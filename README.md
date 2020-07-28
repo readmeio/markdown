@@ -52,5 +52,5 @@ Our old editor compiled custom "Magic Block" components from a JSON-based syntax
 
 ## Credits
 
-- **Lisence**: ISC
+- **Lisence**: MIT
 - **Authors**: [Dom Harrington](https://github.com/domharrington/), [Rafe Goldberg](https://github.com/rafegoldberg)
