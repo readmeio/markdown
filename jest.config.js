@@ -1,5 +1,13 @@
 module.exports = {
-  testURL: 'http://localhost',
+  collectCoverageFrom: ['**/*.{js,jsx}'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/coverage/',
+    '<rootDir>/dist/',
+    '<rootDir>/lib',
+    '<rootDir>/node_modules/',
+    '<rootDir>/jest.config.js',
+    '<rootDir>/webpack.*.js',
+  ],
   coverageReporters: ['json', 'text', 'lcov', 'clover'], // per https://github.com/facebook/jest/issues/9396#issuecomment-573328488
   coverageThreshold: {
     global: {
@@ -9,13 +17,16 @@ module.exports = {
       statements: 90,
     },
   },
-  setupFiles: ['<rootDir>/lib/enzyme'],
-  coveragePathIgnorePatterns: ['<rootDir>/webpack.*.js', 'dist/'],
-  collectCoverageFrom: ['**/*.{js,jsx}', '!**/node_modules/**', '!jest.config.js', '!**/coverage/lcov-report/**'],
   moduleNameMapper: {
     '.+\\.(css|styl|less|sass|scss)$': 'identity-obj-proxy',
   },
+  setupFiles: ['<rootDir>/lib/enzyme'],
+  testURL: 'http://localhost',
   transform: {
     '^.+\\.jsx?$': '<rootDir>/lib/babel-jest',
   },
+  transformIgnorePatterns: [
+    // Since `@readme/variable` doesn't ship any transpiled code, we need to transform it as we're running tests.
+    '<rootDir>/node_modules/@readme/variable/^.+\\.jsx?$',
+  ],
 };
