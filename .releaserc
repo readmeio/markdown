@@ -7,6 +7,7 @@
         "preset": "angular",
         "releaseRules": [
           { "type": "feat", "release": "minor" },
+          { "type": "enhance", "release": "minor" },
           { "type": "refactor", "release": "minor" },
           { "type": "style", "release": "patch" }
         ],
@@ -27,7 +28,7 @@
             { "type": "style", "section": "✨ New & Improved", "hidden": false },
             { "type": "fix", "section": "🛠 Fixes & Updates", "hidden": false },
             { "type": "perf", "section": "🛠 Fixes & Updates", "hidden": false },
-            { "type": "chore", "section": "🛠 Fixes & Updates", "hidden": false },
+            { "type": "chore", "section": "🛠 Fixes & Updates", "hidden": true },
             { "type": "docs", "section": "📘 Tests & Docs", "hidden": false },
             { "type": "test", "section": "📘 Tests & Docs", "hidden": true },
             { "type": "build", "hidden": true },

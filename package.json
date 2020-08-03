@@ -19,7 +19,7 @@
     "test.watch": "npm test -- --watch --coverage=false",
     "watch": "webpack -w --progress --mode development",
     "release": "npx semantic-release",
-    "release.dry": "npx semantic-release --debug --dryRun"
+    "release.dry": "npx semantic-release --dryRun"
   },
   "dependencies": {
     "@readme/emojis": "^1.0.0",
@@ -86,6 +86,7 @@
     "webpack-merge": "^4.2.2"
   },
   "license": "MIT",
+  "homepage": "https://rdmd.readme.io",
   "repository": "https://github.com/readmeio/markdown",
   "publishConfig": {
     "registry": "http://registry.npmjs.org",
