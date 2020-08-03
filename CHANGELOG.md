@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.17.1
+
+### 🛠 Fixes & Updates
+
+* _actually_ publish releases to npm ([c6a8883](https://github.com/readmeio/markdown/commit/c6a88835ebf4fd7a7ba7537ac932eaa03468404a))
+* release comment links ([0e87904](https://github.com/readmeio/markdown/commit/0e87904691c1a11180c0a7c3ec04ddc1295398a8))
+* remove next as release branch ([c67c794](https://github.com/readmeio/markdown/commit/c67c794744997a04d2b7e52d6a2322be530de628))
+
 ## Version 6.17.0
 
 ### 📘 Tests & Docs
