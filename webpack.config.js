@@ -1,34 +1,86 @@
 const path = require('path');
-const webpack = require('webpack');
 const merge = require('webpack-merge');
-const common = require('./webpack.common');
-const log = require('./example/fixtures/requestmodel.json');
+const ExtractCSS = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
-module.exports = merge(common, {
-  devServer: {
-    contentBase: './example',
-    publicPath: '/example/',
-    compress: true,
-    port: 9966,
-    hot: true,
-    watchContentBase: true,
-    before: app => {
-      app.get('/api/logs', (req, res) => {
-        // Simulate some loading time
-        setTimeout(() => {
-          // res.json([]); // no data state
-          res.json([...new Array(5).keys()].map(() => ({ ...log, _id: Math.random().toString(5) })));
-        }, 500);
-      });
-    },
-  },
-  devtool: 'cheap-module-source-map',
+const output = {
+  path: path.resolve(__dirname, 'dist'),
+  filename: '[name].js',
+  libraryTarget: 'commonjs2',
+};
+
+const browserConfig = {
+  entry: ['./index.js'],
+  output,
+  plugins: [
+    new ExtractCSS({
+      filename: '[name].css',
+    }),
+  ],
   optimization: {
-    namedChunks: true,
+    minimize: false,
+    minimizer: [new TerserPlugin()],
+    // concatenateModules: false,
+    // namedModules: true,
+    // namedChunks: true,
+    // removeAvailableModules: false,
+    // flagIncludedChunks: false,
+    // occurrenceOrder: false,
   },
+  module: {
+    rules: [
+      {
+        test: /node_modules\/.*(is-plain-obj|parse5)\/.*.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: { extends: './.babelrc' },
+        },
+      },
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules\/(?!@readme\/[\w-]+\/)/,
+        use: {
+          loader: 'babel-loader',
+          options: { extends: './.babelrc' },
+        },
+      },
+      {
+        test: /\.css$/,
+        loaders: [ExtractCSS.loader, 'css-loader'],
+      },
+      {
+        test: /\.scss$/,
+        loaders: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
+      },
+      {
+        // eslint-disable-next-line unicorn/no-unsafe-regex
+        test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
+        loader: 'file-loader?name=dist/fonts/[hash].[ext]',
+        exclude: /(node_modules)/,
+      },
+      {
+        test: /\.(txt|md)$/i,
+        use: 'raw-loader',
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.js', '.json', '.jsx'],
+  },
+  devServer: {
+    port: 6699,
+    contentBase: './dist',
+    watchContentBase: true,
+    compress: true,
+    // hot: true,
+  },
+};
+
+const serverConfig = merge(browserConfig, {
+  target: 'node',
   output: {
-    path: path.resolve(__dirname, 'example'),
-    filename: '[name]-bundle.js',
+    filename: '[name].node.js',
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()],
 });
+
+module.exports = [browserConfig, serverConfig];

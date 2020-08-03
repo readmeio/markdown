@@ -1,52 +1,56 @@
-# api-explorer
+<img align=right width=26% src=http://owlbert.io/images/owlberts-png/Reading.psd.png>
 
-Open source components that make up ReadMe's API Explorer.
+@readme/markdown
+===
 
-[![Build](https://github.com/readmeio/api-explorer/workflows/CI/badge.svg)](https://github.com/readmeio/api-explorer)
+A [Unified](https://github.com/unifiedjs)-based Markdown parser for ReadMe. [![Build](https://github.com/readmeio/api-explorer/workflows/CI/badge.svg)](https://github.com/readmeio/api-explorer/tree/master/packages/markdown)
 
-[![](https://d3vv6lp55qjaqc.cloudfront.net/items/1M3C3j0I0s0j3T362344/Untitled-2.png)](https://readme.io)
-
-This repo consists of the following npm modules:
-
-- [@readme/api-explorer](https://npm.im/@readme/api-explorer) — React components that make up the API Explorer
-- [@readme/api-logs](https://npm.im/@readme/api-logs) — React components for ReadMe Metrics
-- [@readme/markdown](https://npm.im/@readme/markdown) — ReadMe's Markdown parser
-- [@readme/markdown-magic](https://npm.im/@readme/markdown-magic) — Our legacy "magic block"-based Markdown parser
-- [@readme/oas-extensions](https://npm.im/@readme/oas-extensions) — An exported object of our [OpenAPI extensions](https://docs.readme.com/docs/swagger-extensions)
-- [@readme/oas-to-har](https://npm.im/@readme/oas-to-har) — Utility to transform an OpenAPI operation into a HAR representation
-- [@readme/oas-to-snippet](https://npm.im/@readme/oas-to-snippet) — Utility to transform an OpenAPI operation into a code snippet
-- [@readme/syntax-highlighter](https://npm.im/@readme/syntax-highlighter) — The syntax highlighter in use on ReadMe
-- [@readme/variable](https://npm.im/@readme/variable) — React components for ReadMe custom variables
-
-## Installation
-
-```sh
-git clone git@github.com:readmeio/api-explorer.git
-cd api-explorer
-npm install
-npx lerna bootstrap
 ```
-
-## Running the tests
-
-```sh
-npm test
+npm install --save @readme/markdown
 ```
 
 ## Usage
 
-To spin up an example server:
+By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](#readme-flavored-syntax) and returns a tree of React components:
 
-```sh
-npm start
+```jsx
+import React from 'react';
+import rdmd from "@readme/markdown";
+
+export default ({ body }) => (
+  <div className="markdown-body">
+    {rdmd(body)}
+  </div>
+);
 ```
 
-## Fetching the latest stylesheet from ReadMe (for the demo site)
+### Export Methods
 
-```
-# Fetch the latest
-curl https://readme.readme.io/css/bundle-hub2.css -o example/bundle-hub2.css
+In addition to the default processor, the package exports some other methods for transforming ReadMe-flavored markdown:
 
-# Remove relative paths for gh-pages
-sed -i '' 's/\.\.\///g' example/bundle-hub2.css
-```
+| Export  | Description                                    | Arguments       |
+| -------:|:---------------------------------------------- |:--------------- |
+|*`react`*|(default) returns a VDOM tree object            |`text`, `options`|
+|*`md`*   | transform mdast in to ReadMe-flavored markdown |`tree`, `options`|
+|*`html`* | transform markdown in to HTML                  |`text`, `options`|
+|*`mdast`*| transform markdown to an mdast object          |`text`, `options`|
+|*`hast`* | transform markdown to HAST object              |`text`, `options`|
+|*`plain`*| transform markdown to plain text               |`text`, `options`|
+|*`utils`*| contexts, defaults, helpers, etc.              | N/A             |
+
+#### Settings & Options
+
+Each processor method takes an options object, which you can use to customize various outputs. Among them
+
+- **`markdownOptions`**: [Remark parsing options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options)
+- **`correctnewlines`**: render new line delimeters as `<br>` tags.
+- **`compatibilityMode`**: [enable compatibility features for ReadMe's old markdown engine](https://github.com/readmeio/api-explorer/issues/668).
+
+## Flavored Syntax
+
+Our old editor compiled custom "Magic Block" components from a JSON-based syntax. To provide seamless backwards-compatibility, the updated Markdown processor ships with built in support for parsing this old format and transpiling it in to standard, GitHub-flavored markdown. We've also sprinkled a bit of our own syntactic sugar on top, which let's you supercharge your docs. [**Read more about ReadMe's flavored syntax!**](https://rdmd.readme.io)
+
+## Credits
+
+- **Lisence**: MIT
+- **Authors**: [Dom Harrington](https://github.com/domharrington/), [Rafe Goldberg](https://github.com/rafegoldberg)
