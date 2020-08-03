@@ -1,5 +1,5 @@
-@import '~@readme/syntax-highlighter/node_modules/codemirror/lib/codemirror.css';
-@import '~@readme/syntax-highlighter/node_modules/codemirror/theme/neo.css';
+@import '~codemirror/lib/codemirror.css';
+@import '~codemirror/theme/neo.css';
 
 @mixin CodeTabs {
   $bgc-pre: #F6F8FA;

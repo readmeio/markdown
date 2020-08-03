@@ -33,24 +33,20 @@ const browserConfig = {
         test: /node_modules\/.*(is-plain-obj|parse5)\/.*.js$/,
         use: {
           loader: 'babel-loader',
-          options: {
-            extends: '../../.babelrc',
-          },
+          options: { extends: './.babelrc' },
         },
       },
       {
-        test: /\.js(x?)$/,
-        exclude: /node_modules/,
+        test: /\.jsx?$/,
+        exclude: /node_modules\/(?!@readme\/[\w-]+\/)/,
         use: {
           loader: 'babel-loader',
-          options: {
-            extends: '../../.babelrc',
-          },
+          options: { extends: './.babelrc' },
         },
       },
       {
         test: /\.css$/,
-        loader: [ExtractCSS.loader, 'css-loader'],
+        loaders: [ExtractCSS.loader, 'css-loader'],
       },
       {
         test: /\.scss$/,
@@ -60,7 +56,7 @@ const browserConfig = {
         // eslint-disable-next-line unicorn/no-unsafe-regex
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
         loader: 'file-loader?name=dist/fonts/[hash].[ext]',
-        exclude: /(node_modules|bower_components)/,
+        exclude: /(node_modules)/,
       },
       {
         test: /\.(txt|md)$/i,
