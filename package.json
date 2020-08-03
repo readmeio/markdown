@@ -52,16 +52,20 @@
     "@babel/plugin-proposal-optional-chaining": "^7.9.0",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-react": "^7.10.4",
+    "@commitlint/cli": "^9.1.1",
+    "@commitlint/config-angular": "^9.1.1",
+    "@commitlint/config-conventional": "^9.1.1",
     "@readme/eslint-config": "^3.2.0",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-loader": "^8.0.6",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.1.0",
+    "babel-loader": "^8.0.6",
     "babel-polyfill": "^6.26.0",
     "css-loader": "^3.4.2",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.0.0",
+    "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
     "isomorphic-style-loader": "^5.1.0",
     "jest": "^26.0.1",
@@ -82,5 +86,10 @@
     "registry": "http://registry.npmjs.org",
     "access": "public"
   },
-  "prettier": "@readme/eslint-config/prettier"
+  "prettier": "@readme/eslint-config/prettier",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
 }
