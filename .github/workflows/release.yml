@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - chore/promote-to-single-package
 
 jobs:
   semantic-release:
@@ -36,7 +35,7 @@ jobs:
       # Build, version, and tag a new release.
       #
       - name: Build new release
-        run: npm run release.dry # configured in .releaserc
+        run: npm run release # configured in .releaserc
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
           NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.GH_TOKEN }} # auth publish to registry

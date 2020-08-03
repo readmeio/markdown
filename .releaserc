@@ -1,5 +1,5 @@
 {
-  "branches": ["master","chore/promote-to-single-package"],
+  "branches": ["master"],
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
