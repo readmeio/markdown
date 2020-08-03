@@ -1,0 +1,71 @@
+{
+  "branches": ["master","chore/promote-to-single-package"],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "angular",
+        "releaseRules": [
+          { "type": "feat", "release": "minor" },
+          { "type": "refactor", "release": "minor" },
+          { "type": "style", "release": "patch" }
+        ],
+        "parserOpts": {
+          "noteKeywords": ["BREAKING"]
+        }
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "✨ New & Improved", "hidden": false },
+            { "type": "enhance", "section": "✨ New & Improved", "hidden": false },
+            { "type": "refactor", "section": "✨ New & Improved", "hidden": false },
+            { "type": "style", "section": "✨ New & Improved", "hidden": false },
+            { "type": "fix", "section": "🛠 Fixes & Updates", "hidden": false },
+            { "type": "perf", "section": "🛠 Fixes & Updates", "hidden": false },
+            { "type": "chore", "section": "🛠 Fixes & Updates", "hidden": false },
+            { "type": "docs", "section": "📘 Tests & Docs", "hidden": false },
+            { "type": "test", "section": "📘 Tests & Docs", "hidden": true },
+            { "type": "build", "hidden": true },
+            { "type": "ci", "hidden": true }
+          ]
+        },
+        "parserOpts": {
+          "noteKeywords": ["BREAKING"]
+        },
+        "writerOpts": {
+          "commitsSort": ["subject", "scope"],
+          "headerPartial": "## Version {{version}}"
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogTitle": "Changelog\n==="
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "successComment": "<img align=\"right\" height=\"100\" src=\"https://user-images.githubusercontent.com/886627/87183626-529d9580-c29b-11ea-8c54-5ca58a1f4a77.png\" />\n\n## This ${issue.pull_request ? \"PR\" : \"issue\"} was ${issue.pull_request ? \"released\" : \"resolved\"}!\n\n🚀 Changes included in [<b>v${nextRelease.version}</b>](https://github.com/readmeio/readme/releases/tag/v${nextRelease.version})\n<br>"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "message": "🚀 v${nextRelease.version} 🦉\n\n${nextRelease.notes}\n<!--SKIP CI-->"
+      }
+    ]
+  ]
+}
