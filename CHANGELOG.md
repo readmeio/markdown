@@ -1,3 +1,18 @@
+Changelog
+===
+
+## Version 6.17.0
+
+### 📘 Tests & Docs
+
+* update status badge ([d6d7238](https://github.com/readmeio/markdown/commit/d6d723859ded6ea42b66aa52926014d09f758980))
+
+
+### ✨ New & Improved
+
+* **rdmd/callout:** fix icon alignment ([#853](https://github.com/readmeio/markdown/issues/853)) ([7ee7b5f](https://github.com/readmeio/markdown/commit/7ee7b5f472c6b0248e4fb9745631b18e8e2cbb59))
+* promote the markdown engine into a dedicated repo ([#12](https://github.com/readmeio/markdown/issues/12)) ([6093851](https://github.com/readmeio/markdown/commit/6093851f26007da7a5775e381027773e948db644))
+
 ## 6.16.0 (2020-07-23)
 
 * build: updating dist files ([15a2997](https://github.com/readmeio/api-explorer/commit/15a2997))
@@ -2821,6 +2836,3 @@
 * Whitespace ([15f083f](https://github.com/readmeio/api-explorer/commit/15f083f))
 * Whoops. Fix the build ([184ca88](https://github.com/readmeio/api-explorer/commit/184ca88))
 * Wire examplesTabs and result Tabs with state from parent comp ([efdf9a0](https://github.com/readmeio/api-explorer/commit/efdf9a0))
-
-
-
