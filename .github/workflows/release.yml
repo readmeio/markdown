@@ -30,7 +30,6 @@ jobs:
       - name: Install packages
         run: |
           npm ci
-          npm run oas
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
