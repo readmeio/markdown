@@ -59,7 +59,7 @@
     [
       "@semantic-release/github",
       {
-        "successComment": "<img align=\"right\" height=\"100\" src=\"https://user-images.githubusercontent.com/886627/87183626-529d9580-c29b-11ea-8c54-5ca58a1f4a77.png\" />\n\n## This ${issue.pull_request ? \"PR\" : \"issue\"} was ${issue.pull_request ? \"released\" : \"resolved\"}!\n\n🚀 Changes included in [<b>v${nextRelease.version}</b>](https://github.com/readmeio/readme/releases/tag/v${nextRelease.version})\n<br>"
+        "successComment": "<img align=\"right\" height=\"100\" src=\"https://user-images.githubusercontent.com/886627/87183626-529d9580-c29b-11ea-8c54-5ca58a1f4a77.png\" />\n\n## This ${issue.pull_request ? \"PR\" : \"issue\"} was ${issue.pull_request ? \"released\" : \"resolved\"}!\n\n🚀 Changes included in [<b>v${nextRelease.version}</b>](/readmeio/markdown/releases/tag/v${nextRelease.version})\n<br>"
       }
     ],
     [
