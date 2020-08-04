@@ -105,6 +105,12 @@ test('anchor target: should allow _blank if using HTML', () => {
   expect(mount(markdown.default('<a href="https://example.com" target="_blank">test</a>')).html()).toMatchSnapshot();
 });
 
+test('anchor target: should allow download if using HTML', () => {
+  expect(
+    mount(markdown.default('<a download="example.png" href="" target="_blank">test</a>')).html()
+  ).toMatchSnapshot();
+});
+
 test('anchors with baseUrl', () => {
   const wrapper = mount(
     React.createElement(

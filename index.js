@@ -78,7 +78,7 @@ sanitize.attributes['rdme-embed'] = [
   'favicon',
 ];
 
-sanitize.attributes.a = ['href', 'title', 'class', 'className'];
+sanitize.attributes.a = ['href', 'title', 'class', 'className', 'download'];
 
 sanitize.tagNames.push('figure');
 sanitize.tagNames.push('figcaption');

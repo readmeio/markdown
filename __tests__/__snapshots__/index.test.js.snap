@@ -2,6 +2,8 @@
 
 exports[`anchor target: should allow _blank if using HTML 1`] = `"<p><a href=\\"https://example.com\\" target=\\"_blank\\" title=\\"\\">test</a></p>"`;
 
+exports[`anchor target: should allow download if using HTML 1`] = `"<p><a download=\\"example.png\\" href=\\"\\" target=\\"_blank\\" title=\\"\\">test</a></p>"`;
+
 exports[`anchor target: should default to _self 1`] = `"<p><a href=\\"https://example.com\\" target=\\"_self\\" title=\\"\\">test</a></p>"`;
 
 exports[`anchors 1`] = `
