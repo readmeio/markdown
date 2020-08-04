@@ -26,23 +26,24 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install packages
+      - name: Install dependencies
         run: |
           npm ci
+          npm run build --if-present
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
       # Build, version, and tag a new release.
       #
-      - name: Build new release
+      - name: Publish release
         run: npm run release # configured in .releaserc
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}                       # auth push to remote repo
           NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.GH_TOKEN }} # auth publish to registry
 
       # Push release changes to the remote.
       #
-      - name: Sync to remote
+      - name: Push to remote
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
