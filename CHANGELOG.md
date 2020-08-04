@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.17.2
+
+### 🛠 Fixes & Updates
+
+* run build pre-release ([1b72836](https://github.com/readmeio/markdown/commit/1b7283689b709e40670d568734872026758c7f50))
+
 ## Version 6.17.1
 
 ### 🛠 Fixes & Updates
