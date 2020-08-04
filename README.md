@@ -3,7 +3,7 @@
 @readme/markdown
 ===
 
-A [Unified](https://github.com/unifiedjs)-based Markdown parser for ReadMe. ![CI Status](https://github.com/readmeio/markdown/workflows/CI/badge.svg)
+ReadMe's flavored Markdown parser and MDX rendering engine. ![CI Status](https://github.com/readmeio/markdown/workflows/CI/badge.svg)
 
 ```
 npm install --save @readme/markdown
@@ -11,7 +11,7 @@ npm install --save @readme/markdown
 
 ## Usage
 
-By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](#readme-flavored-syntax) and returns a tree of React components:
+By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](https://rdmd.readme.io/) and returns a tree of React components:
 
 ```jsx
 import React from 'react';
@@ -26,11 +26,11 @@ export default ({ body }) => (
 
 ### Export Methods
 
-In addition to the default processor, the package exports some other methods for transforming ReadMe-flavored markdown:
+In addition to the default React processor, the package exports some other methods for transforming ReadMe-flavored markdown:
 
 | Export  | Description                                    | Arguments       |
 | -------:|:---------------------------------------------- |:--------------- |
-|*`react`*|(default) returns a VDOM tree object            |`text`, `options`|
+|*`react`*|_(default)_ returns a VDOM tree object          |`text`, `options`|
 |*`md`*   | transform mdast in to ReadMe-flavored markdown |`tree`, `options`|
 |*`html`* | transform markdown in to HTML                  |`text`, `options`|
 |*`mdast`*| transform markdown to an mdast object          |`text`, `options`|
@@ -42,13 +42,13 @@ In addition to the default processor, the package exports some other methods for
 
 Each processor method takes an options object, which you can use to customize various outputs. Among them
 
-- **`markdownOptions`**: [Remark parsing options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options)
 - **`correctnewlines`**: render new line delimeters as `<br>` tags.
+- **`markdownOptions`**: [Remark parsing options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options)
 - **`compatibilityMode`**: [enable compatibility features for ReadMe's old markdown engine](https://github.com/readmeio/api-explorer/issues/668).
 
 ## Flavored Syntax
 
-Our old editor compiled custom "Magic Block" components from a JSON-based syntax. To provide seamless backwards-compatibility, the updated Markdown processor ships with built in support for parsing this old format and transpiling it in to standard, GitHub-flavored markdown. We've also sprinkled a bit of our own syntactic sugar on top, which let's you supercharge your docs. [**Read more about ReadMe's flavored syntax!**](https://rdmd.readme.io)
+Our old editor compiled custom "Magic Block" components from a JSON-based syntax. To provide seamless backwards-compatibility, the updated Markdown processor ships with built in support for parsing this old format and transpiling it in to standard, GitHub-flavored markdown. We've also sprinkled a bit of our own syntactic sugar on top, which let's you supercharge your docs. [**Read more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
 ## Credits
 
