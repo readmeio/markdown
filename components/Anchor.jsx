@@ -57,6 +57,7 @@ function Anchor(props) {
 Anchor.propTypes = {
   baseUrl: PropTypes.string,
   children: PropTypes.node.isRequired,
+  download: PropTypes.string,
   href: PropTypes.string,
   target: PropTypes.string,
   title: PropTypes.string,
