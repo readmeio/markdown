@@ -1,6 +1,24 @@
 Changelog
 ===
 
+## Version 6.18.0
+
+### 📘 Tests & Docs
+
+* **readme:** formatting and copy edits ([ce9d154](https://github.com/readmeio/markdown/commit/ce9d1549445cda85998ad6380f7168ce26231ff9))
+* update link ([d90138d](https://github.com/readmeio/markdown/commit/d90138d855582cbd7aab4c229b83a3d88de9e933))
+* update links, minor edits ([57e1fd5](https://github.com/readmeio/markdown/commit/57e1fd5e114d2fd9e50987485cdf1f0c872aec6a))
+
+
+### 🛠 Fixes & Updates
+
+* **compat mode:** don't inject inline scripts on server ([#40](https://github.com/readmeio/markdown/issues/40)) ([0a1e72e](https://github.com/readmeio/markdown/commit/0a1e72e08f3f1d6c43410cb9b45045275a62438e))
+
+
+### ✨ New & Improved
+
+* allow download attr in a-tags ([#39](https://github.com/readmeio/markdown/issues/39)) ([87d8099](https://github.com/readmeio/markdown/commit/87d8099e77095ce2aabe3a8c94c5da44d0b5a2a7))
+
 ## Version 6.17.2
 
 ### 🛠 Fixes & Updates
