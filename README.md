@@ -11,7 +11,7 @@ npm install --save @readme/markdown
 
 ## Usage
 
-By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](https://rdmd.readme.io/) and returns a tree of React components:
+By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](https://docs.readme.com/rdmd/docs/syntax-extensions) and returns a tree of React components:
 
 ```jsx
 import React from 'react';
@@ -50,7 +50,7 @@ Each processor method takes an options object which you can use to adjust the ou
 
 Our old editor rendered "Magic Block" components from a custom, JSON-based syntax. To provide seamless backwards-compatibility, our new processor ships with built in support for parsing this old format, and transpiles it straight in to our new, flavored Markdown.
 
-We've also sprinkled a bit of our own syntactic sugar on top of all of this, which let's you supercharge your docs. [**Learn more about ReadMe-flavored Markdown!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
+We've also sprinkled a bit of our own syntactic sugar on top to let you supercharge your docs. [**Learn more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
 ## Credits
 
