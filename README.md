@@ -38,17 +38,19 @@ In addition to the default React processor, the package exports some other metho
 |*`plain`*| transform markdown to plain text               |`text`, `options`|
 |*`utils`*| contexts, defaults, helpers, etc.              | N/A             |
 
-#### Settings & Options
+### Settings & Options
 
-Each processor method takes an options object, which you can use to customize various outputs. Among them
+Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
 
-- **`correctnewlines`**: render new line delimeters as `<br>` tags.
-- **`markdownOptions`**: [Remark parsing options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options)
-- **`compatibilityMode`**: [enable compatibility features for ReadMe's old markdown engine](https://github.com/readmeio/api-explorer/issues/668).
+- **`correctnewlines`**—render new line delimeters as `<br>` tags.
+- **`markdownOptions`**—Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
+- **`compatibilityMode`**—enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
 
 ## Flavored Syntax
 
-Our old editor compiled custom "Magic Block" components from a JSON-based syntax. To provide seamless backwards-compatibility, the updated Markdown processor ships with built in support for parsing this old format and transpiling it in to standard, GitHub-flavored markdown. We've also sprinkled a bit of our own syntactic sugar on top, which let's you supercharge your docs. [**Read more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
+Our old editor rendered "Magic Block" components from a custom, JSON-based syntax. To provide seamless backwards-compatibility, our new processor ships with built in support for parsing this old format, and transpiles it straight in to our new, flavored Markdown.
+
+We've also sprinkled a bit of our own syntactic sugar on top of all of this, which let's you supercharge your docs. [**Learn more about ReadMe-flavored Markdown!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
 ## Credits
 
