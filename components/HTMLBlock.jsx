@@ -2,6 +2,7 @@
  */
 const React = require('react');
 const PropTypes = require('prop-types');
+const matchAll = require('string.prototype.matchall');
 
 /**
  * @arg {string} html the HTML from which to extract script tags.
@@ -10,7 +11,7 @@ const extractScripts = html => {
   if (typeof window === 'undefined' || !html) return () => {};
 
   const regex = /<script\b[^>]*>([\s\S]*?)<\/script>/gim;
-  const scripts = [...html.matchAll(regex)].map(m => m[1].trim());
+  const scripts = [...matchAll(html, regex)].map(m => m[1].trim());
 
   return () => scripts.map(js => window.eval(js));
 };

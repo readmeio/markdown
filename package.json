@@ -42,6 +42,7 @@
     "remark-rehype": "^7.0.0",
     "remark-slug": "^6.0.0",
     "remark-stringify": "^8.0.0",
+    "string.prototype.matchall": "^4.0.2",
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
     "unist-util-map": "^2.0.0",
