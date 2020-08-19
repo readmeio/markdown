@@ -69,6 +69,7 @@
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.0.0",
+    "eslint-plugin-compat": "^3.8.0",
     "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
     "isomorphic-style-loader": "^5.1.0",
@@ -92,6 +93,9 @@
     "registry": "http://registry.npmjs.org",
     "access": "public"
   },
+  "browserslist": [
+    "last 2 versions"
+  ],
   "prettier": "@readme/eslint-config/prettier",
   "husky": {
     "hooks": {
