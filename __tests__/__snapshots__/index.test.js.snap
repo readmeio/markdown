@@ -1014,4 +1014,15 @@ exports[`magic image 1`] = `"<figure><span class=\\"img\\" role=\\"button\\" tab
 
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 
+exports[`table of contents should have nested lis 2 depths down 1`] = `
+"<div class=\\"nav\\"><ul class=\\"toc-list\\"><li><a class=\\"tocHeader\\" href=\\"\\"><i class=\\"icon icon-text-align-left\\"></i>Table of Contents</a></li><ul>
+<li>
+<a href=\\"#heading-1\\">Heading 1</a>
+<ul>
+<li><a href=\\"#heading-2\\">Heading 2</a></li>
+</ul>
+</li>
+</ul></ul></div>"
+`;
+
 exports[`tables 1`] = `"<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div>"`;

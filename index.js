@@ -3,6 +3,7 @@ require('./styles/main.scss');
 
 const React = require('react');
 const unified = require('unified');
+const toc = require('mdast-util-toc');
 
 /* Unified Plugins
  */
@@ -38,6 +39,8 @@ const {
   Embed,
   HTMLBlock,
 } = require('./components');
+
+const TableOfContents = require('./components/TableOfContents');
 
 /* Custom Unified Parsers
  */
@@ -169,7 +172,7 @@ export function react(text, opts = {}, components = {}) {
   const PinWrap = ({ children }) => <div className="pin">{children}</div>;
   const count = {};
 
-  return processor(opts)
+  const reactProcessor = processor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
@@ -194,8 +197,25 @@ export function react(text, opts = {}, components = {}) {
         img: Image(sanitize),
         ...components,
       }),
-    })
-    .processSync(text).contents;
+    });
+
+  const tocProcessor = processor(opts).use(rehypeReact, {
+    createElement: React.createElement,
+    Fragment: React.Fragment,
+    components: {
+      p: React.Fragment,
+    },
+  });
+
+  const tree = reactProcessor.parse(text);
+  const tableOfContents = toc(tree, { maxDepth: 2 }).map;
+
+  return {
+    toc: tableOfContents
+      ? React.createElement(TableOfContents, {}, tocProcessor.stringify(tocProcessor.runSync(tableOfContents)))
+      : null,
+    body: reactProcessor.stringify(reactProcessor.runSync(tree)),
+  };
 }
 
 /**

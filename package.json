@@ -29,6 +29,7 @@
     "hast-util-sanitize": "^2.0.2",
     "hast-util-to-string": "^1.0.3",
     "lodash.kebabcase": "^4.1.1",
+    "mdast-util-toc": "^5.0.3",
     "prop-types": "^15.7.2",
     "react": "^16.4.2",
     "react-dom": "^16.13.1",
