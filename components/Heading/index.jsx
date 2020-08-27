@@ -39,7 +39,7 @@ Heading.propTypes = {
   children: PropTypes.array.isRequired,
   id: PropTypes.string.isRequired,
   level: PropTypes.number,
-  showAnchorIcons: PropTypes.boolean,
+  showAnchorIcons: PropTypes.bool,
   tag: PropTypes.string.isRequired,
 };
 Heading.defaultProps = {
