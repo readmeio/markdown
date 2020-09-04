@@ -208,6 +208,26 @@ export function react(text, opts = {}, components = {}) {
   });
 
   const tree = reactProcessor.parse(text);
+  // function normalizeHeaders(tree) {
+  //   if (tree.children) {
+  //     const headerNumbers = new Set(tree.children.filter(item => item.type === 'heading').map(item => item.depth));
+  //     const sortedHeaderLevels = Array.from(headerNumbers).sort();
+  //     const headerMap = {};
+  //     sortedHeaderLevels.forEach((level, index) => {
+  //       headerMap[level] = index + 1;
+  //     });
+  //     return tree.children.map(item => {
+  //       if (item.type === 'heading') {
+  //         item.depth = headerMap[item.depth];
+  //       }
+  //       return item;
+  //     });
+  //   }
+  //   return tree;
+  // }
+
+  // const normalizedHeadersTree = normalizeHeaders(tree);
+
   const tableOfContents = toc(tree, { maxDepth: 2 }).map;
 
   return {
