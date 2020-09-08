@@ -166,14 +166,11 @@ export function plain(text, opts = {}, components = {}) {
 /**
  *  return a React VDOM component tree
  */
-export function react(text, opts = {}, components = {}) {
-  if (!text) return null;
-  [text, opts] = setup(text, opts);
+// eslint-disable-next-line react/prop-types
+const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @todo: move this to it's own component
+const count = {};
 
-  // eslint-disable-next-line react/prop-types
-  const PinWrap = ({ children }) => <div className="pin">{children}</div>;
-  const count = {};
-
+export function reactProcessor(opts = {}, components = {}) {
   return processor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
@@ -199,13 +196,23 @@ export function react(text, opts = {}, components = {}) {
         img: Image(sanitize),
         ...components,
       }),
-    })
-    .processSync(text).contents;
+    });
 }
 
-export function reactTOC(text, opts = {}) {
-  if (!text) return null;
-  [text, opts] = setup(text, opts);
+export function react(content, opts = {}, components = {}) {
+  if (!content) return null;
+  else if (typeof content === 'string') [content, opts] = setup(content, opts);
+  else [, opts] = setup('', opts);
+
+  const proc = reactProcessor(opts, components);
+  if (typeof content === 'string') content = proc.parse(content);
+
+  return proc.stringify(proc.runSync(content));
+}
+
+export function reactTOC(tree, opts = {}) {
+  if (!tree) return null;
+  [, opts] = setup('', opts);
 
   const proc = processor(opts).use(rehypeReact, {
     createElement: React.createElement,
@@ -213,8 +220,6 @@ export function reactTOC(text, opts = {}) {
       p: React.Fragment,
     },
   });
-
-  let tree = processor(opts).use(sectionAnchorId).use(rehypeReact).parse(text);
 
   // Normalize Heading Levels
   const minLevel = selectAll('heading', tree).reduce((i, { depth }) => (!i || depth <= i ? depth : i), false); // determine "root" depth

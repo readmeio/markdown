@@ -22819,6 +22819,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "utils", function() { return utils; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "processor", function() { return processor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "plain", function() { return plain; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactProcessor", function() { return reactProcessor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "react", function() { return react; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactTOC", function() { return reactTOC; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "html", function() { return html; });
@@ -23009,28 +23010,20 @@ function plain(text) {
 /**
  *  return a React VDOM component tree
  */
+// eslint-disable-next-line react/prop-types
 
-function react(text) {
-  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var components = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  if (!text) return null;
+var PinWrap = function PinWrap(_ref) {
+  var children = _ref.children;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "pin"
+  }, children);
+}; // @todo: move this to it's own component
 
-  var _setup3 = setup(text, opts);
 
-  var _setup4 = _slicedToArray(_setup3, 2);
-
-  text = _setup4[0];
-  opts = _setup4[1];
-
-  // eslint-disable-next-line react/prop-types
-  var PinWrap = function PinWrap(_ref) {
-    var children = _ref.children;
-    return /*#__PURE__*/React.createElement("div", {
-      className: "pin"
-    }, children);
-  };
-
-  var count = {};
+var count = {};
+function reactProcessor() {
+  var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var components = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   return processor(opts).use(sectionAnchorId).use(rehypeReact, {
     createElement: React.createElement,
     Fragment: React.Fragment,
@@ -23055,25 +23048,44 @@ function react(text) {
       code: Code(sanitize),
       img: Image(sanitize)
     }, components))
-  }).processSync(text).contents;
+  });
 }
-function reactTOC(text) {
+function react(content) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  if (!text) return null;
+  var components = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  if (!content) return null;else if (typeof content === 'string') {
+    var _setup3 = setup(content, opts);
 
-  var _setup5 = setup(text, opts);
+    var _setup4 = _slicedToArray(_setup3, 2);
 
-  var _setup6 = _slicedToArray(_setup5, 2);
+    content = _setup4[0];
+    opts = _setup4[1];
+  } else {
+    var _setup5 = setup('', opts);
 
-  text = _setup6[0];
-  opts = _setup6[1];
+    var _setup6 = _slicedToArray(_setup5, 2);
+
+    opts = _setup6[1];
+  }
+  var proc = reactProcessor(opts, components);
+  if (typeof content === 'string') content = proc.parse(content);
+  return proc.stringify(proc.runSync(content));
+}
+function reactTOC(tree) {
+  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  if (!tree) return null;
+
+  var _setup7 = setup('', opts);
+
+  var _setup8 = _slicedToArray(_setup7, 2);
+
+  opts = _setup8[1];
   var proc = processor(opts).use(rehypeReact, {
     createElement: React.createElement,
     components: {
       p: React.Fragment
     }
-  });
-  var tree = processor(opts).use(sectionAnchorId).use(rehypeReact).parse(text); // Normalize Heading Levels
+  }); // Normalize Heading Levels
 
   var minLevel = selectAll('heading', tree).reduce(function (i, _ref2) {
     var depth = _ref2.depth;
@@ -23098,12 +23110,12 @@ function html(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
-  var _setup7 = setup(text, opts);
+  var _setup9 = setup(text, opts);
 
-  var _setup8 = _slicedToArray(_setup7, 2);
+  var _setup10 = _slicedToArray(_setup9, 2);
 
-  text = _setup8[0];
-  opts = _setup8[1];
+  text = _setup10[0];
+  opts = _setup10[1];
   return processor(opts).use(rehypeStringify).processSync(text).contents;
 }
 /**
@@ -23114,12 +23126,12 @@ function hast(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
-  var _setup9 = setup(text, opts);
+  var _setup11 = setup(text, opts);
 
-  var _setup10 = _slicedToArray(_setup9, 2);
+  var _setup12 = _slicedToArray(_setup11, 2);
 
-  text = _setup10[0];
-  opts = _setup10[1];
+  text = _setup12[0];
+  opts = _setup12[1];
   var rdmd = processor(opts).use(tableFlattening);
   var node = rdmd.parse(text);
   return rdmd.runSync(node);
@@ -23132,12 +23144,12 @@ function mdast(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
-  var _setup11 = setup(text, opts);
+  var _setup13 = setup(text, opts);
 
-  var _setup12 = _slicedToArray(_setup11, 2);
+  var _setup14 = _slicedToArray(_setup13, 2);
 
-  text = _setup12[0];
-  opts = _setup12[1];
+  text = _setup14[0];
+  opts = _setup14[1];
   return processor(opts).parse(text);
 }
 /**
@@ -23148,11 +23160,11 @@ function astToPlainText(node) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!node) return '';
 
-  var _setup13 = setup('', opts);
+  var _setup15 = setup('', opts);
 
-  var _setup14 = _slicedToArray(_setup13, 2);
+  var _setup16 = _slicedToArray(_setup15, 2);
 
-  opts = _setup14[1];
+  opts = _setup16[1];
   return processor(opts).use(toPlainText).runSync(node);
 }
 /**
@@ -23163,11 +23175,11 @@ function md(tree) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!tree) return null;
 
-  var _setup15 = setup('', opts);
+  var _setup17 = setup('', opts);
 
-  var _setup16 = _slicedToArray(_setup15, 2);
+  var _setup18 = _slicedToArray(_setup17, 2);
 
-  opts = _setup16[1];
+  opts = _setup18[1];
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
 }
 
