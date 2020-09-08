@@ -3,7 +3,7 @@ require('./styles/main.scss');
 
 const React = require('react');
 const unified = require('unified');
-const toc = require('mdast-util-toc');
+const generateTOC = require('mdast-util-toc');
 
 /* Unified Plugins
  */
@@ -38,9 +38,8 @@ const {
   Image,
   Embed,
   HTMLBlock,
+  TableOfContents,
 } = require('./components');
-
-const TableOfContents = require('./components/TableOfContents');
 
 /* Custom Unified Parsers
  */
@@ -164,6 +163,39 @@ export function plain(text, opts = {}, components = {}) {
 /**
  *  return a React VDOM component tree
  */
+export function reactTOC(tree, opts = {}) {
+  const proc = processor(opts).use(rehypeReact, {
+    createElement: React.createElement,
+    components: {
+      p: React.Fragment,
+    },
+  });
+
+  /*
+  function normalizeHeaders(tree) {
+    if (tree.children) {
+      const headerNumbers = new Set(tree.children.filter(item => item.type === 'heading').map(item => item.depth));
+      const sortedHeaderLevels = Array.from(headerNumbers).sort();
+      const headerMap = {};
+      sortedHeaderLevels.forEach((level, index) => {
+        headerMap[level] = index + 1;
+      });
+      return tree.children.map(item => {
+        if (item.type === 'heading') {
+          item.depth = headerMap[item.depth];
+        }
+        return item;
+      });
+    }
+    return tree;
+  }
+  const normalizedHeadersTree = normalizeHeaders(tree);
+  */
+
+  const tableOfContents = generateTOC(tree, { maxDepth: 2 }).map;
+  return tableOfContents ? proc.stringify(proc.runSync(tableOfContents)) : false;
+}
+
 export function react(text, opts = {}, components = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
@@ -199,41 +231,11 @@ export function react(text, opts = {}, components = {}) {
       }),
     });
 
-  const tocProcessor = processor(opts).use(rehypeReact, {
-    createElement: React.createElement,
-    Fragment: React.Fragment,
-    components: {
-      p: React.Fragment,
-    },
-  });
-
   const tree = reactProcessor.parse(text);
-  // function normalizeHeaders(tree) {
-  //   if (tree.children) {
-  //     const headerNumbers = new Set(tree.children.filter(item => item.type === 'heading').map(item => item.depth));
-  //     const sortedHeaderLevels = Array.from(headerNumbers).sort();
-  //     const headerMap = {};
-  //     sortedHeaderLevels.forEach((level, index) => {
-  //       headerMap[level] = index + 1;
-  //     });
-  //     return tree.children.map(item => {
-  //       if (item.type === 'heading') {
-  //         item.depth = headerMap[item.depth];
-  //       }
-  //       return item;
-  //     });
-  //   }
-  //   return tree;
-  // }
-
-  // const normalizedHeadersTree = normalizeHeaders(tree);
-
-  const tableOfContents = toc(tree, { maxDepth: 2 }).map;
+  const toc = reactTOC(tree, opts);
 
   return {
-    toc: tableOfContents
-      ? React.createElement(TableOfContents, {}, tocProcessor.stringify(tocProcessor.runSync(tableOfContents)))
-      : null,
+    toc: toc ? React.createElement(TableOfContents, {}, toc) : null,
     body: reactProcessor.stringify(reactProcessor.runSync(tree)),
   };
 }
