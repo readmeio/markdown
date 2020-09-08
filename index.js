@@ -166,27 +166,6 @@ export function plain(text, opts = {}, components = {}) {
 /**
  *  return a React VDOM component tree
  */
-export function reactTOC(tree, opts = {}) {
-  const proc = processor(opts).use(rehypeReact, {
-    createElement: React.createElement,
-    components: {
-      p: React.Fragment,
-    },
-  });
-
-  // Get headings from tree and determine "root" level (lowest depth)
-  const minLevel = selectAll('heading', tree).reduce((i, { depth }) => (!i || depth <= i ? depth : i), false);
-
-  // Normalized headings tree
-  tree = mapNodes(tree, n => {
-    if (n.type === 'heading') n.depth -= minLevel - 1;
-    return n;
-  });
-
-  const tableOfContents = generateTOC(tree, { maxDepth: 2 }).map;
-  return tableOfContents ? proc.stringify(proc.runSync(tableOfContents)) : false;
-}
-
 export function react(text, opts = {}, components = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
@@ -195,7 +174,7 @@ export function react(text, opts = {}, components = {}) {
   const PinWrap = ({ children }) => <div className="pin">{children}</div>;
   const count = {};
 
-  const reactProcessor = processor(opts)
+  return processor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
@@ -220,15 +199,34 @@ export function react(text, opts = {}, components = {}) {
         img: Image(sanitize),
         ...components,
       }),
-    });
+    })
+    .processSync(text).contents;
+}
 
-  const tree = reactProcessor.parse(text);
-  const toc = reactTOC(tree, opts);
+export function reactTOC(text, opts = {}) {
+  if (!text) return null;
+  [text, opts] = setup(text, opts);
 
-  return {
-    toc: toc ? React.createElement(TableOfContents, {}, toc) : null,
-    body: reactProcessor.stringify(reactProcessor.runSync(tree)),
-  };
+  const proc = processor(opts).use(rehypeReact, {
+    createElement: React.createElement,
+    components: {
+      p: React.Fragment,
+    },
+  });
+
+  let tree = processor(opts).use(sectionAnchorId).use(rehypeReact).parse(text);
+
+  // Normalize Heading Levels
+  const minLevel = selectAll('heading', tree).reduce((i, { depth }) => (!i || depth <= i ? depth : i), false); // determine "root" depth
+  tree = mapNodes(tree, n => {
+    if (n.type === 'heading') n.depth -= minLevel - 1;
+    return n;
+  });
+
+  const toc = generateTOC(tree, { maxDepth: 2 }).map;
+  const ast = toc ? proc.stringify(proc.runSync(toc)) : false;
+
+  return ast ? React.createElement(TableOfContents, {}, ast) : null;
 }
 
 /**

@@ -21305,7 +21305,7 @@ function TableOfContents(_ref) {
   return /*#__PURE__*/React.createElement("div", {
     className: "nav"
   }, /*#__PURE__*/React.createElement("ul", {
-    className: "toc-list UPDATED"
+    className: "toc-list"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("a", {
     className: "tocHeader",
     href: ""
@@ -22332,8 +22332,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "utils", function() { return utils; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "processor", function() { return processor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "plain", function() { return plain; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactTOC", function() { return reactTOC; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "react", function() { return react; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "reactTOC", function() { return reactTOC; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "html", function() { return html; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hast", function() { return hast; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mdast", function() { return mdast; });
@@ -22523,32 +22523,6 @@ function plain(text) {
  *  return a React VDOM component tree
  */
 
-function reactTOC(tree) {
-  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var proc = processor(opts).use(rehypeReact, {
-    createElement: React.createElement,
-    components: {
-      p: React.Fragment
-    }
-  }); // Get headings from tree and determine "root" level (lowest depth)
-
-  var minLevel = selectAll('heading', tree).reduce(function (i, _ref) {
-    var depth = _ref.depth;
-    return !i || depth <= i ? depth : i;
-  }, false); // Normalized headings tree
-
-  tree = mapNodes(tree, function (n) {
-    if (n.type === 'heading') {
-      n.depth -= minLevel - 1;
-    }
-
-    return n;
-  });
-  var tableOfContents = generateTOC(tree, {
-    maxDepth: 2
-  }).map;
-  return tableOfContents ? proc.stringify(proc.runSync(tableOfContents)) : false;
-}
 function react(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var components = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -22562,15 +22536,15 @@ function react(text) {
   opts = _setup4[1];
 
   // eslint-disable-next-line react/prop-types
-  var PinWrap = function PinWrap(_ref2) {
-    var children = _ref2.children;
+  var PinWrap = function PinWrap(_ref) {
+    var children = _ref.children;
     return /*#__PURE__*/React.createElement("div", {
       className: "pin"
     }, children);
   };
 
   var count = {};
-  var reactProcessor = processor(opts).use(sectionAnchorId).use(rehypeReact, {
+  return processor(opts).use(sectionAnchorId).use(rehypeReact, {
     createElement: React.createElement,
     Fragment: React.Fragment,
     components: (typeof components === 'function' ? components : function (r) {
@@ -22594,19 +22568,9 @@ function react(text) {
       code: Code(sanitize),
       img: Image(sanitize)
     }, components))
-  });
-  var tree = reactProcessor.parse(text);
-  var toc = reactTOC(tree, opts);
-  return {
-    toc: toc ? React.createElement(TableOfContents, {}, toc) : null,
-    body: reactProcessor.stringify(reactProcessor.runSync(tree))
-  };
+  }).processSync(text).contents;
 }
-/**
- *  transform markdown in to HTML
- */
-
-function html(text) {
+function reactTOC(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
@@ -22616,6 +22580,43 @@ function html(text) {
 
   text = _setup6[0];
   opts = _setup6[1];
+  var proc = processor(opts).use(rehypeReact, {
+    createElement: React.createElement,
+    components: {
+      p: React.Fragment
+    }
+  });
+  var tree = processor(opts).use(sectionAnchorId).use(rehypeReact).parse(text); // Normalize Heading Levels
+
+  var minLevel = selectAll('heading', tree).reduce(function (i, _ref2) {
+    var depth = _ref2.depth;
+    return !i || depth <= i ? depth : i;
+  }, false); // determine "root" depth
+
+  tree = mapNodes(tree, function (n) {
+    if (n.type === 'heading') n.depth -= minLevel - 1;
+    return n;
+  });
+  var toc = generateTOC(tree, {
+    maxDepth: 2
+  }).map;
+  var ast = toc ? proc.stringify(proc.runSync(toc)) : false;
+  return ast ? React.createElement(TableOfContents, {}, ast) : null;
+}
+/**
+ *  transform markdown in to HTML
+ */
+
+function html(text) {
+  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  if (!text) return null;
+
+  var _setup7 = setup(text, opts);
+
+  var _setup8 = _slicedToArray(_setup7, 2);
+
+  text = _setup8[0];
+  opts = _setup8[1];
   return processor(opts).use(rehypeStringify).processSync(text).contents;
 }
 /**
@@ -22626,12 +22627,12 @@ function hast(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
-  var _setup7 = setup(text, opts);
+  var _setup9 = setup(text, opts);
 
-  var _setup8 = _slicedToArray(_setup7, 2);
+  var _setup10 = _slicedToArray(_setup9, 2);
 
-  text = _setup8[0];
-  opts = _setup8[1];
+  text = _setup10[0];
+  opts = _setup10[1];
   var rdmd = processor(opts).use(tableFlattening);
   var node = rdmd.parse(text);
   return rdmd.runSync(node);
@@ -22644,12 +22645,12 @@ function mdast(text) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!text) return null;
 
-  var _setup9 = setup(text, opts);
+  var _setup11 = setup(text, opts);
 
-  var _setup10 = _slicedToArray(_setup9, 2);
+  var _setup12 = _slicedToArray(_setup11, 2);
 
-  text = _setup10[0];
-  opts = _setup10[1];
+  text = _setup12[0];
+  opts = _setup12[1];
   return processor(opts).parse(text);
 }
 /**
@@ -22660,11 +22661,11 @@ function astToPlainText(node) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!node) return '';
 
-  var _setup11 = setup('', opts);
+  var _setup13 = setup('', opts);
 
-  var _setup12 = _slicedToArray(_setup11, 2);
+  var _setup14 = _slicedToArray(_setup13, 2);
 
-  opts = _setup12[1];
+  opts = _setup14[1];
   return processor(opts).use(toPlainText).runSync(node);
 }
 /**
@@ -22675,11 +22676,11 @@ function md(tree) {
   var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   if (!tree) return null;
 
-  var _setup13 = setup('', opts);
+  var _setup15 = setup('', opts);
 
-  var _setup14 = _slicedToArray(_setup13, 2);
+  var _setup16 = _slicedToArray(_setup15, 2);
 
-  opts = _setup14[1];
+  opts = _setup16[1];
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
 }
 
