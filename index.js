@@ -3,11 +3,14 @@ require('./styles/main.scss');
 
 const React = require('react');
 const unified = require('unified');
-const generateTOC = require('mdast-util-toc');
 
 /* Unified Plugins
  */
 const sanitize = require('hast-util-sanitize/lib/github.json');
+
+const generateTOC = require('mdast-util-toc');
+const mapNodes = require('unist-util-map');
+const { selectAll } = require('unist-util-select');
 
 // remark plugins
 const remarkRehype = require('remark-rehype');
@@ -171,26 +174,14 @@ export function reactTOC(tree, opts = {}) {
     },
   });
 
-  /*
-  function normalizeHeaders(tree) {
-    if (tree.children) {
-      const headerNumbers = new Set(tree.children.filter(item => item.type === 'heading').map(item => item.depth));
-      const sortedHeaderLevels = Array.from(headerNumbers).sort();
-      const headerMap = {};
-      sortedHeaderLevels.forEach((level, index) => {
-        headerMap[level] = index + 1;
-      });
-      return tree.children.map(item => {
-        if (item.type === 'heading') {
-          item.depth = headerMap[item.depth];
-        }
-        return item;
-      });
-    }
-    return tree;
-  }
-  const normalizedHeadersTree = normalizeHeaders(tree);
-  */
+  // Get headings from tree and determine "root" level (lowest depth)
+  const minLevel = selectAll('heading', tree).reduce((i, { depth }) => (!i || depth <= i ? depth : i), false);
+
+  // Normalized headings tree
+  tree = mapNodes(tree, n => {
+    if (n.type === 'heading') n.depth -= minLevel - 1;
+    return n;
+  });
 
   const tableOfContents = generateTOC(tree, { maxDepth: 2 }).map;
   return tableOfContents ? proc.stringify(proc.runSync(tableOfContents)) : false;
