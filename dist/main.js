@@ -21789,9 +21789,7 @@ var PropTypes = __webpack_require__(7);
 
 function TableOfContents(_ref) {
   var children = _ref.children;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "nav"
-  }, /*#__PURE__*/React.createElement("ul", {
+  return /*#__PURE__*/React.createElement("nav", null, /*#__PURE__*/React.createElement("ul", {
     className: "toc-list"
   }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("a", {
     className: "tocHeader",

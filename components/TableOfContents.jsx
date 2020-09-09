@@ -3,7 +3,7 @@ const PropTypes = require('prop-types');
 
 function TableOfContents({ children }) {
   return (
-    <div className="nav">
+    <nav>
       <ul className="toc-list">
         <li>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
@@ -14,7 +14,7 @@ function TableOfContents({ children }) {
         </li>
         {children}
       </ul>
-    </div>
+    </nav>
   );
 }
 
