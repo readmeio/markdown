@@ -81,29 +81,6 @@ test('headings', () => {
   expect(wrap.find('Heading')).toHaveLength(6);
 });
 
-describe.only('table of contents', () => {
-  it('should return null if no headings', () => {
-    expect(markdown.default('a paragraph').toc).toBeNull();
-  });
-
-  it('should return with component if there are headers', () => {
-    const toc = mount(markdown.default('# heading 1').toc);
-    expect(toc.find('TableOfContents')).toHaveLength(1);
-  });
-
-  it('should have nested lis 2 depths down', () => {
-    const toc = mount(
-      markdown.default(`# Heading 1
-## Heading 2
-### Heading 3
-#### Heading 4
-##### Heading 5
-###### Heading 6`).toc
-    ).html();
-    expect(toc).toMatchSnapshot();
-  });
-});
-
 test('anchors', () => {
   expect(
     mount(
