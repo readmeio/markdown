@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.19.0
+
+### 🛠 Fixes & Updates
+
+* **release:** tiny details ([98c8bf5](https://github.com/readmeio/markdown/commit/98c8bf54e1df18402684bc92e708e0f8c719449f))
+
+
+### ✨ New & Improved
+
+* table of contents generator ([#43](https://github.com/readmeio/markdown/issues/43)) ([056bea6](https://github.com/readmeio/markdown/commit/056bea6d43ee3868f703fe76c3b74d521b2564da))
+
 ## Version 6.18.0
 
 ### 📘 Tests & Docs
