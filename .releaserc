@@ -6,6 +6,7 @@
       {
         "preset": "angular",
         "releaseRules": [
+          { "type": "feature", "release": "minor" },
           { "type": "feat", "release": "minor" },
           { "type": "enhance", "release": "minor" },
           { "type": "refactor", "release": "minor" },
@@ -22,6 +23,7 @@
         "preset": "conventionalcommits",
         "presetConfig": {
           "types": [
+            { "type": "feature", "section": "✨ New & Improved", "hidden": false },
             { "type": "feat", "section": "✨ New & Improved", "hidden": false },
             { "type": "enhance", "section": "✨ New & Improved", "hidden": false },
             { "type": "refactor", "section": "✨ New & Improved", "hidden": false },

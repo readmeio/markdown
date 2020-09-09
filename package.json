@@ -19,7 +19,7 @@
     "test.watch": "npm test -- --watch --coverage=false",
     "watch": "webpack -w --progress --mode development",
     "release": "npx semantic-release",
-    "release.dry": "npx semantic-release --dryRun"
+    "release.dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
     "@readme/emojis": "^1.0.0",
