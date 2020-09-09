@@ -7,6 +7,8 @@ module.exports = {
     '<rootDir>/node_modules/',
     '<rootDir>/jest.config.js',
     '<rootDir>/webpack.*.js',
+    '<rootDir>/.*rc.js',
+    '<rootDir>/*/index.js', // ignore helper index files
   ],
   coverageReporters: ['json', 'text', 'lcov', 'clover'], // per https://github.com/facebook/jest/issues/9396#issuecomment-573328488
   coverageThreshold: {
