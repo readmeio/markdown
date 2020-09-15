@@ -94,7 +94,7 @@ sanitize.ancestors.input = ['li'];
 /**
  * Normalize Magic Block Raw Text
  */
-function setup(blocks, opts = {}) {
+export function setup(blocks, opts = {}) {
   // merge default and user options
   opts = { ...options, ...opts };
 
