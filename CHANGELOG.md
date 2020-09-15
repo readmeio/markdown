@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.20.0
+
+### ✨ New & Improved
+
+* expose the core setup method ([#51](https://github.com/readmeio/markdown/issues/51)) ([3e85a53](https://github.com/readmeio/markdown/commit/3e85a539d99eb86ff1dea3ea050eb2b5add9aa74))
+
 ## Version 6.19.0
 
 ### 🛠 Fixes & Updates
