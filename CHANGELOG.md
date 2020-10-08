@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.20.1
+
+### 🛠 Fixes & Updates
+
+* don't default link targets to "self" ([#58](https://github.com/readmeio/markdown/issues/58)) ([96979ae](https://github.com/readmeio/markdown/commit/96979ae5d54b37dc235c0014ef7d65651327b555))
+
 ## Version 6.20.0
 
 ### ✨ New & Improved
