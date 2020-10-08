@@ -66,7 +66,7 @@ Anchor.propTypes = {
 Anchor.defaultProps = {
   baseUrl: '/',
   href: '',
-  target: '_self',
+  target: '',
   title: '',
 };
 
