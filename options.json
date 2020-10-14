@@ -1,6 +1,6 @@
 {
   "compatibilityMode": false,
-  "copyCodeButton": true,
+  "copyButtons": true,
   "correctnewlines": false,
   "markdownOptions": {
     "fences": true,

@@ -161,11 +161,11 @@ describe('code samples', () => {
     expect(wrap.find('button')).toHaveLength(2);
   });
 
-  describe('`copyCodeButton` option', () => {
-    it('should not insert the CopyCode component if `copyCodeButton=false`', () => {
+  describe('`copyButtons` option', () => {
+    it('should not insert the CopyCode component if `copyButtons=false`', () => {
       const elem = mount(
         markdown.react('This is a sentence and it contains a piece of `code` wrapped in backticks.', {
-          copyCodeButton: false,
+          copyButtons: false,
         })
       );
 

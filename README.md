@@ -43,7 +43,7 @@ In addition to the default React processor, the package exports some other metho
 Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
 
 - **`compatibilityMode`** — Enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
-- **`copyCodeButton`** — Automatically insert a button alongside `<code>` elemnets to copy them to the clipboard.
+- **`copyButtons`** — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
 - **`correctnewlines`** — Render new line delimeters as `<br>` tags.
 - **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
 
