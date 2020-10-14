@@ -1,4 +1,4 @@
-<img align=right width=26% src=http://owlbert.io/images/owlberts-png/Reading.psd.png>
+<img align="right" width="26%" src="https://owlbert.io/images/owlberts-png/Reading.psd.png">
 
 @readme/markdown
 ===
@@ -42,9 +42,10 @@ In addition to the default React processor, the package exports some other metho
 
 Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
 
-- **`correctnewlines`**—render new line delimeters as `<br>` tags.
-- **`markdownOptions`**—Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
-- **`compatibilityMode`**—enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
+- **`compatibilityMode`** — Enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
+- **`copyCodeButton`** — Automatically insert a button alongside `<code>` elemnets to copy them to the clipboard.
+- **`correctnewlines`** — Render new line delimeters as `<br>` tags.
+- **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
 
 ## Flavored Syntax
 

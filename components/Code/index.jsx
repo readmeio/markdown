@@ -29,7 +29,7 @@ CopyCode.propTypes = {
 };
 
 function Code(props) {
-  const { className, children, lang, meta } = props;
+  const { children, className, copyCodeButton, lang, meta } = props;
 
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
   const language = canonicalLanguage(lang) || langClass;
@@ -42,28 +42,34 @@ function Code(props) {
         name={meta}
         suppressHydrationWarning={true}
       >
-        <CopyCode className="fa" code={children[0]} />
+        {copyCodeButton && <CopyCode className="fa" code={children[0]} />}
         {syntaxHighlighter ? syntaxHighlighter(children[0], language, { tokenizeVariables: true }) : children[0]}
       </code>
     </React.Fragment>
   );
 }
 
+function CreateCode(sanitizeSchema, { copyCodeButton }) {
+  // This is for code blocks class name
+  sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
+
+  // eslint-disable-next-line react/display-name
+  return props => <Code {...props} copyCodeButton={copyCodeButton} />;
+}
+
 Code.propTypes = {
   children: PropTypes.arrayOf(PropTypes.string).isRequired,
   className: PropTypes.string,
+  copyCodeButton: PropTypes.bool,
   lang: PropTypes.string,
   meta: PropTypes.string,
 };
 
 Code.defaultProps = {
   className: '',
+  copyCodeButton: true,
   lang: '',
   meta: '',
 };
 
-module.exports = sanitizeSchema => {
-  // This is for code blocks class name
-  sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
-  return Code;
-};
+module.exports = (sanitizeSchema, opts) => CreateCode(sanitizeSchema, opts);

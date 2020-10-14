@@ -144,19 +144,34 @@ test('emojis', () => {
   ).toMatchSnapshot();
 });
 
-test('code samples', () => {
-  const wrap = mount(
-    markdown.default(`
-\`\`\`javascript
-var a = 1;
-\`\`\`
+describe('code samples', () => {
+  it('should codify code', () => {
+    const wrap = mount(
+      markdown.default(`
+  \`\`\`javascript
+  var a = 1;
+  \`\`\`
 
-\`\`\`
-code-without-language
-\`\`\`
-`)
-  );
-  expect(wrap.find('pre')).toHaveLength(2);
+  \`\`\`
+  code-without-language
+  \`\`\`
+  `)
+    );
+    expect(wrap.find('pre')).toHaveLength(2);
+    expect(wrap.find('button')).toHaveLength(2);
+  });
+
+  describe('`copyCodeButton` option', () => {
+    it('should not insert the CopyCode component if `copyCodeButton=false`', () => {
+      const elem = mount(
+        markdown.react('This is a sentence and it contains a piece of `code` wrapped in backticks.', {
+          copyCodeButton: false,
+        })
+      );
+
+      expect(elem.find('button')).toHaveLength(0);
+    });
+  });
 });
 
 test('should render nothing if nothing passed in', () => {
