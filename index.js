@@ -192,7 +192,7 @@ export function reactProcessor(opts = {}, components = {}) {
         h4: Heading(4, count, opts),
         h5: Heading(5, count, opts),
         h6: Heading(6, count, opts),
-        code: Code(sanitize),
+        code: Code(sanitize, opts),
         img: Image(sanitize),
         ...components,
       }),
