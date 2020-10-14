@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.21.0
+
+### ✨ New & Improved
+
+* adding a new `copyButtons` option for disabling code copy btns ([#59](https://github.com/readmeio/markdown/issues/59)) ([e4c40fd](https://github.com/readmeio/markdown/commit/e4c40fde5f0e6411e24b25ba44c8c424bf406913))
+
 ## Version 6.20.1
 
 ### 🛠 Fixes & Updates
