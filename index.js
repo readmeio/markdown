@@ -67,6 +67,13 @@ sanitize.clobberPrefix = '';
 sanitize.tagNames.push('span', 'style');
 sanitize.attributes['*'].push('class', 'className', 'align', 'style');
 
+/**
+ * @todo don't manually whitelist custom component attributes
+ *       within the engine!
+ * @todo change `link` to `href`
+ */
+sanitize.attributes['tutorial-tile'] = ['backgroundColor', 'emoji', 'link'];
+
 sanitize.tagNames.push('rdme-pin');
 
 sanitize.tagNames.push('rdme-embed');
@@ -171,12 +178,14 @@ const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @tod
 const count = {};
 
 export function reactProcessor(opts = {}, components = {}) {
+  Object.keys(components).map(key => sanitize.tagNames.push(key));
+
   return processor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
       Fragment: React.Fragment,
-      components: (typeof components === 'function' ? components : r => r)({
+      components: {
         'code-tabs': CodeTabs(sanitize),
         'html-block': HTMLBlock(sanitize),
         'rdme-callout': Callout(sanitize),
@@ -195,7 +204,7 @@ export function reactProcessor(opts = {}, components = {}) {
         code: Code(sanitize, opts),
         img: Image(sanitize),
         ...components,
-      }),
+      },
     });
 }
 
