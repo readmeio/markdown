@@ -212,6 +212,13 @@ Object {
 }
 `;
 
+exports[`Parse Magic Blocks Custom Default Block 1`] = `
+Object {
+  "children": Array [],
+  "type": "root",
+}
+`;
+
 exports[`Parse Magic Blocks Custom HTML Block 1`] = `
 Object {
   "children": Array [
@@ -232,13 +239,6 @@ Object {
       "type": "html-block",
     },
   ],
-  "type": "root",
-}
-`;
-
-exports[`Parse Magic Blocks Custom Tutorial Block 1`] = `
-Object {
-  "children": Array [],
   "type": "root",
 }
 `;
