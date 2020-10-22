@@ -214,8 +214,8 @@ describe('Parse Magic Blocks', () => {
     expect(process(text)).toMatchSnapshot();
   });
 
-  it('Custom Tutorial Block', () => {
-    const text = `[block:html]
+  it('Custom Default Block', () => {
+    const text = `[block:tutorial-tile]
     {
       "backgroundColor": "#ffffff",
       "title": "Tutorial Title",
