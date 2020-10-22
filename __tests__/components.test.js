@@ -54,8 +54,8 @@ describe('Components', () => {
 `,
       `
 
-> 🚧  
-> 
+> 🚧
+>
 > Callout with no title.
 
 `,
@@ -165,6 +165,11 @@ describe('Components', () => {
 
     const blank = mount(markdown.react('Pretest.\n\n###\n\nPosttest.'));
     expect(blank.find('Heading').text()).toBe('');
+  });
+
+  it('Heading no children', () => {
+    const wrap = mount(markdown.react('### Heading Level 3'));
+    expect(wrap.find('Heading')).toHaveLength(1);
   });
 
   describe('Table of Contents', () => {
