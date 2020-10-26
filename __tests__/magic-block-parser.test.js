@@ -214,6 +214,18 @@ describe('Parse Magic Blocks', () => {
     expect(process(text)).toMatchSnapshot();
   });
 
+  it('Custom Default Block', () => {
+    const text = `[block:tutorial-tile]
+    {
+      "backgroundColor": "#ffffff",
+      "title": "Tutorial Title",
+      "emoji": "🦉",
+      "link": "http://test.com",
+    }
+    [/block]`;
+    expect(process(text)).toMatchSnapshot();
+  });
+
   it('Unrecognized Blocks', () => {
     const text = `[block:unrecognized]
     {

@@ -239,7 +239,11 @@ function tokenize(eat, value) {
           {
             type: 'div',
             children: this.tokenizeBlock(json.text || json.html, eat.now()),
-            data: json,
+            data: {
+              hName: type || 'div',
+              hProperties: json,
+              ...json,
+            },
           },
           json
         )

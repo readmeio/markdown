@@ -212,6 +212,13 @@ Object {
 }
 `;
 
+exports[`Parse Magic Blocks Custom Default Block 1`] = `
+Object {
+  "children": Array [],
+  "type": "root",
+}
+`;
+
 exports[`Parse Magic Blocks Custom HTML Block 1`] = `
 Object {
   "children": Array [
@@ -507,6 +514,12 @@ Object {
       "data": Object {
         "body": "Lorem ipsum dolor sit amet, _consectetur_ adipiscing elit. Praesent nec massa tristique arcu fermentum dapibus. Integer orci turpis, mollis vel augue eget, placerat rhoncus orci. Mauris metus libero, rutrum",
         "color": "#f00",
+        "hName": "unrecognized",
+        "hProperties": Object {
+          "body": "Lorem ipsum dolor sit amet, _consectetur_ adipiscing elit. Praesent nec massa tristique arcu fermentum dapibus. Integer orci turpis, mollis vel augue eget, placerat rhoncus orci. Mauris metus libero, rutrum",
+          "color": "#f00",
+          "title": "Title",
+        },
         "title": "Title",
       },
       "type": "div",
