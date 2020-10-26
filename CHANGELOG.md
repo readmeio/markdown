@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.22.0
+
+### ✨ New & Improved
+
+* specify component-to-custom magic block mappings ([#60](https://github.com/readmeio/markdown/issues/60)) ([460270b](https://github.com/readmeio/markdown/commit/460270be16a2ca4709d57089b70a179d622daabf))
+
 ## Version 6.21.0
 
 ### ✨ New & Improved
