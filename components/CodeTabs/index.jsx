@@ -1,7 +1,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-const upper = require('@readme/syntax-highlighter/uppercase');
+const { uppercase } = require('@readme/syntax-highlighter');
 
 const CodeTabs = props => {
   const { attributes, children } = props;
@@ -27,7 +27,7 @@ const CodeTabs = props => {
           /* istanbul ignore next */
           return (
             <button key={i} onClick={e => handleClick(e, i)} type="button">
-              {meta || `${!lang ? 'Text' : upper(lang)}`}
+              {meta || `${!lang ? 'Text' : uppercase(lang)}`}
             </button>
           );
         })}
