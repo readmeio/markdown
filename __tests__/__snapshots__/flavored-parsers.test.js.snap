@@ -42,14 +42,6 @@ exports[`Parse RDMD Syntax Code Blocks Single Code Block 1`] = `
 Object {
   "children": Array [
     Object {
-      "className": "tab-panel",
-      "data": Object {
-        "hName": "code",
-        "hProperties": Object {
-          "lang": "javascript",
-          "meta": "single.js",
-        },
-      },
       "lang": "javascript",
       "meta": "single.js",
       "type": "code",

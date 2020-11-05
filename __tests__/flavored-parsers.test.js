@@ -99,4 +99,26 @@ describe('Parse RDMD Syntax', () => {
     const ast = process(mdx);
     expect(ast.children).toHaveLength(3);
   });
+
+  it('More foolish disregard for newlines.', () => {
+    const mdx = '```\nfoo\n```\nOops\n```\nbar\n```';
+    const ast = process(mdx);
+
+    // console.log(mdx, "\n", JSON.stringify(ast, null, 2));
+    expect(ast.children.map(c => c.type)).toStrictEqual(['code', 'paragraph', 'code']);
+  });
+
+  it('Inappropriate leading whitespace is not matched.', () => {
+    const mdx = '```\nfoo\n  ```\nOops\n```\nbar\n```';
+    const ast = process(mdx);
+
+    expect(ast.children.map(c => c.type)).toStrictEqual(['code', 'paragraph', 'code']);
+  });
+
+  it('Allows trailing text on a closing fence.', () => {
+    const mdx = '```\nfoo\n```\n```\nbar\n``` Oops';
+    const ast = process(mdx);
+
+    expect(ast.children.map(c => c.type)).toStrictEqual(['code-tabs', 'paragraph']);
+  });
 });
