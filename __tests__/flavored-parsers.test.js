@@ -104,7 +104,6 @@ describe('Parse RDMD Syntax', () => {
     const mdx = '```\nfoo\n```\nOops\n```\nbar\n```';
     const ast = process(mdx);
 
-    // console.log(mdx, "\n", JSON.stringify(ast, null, 2));
     expect(ast.children.map(c => c.type)).toStrictEqual(['code', 'paragraph', 'code']);
   });
 
@@ -120,5 +119,14 @@ describe('Parse RDMD Syntax', () => {
     const ast = process(mdx);
 
     expect(ast.children.map(c => c.type)).toStrictEqual(['code-tabs', 'paragraph']);
+  });
+
+  describe('Parsing individual code tabs', () => {
+    it('Handles triple backticks within a code block', () => {
+      const mdx = '```\nconsole.log("why would you do this?!```");\n```\n```\nbar\n```';
+      const ast = process(mdx);
+
+      expect(ast.children[0].children).toHaveLength(2);
+    });
   });
 });
