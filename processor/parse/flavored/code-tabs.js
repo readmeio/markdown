@@ -14,17 +14,12 @@ function tokenizer(eat, value) {
 
   if (!match) return true;
 
-  const kids = [];
-  let codeBlock;
-  // TODO: once the node version is updated, this should be able to use
-  // String.matchAll() and replace this with a for...in.
-  // eslint-disable-next-line no-cond-assign
-  while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
+  const kids = [...match.matchAll(CODE_BLOCK_RGXP)].map(codeBlock => {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
     meta = meta.trim();
 
-    kids.push({
+    return {
       type: 'code',
       className: 'tab-panel',
       value: code.trim(),
@@ -34,8 +29,8 @@ function tokenizer(eat, value) {
         hName: 'code',
         hProperties: { meta, lang },
       },
-    });
-  }
+    };
+  });
 
   // return a tabbed code block
   return eat(match)({
