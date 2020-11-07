@@ -1,4 +1,5 @@
 @mixin gfmCodeBaseStyles($background: #F6F8FA, $text: inherit) {
+
   code,
   kbd,
   pre {
@@ -21,20 +22,21 @@
     background-color: $background;
     background-color: var(--md-code-background, $background);
     border-radius: 3px;
+    color: var(--md-code-text);
     font-size: 85%;
     margin: 0;
-    padding: .2em .4em
-  }
+    padding: .2em .4em;
 
-  code {
-    color: var(--md-code-text);
+    >div[class*="cm-"] {
+      display: inherit;
+    }
   }
 
   pre {
     word-wrap: normal
   }
 
-  pre > code {
+  pre>code {
     background: 0 0;
     border: 0;
     font-size: 100%;
@@ -89,7 +91,7 @@
 @mixin copyCodeButton {
   button.rdmd-code-copy {
     DISPLAY: none !important; // hide by default
-    
+
     & {
       -webkit-appearance: unset;
       margin: .5em .6em 0 0;
@@ -110,7 +112,9 @@
     }
 
     &:not(:hover) {
-      &:before, &:after {
+
+      &:before,
+      &:after {
         opacity: .66;
       }
     }
@@ -127,12 +131,15 @@
       box-shadow:
         inset 0 0 0 1px rgba(#8B8B8B, .5),
         inset 1px 4px 6px -2px rgba(0, 0, 0, .175);
-      &:before, &:after {
+
+      &:before,
+      &:after {
         opacity: .75;
       }
     }
 
-    &:before, &:after {
+    &:before,
+    &:after {
       display: inline-block;
       font: normal normal normal 1em/1 "Font Awesome 5 Free", "FontAwesome";
       text-rendering: auto;
@@ -143,11 +150,13 @@
       font-variant-ligatures: discretionary-ligatures;
       font-feature-settings: "liga";
     }
+
     &:before {
       content: "\e6c9";
       font-weight: 800;
       transition: .3s .15s ease;
     }
+
     &:after {
       // @todo why are these !important @rafe, you dumbell?
       content: "\e942" !important;
@@ -162,16 +171,20 @@
 
     &_copied {
       pointer-events: none;
-      &, * {
+
+      &,
+      * {
         color: green !important;
         color: var(--md-code-text, green) !important;
         opacity: 1;
       }
+
       &:before {
         transition: .3s 0s ease;
         transform: scale(.33);
         opacity: 0 !important;
       }
+
       &:after {
         transition: .3s .15s ease;
         transform: translate(-50%, -50%) scale(1);
@@ -179,11 +192,11 @@
       }
     }
   }
-  
+
   pre {
     position: relative;
 
-    > code {
+    >code {
       background: inherit;
     }
 
@@ -198,7 +211,8 @@
     & {
       overflow: hidden;
       padding: 0;
-      > code {
+
+      >code {
         display: block !important;
         overflow: auto;
         padding: 1em;
@@ -211,6 +225,7 @@
       &:hover button.rdmd-code-copy:not(:hover) {
         transition-delay: .4s;
       }
+
       &:not(:hover) button.rdmd-code-copy:not(.rdmd-code-copy_copied) {
         opacity: 0 !important;
       }
