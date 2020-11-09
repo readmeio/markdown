@@ -26,7 +26,7 @@
     "@readme/syntax-highlighter": "^10.2.0",
     "@readme/variable": "^9.0.0",
     "copy-to-clipboard": "^3.3.1",
-    "hast-util-sanitize": "^2.0.2",
+    "hast-util-sanitize": "^3.0.1",
     "hast-util-to-string": "^1.0.3",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-toc": "^5.0.3",
