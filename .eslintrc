@@ -4,8 +4,5 @@
     "@readme/eslint-config/react"
   ],
   "parser": "babel-eslint",
-  "root": true,
-  "rules": {
-    "no-cond-assign": ["error", "except-parens"]
-  }
+  "root": true
 }
