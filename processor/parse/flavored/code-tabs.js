@@ -2,7 +2,7 @@
 const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
 /*
  * For each of our adjacent code blocks we'll split the matching block in to three parts:
- *    - [lang] syntax extension
+ *    - [lang] syntax extension (optional)
  *    - [meta] tab name (optional)
  *    - [code] snippet text
  */
@@ -14,12 +14,15 @@ function tokenizer(eat, value) {
 
   if (!match) return true;
 
-  const kids = [...match.matchAll(CODE_BLOCK_RGXP)].map(codeBlock => {
+  const kids = [];
+  let codeBlock;
+
+  while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
     meta = meta.trim();
 
-    return {
+    kids.push({
       type: 'code',
       className: 'tab-panel',
       value: code.trim(),
@@ -29,8 +32,8 @@ function tokenizer(eat, value) {
         hName: 'code',
         hProperties: { meta, lang },
       },
-    };
-  });
+    });
+  }
 
   // return a tabbed code block
   return eat(match)({
