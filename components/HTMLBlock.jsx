@@ -1,4 +1,4 @@
-/* eslint-disable no-eval
+/* eslint-disable no-eval,no-underscore-dangle
  */
 const React = require('react');
 const PropTypes = require('prop-types');
@@ -7,18 +7,20 @@ const PropTypes = require('prop-types');
  * @arg {string} html the HTML from which to extract script tags.
  */
 const extractScripts = html => {
-  if (typeof window === 'undefined' || !html) return () => {};
+  if (typeof window === 'undefined' || !html) return [() => {}, ''];
 
   const regex = /<script\b[^>]*>([\s\S]*?)<\/script>/gim;
   const scripts = [...html.matchAll(regex)].map(m => m[1].trim());
+  const cleaned = html.replace(regex, '') || '';
+  const exec = () => scripts.map(js => window.eval(js));
 
-  return () => scripts.map(js => window.eval(js));
+  return [exec, cleaned];
 };
 
 class HTMLBlock extends React.Component {
   constructor(props) {
     super(props);
-    if ('scripts' in this.props) this.runScripts = extractScripts(this.props.html);
+    [this.runScripts, this.clean] = extractScripts(this.props.html);
   }
 
   componentDidMount() {
@@ -26,7 +28,7 @@ class HTMLBlock extends React.Component {
   }
 
   render() {
-    const { html: __html } = this.props;
+    const __html = this.clean;
     return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html }} />;
   }
 }
