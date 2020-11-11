@@ -8,8 +8,7 @@ const Callout = props => {
 
   let content;
   if (title) {
-    //[children, ...content] = children;
-    content = children.splice(1);
+    [children, ...content] = children;
   } else {
     [children, content] = ['', children];
   }
