@@ -6,8 +6,14 @@ const Callout = props => {
   const { attributes, theme, title, icon } = props;
   if (!(title || children)) return '';
 
-  const content = title ? children.splice(1) : children;
-  children = title ? children : '';
+  let content;
+  if (title) {
+    //[children, ...content] = children;
+    content = children.splice(1);
+  } else {
+    [children, content] = ['', children];
+  }
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
