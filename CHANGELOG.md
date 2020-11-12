@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.22.2
+
+### 🛠 Fixes & Updates
+
+* compat mode in ssr ([#74](https://github.com/readmeio/markdown/issues/74)) ([64f1135](https://github.com/readmeio/markdown/commit/64f11350402377e78dbe75e66615803be4ec76e6))
+* pinned callouts dont render body ([#73](https://github.com/readmeio/markdown/issues/73)) ([b78994e](https://github.com/readmeio/markdown/commit/b78994e1ddd18946d6581ed692bde5956b541a3c))
+
 ## Version 6.22.1
 
 ### 🛠 Fixes & Updates
