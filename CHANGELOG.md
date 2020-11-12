@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.22.1
+
+### 🛠 Fixes & Updates
+
+* tabbed code block regex ([#70](https://github.com/readmeio/markdown/issues/70)) ([118ecd4](https://github.com/readmeio/markdown/commit/118ecd48d00bd478aa0dbb8fbf9889e2a977d01b))
+
 ## Version 6.22.0
 
 ### ✨ New & Improved
