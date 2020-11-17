@@ -8,11 +8,13 @@ const syntaxHighlighter = typeof window !== 'undefined' ? require('@readme/synta
 const { canonical: canonicalLanguage } = require('@readme/syntax-highlighter');
 const copy = require('copy-to-clipboard');
 
-function CopyCode({ code, rootClass = 'rdmd-code-copy', className = '' }) {
+function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
   const button = React.createRef();
   /* istanbul ignore next */
   const copier = () => {
+    const code = codeRef.current.textContent;
+
     if (copy(code)) {
       const $el = button.current;
       $el.classList.add(copyClass);
@@ -24,7 +26,8 @@ function CopyCode({ code, rootClass = 'rdmd-code-copy', className = '' }) {
 
 CopyCode.propTypes = {
   className: PropTypes.string,
-  code: PropTypes.string,
+  codeRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(React.Element) })])
+    .isRequired,
   rootClass: PropTypes.string,
 };
 
@@ -34,16 +37,22 @@ function Code(props) {
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
   const language = canonicalLanguage(lang) || langClass;
 
+  const codeRef = React.createRef();
+  const codeContent = syntaxHighlighter
+    ? syntaxHighlighter(children[0], language, { tokenizeVariables: true })
+    : children[0];
+
   return (
     <React.Fragment>
       <code
+        ref={codeRef}
         className={['rdmd-code', `lang-${language}`].join(' ')}
         data-lang={language}
         name={meta}
         suppressHydrationWarning={true}
       >
-        {copyButtons && <CopyCode className="fa" code={children[0]} />}
-        {syntaxHighlighter ? syntaxHighlighter(children[0], language, { tokenizeVariables: true }) : children[0]}
+        {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
+        {codeContent}
       </code>
     </React.Fragment>
   );
