@@ -128,5 +128,15 @@ describe('Parse RDMD Syntax', () => {
 
       expect(ast.children[0].children).toHaveLength(2);
     });
+
+    it('handles indented code blocks', () => {
+      const mdx = `
+\`\`\`
+  const shouldBeIndented = true;
+  if (shouldBeIndented) pass();
+\`\`\`
+`;
+      expect(process(mdx)).toMatchSnapshot();
+    });
   });
 });
