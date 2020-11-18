@@ -159,8 +159,8 @@ function tokenize(eat, value) {
         col = parseInt(col, 10);
 
         // NOTE:
-        // The magic block tables allowed decreases the dimensions, but
-        // left the data intact.
+        // The magic block tables allowed decreasing the dimensions, but
+        // would leave the data intact.
         // Also, note that the header row is required, so having 1 rows,
         // means we allow upto index 1.
         if (row > rows || col >= cols) return sum;
