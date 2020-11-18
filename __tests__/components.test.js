@@ -124,10 +124,14 @@ describe('Components', () => {
       [/block]`,
       rdmd: `[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")`,
     };
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     Object.values(fixtures).map(fx => {
       const wrap = mount(markdown.react(fx));
       return expect(wrap.html()).toMatchSnapshot();
     });
+
+    expect(error).toHaveBeenCalledTimes(1);
   });
 
   it('Image', () => {

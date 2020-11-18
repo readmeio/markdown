@@ -223,7 +223,10 @@ describe('Parse Magic Blocks', () => {
       "link": "http://test.com",
     }
     [/block]`;
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     expect(process(text)).toMatchSnapshot();
+    expect(error).toHaveBeenCalledTimes(1);
   });
 
   it('Unrecognized Blocks', () => {

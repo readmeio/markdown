@@ -150,29 +150,34 @@ function tokenize(eat, value) {
       );
     }
     case 'parameters': {
-      const { data } = json;
-
-      if (!Object.keys(data).length) return eat(match); // skip empty tables
-
+      const { data, rows, cols } = json;
       const tokenizeCell = this[compatibilityMode ? 'tokenizeBlock' : 'tokenizeInline'].bind(this);
-      const children = Object.keys(data)
-        .sort()
-        .reduce((sum, key) => {
-          const val = data[key];
-          let [row, col] = key.split('-');
-          row = row === 'h' ? 0 : parseInt(row, 10) + 1;
-          col = parseInt(col, 10);
 
-          sum[row] = sum[row] || { type: 'tableRow', children: [] };
+      const children = Object.entries(data).reduce((sum, [key, val]) => {
+        let [row, col] = key.split('-');
+        row = row === 'h' ? 0 : parseInt(row, 10) + 1;
+        col = parseInt(col, 10);
 
-          sum[row].children[col] = {
-            type: row ? 'tableCell' : 'tableHead',
-            children: tokenizeCell(val, eat.now()),
-          };
-          // convert falsey values to empty strings
-          sum[row].children = [...sum[row].children].map(v => v || '');
-          return sum;
-        }, []);
+        // NOTE:
+        // The magic block tables allowed decreases the dimensions, but
+        // left the data intact.
+        // Also, note that the header row is required, so having 1 rows,
+        // means we allow upto index 1.
+        if (row > rows || col >= cols) return sum;
+
+        sum[row] = sum[row] || { type: 'tableRow', children: [] };
+
+        sum[row].children[col] = {
+          type: row ? 'tableCell' : 'tableHead',
+          children: tokenizeCell(val, eat.now()),
+        };
+        // convert falsey values to empty strings
+        sum[row].children = [...sum[row].children].map(v => v || '');
+        return sum;
+      }, []);
+
+      if (!children.length) return eat(match); // skip empty tables
+
       const table = {
         type: 'table',
         align: 'align' in json ? json.align : new Array(json.cols).fill('left'),
