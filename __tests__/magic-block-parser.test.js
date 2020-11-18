@@ -5,6 +5,8 @@ const rehypeSanitize = require('rehype-sanitize');
 const parser = require('../processor/parse/magic-block-parser');
 const options = require('../options.json').markdownOptions;
 
+const { silenceConsole } = require('./helpers');
+
 const sanitize = { attributes: [] };
 const process = (text, opts = options) =>
   text &&
@@ -223,10 +225,11 @@ describe('Parse Magic Blocks', () => {
       "link": "http://test.com",
     }
     [/block]`;
-    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(process(text)).toMatchSnapshot();
-    expect(error).toHaveBeenCalledTimes(1);
+    silenceConsole(({ error }) => {
+      expect(process(text)).toMatchSnapshot();
+      expect(error).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('Unrecognized Blocks', () => {
