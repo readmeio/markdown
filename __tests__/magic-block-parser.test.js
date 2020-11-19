@@ -226,7 +226,7 @@ describe('Parse Magic Blocks', () => {
     }
     [/block]`;
 
-    silenceConsole(({ error }) => {
+    silenceConsole()(error => {
       expect(process(text)).toMatchSnapshot();
       expect(error).toHaveBeenCalledTimes(1);
     });

@@ -127,7 +127,7 @@ describe('Components', () => {
       rdmd: `[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")`,
     };
 
-    silenceConsole(({ error }) => {
+    silenceConsole()(error => {
       Object.values(fixtures).map(fx => {
         const wrap = mount(markdown.react(fx));
         return expect(wrap.html()).toMatchSnapshot();
