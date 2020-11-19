@@ -38,6 +38,29 @@ describe('Parse RDMD Syntax', () => {
       expect(ast).toMatchSnapshot();
     });
 
+    it('allows indented code', () => {
+      const mdx = `
+\`\`\`
+  const shouldBeIndented = true;
+  if (shouldBeIndented) pass();
+\`\`\`
+`;
+      expect(process(mdx)).toMatchSnapshot();
+    });
+
+    it('parses indented code blocks', () => {
+      const mdx = `
+
+    const shouldBeIndented = true;
+    if (shouldBeIndented) pass();
+
+`;
+      const ast = process(mdx);
+
+      expect(ast.children[0].type).toStrictEqual('code');
+      expect(ast).toMatchSnapshot();
+    });
+
     describe('Edge Cases', () => {
       it('Code blocks should elide spaces before meta data', () => {
         /**
@@ -63,10 +86,18 @@ describe('Parse RDMD Syntax', () => {
         expect(ast.children).toHaveLength(1);
       });
 
+      it('Handles triple backticks within a code block', () => {
+        const mdx = '```\nconsole.log("why would you do this?!```");\n```\n```\nbar\n```';
+        const ast = process(mdx);
+
+        expect(ast.children[0].children).toHaveLength(2);
+      });
+
       it('Tabbed code blocks should allow internal new lines', () => {
         const mdx =
           "```javascript tab/a.js\nfunction sayHello (state) {\n  console.log(state);\n}\n\nexport default sayHello;\n```\n```javascript tab/b.js\nimport A from './a.js';\n\nA('Hello world!');\n```\n\n";
         const ast = process(mdx);
+
         expect(ast.children).toHaveLength(1);
         expect(ast.children[0].type).toBe('code-tabs');
       });
@@ -121,22 +152,12 @@ describe('Parse RDMD Syntax', () => {
     expect(ast.children.map(c => c.type)).toStrictEqual(['code-tabs', 'paragraph']);
   });
 
-  describe('Parsing individual code tabs', () => {
-    it('Handles triple backticks within a code block', () => {
-      const mdx = '```\nconsole.log("why would you do this?!```");\n```\n```\nbar\n```';
-      const ast = process(mdx);
+  it('is not stateful', () => {
+    const mdx = '```\n"Dont forget that RegExp.prototype.exec is statefule"\n```\n```\nbar\n```';
+    let ast = process(mdx);
+    expect(ast.children.map(c => c.type)).toStrictEqual(['code-tabs']);
 
-      expect(ast.children[0].children).toHaveLength(2);
-    });
-
-    it('handles indented code blocks', () => {
-      const mdx = `
-\`\`\`
-  const shouldBeIndented = true;
-  if (shouldBeIndented) pass();
-\`\`\`
-`;
-      expect(process(mdx)).toMatchSnapshot();
-    });
+    ast = process(mdx);
+    expect(ast.children.map(c => c.type)).toStrictEqual(['code-tabs']);
   });
 });

@@ -106,7 +106,7 @@ Object {
 }
 `;
 
-exports[`Parse RDMD Syntax Parsing individual code tabs handles indented code blocks 1`] = `
+exports[`Parse RDMD Syntax Code Blocks allows indented code 1`] = `
 Object {
   "children": Array [
     Object {
@@ -115,6 +115,21 @@ Object {
       "type": "code",
       "value": "  const shouldBeIndented = true;
   if (shouldBeIndented) pass();",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Syntax Code Blocks parses indented code blocks 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "lang": null,
+      "meta": null,
+      "type": "code",
+      "value": "const shouldBeIndented = true;
+if (shouldBeIndented) pass();",
     },
   ],
   "type": "root",
