@@ -162,7 +162,7 @@ function tokenize(eat, value) {
         // The magic block tables allowed decreasing the dimensions, but
         // would leave the data intact.
         // Also, note that the header row is required, so having 1 rows,
-        // means we allow upto index 1.
+        // means we allow up to index 1.
         if (row > rows || col >= cols) return sum;
 
         sum[row] = sum[row] || { type: 'tableRow', children: [] };
