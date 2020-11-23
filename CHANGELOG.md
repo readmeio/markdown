@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.22.3
+
+### 🛠 Fixes & Updates
+
+* add codemirror as exp dep ([#82](https://github.com/readmeio/markdown/issues/82)) ([5a3aa52](https://github.com/readmeio/markdown/commit/5a3aa520627dc7aa4c0413ce25be24849897e86b))
+* **code:** copying interpolated variables ([#75](https://github.com/readmeio/markdown/issues/75)) ([872adca](https://github.com/readmeio/markdown/commit/872adcaa1f64ac61a6fb160f04f4dd0b7dd46f3d))
+
 ## Version 6.22.2
 
 ### 🛠 Fixes & Updates
