@@ -4,7 +4,6 @@ const PropTypes = require('prop-types');
 const Callout = props => {
   let { children } = props;
   const { attributes, theme, title, icon } = props;
-  if (!(title || children)) return '';
 
   let content;
   if (title) {

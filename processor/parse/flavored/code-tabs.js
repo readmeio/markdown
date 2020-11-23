@@ -1,15 +1,7 @@
-// eslint-disable-next-line unicorn/no-unsafe-regex
-const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
-/*
- * For each of our adjacent code blocks we'll split the matching block in to three parts:
- *    - [lang] syntax extension (optional)
- *    - [meta] tab name (optional)
- *    - [code] snippet text
- */
-// eslint-disable-next-line unicorn/no-unsafe-regex
-const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?\n(?<code>((?!\n```).)*)\n```/gs;
-
 function tokenizer(eat, value) {
+  // eslint-disable-next-line unicorn/no-unsafe-regex
+  const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
+
   const [match] = TAB_BLOCK_RGXP.exec(value) || [];
 
   if (!match) return true;
@@ -17,6 +9,14 @@ function tokenizer(eat, value) {
   const kids = [];
   let codeBlock;
 
+  /*
+   * For each of our adjacent code blocks we'll split the matching block in to three parts:
+   *    - [lang] syntax extension (optional)
+   *    - [meta] tab name (optional)
+   *    - [code] snippet text
+   */
+  // eslint-disable-next-line unicorn/no-unsafe-regex
+  const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?\n(?<code>((?!\n```).)*)\n```/gs;
   while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
