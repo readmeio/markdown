@@ -22,7 +22,9 @@ module.exports = {
   moduleNameMapper: {
     '.+\\.(css|styl|less|sass|scss)$': 'identity-obj-proxy',
   },
+  modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
   setupFiles: ['<rootDir>/lib/enzyme'],
+  setupAfterEnvFiles: ['<rootDir>/__tests__/helpers'],
   testURL: 'http://localhost',
   transform: {
     '^.+\\.jsx?$': '<rootDir>/lib/babel-jest',

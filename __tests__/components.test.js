@@ -3,6 +3,8 @@ const { mount } = require('enzyme');
 const React = require('react');
 const markdown = require('../index');
 
+const { silenceConsole } = require('./helpers');
+
 describe('Data Replacements', () => {
   it('Variables', () => {
     const wrapper = mount(
@@ -124,9 +126,14 @@ describe('Components', () => {
       [/block]`,
       rdmd: `[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")`,
     };
-    Object.values(fixtures).map(fx => {
-      const wrap = mount(markdown.react(fx));
-      return expect(wrap.html()).toMatchSnapshot();
+
+    silenceConsole()(error => {
+      Object.values(fixtures).map(fx => {
+        const wrap = mount(markdown.react(fx));
+        return expect(wrap.html()).toMatchSnapshot();
+      });
+
+      expect(error).toHaveBeenCalledTimes(1);
     });
   });
 
