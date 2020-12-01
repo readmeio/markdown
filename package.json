@@ -68,7 +68,7 @@
     "babel-loader": "^8.0.6",
     "babel-polyfill": "^6.26.0",
     "codemirror": "^5.58.3",
-    "css-loader": "^3.4.2",
+    "css-loader": "^5.0.1",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.14.0",
