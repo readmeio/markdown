@@ -96,5 +96,17 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "bundlewatch": {
+    "files": [
+      {
+        "path": "dist/main.js",
+        "maxSize": "400KB"
+      },
+      {
+        "path": "dist/main.node.js",
+        "maxSize": "250KB"
+      }
+    ]
   }
 }
