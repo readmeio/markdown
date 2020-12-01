@@ -101,11 +101,11 @@
     "files": [
       {
         "path": "dist/main.js",
-        "maxSize": "1mb"
+        "maxSize": "400KB"
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "1mb"
+        "maxSize": "250KB"
       }
     ]
   }
