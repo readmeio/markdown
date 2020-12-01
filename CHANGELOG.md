@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.23.0
+
+### ✨ New & Improved
+
+* treat react and react-dom as external deps ([#90](https://github.com/readmeio/markdown/issues/90)) ([7be16d7](https://github.com/readmeio/markdown/commit/7be16d7a4de3ede54a3c46ef7cc5797a1a47888e))
+
+
+### 🛠 Fixes & Updates
+
+* **magic-block-parser:** handle excess table data ([#78](https://github.com/readmeio/markdown/issues/78)) ([33bab04](https://github.com/readmeio/markdown/commit/33bab043c579c2ee2531aad0c69c94e6edd02cb7))
+
 ## Version 6.22.3
 
 ### 🛠 Fixes & Updates
