@@ -24,7 +24,7 @@ module.exports = {
   },
   modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
   setupFiles: ['<rootDir>/lib/enzyme'],
-  setupAfterEnvFiles: ['<rootDir>/__tests__/helpers'],
+  setupFilesAfterEnv: ['<rootDir>/__tests__/helpers'],
   testURL: 'http://localhost',
   transform: {
     '^.+\\.jsx?$': '<rootDir>/lib/babel-jest',
