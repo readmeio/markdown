@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-
+      - next
 jobs:
   semantic-release:
     name: Build & Publish Release
