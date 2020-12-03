@@ -17,7 +17,7 @@
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "test": "jest --coverage --runInBand",
     "test.watch": "npm test -- --watch --coverage=false",
-    "watch": "webpack -w --progress --mode development",
+    "watch": "webpack -w --progress --mode production",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run"
   },
