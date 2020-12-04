@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.24.0
+
+### ✨ New & Improved
+
+* **release:** add a next channel ([#91](https://github.com/readmeio/markdown/issues/91)) ([5938622](https://github.com/readmeio/markdown/commit/59386226fc8785f159fe97464ad4aef48dbb58b8))
+
 ## Version 6.24.0-next.1
 
 ### ✨ New & Improved
