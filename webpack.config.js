@@ -12,6 +12,7 @@ const output = {
 const browserConfig = {
   entry: ['./index.js'],
   externals: {
+    '@readme/variable': '@readme/variable',
     react: {
       amd: 'react',
       commonjs: 'react',

@@ -1,19 +1,42 @@
 {
-  "branches": ["master"],
+  "branches": [
+    "master",
+    {
+      "name": "next",
+      "prerelease": true
+    }
+  ],
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
       {
         "preset": "angular",
         "releaseRules": [
-          { "type": "feature", "release": "minor" },
-          { "type": "feat", "release": "minor" },
-          { "type": "enhance", "release": "minor" },
-          { "type": "refactor", "release": "minor" },
-          { "type": "style", "release": "patch" }
+          {
+            "type": "feature",
+            "release": "minor"
+          },
+          {
+            "type": "feat",
+            "release": "minor"
+          },
+          {
+            "type": "enhance",
+            "release": "minor"
+          },
+          {
+            "type": "refactor",
+            "release": "minor"
+          },
+          {
+            "type": "style",
+            "release": "patch"
+          }
         ],
         "parserOpts": {
-          "noteKeywords": ["BREAKING"]
+          "noteKeywords": [
+            "BREAKING"
+          ]
         }
       }
     ],
@@ -23,25 +46,76 @@
         "preset": "conventionalcommits",
         "presetConfig": {
           "types": [
-            { "type": "feature", "section": "✨ New & Improved", "hidden": false },
-            { "type": "feat", "section": "✨ New & Improved", "hidden": false },
-            { "type": "enhance", "section": "✨ New & Improved", "hidden": false },
-            { "type": "refactor", "section": "✨ New & Improved", "hidden": false },
-            { "type": "style", "section": "✨ New & Improved", "hidden": false },
-            { "type": "fix", "section": "🛠 Fixes & Updates", "hidden": false },
-            { "type": "perf", "section": "🛠 Fixes & Updates", "hidden": false },
-            { "type": "chore", "section": "🛠 Fixes & Updates", "hidden": true },
-            { "type": "docs", "section": "📘 Tests & Docs", "hidden": false },
-            { "type": "test", "section": "📘 Tests & Docs", "hidden": true },
-            { "type": "build", "hidden": true },
-            { "type": "ci", "hidden": true }
+            {
+              "type": "feature",
+              "section": "✨ New & Improved",
+              "hidden": false
+            },
+            {
+              "type": "feat",
+              "section": "✨ New & Improved",
+              "hidden": false
+            },
+            {
+              "type": "enhance",
+              "section": "✨ New & Improved",
+              "hidden": false
+            },
+            {
+              "type": "refactor",
+              "section": "✨ New & Improved",
+              "hidden": false
+            },
+            {
+              "type": "style",
+              "section": "✨ New & Improved",
+              "hidden": false
+            },
+            {
+              "type": "fix",
+              "section": "🛠 Fixes & Updates",
+              "hidden": false
+            },
+            {
+              "type": "perf",
+              "section": "🛠 Fixes & Updates",
+              "hidden": false
+            },
+            {
+              "type": "chore",
+              "section": "🛠 Fixes & Updates",
+              "hidden": true
+            },
+            {
+              "type": "docs",
+              "section": "📘 Tests & Docs",
+              "hidden": false
+            },
+            {
+              "type": "test",
+              "section": "📘 Tests & Docs",
+              "hidden": true
+            },
+            {
+              "type": "build",
+              "hidden": true
+            },
+            {
+              "type": "ci",
+              "hidden": true
+            }
           ]
         },
         "parserOpts": {
-          "noteKeywords": ["BREAKING"]
+          "noteKeywords": [
+            "BREAKING"
+          ]
         },
         "writerOpts": {
-          "commitsSort": ["subject", "scope"],
+          "commitsSort": [
+            "subject",
+            "scope"
+          ],
           "headerPartial": "## Version {{version}}"
         }
       }
