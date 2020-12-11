@@ -6,27 +6,30 @@ const TerserPlugin = require('terser-webpack-plugin');
 const output = {
   path: path.resolve(__dirname, 'dist'),
   filename: '[name].js',
-  libraryTarget: 'commonjs2',
+  // libraryTarget: 'commonjs2',
 };
 
 const browserConfig = {
-  entry: ['./index.js'],
+  entry: {
+    main: './index.js',
+    demo: ['react', './example/index.jsx'],
+  },
   externals: {
-    '@readme/variable': '@readme/variable',
-    react: {
-      amd: 'react',
-      commonjs: 'react',
-      commonjs2: 'react',
-      root: 'React',
-      umd: 'react',
-    },
-    'react-dom': {
-      amd: 'react-dom',
-      commonjs2: 'react-dom',
-      commonjs: 'react-dom',
-      root: 'ReactDOM',
-      umd: 'react-dom',
-    },
+    // '@readme/variable': '@readme/variable',
+    // react: {
+    //   amd: 'react',
+    //   commonjs: 'react',
+    //   commonjs2: 'react',
+    //   root: 'React',
+    //   umd: 'react',
+    // },
+    // 'react-dom': {
+    //   amd: 'react-dom',
+    //   commonjs2: 'react-dom',
+    //   commonjs: 'react-dom',
+    //   root: 'ReactDOM',
+    //   umd: 'react-dom',
+    // },
   },
   output,
   plugins: [
@@ -85,11 +88,11 @@ const browserConfig = {
     extensions: ['.js', '.json', '.jsx'],
   },
   devServer: {
-    port: 6699,
-    contentBase: './dist',
-    watchContentBase: true,
+    contentBase: './example',
     compress: true,
-    // hot: true,
+    port: 9966,
+    hot: true,
+    watchContentBase: true,
   },
 };
 
