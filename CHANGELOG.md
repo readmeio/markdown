@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.24.1-next.1
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @babel/core from 7.11.0 to 7.12.9 ([2234951](https://github.com/readmeio/markdown/commit/2234951bf5c4fdaf94ea14b798f5f80b19d8c736))
+* **deps-dev:** bump css-loader from 3.6.0 to 5.0.1 ([2849a7d](https://github.com/readmeio/markdown/commit/2849a7dfd58603d842933cdf3c5834b610774a47))
+* **deps-dev:** bump node-sass from 4.14.1 to 5.0.0 ([576ac1e](https://github.com/readmeio/markdown/commit/576ac1e46e802ccdd27c777013c01d62bfa7f98e))
+* **deps-dev:** bump sass-loader from 7.3.1 to 10.1.0 ([ba4b402](https://github.com/readmeio/markdown/commit/ba4b40251b766729397464551e97c9bda7da651f))
+* **deps-dev:** bump terser-webpack-plugin from 3.0.8 to 4.2.3 ([979b1ec](https://github.com/readmeio/markdown/commit/979b1ecbd5a16f00a6ab514bcfe41f642820cf3f))
+* **deps-dev:** bump webpack-merge from 4.2.2 to 5.4.0 ([3c08dc9](https://github.com/readmeio/markdown/commit/3c08dc9d44526695b7a72b706567865f3f467e64))
+* **webpack:** update merge import ([74d6e8a](https://github.com/readmeio/markdown/commit/74d6e8a7f8277fe7fd019b10e0a26eaa6400727d))
+* update release note sections ([2bb84fe](https://github.com/readmeio/markdown/commit/2bb84fe54d2e897303cee426805a40e712ddf642))
+
 ## Version 6.24.0
 
 ### ✨ New & Improved
