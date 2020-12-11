@@ -88,5 +88,5 @@ const serverConfig = merge(browserConfig, {
   },
 });
 
-module.exports.shared = shared;
 module.exports = [browserConfig, serverConfig];
+module.exports.shared = shared;
