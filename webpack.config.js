@@ -3,50 +3,12 @@ const merge = require('webpack-merge');
 const ExtractCSS = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const output = {
-  path: path.resolve(__dirname, 'dist'),
-  filename: '[name].js',
-  // libraryTarget: 'commonjs2',
-};
-
-const browserConfig = {
-  entry: {
-    main: './index.js',
-    demo: ['react', './example/index.jsx'],
-  },
-  externals: {
-    // '@readme/variable': '@readme/variable',
-    // react: {
-    //   amd: 'react',
-    //   commonjs: 'react',
-    //   commonjs2: 'react',
-    //   root: 'React',
-    //   umd: 'react',
-    // },
-    // 'react-dom': {
-    //   amd: 'react-dom',
-    //   commonjs2: 'react-dom',
-    //   commonjs: 'react-dom',
-    //   root: 'ReactDOM',
-    //   umd: 'react-dom',
-    // },
-  },
-  output,
+const shared = {
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
     }),
   ],
-  optimization: {
-    minimize: false,
-    minimizer: [new TerserPlugin()],
-    // concatenateModules: false,
-    // namedModules: true,
-    // namedChunks: true,
-    // removeAvailableModules: false,
-    // flagIncludedChunks: false,
-    // occurrenceOrder: false,
-  },
   module: {
     rules: [
       {
@@ -87,14 +49,37 @@ const browserConfig = {
   resolve: {
     extensions: ['.js', '.json', '.jsx'],
   },
-  devServer: {
-    contentBase: './example',
-    compress: true,
-    port: 9966,
-    hot: true,
-    watchContentBase: true,
-  },
 };
+
+const browserConfig = merge(shared, {
+  entry: './index.js',
+  externals: {
+    '@readme/variable': '@readme/variable',
+    react: {
+      amd: 'react',
+      commonjs: 'react',
+      commonjs2: 'react',
+      root: 'React',
+      umd: 'react',
+    },
+    'react-dom': {
+      amd: 'react-dom',
+      commonjs2: 'react-dom',
+      commonjs: 'react-dom',
+      root: 'ReactDOM',
+      umd: 'react-dom',
+    },
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+    libraryTarget: 'commonjs2',
+  },
+  optimization: {
+    minimize: false,
+    minimizer: [new TerserPlugin()],
+  },
+});
 
 const serverConfig = merge(browserConfig, {
   target: 'node',
@@ -103,4 +88,5 @@ const serverConfig = merge(browserConfig, {
   },
 });
 
+module.exports.shared = shared;
 module.exports = [browserConfig, serverConfig];

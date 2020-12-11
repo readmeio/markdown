@@ -17,5 +17,5 @@ render(Demo);
 
 // Webpack Hot Module Replacement API
 if (module.hot) {
-  module.hot.accept('./Demo', () => render(Demo)); // eslint-disable-line global-require
+  module.hot.accept('./Demo', () => render(Demo));
 }
