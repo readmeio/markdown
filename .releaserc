@@ -84,7 +84,7 @@
             {
               "type": "chore",
               "section": "🛠 Fixes & Updates",
-              "hidden": true
+              "hidden": false
             },
             {
               "type": "docs",
