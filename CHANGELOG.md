@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 6.24.1-next.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump [@readme](https://github.com/readme) packages ([#98](https://github.com/readmeio/markdown/issues/98)) ([8f54042](https://github.com/readmeio/markdown/commit/8f5404280f628a934c5397bfbf0420861133be54))
+* **deps-dev:** bump @readme/variable to v10.0.7 ([d6006d6](https://github.com/readmeio/markdown/commit/d6006d6867ad941dcc3cebb109cf9784aa22be57))
+* **release:** trigger on deps and deps-dev chores ([bcf7569](https://github.com/readmeio/markdown/commit/bcf7569a3b0372b6d0acb64ac96f35b714dfe30f))
+* **deps:** update various dev dependencies ([#97](https://github.com/readmeio/markdown/issues/97)) ([1506072](https://github.com/readmeio/markdown/commit/150607267bdfa9226b62df18d236536e41c176e4))
+
 ## Version 6.24.1-next.1
 
 ### 🛠 Fixes & Updates
