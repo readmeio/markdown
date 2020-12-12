@@ -1,5 +1,5 @@
 const path = require('path');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const { shared } = require('./webpack.config');
 
 const config = merge(shared, {
@@ -16,6 +16,12 @@ const config = merge(shared, {
     port: 9966,
     hot: true,
     watchContentBase: true,
+  },
+  devtool: 'inline-source-maps',
+  resolve: {
+    alias: {
+      'react-dom': '@hot-loader/react-dom',
+    },
   },
 });
 

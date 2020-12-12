@@ -1,0 +1,15 @@
+.markdown-demo-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.markdown-demo-content {
+  width: 800px;
+}
+
+[name="demo-editor"] {
+  display: block;
+  height: 32em;
+  width: 100%;
+}

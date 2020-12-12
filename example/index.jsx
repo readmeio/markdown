@@ -4,12 +4,14 @@ import { AppContainer } from 'react-hot-loader';
 
 import Demo from './Demo';
 
+require('./demo.scss');
+
 function render(Component) {
   ReactDOM.render(
     <AppContainer>
-      <Component text="# hello kelly!!!" />
+      <Component />
     </AppContainer>,
-    document.getElementById('markdown')
+    document.getElementById('markdown-demo')
   );
 }
 
