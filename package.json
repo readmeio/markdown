@@ -22,8 +22,8 @@
     "release.dry": "npx semantic-release --dry-run"
   },
   "dependencies": {
-    "@readme/emojis": "^1.0.0",
-    "@readme/syntax-highlighter": "^10.4.0",
+    "@readme/emojis": "^3.0.0",
+    "@readme/syntax-highlighter": "^10.4.1",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^2.0.2",
     "hast-util-to-string": "^1.0.3",
