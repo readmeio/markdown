@@ -22,12 +22,18 @@
     
     tr {
       background-color: var(--table-row, #{$row});
-      border-top: 1px solid var(--table-edges, #{$edges});
+      & + tr {
+        border-top: 1px solid var(--table-edges, #{$edges});
+      }
     }
 
     th,
     thead td {
       font-weight: 600;
+      &:empty {
+        padding: 0;
+        border: none;
+      }
     }
 
     td,
@@ -40,7 +46,7 @@
       > :first-child, > :only-child { margin-top:    0 !important }
       > :last-child, > :only-child  { margin-bottom: 0 !important }
     }
-    
+
     &:not(.plain) tr:nth-child(2n) {
       background-color: var(--table-stripe, #{$stripe});
     }
