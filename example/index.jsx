@@ -4,14 +4,12 @@ import { AppContainer } from 'react-hot-loader';
 
 import Demo from './Demo';
 
-require('./demo.scss');
-
 function render(Component) {
   ReactDOM.render(
     <AppContainer>
       <Component />
     </AppContainer>,
-    document.getElementById('markdown-demo')
+    document.getElementById('rdmd-demo')
   );
 }
 

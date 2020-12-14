@@ -1,25 +1,36 @@
 import React from 'react';
 
-import Fixtures from './Fixtures';
 import markdown from '../index.js';
+import Fixtures from './Fixtures';
+import Header from './Header';
+
+require('./demo.scss');
 
 function Markdown({ opts }) {
   return (
-    <div className="markdown-demo-container">
-      <div className="markdown-demo-content">
-        <Fixtures
-          render={fixture => {
-            console.log('in render props', { fixture });
-            return (
-              <React.Fragment>
-                <textarea name="demo-editor" value={fixture} />
-                {markdown(fixture, opts)}
-              </React.Fragment>
-            );
-          }}
-        />
+    <React.Fragment>
+      <Header />
+      <div className="rdmd-demo--container">
+        <div className="rdmd-demo--content">
+          <Fixtures
+            render={({ select, fixture, name, onChange }) => {
+              return (
+                <React.Fragment>
+                  <div className="rdmd-demo--editor">
+                    {select}
+                    <textarea name="demo-editor" onChange={onChange} value={fixture} />
+                  </div>
+                  <div className="rdmd-demo--display">
+                    <h2 className="rdmd-demo--markdown-header">{name}</h2>
+                    <div className="markdown-body">{markdown(fixture, opts)}</div>
+                  </div>
+                </React.Fragment>
+              );
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </React.Fragment>
   );
 }
 

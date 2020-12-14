@@ -5,22 +5,46 @@ import syntaxFixtures from './Syntax';
 
 const initialFixture = Object.keys(syntaxFixtures)[0];
 
-const Fixtures = props => {
-  const [fixture, setFixture] = useState(initialFixture);
-  const onChange = event => setFixture(event.target.value);
+const Fixtures = ({ render }) => {
+  const [selected, setSelected] = useState(initialFixture);
+  const [edited, setEdited] = useState(null);
 
-  return (
-    <React.Fragment>
-      <select name="fixture-select" onChange={onChange} value={fixture}>
-        {Object.keys(syntaxFixtures).map(name => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
+  const handleSelect = event => {
+    setSelected(event.target.value);
+  };
+  const onChange = event => {
+    setEdited(event.target.value);
+    setSelected('edited');
+  };
+
+  let fixture;
+  let name;
+  if (selected === 'edited') {
+    fixture = edited;
+    name = '** modified **';
+  } else {
+    ({ doc: fixture, name } = syntaxFixtures[selected]);
+  }
+
+  const select = (
+    <fieldset className="rdmd-demo--fixture-select">
+      <label className="rdmd-demo--label" htmlFor="fixture-select">
+        fixture
+      </label>
+      <select className="rdmd-demo--select" id="fixture-select" onChange={handleSelect} value={selected}>
+        {edited && <option value={'edited'}>** modified **</option>}
+        {Object.entries(syntaxFixtures).map(([sym, { name }]) => {
+          return (
+            <option key={sym} value={sym}>
+              {name}
+            </option>
+          );
+        })}
       </select>
-      {props.render(syntaxFixtures[fixture].doc)}
-    </React.Fragment>
+    </fieldset>
   );
+
+  return render({ select, name, fixture, onChange });
 };
 
 export default Fixtures;

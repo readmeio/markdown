@@ -17,11 +17,13 @@ const config = merge(shared, {
     hot: true,
     watchContentBase: true,
   },
-  devtool: 'inline-source-maps',
   resolve: {
     alias: {
       'react-dom': '@hot-loader/react-dom',
     },
+  },
+  cache: {
+    type: 'filesystem',
   },
 });
 

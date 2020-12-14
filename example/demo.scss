@@ -1,15 +1,99 @@
-.markdown-demo-container {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
+#rdmd-demo {
+  .rdmd-demo--header {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    background-color: #018ef5;
+    height: 64px
+  }
 
-.markdown-demo-content {
-  width: 800px;
-}
+  .rdmd-demo--header-content {
+    width: 1200px;
+    padding: 0 2em;
+    color: white;
+    display: flex;
+    align-items: center;
 
-[name="demo-editor"] {
-  display: block;
-  height: 32em;
-  width: 100%;
+    h1 {
+      margin: 0;
+      margin-top: .25em;
+      font-size: 1.5em;
+      font-weight: 500;
+    }
+  }
+
+  .rdmd-demo--header-logo {
+    float: left;
+    height: 40px;
+    width: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-image: url(https://files.readme.io/97584af-brandmark-white.svg);
+    text-indent: -99999px;
+    margin-right: 1em;
+  }
+
+  .rdmd-demo--container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .rdmd-demo--content {
+    max-width: 1200px;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .rdmd-demo--fixture-select {
+    padding: 1em;
+    border: none;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+
+  }
+
+  .rdmd-demo--label {
+    text-transform: uppercase;
+    color: #bbb;
+  }
+
+  .rdmd-demo--select {
+    min-width: 50%;
+    color: #555;
+  }
+
+  [name="demo-editor"] {
+    display: block;
+    color: #555;
+    min-height: 32em;
+    height: calc(100vh - 4em);
+    width: 100%;
+    overflow: auto;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    padding: 1em;
+    position: sticky;
+    top: 2em;
+  }
+
+  .rdmd-demo--editor, .rdmd-demo--display {
+    min-width: 600px;
+    margin: 2em;
+  }
+
+  .rdmd-demo--markdown-header {
+    border-bottom: 1px solid #eee;
+    color: #384248;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 30px;
+    margin-bottom: 1em;
+    margin-top: 0;
+    padding-bottom: .5em;
+    text-transform: capitalize;
+    word-wrap: break-word;
+  }
 }
