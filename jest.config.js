@@ -9,6 +9,7 @@ module.exports = {
     '<rootDir>/webpack.*.js',
     '<rootDir>/.*rc.js',
     '<rootDir>/*/index.js', // ignore helper index files
+    '<rootDir>/example',
   ],
   coverageReporters: ['json', 'text', 'lcov', 'clover'], // per https://github.com/facebook/jest/issues/9396#issuecomment-573328488
   coverageThreshold: {
