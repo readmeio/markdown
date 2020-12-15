@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Header(props) {
+function Header() {
   return (
     <header className="rdmd-demo--header">
       <div className="rdmd-demo--header-content">

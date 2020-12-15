@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
 
 import syntaxFixtures from './Syntax';
 
@@ -33,10 +32,10 @@ const Fixtures = ({ render }) => {
       </label>
       <select className="rdmd-demo--select" id="fixture-select" onChange={handleSelect} value={selected}>
         {edited && <option value={'edited'}>** modified **</option>}
-        {Object.entries(syntaxFixtures).map(([sym, { name }]) => {
+        {Object.entries(syntaxFixtures).map(([sym, { name: _name }]) => {
           return (
             <option key={sym} value={sym}>
-              {name}
+              {_name}
             </option>
           );
         })}

@@ -54,6 +54,7 @@
     & {
       position: relative;
       display: block;
+      overflow: hidden;
       border-radius: var(--table-radius, var(--markdown-radius, 2px));
     }
     &:after {

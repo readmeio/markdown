@@ -1,6 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-import markdown from '../index.js';
+import markdown from '../index';
 import Fixtures from './Fixtures';
 import Header from './Header';
 
@@ -33,5 +34,9 @@ function Markdown({ opts }) {
     </React.Fragment>
   );
 }
+
+Markdown.propTypes = {
+  opts: PropTypes.object,
+};
 
 export default Markdown;

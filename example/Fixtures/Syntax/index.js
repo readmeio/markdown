@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { lowerCase } from 'lodash';
 
 import callouts from './callouts.md';
