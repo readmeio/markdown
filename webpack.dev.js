@@ -1,7 +1,8 @@
+/* eslint-disable-next-line import/no-extraneous-dependencies
+ */
 const path = require('path');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const { merge } = require('webpack-merge');
-const { shared } = require('./webpack.config');
+const common = require('./webpack.common');
 
 const config = merge(shared, {
   entry: {
@@ -22,9 +23,6 @@ const config = merge(shared, {
     alias: {
       'react-dom': '@hot-loader/react-dom',
     },
-  },
-  cache: {
-    type: 'filesystem',
   },
 });
 
