@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { lowerCase } from 'lodash';
-
 import callouts from './callouts.md';
 import codeBlockTests from './code-blocks/code-block-tests.md';
 import codeBlockVarsTest from './code-blocks/vars-test.md';
@@ -11,6 +8,8 @@ import headings from './headings.md';
 import images from './images.md';
 import lists from './lists.md';
 import tables from './tables.md';
+
+const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
 const fixtures = Object.entries({
   codeBlocks,
