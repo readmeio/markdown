@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 import syntaxFixtures from './Syntax';
 
-const initialFixture = Object.keys(syntaxFixtures)[0];
-
-const Fixtures = ({ render }) => {
-  const [selected, setSelected] = useState(initialFixture);
+const Fixtures = ({ render, selected, getRoute }) => {
   const [edited, setEdited] = useState(null);
 
   const handleSelect = event => {
-    setSelected(event.target.value);
+    getRoute(event.target.value);
   };
   const onChange = event => {
     setEdited(event.target.value);
-    setSelected('edited');
+    getRoute('edited');
   };
 
   let fixture;
@@ -25,7 +23,7 @@ const Fixtures = ({ render }) => {
     ({ doc: fixture, name } = syntaxFixtures[selected]);
   }
 
-  const select = (
+  const fields = (
     <fieldset className="rdmd-demo--fixture-select">
       <label className="rdmd-demo--label" htmlFor="fixture-select">
         fixture
@@ -43,7 +41,13 @@ const Fixtures = ({ render }) => {
     </fieldset>
   );
 
-  return render({ select, name, fixture, onChange });
+  return render({ children: fields, name, fixture, onChange });
+};
+
+Fixtures.propTypes = {
+  getRoute: PropTypes.func.isRequired,
+  render: PropTypes.func.isRequired,
+  selected: PropTypes.string,
 };
 
 export default Fixtures;

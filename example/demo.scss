@@ -69,19 +69,22 @@
     display: block;
     color: #555;
     min-height: 32em;
-    height: calc(100vh - 4em);
+    height: calc(100vh - 20em);
     width: 100%;
     overflow: auto;
     border: 1px solid #eee;
     border-radius: 2px;
     padding: 1em;
-    position: sticky;
-    top: 2em;
   }
 
   .rdmd-demo--editor, .rdmd-demo--display {
     min-width: 600px;
     margin: 2em;
+  }
+
+  .rdmd-demo--editor-container {
+    position: sticky;
+    top: 2em;
   }
 
   .rdmd-demo--markdown-header {

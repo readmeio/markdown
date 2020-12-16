@@ -11,7 +11,7 @@ import tables from './tables.md';
 
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
-const fixtures = Object.entries({
+const fixtureMap = Object.entries({
   codeBlocks,
   codeBlockTests,
   codeBlockVarsTest,
@@ -24,8 +24,12 @@ const fixtures = Object.entries({
   features,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);
-  memo[name] = { name, doc };
+  memo[sym] = { name, doc };
   return memo;
 }, {});
+
+const fixtures = new Proxy(fixtureMap, {
+  get: (obj, prop) => (prop in obj ? obj[prop] : obj[Object.keys(obj)[0]]),
+});
 
 export default fixtures;
