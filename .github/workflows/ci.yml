@@ -25,3 +25,6 @@ jobs:
 
     - name: Run tests
       run: npm test
+
+    - name: Run visual regression tests
+      run: npm run test.browser
