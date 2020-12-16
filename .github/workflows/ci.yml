@@ -28,3 +28,5 @@ jobs:
 
     - name: Run visual regression tests
       run: npm run test.browser
+      with: diff-output
+      path: __tests__/browser/__image_snapshots__/__diff_output__
