@@ -10,3 +10,5 @@ node_modules
 .DS_Store
 
 __diff_output__
+
+example/img/emojis
