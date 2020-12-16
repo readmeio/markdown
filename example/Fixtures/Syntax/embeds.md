@@ -18,7 +18,7 @@ Embedded content is written as a simple Markdown link, with a title of "@embed",
   "url": "https://github.com/readmeio/api-explorer/pull/671",
   "title": "RDMD CSS theming and style adjustments. by rafegoldberg · Pull Request #671 · readmeio/api-explorer",
   "favicon": "https://github.com/favicon.ico",
-  "image": "https://avatars2.githubusercontent.com/u/6878153?s=400&v=4"
+  "image": "img/readme-logo-white-on-blue.png"
 }
 [/block]
 
@@ -28,7 +28,7 @@ Embedded content is written as a simple Markdown link, with a title of "@embed",
   "url": "https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html",
   "title": "George W. Bush Calls for End to Pandemic Partisanship",
   "favicon": "https://www.nytimes.com/vi-assets/static-assets/favicon-4bf96cb6a1093748bf5b3c429accb9b4.ico",
-  "image": "https://static01.nyt.com/images/2020/05/02/world/02dc-virus-bush-2/merlin_171999921_e857a690-fb9b-462d-a20c-28c8161107c9-facebookJumbo.jpg"
+  "image": "img/nyt-thumbnail.jpg"
 }
 [/block]
 <details><summary><b>Magic Block</b> (Embedly)</summary><br>

@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+const trimHash = () => window.location.hash.replace(/^#/, '');
 
 const Router = ({ render }) => {
-  const [hash, setHash] = React.useState(window.location.hash.replace(/^#/, ''));
-  const getRoute = route => {
-    setHash(route);
-    history.replaceState({}, '', `#${route}`);
-  };
+  const [route, getRoute] = useState(trimHash());
 
-  return render({ route: hash, getRoute });
+  useEffect(() => {
+    const handleStateChange = () => {
+      getRoute(trimHash());
+    };
+
+    history.replaceState({}, '', `#${route}`);
+    window.addEventListener('popstate', handleStateChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleStateChange);
+    };
+  });
+
+  return render({ route, getRoute });
 };
 
 export default Router;

@@ -1,22 +1,17 @@
 ## Examples
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/34da77d-docs.readme.com_rdmd_docs_headings.png",
-        "docs.readme.com_rdmd_docs_headings.png",
-        1219,
-        417,
-        "#fafbfb"
-      ],
-      "border": false,
-      "sizing": "full",
-      "caption": ""
-    }
-  ]
-}
-[/block]
+
+# Heading Block 1
+
+## Heading Block 2
+
+### Heading Block 3
+
+#### Heading Block 4
+
+##### Heading Block 5
+
+###### Heading Block 6
+
 ## Edge Cases
 
 ### Heading Styles

@@ -4,6 +4,6 @@ module.exports = {
     debug: true,
     port: 9966,
     protocol: 'http-get',
-    launchTimeout: 30000,
+    launchTimeout: 45000,
   },
 };

@@ -1,13 +1,31 @@
 /* global page */
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
-    it('renders without surprises', async () => {
-      const uri = 'http://localhost:9966';
-      const response = await page.goto(uri);
-      expect(response.status()).toStrictEqual(200);
+    beforeEach(async () => {
+      await page.setViewport({ width: 1600, height: 800 });
+    });
 
-      const image = await page.screenshot();
-      expect(image).toMatchImageSnapshot();
+    const docs = [
+      'callouts',
+      'codeBlockTests',
+      'codeBlockVarsTest',
+      'codeBlocks',
+      'embeds',
+      'features',
+      'headings',
+      'images',
+      'lists',
+      'tables',
+    ];
+
+    docs.forEach(doc => {
+      it(`renders "${doc}" without surprises`, async () => {
+        const uri = `http://localhost:9966/#${doc}`;
+        await page.goto(uri, { waitUntil: 'networkidle0' });
+        const image = await page.screenshot({ fullPage: true });
+
+        expect(image).toMatchImageSnapshot();
+      }, 10000);
     });
   });
 });

@@ -12,7 +12,7 @@
   "images": [
     {
       "image": [
-        "https://files.readme.io/b8674d6-pizzabro.jpg",
+        "img/pizzabro.jpg",
         "pizzabro.jpg",
         1024,
         682,
