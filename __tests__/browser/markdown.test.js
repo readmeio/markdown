@@ -22,6 +22,7 @@ describe('visual regression tests', () => {
       it(`renders "${doc}" without surprises`, async () => {
         const uri = `http://localhost:9966/#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const image = await page.screenshot({ fullPage: true });
 
         expect(image).toMatchImageSnapshot();
