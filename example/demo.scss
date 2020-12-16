@@ -79,7 +79,8 @@
 
   .rdmd-demo--editor, .rdmd-demo--display {
     min-width: 600px;
-    margin: 2em;
+    padding: 2em;
+    box-sizing: border-box;
   }
 
   .rdmd-demo--editor-container {

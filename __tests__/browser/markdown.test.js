@@ -2,7 +2,7 @@
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
-      await page.setViewport({ width: 1600, height: 800 });
+      await page.setViewport({ width: 1200, height: 800 });
     });
 
     const docs = [
