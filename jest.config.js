@@ -1,20 +1,8 @@
-const shared = {
-  moduleNameMapper: {
-    '.+\\.(css|styl|less|sass|scss)$': 'identity-obj-proxy',
-  },
-  modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
-  setupFiles: ['<rootDir>/lib/enzyme'],
-  transform: {
-    '^.+\\.jsx?$': '<rootDir>/lib/babel-jest',
-  },
-  transformIgnorePatterns: [
-    // Since `@readme/variable` doesn't ship any transpiled code, we need to transform it as we're running tests.
-    '<rootDir>/node_modules/@readme/variable/^.+\\.jsx?$',
-  ],
-};
+const common = require('./jest.common');
+const browser = require('./jest.browser');
 
 const unit = {
-  ...shared,
+  ...common,
   collectCoverageFrom: ['**/*.{js,jsx}'],
   coveragePathIgnorePatterns: [
     '<rootDir>/coverage/',
@@ -40,13 +28,6 @@ const unit = {
   setupFilesAfterEnv: ['<rootDir>/__tests__/helpers'],
   testPathIgnorePatterns: ['/browser/'],
   testURL: 'http://localhost',
-};
-
-const browser = {
-  ...shared,
-  displayName: 'browser',
-  preset: 'jest-puppeteer',
-  testMatch: ['**/__tests__/browser/**/*.[jt]s?(x)'],
 };
 
 module.exports = { projects: [unit, browser] };

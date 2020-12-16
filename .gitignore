@@ -8,3 +8,5 @@ node_modules
 *.sublime-*
 
 .DS_Store
+
+__diff_output__

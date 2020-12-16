@@ -9,7 +9,7 @@ import images from './images.md';
 import lists from './lists.md';
 import tables from './tables.md';
 
-const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
+const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
 const fixtures = Object.entries({
   codeBlocks,

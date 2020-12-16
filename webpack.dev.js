@@ -1,10 +1,10 @@
-/* eslint-disable-next-line import/no-extraneous-dependencies
+/* eslint-disable import/no-extraneous-dependencies
  */
 const path = require('path');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
 
-const config = merge(shared, {
+const config = merge(common, {
   entry: {
     demo: './example/index.jsx',
   },
