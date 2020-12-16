@@ -25,6 +25,14 @@ function DemoContent({ children, fixture, name, onChange, opts }) {
   );
 }
 
+DemoContent.propTypes = {
+  children: PropTypes.node.isRequired,
+  fixture: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  opts: PropTypes.obj,
+};
+
 function Demo({ opts }) {
   return (
     <React.Fragment>
