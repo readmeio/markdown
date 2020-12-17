@@ -36,4 +36,4 @@ jobs:
       if: failure()
       with:
         name: diff-output
-        path: __tests__/browser/__image_snapshots__/__diff_output__
+        path: __tests__/browser/__image_snapshots__

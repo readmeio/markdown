@@ -8,7 +8,15 @@ import Router from './Router';
 
 require('./demo.scss');
 
-function DemoContent({ children, fixture, name, onChange, opts }) {
+function DemoContent({ ci, children, fixture, name, onChange, opts }) {
+  if (ci) {
+    return (
+      <div className="rdmd-demo--display">
+        <div className="markdown-body">{markdown(fixture, opts)}</div>
+      </div>
+    );
+  }
+
   return (
     <React.Fragment>
       <div className="rdmd-demo--editor">
@@ -34,17 +42,20 @@ DemoContent.propTypes = {
 };
 
 function Demo({ opts }) {
+  const ci = new URLSearchParams(location.search).get('ci');
+
   return (
     <React.Fragment>
-      <Header />
+      {!ci && <Header />}
       <div className="rdmd-demo--container">
         <div className="rdmd-demo--content">
           <Router
             render={({ route, getRoute }) => {
               return (
                 <Fixtures
+                  ci={ci}
                   getRoute={getRoute}
-                  render={props => <DemoContent {...props} opts={opts} />}
+                  render={props => <DemoContent {...props} ci={ci} opts={opts} />}
                   selected={route}
                 />
               );
@@ -57,7 +68,7 @@ function Demo({ opts }) {
 }
 
 Demo.propTypes = {
-  opts: PropTypes.object,
+  opts: PropTypes.obj,
 };
 
 export default Demo;

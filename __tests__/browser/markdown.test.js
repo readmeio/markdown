@@ -5,7 +5,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
-      await page.setViewport({ width: 1200, height: 800 });
+      await page.setViewport({ width: 800, height: 800 });
     });
 
     const docs = [
@@ -23,7 +23,7 @@ describe('visual regression tests', () => {
 
     docs.forEach(doc => {
       it(`renders "${doc}" without surprises`, async () => {
-        const uri = `http://localhost:9966/#${doc}`;
+        const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
         await sleep(500);
 
