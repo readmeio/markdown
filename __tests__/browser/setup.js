@@ -21,4 +21,4 @@ async function customToMatchImageSnapshot(...args) {
   return { pass, ...rest };
 }
 
-expect.extend({ toMatchImageSnapshot: customToMatchImageSnapshot });
+expect.extend({ toMatchImageSnapshot });
