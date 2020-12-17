@@ -18,7 +18,8 @@ class HTMLBlock extends React.Component {
   }
 
   componentDidMount() {
-    if (typeof window !== 'undefined' && this.props.runScripts) this.exec();
+    const { runScripts } = this.props;
+    if (typeof window !== 'undefined' && (runScripts === '' || runScripts)) this.exec();
   }
 
   render() {
