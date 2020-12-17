@@ -18,13 +18,17 @@ class HTMLBlock extends React.Component {
   }
 
   componentDidMount() {
-    if (typeof window !== 'undefined' && 'runScripts' in this.props) this.exec();
+    if (typeof window !== 'undefined' && this.props.runScripts) this.exec();
   }
 
   render() {
     return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html: this.html }} />;
   }
 }
+
+HTMLBlock.defaultProps = {
+  runScripts: false,
+};
 
 HTMLBlock.propTypes = {
   html: PropTypes.string,

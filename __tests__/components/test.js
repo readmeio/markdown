@@ -1,9 +1,9 @@
 /* eslint-disable no-eval */
 const { mount } = require('enzyme');
 const React = require('react');
-const markdown = require('../index');
+const markdown = require('../../index');
 
-const { silenceConsole } = require('./helpers');
+const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {
   it('Variables', () => {
@@ -246,8 +246,6 @@ ${JSON.stringify({
   const wrap = mount(rdmd);
 
   it('Should use h1 tags for magic heading blocks.', () => expect(wrap.find('h1')).toHaveLength(1));
-
-  it('Should execute scripts in magic custom HTML blocks.', () => expect(global.eval).toHaveBeenCalledTimes(2));
 
   it('Should allow block-level RDMD compoonents in tables.', () => {
     const table = wrap.find('table');

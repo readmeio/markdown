@@ -233,7 +233,7 @@ Object {
   <br/>
   <a class=\\"button\\">Go</a>
 </form>",
-          "scripts": undefined,
+          "runScripts": undefined,
         },
       },
       "type": "html-block",
