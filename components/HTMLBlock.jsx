@@ -3,41 +3,41 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-/**
- * @arg {string} html the HTML from which to extract script tags.
- */
-const extractScripts = html => {
-  if (typeof window === 'undefined' || !html) return () => {};
+const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script>\n?/gim;
 
-  const regex = /<script\b[^>]*>([\s\S]*?)<\/script>/gim;
-  const scripts = [...html.matchAll(regex)].map(m => m[1].trim());
-
-  return () => scripts.map(js => window.eval(js));
+const extractScripts = (html = '') => {
+  const scripts = [...html.matchAll(MATCH_SCRIPT_TAGS)].map(m => m[1]);
+  const cleaned = html.replace(MATCH_SCRIPT_TAGS, '');
+  return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
 class HTMLBlock extends React.Component {
   constructor(props) {
     super(props);
-    if ('scripts' in this.props) this.runScripts = extractScripts(this.props.html);
+    [this.html, this.exec] = extractScripts(this.props.html);
   }
 
   componentDidMount() {
-    if ('scripts' in this.props) this.runScripts();
+    const { runScripts } = this.props;
+    if (typeof window !== 'undefined' && (runScripts === '' || runScripts)) this.exec();
   }
 
   render() {
-    const { html: __html } = this.props;
-    return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html }} />;
+    return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html: this.html }} />;
   }
 }
 
+HTMLBlock.defaultProps = {
+  runScripts: false,
+};
+
 HTMLBlock.propTypes = {
   html: PropTypes.string,
-  scripts: PropTypes.any,
+  runScripts: PropTypes.any,
 };
 
 module.exports = sanitize => {
   sanitize.tagNames.push('html-block');
-  sanitize.attributes['html-block'] = ['html', 'scripts'];
+  sanitize.attributes['html-block'] = ['html', 'runScripts'];
   return HTMLBlock;
 };
