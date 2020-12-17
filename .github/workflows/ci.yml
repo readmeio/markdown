@@ -30,7 +30,7 @@ jobs:
       run: npm test
 
     - name: Run visual regression tests
-      run: npm run test.browser -- -u
+      run: npm run test.browser
 
     - uses: actions/upload-artifact@v2
       if: failure()
