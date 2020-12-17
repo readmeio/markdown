@@ -24,6 +24,7 @@ jobs:
       run: |
         npm ci
         sudo apt install fonts-noto-color-emoji
+        make emoji
 
     - name: Run tests
       run: npm test

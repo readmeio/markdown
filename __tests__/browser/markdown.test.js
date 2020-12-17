@@ -1,4 +1,7 @@
 /* global page */
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
@@ -22,7 +25,8 @@ describe('visual regression tests', () => {
       it(`renders "${doc}" without surprises`, async () => {
         const uri = `http://localhost:9966/#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await sleep(500);
+
         const image = await page.screenshot({ fullPage: true });
 
         expect(image).toMatchImageSnapshot();
