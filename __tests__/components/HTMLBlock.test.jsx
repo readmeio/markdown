@@ -6,17 +6,19 @@ const sanitize = require('../../sanitize.schema');
 const HTMLBlock = require('../../components/HTMLBlock')(sanitize);
 
 describe('HTML Block', () => {
-  global.window = true;
-  global.mockFn = jest.fn(() => console.log('custom script ran'));
-
-  it("doesn't run user scripts by default", () => {
-    mount(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
-    expect(global.mockFn).toHaveBeenCalledTimes(0);
+  beforeEach(() => {
+    global.window = true;
+    global.mockFn = jest.fn(() => console.log('RAN CUSTOM SCRIPT'));
   });
 
   it('runs user scripts in compat mode', () => {
     mount(<HTMLBlock html="<script>mockFn()</script>" runScripts={true} />);
     expect(global.mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("doesn't run user scripts by default", () => {
+    mount(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
+    expect(global.mockFn).toHaveBeenCalledTimes(0);
   });
 
   it("doesn't run scripts on the server (even in compat mode)", () => {
