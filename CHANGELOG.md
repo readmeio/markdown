@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.24.1-next.3
+
+### 🛠 Fixes & Updates
+
+* user script extraction and execution ([#100](https://github.com/readmeio/markdown/issues/100)) ([3eeeee9](https://github.com/readmeio/markdown/commit/3eeeee9ff7f44998457a85cff83b7760efc135a3))
+
 ## Version 6.24.1-next.2
 
 ### 🛠 Fixes & Updates
