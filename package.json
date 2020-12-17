@@ -16,7 +16,7 @@
     "pretest": "npm run lint && npm run prettier",
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "test": "jest --coverage --runInBand",
-    "test.watch": "npm test -- --watch --coverage=false",
+    "test.watch": "jest --watch --coverage=false",
     "watch": "webpack -w --progress --mode production",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run"
