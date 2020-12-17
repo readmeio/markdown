@@ -6,7 +6,7 @@ const unified = require('unified');
 
 /* Unified Plugins
  */
-const sanitize = require('hast-util-sanitize/lib/github.json');
+const sanitize = require('./sanitize.schema');
 
 const generateTOC = require('mdast-util-toc');
 const mapNodes = require('unist-util-map');
@@ -60,43 +60,6 @@ const toPlainText = require('./processor/plugin/plain-text');
 
 // Processor Option Defaults
 const options = require('./options.json');
-
-// Sanitization Schema Defaults
-sanitize.clobberPrefix = '';
-
-sanitize.tagNames.push('span', 'style');
-sanitize.attributes['*'].push('class', 'className', 'align', 'style');
-
-/**
- * @todo don't manually whitelist custom component attributes
- *       within the engine!
- * @todo change `link` to `href`
- */
-sanitize.attributes['tutorial-tile'] = ['backgroundColor', 'emoji', 'link'];
-
-sanitize.tagNames.push('rdme-pin');
-
-sanitize.tagNames.push('rdme-embed');
-sanitize.attributes['rdme-embed'] = [
-  'url',
-  'provider',
-  'html',
-  'title',
-  'href',
-  'iframe',
-  'width',
-  'height',
-  'image',
-  'favicon',
-];
-
-sanitize.attributes.a = ['href', 'title', 'class', 'className', 'download'];
-
-sanitize.tagNames.push('figure');
-sanitize.tagNames.push('figcaption');
-
-sanitize.tagNames.push('input'); // allow GitHub-style todo lists
-sanitize.ancestors.input = ['li'];
 
 /**
  * Normalize Magic Block Raw Text
