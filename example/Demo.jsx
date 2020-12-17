@@ -35,6 +35,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
 
 DemoContent.propTypes = {
   children: PropTypes.node.isRequired,
+  ci: PropTypes.string,
   fixture: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
@@ -42,6 +43,7 @@ DemoContent.propTypes = {
 };
 
 function Demo({ opts }) {
+  // eslint-disable-next-line no-restricted-globals
   const ci = new URLSearchParams(location.search).get('ci');
 
   return (
