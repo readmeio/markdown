@@ -11,8 +11,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "webpack -p",
-    "start": "webpack-dev-server --config ./webpack.dev.js",
+    "build": "webpack -p && make emojis",
+    "start": "webpack-dev-server --config ./webpack.dev.js --open",
     "lint": "eslint . --ext .jsx --ext .js",
     "pretest": "npm run lint && npm run prettier",
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
