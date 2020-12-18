@@ -8,7 +8,7 @@ async function customToMatchImageSnapshot(...args) {
   const { pass, ...rest } = toMatchImageSnapshot.bind(this)(...args);
 
   if (!pass) {
-    const { testPath, currentTestName, snapshotState } = this;
+    const { testPath, currentTestName } = this;
 
     // copied from: https://github.com/americanexpress/jest-image-snapshot/blob/b82b068c6e001a2e098ac2fbde3abc55ffeb493b/src/index.js#L109
     const snapshotName = kebabCase(`${path.basename(testPath)}-${currentTestName}-ci`);
@@ -20,4 +20,4 @@ async function customToMatchImageSnapshot(...args) {
   return { pass, ...rest };
 }
 
-expect.extend({ toMatchImageSnapshot });
+expect.extend({ toMatchImageSnapshot: customToMatchImageSnapshot });
