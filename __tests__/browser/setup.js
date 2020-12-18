@@ -5,7 +5,7 @@ import path from 'path';
 const kebabCase = str => str.replace(/[ .]/g, '-').replace(/['"]/g, '');
 
 async function customToMatchImageSnapshot(...args) {
-  const { pass, ...rest } = toMatchImageSnapshot.bind(this)(...args);
+  const { pass, message } = toMatchImageSnapshot.bind(this)(...args);
 
   if (!pass) {
     const { testPath, currentTestName } = this;
@@ -14,10 +14,12 @@ async function customToMatchImageSnapshot(...args) {
     const snapshotName = kebabCase(`${path.basename(testPath)}-${currentTestName}-ci`);
     const snapshotPath = `${path.dirname(testPath)}/__image_snapshots__/${snapshotName}.png`;
 
+    console.log(message)
+
     await page.screenshot({ fullPage: true, path: snapshotPath });
   }
 
-  return { pass, ...rest };
+  return { pass, message };
 }
 
 expect.extend({ toMatchImageSnapshot: customToMatchImageSnapshot });
