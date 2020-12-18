@@ -11,7 +11,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "webpack -p && make emojis",
+    "build": "webpack -p",
+    "heroku-postbuild": "make emojis",
     "start": "webpack-dev-server --config ./webpack.dev.js --open",
     "lint": "eslint . --ext .jsx --ext .js",
     "pretest": "npm run lint && npm run prettier",
