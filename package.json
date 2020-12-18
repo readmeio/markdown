@@ -110,7 +110,8 @@
   "prettier": "@readme/eslint-config/prettier",
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "npm run pretest"
     }
   },
   "bundlewatch": {
