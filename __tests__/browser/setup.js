@@ -14,7 +14,8 @@ async function customToMatchImageSnapshot(...args) {
     const snapshotName = kebabCase(`${path.basename(testPath)}-${currentTestName}-ci`);
     const snapshotPath = `${path.dirname(testPath)}/__image_snapshots__/${snapshotName}.png`;
 
-    console.log(message)
+    // eslint-disable-next-line no-console
+    console.log(message);
 
     await page.screenshot({ fullPage: true, path: snapshotPath });
   }
