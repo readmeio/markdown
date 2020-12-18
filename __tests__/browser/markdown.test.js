@@ -21,8 +21,9 @@ describe('visual regression tests', () => {
       'tables',
     ];
 
-    docs.forEach(doc => {
-      it(`renders "${doc}" without surprises`, async () => {
+    it.each(docs)(
+      'renders "%s" without surprises',
+      async doc => {
         const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
         await sleep(500);
@@ -30,7 +31,8 @@ describe('visual regression tests', () => {
         const image = await page.screenshot({ fullPage: true });
 
         expect(image).toMatchImageSnapshot();
-      }, 10000);
-    });
+      },
+      10000
+    );
   });
 });

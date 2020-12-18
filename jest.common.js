@@ -1,6 +1,6 @@
 module.exports = {
   moduleNameMapper: {
-    '.+\\.(css|styl|less|sass|scss)$': 'identity-obj-proxy',
+    '.+\\.scss$': 'identity-obj-proxy',
   },
   modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
   setupFiles: ['<rootDir>/lib/enzyme'],
