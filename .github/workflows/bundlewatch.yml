@@ -3,7 +3,9 @@ on: [push]
 
 jobs:
   check:
+    name: Bundle Watch
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     steps:
       - uses: actions/checkout@v2.3.4
       - uses: actions/setup-node@v2.1.2

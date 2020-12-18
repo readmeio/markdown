@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.24.1-next.2",
+  "version": "6.24.1-next.4",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -17,7 +17,7 @@
     "pretest": "npm run lint && npm run prettier",
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
-    "test.watch": "npm test -- --watch --coverage=false",
+    "test.watch": "jest --watch --coverage=false",
     "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
     "test.browser.watch": "npm run test.browser -- --watch",
     "watch": "webpack -w --progress --mode production",

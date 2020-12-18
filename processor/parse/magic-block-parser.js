@@ -230,7 +230,7 @@ function tokenize(eat, value) {
               hName: 'html-block',
               hProperties: {
                 html: json.html,
-                scripts: compatibilityMode,
+                runScripts: compatibilityMode,
               },
             },
           },

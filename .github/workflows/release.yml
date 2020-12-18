@@ -1,13 +1,12 @@
 name: Release
-
 on:
   push:
     branches:
       - master
       - next
+
 jobs:
-  semantic-release:
-    name: Build & Publish Release
+  Release:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
     strategy:
