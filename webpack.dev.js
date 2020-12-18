@@ -5,7 +5,6 @@ const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
 
 const port = process.env.PORT || 9966;
-const host = process.env.HEROKU_APP_NAME ? '0.0.0.0' : 'localhost';
 
 const config = merge(common, {
   entry: {
@@ -16,9 +15,9 @@ const config = merge(common, {
     filename: '[name].js',
   },
   devServer: {
+    allowedHosts: ['.herokuapp.com'],
     contentBase: './example',
     compress: true,
-    host,
     port,
     publicPath: '/',
     hot: true,
