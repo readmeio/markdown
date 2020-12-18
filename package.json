@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "webpack -p",
-    "heroku-postbuild": "make emojis",
+    "heroku-postbuild": "make emojis && webpack -p --config ./webpack.dev.js",
     "start": "webpack-dev-server --config ./webpack.dev.js --open",
     "lint": "eslint . --ext .jsx --ext .js",
     "pretest": "npm run lint && npm run prettier",
