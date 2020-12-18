@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 .PHONY: help
 
-emoji: example/img/emojis ## Install our emojis
+emojis: example/img/emojis ## Install our emojis
 
 example/img/emojis: node_modules/@readme/emojis
 	rm -rf example/img/emojis
