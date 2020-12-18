@@ -2,8 +2,6 @@
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-const port = process.env.PORT || 9966;
-
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
@@ -25,7 +23,7 @@ describe('visual regression tests', () => {
 
     docs.forEach(doc => {
       it(`renders "${doc}" without surprises`, async () => {
-        const uri = `http://localhost:${port}/?ci=true#${doc}`;
+        const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
         await sleep(500);
 

@@ -15,6 +15,7 @@ const config = merge(common, {
   devServer: {
     contentBase: './example',
     compress: true,
+    port: 9966,
     publicPath: '/',
     hot: true,
     watchContentBase: true,
