@@ -4,6 +4,8 @@ const path = require('path');
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
 
+const port = process.env.PORT || 9966;
+
 const config = merge(common, {
   entry: {
     demo: './example/index.jsx',
@@ -15,7 +17,7 @@ const config = merge(common, {
   devServer: {
     contentBase: './example',
     compress: true,
-    port: 9966,
+    port,
     publicPath: '/',
     hot: true,
     watchContentBase: true,

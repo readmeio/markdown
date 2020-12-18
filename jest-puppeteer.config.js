@@ -2,7 +2,7 @@ module.exports = {
   server: {
     command: 'npm run start',
     debug: true,
-    port: 9966,
+    port: process.env.PORT || 9966,
     protocol: 'http-get',
     launchTimeout: 45000,
   },
