@@ -20,7 +20,6 @@
     "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
     "test.watch": "jest --watch --coverage=false",
     "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
-    "test.browser.watch": "npm run test.browser -- --watch",
     "watch": "webpack -w --progress --mode production",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run"
