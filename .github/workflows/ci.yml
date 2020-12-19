@@ -17,18 +17,20 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: |
-        npm ci
-        sudo apt install fonts-noto-color-emoji
-        make emojis
+      run: npm ci
 
     - name: Run tests
       run: npm test
 
-    - name: Run visual regression tests
-      run: CI=true npm run test.browser
+  Visual_Tests:
+    if: "!contains(github.event.head_commit.message, 'SKIP CI')"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.3.4
+
+    - uses: ./
 
     - uses: actions/upload-artifact@v2
       with:
-        name: image-snapshots
-        path: __tests__/browser/ci
+        name: diff-output
+        path: __tests__/browser/__image_snapshots__/__diff_output__
