@@ -28,18 +28,11 @@ jobs:
   "Visual-tests":
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
-    container: node:14-buster
     steps:
     - uses: actions/checkout@v2.3.4
 
-    - name: Install dependencies
-      run: |
-        apt update && apt install -y chromium fonts-noto-color-emoji
-        npm install
-        make emojis
-
     - name: Run visual tests
-      run: npm run test.browser
+      uses: ./
 
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
