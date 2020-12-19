@@ -33,9 +33,9 @@ jobs:
 
     - name: Install dependencies
       run: |
-      apt update && apt install -y chromium fonts-noto-color-emoji
-      npm install
-      make emojis
+        apt update && apt install -y chromium fonts-noto-color-emoji
+        npm install
+        make emojis
 
     - name: Run visual tests
       run: npm run test.browser
