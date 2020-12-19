@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.25.0-next.1
+
+### ✨ New & Improved
+
+* visual regression testing and dev server app ([#94](https://github.com/readmeio/markdown/issues/94)) ([0774166](https://github.com/readmeio/markdown/commit/07741663d0a603c7f178b63ebed6a81695e36ec2))
+
+
+### 🛠 Fixes & Updates
+
+* don't run eslint on `test.watch` ([#102](https://github.com/readmeio/markdown/issues/102)) ([59a6dfe](https://github.com/readmeio/markdown/commit/59a6dfe43d3607f5d878989a92bcaf9443228c26))
+
 ## Version 6.24.1-next.4
 
 ### 🛠 Fixes & Updates
