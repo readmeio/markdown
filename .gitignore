@@ -9,6 +9,6 @@ node_modules
 
 .DS_Store
 
-__diff_output__
+__image_snapshots__
 
 example/img/emojis
