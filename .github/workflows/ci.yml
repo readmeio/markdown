@@ -22,9 +22,11 @@ jobs:
     - name: Run tests
       run: npm test
 
-  Visual_Tests:
+  "Visual Tests":
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
-    runs-on: node:14-buster
+    runs-on: ubuntu-latest
+    container:
+      image: node:14-buster
     steps:
     - uses: actions/checkout@v2.3.4
 
@@ -37,7 +39,8 @@ jobs:
     - name: Run visual tests
       run: npm run test.browser
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload snapshots
+      uses: actions/upload-artifact@v2
       with:
         name: diff-output
         path: __tests__/browser/__image_snapshots__/__diff_output__
