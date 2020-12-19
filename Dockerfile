@@ -4,9 +4,6 @@ RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
 
-RUN mkdir /markdown
-WORKDIR /markdown
-
 COPY package.json package-lock.json ./
 RUN npm install
 
@@ -16,4 +13,4 @@ RUN make emojis
 
 EXPOSE 9966
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "test.browser"]
