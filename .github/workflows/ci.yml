@@ -25,9 +25,11 @@ jobs:
     - name: Run tests
       run: npm test
 
-  Visual_Tests:
+  "Visual Tests":
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
-    runs-on: node:14-buster
+    runs-on: ubuntu-latest
+    container:
+      image: node:14-buster
     steps:
     - uses: actions/checkout@v2.3.4
 
@@ -44,7 +46,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: image-diffs
-        path: __tests__/browser/ci/__diff_output__
+        path: __tests__/browser/__image_snapshots__/__diff_output__
 
     - name: Update regression test snapshots
       if: ${{ failure() }}
