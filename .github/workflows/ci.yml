@@ -17,7 +17,18 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm ci
+        sudo apt install fonts-noto-color-emoji
+        make emojis
 
     - name: Run tests
       run: npm test
+
+    - name: Run visual regression tests
+      run: CI=true npm run test.browser
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: image-snapshots
+        path: __tests__/browser/ci

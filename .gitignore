@@ -8,3 +8,7 @@ node_modules
 *.sublime-*
 
 .DS_Store
+
+__image_snapshots__
+
+example/img/emojis
