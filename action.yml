@@ -1,6 +1,0 @@
-name: 'Markdown Browser Tests'
-description: 'Run markdown visual regression tests in the browser'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args: 'npm run test.browser'
