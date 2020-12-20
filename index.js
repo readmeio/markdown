@@ -9,6 +9,7 @@ const unified = require('unified');
 const sanitize = require('./sanitize.schema');
 
 const generateTOC = require('mdast-util-toc');
+
 const mapNodes = require('unist-util-map');
 const { selectAll } = require('unist-util-select');
 
@@ -19,6 +20,7 @@ const remarkParse = require('remark-parse');
 const remarkStringify = require('remark-stringify');
 const remarkBreaks = require('remark-breaks');
 const remarkSlug = require('remark-slug');
+const remarkFrontmatter = require('remark-frontmatter');
 
 // rehype plugins
 const rehypeSanitize = require('rehype-sanitize');
@@ -110,6 +112,7 @@ export function processor(opts = {}) {
    */
   return unified()
     .use(remarkParse, opts.markdownOptions)
+    .use(remarkFrontmatter, ['yaml', 'toml'])
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
