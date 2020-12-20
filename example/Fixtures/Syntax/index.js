@@ -1,13 +1,14 @@
-import callouts from './callouts.md';
+import callouts from '../../../docs/callouts.md';
+import codeBlocks from '../../../docs/code-blocks.md';
+import embeds from '../../../docs/embeds.md';
+import features from '../../../docs/features.md';
+import headings from '../../../docs/headings.md';
+import images from '../../../docs/images.md';
+import lists from '../../../docs/lists.md';
+import tables from '../../../docs/tables.md';
+
 import codeBlockTests from './code-blocks/code-block-tests.md';
 import codeBlockVarsTest from './code-blocks/vars-test.md';
-import codeBlocks from './code-blocks.md';
-import embeds from './embeds.md';
-import features from './features.md';
-import headings from './headings.md';
-import images from './images.md';
-import lists from './lists.md';
-import tables from './tables.md';
 
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
