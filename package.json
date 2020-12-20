@@ -23,7 +23,8 @@
     "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
     "watch": "webpack -w --progress --mode production",
     "release": "npx semantic-release",
-    "release.dry": "npx semantic-release --dry-run"
+    "release.dry": "npx semantic-release --dry-run",
+    "sync": "rdme docs ./docs --version=2"
   },
   "dependencies": {
     "@readme/emojis": "^3.0.0",
@@ -89,6 +90,7 @@
     "prettier": "^2.2.1",
     "puppeteer": "^5.5.0",
     "raw-loader": "^4.0.2",
+    "rdme": "^3.8.2",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-hot-loader": "^4.13.0",
