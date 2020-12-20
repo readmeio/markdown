@@ -3,8 +3,6 @@ title: "Custom Styling"
 slug: "custom-css"
 excerpt: "Styling best-practices and CSS selector references."
 hidden: false
-createdAt: "2020-03-28T16:35:44.474Z"
-updatedAt: "2020-04-17T22:39:30.271Z"
 ---
 By and large, the new markdown processor outputs standard HTML. This means most basic CSS element selectors will continue to work seamlessly. Depending on how complex your Markdown and custom CSS are, you should only have to update a few styles here and there!
 

@@ -2,8 +2,6 @@
 title: "Code Blocks"
 slug: "code-blocks"
 hidden: false
-createdAt: "2019-12-10T01:01:15.108Z"
-updatedAt: "2020-04-25T02:07:05.267Z"
 ---
 [block:api-header]
 {

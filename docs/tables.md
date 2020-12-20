@@ -2,8 +2,6 @@
 title: "Tables"
 slug: "tables"
 hidden: false
-createdAt: "2019-12-10T01:01:15.097Z"
-updatedAt: "2020-04-16T17:45:25.365Z"
 ---
 ## Syntax
 

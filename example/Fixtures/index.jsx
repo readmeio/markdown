@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import syntaxFixtures from './Syntax';
+import syntaxFixtures from './docs';
 
 const Fixtures = ({ render, selected, getRoute }) => {
   const [edited, setEdited] = useState(null);

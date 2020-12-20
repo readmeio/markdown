@@ -2,8 +2,6 @@
 title: "Images"
 slug: "images"
 hidden: false
-createdAt: "2019-12-10T01:01:15.080Z"
-updatedAt: "2020-04-25T20:42:33.103Z"
 ---
 [block:callout]
 {

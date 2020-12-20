@@ -2,8 +2,6 @@
 title: "Embeds"
 slug: "embeds"
 hidden: false
-createdAt: "2019-12-10T01:01:15.103Z"
-updatedAt: "2020-04-07T14:52:31.276Z"
 ---
 [block:api-header]
 {

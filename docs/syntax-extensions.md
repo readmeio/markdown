@@ -3,8 +3,6 @@ title: "Flavored Syntax"
 slug: "syntax-extensions"
 excerpt: "Specs and examples of ReadMe's (restrained) Markdown syntax extensions."
 hidden: false
-createdAt: "2020-03-28T12:11:36.822Z"
-updatedAt: "2020-04-07T14:57:55.058Z"
 ---
 Custom Blocks
 ---

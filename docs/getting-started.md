@@ -12,8 +12,6 @@ metadata:
     2: 600
     3: 315
     4: "#2caaf8"
-createdAt: "2020-03-28T16:21:26.026Z"
-updatedAt: "2020-04-15T13:50:43.600Z"
 ---
 [<img src=https://github.com/readmeio/api-explorer/workflows/CI/badge.svg align=right />](https://www.npmjs.com/package/@readme/markdown) A remark-based Markdown engine for parsing and rendering ReadMe docs. (In fact, you're looking at it right now, since we've used it to render every doc in this project!)
 

@@ -2,8 +2,6 @@
 title: "Lists"
 slug: "lists"
 hidden: false
-createdAt: "2019-12-10T01:01:15.083Z"
-updatedAt: "2020-04-24T18:05:46.493Z"
 ---
 [block:api-header]
 {

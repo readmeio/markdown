@@ -2,8 +2,6 @@
 title: "Headings"
 slug: "headings"
 hidden: false
-createdAt: "2019-12-10T01:01:15.098Z"
-updatedAt: "2020-04-07T20:36:57.487Z"
 ---
 ## Examples
 

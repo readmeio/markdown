@@ -11,8 +11,6 @@ metadata:
     2: 530
     3: 173
     4: "#edf3ec"
-createdAt: "2019-12-10T01:01:15.091Z"
-updatedAt: "2020-04-27T01:07:13.633Z"
 ---
 [block:api-header]
 {
