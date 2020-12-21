@@ -15,4 +15,5 @@ RUN make emojis
 
 EXPOSE 9966
 
-CMD ["npm", "run", "test.browser"]
+CMD ["test.browser"]
+ENTRYPOINT ["npm", "run"]
