@@ -2,8 +2,6 @@
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
 
-GITHUB_WORKSPACE := /markdown
-
 emojis: example/img/emojis ## Install our emojis
 
 example/img/emojis: node_modules/@readme/emojis
