@@ -2,9 +2,7 @@
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
 
-GITHUB_WORKSPACE := "/github/workspace"
-BROWSER_IMAGE_VERSION := 0.0
-BROWSER_IMAGE := docker.pkg.github.com/readmeio/markdown/browser:$(BROWSER_IMAGE_VERSION)
+DOCKER_WORKSPACE := "/markdown"
 
 emojis: example/img/emojis ## Install our emojis.
 
@@ -25,10 +23,10 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
-	docker run -it --rm -v ${PWD}:${GITHUB_WORKSPACE} markdown $(RUN_ARGS)
+	docker run -it --rm -v ${PWD}:${DOCKER_WORKSPACE} markdown $(RUN_ARGS)
 
 ci: build ## CI runner
-	docker run -i -v ${PWD}:${GITHUB_WORKSPACE} markdown $(RUN_ARGS)
+	docker run -i -v ${PWD}:${DOCKER_WORKSPACE} markdown $(RUN_ARGS)
 
 shell: build ## Docker shell.
 	docker run -it --rm --entrypoint /bin/bash markdown
