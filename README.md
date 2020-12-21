@@ -54,11 +54,15 @@ Our old editor rendered "Magic Block" components from a custom, JSON-based synta
 
 We've also sprinkled a bit of our own syntactic sugar on top to let you supercharge your docs. [**Learn more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
-## Local Development
+## Contributing
 
-To make changes to the RDMD engine locally is to run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
+To make changes to the RDMD engine locally, run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
+
+### Environment setup
+
+Running the browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
 
 ## Credits
 
-- **License**: MIT
-- **Authors**: [Dom Harrington](https://github.com/domharrington/), [Rafe Goldberg](https://github.com/rafegoldberg)
+- **Lisence**: MIT
+- **Authors**: [Dom Harrington](https://github.com/domharrington/), [Rafe Goldberg](https://github.com/rafegoldberg), [Kelly Price](https://github.com/kellyjosephprice)
