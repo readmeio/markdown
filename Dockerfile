@@ -4,6 +4,8 @@ RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
 
+WORKDIR /github/workflow
+
 COPY package.json package-lock.json ./
 RUN npm install
 
