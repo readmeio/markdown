@@ -19,7 +19,7 @@
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
     "test.watch": "jest --watch --coverage=false",
-    "pretest.browser": "jest --clearCache",
+    "pretest.browser": "ls -ltr node_modules && jest --clearCache",
     "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
     "watch": "webpack -w --progress --mode production",
     "release": "npx semantic-release",
