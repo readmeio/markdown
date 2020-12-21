@@ -25,8 +25,8 @@ endif
 run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
 	docker run -it --rm -v ${PWD}:${DOCKER_WORKSPACE} markdown $(RUN_ARGS)
 
-ci: build ## CI runner
-	docker run -i -v ${PWD}:${DOCKER_WORKSPACE} markdown $(RUN_ARGS)
+ci: build ## CI runner for `npm run test.browser`
+	docker run -i -v ${PWD}:${DOCKER_WORKSPACE} markdown
 
 shell: build ## Docker shell.
 	docker run -it --rm --entrypoint /bin/bash markdown
