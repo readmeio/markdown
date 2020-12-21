@@ -1,5 +1,0 @@
-name: 'Markdown Visual Tests'
-description: 'Run markdown visual regression tests in a container'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'

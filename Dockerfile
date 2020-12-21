@@ -1,10 +1,8 @@
-FROM node:14-buster AS markdown-browser
+FROM node:14-buster
 
 RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
-
-FROM markdown-browser
 
 ENV GITHUB_WORKSPACE = /github/workspace
 WORKDIR ${GITHUB_WORKSPACE}
