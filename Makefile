@@ -4,7 +4,7 @@
 
 GITHUB_WORKSPACE := "/github/workspace"
 
-emojis: example/img/emojis ## Install our emojis
+emojis: example/img/emojis ## Install our emojis.
 
 example/img/emojis: node_modules/@readme/emojis
 	rm -rf example/img/emojis
@@ -14,15 +14,18 @@ example/img/emojis: node_modules/@readme/emojis
 build:
 	docker build -t markdown .
 
+# This lets us call `make run test.browser`. Make expects cmdline args
+# to be targets. So this creates noop targets out of args. Copied from
+# SO.
 ifeq (run,$(firstword $(MAKECMDGOALS)))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-run: build
-	docker run -it --rm -v ${PWD}:${GITHUB_WORKSPACE} markdown $(RUN_ARGS)
+run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
+	docker run -i --rm -v ${PWD}:${GITHUB_WORKSPACE} markdown $(RUN_ARGS)
 
-shell: build
+shell: build ## Docker shell.
 	docker run -it --rm --entrypoint /bin/bash markdown
 
 help: ## Show this help.
