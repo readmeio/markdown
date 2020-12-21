@@ -16,10 +16,6 @@ example/img/emojis: node_modules/@readme/emojis
 build:
 	docker build -t markdown .
 
-publish:
-	docker build --target markdown-browser -t $(BROWSER_IMAGE) .
-	docker push $(BROWSER_IMAGE)
-
 # This lets us call `make run test.browser`. Make expects cmdline args
 # to be targets. So this creates noop targets out of args. Copied from
 # SO.
@@ -33,8 +29,6 @@ run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
 
 ci: build ## CI runner
 	docker run -i -v ${PWD}:${GITHUB_WORKSPACE} markdown $(RUN_ARGS)
-
-test.browser: run ## Run browser tests
 
 shell: build ## Docker shell.
 	docker run -it --rm --entrypoint /bin/bash markdown
