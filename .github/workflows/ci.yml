@@ -44,12 +44,3 @@ jobs:
       with:
         name: diff-output
         path: __tests__/browser/__image_snapshots__/__diff_output__
-
-  "Visual-tests-debug":
-    if: "!contains(github.event.head_commit.message, 'SKIP CI')"
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2.3.4
-
-    - name: Run visual tests
-      run: make run test.browser
