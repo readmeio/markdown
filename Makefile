@@ -2,7 +2,7 @@
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
 
-GITHUB_WORKFLOW_DIR := "/github/workflow"
+GITHUB_WORKSPACE := "/github/workspace"
 
 emojis: example/img/emojis ## Install our emojis
 
@@ -15,7 +15,7 @@ docker_build:
 	docker build -t markdown .
 
 browser_tests: docker_build
-	docker run -it --rm -v ${PWD}:${GITHUB_WORKFLOW_DIR} markdown
+	docker run -it --rm -v ${PWD}:${GITHUB_WORKSPACE} markdown
 
 shell: docker_build
 	docker run -it --rm markdown /bin/bash
