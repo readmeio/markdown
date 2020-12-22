@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Select } from '@readme/ui';
 
 import syntaxFixtures from './Syntax';
 
-const Fixtures = ({ render, selected, getRoute }) => {
+const Fixtures = ({ children, selected, getRoute }) => {
   const [edited, setEdited] = useState(null);
 
   const handleSelect = event => {
@@ -23,30 +25,33 @@ const Fixtures = ({ render, selected, getRoute }) => {
     ({ doc: fixture, name } = syntaxFixtures[selected]);
   }
 
+  const options = Object.entries(syntaxFixtures).map(([value, { name: label }]) => ({ label, value }));
+
+  if (edited) {
+    options.unshift({ label: '** modified **', value: 'edited' });
+  }
+
   const fields = (
-    <fieldset className="rdmd-demo--fixture-select">
+    <fieldset className="rdmd-demo--options">
       <label className="rdmd-demo--label" htmlFor="fixture-select">
         fixture
       </label>
-      <select className="rdmd-demo--select" id="fixture-select" onChange={handleSelect} value={selected}>
-        {edited && <option value={'edited'}>** modified **</option>}
-        {Object.entries(syntaxFixtures).map(([sym, { name: _name }]) => {
-          return (
-            <option key={sym} value={sym}>
-              {_name}
-            </option>
-          );
-        })}
-      </select>
+      <Select
+        className="rdmd-demo--select"
+        id="fixture-select"
+        onChange={handleSelect}
+        options={options}
+        value={selected}
+      />
     </fieldset>
   );
 
-  return render({ children: fields, name, fixture, onChange });
+  return children({ children: fields, name, fixture, onChange });
 };
 
 Fixtures.propTypes = {
+  children: PropTypes.func.isRequired,
   getRoute: PropTypes.func.isRequired,
-  render: PropTypes.func.isRequired,
   selected: PropTypes.string,
 };
 

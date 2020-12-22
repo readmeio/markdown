@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 const trimHash = () => window.location.hash.replace(/^#/, '');
 
-const Router = ({ render }) => {
+const Router = ({ children }) => {
   const [route, getRoute] = useState(trimHash());
 
   useEffect(() => {
@@ -10,8 +10,11 @@ const Router = ({ render }) => {
       getRoute(trimHash());
     };
 
+    const url = new URL(window.location);
+    url.hash = route;
+
     // eslint-disable-next-line no-restricted-globals
-    history.replaceState({}, '', `#${route}`);
+    history.replaceState({}, '', url);
     window.addEventListener('popstate', handleStateChange);
 
     return () => {
@@ -19,7 +22,7 @@ const Router = ({ render }) => {
     };
   });
 
-  return render({ route, getRoute });
+  return children({ route, getRoute });
 };
 
 export default Router;

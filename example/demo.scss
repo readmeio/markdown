@@ -18,7 +18,7 @@
       margin: 0;
       margin-top: .25em;
       font-size: 1.5em;
-      font-weight: 500;
+      font-weight: 700;
     }
   }
 
@@ -46,13 +46,17 @@
     flex-direction: row;
   }
 
-  .rdmd-demo--fixture-select {
+  .rdmd-demo--options {
     padding: 1em;
     border: none;
     border-top: 1px solid #eee;
     display: flex;
     justify-content: space-between;
+  }
 
+  .rdmd-demo--toggles {
+    display: flex;
+    flex-direction: column;
   }
 
   .rdmd-demo--label {
@@ -60,21 +64,9 @@
     color: #bbb;
   }
 
-  .rdmd-demo--select {
-    min-width: 50%;
-    color: #555;
-  }
-
   [name="demo-editor"] {
-    display: block;
-    color: #555;
     min-height: 32em;
-    height: calc(100vh - 20em);
-    width: 100%;
-    overflow: auto;
-    border: 1px solid #eee;
-    border-radius: 2px;
-    padding: 1em;
+    height: calc(100vh - 40em);
   }
 
   .rdmd-demo--editor, .rdmd-demo--display {
