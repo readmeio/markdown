@@ -8,7 +8,6 @@
     display: table;
     border-collapse: collapse;
     border-spacing: 0;
-    // overflow: auto;
     width: 100%;
     color: var(--table-text);
 
@@ -54,8 +53,6 @@
     & {
       position: relative;
       display: block;
-      // overflow: hidden;
-      border-radius: var(--table-radius, var(--markdown-radius, 2px));
     }
     &:after {
       content: ' ';
@@ -66,14 +63,11 @@
       top: 0;
       pointer-events: none;
       z-index: 1;
-      border-radius: inherit;
     }
     &-inner {
-      // overflow: auto;
       min-width: 100%;
       box-sizing: content-box;
       width: 100%;
-      border-radius: inherit;
     }
     table:only-child {
       margin: 0 !important;
