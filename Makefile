@@ -28,7 +28,9 @@ run: build ## Run npm scripts in a docker container. (default: make test.browser
 	docker run -it --rm ${MOUNTS} markdown $(RUN_ARGS)
 
 ci: build ## CI runner for `npm run test.browser -- --ci`
-	docker run -i ${MOUNTS} markdown test.browser -- --ci
+	# We don't mount root because CI doesn't care about live changes,
+	# except for grabbing the snapshot diffs, so we mount __tests__
+	docker run -i --volume ${PWD}/__tests__:${DOCKER_WORKSPACE}/__tests__ markdown test.browser -- --ci
 
 # I would like this to be `updateSnapshots` but I think it's better to
 # be consistent with jest.
