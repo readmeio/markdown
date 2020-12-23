@@ -1,3 +1,9 @@
+---
+title: "Code Blocks"
+slug: "code-blocks"
+hidden: false
+---
+
 [block:api-header]
 {
   "title": "Examples"

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Select } from '@readme/ui';
 
-import syntaxFixtures from './Syntax';
+import syntaxFixtures from './docs';
 
 const Fixtures = ({ children, selected, getRoute }) => {
   const [edited, setEdited] = useState(null);
