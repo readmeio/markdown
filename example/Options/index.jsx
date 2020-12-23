@@ -3,20 +3,24 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { LabeledCheckbox } from '@readme/ui';
 
+const defer = fn => window.requestAnimationFrame(() => window.requestAnimationFrame(fn));
+
 function Option({ param, checked, label, onChange }) {
   const [value, setValue] = React.useState(checked);
   const toggle = () => setValue(!value);
 
-  React.useEffect(() => onChange({ [param]: value }), [value]);
+  React.useEffect(() => {
+    defer(() => onChange({ [param]: value }));
+  }, [value]);
 
   return <LabeledCheckbox key={param} checked={value} label={label} onChange={toggle} type="toggle" />;
 }
 
 Option.propTypes = {
   checked: PropTypes.bool,
-  param: PropTypes.string,
   label: PropTypes.string,
   onChange: PropTypes.func,
+  param: PropTypes.string,
 };
 
 function Options({ params, setParams }) {
@@ -25,7 +29,7 @@ function Options({ params, setParams }) {
       <span className="rdmd-demo--label">options</span>
       <div className="rdmd-demo--toggles">
         {['compatabilityMode', 'copyButtons', 'correctnewlines'].map(param => (
-          <Option checked={!!params[param]} label={param} onChange={setParams} param={param} />
+          <Option key={param} checked={!!params[param]} label={param} onChange={setParams} param={param} />
         ))}
       </div>
     </fieldset>
