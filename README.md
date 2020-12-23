@@ -59,6 +59,14 @@ We've also sprinkled a bit of our own syntactic sugar on top to let you supercha
 
 Running the browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
 
+### Running visual regression tests
+
+If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots. You can run the visual regression tests in a docker container with:
+
+```
+make updateSnapshot
+```
+
 ## Credits
 
 - **Lisence**: MIT

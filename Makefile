@@ -24,11 +24,16 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
+run: build ## Run npm scripts in a docker container. (default: make test.browser)
 	docker run -it --rm ${MOUNTS} markdown $(RUN_ARGS)
 
-ci: build ## CI runner for `npm run test.browser`
-	docker run -i ${MOUNTS} markdown
+ci: build ## CI runner for `npm run test.browser -- --ci`
+	docker run -i ${MOUNTS} markdown test.browser -- --ci
+
+# I would like this to be `updateSnapshots` but I think it's better to
+# be consistent with jest.
+updateSnapshot: build ## Run `npm run test.browser -- --updateSnapshot`
+	docker run -it --rm ${MOUNTES} markdown test.browser -- --updateSnapshot
 
 shell: build ## Docker shell.
 	docker run -it --rm ${MOUNTS} --entrypoint /bin/bash markdown
