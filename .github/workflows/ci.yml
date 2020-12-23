@@ -43,7 +43,7 @@ jobs:
       if: ${{ failure() }}
     - name: Upload snapshots
       uses: actions/upload-artifact@v2
-      if: failed()
+      if: ${{ failure() }}
       with:
         name: image-snapshots
         path: __tests__/browser/__image_snapshots__/
