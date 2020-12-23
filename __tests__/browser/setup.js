@@ -6,7 +6,6 @@ const opts = {
     ssim: 'bezkrovny',
   },
 };
-
 const toMatchImageSnapshot = configureToMatchImageSnapshot(opts);
 
 expect.extend({ toMatchImageSnapshot });
