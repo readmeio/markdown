@@ -3,19 +3,29 @@ title: "Images"
 slug: "images"
 hidden: false
 ---
-[block:callout]
-{
-  "type": "warning",
-  "title": "Known Issue",
-  "body": "The ReadMe-flavored markdown engine does not currently support lightbox functionality (click-to-zoom). **[But we're working on it!](https://github.com/readmeio/api-explorer/issues/621)**"
-}
-[/block]
 ## Syntax
 
-    ![Alt text](https://cdn.path.to/some/image.jpg "Image Title")
+    ![Alt text](https://cdn.path.to/some/image.jpg "This is some image...")
 [block:api-header]
 {
   "title": "Examples"
 }
 [/block]
-![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")
+
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://files.readme.io/b8674d6-pizzabro.jpg",
+        "pizzabro.jpg",
+        1024,
+        682,
+        "#d1c8c5"
+      ],
+      "caption": "Click to zoom."
+    }
+  ]
+}
+[/block]
+<!-- ![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face") -->
