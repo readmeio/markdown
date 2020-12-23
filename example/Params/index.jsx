@@ -1,11 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const getSearchParams = () =>
-  [...new URLSearchParams(document.location.search).entries()].reduce((obj, [k, v]) => {
-    obj[k] = v !== 'false';
-    return obj;
-  }, {});
+const defaults = {
+  compatabilityMode: false,
+  copyButtons: true,
+  correctnewlines: false,
+};
+
+const getSearchParams = () => ({
+  ...defaults,
+  ...Object.fromEntries(new URLSearchParams(document.location.search).entries()),
+});
 
 const Params = ({ children }) => {
   const [params, _setParams] = React.useState(getSearchParams());
@@ -14,7 +19,7 @@ const Params = ({ children }) => {
     const merged = { ...params, ...newParams };
 
     Object.keys(merged)
-      .filter(param => !merged[param])
+      .filter(param => merged[param] === defaults[param])
       .forEach(param => delete merged[param]);
 
     _setParams(merged);

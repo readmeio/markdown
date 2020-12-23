@@ -8,6 +8,7 @@ import Fixtures from './Fixtures';
 import Header from './Header';
 import Router from './Router';
 import Params from './Params';
+import Options from './Options';
 
 require('./demo.scss');
 
@@ -22,22 +23,11 @@ function DemoContent({ params, children, fixture, name, onChange, opts, setParam
     );
   }
 
-  const toggle = param => () => {
-    setParams({ [param]: !params[param] });
-  };
-
-  const toggles = ['compatabilityMode', 'copyButtons', 'correctnewlines'].map(param => (
-    <LabeledCheckbox key={param} checked={!!params[param]} label={param} onChange={toggle(param)} type="toggle" />
-  ));
-
   return (
     <React.Fragment>
       <div className="rdmd-demo--editor">
         <div className="rdmd-demo--editor-container">
-          <fieldset className="rdmd-demo--options">
-            <span className="rdmd-demo--label">options</span>
-            <div className="rdmd-demo--toggles">{toggles}</div>
-          </fieldset>
+          <Options params={params} setParams={setParams} />
           {children}
           <Textarea name="demo-editor" onChange={onChange} value={fixture} />
         </div>
