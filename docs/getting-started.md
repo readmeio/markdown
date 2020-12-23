@@ -13,10 +13,10 @@ metadata:
     3: 315
     4: "#2caaf8"
 ---
-[<img src=https://github.com/readmeio/api-explorer/workflows/CI/badge.svg align=right />](https://www.npmjs.com/package/@readme/markdown) A remark-based Markdown engine for parsing and rendering ReadMe docs. (In fact, you're looking at it right now, since we've used it to render every doc in this project!)
+[<img src=https://github.com/readmeio/markdown/workflows/CI/badge.svg align=right style="margin-top: 3px; margin-bottom: 3px;" />](https://www.npmjs.com/package/@readme/markdown) A remark-based Markdown engine for parsing and rendering ReadMe docs. (In fact, you're looking at it right now, since we've used it to render every doc in this project!)
 
 ```bash
-npm i -S @readme/markdown
+npm install --save @readme/markdown
 ```
 
 > 🧙‍ **Backwards Compatible**
@@ -52,14 +52,14 @@ This gives you various methods and utilities:
 
 | Export        | Description                                    | Arguments        |
 |:------------- |:---------------------------------------------- | ----------------:|
-| *`react`*     |_default;_ returns a VDOM React tree           | `text`, `options`|
+| *`react`*     |_default;_ returns a VDOM React tree            | `text`, `options`|
 | *`html`*      | transform markdown in to HTML                  | `text`, `options`|
 | *`ast`*       | transform markdown to an mdast object          | `text`, `options`|
-| *`md`*        | transform mdast in to ReadMe-flavored markdown | `ast`, `options`|
+| *`md`*        | transform mdast in to ReadMe-flavored markdown | `ast`, `options` |
 
 ### Utilities
 
-The `rdmd.utils` export gives you access to various tools and configuration settings:
+The `utils` export gives you access to various tools and configuration settings:
 
 - **`options`**
   _a hash of default settings accepted by the rdmd engine._
@@ -67,9 +67,9 @@ The `rdmd.utils` export gives you access to various tools and configuration sett
   - `correctnewlines`—flag to toggle newline transformation.
   - `normalize`—auto-normalize magic blocks before processing.
 - **`<GlossaryContext/>`** and **`<VariablesContext/>`**
-  React provider and consumer wrappers for [ReadMe data replacement.](doc:features#section-data-replacement).
+  React provider and consumer wrappers for [user data injection](doc:features#section-data-injection).
 [block:html]
 {
-  "html": "<style>\n  .markdown-body .callout.callout_default[theme=🧙‍]{\n    --background: #fffae7;\n  --border: #e6b8086e;\n  --title: #e0b400;\n  }\n</style>"
+  "html": "<style>\n  .markdown-body .callout.callout_default[theme=🧙‍]{\n    --background: #fffae7;\n    --border: #e6b8086e;\n    --title: #e0b400;\n  }\n</style>"
 }
 [/block]

@@ -35,21 +35,6 @@ The new Markdown engine uses CSS variables to enable simple theming for all mode
   --markdown-font: Papyrus, serif;
   --markdown-text: #333;
   --markdown-title: hotpink;
-  --markdown-lineHeight: 2;
+  --markdown-line-height: 2;
 }
 ```
-
-## Styling Components
-
-### Callouts
-
-Our callouts have been refactored to be based on the default block quote element and styling. It comes with various themes, which can be customized using the following selectors. [**More**](doc:callouts)...
-
-### Tables
-
-Tables have been simplified to mirror a more standard implementation, which should make them easier to style. [**More**](doc:tables)...
-[block:html]
-{
-  "html": "<style>\n.callout.callout_default[theme=🐷] {\n  --background: #fdf2fa;\n  --title: #ed32ba;\n  --border: var(--title);\n}\n</style>"
-}
-[/block]

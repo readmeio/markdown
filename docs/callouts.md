@@ -12,6 +12,7 @@ metadata:
     3: 173
     4: "#edf3ec"
 ---
+
 [block:api-header]
 {
   "title": "Syntax"
@@ -19,7 +20,7 @@ metadata:
 [/block]
 Callouts are very nearly equivalent to standard Markdown block quotes in their syntax, other than some specific requirements on their content: To be considered a “callout”, a block quote must start with an initial emoji. This is used to determine the callout's theme. Here's an example of how you might write a warning callout.
 
-    > 👍 [Success](#edge-cases)
+    > 👍 Success
     > 
     > Vitae reprehenderit at aliquid error voluptates eum dignissimos.
 
@@ -33,6 +34,19 @@ Default themes are specified using one of the following emojis. (If you don't li
 | 👍 | `.callout_okay` | ✅ |
 | 🚧 | `.callout_warn` | ⚠️ |
 | ❗️ | `.callout_error` | 🛑 |
+
+<hr>
+<details><summary><em>Tips & Tricks </em></summary><br>
+
+If you have a block quote that starts with an initial emoji which *should not* be rendered as a ReadMe callout, just bold the emoji. It's a bit of a hack for sure, but it's easy enough, and hey: it works! So this:
+
+    > **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+Renders to a plain ol' block quote:
+
+> **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
+
+</details><hr>
 [block:api-header]
 {
   "title": "Examples"
@@ -62,22 +76,6 @@ If a callout starts with an emoji that's not dedicated to one of the themes (abo
 > 🥇 Themeless
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.
-
-<!--
-> ✅ Default themes using the alternate emoji!
--->
-
-<details><summary><em>Tips & Tricks </em></summary><hr>
-
-If you have a block quote that starts with an initial emoji which *should not* be rendered as a ReadMe callout, just bold the emoji. It's a bit of a hack for sure, but it's easy enough, and hey: it works! So this:
-
-    > **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
-
-Renders to a plain ol' block quote:
-
-> **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
-
-</details><hr>
 [block:api-header]
 {
   "title": "Custom CSS"
@@ -106,11 +104,6 @@ Callouts come in [various themes](#section--examples-). These can be customized 
 
 Each callout will also have a `theme` attribute that's set to it's emoji prefix. Combined with a basic attribute selector, we should be able to create entirely new styles per-emoji, in addition to the built in themes above!
 
-```markdown Markdown Syntax
-> 🎅 Old Saint Nick
->
-> 'Twas the night before Christmas, when all through the house not a creature was stirring, not even a mouse. The stockings were hung by the chimney with care, in hopes that St. Nicholas soon would be there. The children were nestled all snug in their beds, while visions of sugar plums danced in their heads.
-```
 ```css Custom CSS
 .markdown-body .callout[theme="🎅"] {
   --background: #c54245;
@@ -118,9 +111,14 @@ Each callout will also have a `theme` attribute that's set to it's emoji prefix.
   --text: #f5fffa;
 }
 ```
+```markdown Markdown Syntax
+> 🎅 Old Saint Nick
+>
+> 'Twas the night before Christmas, when all through the house not a creature was stirring, not even a mouse. The stockings were hung by the chimney with care, in hopes that St. Nicholas soon would be there. The children were nestled all snug in their beds, while visions of sugar plums danced in their heads.
+```
 ```html Generated HTML
+<!-- condensed for clarity! -->
 <blockquote class="callout callout_default" theme="🎅">
-  <!-- essentially -->
   <h3>🎅 Old Saint Nick</h3>
   <p>'Twas the night before Christmas, when all through the house not a creature was stirring, not even a mouse. The stockings were hung by the chimney with care, in hopes that St. Nicholas soon would be there. The children were nestled all snug in their beds, while visions of sugar plums danced in their heads.</p>
 </blockquote>
@@ -134,45 +132,47 @@ And voilà...
 
 ### Custom Icons
 
-What if we wanted to use a custom icon instead of the emoji? With just a touch of Custom CSS, we should be able to display the callout's 📷 emoji using the icon glyph we found on FontAwesome's site!
-[block:code]
-{
-  "codes": [
-    {
-      "code": ".callout[theme=📷] {\n  --emoji: unset;\n  --icon: \"\\f083\";\n  --icon-color: #c50a50;\n}",
-      "language": "css",
-      "name": "Custom Icons CSS"
-    }
-  ]
+Emojis are already a pretty good starting point as far as default icon options go! There are a *lot* of 'em, and they're supported across nearly all platforms. But what if we're going for a different look, or need to match our docs to a branding kit? Icons are a big part of setting the "tone" for your site.
+
+With a touch of Custom CSS, we should be able to get a callout using the 📷 emoji to display an icon font glyph!
+
+```css Custom CSS
+.callout[theme=📷] {
+  --emoji: unset;
+  --icon: "\f083"; /* copied front FontAwesome */
+  --icon-color: #c50a50;
 }
-[/block]
-<details><summary>This works like a charm! (Click to compare the custom icon against the default.)</summary><br>
-
-Here's what it looks like by default:
-
+```
+``` Markdown Syntax
 > 📷 Cool pix!
+>
 > Vitae reprehenderit at aliquid error voluptates eum dignissimos.
+```
 
-And here it is with our custom CSS:
-</details>
+This works like a charm:
+
+<div id="my-theme">
 
 > 📸 Cool pix!
 > Vitae reprehenderit at aliquid error voluptates eum dignissimos.
+[block:html]
+{
+  "html": "<style>\n  #my-theme .callout[theme=📸] {\n    --emoji: unset;\n    --icon: \"\";\n  }\n  #my-theme .callout[theme=📷],\n  #my-theme .callout[theme=📸] {\n    --icon-color: #c50a50;\n    --border: var(--icon-color);\n    --title: var(--icon-color);\n  }\n  summary {\n    outline: none;\n    user-select: none;\n  }\n</style>"
+}
+[/block]
+</div>
+
+<hr><details><summary><em>Setting the Custom Icon Font</em></summary><br>
 
 The custom icon font defaults to `FontAwesome`, but you can use any font family available on the page by setting the `--icon-font` variable!
 
 ```css
 .callout[theme=📷] {
-  /* etc. */
-  --icon-font-family: 
+  --icon-font-family: FontAwesome; /* copied from https://fontawesome.com/v4.7.0/icon/camera-retro */
 }
 ```
-[block:html]
-{
-  "html": "<style>\n  .callout[theme=📸] {\n    --emoji: unset;\n    --icon: \"\";\n  }\n  .callout[theme=📷],\n  .callout[theme=📸] {\n    --icon-color: #c50a50;\n    --border: var(--icon-color);\n    --title: var(--icon-color);\n  }\n  details, summary {\n    outline: none;\n  }\n</style>"
-}
-[/block]
 
+</details><hr>
 [block:api-header]
 {
   "title": "Edge Cases"
@@ -180,11 +180,11 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
 [/block]
 Callouts don't need to have any body text:
 
-> 🥈  No body text.
+> 🥇  No body text.
 
 You can also skip the title, if you're so inclined!
 
-> 🥉  
+> 🥈  
 > 
 > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
 [block:html]
