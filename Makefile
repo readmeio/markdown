@@ -3,6 +3,8 @@
 .EXPORT_ALL_VARIABLES:
 
 DOCKER_WORKSPACE := "/markdown"
+MOUNTS = --volume ${PWD}:${DOCKER_WORKSPACE} \
+	--volume ${DOCKER_WORKSPACE}/node_modules
 
 emojis: example/img/emojis ## Install our emojis.
 
@@ -23,13 +25,13 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
 endif
 
 run: build ## Run npm scripts in a docker container. (ie. make run test.browser)
-	docker run -it --rm -v ${PWD}:${DOCKER_WORKSPACE} markdown $(RUN_ARGS)
+	docker run -it --rm ${MOUNTS} markdown $(RUN_ARGS)
 
 ci: build ## CI runner for `npm run test.browser`
-	docker run -i -v ${PWD}:${DOCKER_WORKSPACE} markdown
+	docker run -i ${MOUNTS} markdown
 
 shell: build ## Docker shell.
-	docker run -it --rm --entrypoint /bin/bash markdown
+	docker run -it --rm ${MOUNTS} --entrypoint /bin/bash markdown
 
 help: ## Show this help.
 	@grep -E '^[a-zA-Z._-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

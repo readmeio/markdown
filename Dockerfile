@@ -4,13 +4,11 @@ RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
 
-ENV DOCKER_WORKSPACE = /markdown
+ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
 RUN npm install
-
-VOLUME ${DOCKER_WORKSPACE}/node_modules
 
 COPY . ./
 
