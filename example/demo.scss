@@ -23,7 +23,7 @@
     h1 {
       margin: 0;
       font-size: 1.5em;
-      font-weight: 700;
+      font-weight: 500;
       line-height: 1;
       code {
         font-size: inherit;
@@ -69,8 +69,8 @@
     flex-direction: row;
   }
 
-  .rdmd-demo--fixture-select {
-    padding: 0 0 1em;
+  .rdmd-demo--options {
+    padding: 1em;
     border: none;
     border-top: 1px solid #eee;
     display: flex;
@@ -86,7 +86,6 @@
     text-transform: uppercase;
     color: #bbb;
   }
-
 
   [name='demo-editor'] {
     display: block;

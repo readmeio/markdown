@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { LabeledCheckbox, Textarea } from '@readme/ui';
+import { Textarea } from '@readme/ui';
 
 import markdown from '../index';
 import Fixtures from './Fixtures';
