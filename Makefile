@@ -33,7 +33,7 @@ ci: build ## CI runner for `npm run test.browser -- --ci`
 # I would like this to be `updateSnapshots` but I think it's better to
 # be consistent with jest.
 updateSnapshot: build ## Run `npm run test.browser -- --updateSnapshot`
-	docker run -it --rm ${MOUNTES} markdown test.browser -- --updateSnapshot
+	docker run -it --rm ${MOUNTS} markdown test.browser -- --updateSnapshot
 
 shell: build ## Docker shell.
 	docker run -it --rm ${MOUNTS} --entrypoint /bin/bash markdown
