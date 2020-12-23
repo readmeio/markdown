@@ -34,6 +34,7 @@ jobs:
 
     - name: Upload snapshots
       uses: actions/upload-artifact@v2
+      if: failed()
       with:
         name: diff-output
         path: __tests__/browser/__image_snapshots__/__diff_output__
