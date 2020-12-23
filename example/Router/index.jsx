@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 const trimHash = () => window.location.hash.replace(/^#/, '');
 
 const Router = ({ children }) => {
-  const [route, getRoute] = useState(trimHash());
+  const [route, getRoute] = useState(trimHash().replace(/^edited$/, ''));
 
   useEffect(() => {
     const handleStateChange = () => {

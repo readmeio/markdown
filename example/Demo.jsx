@@ -45,8 +45,8 @@ DemoContent.propTypes = {
   fixture: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  opts: PropTypes.obj,
-  params: PropTypes.obj,
+  opts: PropTypes.object,
+  params: PropTypes.object,
   setParams: PropTypes.func.isRequired,
 };
 
@@ -74,7 +74,7 @@ function Demo({ opts }) {
 }
 
 Demo.propTypes = {
-  opts: PropTypes.obj,
+  opts: PropTypes.object,
 };
 
 export default Demo;
