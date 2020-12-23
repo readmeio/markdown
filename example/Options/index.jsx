@@ -37,7 +37,7 @@ function Options({ params, setParams }) {
 }
 
 Options.propTypes = {
-  params: PropTypes.obj,
+  params: PropTypes.object,
   setParams: PropTypes.func,
 };
 
