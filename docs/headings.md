@@ -1,16 +1,17 @@
+---
+title: "Headings"
+slug: "headings"
+hidden: false
+---
 ## Examples
 
-# Heading Block 1
-
-## Heading Block 2
-
-### Heading Block 3
-
-#### Heading Block 4
-
-##### Heading Block 5
-
-###### Heading Block 6
+> ### Heading Block 3
+>
+> ####  Heading Block 4
+> 
+> #####  Heading Block 5
+> 
+> ######  Heading Block 6
 
 ## Edge Cases
 
@@ -45,9 +46,7 @@ For top-level headings, the underline notation is valid:
 
 ### Incremented Anchors
 
-Occasionally, a single doc might contain multiple headings with the same text, which can cause the generated anchor links to conflict. ReadMe's new markdown processor normalizes heading anchors by auto-incrementing similar heading's IDs.
+Occasionally, a single doc might contain multiple headings with the same text, which can cause the generated anchor links to conflict. ReadMe's new markdown processor normalizes heading anchors by auto-incrementing similar heading's IDs. Try it out by clicking on this section header _or_ the following sub-section title:
 
-Try clicking on either of these section headers and comparing the two URLs:
-
-> #### Incremented Heading Anchors
-> #### Incremented Heading Anchors
+#### Incremented Heading Anchors
+#### Incremented Heading Anchors

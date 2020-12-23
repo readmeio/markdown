@@ -1,11 +1,12 @@
+---
+title: "And more..."
+slug: "features"
+excerpt: "Additional Markdown features of the ReadMe platform implementation."
+hidden: false
+---
 We've also built a lot of great features right in to the ReadMe app, which work on top of our markdown engine to give your developers a best-in-class documentation experience. These features aren't all baked in to the new engine itself, but they're worth mentioning nonetheless!
 
-## Sectioning Semantics
-
-- Automatic **table of contents** based on sections.
-- Generated **[heading anchor links](doc:headings#section-incremented-anchors)**.
-
-## Data Injection
+## Data Replacement
 
 #### User Variables
 
@@ -30,3 +31,12 @@ You can use GitHub-style emoji short codes (feat. Owlbert!)
     :sparkles: :owlbert-reading:
 
 This expands out to: “:sparkles: :owlbert-reading:”
+
+## Generative Semantics
+
+- Markup-based TOC generation.
+- Auto-generated [heading anchors](doc:headings#section-incremented-anchors).
+
+## Known Issues
+
+- Variable and glossary term expansions are rendered even when they've been manually escaped by the author.

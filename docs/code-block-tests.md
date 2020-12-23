@@ -1,5 +1,11 @@
+---
+title: "Code Block Tests"
+slug: "code-block-tests"
+hidden: true
+---
 Basics
 ===
+
 ### Simple
 ```php
 <b><?= "Hello world!" ?></b>;
