@@ -1,4 +1,8 @@
-FROM node:14-buster
+ARG NODE_VERSION=14
+FROM node:${NODE_VERSION}-buster
+
+ARG NODE_VERSION
+ENV NODE_VERSION=$NODE_VERSION
 
 RUN apt update && apt install -y \
   chromium \

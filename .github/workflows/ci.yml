@@ -28,10 +28,13 @@ jobs:
   "Visual-tests":
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [10, 12, 14]
     steps:
     - uses: actions/checkout@v2.3.4
 
-    - name: Run visual tests
+    - name: Run visual tests (node ${{ matrix.node-version }})
       run:
         make ci
 
