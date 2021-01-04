@@ -1,4 +1,7 @@
 module.exports = {
+  launch: {
+    args: ['--no-sandbox'],
+  },
   server: {
     command: 'npm run start',
     debug: true,
