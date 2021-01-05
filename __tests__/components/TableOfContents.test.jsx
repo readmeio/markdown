@@ -69,7 +69,7 @@ describe('Table of Contents', () => {
   });
 
   it('includes glossary items', () => {
-    const txt = '# Heading <<glossary:demos>>';
+    const txt = '# Heading <<glossary:demo>>';
     const ast = markdown.reactProcessor().parse(txt);
     const toc = markdown.reactTOC(ast);
     const dom = mount(<GlossaryContext.Provider value={glossaryTerms}>{toc}</GlossaryContext.Provider>);
