@@ -1,7 +1,18 @@
 #rdmd-demo {
-  --rdmd-demo-container: 1200px;
+  --rdmd-demo-container: 1400px;
+  --rdmd-demo-content-width: 600px;
   --rdmd-demo-mono: menlo, monospace;
   --rdmd-demo-blue: #018ef5;
+
+  // hub overrides
+  #hub-content {
+    padding-left: 0;
+  }
+
+  .content-toc {
+    overflow: hidden !important;
+  }
+  // end hub overrides
 
   .rdmd-demo--header {
     display: flex;
@@ -85,6 +96,7 @@
   .rdmd-demo--select {
     min-width: 50%;
     color: #555;
+    margin-top: 1em;
   }
 
   [name='demo-editor'] {
@@ -102,9 +114,16 @@
 
   .rdmd-demo--editor,
   .rdmd-demo--display {
-    width: 600px;
     padding: 2em;
     box-sizing: border-box;
+  }
+
+  .rdmd-demo--editor {
+    width: var(--rdmd-demo-content-width);
+  }
+
+  .rdmd-demo--display {
+    width: calc(var(--rdmd-demo-content-width) / 3 * 4);
   }
 
   .rdmd-demo--editor-container {
@@ -129,5 +148,9 @@
     padding-bottom: 0.5em;
     text-transform: capitalize;
     word-wrap: break-word;
+  }
+
+  .markdown-body {
+    width: 75%;
   }
 }

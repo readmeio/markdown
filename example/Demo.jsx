@@ -13,32 +13,30 @@ const { GlossaryContext } = utils;
 const terms = [
   {
     term: 'demo',
-    definition: 'something that always goes wrong',
+    definition: 'a thing that breaks on presentation',
   },
 ];
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
-  if (ci) {
-    return (
-      <div className="rdmd-demo--display">
-        <div className="markdown-body">{markdown(fixture, opts)}</div>
-      </div>
-    );
-  }
+  const DevOnly = props => !ci && props.children;
 
   return (
     <React.Fragment>
-      <div className="rdmd-demo--editor">
-        <div className="rdmd-demo--editor-container">
-          {children}
-          <textarea name="demo-editor" onChange={onChange} value={fixture} />
+      <DevOnly>
+        <div className="rdmd-demo--editor">
+          <div className="rdmd-demo--editor-container">
+            {children}
+            <textarea name="demo-editor" onChange={onChange} value={fixture} />
+          </div>
         </div>
-      </div>
+      </DevOnly>
       <div className="rdmd-demo--display">
-        <h2 className="rdmd-demo--markdown-header">{name}</h2>
         <section id="hub-content">
-          <div className="markdown-body">{markdown(fixture, opts)}</div>
+          <DevOnly>
+            <h2 className="rdmd-demo--markdown-header">{name}</h2>
+          </DevOnly>
           <div id="content-container">
+            <div className="markdown-body">{markdown(fixture, opts)}</div>
             <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
           </div>
         </section>

@@ -11,8 +11,8 @@ const variables = {
 };
 const glossaryTerms = [
   {
-    term: 'demos',
-    definition: 'things that break on presentation',
+    term: 'demo',
+    definition: 'a thing that breaks on presentation',
   },
 ];
 
