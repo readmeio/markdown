@@ -10,8 +10,6 @@ describe('visual regression tests', () => {
 
     const docs = [
       'callouts',
-      'codeBlockTests',
-      'codeBlockVarsTest',
       'codeBlocks',
       'embeds',
       'features',
@@ -19,6 +17,9 @@ describe('visual regression tests', () => {
       'images',
       'lists',
       'tables',
+      'codeBlockTests',
+      'tableOfContentsTests',
+      'varsTest',
     ];
 
     it.each(docs)(
