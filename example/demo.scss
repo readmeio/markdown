@@ -12,6 +12,10 @@
   .content-toc {
     overflow: hidden !important;
   }
+
+  #content-container {
+    padding-top: 0 !important;
+  }
   // end hub overrides
 
   .rdmd-demo--header {
@@ -151,6 +155,6 @@
   }
 
   .markdown-body {
-    width: 75%;
+    width: 508px;
   }
 }
