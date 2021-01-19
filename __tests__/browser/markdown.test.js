@@ -5,7 +5,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
-      await page.setViewport({ width: 800, height: 800 });
+      await page.setViewport({ width: 1000, height: 800 });
     });
 
     const docs = [
