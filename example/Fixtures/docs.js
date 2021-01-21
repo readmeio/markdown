@@ -8,14 +8,13 @@ import lists from '../../docs/lists.md';
 import tables from '../../docs/tables.md';
 
 import codeBlockTests from '../../docs/code-block-tests.md';
-import codeBlockVarsTest from '../../docs/variable-tests.md';
+import tableOfContentsTests from '../../docs/table-of-contents-tests.md';
+import varsTest from '../../docs/variable-tests.md';
 
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
 const fixtureMap = Object.entries({
   codeBlocks,
-  codeBlockTests,
-  codeBlockVarsTest,
   callouts,
   embeds,
   tables,
@@ -23,6 +22,9 @@ const fixtureMap = Object.entries({
   headings,
   images,
   features,
+  codeBlockTests,
+  tableOfContentsTests,
+  varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);
   memo[sym] = { name, doc };

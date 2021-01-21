@@ -178,39 +178,6 @@ describe('Components', () => {
     const wrap = mount(markdown.react('### Heading Level 3'));
     expect(wrap.find('Heading')).toHaveLength(1);
   });
-
-  describe('Table of Contents', () => {
-    it('generates TOC from headings', () => {
-      const txt = '# Heading Zed\n\n# Heading One';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-    });
-
-    it('includes two heading levels', () => {
-      const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-      expect(dom.html()).toMatchSnapshot();
-    });
-
-    it('normalizes root depth level', () => {
-      const txt = '##### Heading Zed\n\n###### Subheading Zed';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-    });
-  });
 });
 
 describe('Compatibility Mode', () => {

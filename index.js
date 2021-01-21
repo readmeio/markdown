@@ -193,6 +193,8 @@ export function reactTOC(tree, opts = {}) {
     createElement: React.createElement,
     components: {
       p: React.Fragment,
+      'readme-variable': Variable,
+      'readme-glossary-item': GlossaryItem,
     },
   });
 
