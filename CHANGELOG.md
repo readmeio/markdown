@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.25.0-next.2
+
+### 🛠 Fixes & Updates
+
+* add variables and glossary items to TOC ([#115](https://github.com/readmeio/markdown/issues/115)) ([94e505d](https://github.com/readmeio/markdown/commit/94e505d7399523e9083d47d9ef4ed2750df954aa))
+
+
+### 📘 Tests & Docs
+
+* sync exported markdown to RDMD site ([#105](https://github.com/readmeio/markdown/issues/105)) ([8651c88](https://github.com/readmeio/markdown/commit/8651c883beedb9711258f1a1b3f4799fd110c4c5))
+* update docs to latest markdown ([#107](https://github.com/readmeio/markdown/issues/107)) ([239d0df](https://github.com/readmeio/markdown/commit/239d0df022aecd9996db9b00f86b9ea4f2442341))
+
 ## Version 6.25.0-next.1
 
 ### ✨ New & Improved
