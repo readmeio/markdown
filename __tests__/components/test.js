@@ -1,9 +1,9 @@
 /* eslint-disable no-eval */
 const { mount } = require('enzyme');
 const React = require('react');
-const markdown = require('../index');
+const markdown = require('../../index');
 
-const { silenceConsole } = require('./helpers');
+const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {
   it('Variables', () => {
@@ -178,39 +178,6 @@ describe('Components', () => {
     const wrap = mount(markdown.react('### Heading Level 3'));
     expect(wrap.find('Heading')).toHaveLength(1);
   });
-
-  describe('Table of Contents', () => {
-    it('generates TOC from headings', () => {
-      const txt = '# Heading Zed\n\n# Heading One';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-    });
-
-    it('includes two heading levels', () => {
-      const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-      expect(dom.html()).toMatchSnapshot();
-    });
-
-    it('normalizes root depth level', () => {
-      const txt = '##### Heading Zed\n\n###### Subheading Zed';
-      const ast = markdown.reactProcessor().parse(txt);
-      const toc = markdown.reactTOC(ast);
-      const dom = mount(toc);
-
-      const items = dom.find('li > a[href]').not('[href=""]');
-      expect(items).toHaveLength(2);
-    });
-  });
 });
 
 describe('Compatibility Mode', () => {
@@ -246,8 +213,6 @@ ${JSON.stringify({
   const wrap = mount(rdmd);
 
   it('Should use h1 tags for magic heading blocks.', () => expect(wrap.find('h1')).toHaveLength(1));
-
-  it('Should execute scripts in magic custom HTML blocks.', () => expect(global.eval).toHaveBeenCalledTimes(2));
 
   it('Should allow block-level RDMD compoonents in tables.', () => {
     const table = wrap.find('table');

@@ -1,6 +1,63 @@
 Changelog
 ===
 
+## Version 6.25.0-next.2
+
+### 🛠 Fixes & Updates
+
+* add variables and glossary items to TOC ([#115](https://github.com/readmeio/markdown/issues/115)) ([94e505d](https://github.com/readmeio/markdown/commit/94e505d7399523e9083d47d9ef4ed2750df954aa))
+
+
+### 📘 Tests & Docs
+
+* sync exported markdown to RDMD site ([#105](https://github.com/readmeio/markdown/issues/105)) ([8651c88](https://github.com/readmeio/markdown/commit/8651c883beedb9711258f1a1b3f4799fd110c4c5))
+* update docs to latest markdown ([#107](https://github.com/readmeio/markdown/issues/107)) ([239d0df](https://github.com/readmeio/markdown/commit/239d0df022aecd9996db9b00f86b9ea4f2442341))
+
+## Version 6.25.0-next.1
+
+### ✨ New & Improved
+
+* visual regression testing and dev server app ([#94](https://github.com/readmeio/markdown/issues/94)) ([0774166](https://github.com/readmeio/markdown/commit/07741663d0a603c7f178b63ebed6a81695e36ec2))
+
+
+### 🛠 Fixes & Updates
+
+* don't run eslint on `test.watch` ([#102](https://github.com/readmeio/markdown/issues/102)) ([59a6dfe](https://github.com/readmeio/markdown/commit/59a6dfe43d3607f5d878989a92bcaf9443228c26))
+
+## Version 6.24.1-next.4
+
+### 🛠 Fixes & Updates
+
+* **bundlewatch:** honor skip commit message ([#101](https://github.com/readmeio/markdown/issues/101)) ([796bc9c](https://github.com/readmeio/markdown/commit/796bc9ce2aad883c27fbcf8cd26cb170f0575b27))
+
+## Version 6.24.1-next.3
+
+### 🛠 Fixes & Updates
+
+* user script extraction and execution ([#100](https://github.com/readmeio/markdown/issues/100)) ([3eeeee9](https://github.com/readmeio/markdown/commit/3eeeee9ff7f44998457a85cff83b7760efc135a3))
+
+## Version 6.24.1-next.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump [@readme](https://github.com/readme) packages ([#98](https://github.com/readmeio/markdown/issues/98)) ([8f54042](https://github.com/readmeio/markdown/commit/8f5404280f628a934c5397bfbf0420861133be54))
+* **deps-dev:** bump @readme/variable to v10.0.7 ([d6006d6](https://github.com/readmeio/markdown/commit/d6006d6867ad941dcc3cebb109cf9784aa22be57))
+* **release:** trigger on deps and deps-dev chores ([bcf7569](https://github.com/readmeio/markdown/commit/bcf7569a3b0372b6d0acb64ac96f35b714dfe30f))
+* **deps:** update various dev dependencies ([#97](https://github.com/readmeio/markdown/issues/97)) ([1506072](https://github.com/readmeio/markdown/commit/150607267bdfa9226b62df18d236536e41c176e4))
+
+## Version 6.24.1-next.1
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @babel/core from 7.11.0 to 7.12.9 ([2234951](https://github.com/readmeio/markdown/commit/2234951bf5c4fdaf94ea14b798f5f80b19d8c736))
+* **deps-dev:** bump css-loader from 3.6.0 to 5.0.1 ([2849a7d](https://github.com/readmeio/markdown/commit/2849a7dfd58603d842933cdf3c5834b610774a47))
+* **deps-dev:** bump node-sass from 4.14.1 to 5.0.0 ([576ac1e](https://github.com/readmeio/markdown/commit/576ac1e46e802ccdd27c777013c01d62bfa7f98e))
+* **deps-dev:** bump sass-loader from 7.3.1 to 10.1.0 ([ba4b402](https://github.com/readmeio/markdown/commit/ba4b40251b766729397464551e97c9bda7da651f))
+* **deps-dev:** bump terser-webpack-plugin from 3.0.8 to 4.2.3 ([979b1ec](https://github.com/readmeio/markdown/commit/979b1ecbd5a16f00a6ab514bcfe41f642820cf3f))
+* **deps-dev:** bump webpack-merge from 4.2.2 to 5.4.0 ([3c08dc9](https://github.com/readmeio/markdown/commit/3c08dc9d44526695b7a72b706567865f3f467e64))
+* **webpack:** update merge import ([74d6e8a](https://github.com/readmeio/markdown/commit/74d6e8a7f8277fe7fd019b10e0a26eaa6400727d))
+* update release note sections ([2bb84fe](https://github.com/readmeio/markdown/commit/2bb84fe54d2e897303cee426805a40e712ddf642))
+
 ## Version 6.24.0
 
 ### ✨ New & Improved

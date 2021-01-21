@@ -1,13 +1,12 @@
 name: Release
-
 on:
   push:
     branches:
       - master
       - next
+
 jobs:
-  semantic-release:
-    name: Build & Publish Release
+  Release:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
     strategy:
@@ -48,7 +47,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
-        continue-on-error: true
 
       # Merge @latest release back to @next.
       #
@@ -59,3 +57,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: next
         continue-on-error: true
+
+      # Sync docs to rdmd.readme.io
+      #
+      - name: Sync docs to rdmd.readme.io
+        if: "github.ref == 'refs/heads/master'"
+        run: npm run sync -- --key=$KEY
+        env:
+          KEY: ${{ secrets.RDME_KEY }}
