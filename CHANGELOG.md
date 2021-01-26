@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.25.1-next.1
+
+### 🛠 Fixes & Updates
+
+* **recipes:** add 'slug' to whitelist ([#118](https://github.com/readmeio/markdown/issues/118)) ([03d966a](https://github.com/readmeio/markdown/commit/03d966a86b0a271525ee52f6ab28cd288796997d))
+
 ## Version 6.25.0
 
 ### 🛠 Fixes & Updates
