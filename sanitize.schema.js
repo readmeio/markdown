@@ -11,7 +11,7 @@ sanitize.attributes['*'].push('class', 'className', 'align', 'style');
  *       within the engine!
  * @todo change `link` to `href`
  */
-sanitize.attributes['tutorial-tile'] = ['backgroundColor', 'emoji', 'link'];
+sanitize.attributes['tutorial-tile'] = ['backgroundColor', 'emoji', 'link', 'slug'];
 
 sanitize.tagNames.push('rdme-pin');
 
