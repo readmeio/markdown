@@ -13,3 +13,10 @@ test('disabling emphasis', () => {
 
   expect(markdown.mdast(md, opts)).toMatchSnapshot();
 });
+
+test('disabling block tokenizer', () => {
+  const md = '# heading 1';
+  const opts = { disableTokenizers: { block: ['atxHeading'] } };
+
+  expect(markdown.mdast(md, opts)).toMatchSnapshot();
+});
