@@ -17,6 +17,28 @@ Object {
 }
 `;
 
+exports[`disabling delete 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "strikethrough",
+            },
+          ],
+          "type": "delete",
+        },
+      ],
+      "type": "paragraph",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`disabling emphasis 1`] = `
 Object {
   "children": Array [
