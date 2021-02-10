@@ -23,13 +23,8 @@ Object {
     Object {
       "children": Array [
         Object {
-          "children": Array [
-            Object {
-              "type": "text",
-              "value": "strikethrough",
-            },
-          ],
-          "type": "delete",
+          "type": "text",
+          "value": "~~strikethrough~~",
         },
       ],
       "type": "paragraph",
