@@ -1,10 +1,15 @@
-<img height=20 src=https://readme.com/static/favicon.ico align=center> [Demo][demo] | 🎫 [Ticket][ticket]
+[<img height=20 src=https://readme.com/static/favicon.ico align=center>][demo] | Fixes LINEAR_ID
 :---:|:---:
 
-### 🧰  Changes
+## 🧰 Changes
 
-***DESCRIBE YOUR CHANGES***.
+Describe your changes in detail.
+
+## 🧬 QA & Testing
+
+- [Broken on production][prod].
+- [Working in this PR app][demo].
 
 
-[demo]: #demo-app-link-to-come
-[ticket]: #ticket-link-to-come
+[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
+[prod]: https://SUBDOMAIN.readme.io
