@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.25.3-next.1
+
+### 🛠 Fixes & Updates
+
+* add back padding to lists in callouts ([#126](https://github.com/readmeio/markdown/issues/126)) ([184c238](https://github.com/readmeio/markdown/commit/184c2389acd48ef19eceee1d2e23402fddbfe235))
+
+
+### 📘 Tests & Docs
+
+* update the PR template ([#127](https://github.com/readmeio/markdown/issues/127)) ([72c4475](https://github.com/readmeio/markdown/commit/72c44756b674b0676be1dce951677b062fb22542))
+
 ## Version 6.25.2
 
 ### 🛠 Fixes & Updates
