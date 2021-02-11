@@ -41,6 +41,9 @@
     margin-left: $l-offset;
     position: relative;
   }
+  ul, ol {
+    padding-left: 1.3em;
+  }
 
   a {
     color: inherit;
