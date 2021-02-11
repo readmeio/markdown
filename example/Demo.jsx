@@ -17,24 +17,24 @@ const terms = [
   },
 ];
 
-function DemoContent({ ci, children, fixture, name, onChange, opts }) {
-  const DevOnly = props => !ci && props.children;
+const Maybe = ({ when, children }) => when && children;
 
+function DemoContent({ ci, children, fixture, name, onChange, opts }) {
   return (
     <React.Fragment>
-      <DevOnly>
+      <Maybe when={!ci}>
         <div className="rdmd-demo--editor">
           <div className="rdmd-demo--editor-container">
             {children}
             <textarea name="demo-editor" onChange={onChange} value={fixture} />
           </div>
         </div>
-      </DevOnly>
+      </Maybe>
       <div className="rdmd-demo--display">
         <section id="hub-content">
-          <DevOnly>
+          <Maybe when={!ci}>
             <h2 className="rdmd-demo--markdown-header">{name}</h2>
-          </DevOnly>
+          </Maybe>
           <div id="content-container">
             <div className="markdown-body">{markdown(fixture, opts)}</div>
             <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
