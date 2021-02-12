@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.25.3-next.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** syntax-highlighter@10.4.4 + variable@11 ([#123](https://github.com/readmeio/markdown/issues/123)) ([8ef1575](https://github.com/readmeio/markdown/commit/8ef1575ba67bdd56bb40deab3860d92f8c33e15f))
+
 ## Version 6.25.3-next.1
 
 ### 🛠 Fixes & Updates
