@@ -7,7 +7,7 @@ const rehypeSanitize = require('rehype-sanitize');
 
 const parsers = Object.values(require('../processor/parse')).map(parser => parser.sanitize(sanitize));
 const compilers = Object.values(require('../processor/compile'));
-const options = require('../options.json').markdownOptions;
+const options = require('../options.js').options.markdownOptions;
 
 const processor = unified()
   .use(remarkParse, options)

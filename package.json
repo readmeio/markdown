@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.25.2",
+  "version": "6.26.0-next.1",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@readme/emojis": "^3.0.0",
-    "@readme/syntax-highlighter": "^10.4.1",
+    "@readme/syntax-highlighter": "^10.4.4",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^2.0.2",
     "hast-util-to-string": "^1.0.3",
@@ -40,6 +40,7 @@
     "rehype-sanitize": "^3.0.1",
     "rehype-stringify": "^6.0.0",
     "remark-breaks": "^1.0.0",
+    "remark-disable-tokenizers": "^1.0.24",
     "remark-frontmatter": "^2.0.0",
     "remark-parse": "^7.0.2",
     "remark-rehype": "^7.0.0",
@@ -51,7 +52,7 @@
     "unist-util-select": "^3.0.4"
   },
   "peerDependencies": {
-    "@readme/variable": "^10.0.0",
+    "@readme/variable": "^11.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
   },
@@ -67,7 +68,7 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^3.8.0",
-    "@readme/variable": "^10.0.9",
+    "@readme/variable": "^11.0.0",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/git": "^9.0.0",
     "babel-core": "^7.0.0-bridge.0",

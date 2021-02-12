@@ -1,6 +1,29 @@
 Changelog
 ===
 
+## Version 6.26.0-next.1
+
+### ✨ New & Improved
+
+* allow disabling tokenizers ([#119](https://github.com/readmeio/markdown/issues/119)) ([0418a05](https://github.com/readmeio/markdown/commit/0418a0543e0b15a00b51c0de38180c9de2f2b5fe))
+
+## Version 6.25.3-next.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** syntax-highlighter@10.4.4 + variable@11 ([#123](https://github.com/readmeio/markdown/issues/123)) ([8ef1575](https://github.com/readmeio/markdown/commit/8ef1575ba67bdd56bb40deab3860d92f8c33e15f))
+
+## Version 6.25.3-next.1
+
+### 🛠 Fixes & Updates
+
+* add back padding to lists in callouts ([#126](https://github.com/readmeio/markdown/issues/126)) ([184c238](https://github.com/readmeio/markdown/commit/184c2389acd48ef19eceee1d2e23402fddbfe235))
+
+
+### 📘 Tests & Docs
+
+* update the PR template ([#127](https://github.com/readmeio/markdown/issues/127)) ([72c4475](https://github.com/readmeio/markdown/commit/72c44756b674b0676be1dce951677b062fb22542))
+
 ## Version 6.25.2
 
 ### 🛠 Fixes & Updates

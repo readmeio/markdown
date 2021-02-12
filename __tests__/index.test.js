@@ -4,7 +4,7 @@ const BaseUrlContext = require('../contexts/BaseUrl');
 
 const markdown = require('../index');
 const { tableFlattening } = require('../processor/plugin/table-flattening');
-const settings = require('../options.json');
+const { options } = require('../options.js');
 
 test('image', () => {
   expect(mount(markdown.default('![Image](http://example.com/image.png)')).html()).toMatchSnapshot();
@@ -33,7 +33,7 @@ test('magic image', () => {
     }
     [/block]
     `,
-        settings
+        options
       )
     ).html()
   ).toMatchSnapshot();
