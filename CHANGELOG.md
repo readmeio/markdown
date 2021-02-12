@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.26.0-next.1
+
+### ✨ New & Improved
+
+* allow disabling tokenizers ([#119](https://github.com/readmeio/markdown/issues/119)) ([0418a05](https://github.com/readmeio/markdown/commit/0418a0543e0b15a00b51c0de38180c9de2f2b5fe))
+
 ## Version 6.25.3-next.2
 
 ### 🛠 Fixes & Updates
