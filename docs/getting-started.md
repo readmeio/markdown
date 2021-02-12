@@ -66,6 +66,7 @@ The `utils` export gives you access to various tools and configuration settings:
   - `markdownOptions`—configuration object passed to `remark`
   - `correctnewlines`—flag to toggle newline transformation.
   - `normalize`—auto-normalize magic blocks before processing.
+  - `disableTokenizers`—disable internal `block` or `inline` tokenizers.
 - **`<GlossaryContext/>`** and **`<VariablesContext/>`**
   React provider and consumer wrappers for [user data injection](doc:features#section-data-injection).
 [block:html]
