@@ -18,7 +18,9 @@ const options = {
   },
 };
 
-// NOTE: disabling newline, paragraph, or text trips remark into an infinite loop!
+/**
+ * @note disabling `newline`, `paragraph`, or `text` tokenizers trips Remark into an infinite loop!
+ */
 const blocks = [
   // 'newline',
   'indentedCode',
