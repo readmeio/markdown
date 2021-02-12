@@ -70,7 +70,9 @@ const disableTokenizers = {
   },
 };
 
-const parseOptions = (opts = {}) => {
+const parseOptions = (userOpts = {}) => {
+  const opts = { ...options, ...userOpts };
+
   if (opts.tokenizerSet in disableTokenizers) {
     return { ...disableTokenizers[opts.tokenizerSet], ...opts };
   } else if (opts.tokenizerSet) {

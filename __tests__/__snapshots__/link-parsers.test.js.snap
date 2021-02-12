@@ -9,12 +9,12 @@ Object {
           "children": Array [
             Object {
               "type": "text",
-              "value": "http://www.google.com",
+              "value": "http://www.googl.com",
             },
           ],
           "title": null,
           "type": "link",
-          "url": "http://www.google.com",
+          "url": "http://www.googl.com",
         },
       ],
       "type": "paragraph",
