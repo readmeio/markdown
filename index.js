@@ -21,6 +21,7 @@ const remarkStringify = require('remark-stringify');
 const remarkBreaks = require('remark-breaks');
 const remarkSlug = require('remark-slug');
 const remarkFrontmatter = require('remark-frontmatter');
+const remarkDisableTokenizers = require('remark-disable-tokenizers');
 
 // rehype plugins
 const rehypeSanitize = require('rehype-sanitize');
@@ -61,14 +62,14 @@ const tableFlattening = require('./processor/plugin/table-flattening');
 const toPlainText = require('./processor/plugin/plain-text');
 
 // Processor Option Defaults
-const options = require('./options.json');
+const { options, parseOptions } = require('./options.js');
 
 /**
  * Normalize Magic Block Raw Text
  */
 export function setup(blocks, opts = {}) {
   // merge default and user options
-  opts = { ...options, ...opts };
+  opts = parseOptions(opts);
 
   // normalize magic block linebreaks
   if (opts.normalize && blocks) {
@@ -110,6 +111,7 @@ export function processor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
+
   return unified()
     .use(remarkParse, opts.markdownOptions)
     .use(remarkFrontmatter, ['yaml', 'toml'])
@@ -118,6 +120,7 @@ export function processor(opts = {}) {
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(customParsers)
     .use(remarkSlug)
+    .use(remarkDisableTokenizers, opts.disableTokenizers)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSanitize, sanitize);
