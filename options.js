@@ -58,13 +58,13 @@ const toBeDecorated = {
 };
 
 const disableTokenizers = {
-  blocks: {
+  inlines: {
     disableTokenizers: {
       inline: toBeDecorated.inlines,
       block: toBeDecorated.blocks,
     },
   },
-  inlines: {
+  blocks: {
     disableTokenizers: {
       inline: inlines.filter(i => !toBeDecorated.inlines.includes(i)),
       block: blocks.filter(b => !toBeDecorated.blocks.includes(b)),
@@ -73,12 +73,14 @@ const disableTokenizers = {
 };
 
 const parseOptions = (userOpts = {}) => {
-  const opts = { ...options, ...userOpts };
+  let opts = { ...options, ...userOpts };
 
-  if (opts.tokenizerSet in disableTokenizers) {
-    return { ...disableTokenizers[opts.tokenizerSet], ...opts };
-  } else if (opts.tokenizerSet) {
-    throw new Error(`opts.tokenizerSet "${opts.tokenizerSet}" not one of "${Object.keys(disableTokenizers)}"`);
+  if (opts.disableTokenizers in disableTokenizers) {
+    opts = { ...opts, ...disableTokenizers[opts.disableTokenizers] };
+  } else if (opts.disableTokenizers) {
+    throw new Error(
+      `opts.disableTokenizers "${opts.disableTokenizers}" not one of "${Object.keys(disableTokenizers)}"`
+    );
   }
 
   return opts;

@@ -1,7 +1,7 @@
 const markdown = require('../index');
 
-describe('tokenizerSet: "blocks"', () => {
-  const opts = { tokenizerSet: 'blocks' };
+describe('disableTokenizers: "inlines"', () => {
+  const opts = { disableTokenizers: 'inlines' };
 
   it('disabling inlineCode', () => {
     const md = '`const js = true `';
@@ -19,8 +19,8 @@ describe('tokenizerSet: "blocks"', () => {
   });
 });
 
-describe('tokenizerSet: "inlines"', () => {
-  const opts = { tokenizerSet: 'inlines' };
+describe('disableTokenizers: "blocks"', () => {
+  const opts = { disableTokenizers: 'blocks' };
 
   it('disabling block tokenizer', () => {
     const md = '# heading 1';

@@ -30,8 +30,15 @@ Object {
     Object {
       "children": Array [
         Object {
-          "type": "text",
-          "value": "www.google.com",
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "www.google.com",
+            },
+          ],
+          "title": null,
+          "type": "link",
+          "url": "http://www.google.com",
         },
       ],
       "type": "paragraph",
