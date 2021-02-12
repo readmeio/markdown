@@ -62,14 +62,14 @@ const tableFlattening = require('./processor/plugin/table-flattening');
 const toPlainText = require('./processor/plugin/plain-text');
 
 // Processor Option Defaults
-const options = require('./options.json');
+const { options, parseOptions } = require('./options.js');
 
 /**
  * Normalize Magic Block Raw Text
  */
 export function setup(blocks, opts = {}) {
   // merge default and user options
-  opts = { ...options, ...opts };
+  opts = parseOptions(opts);
 
   // normalize magic block linebreaks
   if (opts.normalize && blocks) {
