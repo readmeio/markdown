@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.26.1-next.1
+
+### ✨ New & Improved
+
+* fix glossary term overflow in tables ([#108](https://github.com/readmeio/markdown/issues/108)) ([52e8d9e](https://github.com/readmeio/markdown/commit/52e8d9efddcfdd205c17be6fdbd62c70f6b31fe5))
+
 ## Version 6.26.0
 
 ### ✨ New & Improved
