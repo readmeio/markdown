@@ -4,8 +4,16 @@ test('a link with label', () => {
   expect(markdown.mdast('[link](http://www.foo.com)')).toMatchSnapshot();
 });
 
+test('a link with no url', () => {
+  expect(markdown.mdast('[link]()')).toMatchSnapshot();
+});
+
 test('a link ref', () => {
   expect(markdown.mdast('[link]')).toMatchSnapshot();
+});
+
+test('a link ref with reference', () => {
+  expect(markdown.mdast('[link]\n\n[link]: www.example.com')).toMatchSnapshot();
 });
 
 test('a bracketed autoLinked url', () => {
