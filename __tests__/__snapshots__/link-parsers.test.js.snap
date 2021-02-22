@@ -97,6 +97,38 @@ Object {
 }
 `;
 
+exports[`a link ref with reference 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "link",
+            },
+          ],
+          "identifier": "link",
+          "label": "link",
+          "referenceType": "shortcut",
+          "type": "linkReference",
+        },
+      ],
+      "type": "paragraph",
+    },
+    Object {
+      "identifier": "link",
+      "label": "link",
+      "title": null,
+      "type": "definition",
+      "url": "www.example.com",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`a link with label 1`] = `
 Object {
   "children": Array [
@@ -112,6 +144,30 @@ Object {
           "title": null,
           "type": "link",
           "url": "http://www.foo.com",
+        },
+      ],
+      "type": "paragraph",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`a link with no url 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "link",
+            },
+          ],
+          "title": null,
+          "type": "link",
+          "url": "",
         },
       ],
       "type": "paragraph",
