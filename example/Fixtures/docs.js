@@ -7,6 +7,7 @@ import images from '../../docs/images.md';
 import lists from '../../docs/lists.md';
 import tables from '../../docs/tables.md';
 
+import calloutTests from '../../docs/callout-tests.md';
 import codeBlockTests from '../../docs/code-block-tests.md';
 import tableOfContentsTests from '../../docs/table-of-contents-tests.md';
 import varsTest from '../../docs/variable-tests.md';
@@ -22,6 +23,7 @@ const fixtureMap = Object.entries({
   headings,
   images,
   features,
+  calloutTests,
   codeBlockTests,
   tableOfContentsTests,
   varsTest,

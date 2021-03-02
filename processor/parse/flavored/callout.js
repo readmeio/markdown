@@ -8,7 +8,7 @@ function tokenizer(eat, value) {
   let [match, icon, title = '', text] = rgx.exec(value);
 
   icon = icon.trim();
-  text = text.replace(/>(?:(\n)|(\s)?)/g, '$1').trim();
+  text = text.replace(/^>(?:(\n)|(\s)?)/gm, '$1').trim();
   title = title.trim();
 
   const style = {
@@ -22,7 +22,6 @@ function tokenizer(eat, value) {
     '\uD83D\uDED1': 'error',
     '\u2049\uFE0F': 'error',
     '\u203C\uFE0F': 'error',
-    // prettier-ignore
     '\u2139\uFE0F': 'info',
     '\u26A0': 'warn',
   }[icon];
