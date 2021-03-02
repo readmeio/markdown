@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.26.2
+
+### 🛠 Fixes & Updates
+
+* html in callouts ([#135](https://github.com/readmeio/markdown/issues/135)) ([aee4b91](https://github.com/readmeio/markdown/commit/aee4b918851b9c03fac1847507d156a1edd4704c))
+
 ## Version 6.26.2-next.1
 
 ### 🛠 Fixes & Updates
