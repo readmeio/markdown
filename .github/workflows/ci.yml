@@ -26,10 +26,11 @@ jobs:
       run: npm test
 
     - name: Run visual regression tests
-      run: CI=true npm run test.browser
+      #run: CI=true npm run test.browser
+      run: npm run test.browser
 
     - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
+      #if: ${{ failure() }}
       with:
         name: image-snapshots
         path: __tests__/browser/ci
