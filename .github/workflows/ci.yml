@@ -27,7 +27,7 @@ jobs:
 
     - name: Run visual regression tests
       #run: CI=true npm run test.browser
-      run: npm run test.browser
+      run: npm run test.browser -- -u
 
     - uses: actions/upload-artifact@v2
       #if: ${{ failure() }}
