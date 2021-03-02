@@ -11,6 +11,7 @@ describe('visual regression tests', () => {
 
     const docs = [
       'callouts',
+      'calloutTests',
       'codeBlocks',
       'embeds',
       'features',
