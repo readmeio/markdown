@@ -17,13 +17,6 @@ const process = (text, opts = options) =>
     .parse(text);
 
 describe('Parse RDMD Syntax', () => {
-  it('Callouts', () => {
-    const text = `> ℹ️ Info Callout
-    >
-    > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
-    expect(process(text)).toMatchSnapshot();
-  });
-
   describe('Code Blocks', () => {
     it('Tabbed Code Block', () => {
       const text =

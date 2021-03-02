@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Parse RDMD Callouts edge cases renders html inside a callout 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "️ Info Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "html",
+              "value": "<span>",
+            },
+            Object {
+              "type": "text",
+              "value": "With html!",
+            },
+            Object {
+              "type": "html",
+              "value": "</span>",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ",
+          "theme": "default",
+          "title": "️ Info Callout",
+          "value": "<span>With html!</span>",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts renders an info callout 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "️ Info Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ",
+          "theme": "default",
+          "title": "️ Info Callout",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
