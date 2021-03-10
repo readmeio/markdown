@@ -101,20 +101,3 @@ Object {
   "type": "root",
 }
 `;
-
-exports[`disableTokenizers: {} disabling block tokenizer 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "#  heading 1",
-        },
-      ],
-      "type": "paragraph",
-    },
-  ],
-  "type": "root",
-}
-`;
