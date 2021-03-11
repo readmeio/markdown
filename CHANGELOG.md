@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.26.4
+
+### 🛠 Fixes & Updates
+
+* force release ([6c6e1b6](https://github.com/readmeio/markdown/commit/6c6e1b6f89436f44bceb241564afbeba858b0b27))
+
 ## Version 6.26.3-next.2
 
 ### 🛠 Fixes & Updates
