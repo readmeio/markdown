@@ -27,3 +27,17 @@ describe('disableTokenizers: "blocks"', () => {
     expect(markdown.mdast(md, opts)).toMatchSnapshot();
   });
 });
+
+describe('disableTokenizers: {}', () => {
+  it('disables a block tokenizer', () => {
+    const opts = { disableTokenizers: { block: ['atxHeading'] } };
+    const md = '# heading 1';
+    expect(markdown.mdast(md, opts)).toMatchSnapshot();
+  });
+
+  it('disables an inline tokenizer', () => {
+    const opts = { disableTokenizers: { inline: ['code'] } };
+    const md = '`const js = true`';
+    expect(markdown.mdast(md, opts)).toMatchSnapshot();
+  });
+});

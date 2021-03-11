@@ -77,11 +77,15 @@ const parseOptions = (userOpts = {}) => {
 
   if (opts.disableTokenizers in disableTokenizers) {
     opts = { ...opts, ...disableTokenizers[opts.disableTokenizers] };
-  } else if (opts.disableTokenizers) {
-    throw new Error(
-      `opts.disableTokenizers "${opts.disableTokenizers}" not one of "${Object.keys(disableTokenizers)}"`
-    );
   }
+  // @note: commenting out for now. While doing dev for @readme/editor, I would
+  // like fine-grained control of which tokenizers we are using. We might to
+  // remove that at some point?
+  // } else if (opts.disableTokenizers) {
+  // throw new Error(
+  // `opts.disableTokenizers "${opts.disableTokenizers}" not one of "${Object.keys(disableTokenizers)}"`
+  // );
+  // }
 
   return opts;
 };

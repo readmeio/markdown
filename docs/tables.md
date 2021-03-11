@@ -54,8 +54,22 @@ Tables have been simplified to mirror a more standard implementation. We've also
 .markdown-body .rdmd-table th {}
 .markdown-body .rdmd-table td {}
 ```
-[block:html]
-{
-  "html": "<style>\n  .markdown-body .rdmd-table {\n    --table-text: black;\n    --table-head: #5b1c9f;\n    --table-head-text: white;\n    --table-stripe: #f0eaf7;\n    --table-edges: rgba(34, 5, 64, .5);\n    --table-row: white;\n    \n    --markdown-radius: 3px;\n  }\n</style>"
-}
-[/block]
+
+<style>
+  .markdown-body .rdmd-table {
+    --table-text: black;
+    --table-head: #5b1c9f;
+    --table-head-text: white;
+    --table-stripe: #f0eaf7;
+    --table-edges: rgba(34, 5, 64, .5);
+    --table-row: white;
+  }
+
+  #rdmd-demo .markdown-body .rdmd-table thead tr {
+    box-shadow: none;
+  }
+
+  #rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
+    box-shadow: none;
+  }
+</style>

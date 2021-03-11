@@ -67,3 +67,37 @@ Object {
   "type": "root",
 }
 `;
+
+exports[`disableTokenizers: {} disables a block tokenizer 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "type": "text",
+          "value": "#  heading 1",
+        },
+      ],
+      "type": "paragraph",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`disableTokenizers: {} disables an inline tokenizer 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "type": "text",
+          "value": "\`const js = true\`",
+        },
+      ],
+      "type": "paragraph",
+    },
+  ],
+  "type": "root",
+}
+`;
