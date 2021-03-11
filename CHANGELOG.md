@@ -1,6 +1,8 @@
 Changelog
 ===
 
+## Version 6.26.4-next.1
+
 ## Version 6.26.4
 
 ### 🛠 Fixes & Updates
