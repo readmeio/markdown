@@ -9,6 +9,8 @@ Changelog
 
 ## Version 6.26.3-next.1
 
+## Version 6.26.3
+
 ### 🛠 Fixes & Updates
 
 * allow disabling per tokenizer ([#136](https://github.com/readmeio/markdown/issues/136)) ([9bdd6e7](https://github.com/readmeio/markdown/commit/9bdd6e7b035ec56a96014f6163ff843734fc66d8))
