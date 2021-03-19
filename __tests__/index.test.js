@@ -234,8 +234,8 @@ describe('tree flattening', () => {
 
     const table = markdown.hast(text).children[1];
     expect(table.children).toHaveLength(2);
-    expect(table.children[0].value).toStrictEqual(' Col. B');
-    expect(table.children[1].value).toStrictEqual('Cell A1 Cell B1 Cell A2 Cell B2 Cell A3 ');
+    expect(table.children[0].value).toStrictEqual('Col. B');
+    expect(table.children[1].value).toStrictEqual('Cell A1 Cell B1 Cell A2 Cell B2 Cell A3');
   });
 
   it('should not throw an error if missing values', () => {

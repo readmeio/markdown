@@ -1,5 +1,16 @@
 const flatMap = require('unist-util-flatmap');
 
+const collectValues = ({ value, children }) => {
+  if (value) return value;
+  if (children) return children.flatMap(collectValues);
+  return '';
+};
+
+const valuesToString = node => {
+  const values = collectValues(node);
+  return Array.isArray(values) ? values.join(' ') : values;
+};
+
 // Flattens table values and adds them as a seperate, easily-accessible key within children
 function transformer(ast) {
   return flatMap(ast, node => {
@@ -7,25 +18,17 @@ function transformer(ast) {
       const [header, body] = node.children;
       // hAST tables are deeply nested with an innumerable amount of children
       // This is necessary to pullout all the relevant strings
-
-      // Parse Header Values
-      const headerChildren = header?.children?.[0]?.children || [];
-      const headerValue = headerChildren.map(hc => hc?.children?.[0]?.value || '').join(' ');
-      // Parse Body Values
-      const bodyChildren = body?.children?.map(bc => bc?.children).reduce((a, b) => a.concat(b), []) || [];
-      const bodyValue = bodyChildren.map(bc => bc?.children?.[0]?.value || '').join(' ');
-
       return [
         {
           ...node,
           children: [
             {
               ...node.children[0],
-              value: headerValue,
+              value: valuesToString(header),
             },
             {
               ...node.children[1],
-              value: bodyValue,
+              value: valuesToString(body),
             },
           ],
         },
