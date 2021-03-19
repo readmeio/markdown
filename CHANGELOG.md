@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.26.6
+
+### 🛠 Fixes & Updates
+
+* magic tables collect all cells ([#139](https://github.com/readmeio/markdown/issues/139)) ([ae6fd84](https://github.com/readmeio/markdown/commit/ae6fd843ec2c13ed539dee33fc4ce1efd65085f8))
+
 ## Version 6.26.6-next.1
 
 ### 🛠 Fixes & Updates
