@@ -38,9 +38,11 @@ function Code(props) {
   const language = canonicalLanguage(lang) || langClass;
 
   const codeRef = React.createRef();
-  const codeContent = syntaxHighlighter
-    ? syntaxHighlighter(children[0], language, { tokenizeVariables: true })
-    : children[0];
+  const codeOpts = {
+    inline: !lang,
+    tokenizeVariables: true,
+  };
+  const codeContent = syntaxHighlighter ? syntaxHighlighter(children[0], language, codeOpts) : children[0];
 
   return (
     <React.Fragment>
