@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.26.7-next.1
+
+### 🛠 Fixes & Updates
+
+* bump syntax highlighter ([#141](https://github.com/readmeio/markdown/issues/141)) ([78e5fd5](https://github.com/readmeio/markdown/commit/78e5fd51202fb8b7a0cce527a84ef2313a7ccdf2))
+* **code:** silence DOM err on inline snippets ([#140](https://github.com/readmeio/markdown/issues/140)) ([2a345a4](https://github.com/readmeio/markdown/commit/2a345a49a4237df15a1d7eb1a6bf33af7524841d)), closes [readme/syntax-highlighter#94](https://github.com/readme/syntax-highlighter/issues/94) [#94](https://github.com/readmeio/markdown/issues/94) [/www.w3.org/TR/html401/struct/text.html#h-9](https://github.com/readmeio//www.w3.org/TR/html401/struct/text.html/issues/h-9)
+
 ## Version 6.26.6
 
 ### 🛠 Fixes & Updates
