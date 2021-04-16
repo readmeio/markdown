@@ -1,6 +1,8 @@
 Changelog
 ===
 
+## Version 6.26.9-next.1
+
 ## Version 6.26.8
 
 ## Version 6.26.8-next.1
