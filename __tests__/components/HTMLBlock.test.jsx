@@ -8,7 +8,7 @@ const HTMLBlock = require('../../components/HTMLBlock')(sanitize);
 describe('HTML Block', () => {
   beforeEach(() => {
     global.window = true;
-    global.mockFn = jest.fn(() => console.log('RAN CUSTOM SCRIPT'));
+    global.mockFn = jest.fn();
   });
 
   it('runs user scripts in compat mode', () => {
