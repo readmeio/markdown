@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.27.0-next.1
+
+### ✨ New & Improved
+
+* adding support for highlighting OCaml and R languages ([#151](https://github.com/readmeio/markdown/issues/151)) ([b901605](https://github.com/readmeio/markdown/commit/b90160520a74f624faedf780d5bea6df583aa180))
+
 ## Version 6.26.9
 
 ## Version 6.26.9-next.1
