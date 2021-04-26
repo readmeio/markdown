@@ -101,10 +101,12 @@ We support syntax highlighting on a number of languages:
 | Markdown | `markdown` |
 | Objective-C | `objc`, `objectivec`,  |
 | Objective-C++ | `objc++`, `objcpp`, `objectivecpp`, `objectivecplusplus`,  |
+| OCaml | `ocaml`, `ml` |
 | Perl | `perl`, `pl` |
 | PHP | `php` |
 | PowerShell | `powershell`, `ps1` |
 | Python | `py`, `python` |
+| R | `r` |
 | Ruby | `jruby`, `macruby`, `rake`, `rb`, `rbx`, `ruby` |
 | Rust | `rs`, `rust` |
 | Scala | `scala` |
