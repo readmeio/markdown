@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - main
       - next
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
       # Push release changes to the remote.
       #
       - name: Push to remote
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
@@ -51,8 +51,8 @@ jobs:
       # Merge @latest release back to @next.
       #
       - name: Sync to next
-        if: "github.ref == 'refs/heads/master'"
-        uses: ad-m/github-push-action@master
+        if: "github.ref == 'refs/heads/main'"
+        uses: ad-m/github-push-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: next
@@ -61,7 +61,7 @@ jobs:
       # Sync docs to rdmd.readme.io
       #
       - name: Sync docs to rdmd.readme.io
-        if: "github.ref == 'refs/heads/master'"
+        if: "github.ref == 'refs/heads/main'"
         run: npm run sync -- --key=$KEY
         env:
           KEY: ${{ secrets.RDME_KEY }}
