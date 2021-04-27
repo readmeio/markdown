@@ -29,3 +29,7 @@ feat(api-explorer): add color variants
 - some more details
 - about the changes
 ```
+
+### Visual Regression Tests
+
+If you update the docs or the rendering changes, you'll need to update the snapshots. As most environments font configs are different, the simplest thing to do is grab the updated snapshots from github's actions. After a failed tests, the updated snapshots should be available for download.
