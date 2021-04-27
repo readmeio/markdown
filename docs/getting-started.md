@@ -74,9 +74,3 @@ The `utils` export gives you access to various tools and configuration settings:
   "html": "<style>\n  .markdown-body .callout.callout_default[theme=🧙‍]{\n    --background: #fffae7;\n    --border: #e6b8086e;\n    --title: #e0b400;\n  }\n</style>"
 }
 [/block]
-
-### Test
-
-```
-shouldFail = true
-```

@@ -192,3 +192,9 @@ You can also skip the title, if you're so inclined!
   "html": "<style>\n.markdown-body .callout[theme=\"🎅\"] {\n  --background: #c50a4f;\n  --border: #ffffff6b;\n  --text: #f5fffa;\n}\n</style>"
 }
 [/block]
+
+### Test
+
+```
+shouldFail = true
+```
