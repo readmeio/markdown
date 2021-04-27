@@ -43,7 +43,7 @@ jobs:
       # Push release changes to the remote.
       #
       - name: Push to remote
-        uses: ad-m/github-push-action@main
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
@@ -52,7 +52,7 @@ jobs:
       #
       - name: Sync to next
         if: "github.ref == 'refs/heads/main'"
-        uses: ad-m/github-push-action@main
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: next
