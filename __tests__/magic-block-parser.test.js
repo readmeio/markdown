@@ -72,6 +72,15 @@ test('Blank Magic Blocks', () => {
   }
   [/block]`;
   expect(process(emptyImage).children).toHaveLength(0);
+
+  const nullImage = `[block:image]
+  {
+    "images": [
+      {}
+    ]
+  }
+  [/block]`;
+  expect(process(nullImage).children).toHaveLength(0);
 });
 
 test('Sanitize Schema', () => {
