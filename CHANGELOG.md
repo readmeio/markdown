@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.27.1-next.1
+
+### 🛠 Fixes & Updates
+
+* **image:** filter null magic blocks ([#158](https://github.com/readmeio/markdown/issues/158)) ([603e0b5](https://github.com/readmeio/markdown/commit/603e0b57b14ad064ccf2b68920e371fee3aacfe0))
+* fix release (not all masters are mains) ([0f5a8e9](https://github.com/readmeio/markdown/commit/0f5a8e9b4412cb35dfc17c986fc26a64ae9c6eb3))
+* fix release branch ([345e44f](https://github.com/readmeio/markdown/commit/345e44f5968770de3235af6a92ad86b2022e5f4e))
+
 ## Version 6.27.0-next.1
 
 ### ✨ New & Improved
