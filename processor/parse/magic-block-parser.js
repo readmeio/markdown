@@ -120,7 +120,7 @@ function tokenize(eat, value) {
         .filter(e => e); // eslint-disable-line unicorn/prefer-array-find
       const img = imgs[0];
 
-      if (!img.url) return eat(match);
+      if (!img || !img.url) return eat(match);
       return eat(match)(WrapPinnedBlocks(img, json));
     }
     case 'callout': {
