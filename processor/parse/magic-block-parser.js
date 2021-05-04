@@ -83,41 +83,44 @@ function tokenize(eat, value) {
       );
     }
     case 'image': {
-      const imgs = json.images.map(img => {
-        const [url, title] = img.image;
-        const size = img.sizing;
+      const imgs = json.images
+        .map(img => {
+          if (!('image' in img)) return null;
+          const [url, title] = img.image;
+          const size = img.sizing;
 
-        const block = {
-          type: 'image',
-          url,
-          title,
-          data: {
-            hProperties: {
-              className: img.border ? 'border' : '',
-              width: size && !size.match(/\D/) ? `${size}%` : imgSizeRemap[size] || size,
+          const block = {
+            type: 'image',
+            url,
+            title,
+            data: {
+              hProperties: {
+                className: img.border ? 'border' : '',
+                width: size && !size.match(/\D/) ? `${size}%` : imgSizeRemap[size] || size,
+              },
             },
-          },
-        };
+          };
 
-        if (!img.caption) return block;
+          if (!img.caption) return block;
 
-        return {
-          type: 'figure',
-          url,
-          data: { hName: 'figure' },
-          children: [
-            block,
-            {
-              type: 'figcaption',
-              data: { hName: 'figcaption' },
-              children: this.tokenizeBlock(img.caption, eat.now()),
-            },
-          ],
-        };
-      });
+          return {
+            type: 'figure',
+            url,
+            data: { hName: 'figure' },
+            children: [
+              block,
+              {
+                type: 'figcaption',
+                data: { hName: 'figcaption' },
+                children: this.tokenizeBlock(img.caption, eat.now()),
+              },
+            ],
+          };
+        })
+        .filter(e => e); // eslint-disable-line unicorn/prefer-array-find
       const img = imgs[0];
 
-      if (!img.url) return eat(match);
+      if (!img || !img.url) return eat(match);
       return eat(match)(WrapPinnedBlocks(img, json));
     }
     case 'callout': {
