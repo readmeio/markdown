@@ -6,6 +6,7 @@ node_modules
 .vscode/
 *.code-*
 *.sublime-*
+*.stylelintrc.json
 
 .DS_Store
 

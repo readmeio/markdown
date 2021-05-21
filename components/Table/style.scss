@@ -46,34 +46,42 @@
   }
 }
 
-.markdown-body { 
+.markdown-body {
   @include markdown-table;
+
   .rdmd-table {
     $border-wrap-width: 1px;
+
     & {
-      position: relative;
       display: block;
+      position: relative;
     }
+
     &-inner {
-      overflow: auto;
-      min-width: 100%;
       box-sizing: content-box;
+      min-width: 100%;
+      overflow: auto;
       width: 100%;
     }
+
     table {
       border: 1px solid var(--table-edges, #dfe2e5);
+
       &:only-child {
         margin: 0 !important;
+
         thead th {
-          position: sticky;
-          left: 0;
-          z-index: 1;
           background: inherit;
+          left: 0;
+          position: sticky;
+          z-index: 1;
         }
+
         td:last-child,
         th:last-child {
           border-right: none;
         }
+
         thead tr,
         thead th:last-child {
           box-shadow: 3px 0 0 var(--table-head);
