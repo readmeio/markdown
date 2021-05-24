@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.27.1-next.2
+
+### 🛠 Fixes & Updates
+
+* **tables:** fix tables overflowing divs and unaligned borders ([#160](https://github.com/readmeio/markdown/issues/160)) ([aa5fc94](https://github.com/readmeio/markdown/commit/aa5fc948f99c90e0961ff88a1af180a28af100d7))
+
 ## Version 6.27.1-next.1
 
 ### 🛠 Fixes & Updates
