@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 6.27.1
+
+### 🛠 Fixes & Updates
+
+* **image:** filter null magic blocks ([#158](https://github.com/readmeio/markdown/issues/158)) ([603e0b5](https://github.com/readmeio/markdown/commit/603e0b57b14ad064ccf2b68920e371fee3aacfe0))
+* fix release (not all masters are mains) ([0f5a8e9](https://github.com/readmeio/markdown/commit/0f5a8e9b4412cb35dfc17c986fc26a64ae9c6eb3))
+* fix release branch ([345e44f](https://github.com/readmeio/markdown/commit/345e44f5968770de3235af6a92ad86b2022e5f4e))
+* **tables:** fix tables overflowing divs and unaligned borders ([#160](https://github.com/readmeio/markdown/issues/160)) ([aa5fc94](https://github.com/readmeio/markdown/commit/aa5fc948f99c90e0961ff88a1af180a28af100d7))
+* trigger release ([b7349c2](https://github.com/readmeio/markdown/commit/b7349c297698174cd22930bb53fcd68b402e5fc4))
+
 ## Version 6.27.1-next.3
 
 ### 🛠 Fixes & Updates
