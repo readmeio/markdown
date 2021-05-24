@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.27.1-next.3
+
+### 🛠 Fixes & Updates
+
+* trigger release ([b7349c2](https://github.com/readmeio/markdown/commit/b7349c297698174cd22930bb53fcd68b402e5fc4))
+
 ## Version 6.27.1-next.2
 
 ### 🛠 Fixes & Updates
