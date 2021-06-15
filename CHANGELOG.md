@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.27.2-next.2
+
+### 🛠 Fixes & Updates
+
+* **compat:** replace matchAll to support iOS safari <= 12 ([#168](https://github.com/readmeio/markdown/issues/168)) ([24142c0](https://github.com/readmeio/markdown/commit/24142c0dfe7e41e3d89c99ba9f3d0e23e3e8c746))
+
 ## Version 6.27.2-next.1
 
 ### ✨ New & Improved
