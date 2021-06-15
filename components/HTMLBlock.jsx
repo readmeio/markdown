@@ -6,7 +6,11 @@ const PropTypes = require('prop-types');
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script>\n?/gim;
 
 const extractScripts = (html = '') => {
-  const scripts = [...html.matchAll(MATCH_SCRIPT_TAGS)].map(m => m[1]);
+  const scripts = [];
+  let match;
+  while ((match = MATCH_SCRIPT_TAGS.exec(html)) !== null) {
+    scripts.push(match[1]);
+  }
   const cleaned = html.replace(MATCH_SCRIPT_TAGS, '');
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
