@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.27.2
+
+### 🛠 Fixes & Updates
+
+* **compat:** replace matchAll to support iOS safari <= 12 ([#168](https://github.com/readmeio/markdown/issues/168)) ([24142c0](https://github.com/readmeio/markdown/commit/24142c0dfe7e41e3d89c99ba9f3d0e23e3e8c746))
+
+
+### ✨ New & Improved
+
+* **tables:** hide empty table header rows ([#99](https://github.com/readmeio/markdown/issues/99)) ([8b6d24b](https://github.com/readmeio/markdown/commit/8b6d24bf3b1cebfce19b161bb669e504bddf083d))
+
 ## Version 6.27.2-next.1
 
 ### ✨ New & Improved
