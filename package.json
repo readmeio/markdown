@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.27.2-next.1",
+  "version": "6.27.2",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -100,7 +100,7 @@
     "sass-loader": "^10.1.1",
     "semantic-release": "^17.3.8",
     "terser-webpack-plugin": "^5.1.1",
-    "webpack": "^4.46.0",
+    "webpack": "^5.39.0",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.11.2",
     "webpack-merge": "^5.7.3"
