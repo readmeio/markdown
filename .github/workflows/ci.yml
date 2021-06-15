@@ -28,9 +28,9 @@ jobs:
     - name: Run visual regression tests
       run: CI=true npm run test.browser
 
-    #- name: Update regression test snapshots
-      #if: ${{ failure() }}
-      #run: npm run test.browser -- -u
+    - name: Update regression test snapshots
+      if: ${{ failure() }}
+      run: npm run test.browser -- -u
 
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
