@@ -1,5 +1,6 @@
 ---
 title: "Images"
+category: 5fdf7610134322007389a6ed
 slug: "images"
 hidden: false
 ---
