@@ -46,7 +46,7 @@ module.exports = {
       },
       {
         test: /\.(txt|md)$/i,
-        type: 'asset/resource',
+        type: 'asset/source',
       },
     ],
   },

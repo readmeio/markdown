@@ -1,4 +1,7 @@
 module.exports = {
+  launch: {
+    product: 'chrome',
+  },
   server: {
     command: 'npm run start',
     debug: true,
