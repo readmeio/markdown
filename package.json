@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.27.2",
+  "version": "6.27.3-next.1",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -59,7 +59,7 @@
     "react-dom": "^16.14.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.13",
+    "@babel/core": "^7.14.6",
     "@babel/plugin-proposal-class-properties": "^7.12.13",
     "@babel/plugin-proposal-object-rest-spread": "^7.12.13",
     "@babel/plugin-proposal-optional-chaining": "^7.12.13",
