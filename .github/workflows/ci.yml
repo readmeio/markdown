@@ -32,7 +32,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: image-diffs
-        path: __tests__/browser/ci
+        path: __tests__/browser/ci/__diff_output__
 
     - name: Update regression test snapshots
       if: ${{ failure() }}
