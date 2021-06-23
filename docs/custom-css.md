@@ -26,11 +26,9 @@ When writing custom styles for the new processor, you should explicitly target c
 <details>
 <summary><b>Legacy Docs Guidance (Q2 2021)</b></summary>
 
-<!--- TODO: populate link with Custom CSS guidance! --->
+As of Q2 2021, we've rolled out [several major improvements to our docs](https://docs.readme.com/docs/beta-overview-redesigned-api-reference)! While the CSS variables ([see the next section below](#css-variables-theming)) and the HTML output of the Markdown engine itself have remained the same, the overall documentation markup has changed, so our guidance on scoped selectors has been updated. The current guidance with the latest designs is shown above and you can see the legacy scoped class names below. Check out our migration guide for [guidance on migrating your Custom CSS]((https://docs.readme.com/docs/migration-guide#custom-stylesheets)).
 
-As of Q2 2021, we've rolled out several major improvements to our docs (that you can read about [here](https://docs.readme.com/docs/beta-overview-redesigned-api-reference))! As a result, our markup for your documentation have changed. While the CSS variables ([see the next section below](#css-variables-theming)) and the HTML output of this markdown processor itself have remained the same, our guidance for scoped selectors has changed slightly. The current guidance with the latest designs is shown above and you can see the legacy scoped class names below. To ensure that your old [this page]() for guidance on migrating your Custom CSS.
-
-```scss Markdown Selector Scope
+```scss Markdown Selector Scope (Legacy)
 /* Guides Pages */
 #content-body .markdown-body {}
 
