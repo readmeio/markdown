@@ -24,13 +24,14 @@ const browserConfig = merge(common, {
     },
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
     libraryTarget: 'commonjs2',
   },
   optimization: {
     minimize: false,
     minimizer: [new TerserPlugin()],
+  },
+  resolve: {
+    fallback: { path: require.resolve('path-browserify') },
   },
 });
 
