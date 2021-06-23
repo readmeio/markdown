@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.27.3-next.1
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @babel/core from 7.12.13 to 7.14.6 ([#169](https://github.com/readmeio/markdown/issues/169)) ([8666a71](https://github.com/readmeio/markdown/commit/8666a7150fb937d3fb4c2146543cb63649b369e8))
+
+
+### 📘 Tests & Docs
+
+* add category to each page ([#171](https://github.com/readmeio/markdown/issues/171)) ([9a5e1c6](https://github.com/readmeio/markdown/commit/9a5e1c613113f04523bbb7d83eacd0621fde570a))
+* update custom CSS guidance ([#172](https://github.com/readmeio/markdown/issues/172)) ([5c3725d](https://github.com/readmeio/markdown/commit/5c3725d4bafd5c11fa3bb1cd93b6d725772d31a7))
+
 ## Version 6.27.2
 
 ### 🛠 Fixes & Updates
