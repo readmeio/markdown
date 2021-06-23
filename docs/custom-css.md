@@ -17,12 +17,26 @@ When writing custom styles for the new processor, you should explicitly target c
 
 ```scss Markdown Selector Scope
 /* Guides Pages */
+.rm-Guides .markdown-body {}
+
+/* Reference Pages */
+.rm-ReferenceMain .markdown-body {}
+```
+
+<details>
+<summary><b>Legacy Docs Guidance (Q2 2021)</b></summary>
+
+As of Q2 2021, we've rolled out [several major improvements to our docs](https://docs.readme.com/docs/beta-overview-redesigned-api-reference)! While the CSS variables ([see the next section below](#css-variables-theming)) and the HTML output of the Markdown engine itself have remained the same, the overall documentation markup has changed, so our guidance on scoped selectors has been updated. The current guidance with the latest designs is shown above and you can see the legacy scoped class names below. Check out our migration guide for [guidance on migrating your Custom CSS]((https://docs.readme.com/docs/migration-guide#custom-stylesheets)).
+
+```scss Markdown Selector Scope (Legacy)
+/* Guides Pages */
 #content-body .markdown-body {}
 
 /* Reference Pages */
 #api-explorer .markdown-body {}
-#api-explorer .markdown-body > .pin {} /* target pinned sidebar content */
+#api-explorer .markdown-body > .pin {} /* target pinned sidebar content (deprecated in new reference docs) */
 ```
+</details>
 
 > **Note**: The `.markdown-body` prefix is unique to the new engine, which is useful when refactoring custom styles. In the run up to the production release, this can be a useful “hook” for progressively enhancing your custom CSS. Just prefix your selectors with the `.markdown-body` class and appending the new ruleset to your custom CSS
 
