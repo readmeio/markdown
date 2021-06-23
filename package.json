@@ -39,7 +39,7 @@
     "rehype-react": "^6.2.1",
     "rehype-sanitize": "^4.0.0",
     "rehype-stringify": "^6.0.0",
-    "remark-breaks": "^1.0.0",
+    "remark-breaks": "^2.0.2",
     "remark-disable-tokenizers": "^1.0.24",
     "remark-frontmatter": "^2.0.0",
     "remark-parse": "^7.0.2",
