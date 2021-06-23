@@ -42,7 +42,7 @@
     "remark-breaks": "^1.0.0",
     "remark-disable-tokenizers": "^1.0.24",
     "remark-frontmatter": "^2.0.0",
-    "remark-parse": "^7.0.2",
+    "remark-parse": "^9.0.0",
     "remark-rehype": "^7.0.0",
     "remark-slug": "^6.0.0",
     "remark-stringify": "^8.0.0",
