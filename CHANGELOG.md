@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.27.3-next.2
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @commitlint/config-angular from 11.0.0 to 12.1.4 ([#162](https://github.com/readmeio/markdown/issues/162)) ([227c5ed](https://github.com/readmeio/markdown/commit/227c5edbed986810953c8e19ec345c651f696ee9))
+* **deps-dev:** bump codemirror from 5.59.2 to 5.62.0 ([#177](https://github.com/readmeio/markdown/issues/177)) ([35eb916](https://github.com/readmeio/markdown/commit/35eb9165940c818aa848f37bc6a1dd317968fded))
+* **deps:** bump rehype-react from 5.0.1 to 6.2.1 ([#175](https://github.com/readmeio/markdown/issues/175)) ([101218f](https://github.com/readmeio/markdown/commit/101218f9167247878720d0c98850ca51d5af3eff))
+* **deps:** bump rehype-sanitize from 3.0.1 to 4.0.0 ([#176](https://github.com/readmeio/markdown/issues/176)) ([bb3956d](https://github.com/readmeio/markdown/commit/bb3956d5b5fbf16a1f0f19536efc12cff4d13029))
+* **deps:** bump remark-disable-tokenizers from 1.0.24 to 1.1.0 ([#179](https://github.com/readmeio/markdown/issues/179)) ([53ae45f](https://github.com/readmeio/markdown/commit/53ae45ff00ac3433c8bfebaaa970047004d7bf36))
+* **deps-dev:** bump webpack-merge from 5.7.3 to 5.8.0 ([#174](https://github.com/readmeio/markdown/issues/174)) ([ea0aefa](https://github.com/readmeio/markdown/commit/ea0aefab27c0a3968878b8cedbdc1aec03acf3df))
+
 ## Version 6.27.3-next.1
 
 ### 🛠 Fixes & Updates
