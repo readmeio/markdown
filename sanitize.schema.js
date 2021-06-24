@@ -1,4 +1,4 @@
-const sanitize = require('hast-util-sanitize/lib/github.json');
+const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema.js');
 
 // Sanitization Schema Defaults
 sanitize.clobberPrefix = '';
