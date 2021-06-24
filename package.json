@@ -49,7 +49,7 @@
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
     "unist-util-map": "^2.0.0",
-    "unist-util-select": "^3.0.4"
+    "unist-util-select": "^4.0.0"
   },
   "peerDependencies": {
     "@readme/variable": "*",
