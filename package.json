@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@readme/emojis": "^3.0.0",
-    "@readme/syntax-highlighter": "^10.7.0",
+    "@readme/syntax-highlighter": "^10.8.0",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^4.0.0",
     "hast-util-to-string": "^1.0.3",
