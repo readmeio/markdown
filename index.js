@@ -136,7 +136,7 @@ export function plain(text, opts = {}, components = {}) {
       Fragment: React.Fragment,
       components,
     })
-    .processSync(text).contents;
+    .processSync(text).result;
 }
 
 /**
