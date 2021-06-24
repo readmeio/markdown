@@ -1,5 +1,5 @@
 const unified = require('unified');
-const sanitize = require('hast-util-sanitize/lib/github.json');
+const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema.js');
 
 const remarkParse = require('remark-parse');
 const remarkStringify = require('remark-stringify');
