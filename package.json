@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.27.3-next.3",
+  "version": "6.27.3-next.4",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -51,7 +51,7 @@
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
     "unist-util-map": "^2.0.0",
-    "unist-util-select": "^3.0.4"
+    "unist-util-select": "^4.0.0"
   },
   "peerDependencies": {
     "@readme/variable": "*",
@@ -72,10 +72,10 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^3.8.0",
-    "@readme/variable": "^11.0.0",
+    "@readme/variable": "^13.4.12",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/git": "^9.0.0",
-    "babel-jest": "^26.6.3",
+    "babel-jest": "^27.0.5",
     "babel-loader": "^8.2.2",
     "chokidar": "^3.5.2",
     "codemirror": "^5.59.2",
