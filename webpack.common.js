@@ -27,21 +27,26 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loaders: [ExtractCSS.loader, 'css-loader'],
+        use: [ExtractCSS.loader, 'css-loader'],
       },
       {
         test: /\.scss$/,
-        loaders: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
+        use: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
       },
       {
         // eslint-disable-next-line unicorn/no-unsafe-regex
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=dist/fonts/[hash].[ext]',
         exclude: /(node_modules)/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            name: 'dist/fons/[hash].[ext]',
+          },
+        },
       },
       {
         test: /\.(txt|md)$/i,
-        use: 'raw-loader',
+        type: 'asset/source',
       },
     ],
   },
