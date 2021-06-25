@@ -1,7 +1,6 @@
 ---
 title: "And more..."
 category: 5fdf7610134322007389a6ed
-slug: "features"
 excerpt: "Additional Markdown features of the ReadMe platform implementation."
 hidden: false
 ---

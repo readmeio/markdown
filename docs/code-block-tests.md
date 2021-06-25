@@ -1,7 +1,6 @@
 ---
 title: "Code Block Tests"
 category: 5fdf9fc9c2a7ef443e937315
-slug: "code-block-tests"
 hidden: true
 ---
 Basics
