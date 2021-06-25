@@ -1,5 +1,6 @@
-// eslint-disable-next-line unicorn/no-unsafe-regex
-const rgx = /^> ?((?:\u2139|\u2049|\u2757|\u203C|\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])+)(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/;
+const rgx =
+  // eslint-disable-next-line unicorn/no-unsafe-regex
+  /^> ?((?:\u2139|\u2049|\u2757|\u203C|\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])+)(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/;
 
 function tokenizer(eat, value) {
   if (!rgx.test(value)) return true;
