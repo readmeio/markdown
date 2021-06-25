@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.27.3-next.4
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump webpack from 4.46.0 to 5.39.0 ([#170](https://github.com/readmeio/markdown/issues/170)) ([91523e8](https://github.com/readmeio/markdown/commit/91523e89e44a1bd8edaedf22d455e664fb1816d2))
+
 ## Version 6.27.3-next.3
 
 ### 🛠 Fixes & Updates
