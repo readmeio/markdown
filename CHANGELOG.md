@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 6.27.3-next.3
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @commitlint/cli from 11.0.0 to 12.1.4 ([#182](https://github.com/readmeio/markdown/issues/182)) ([50325ed](https://github.com/readmeio/markdown/commit/50325edf4388832a9a55d57974b2dc6782c65761))
+* **deps:** bump hast-util-sanitize from 2.0.3 to 4.0.0 ([#156](https://github.com/readmeio/markdown/issues/156)) ([e5fda67](https://github.com/readmeio/markdown/commit/e5fda673e975259b3b09a8260b93b52240c970d4))
+* **deps-dev:** bump semantic-release from 17.3.8 to 17.4.4 ([#181](https://github.com/readmeio/markdown/issues/181)) ([ad92db6](https://github.com/readmeio/markdown/commit/ad92db6be891a5a11d601798ae77bdfc0212f2ee))
+* **deps:** upgrading syntax-highlighter to 10.8.0 ([#185](https://github.com/readmeio/markdown/issues/185)) ([6f3c06c](https://github.com/readmeio/markdown/commit/6f3c06c34c3790e56dcdc5976bcadbd5206413cf))
+
+
+### 📘 Tests & Docs
+
+* remove unnecessary slug parameter, newlines ([8e0ac53](https://github.com/readmeio/markdown/commit/8e0ac533255f9a95b956fbaaccb3c6957767ea11)), closes [/github.com/readmeio/markdown/pull/173#issuecomment-867169250](https://github.com/readmeio//github.com/readmeio/markdown/pull/173/issues/issuecomment-867169250)
+
 ## Version 6.27.3-next.2
 
 ### 🛠 Fixes & Updates
