@@ -34,7 +34,6 @@ const BaseUrlContext = require('./contexts/BaseUrl');
 
 const Variable = require('./variable');
 
-export const SelectedAppContext = Variable.SelectedAppContext;
 const {
   GlossaryItem,
   Code,
@@ -85,10 +84,13 @@ export function setup(blocks, opts = {}) {
 }
 
 export const utils = {
-  options,
   BaseUrlContext,
-  VariablesContext: Variable.VariablesContext,
   GlossaryContext: GlossaryItem.GlossaryContext,
+  OuathContext: Variable.OuathContext,
+  SelectedAppContext: Variable.SelectedAppContext,
+  VARIABLE_REGEX: Variable.VARIABLE_REGEX,
+  VariablesContext: Variable.VariablesContext,
+  options,
 };
 
 /**
