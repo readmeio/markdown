@@ -32,7 +32,9 @@ const rehypeReact = require('rehype-react');
  */
 const BaseUrlContext = require('./contexts/BaseUrl');
 
-const Variable = require('@readme/variable');
+const Variable = require('./variable');
+
+export const SelectedAppContext = Variable.SelectedAppContext;
 const {
   GlossaryItem,
   Code,
