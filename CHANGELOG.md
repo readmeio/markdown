@@ -1,6 +1,42 @@
 Changelog
 ===
 
+## Version 6.28.0
+
+### 📘 Tests & Docs
+
+* add category to each page ([#171](https://github.com/readmeio/markdown/issues/171)) ([9a5e1c6](https://github.com/readmeio/markdown/commit/9a5e1c613113f04523bbb7d83eacd0621fde570a))
+* remove unnecessary slug parameter, newlines ([8e0ac53](https://github.com/readmeio/markdown/commit/8e0ac533255f9a95b956fbaaccb3c6957767ea11)), closes [/github.com/readmeio/markdown/pull/173#issuecomment-867169250](https://github.com/readmeio//github.com/readmeio/markdown/pull/173/issues/issuecomment-867169250)
+* update custom CSS guidance ([#172](https://github.com/readmeio/markdown/issues/172)) ([5c3725d](https://github.com/readmeio/markdown/commit/5c3725d4bafd5c11fa3bb1cd93b6d725772d31a7))
+
+
+### ✨ New & Improved
+
+* adopt variable ([#200](https://github.com/readmeio/markdown/issues/200)) ([947e31e](https://github.com/readmeio/markdown/commit/947e31e08e02fe4d82c628ebd5bf3dd268ff3471))
+
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @babel/core from 7.12.13 to 7.14.6 ([#169](https://github.com/readmeio/markdown/issues/169)) ([8666a71](https://github.com/readmeio/markdown/commit/8666a7150fb937d3fb4c2146543cb63649b369e8))
+* **deps-dev:** bump @commitlint/cli from 11.0.0 to 12.1.4 ([#182](https://github.com/readmeio/markdown/issues/182)) ([50325ed](https://github.com/readmeio/markdown/commit/50325edf4388832a9a55d57974b2dc6782c65761))
+* **deps-dev:** bump @commitlint/config-angular from 11.0.0 to 12.1.4 ([#162](https://github.com/readmeio/markdown/issues/162)) ([227c5ed](https://github.com/readmeio/markdown/commit/227c5edbed986810953c8e19ec345c651f696ee9))
+* **deps-dev:** bump @readme/variable from 11.0.0 to 13.4.12 ([#188](https://github.com/readmeio/markdown/issues/188)) ([16724d8](https://github.com/readmeio/markdown/commit/16724d84940b5211716264577a080a5d95d7dbbe))
+* **deps-dev:** bump babel-jest from 26.6.3 to 27.0.5 ([#187](https://github.com/readmeio/markdown/issues/187)) ([dd26212](https://github.com/readmeio/markdown/commit/dd262123e9dc6af8147c1250907014b2d92d8054))
+* **deps-dev:** bump codemirror from 5.59.2 to 5.62.0 ([#177](https://github.com/readmeio/markdown/issues/177)) ([35eb916](https://github.com/readmeio/markdown/commit/35eb9165940c818aa848f37bc6a1dd317968fded))
+* **deps-dev:** bump eslint from 7.19.0 to 7.29.0 ([#184](https://github.com/readmeio/markdown/issues/184)) ([7e032cf](https://github.com/readmeio/markdown/commit/7e032cfc4b91ac9b0f43e0931ae770d8ff54fcbe))
+* **deps:** bump hast-util-sanitize from 2.0.3 to 4.0.0 ([#156](https://github.com/readmeio/markdown/issues/156)) ([e5fda67](https://github.com/readmeio/markdown/commit/e5fda673e975259b3b09a8260b93b52240c970d4))
+* **deps-dev:** bump puppeteer from 9.1.1 to 10.0.0 ([#191](https://github.com/readmeio/markdown/issues/191)) ([3218a8d](https://github.com/readmeio/markdown/commit/3218a8d0221fe4b40b67fc922571d93479cbafb7))
+* **deps:** bump rehype-react from 5.0.1 to 6.2.1 ([#175](https://github.com/readmeio/markdown/issues/175)) ([101218f](https://github.com/readmeio/markdown/commit/101218f9167247878720d0c98850ca51d5af3eff))
+* **deps:** bump rehype-sanitize from 3.0.1 to 4.0.0 ([#176](https://github.com/readmeio/markdown/issues/176)) ([bb3956d](https://github.com/readmeio/markdown/commit/bb3956d5b5fbf16a1f0f19536efc12cff4d13029))
+* **deps:** bump remark-disable-tokenizers from 1.0.24 to 1.1.0 ([#179](https://github.com/readmeio/markdown/issues/179)) ([53ae45f](https://github.com/readmeio/markdown/commit/53ae45ff00ac3433c8bfebaaa970047004d7bf36))
+* **deps-dev:** bump semantic-release from 17.3.8 to 17.4.4 ([#181](https://github.com/readmeio/markdown/issues/181)) ([ad92db6](https://github.com/readmeio/markdown/commit/ad92db6be891a5a11d601798ae77bdfc0212f2ee))
+* **deps:** bump unist-util-select from 3.0.4 to 4.0.0 ([#180](https://github.com/readmeio/markdown/issues/180)) ([caa51ff](https://github.com/readmeio/markdown/commit/caa51ff18be86c45e957997a3886f5b0c1ed91a1))
+* **deps-dev:** bump webpack from 4.46.0 to 5.39.0 ([#170](https://github.com/readmeio/markdown/issues/170)) ([91523e8](https://github.com/readmeio/markdown/commit/91523e89e44a1bd8edaedf22d455e664fb1816d2))
+* **deps-dev:** bump webpack-merge from 5.7.3 to 5.8.0 ([#174](https://github.com/readmeio/markdown/issues/174)) ([ea0aefa](https://github.com/readmeio/markdown/commit/ea0aefab27c0a3968878b8cedbdc1aec03acf3df))
+* **deps:** general maintenance ([#186](https://github.com/readmeio/markdown/issues/186)) ([c2c59b7](https://github.com/readmeio/markdown/commit/c2c59b7a9948dfb92d406ef14621422ac5efd604))
+* updatee package-log.json ([59e2df2](https://github.com/readmeio/markdown/commit/59e2df20ea46a21033464350ae4c82d9a3296a9c))
+* **deps:** upgrading syntax-highlighter to 10.8.0 ([#185](https://github.com/readmeio/markdown/issues/185)) ([6f3c06c](https://github.com/readmeio/markdown/commit/6f3c06c34c3790e56dcdc5976bcadbd5206413cf))
+
 ## Version 6.28.0-next.1
 
 ### ✨ New & Improved
