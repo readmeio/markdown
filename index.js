@@ -89,6 +89,7 @@ export const utils = {
   OuathContext: Variable.OuathContext,
   SelectedAppContext: Variable.SelectedAppContext,
   VARIABLE_REGEX: Variable.VARIABLE_REGEX,
+  Variable: Variable.Variable,
   VariablesContext: Variable.VariablesContext,
   options,
 };

@@ -132,7 +132,7 @@ Variable.defaultProps = {
 
 /* istanbul ignore next */
 // eslint-disable-next-line react/display-name
-module.exports = props => (
+module.exports.Variable = props => (
   <VariablesContext.Consumer>
     {({ user, defaults }) => (
       <OauthContext.Consumer>
@@ -154,8 +154,6 @@ module.exports = props => (
     )}
   </VariablesContext.Consumer>
 );
-
-module.exports.Variable = Variable;
 
 // Regex to match the following:
 // - \<<apiKey\>> - escaped variables
