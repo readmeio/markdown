@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.28.1
+
+### 🛠 Fixes & Updates
+
+* typos in variable subpackage exports ([#203](https://github.com/readmeio/markdown/issues/203)) ([4c6695e](https://github.com/readmeio/markdown/commit/4c6695efcc8dcdeb93c12dcdbb897f99529bedb8))
+
 ## Version 6.28.1-next.1
 
 ### 🛠 Fixes & Updates
