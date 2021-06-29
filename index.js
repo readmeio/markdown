@@ -163,7 +163,7 @@ export function reactProcessor(opts = {}, components = {}) {
         'code-tabs': CodeTabs(sanitize),
         'html-block': HTMLBlock(sanitize),
         'rdme-callout': Callout(sanitize),
-        'readme-variable': Variable,
+        'readme-variable': Variable.Variable,
         'readme-glossary-item': GlossaryItem,
         'rdme-embed': Embed(sanitize),
         'rdme-pin': PinWrap,
@@ -201,7 +201,7 @@ export function reactTOC(tree, opts = {}) {
     createElement: React.createElement,
     components: {
       p: React.Fragment,
-      'readme-variable': Variable,
+      'readme-variable': Variable.Variable,
       'readme-glossary-item': GlossaryItem,
     },
   });
