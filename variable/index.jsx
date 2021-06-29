@@ -155,6 +155,7 @@ module.exports.Variable = props => (
   </VariablesContext.Consumer>
 );
 
+module.exports.VariableComponent = Variable;
 // Regex to match the following:
 // - \<<apiKey\>> - escaped variables
 // - <<apiKey>> - regular variables
