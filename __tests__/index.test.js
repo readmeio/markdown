@@ -6,6 +6,34 @@ const markdown = require('../index');
 const { tableFlattening } = require('../processor/plugin/table-flattening');
 const { options } = require('../options.js');
 
+test('it should have the proper utils exports', () => {
+  expect(typeof markdown.utils.BaseUrlContext).toBe('object');
+  expect(typeof markdown.utils.GlossaryContext).toBe('object');
+  expect(typeof markdown.utils.OauthContext).toBe('object');
+  expect(typeof markdown.utils.SelectedAppContext).toBe('object');
+  expect(typeof markdown.utils.Variable).toBe('function');
+  expect(typeof markdown.utils.VariablesContext).toBe('object');
+
+  expect(markdown.utils.VARIABLE_REGEXP).toBe('(?:\\\\)?<<([-\\w:.\\s]+)(?:\\\\)?>>');
+  expect(markdown.utils.options).toStrictEqual({
+    compatibilityMode: false,
+    copyButtons: true,
+    correctnewlines: false,
+    markdownOptions: {
+      fences: true,
+      commonmark: true,
+      gfm: true,
+      ruleSpaces: false,
+      listItemIndent: '1',
+      spacedTable: true,
+      paddedTable: true,
+      setext: true,
+    },
+    normalize: true,
+    settings: { position: false },
+  });
+});
+
 test('image', () => {
   expect(mount(markdown.default('![Image](http://example.com/image.png)')).html()).toMatchSnapshot();
 });

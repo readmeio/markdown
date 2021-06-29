@@ -156,10 +156,13 @@ module.exports.Variable = props => (
 );
 
 module.exports.VariableComponent = Variable;
+
 // Regex to match the following:
 // - \<<apiKey\>> - escaped variables
 // - <<apiKey>> - regular variables
 // - <<glossary:glossary items>> - glossary
 module.exports.VARIABLE_REGEXP = /(?:\\)?<<([-\w:.\s]+)(?:\\)?>>/.source;
-module.exports.VariablesContext = VariablesContext;
+
+module.exports.OauthContext = OauthContext;
 module.exports.SelectedAppContext = SelectedAppContext;
+module.exports.VariablesContext = VariablesContext;
