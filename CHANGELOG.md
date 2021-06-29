@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 6.28.0-next.1
+
+### ✨ New & Improved
+
+* adopt variable ([#200](https://github.com/readmeio/markdown/issues/200)) ([947e31e](https://github.com/readmeio/markdown/commit/947e31e08e02fe4d82c628ebd5bf3dd268ff3471))
+
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @readme/variable from 11.0.0 to 13.4.12 ([#188](https://github.com/readmeio/markdown/issues/188)) ([16724d8](https://github.com/readmeio/markdown/commit/16724d84940b5211716264577a080a5d95d7dbbe))
+* **deps-dev:** bump babel-jest from 26.6.3 to 27.0.5 ([#187](https://github.com/readmeio/markdown/issues/187)) ([dd26212](https://github.com/readmeio/markdown/commit/dd262123e9dc6af8147c1250907014b2d92d8054))
+* **deps-dev:** bump eslint from 7.19.0 to 7.29.0 ([#184](https://github.com/readmeio/markdown/issues/184)) ([7e032cf](https://github.com/readmeio/markdown/commit/7e032cfc4b91ac9b0f43e0931ae770d8ff54fcbe))
+* **deps-dev:** bump puppeteer from 9.1.1 to 10.0.0 ([#191](https://github.com/readmeio/markdown/issues/191)) ([3218a8d](https://github.com/readmeio/markdown/commit/3218a8d0221fe4b40b67fc922571d93479cbafb7))
+* **deps:** bump unist-util-select from 3.0.4 to 4.0.0 ([#180](https://github.com/readmeio/markdown/issues/180)) ([caa51ff](https://github.com/readmeio/markdown/commit/caa51ff18be86c45e957997a3886f5b0c1ed91a1))
+* **deps:** general maintenance ([#186](https://github.com/readmeio/markdown/issues/186)) ([c2c59b7](https://github.com/readmeio/markdown/commit/c2c59b7a9948dfb92d406ef14621422ac5efd604))
+* updatee package-log.json ([59e2df2](https://github.com/readmeio/markdown/commit/59e2df20ea46a21033464350ae4c82d9a3296a9c))
+
 ## Version 6.27.3-next.4
 
 ### 🛠 Fixes & Updates
