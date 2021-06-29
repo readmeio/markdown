@@ -1,7 +1,6 @@
 ---
 title: "Getting Started"
 category: 5fdf7610134322007389a6ec
-slug: "getting-started"
 excerpt: "ReadMe's Markdown engine, with notes of GitHub, modern styles, and a hint of magic."
 hidden: false
 metadata: 

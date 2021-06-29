@@ -32,7 +32,8 @@ const rehypeReact = require('rehype-react');
  */
 const BaseUrlContext = require('./contexts/BaseUrl');
 
-const Variable = require('@readme/variable');
+const Variable = require('./variable');
+
 const {
   GlossaryItem,
   Code,
@@ -83,10 +84,14 @@ export function setup(blocks, opts = {}) {
 }
 
 export const utils = {
-  options,
   BaseUrlContext,
-  VariablesContext: Variable.VariablesContext,
   GlossaryContext: GlossaryItem.GlossaryContext,
+  OuathContext: Variable.OuathContext,
+  SelectedAppContext: Variable.SelectedAppContext,
+  VARIABLE_REGEX: Variable.VARIABLE_REGEX,
+  Variable: Variable.Variable,
+  VariablesContext: Variable.VariablesContext,
+  options,
 };
 
 /**
@@ -158,7 +163,7 @@ export function reactProcessor(opts = {}, components = {}) {
         'code-tabs': CodeTabs(sanitize),
         'html-block': HTMLBlock(sanitize),
         'rdme-callout': Callout(sanitize),
-        'readme-variable': Variable,
+        'readme-variable': Variable.Variable,
         'readme-glossary-item': GlossaryItem,
         'rdme-embed': Embed(sanitize),
         'rdme-pin': PinWrap,
@@ -196,7 +201,7 @@ export function reactTOC(tree, opts = {}) {
     createElement: React.createElement,
     components: {
       p: React.Fragment,
-      'readme-variable': Variable,
+      'readme-variable': Variable.Variable,
       'readme-glossary-item': GlossaryItem,
     },
   });

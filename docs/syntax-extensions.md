@@ -1,7 +1,6 @@
 ---
 title: "Flavored Syntax"
 category: 5fdf7610134322007389a6ec
-slug: "syntax-extensions"
 excerpt: "Specs and examples of ReadMe's (restrained) Markdown syntax extensions."
 hidden: false
 ---

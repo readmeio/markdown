@@ -1,7 +1,6 @@
 ---
 title: "Tables"
 category: 5fdf7610134322007389a6ed
-slug: "tables"
 hidden: false
 ---
 ## Syntax

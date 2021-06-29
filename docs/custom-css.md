@@ -1,7 +1,6 @@
 ---
 title: "Custom Styling"
 category: 5fdf7610134322007389a6ec
-slug: "custom-css"
 excerpt: "Styling best-practices and CSS selector references."
 hidden: false
 ---

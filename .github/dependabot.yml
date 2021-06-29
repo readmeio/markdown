@@ -3,9 +3,10 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     reviewers:
       - rafegoldberg
+      - kellyjosephprice
     labels:
       - scope:dependency
     commit-message:
@@ -15,10 +16,11 @@ updates:
   - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     open-pull-requests-limit: 10
     reviewers:
       - rafegoldberg
+      - kellyjosephprice
     labels:
       - scope:dependency
     commit-message:
