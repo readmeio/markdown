@@ -86,9 +86,9 @@ export function setup(blocks, opts = {}) {
 export const utils = {
   BaseUrlContext,
   GlossaryContext: GlossaryItem.GlossaryContext,
-  OuathContext: Variable.OuathContext,
+  OauthContext: Variable.OauthContext,
   SelectedAppContext: Variable.SelectedAppContext,
-  VARIABLE_REGEX: Variable.VARIABLE_REGEX,
+  VARIABLE_REGEXP: Variable.VARIABLE_REGEXP,
   Variable: Variable.Variable,
   VariablesContext: Variable.VariablesContext,
   options,
