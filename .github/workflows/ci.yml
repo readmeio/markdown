@@ -16,6 +16,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Install npm@7
+      run: npm install -g npm@7
+
     - name: Install dependencies
       run: |
         npm ci
@@ -36,7 +39,7 @@ jobs:
 
     - name: Update regression test snapshots
       if: ${{ failure() }}
-      run: npm run test.browser -- -u
+      run: CI=true npm run test.browser -- -u
 
     - uses: actions/upload-artifact@v2
       if: ${{ failure() }}
