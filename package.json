@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@readme/emojis": "^3.0.0",
-    "@readme/syntax-highlighter": "^10.8.0",
+    "@readme/syntax-highlighter": "^10.9.0",
     "classnames": "^2.2.6",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^4.0.0",
@@ -55,7 +55,6 @@
     "unist-util-select": "^4.0.0"
   },
   "peerDependencies": {
-    "@readme/variable": "*",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
   },
@@ -73,7 +72,6 @@
     "@commitlint/config-conventional": "^11.0.0",
     "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^3.8.0",
-    "@readme/variable": "^13.4.12",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/git": "^9.0.0",
     "babel-jest": "^27.0.5",
