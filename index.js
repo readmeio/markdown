@@ -34,9 +34,7 @@ const BaseUrlContext = require('./contexts/BaseUrl');
 
 const Variable = require('@readme/variable');
 
-const components = require('./components');
-
-export { components };
+const Components = require('./components');
 
 const {
   GlossaryItem,
@@ -50,7 +48,9 @@ const {
   Embed,
   HTMLBlock,
   TableOfContents,
-} = components;
+} = Components;
+
+export { Components };
 
 /* Custom Unified Parsers
  */
