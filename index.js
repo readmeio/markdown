@@ -32,7 +32,9 @@ const rehypeReact = require('rehype-react');
  */
 const BaseUrlContext = require('./contexts/BaseUrl');
 
-const Variable = require('./variable');
+const Variable = require('@readme/variable');
+
+const Components = require('./components');
 
 const {
   GlossaryItem,
@@ -46,7 +48,9 @@ const {
   Embed,
   HTMLBlock,
   TableOfContents,
-} = require('./components');
+} = Components;
+
+export { Components };
 
 /* Custom Unified Parsers
  */
@@ -86,12 +90,8 @@ export function setup(blocks, opts = {}) {
 export const utils = {
   BaseUrlContext,
   GlossaryContext: GlossaryItem.GlossaryContext,
-  OauthContext: Variable.OauthContext,
-  SelectedAppContext: Variable.SelectedAppContext,
-  VARIABLE_REGEXP: Variable.VARIABLE_REGEXP,
-  Variable: Variable.Variable,
-  VariablesContext: Variable.VariablesContext,
   options,
+  VariablesContext: Variable.VariablesContext,
 };
 
 /**
@@ -163,7 +163,7 @@ export function reactProcessor(opts = {}, components = {}) {
         'code-tabs': CodeTabs(sanitize),
         'html-block': HTMLBlock(sanitize),
         'rdme-callout': Callout(sanitize),
-        'readme-variable': Variable.Variable,
+        'readme-variable': Variable,
         'readme-glossary-item': GlossaryItem,
         'rdme-embed': Embed(sanitize),
         'rdme-pin': PinWrap,
@@ -201,7 +201,7 @@ export function reactTOC(tree, opts = {}) {
     createElement: React.createElement,
     components: {
       p: React.Fragment,
-      'readme-variable': Variable.Variable,
+      'readme-variable': Variable,
       'readme-glossary-item': GlossaryItem,
     },
   });

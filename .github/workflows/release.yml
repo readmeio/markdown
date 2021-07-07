@@ -22,7 +22,7 @@ jobs:
         with:
           persist-credentials: false # install breaks with persistant creds!
       - name: Setup node (v${{ matrix.node-version }})
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v2.2.0
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
