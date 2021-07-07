@@ -69,7 +69,7 @@
     "@babel/preset-react": "^7.12.13",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-angular": "^12.1.4",
-    "@commitlint/config-conventional": "^11.0.0",
+    "@commitlint/config-conventional": "^12.1.4",
     "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^3.8.0",
     "@readme/variable": "^13.5.1",
