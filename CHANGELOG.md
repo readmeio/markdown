@@ -1,6 +1,26 @@
 Changelog
 ===
 
+## Version 6.29.0-next.1
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @babel/plugin-proposal-object-rest-spread ([#190](https://github.com/readmeio/markdown/issues/190)) ([0599876](https://github.com/readmeio/markdown/commit/0599876805f645bf9cc129c1eed28db27915328f))
+* **deps-dev:** bump @babel/preset-env from 7.12.13 to 7.14.7 ([#197](https://github.com/readmeio/markdown/issues/197)) ([0eb0e19](https://github.com/readmeio/markdown/commit/0eb0e19b1761fd225d28e6f4ca62ab72b647b4e0))
+* **deps-dev:** bump @commitlint/config-conventional ([#195](https://github.com/readmeio/markdown/issues/195)) ([43bc4b4](https://github.com/readmeio/markdown/commit/43bc4b47db7e7b82d8c162e42011c23960b99078))
+* **deps:** bump actions/setup-node from 2.1.2 to 2.2.0 ([#205](https://github.com/readmeio/markdown/issues/205)) ([decc3bd](https://github.com/readmeio/markdown/commit/decc3bdb24fd904777e7a96296539ff06a835b2f))
+* **deps-dev:** bump core-js from 3.8.3 to 3.15.2 ([#201](https://github.com/readmeio/markdown/issues/201)) ([6f8c953](https://github.com/readmeio/markdown/commit/6f8c9536488ea7b030cae18480fef775c6037110))
+* **deps-dev:** bump eslint from 7.29.0 to 7.30.0 ([#209](https://github.com/readmeio/markdown/issues/209)) ([5309d0e](https://github.com/readmeio/markdown/commit/5309d0e2cc84e2eb6ad971d5d58ace789c1cedd3))
+* **deps-dev:** bump husky from 4.3.8 to 7.0.1 ([#208](https://github.com/readmeio/markdown/issues/208)) ([1f09f4a](https://github.com/readmeio/markdown/commit/1f09f4ad0a308ac3b82e4663e59259baa73ee068))
+* **deps-dev:** bump mini-css-extract-plugin from 1.3.6 to 2.1.0 ([#214](https://github.com/readmeio/markdown/issues/214)) ([427e304](https://github.com/readmeio/markdown/commit/427e3044e9cc04b38bef927b10ae28d040042c87))
+* **deps:** bump rehype-raw from 4.0.2 to 5.1.0 ([#198](https://github.com/readmeio/markdown/issues/198)) ([43fc7f6](https://github.com/readmeio/markdown/commit/43fc7f60807966f500c6056f0071286aa0289f1a))
+* removing the variable subpackage in favor of @readme/variable ([#207](https://github.com/readmeio/markdown/issues/207)) ([36768dc](https://github.com/readmeio/markdown/commit/36768dc7c44f39af36447f6e0a266f43bf8e7526))
+
+
+### ✨ New & Improved
+
+* export components ([#218](https://github.com/readmeio/markdown/issues/218)) ([4f888f6](https://github.com/readmeio/markdown/commit/4f888f6a4e0db2429b30652b32efceb2a6139fae))
+
 ## Version 6.28.1
 
 ### 🛠 Fixes & Updates
