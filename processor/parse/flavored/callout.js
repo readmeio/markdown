@@ -1,5 +1,8 @@
+// @note: We'd like to allow any emoji to match, but included in the emoji
+// character set is [#*0-9].
+// https://www.unicode.org/Public/13.0.0/ucd/emoji/emoji-data.txt
 // eslint-disable-next-line unicorn/no-unsafe-regex
-const rgx = /^> ?(\p{Emoji})(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/u;
+const rgx = /^> ?((?![#*0-9])\p{Emoji})(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/u;
 
 const themes = {
   '\uD83D\uDCD8': 'info',
