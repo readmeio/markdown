@@ -136,7 +136,11 @@
     margin-bottom: var(--markdown-title-marginBottom, 1rem);
   }
 
-  h1,
+  h1 {
+    font-size: 1.75em;
+    font-size: var(--markdown-title-size, 1.75em);
+  }
+  
   h2 {
     font-size: 1.5em;
     font-size: var(--markdown-title-size, 1.5em);
