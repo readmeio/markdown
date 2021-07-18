@@ -6,3 +6,4 @@ __tests__/
 coverage/
 jest.config.js
 wepback.*.js
+ 
