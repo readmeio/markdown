@@ -50,7 +50,7 @@
     "remark-stringify": "^8.0.0",
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
-    "unist-util-map": "^2.0.0",
+    "unist-util-map": "^3.0.0",
     "unist-util-select": "^4.0.0"
   },
   "peerDependencies": {
