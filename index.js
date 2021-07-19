@@ -87,11 +87,14 @@ export function setup(blocks, opts = {}) {
   return [`${blocks}\n\n `, opts];
 }
 
+const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
+
 export const utils = {
   BaseUrlContext,
   GlossaryContext: GlossaryItem.GlossaryContext,
   options,
   VariablesContext: Variable.VariablesContext,
+  calloutIcons,
 };
 
 /**
