@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.30.0
+
+### 🛠 Fixes & Updates
+
+* use different font size for h1 ([#220](https://github.com/readmeio/markdown/issues/220)) ([bdaa498](https://github.com/readmeio/markdown/commit/bdaa4985f7fdf4a9c8af93b1700eecc8a6ba5c61))
+
+
+### ✨ New & Improved
+
+* export callout icons ([#219](https://github.com/readmeio/markdown/issues/219)) ([7391b14](https://github.com/readmeio/markdown/commit/7391b143d4ae889556e4be0d7c78650049c143ba))
+
 ## Version 6.30.0-next.1
 
 ### ✨ New & Improved
