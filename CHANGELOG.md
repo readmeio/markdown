@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.1-next.2
+
+### 🛠 Fixes & Updates
+
+* **heading:** add aria-label to anchors ([#230](https://github.com/readmeio/markdown/issues/230)) ([1df0220](https://github.com/readmeio/markdown/commit/1df0220e4995ecd64c93d2a0fe155d6ec9f956e2))
+
 ## Version 6.30.1-next.1
 
 ### 🛠 Fixes & Updates
