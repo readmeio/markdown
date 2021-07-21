@@ -21,7 +21,7 @@ function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
       setTimeout(() => $el.classList.remove(copyClass), 1500);
     }
   };
-  return <button ref={button} className={`${rootClass} ${className}`} onClick={copier} />;
+  return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
 CopyCode.propTypes = {
