@@ -17,11 +17,12 @@ function Heading({ tag, showAnchorIcons, ...props }) {
   ];
 
   if (showAnchorIcons) {
+    const headingText = props.children[1];
     children.push(
       // eslint-disable-next-line jsx-a11y/anchor-has-content
       <a
         key={`heading-anchor-icon-${props.id}`}
-        aria-label={`Skip link for ${props.children[1]}`}
+        aria-label={`Skip link to ${headingText}`}
         className="heading-anchor-icon fa fa-anchor"
         href={`#${props.id}`}
       />
