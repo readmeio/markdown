@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.1-next.1
+
+### 🛠 Fixes & Updates
+
+* **A11y:** making copy code button accessible ([#228](https://github.com/readmeio/markdown/issues/228)) ([2d8d594](https://github.com/readmeio/markdown/commit/2d8d59440c582111483950ba3f95746a59e31fc7))
+
 ## Version 6.30.0
 
 ### 🛠 Fixes & Updates
