@@ -1002,7 +1002,7 @@ exports[`export multiple Markdown renderers renders plain markdown as React 1`] 
 
 exports[`export multiple Markdown renderers renders plainText from AST 1`] = `"Hello World"`;
 
-exports[`image 1`] = `"<p><span class=\\"img\\" role=\\"button\\" tabindex=\\"0\\"><img src=\\"http://example.com/image.png\\" alt=\\"Image\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"\\" width=\\"auto\\"><span class=\\"lightbox\\" role=\\"dialog\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img src=\\"http://example.com/image.png\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"Click to close...\\" width=\\"auto\\" alt=\\"Image\\" class=\\"lightbox-img\\" loading=\\"lazy\\"></span></span></span></p>"`;
+exports[`image 1`] = `"<p><span aria-label=\"Image\" class=\\"img\\" role=\\"button\\" tabindex=\\"0\\"><img src=\\"http://example.com/image.png\\" alt=\\"Image\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"\\" width=\\"auto\\"><span class=\\"lightbox\\" role=\\"dialog\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img src=\\"http://example.com/image.png\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"Click to close...\\" width=\\"auto\\" alt=\\"Image\\" class=\\"lightbox-img\\" loading=\\"lazy\\"></span></span></span></p>"`;
 
 exports[`list items 1`] = `
 "<ul>
