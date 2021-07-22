@@ -63,13 +63,13 @@ class Image extends React.Component {
   }
 
   render() {
-    const { alt, caption } = this.props;
+    const { alt } = this.props;
     if (this.isEmoji) {
-      return <img {...this.props} alt={alt || caption} loading="lazy" />;
+      return <img {...this.props} alt={alt} loading="lazy" />;
     }
     return (
       <span
-        aria-label={alt || caption}
+        aria-label={alt}
         className="img"
         onClick={() => this.toggle()}
         onKeyDown={this.handleKey}
