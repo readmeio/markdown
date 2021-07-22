@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.1-next.3
+
+### 🛠 Fixes & Updates
+
+* **toc:** wrap children in an <li> for screen readers controls ([#232](https://github.com/readmeio/markdown/issues/232)) ([6e983a3](https://github.com/readmeio/markdown/commit/6e983a325fffc9670a2763a48fcf230e7303fbe2))
+
 ## Version 6.30.1-next.2
 
 ### 🛠 Fixes & Updates
