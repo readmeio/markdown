@@ -12,7 +12,7 @@ function TableOfContents({ children }) {
             Table of Contents
           </a>
         </li>
-        {children}
+        <li className="toc-children">{children}</li>
       </ul>
     </nav>
   );
