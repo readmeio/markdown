@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.30.1
+
+### 🛠 Fixes & Updates
+
+* **heading:** add aria-label to anchors ([#230](https://github.com/readmeio/markdown/issues/230)) ([1df0220](https://github.com/readmeio/markdown/commit/1df0220e4995ecd64c93d2a0fe155d6ec9f956e2))
+* **A11y:** making copy code button accessible ([#228](https://github.com/readmeio/markdown/issues/228)) ([2d8d594](https://github.com/readmeio/markdown/commit/2d8d59440c582111483950ba3f95746a59e31fc7))
+* **toc:** wrap children in an <li> for screen readers controls ([#232](https://github.com/readmeio/markdown/issues/232)) ([6e983a3](https://github.com/readmeio/markdown/commit/6e983a325fffc9670a2763a48fcf230e7303fbe2))
+
 ## Version 6.30.1-next.3
 
 ### 🛠 Fixes & Updates
