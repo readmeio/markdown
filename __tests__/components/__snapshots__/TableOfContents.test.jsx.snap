@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Table of Contents includes two heading levels 1`] = `
-"<nav><ul class=\\"toc-list\\"><li><a class=\\"tocHeader\\" href=\\"\\"><i class=\\"icon icon-text-align-left\\"></i>Table of Contents</a></li><li><ul>
+"<nav><ul class=\\"toc-list\\"><li><a class=\\"tocHeader\\" href=\\"\\"><i class=\\"icon icon-text-align-left\\"></i>Table of Contents</a></li><li class=\\"tocChildren\\"><ul>
 <li>
 <a href=\\"#heading-zed\\">Heading Zed</a>
 <ul>
