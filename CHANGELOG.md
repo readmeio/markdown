@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.2
+
+### 🛠 Fixes & Updates
+
+* **a11y:** making image captions their alt text ([#231](https://github.com/readmeio/markdown/issues/231)) ([cd8ddfb](https://github.com/readmeio/markdown/commit/cd8ddfbe79b0701c713db3995912228cba900e3d))
+
 ## Version 6.30.2-next.1
 
 ### 🛠 Fixes & Updates
