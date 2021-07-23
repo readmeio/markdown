@@ -311,6 +311,7 @@ Object {
     Object {
       "children": Array [
         Object {
+          "alt": "Qui iusto fugiat doloremque? Facilis obcaecati vitae corrupti.",
           "data": Object {
             "hProperties": Object {
               "className": "border",

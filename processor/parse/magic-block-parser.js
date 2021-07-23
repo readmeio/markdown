@@ -93,6 +93,7 @@ function tokenize(eat, value) {
             type: 'image',
             url,
             title,
+            alt: 'caption' in img ? img.caption : '',
             data: {
               hProperties: {
                 className: img.border ? 'border' : '',
@@ -102,7 +103,6 @@ function tokenize(eat, value) {
           };
 
           if (!img.caption) return block;
-
           return {
             type: 'figure',
             url,
