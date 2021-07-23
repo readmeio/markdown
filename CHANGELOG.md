@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.3-next.1
+
+### 🛠 Fixes & Updates
+
+* <a href="javascript:alert('eek')">oops?</a> ([f3b7bc7](https://github.com/readmeio/markdown/commit/f3b7bc7d986e0fbf82a4b6d68707250434161d9a))
+
 ## Version 6.30.2
 
 ### 🛠 Fixes & Updates
