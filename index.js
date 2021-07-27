@@ -36,19 +36,8 @@ const Variable = require('@readme/variable');
 
 const Components = require('./components');
 
-const {
-  GlossaryItem,
-  Code,
-  Table,
-  Anchor,
-  Heading,
-  Callout,
-  CodeTabs,
-  Image,
-  Embed,
-  HTMLBlock,
-  TableOfContents,
-} = Components;
+const { GlossaryItem, Code, Table, Anchor, Heading, Callout, CodeTabs, Image, Embed, HTMLBlock, TableOfContents } =
+  Components;
 
 export { Components };
 

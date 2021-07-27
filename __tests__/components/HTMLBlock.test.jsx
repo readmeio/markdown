@@ -27,9 +27,9 @@ describe('HTML Block', () => {
     <script>mockFn()</script>
     `;
     const elem = <HTMLBlock html={html} runScripts={true} />;
-    const ssr = renderToString(elem);
+    const view = renderToString(elem);
     expect(elem.props.runScripts).toBe(true);
-    expect(ssr.indexOf('<script>')).toBeLessThan(0);
-    expect(ssr.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
+    expect(view.indexOf('<script>')).toBeLessThan(0);
+    expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
   });
 });

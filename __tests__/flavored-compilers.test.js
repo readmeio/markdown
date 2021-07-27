@@ -25,6 +25,13 @@ describe('ReadMe Flavored Blocks', () => {
     const out = compile(ast);
     expect(out).toMatchSnapshot();
   });
+
+  it('Variables', () => {
+    expect(compile(parse('<<variable:user>>'))).toMatchInlineSnapshot(`
+      "<<variable:user>>
+      "
+    `);
+  });
 });
 
 describe('ReadMe Magic Blocks', () => {

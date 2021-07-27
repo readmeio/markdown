@@ -26,6 +26,7 @@ const unit = {
   },
   displayName: 'unit',
   setupFilesAfterEnv: ['<rootDir>/__tests__/helpers'],
+  testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/browser/'],
   testURL: 'http://localhost',
 };
