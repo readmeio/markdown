@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.30.3
+
+### 🛠 Fixes & Updates
+
+* <a href="javascript:alert('eek')">oops?</a> ([f3b7bc7](https://github.com/readmeio/markdown/commit/f3b7bc7d986e0fbf82a4b6d68707250434161d9a))
+* **deps:** bump actions/setup-node from 2.2.0 to 2.3.0 ([#235](https://github.com/readmeio/markdown/issues/235)) ([95e3a2b](https://github.com/readmeio/markdown/commit/95e3a2b6599b49993df3106cbd20efb46d18e873))
+* **deps-dev:** bump css-loader from 5.0.2 to 6.2.0 ([#229](https://github.com/readmeio/markdown/issues/229)) ([325396b](https://github.com/readmeio/markdown/commit/325396b299fd12bc03f5a763d938e12f6aefc1a7))
+* **deps-dev:** bump jest-image-snapshot from 4.3.0 to 4.5.1 ([#211](https://github.com/readmeio/markdown/issues/211)) ([c31fd91](https://github.com/readmeio/markdown/commit/c31fd916c0f89bf41bac00697d94a06b89f9f5f7))
+* **deps-dev:** bump puppeteer from 10.0.0 to 10.1.0 ([#216](https://github.com/readmeio/markdown/issues/216)) ([da27029](https://github.com/readmeio/markdown/commit/da27029c31a1bf25f4d594c427dabd005dc8ea21))
+* **deps:** bump remark-slug from 6.0.0 to 6.1.0 ([#242](https://github.com/readmeio/markdown/issues/242)) ([dce932b](https://github.com/readmeio/markdown/commit/dce932b75d6e99a50cc1476163680cd489425c15))
+* **dev-deps:** minor updates ([#240](https://github.com/readmeio/markdown/issues/240)) ([32ac1b7](https://github.com/readmeio/markdown/commit/32ac1b782fd9c6cc5ee5e6202fc9f291f2c03b95))
+* variable stringification ([#241](https://github.com/readmeio/markdown/issues/241)) ([5059014](https://github.com/readmeio/markdown/commit/50590143b0768b89229f38dc8b059a38fef1800e))
+
 ## Version 6.30.3-next.3
 
 ### 🛠 Fixes & Updates
