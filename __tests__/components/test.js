@@ -148,21 +148,27 @@ describe('Components', () => {
     const box = wrap.find('.lightbox').at(0);
 
     img.simulate('click');
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
 
     box.simulate('scroll');
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
 
     img.simulate('keydown', { key: 'Enter' });
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
 
     img.simulate('keydown', { key: 'Escape' });
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
 
     img.simulate('keydown', { key: ' ' });
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
 
     img.simulate('keydown', { key: '.', metaKey: true });
+    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
     expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
   });
 
