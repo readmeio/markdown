@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.3-next.3
+
+### 🛠 Fixes & Updates
+
+* variable stringification ([#241](https://github.com/readmeio/markdown/issues/241)) ([5059014](https://github.com/readmeio/markdown/commit/50590143b0768b89229f38dc8b059a38fef1800e))
+
 ## Version 6.30.3-next.2
 
 ### 🛠 Fixes & Updates
