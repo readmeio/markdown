@@ -99,6 +99,7 @@
     "regenerator-runtime": "^0.13.9",
     "sass-loader": "^12.1.0",
     "semantic-release": "^17.4.4",
+    "string.prototype.trimend": "^1.0.4",
     "terser-webpack-plugin": "^5.1.4",
     "webpack": "^5.47.0",
     "webpack-cli": "^4.7.2",
