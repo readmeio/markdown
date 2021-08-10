@@ -13,18 +13,19 @@
   "scripts": {
     "build": "webpack --mode production",
     "heroku-postbuild": "make emojis && webpack --mode production --config ./webpack.dev.js",
-    "start": "webpack serve --config ./webpack.dev.js --open --mode development",
     "lint": "eslint . --ext .jsx --ext .js",
+    "prepare": "husky install",
     "pretest": "npm run lint",
-    "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
-    "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
-    "test.watch": "jest --watch --coverage=false",
     "pretest.browser": "jest --clearCache",
-    "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
-    "watch": "webpack -w --progress --mode production",
+    "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
-    "sync": "rdme docs ./docs --version=2"
+    "start": "webpack serve --config ./webpack.dev.js --open --mode development",
+    "sync": "rdme docs ./docs --version=2",
+    "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
+    "test.watch": "jest --watch --coverage=false",
+    "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
+    "watch": "webpack -w --progress --mode production"
   },
   "dependencies": {
     "@readme/emojis": "^3.0.0",
@@ -114,12 +115,6 @@
     "access": "public"
   },
   "prettier": "@readme/eslint-config/prettier",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm run pretest"
-    }
-  },
   "bundlewatch": {
     "files": [
       {
