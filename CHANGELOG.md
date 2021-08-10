@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.30.4
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump eslint from 7.31.0 to 7.32.0 ([#248](https://github.com/readmeio/markdown/issues/248)) ([76e5a79](https://github.com/readmeio/markdown/commit/76e5a7970c729a1198fec21c97e6eaacbc81b6a5))
+* **deps:** minor package updates ([#263](https://github.com/readmeio/markdown/issues/263)) ([ca4c777](https://github.com/readmeio/markdown/commit/ca4c77765bfe50ee9a669aadab5bba0ef684a619))
+
 ## Version 6.30.3
 
 ### 🛠 Fixes & Updates
