@@ -146,7 +146,7 @@
     [
       "@semantic-release/git",
       {
-        "message": "🚀 v${nextRelease.version} 🦉\n\n${nextRelease.notes}\n<!--SKIP CI-->"
+        "message": "build(release): 🚀 v${nextRelease.version} 🦉\n\n${nextRelease.notes}\n<!--SKIP CI-->"
       }
     ]
   ]
