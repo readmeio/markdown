@@ -93,7 +93,7 @@ We support syntax highlighting on a number of languages:
 | HTML/XML | `html`, `xhtml`, `xml` |
 | HTTP | `http` |
 | Java | `java` |
-| JavaScript | `coffeescript`, `ecmascript`, `javascript`, `js`, `node` |
+| JavaScript | `coffeescript`, `ecmascript`, `javascript`, `js`, `jsx`, `node` |
 | JSON | `json` |
 | Julia | `jl`, `julia` |
 | Kotlin | `kotlin`, `kt` |
@@ -107,6 +107,7 @@ We support syntax highlighting on a number of languages:
 | PowerShell | `powershell`, `ps1` |
 | Python | `py`, `python` |
 | R | `r` |
+| React | `jsx` |
 | Ruby | `jruby`, `macruby`, `rake`, `rb`, `rbx`, `ruby` |
 | Rust | `rs`, `rust` |
 | Scala | `scala` |
