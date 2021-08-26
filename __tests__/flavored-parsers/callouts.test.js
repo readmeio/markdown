@@ -17,8 +17,22 @@ describe('Parse RDMD Callouts', () => {
 >
 > <span>With html!</span>
       `;
-
       expect(mdast(text)).toMatchSnapshot();
+    });
+  });
+
+  describe('emoji support', () => {
+    const emojis = ['🛈', '✎', '🗹', '🗐'];
+
+    emojis.forEach(emoji => {
+      it(`render a callout for ${emoji}`, () => {
+        const text = `
+> ${emoji} Default Callout
+>
+> Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
+
+        expect(mdast(text)).toMatchSnapshot();
+      });
     });
   });
 });
