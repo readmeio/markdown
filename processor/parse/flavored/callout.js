@@ -3,7 +3,7 @@
 // https://www.unicode.org/Public/13.0.0/ucd/emoji/emoji-data.txt
 const rgx =
   // eslint-disable-next-line unicorn/no-unsafe-regex
-  /^> ?((?![#*0-9])(?:\p{Emoji}|\u2139|\u2049|\u2757|\u203C|\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]))(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/u;
+  /^> ?((?![#*0-9])\p{Emoji}|\u2139|\u2049|\u2757|\u203C|\u00a9|\u00ae|[\u2000-\u3300]|[\u{1f000}-\u{1f3ff}]|[\u{1f400}-\u{1f7ff}]|[\u{1f800}-\u{1fbff}])(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/u;
 
 const themes = {
   '\uD83D\uDCD8': 'info',

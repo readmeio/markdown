@@ -22,7 +22,7 @@ describe('Parse RDMD Callouts', () => {
   });
 
   describe('emoji support', () => {
-    const emojis = ['🛈', '✎', '🗹', '🗐'];
+    const emojis = ['🛈', '✎', '🗹', '🗐', 'ℹ'];
 
     emojis.forEach(emoji => {
       it(`render a callout for ${emoji}`, () => {
