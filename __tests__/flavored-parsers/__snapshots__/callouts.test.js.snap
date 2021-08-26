@@ -48,6 +48,206 @@ Object {
 }
 `;
 
+exports[`Parse RDMD Callouts emoji support render a callout for ℹ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Default Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ",
+          "theme": "default",
+          "title": "Default Callout",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts emoji support render a callout for ✎ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Default Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "✎",
+          "theme": "default",
+          "title": "Default Callout",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts emoji support render a callout for 🗐 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Default Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🗐",
+          "theme": "default",
+          "title": "Default Callout",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts emoji support render a callout for 🗹 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Default Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🗹",
+          "theme": "default",
+          "title": "Default Callout",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts emoji support render a callout for 🛈 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Default Callout",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🛈",
+          "theme": "default",
+          "title": "Default Callout",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse RDMD Callouts renders an info callout 1`] = `
 Object {
   "children": Array [
