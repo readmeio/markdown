@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.5-next.1
+
+### 🛠 Fixes & Updates
+
+* add back support for certain ranges of emoji ([#279](https://github.com/readmeio/markdown/issues/279)) ([163863f](https://github.com/readmeio/markdown/commit/163863f9d6d99009f1c6f1f1d08ef6f81bda3ab2))
+
 ## Version 6.30.4
 
 ### 🛠 Fixes & Updates
