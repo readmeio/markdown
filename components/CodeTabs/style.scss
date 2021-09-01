@@ -3,13 +3,24 @@
 
 @mixin CodeTabs {
   $bgc-pre: #F6F8FA;
+  $bgc-pre-dark: #242E34;
   $bgc-bar: darken(desaturate($bgc-pre, 17.46), 4.31);
+  $bgc-bar-dark: lighten(desaturate($bgc-pre-dark, 17.46), 4.31);
   $radius: var(--md-code-radius, var(--markdown-radius, 3px));
 
   color: #333;
   color: var(--md-code-text, #333);
   border-radius: $radius !important;
   overflow: hidden;
+
+  &.theme-dark {
+    color: white;
+    color: var(--md-code-text, white);
+    &-toolbar {
+      background: $bgc-bar-dark;
+      background: var(--md-code-tabs, $bgc-bar-dark);
+    }
+  }
 
   &-toolbar {
     background: $bgc-bar;
@@ -50,6 +61,14 @@
     pointer-events: none;
   }
 
+  &.theme-dark &.CodeTabs_initial &-toolbar button:first-child,
+  &.theme-dark &-toolbar button.CodeTabs_active {
+    background: $bgc-pre-dark;
+    background: var(--md-code-background, $bgc-pre-dark);
+    color: white;
+    color: var(--md-code-text, white);
+  }
+
   &-toolbar button:not(.CodeTabs_active):hover {
     background: rgba(0, 0, 0, .075);
   }
@@ -60,6 +79,11 @@
     background: var(--md-code-background, $bgc-pre);
     margin-bottom: 0;
     &:not(.CodeTabs_active) { display: none }
+  }
+
+  &.theme-dark pre {
+    background: $bgc-pre-dark;
+    background: var(--md-code-background, $bgc-pre-dark);
   }
 
   &.CodeTabs_initial pre:first-child {

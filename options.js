@@ -16,6 +16,7 @@ const options = {
   settings: {
     position: false,
   },
+  theme: 'dark',
 };
 
 /**

@@ -1,4 +1,4 @@
-@mixin gfmCodeBaseStyles($background: #F6F8FA, $text: inherit) {
+@mixin gfmCodeBaseStyles($background: #F6F8FA, $background-dark: #242E34, $text: inherit) {
 
   code,
   kbd,
@@ -58,6 +58,11 @@
     line-height: 1.45;
     overflow: auto;
     padding: 1em
+  }
+
+  pre code.theme-dark {
+    background-color: $background-dark;
+    background-color: var(--md-code-background, $background-dark);
   }
 
   pre code {
@@ -198,6 +203,10 @@
 
     >code {
       background: inherit;
+    }
+
+    >code.theme-dark {
+      color: white;
     }
 
     button.rdmd-code-copy {
