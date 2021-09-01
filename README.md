@@ -53,6 +53,10 @@ Our old editor rendered "Magic Block" components from a custom, JSON-based synta
 
 We've also sprinkled a bit of our own syntactic sugar on top to let you supercharge your docs. [**Learn more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
+## Local Development
+
+To make changes to the RDMD engine locally is to run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
+
 ## Credits
 
 - **Lisence**: MIT
