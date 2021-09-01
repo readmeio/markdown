@@ -27,6 +27,7 @@ test('it should have the proper utils exports', () => {
     },
     normalize: true,
     settings: { position: false },
+    theme: 'dark',
   });
 });
 
