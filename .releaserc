@@ -6,8 +6,9 @@
       "prerelease": true
     },
     {
-      "name": "integration-test/**",
-      "prerelease": "integration-test"
+      "name": "integration-test/*",
+      "prerelease": "integration-test",
+      "channel": "${name}"
     }
   ],
   "plugins": [
