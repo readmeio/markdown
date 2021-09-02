@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 6.31.0-integration-test.1
+
+### 📘 Tests & Docs
+
+* **readme:** add Local Development section ([#283](https://github.com/readmeio/markdown/issues/283)) ([f2414ed](https://github.com/readmeio/markdown/commit/f2414ed570961c56b683c1547466265cf4ff596f))
+
+
+### 🛠 Fixes & Updates
+
+* try a single star ([335a87b](https://github.com/readmeio/markdown/commit/335a87b5259725af37699dd098fc2ddd4959712b))
+* try a static prerelease value? ([1c278cc](https://github.com/readmeio/markdown/commit/1c278cc5916ba011733c3fbe478fb281463fd6cc))
+
+
+### ✨ New & Improved
+
+* **trigger:** release ([f3a5ab4](https://github.com/readmeio/markdown/commit/f3a5ab462ec70736c3fbd806a01048501ef81d2c))
+
 ## Version 6.30.5
 
 ### 🛠 Fixes & Updates
