@@ -7,7 +7,7 @@
     },
     {
       "name": "integration-test/*",
-      "prerelease": "integration-test",
+      "prerelease": "${name}",
       "channel": "${name}"
     }
   ],
