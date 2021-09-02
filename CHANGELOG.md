@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.31.0-integration-test.3
+
+### ✨ New & Improved
+
+* **release:** simplify name + channel ([13ee193](https://github.com/readmeio/markdown/commit/13ee193e117797fe4d1be7d9fe34a1073f06bb36))
+
 ## Version 6.31.0-integration-test.2
 
 ### ✨ New & Improved
