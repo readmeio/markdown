@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.31.0-integration-test.2
+
+### ✨ New & Improved
+
+* **release:** try specifying channel ([027f928](https://github.com/readmeio/markdown/commit/027f9280e4630dd8868a6f0aec726da494f36bc1))
+
 ## Version 6.31.0-integration-test.1
 
 ### 📘 Tests & Docs
