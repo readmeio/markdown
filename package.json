@@ -93,7 +93,7 @@
     "node-sass": "^6.0.1",
     "prettier": "^2.3.2",
     "puppeteer": "^10.1.0",
-    "rdme": "^4.0.0",
+    "rdme": "^5.1.4",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-hot-loader": "^4.13.0",
