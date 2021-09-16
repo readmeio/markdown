@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.30.6-next.1
+
+### 📘 Tests & Docs
+
+* **readme:** add Local Development section ([#283](https://github.com/readmeio/markdown/issues/283)) ([f2414ed](https://github.com/readmeio/markdown/commit/f2414ed570961c56b683c1547466265cf4ff596f))
+* adding a security policy ([bbc81a2](https://github.com/readmeio/markdown/commit/bbc81a26d3a94c57e5345325d8cb0780d06bd467))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/setup-node from 2.3.0 to 2.4.0 ([#251](https://github.com/readmeio/markdown/issues/251)) ([c013b36](https://github.com/readmeio/markdown/commit/c013b360570875390f44cfde458ece7a6d565c1a))
+* **deps-dev:** bump semantic-release from 17.4.4 to 17.4.7 ([#277](https://github.com/readmeio/markdown/issues/277)) ([bfcfd3f](https://github.com/readmeio/markdown/commit/bfcfd3f4fb9eeb6d2c07d6bbb3435df70e6cefba))
+
 ## Version 6.30.5
 
 ### 🛠 Fixes & Updates
