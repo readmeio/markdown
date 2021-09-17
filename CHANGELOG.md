@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.30.6-next.4
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+
 ## Version 6.30.6-next.3
 
 ### 🛠 Fixes & Updates
