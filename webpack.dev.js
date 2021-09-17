@@ -19,7 +19,6 @@ const config = merge(common, {
     port: 9966,
     publicPath: '/',
     hot: true,
-    watchContentBase: true,
   },
   plugins: [
     new webpack.ProvidePlugin({
