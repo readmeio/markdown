@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.6-next.2
+
+### 🛠 Fixes & Updates
+
+* **chore:** bumping dependencies and resolving `npm audit` warnings ([#303](https://github.com/readmeio/markdown/issues/303)) ([3a79d61](https://github.com/readmeio/markdown/commit/3a79d61670ebd82a73d38bb6a677bb061276e5fb))
+
 ## Version 6.30.6-next.1
 
 ### 📘 Tests & Docs
