@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.6-next.3
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @readme/variable from 13.5.4 to 13.6.0 ([#307](https://github.com/readmeio/markdown/issues/307)) ([51da52a](https://github.com/readmeio/markdown/commit/51da52aa3a241c6f927cde5c60bcd0186a1da1ba))
+
 ## Version 6.30.6-next.2
 
 ### 🛠 Fixes & Updates
