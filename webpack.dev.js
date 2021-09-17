@@ -14,12 +14,10 @@ const config = merge(common, {
     filename: '[name].js',
   },
   devServer: {
-    contentBase: './example',
+    static: './example',
     compress: true,
     port: 9966,
-    publicPath: '/',
     hot: true,
-    watchContentBase: true,
   },
   plugins: [
     new webpack.ProvidePlugin({
