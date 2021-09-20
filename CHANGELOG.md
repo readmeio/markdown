@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.31.0-next.1
+
+### ✨ New & Improved
+
+* add dark option for code blocks ([#284](https://github.com/readmeio/markdown/issues/284)) ([885b844](https://github.com/readmeio/markdown/commit/885b8441a6ad423b4d59a14a7430c882f5ea1fad))
+
 ## Version 6.30.7-next.1
 
 ### 📘 Tests & Docs
