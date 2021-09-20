@@ -27,11 +27,16 @@ test('it should have the proper utils exports', () => {
     },
     normalize: true,
     settings: { position: false },
+    theme: 'light',
   });
 });
 
 test('image', () => {
   expect(mount(markdown.default('![Image](http://example.com/image.png)')).html()).toMatchSnapshot();
+});
+
+test('heading', () => {
+  expect(mount(markdown.default('## Example Header')).html()).toMatchSnapshot();
 });
 
 test('magic image', () => {

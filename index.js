@@ -152,7 +152,7 @@ export function reactProcessor(opts = {}, components = {}) {
       createElement: React.createElement,
       Fragment: React.Fragment,
       components: {
-        'code-tabs': CodeTabs(sanitize),
+        'code-tabs': CodeTabs(sanitize, opts),
         'html-block': HTMLBlock(sanitize),
         'rdme-callout': Callout(sanitize),
         'readme-variable': Variable,

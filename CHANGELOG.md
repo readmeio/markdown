@@ -1,13 +1,53 @@
 Changelog
 ===
 
+## Version 6.31.0-next.1
+
+### ✨ New & Improved
+
+* add dark option for code blocks ([#284](https://github.com/readmeio/markdown/issues/284)) ([885b844](https://github.com/readmeio/markdown/commit/885b8441a6ad423b4d59a14a7430c882f5ea1fad))
+
+## Version 6.30.7-next.1
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
 ## Version 6.30.6
 
 ### 📘 Tests & Docs
 
 * **readme:** add Local Development section ([#283](https://github.com/readmeio/markdown/issues/283)) ([f2414ed](https://github.com/readmeio/markdown/commit/f2414ed570961c56b683c1547466265cf4ff596f))
 * adding a security policy ([bbc81a2](https://github.com/readmeio/markdown/commit/bbc81a26d3a94c57e5345325d8cb0780d06bd467))
+*
+### 🛠 Fixes & Updates
 
+* **deps-dev:** bump @readme/variable from 13.5.4 to 13.6.0 ([#307](https://github.com/readmeio/markdown/issues/307)) ([51da52a](https://github.com/readmeio/markdown/commit/51da52aa3a241c6f927cde5c60bcd0186a1da1ba))
+
+## Version 6.30.6-next.5
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
+## Version 6.30.6-next.4
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+
+## Version 6.30.6-next.3
 
 ### 🛠 Fixes & Updates
 
