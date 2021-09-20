@@ -1,6 +1,24 @@
 Changelog
 ===
 
+## Version 6.31.0
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### ✨ New & Improved
+
+* add dark option for code blocks ([#284](https://github.com/readmeio/markdown/issues/284)) ([885b844](https://github.com/readmeio/markdown/commit/885b8441a6ad423b4d59a14a7430c882f5ea1fad))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+* package updates ([#316](https://github.com/readmeio/markdown/issues/316)) ([8740f2f](https://github.com/readmeio/markdown/commit/8740f2f48030e9b26328f76c3dfe631a54b50b2f))
+
 ## Version 6.31.0-next.1
 
 ### ✨ New & Improved
