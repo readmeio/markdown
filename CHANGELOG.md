@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.30.7-next.1
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
 ## Version 6.30.6
 
 ### 📘 Tests & Docs
