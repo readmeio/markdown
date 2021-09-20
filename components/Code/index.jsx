@@ -32,7 +32,7 @@ CopyCode.propTypes = {
 };
 
 function Code(props) {
-  const { children, className, copyButtons, lang, meta } = props;
+  const { children, className, copyButtons, lang, meta, theme } = props;
 
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
   const language = canonicalLanguage(lang) || langClass;
@@ -41,6 +41,7 @@ function Code(props) {
   const codeOpts = {
     inline: !lang,
     tokenizeVariables: true,
+    dark: theme === 'dark',
   };
   const codeContent = syntaxHighlighter ? syntaxHighlighter(children[0], language, codeOpts) : children[0];
 
@@ -48,7 +49,7 @@ function Code(props) {
     <React.Fragment>
       <code
         ref={codeRef}
-        className={['rdmd-code', `lang-${language}`].join(' ')}
+        className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
         data-lang={language}
         name={meta}
         suppressHydrationWarning={true}
@@ -60,12 +61,12 @@ function Code(props) {
   );
 }
 
-function CreateCode(sanitizeSchema, { copyButtons }) {
+function CreateCode(sanitizeSchema, { copyButtons, theme }) {
   // This is for code blocks class name
   sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
 
   // eslint-disable-next-line react/display-name
-  return props => <Code {...props} copyButtons={copyButtons} />;
+  return props => <Code {...props} copyButtons={copyButtons} theme={theme} />;
 }
 
 Code.propTypes = {
@@ -74,6 +75,7 @@ Code.propTypes = {
   copyButtons: PropTypes.bool,
   lang: PropTypes.string,
   meta: PropTypes.string,
+  theme: PropTypes.string,
 };
 
 Code.defaultProps = {

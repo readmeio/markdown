@@ -4,7 +4,7 @@ const PropTypes = require('prop-types');
 const { uppercase } = require('@readme/syntax-highlighter');
 
 const CodeTabs = props => {
-  const { attributes, children } = props;
+  const { attributes, children, theme } = props;
 
   function handleClick({ target }, index) {
     const $wrap = target.parentElement.parentElement;
@@ -20,7 +20,7 @@ const CodeTabs = props => {
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...attributes} className="CodeTabs CodeTabs_initial">
+    <div {...attributes} className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
         {children.map(({ props: pre }, i) => {
           const { meta, lang } = pre.children[0].props;
@@ -40,12 +40,16 @@ const CodeTabs = props => {
 CodeTabs.propTypes = {
   attributes: PropTypes.shape({}),
   children: PropTypes.arrayOf(PropTypes.any).isRequired,
+  theme: PropTypes.string,
 };
 
 CodeTabs.defaultProps = {
   attributes: null,
 };
 
-module.exports = (/* sanitizeSchema */) => {
-  return CodeTabs;
-};
+function CreateCodeTabs({ theme }) {
+  // eslint-disable-next-line react/display-name
+  return props => <CodeTabs {...props} theme={theme} />;
+}
+
+module.exports = (_, opts) => CreateCodeTabs(opts);
