@@ -1,6 +1,74 @@
 Changelog
 ===
 
+## Version 6.30.7-next.1
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
+## Version 6.30.6
+
+### 📘 Tests & Docs
+
+* **readme:** add Local Development section ([#283](https://github.com/readmeio/markdown/issues/283)) ([f2414ed](https://github.com/readmeio/markdown/commit/f2414ed570961c56b683c1547466265cf4ff596f))
+* adding a security policy ([bbc81a2](https://github.com/readmeio/markdown/commit/bbc81a26d3a94c57e5345325d8cb0780d06bd467))
+*
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @readme/variable from 13.5.4 to 13.6.0 ([#307](https://github.com/readmeio/markdown/issues/307)) ([51da52a](https://github.com/readmeio/markdown/commit/51da52aa3a241c6f927cde5c60bcd0186a1da1ba))
+
+## Version 6.30.6-next.5
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
+## Version 6.30.6-next.4
+
+### 📘 Tests & Docs
+
+* adding a code of conduct ([b00b1f5](https://github.com/readmeio/markdown/commit/b00b1f5b368970db97577a13a84bedbffc73afe5))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping @readme/syntax-highlighter and @readme/variable ([#308](https://github.com/readmeio/markdown/issues/308)) ([36aca90](https://github.com/readmeio/markdown/commit/36aca902a8f1d900670c22d095373674c69b5c45))
+
+## Version 6.30.6-next.3
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @readme/variable from 13.5.4 to 13.6.0 ([#307](https://github.com/readmeio/markdown/issues/307)) ([51da52a](https://github.com/readmeio/markdown/commit/51da52aa3a241c6f927cde5c60bcd0186a1da1ba))
+* **deps:** bump actions/setup-node from 2.3.0 to 2.4.0 ([#251](https://github.com/readmeio/markdown/issues/251)) ([c013b36](https://github.com/readmeio/markdown/commit/c013b360570875390f44cfde458ece7a6d565c1a))
+* **deps-dev:** bump semantic-release from 17.4.4 to 17.4.7 ([#277](https://github.com/readmeio/markdown/issues/277)) ([bfcfd3f](https://github.com/readmeio/markdown/commit/bfcfd3f4fb9eeb6d2c07d6bbb3435df70e6cefba))
+* **chore:** bumping dependencies and resolving `npm audit` warnings ([#303](https://github.com/readmeio/markdown/issues/303)) ([3a79d61](https://github.com/readmeio/markdown/commit/3a79d61670ebd82a73d38bb6a677bb061276e5fb))
+
+## Version 6.30.6-next.2
+
+### 🛠 Fixes & Updates
+
+* **chore:** bumping dependencies and resolving `npm audit` warnings ([#303](https://github.com/readmeio/markdown/issues/303)) ([3a79d61](https://github.com/readmeio/markdown/commit/3a79d61670ebd82a73d38bb6a677bb061276e5fb))
+
+## Version 6.30.6-next.1
+
+### 📘 Tests & Docs
+
+* **readme:** add Local Development section ([#283](https://github.com/readmeio/markdown/issues/283)) ([f2414ed](https://github.com/readmeio/markdown/commit/f2414ed570961c56b683c1547466265cf4ff596f))
+* adding a security policy ([bbc81a2](https://github.com/readmeio/markdown/commit/bbc81a26d3a94c57e5345325d8cb0780d06bd467))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/setup-node from 2.3.0 to 2.4.0 ([#251](https://github.com/readmeio/markdown/issues/251)) ([c013b36](https://github.com/readmeio/markdown/commit/c013b360570875390f44cfde458ece7a6d565c1a))
+* **deps-dev:** bump semantic-release from 17.4.4 to 17.4.7 ([#277](https://github.com/readmeio/markdown/issues/277)) ([bfcfd3f](https://github.com/readmeio/markdown/commit/bfcfd3f4fb9eeb6d2c07d6bbb3435df70e6cefba))
+
 ## Version 6.30.5
 
 ### 🛠 Fixes & Updates

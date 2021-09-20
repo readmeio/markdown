@@ -35,6 +35,10 @@ test('image', () => {
   expect(mount(markdown.default('![Image](http://example.com/image.png)')).html()).toMatchSnapshot();
 });
 
+test('heading', () => {
+  expect(mount(markdown.default('## Example Header')).html()).toMatchSnapshot();
+});
+
 test('magic image', () => {
   expect(
     mount(
