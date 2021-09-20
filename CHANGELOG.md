@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.30.6-next.5
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping syntax-highlighter to support graphql ([#309](https://github.com/readmeio/markdown/issues/309)) ([c38ba00](https://github.com/readmeio/markdown/commit/c38ba0003dec308268f8f6afafa563f45872cd19)), closes [#173](https://github.com/readmeio/markdown/issues/173)
+
 ## Version 6.30.6-next.4
 
 ### 📘 Tests & Docs
