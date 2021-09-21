@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.31.1-next.1
+
+### 🛠 Fixes & Updates
+
+* dont load codemirror in node ([#317](https://github.com/readmeio/markdown/issues/317)) ([a640832](https://github.com/readmeio/markdown/commit/a6408323994c6ab16995ae314ad621810a1085fb))
+
 ## Version 6.31.0
 
 ### 📘 Tests & Docs
