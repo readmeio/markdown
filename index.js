@@ -65,8 +65,12 @@ export function setup(blocks, opts = {}) {
   // merge default and user options
   opts = parseOptions(opts);
 
-  // normalize magic block linebreaks
   if (opts.normalize && blocks) {
+    if (opts.compatibilityMode) {
+      // Add spaces to "compact" heading syntax.
+      blocks = blocks.replace(/([^\n]\n#+)(\s?)(.*)/gm, '$1 $3');
+    }
+    // Normalize magic block linebreaks.
     blocks = blocks
       .replace(/\[block:/g, '\n\n[block:')
       .replace(/\[\/block\]/g, '[/block]\n')
