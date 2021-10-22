@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.32.0-next.1
+
+### ✨ New & Improved
+
+* autoregister custom component tags and attrs ([#342](https://github.com/readmeio/markdown/issues/342)) ([e58309a](https://github.com/readmeio/markdown/commit/e58309aa27aebd6fccfc73a32e0f25daa7167aa9))
+
 ## Version 6.31.1-next.1
 
 ### 🛠 Fixes & Updates
