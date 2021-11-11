@@ -111,7 +111,7 @@
   "homepage": "https://rdmd.readme.io",
   "repository": "https://github.com/readmeio/markdown",
   "publishConfig": {
-    "registry": "http://registry.npmjs.org",
+    "registry": "https://registry.npmjs.org",
     "access": "public"
   },
   "prettier": "@readme/eslint-config/prettier",
