@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.32.0-next.2
+
+### 🛠 Fixes & Updates
+
+* normalize h2 font-weight ([#352](https://github.com/readmeio/markdown/issues/352)) ([a6eedcf](https://github.com/readmeio/markdown/commit/a6eedcf3c6f5259778430250b112e306bbe17be2))
+
 ## Version 6.32.0-next.1
 
 ### ✨ New & Improved
