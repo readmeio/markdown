@@ -1,12 +1,18 @@
 const React = require('react');
 const PropTypes = require('prop-types');
+const copy = require('copy-to-clipboard');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
 // https://github.com/codemirror/CodeMirror/issues/3701#issuecomment-164904534
-const syntaxHighlighter = typeof window !== 'undefined' ? require('@readme/syntax-highlighter').default : false;
-const { canonical: canonicalLanguage } = require('@readme/syntax-highlighter');
-const copy = require('copy-to-clipboard');
+let syntaxHighlighter;
+let canonicalLanguage = () => {};
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line global-require
+  syntaxHighlighter = require('@readme/syntax-highlighter').default;
+  // eslint-disable-next-line global-require
+  ({ canonical: canonicalLanguage } = require('@readme/syntax-highlighter'));
+}
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;

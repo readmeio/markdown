@@ -58,6 +58,10 @@ const toPlainText = require('./processor/plugin/plain-text');
 // Processor Option Defaults
 const { options, parseOptions } = require('./options.js');
 
+/* Utilities
+ */
+const registerCustomComponents = require('./lib/registerCustomComponents');
+
 /**
  * Normalize Magic Block Raw Text
  */
@@ -144,8 +148,6 @@ const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @tod
 const count = {};
 
 export function reactProcessor(opts = {}, components = {}) {
-  Object.keys(components).map(key => sanitize.tagNames.push(key));
-
   return processor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
@@ -169,7 +171,7 @@ export function reactProcessor(opts = {}, components = {}) {
         h6: Heading(6, count, opts),
         code: Code(sanitize, opts),
         img: Image(sanitize),
-        ...components,
+        ...registerCustomComponents(components, opts.customComponentPrefix),
       },
     });
 }
