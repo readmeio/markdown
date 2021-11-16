@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.32.0-next.3
+
+### 🛠 Fixes & Updates
+
+* remove publishConfig ([#358](https://github.com/readmeio/markdown/issues/358)) ([1ad9913](https://github.com/readmeio/markdown/commit/1ad991305558f7eb6a27f029b57635faedd88d07))
+
 ## Version 6.32.0-next.2
 
 ### 🛠 Fixes & Updates
