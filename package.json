@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.32.0",
+  "version": "6.32.1-next.1",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -110,10 +110,6 @@
   "license": "MIT",
   "homepage": "https://rdmd.readme.io",
   "repository": "https://github.com/readmeio/markdown",
-  "publishConfig": {
-    "registry": "http://registry.npmjs.org",
-    "access": "public"
-  },
   "prettier": "@readme/eslint-config/prettier",
   "bundlewatch": {
     "files": [
