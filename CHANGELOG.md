@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.32.2-next.1
+
+### 🛠 Fixes & Updates
+
+* publish new release ([670b575](https://github.com/readmeio/markdown/commit/670b5752a7092f6da78b55839288846bb8db1df4))
+
 ## Version 6.32.1
 
 ### 🛠 Fixes & Updates
