@@ -7,6 +7,18 @@ Changelog
 
 * remove publishConfig ([#358](https://github.com/readmeio/markdown/issues/358)) ([1ad9913](https://github.com/readmeio/markdown/commit/1ad991305558f7eb6a27f029b57635faedd88d07))
 
+## Version 6.32.0
+
+### ✨ New & Improved
+
+* autoregister custom component tags and attrs ([#342](https://github.com/readmeio/markdown/issues/342)) ([e58309a](https://github.com/readmeio/markdown/commit/e58309aa27aebd6fccfc73a32e0f25daa7167aa9))
+
+
+### 🛠 Fixes & Updates
+
+* dont load codemirror in node ([#317](https://github.com/readmeio/markdown/issues/317)) ([a640832](https://github.com/readmeio/markdown/commit/a6408323994c6ab16995ae314ad621810a1085fb))
+* normalize h2 font-weight ([#352](https://github.com/readmeio/markdown/issues/352)) ([a6eedcf](https://github.com/readmeio/markdown/commit/a6eedcf3c6f5259778430250b112e306bbe17be2))
+
 ## Version 6.32.0-next.2
 
 ### 🛠 Fixes & Updates
