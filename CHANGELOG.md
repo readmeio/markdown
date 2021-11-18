@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.33.0
+
+### 🛠 Fixes & Updates
+
+* trigger release ([3a3b24c](https://github.com/readmeio/markdown/commit/3a3b24cbe80d0af7aeeab36cc0513bc6ca195181))
+
+
+### ✨ New & Improved
+
+* trigger release ([9549095](https://github.com/readmeio/markdown/commit/9549095fc9c4587812bd482bf2d1f52b295e53ff))
+
 ## Version 6.32.2
 
 ### 🛠 Fixes & Updates
