@@ -201,6 +201,11 @@ describe('code samples', () => {
       expect(elem.find('button')).toHaveLength(0);
     });
   });
+
+  it('should parse indented code on the first line', () => {
+    const md = '    const code = true;';
+    expect(markdown.mdast(md)).toMatchSnapshot();
+  });
 });
 
 test('should render nothing if nothing passed in', () => {
@@ -253,15 +258,17 @@ describe('tree flattening', () => {
   it('should bring nested mdast data up to the top child level', () => {
     const text = `
 
-    |  | Col. B  |
-    |:-------:|:-------:|
-    | Cell A1 | Cell B1 |
-    | Cell A2 | Cell B2 |
-    | Cell A3 | |
+|  | Col. B  |
+|:-------:|:-------:|
+| Cell A1 | Cell B1 |
+| Cell A2 | Cell B2 |
+| Cell A3 | |
 
     `;
 
-    const table = markdown.hast(text).children[1];
+    const hast = markdown.hast(text);
+    const table = hast.children[1];
+
     expect(table.children).toHaveLength(2);
     expect(table.children[0].value).toStrictEqual('Col. B');
     expect(table.children[1].value).toStrictEqual('Cell A1 Cell B1 Cell A2 Cell B2 Cell A3');
