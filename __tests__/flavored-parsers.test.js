@@ -4,7 +4,7 @@ const rehypeSanitize = require('rehype-sanitize');
 
 const parseCallouts = require('../processor/parse/flavored/callout');
 const parseCodeTabs = require('../processor/parse/flavored/code-tabs');
-const options = require('../options.js').options.markdownOptions;
+const options = require('../options').options.markdownOptions;
 
 const sanitize = { attributes: [], tagNames: [] };
 const process = (text, opts = options) =>
@@ -50,7 +50,7 @@ describe('Parse RDMD Syntax', () => {
 `;
       const ast = process(mdx);
 
-      expect(ast.children[0].type).toStrictEqual('code');
+      expect(ast.children[0].type).toBe('code');
       expect(ast).toMatchSnapshot();
     });
 
