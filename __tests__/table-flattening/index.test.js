@@ -18,10 +18,10 @@ describe('astToPlainText with tables', () => {
 
   it('includes formatted text', () => {
     const text = `
-      | *Col. A*  | Col. *B*  |
-      |:---------:|:---------:|
-      | Cell *A1* | *Cell B1* |
-      | *Cell* A2 | *Cell* B2 |`;
+| *Col. A*  | Col. *B*  |
+|:---------:|:---------:|
+| Cell *A1* | *Cell B1* |
+| *Cell* A2 | *Cell* B2 |`;
 
     expect(astToPlainText(hast(text))).toMatchInlineSnapshot(`
       "
