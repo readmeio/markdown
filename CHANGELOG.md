@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.33.1
+
+### 🛠 Fixes & Updates
+
+* allow indented code on first line ([#362](https://github.com/readmeio/markdown/issues/362)) ([2b55c09](https://github.com/readmeio/markdown/commit/2b55c092e669ddf1488c792748f9c9775742e97d))
+* trigger release ([00a259b](https://github.com/readmeio/markdown/commit/00a259b436b69a1b3c907c75bf9b9dae2486caaa))
+
 ## Version 6.33.1-next.1
 
 ### 🛠 Fixes & Updates
