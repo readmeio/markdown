@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.33.2-next.1
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** upgrading eslint to v8 ([#363](https://github.com/readmeio/markdown/issues/363)) ([431dcae](https://github.com/readmeio/markdown/commit/431dcaefb99c4885324c5be429b876fe0946a0ad))
+
 ## Version 6.33.1
 
 ### 🛠 Fixes & Updates
