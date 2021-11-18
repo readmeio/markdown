@@ -71,10 +71,7 @@ export function setup(blocks, opts = {}) {
 
   // normalize magic block linebreaks
   if (opts.normalize && blocks) {
-    blocks = blocks
-      .replace(/\[block:/g, '\n\n[block:')
-      .replace(/\[\/block\]/g, '[/block]\n')
-      .trim();
+    blocks = blocks.replace(/\[block:/g, '\n\n[block:').replace(/\[\/block\]/g, '[/block]\n');
   }
 
   return [`${blocks}\n\n `, opts];

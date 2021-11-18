@@ -16,7 +16,8 @@ describe('Parse RDMD Callouts', () => {
 > ℹ️ Info Callout
 >
 > <span>With html!</span>
-      `;
+`;
+
       expect(mdast(text)).toMatchSnapshot();
     });
   });
