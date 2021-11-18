@@ -3,7 +3,7 @@ const remarkParse = require('remark-parse');
 const rehypeSanitize = require('rehype-sanitize');
 
 const parser = require('../processor/parse/magic-block-parser');
-const options = require('../options.js').options.markdownOptions;
+const options = require('../options').options.markdownOptions;
 
 const { silenceConsole } = require('./helpers');
 

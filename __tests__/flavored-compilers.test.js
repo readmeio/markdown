@@ -1,5 +1,5 @@
 const unified = require('unified');
-const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema.js');
+const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema');
 
 const remarkParse = require('remark-parse');
 const remarkStringify = require('remark-stringify');
@@ -7,7 +7,7 @@ const rehypeSanitize = require('rehype-sanitize');
 
 const parsers = Object.values(require('../processor/parse')).map(parser => parser.sanitize(sanitize));
 const compilers = Object.values(require('../processor/compile'));
-const options = require('../options.js').options.markdownOptions;
+const options = require('../options').options.markdownOptions;
 
 const processor = unified()
   .use(remarkParse, options)
