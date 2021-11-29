@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.33.2-next.2
+
+### 🛠 Fixes & Updates
+
+* include icon in callout to string ([#373](https://github.com/readmeio/markdown/issues/373)) ([208ddb5](https://github.com/readmeio/markdown/commit/208ddb5ece9f6069b49adf5717cbc50988895705))
+
 ## Version 6.33.2-next.1
 
 ### 🛠 Fixes & Updates
