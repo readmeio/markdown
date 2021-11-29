@@ -27,6 +27,7 @@ function tokenize(eat, value) {
 
   match = match.trim();
   type = type.trim();
+
   try {
     json = JSON.parse(json);
   } catch (err) {

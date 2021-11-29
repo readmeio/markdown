@@ -1,4 +1,3 @@
-/* eslint-disable import/no-import-module-exports */
 import React from 'react';
 import ReactDOM from 'react-dom';
 // eslint-disable-next-line import/no-extraneous-dependencies
