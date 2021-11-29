@@ -1,5 +1,4 @@
 jest.mock('@readme/syntax-highlighter', () => ({
-  // eslint-disable-next-line react/display-name
   default: code => {
     return <span>{code.replace(/<<.*?>>/, 'VARIABLE_SUBSTITUTED')}</span>;
   },

@@ -4,7 +4,7 @@ const BaseUrlContext = require('../contexts/BaseUrl');
 
 const markdown = require('../index');
 const { tableFlattening } = require('../processor/plugin/table-flattening');
-const { options } = require('../options.js');
+const { options } = require('../options');
 
 test('it should have the proper utils exports', () => {
   expect(typeof markdown.utils.BaseUrlContext).toBe('object');
@@ -270,8 +270,8 @@ describe('tree flattening', () => {
     const table = hast.children[1];
 
     expect(table.children).toHaveLength(2);
-    expect(table.children[0].value).toStrictEqual('Col. B');
-    expect(table.children[1].value).toStrictEqual('Cell A1 Cell B1 Cell A2 Cell B2 Cell A3');
+    expect(table.children[0].value).toBe('Col. B');
+    expect(table.children[1].value).toBe('Cell A1 Cell B1 Cell A2 Cell B2 Cell A3');
   });
 
   it('should not throw an error if missing values', () => {
@@ -288,8 +288,8 @@ describe('tree flattening', () => {
     };
 
     const [head, body] = tableFlattening(tree).children;
-    expect(head.value).toStrictEqual('');
-    expect(body.value).toStrictEqual('');
+    expect(head.value).toBe('');
+    expect(body.value).toBe('');
   });
 });
 
@@ -351,7 +351,7 @@ describe('export multiple Markdown renderers', () => {
   });
 
   it('astToPlainText should return an empty string if no value', () => {
-    expect(markdown.astToPlainText()).toStrictEqual('');
+    expect(markdown.astToPlainText()).toBe('');
   });
 
   it('allows complex compact headings', () => {

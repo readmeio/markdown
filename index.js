@@ -56,7 +56,7 @@ const tableFlattening = require('./processor/plugin/table-flattening');
 const toPlainText = require('./processor/plugin/plain-text');
 
 // Processor Option Defaults
-const { options, parseOptions } = require('./options.js');
+const { options, parseOptions } = require('./options');
 
 /* Utilities
  */
