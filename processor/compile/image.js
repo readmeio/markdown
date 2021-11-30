@@ -4,6 +4,6 @@ module.exports = function ImageCompiler() {
   const { image: original } = visitors;
 
   visitors.image = function compile(node, ...args) {
-    return node.data.hProperties.className === 'emoji' ? node.title : original(node, ...args);
+    return node.data.hProperties.className === 'emoji' ? node.title : original.call(this, node, ...args);
   };
 };
