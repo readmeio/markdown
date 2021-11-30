@@ -32,6 +32,13 @@ describe('ReadMe Flavored Blocks', () => {
       "
     `);
   });
+
+  it('Emojis', () => {
+    expect(compile(parse(':smiley:'))).toMatchInlineSnapshot(`
+      ":smiley:
+      "
+    `);
+  });
 });
 
 describe('ReadMe Magic Blocks', () => {

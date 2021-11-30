@@ -5,6 +5,11 @@ exports[`ReadMe Flavored Blocks Embed 1`] = `
 "
 `;
 
+exports[`ReadMe Flavored Blocks Emojis 1`] = `
+"![:smiley:](/img/emojis/smiley.png \\":smiley:\\")
+"
+`;
+
 exports[`ReadMe Magic Blocks Callouts 1`] = `
 "> 👍 Success
 > 
