@@ -103,7 +103,7 @@ describe('ReadMe Magic Blocks', () => {
             "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
             "rdme-blue.svg"
           ],
-          "caption": "Ok, pizza man.",
+          "caption": "Ok, __pizza__ man.",
           "sizing": "80"
         }
       ]

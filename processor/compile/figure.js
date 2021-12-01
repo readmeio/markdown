@@ -1,5 +1,3 @@
-const nodeToString = require('hast-util-to-string');
-
 const { imgSizeByWidth } = require('../parse/magic-block-parser');
 
 module.exports = function FigureCompiler() {
@@ -11,7 +9,7 @@ module.exports = function FigureCompiler() {
 
     const img = {
       image: [image.url, image.title],
-      caption: nodeToString(caption),
+      caption: this.block(caption),
       sizing: imgSizeByWidth[image.data.hProperties.width],
     };
 
