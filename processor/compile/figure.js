@@ -1,21 +1,28 @@
 const nodeToString = require('hast-util-to-string');
 
+const { imgSizeByWidth } = require('../parse/magic-block-parser');
+
 module.exports = function FigureCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors.figcaption = function figcaptionCompiler(node) {
-    const caption = nodeToString(node);
-    return `<figcaption>${caption}</figcaption>`;
-  };
-
   visitors.figure = function figureCompiler(node) {
     const [image, caption] = node.children;
-    return `<figure>
 
-${visitors.image.call(this, image)}
+    const img = {
+      image: [image.url, image.title],
+      caption: nodeToString(caption),
+      sizing: imgSizeByWidth[image.data.hProperties.width],
+    };
 
-${visitors.figcaption.call(this, caption)}
-</figure>`;
+    if (image.border) img.border = image.border;
+
+    const block = {
+      images: [img],
+    };
+
+    return `[block:image]
+${JSON.stringify(block, null, 2)}
+[/block]`;
   };
 };

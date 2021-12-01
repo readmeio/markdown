@@ -15,10 +15,21 @@ const WrapPinnedBlocks = (node, json) => {
   };
 };
 
-const imgSizeRemap = {
+const imgSizeValues = {
   full: '100%',
   original: 'auto',
 };
+
+const imgWidthBySize = new Proxy(imgSizeValues, {
+  get: (widths, size) => (size?.match(/^\d+$/) ? `${size}%` : size in widths ? widths[size] : size),
+});
+
+const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
+  get: (sizes, width) => {
+    const match = width?.match(/^(\d+)%$/);
+    return match ? match[1] : width in sizes ? sizes[width] : width;
+  },
+});
 
 function tokenize(eat, value) {
   let [match, type, json] = RGXP.exec(value) || [];
@@ -88,7 +99,6 @@ function tokenize(eat, value) {
         .map(img => {
           if (!('image' in img)) return null;
           const [url, title] = img.image;
-          const size = img.sizing;
 
           const block = {
             type: 'image',
@@ -98,7 +108,7 @@ function tokenize(eat, value) {
             data: {
               hProperties: {
                 className: img.border ? 'border' : '',
-                width: size && !size.match(/\D/) ? `${size}%` : imgSizeRemap[size] || size,
+                width: imgWidthBySize[img.sizing],
               },
             },
           };
@@ -284,3 +294,5 @@ module.exports.sanitize = sanitizeSchema => {
 
   return parser;
 };
+
+module.exports.imgSizeByWidth = imgSizeByWidth;

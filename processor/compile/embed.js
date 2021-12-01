@@ -1,10 +1,13 @@
 function EmbedCompiler(node) {
-  const { title, url } = node.data.hProperties;
+  const data = node.data.hProperties;
+  let { provider = 'embed' } = data;
+  provider = provider.replace(/^@/, '');
 
-  let { provider = '@embed' } = node.data.hProperties;
-  provider = provider[0] === '@' ? provider : `@${provider}`;
-
-  return `[${title || ''}](${url} "${provider}")`;
+  return `
+[block:embed]
+${JSON.stringify({ ...data, provider }, null, 2)}
+[/block]
+`;
 }
 
 module.exports = function () {

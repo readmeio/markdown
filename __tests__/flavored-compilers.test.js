@@ -101,15 +101,12 @@ describe('ReadMe Magic Blocks', () => {
         {
           "image": [
             "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
-            "rdme-blue.svg",
-            300,
-            54,
-            "#000000"
+            "rdme-blue.svg"
           ],
-          "caption": "Ok, pizza man."
+          "caption": "Ok, pizza man.",
+          "sizing": "80"
         }
-      ],
-      "sidebar": true
+      ]
     }
     [/block]`;
     const ast = parse(txt);
