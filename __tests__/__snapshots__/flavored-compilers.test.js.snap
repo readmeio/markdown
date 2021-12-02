@@ -1,7 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReadMe Flavored Blocks Embed 1`] = `
-"[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 \\"@nyt\\")
+"
+[block:embed]
+{
+  \\"title\\": \\"Embedded meta links.\\",
+  \\"url\\": \\"https://nyti.me/s/gzoa2xb2v3\\",
+  \\"provider\\": \\"nyt\\"
+}
+[/block]
 "
 `;
 
@@ -27,20 +34,34 @@ console.log('an unnamed sample snippet');
 `;
 
 exports[`ReadMe Magic Blocks Embed 1`] = `
-"[](https://youtu.be/J3-uKv1DShQ \\"@youtu.be\\")
+"
+[block:embed]
+{
+  \\"html\\": false,
+  \\"url\\": \\"https://youtu.be/J3-uKv1DShQ\\",
+  \\"title\\": null,
+  \\"favicon\\": \\"https://youtu.be/favicon.ico\\",
+  \\"provider\\": \\"youtu.be\\",
+  \\"href\\": \\"https://youtu.be/J3-uKv1DShQ\\"
+}
+[/block]
 "
 `;
 
 exports[`ReadMe Magic Blocks Figure 1`] = `
-"<div class=\\"rdmd-pinned\\">
-
-<figure>
-
-![Ok, pizza man.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg \\"rdme-blue.svg\\")
-
-<figcaption>Ok, pizza man.</figcaption>
-</figure>
-
-</div>
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\"
+      ],
+      \\"caption\\": \\"Ok, **pizza** man.\\",
+      \\"sizing\\": \\"80\\"
+    }
+  ]
+}
+[/block]
 "
 `;
