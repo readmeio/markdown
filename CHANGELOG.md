@@ -7,6 +7,13 @@ Changelog
 
 * less lossy md() ([#377](https://github.com/readmeio/markdown/issues/377)) ([4189554](https://github.com/readmeio/markdown/commit/4189554e6f332ca396c6095ad3f028f567c7c2f3))
 
+## Version 6.33.2
+
+### 🛠 Fixes & Updates
+
+* include icon in callout to string ([#373](https://github.com/readmeio/markdown/issues/373)) ([208ddb5](https://github.com/readmeio/markdown/commit/208ddb5ece9f6069b49adf5717cbc50988895705))
+* **deps-dev:** upgrading eslint to v8 ([#363](https://github.com/readmeio/markdown/issues/363)) ([431dcae](https://github.com/readmeio/markdown/commit/431dcaefb99c4885324c5be429b876fe0946a0ad))
+
 ## Version 6.33.2-next.2
 
 ### 🛠 Fixes & Updates
