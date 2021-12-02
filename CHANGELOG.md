@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.34.0-next.1
+
+### ✨ New & Improved
+
+* less lossy md() ([#377](https://github.com/readmeio/markdown/issues/377)) ([4189554](https://github.com/readmeio/markdown/commit/4189554e6f332ca396c6095ad3f028f567c7c2f3))
+
 ## Version 6.33.2-next.2
 
 ### 🛠 Fixes & Updates
