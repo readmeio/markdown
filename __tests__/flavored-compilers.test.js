@@ -47,7 +47,7 @@ describe('ReadMe Flavored Blocks', () => {
     `);
   });
 
-  it.only('Html Block', () => {
+  it('Html Block', () => {
     const text = `
 [block:html]
 {
