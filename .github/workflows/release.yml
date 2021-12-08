@@ -18,7 +18,7 @@ jobs:
       # Setup the git repo & Node environemnt.
       #
       - name: Checkout branch (${{ github.ref }})
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           persist-credentials: false # install breaks with persistant creds!
 
