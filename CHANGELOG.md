@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.35.0-next.1
+
+### ✨ New & Improved
+
+* more compiler updates ([#383](https://github.com/readmeio/markdown/issues/383)) ([313e905](https://github.com/readmeio/markdown/commit/313e9056e8eb114bc556bc50c163ebafaa6f1bcc))
+
+
+### 🛠 Fixes & Updates
+
+* release workflow yaml indent ([30dc493](https://github.com/readmeio/markdown/commit/30dc493cea96e5d36c7c969ca6ba96375a396757))
+
 ## Version 6.34.0
 
 ### ✨ New & Improved
