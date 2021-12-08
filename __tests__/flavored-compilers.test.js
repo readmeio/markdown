@@ -33,11 +33,40 @@ describe('ReadMe Flavored Blocks', () => {
     `);
   });
 
+  it('Glossary Items', () => {
+    expect(compile(parse('<<glossary:owl>>'))).toMatchInlineSnapshot(`
+      "<<glossary:owl>>
+      "
+    `);
+  });
+
   it('Emojis', () => {
     expect(compile(parse(':smiley:'))).toMatchInlineSnapshot(`
       ":smiley:
       "
     `);
+  });
+
+  it('Html Block', () => {
+    const text = `
+[block:html]
+{
+  "html": ${JSON.stringify(
+    '<style>\n  summary {\n    padding-top: 8px;\n    outline: none !important;\n    user-select: none;\n  }\n  details[open] + details > summary {\n    padding-top: 0;\n  }\n  details > summary + hr {\n    opacity: .66;\n  }\n</style>'
+  )}
+}
+[/block]
+`;
+    const ast = parse(text);
+
+    expect(compile(ast)).toMatchInlineSnapshot(`
+"[block:html]
+{
+  \\"html\\": \\"<style>\\\\n  summary {\\\\n    padding-top: 8px;\\\\n    outline: none !important;\\\\n    user-select: none;\\\\n  }\\\\n  details[open] + details > summary {\\\\n    padding-top: 0;\\\\n  }\\\\n  details > summary + hr {\\\\n    opacity: .66;\\\\n  }\\\\n</style>\\"
+}
+[/block]
+"
+`);
   });
 });
 
