@@ -115,7 +115,7 @@
     "files": [
       {
         "path": "dist/main.js",
-        "maxSize": "400KB"
+        "maxSize": "450KB"
       },
       {
         "path": "dist/main.node.js",
