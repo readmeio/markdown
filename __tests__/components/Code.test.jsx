@@ -24,4 +24,10 @@ describe('Code', () => {
 
     expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
   });
+
+  it('allows undefined children?!', () => {
+    const code = mount(<Code />);
+
+    expect(code.text()).toBe('');
+  });
 });
