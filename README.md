@@ -59,5 +59,5 @@ To make changes to the RDMD engine locally is to run the local development serve
 
 ## Credits
 
-- **Lisence**: MIT
+- **License**: MIT
 - **Authors**: [Dom Harrington](https://github.com/domharrington/), [Rafe Goldberg](https://github.com/rafegoldberg)
