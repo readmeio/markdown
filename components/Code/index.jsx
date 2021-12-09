@@ -49,7 +49,9 @@ function Code(props) {
     tokenizeVariables: true,
     dark: theme === 'dark',
   };
-  const codeContent = syntaxHighlighter ? syntaxHighlighter(children[0], language, codeOpts) : children[0];
+
+  const codeContent =
+    syntaxHighlighter && children ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
 
   return (
     <React.Fragment>
@@ -76,7 +78,7 @@ function CreateCode(sanitizeSchema, { copyButtons, theme }) {
 }
 
 Code.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.string).isRequired,
+  children: PropTypes.arrayOf(PropTypes.string),
   className: PropTypes.string,
   copyButtons: PropTypes.bool,
   lang: PropTypes.string,
