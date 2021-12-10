@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.36.0-next.1
+
+### ✨ New & Improved
+
+* upgrading syntax-highlighter to support Lua and Solidity ([#391](https://github.com/readmeio/markdown/issues/391)) ([3466ece](https://github.com/readmeio/markdown/commit/3466ecefc97405a3e2ebe953a1d754f4eb8be6b2))
+
 ## Version 6.35.1
 
 ### 🛠 Fixes & Updates

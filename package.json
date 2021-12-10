@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.35.1",
+  "version": "6.36.0-next.1",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@readme/emojis": "^4.0.0",
-    "@readme/syntax-highlighter": "^10.13.2",
+    "@readme/syntax-highlighter": "^10.14.0",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^4.0.0",
     "hast-util-to-string": "^1.0.4",
@@ -115,7 +115,7 @@
     "files": [
       {
         "path": "dist/main.js",
-        "maxSize": "400KB"
+        "maxSize": "450KB"
       },
       {
         "path": "dist/main.node.js",
