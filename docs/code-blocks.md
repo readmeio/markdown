@@ -98,6 +98,7 @@ We support syntax highlighting on a number of languages:
 | Julia | `jl`, `julia` |
 | Kotlin | `kotlin`, `kt` |
 | Liquid | `liquid` |
+| Lua | `lua` |
 | Markdown | `markdown` |
 | Objective-C | `objc`, `objectivec`,  |
 | Objective-C++ | `objc++`, `objcpp`, `objectivecpp`, `objectivecplusplus`,  |
@@ -112,6 +113,7 @@ We support syntax highlighting on a number of languages:
 | Rust | `rs`, `rust` |
 | Scala | `scala` |
 | Shell | `bash`, `sh`, `shell`, `zsh` |
+| Solidity | `sol`, `solidity` |
 | SQL | `cql`, `mssql`, `mysql`, `plsql`, `postgres`, `postgresql`, `pgsql`, `sql`, `sqlite` |
 | Swift | `swift` |
 | TypeScript | `ts`, `typescript` |
