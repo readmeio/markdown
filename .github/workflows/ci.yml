@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         npm ci
-        sudo apt install fonts-noto-color-emoji
+        sudo apt install ttf-mscorefonts-installer fonts-noto-color-emoji
         make emojis
 
     - name: Run tests
