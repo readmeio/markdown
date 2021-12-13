@@ -1,10 +1,28 @@
 @import '../styles/main.scss';
 
+@if $env == 'test' {
+  // The Hub2 CSS that we load in our `examples/` demo server sets a handful of fonts that we might
+  // not have in a CI environment.
+  body {
+    --font-family: arial;
+    font-family: arial !important;
+  }
+}
+
 #rdmd-demo {
   --rdmd-demo-container: 1400px;
   --rdmd-demo-content-width: 600px;
   --rdmd-demo-mono: menlo, monospace;
   --rdmd-demo-blue: #018ef5;
+
+  // We don't have Menlo running in our CI environment so for the purposes of we're falling back to
+  // a more standard font to do regression tests with/against.
+  @if $env == 'test' {
+    --rdmd-demo-mono: arial, monospace;
+    --md-code-font: arial, monospace;
+    --markdown-title-font: arial;
+    --markdown-font: arial;
+  }
 
   // hub overrides
   #hub-content {

@@ -2,6 +2,11 @@
  */
 const ExtractCSS = require('mini-css-extract-plugin');
 
+const sassLoaderOptions = {};
+if (process.env.NODE_ENV === 'test') {
+  sassLoaderOptions.additionalData = `$env: ${process.env.NODE_ENV};`;
+}
+
 module.exports = {
   plugins: [
     new ExtractCSS({
@@ -31,7 +36,14 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
+        use: [
+          ExtractCSS.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            options: sassLoaderOptions,
+          },
+        ],
       },
       {
         // eslint-disable-next-line unicorn/no-unsafe-regex
