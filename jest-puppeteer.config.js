@@ -7,6 +7,7 @@ module.exports = {
     launchTimeout: 45000,
   },
   launch: {
-    args: ['--font-render-hinting=medium'],
+    // https://docs.browserless.io/blog/2020/09/30/puppeteer-print.html
+    args: ['--font-render-hinting=none'],
   },
 };
