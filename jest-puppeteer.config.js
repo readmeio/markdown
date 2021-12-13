@@ -6,4 +6,7 @@ module.exports = {
     protocol: 'http-get',
     launchTimeout: 45000,
   },
+  launch: {
+    args: ['--font-render-hinting=medium'],
+  },
 };

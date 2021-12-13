@@ -1,5 +1,3 @@
-import { configureToMatchImageSnapshot } from 'jest-image-snapshot';
-
-const toMatchImageSnapshot = configureToMatchImageSnapshot();
+import { toMatchImageSnapshot } from 'jest-image-snapshot';
 
 expect.extend({ toMatchImageSnapshot });
