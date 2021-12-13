@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.36.0-next.2
+
+### 🛠 Fixes & Updates
+
+* bumping @readme/syntax-highlighter to resolve upstram webpack issues ([#394](https://github.com/readmeio/markdown/issues/394)) ([cb913ad](https://github.com/readmeio/markdown/commit/cb913ad329fc318340f46ff71e214c5092c45fbe))
+
 ## Version 6.36.0-next.1
 
 ### ✨ New & Improved
