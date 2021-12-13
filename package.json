@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@readme/emojis": "^4.0.0",
-    "@readme/syntax-highlighter": "^10.14.0",
+    "@readme/syntax-highlighter": "^10.14.1",
     "copy-to-clipboard": "^3.3.1",
     "hast-util-sanitize": "^4.0.0",
     "hast-util-to-string": "^1.0.4",
