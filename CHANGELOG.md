@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.36.2
+
+### 🛠 Fixes & Updates
+
+* upgrading syntax-highlighter to the latest release ([#396](https://github.com/readmeio/markdown/issues/396)) ([7fa4d87](https://github.com/readmeio/markdown/commit/7fa4d8754932116c423384894e7b61427debfb17))
+
 ## Version 6.36.1
 
 ### 🛠 Fixes & Updates
