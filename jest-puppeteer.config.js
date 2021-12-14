@@ -6,8 +6,4 @@ module.exports = {
     protocol: 'http-get',
     launchTimeout: 45000,
   },
-  // launch: {
-  //   // https://docs.browserless.io/blog/2020/09/30/puppeteer-print.html
-  //   args: ['--font-render-hinting=none'],
-  // },
 };

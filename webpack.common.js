@@ -2,11 +2,6 @@
  */
 const ExtractCSS = require('mini-css-extract-plugin');
 
-const sassLoaderOptions = {};
-if (process.env.NODE_ENV === 'test') {
-  sassLoaderOptions.additionalData = `$env: ${process.env.NODE_ENV};`;
-}
-
 module.exports = {
   plugins: [
     new ExtractCSS({
@@ -41,7 +36,9 @@ module.exports = {
           'css-loader',
           {
             loader: 'sass-loader',
-            options: sassLoaderOptions,
+            options: {
+              additionalData: `$env: ${process.env.NODE_ENV};`,
+            },
           },
         ],
       },
