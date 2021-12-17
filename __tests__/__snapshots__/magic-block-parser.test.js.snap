@@ -214,7 +214,25 @@ Object {
 
 exports[`Parse Magic Blocks Custom Default Block 1`] = `
 Object {
-  "children": Array [],
+  "children": Array [
+    Object {
+      "children": Array [],
+      "data": Object {
+        "backgroundColor": "#ffffff",
+        "emoji": "🦉",
+        "hName": "tutorial-tile",
+        "hProperties": Object {
+          "backgroundColor": "#ffffff",
+          "emoji": "🦉",
+          "link": "http://test.com",
+          "title": "Tutorial Title",
+        },
+        "link": "http://test.com",
+        "title": "Tutorial Title",
+      },
+      "type": "div",
+    },
+  ],
   "type": "root",
 }
 `;
