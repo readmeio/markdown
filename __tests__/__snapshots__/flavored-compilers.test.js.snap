@@ -68,7 +68,7 @@ exports[`ReadMe Magic Blocks Figure 1`] = `
 
 exports[`ReadMe Magic Blocks custom blocks 1`] = `
 "
-[block:undefined]
+[block:tutorial-tile]
 {
   \\"backgroundColor\\": \\"#ffffff\\",
   \\"title\\": \\"Tutorial Title\\",
