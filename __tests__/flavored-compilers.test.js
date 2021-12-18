@@ -142,4 +142,26 @@ describe('ReadMe Magic Blocks', () => {
     const out = compile(ast);
     expect(out).toMatchSnapshot();
   });
+
+  it('custom blocks', () => {
+    const txt = `
+[block:tutorial-tile]
+${JSON.stringify(
+  {
+    backgroundColor: '#ffffff',
+    title: 'Tutorial Title',
+    emoji: '🦉',
+    link: 'http://test.com',
+  },
+  null,
+  2
+)}
+[/block]
+
+    `;
+
+    const ast = parse(txt);
+    const out = compile(ast);
+    expect(out).toMatchSnapshot();
+  });
 });

@@ -5,8 +5,6 @@ const rehypeSanitize = require('rehype-sanitize');
 const parser = require('../processor/parse/magic-block-parser');
 const options = require('../options').options.markdownOptions;
 
-const { silenceConsole } = require('./helpers');
-
 const sanitize = { attributes: [] };
 const process = (text, opts = options) =>
   text &&
@@ -230,14 +228,11 @@ describe('Parse Magic Blocks', () => {
       "backgroundColor": "#ffffff",
       "title": "Tutorial Title",
       "emoji": "🦉",
-      "link": "http://test.com",
+      "link": "http://test.com"
     }
     [/block]`;
 
-    silenceConsole()(error => {
-      expect(process(text)).toMatchSnapshot();
-      expect(error).toHaveBeenCalledTimes(1);
-    });
+    expect(process(text)).toMatchSnapshot();
   });
 
   it('Unrecognized Blocks', () => {
