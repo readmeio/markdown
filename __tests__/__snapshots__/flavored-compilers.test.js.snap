@@ -65,3 +65,16 @@ exports[`ReadMe Magic Blocks Figure 1`] = `
 [/block]
 "
 `;
+
+exports[`ReadMe Magic Blocks custom blocks 1`] = `
+"
+[block:tutorial-tile]
+{
+  \\"backgroundColor\\": \\"#ffffff\\",
+  \\"title\\": \\"Tutorial Title\\",
+  \\"emoji\\": \\"🦉\\",
+  \\"link\\": \\"http://test.com\\"
+}
+[/block]
+"
+`;

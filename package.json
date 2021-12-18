@@ -23,7 +23,7 @@
     "start": "webpack serve --config ./webpack.dev.js --open --mode development",
     "sync": "rdme docs ./docs --version=2",
     "test": "jest --coverage --runInBand --testPathIgnorePatterns '__tests__/browser'",
-    "test.watch": "jest --watch --coverage=false",
+    "test.watch": "jest --watch --coverage=false --testPathIgnorePatterns '__tests__/browser'",
     "test.browser": "jest --runInBand --testPathPattern '__tests__/browser'",
     "watch": "webpack -w --progress --mode production"
   },
