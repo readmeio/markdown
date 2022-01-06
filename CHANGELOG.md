@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.37.0
+
+### ✨ New & Improved
+
+* compile custom magic blocks ([#399](https://github.com/readmeio/markdown/issues/399)) ([d62229a](https://github.com/readmeio/markdown/commit/d62229a6f12a6280ec4e313e22cdb1802b49796a))
+
 ## Version 6.36.2
 
 ### 🛠 Fixes & Updates
