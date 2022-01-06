@@ -1,7 +1,7 @@
 Changelog
 ===
 
-## Version 6.37.0-next.1
+## Version 6.37.0
 
 ### ✨ New & Improved
 
