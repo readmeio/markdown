@@ -63,12 +63,7 @@ class Image extends React.Component {
   }
 
   render() {
-    // Avoid spreading props that are undefined into html elements
-    const props = Object.keys(this.props).reduce((acc, key) => {
-      const value = this.props[key];
-      if (value !== undefined) acc[key] = value;
-      return acc;
-    }, {});
+    const { props } = this;
     const { alt } = props;
 
     if (this.isEmoji) {
