@@ -10,7 +10,7 @@ module.exports = function FigureCompiler() {
     const img = {
       image: [image.url, image.title],
       caption: this.block(caption),
-      sizing: imgSizeByWidth[image.data.hProperties.width],
+      sizing: imgSizeByWidth[image.data.hProperties.width ?? 'auto'],
     };
 
     if (image.border) img.border = image.border;

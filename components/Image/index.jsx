@@ -63,9 +63,11 @@ class Image extends React.Component {
   }
 
   render() {
-    const { alt } = this.props;
+    const { props } = this;
+    const { alt } = props;
+
     if (this.isEmoji) {
-      return <img {...this.props} alt={alt} loading="lazy" />;
+      return <img {...props} alt={alt} loading="lazy" />;
     }
     return (
       <span
@@ -76,13 +78,8 @@ class Image extends React.Component {
         role={'button'}
         tabIndex={0}
       >
-        <img {...this.props} alt={alt} />
-        <Lightbox
-          ref={this.lightbox}
-          {...this.props}
-          onScroll={() => this.toggle(false)}
-          opened={this.state.lightbox}
-        />
+        <img {...props} alt={alt} loading="lazy" />
+        <Lightbox ref={this.lightbox} {...props} onScroll={() => this.toggle(false)} opened={this.state.lightbox} />
       </span>
     );
   }
