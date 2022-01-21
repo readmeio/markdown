@@ -60,13 +60,13 @@ describe('ReadMe Flavored Blocks', () => {
     const ast = parse(text);
 
     expect(compile(ast)).toMatchInlineSnapshot(`
-"[block:html]
-{
-  \\"html\\": \\"<style>\\\\n  summary {\\\\n    padding-top: 8px;\\\\n    outline: none !important;\\\\n    user-select: none;\\\\n  }\\\\n  details[open] + details > summary {\\\\n    padding-top: 0;\\\\n  }\\\\n  details > summary + hr {\\\\n    opacity: .66;\\\\n  }\\\\n</style>\\"
-}
-[/block]
-"
-`);
+      "[block:html]
+      {
+        \\"html\\": \\"<style>\\\\n  summary {\\\\n    padding-top: 8px;\\\\n    outline: none !important;\\\\n    user-select: none;\\\\n  }\\\\n  details[open] + details > summary {\\\\n    padding-top: 0;\\\\n  }\\\\n  details > summary + hr {\\\\n    opacity: .66;\\\\n  }\\\\n</style>\\"
+      }
+      [/block]
+      "
+    `);
   });
 });
 
@@ -140,6 +140,41 @@ describe('ReadMe Magic Blocks', () => {
     [/block]`;
     const ast = parse(txt);
     const out = compile(ast);
+    expect(out).toMatchSnapshot();
+  });
+
+  it('Image', () => {
+    const txt = `[block:image]
+    {
+       "images": [{
+          "image": [
+            "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
+            "rdme-blue.svg"
+          ]
+       }]
+    }
+    [/block]`;
+    const ast = parse(txt);
+    const out = compile(ast);
+
+    expect(out).toMatchSnapshot();
+  });
+
+  it('Image with sizing', () => {
+    const txt = `[block:image]
+    {
+       "images": [{
+          "image": [
+            "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
+            "rdme-blue.svg"
+          ],
+          "sizing": "80px"
+       }]
+    }
+    [/block]`;
+    const ast = parse(txt);
+    const out = compile(ast);
+
     expect(out).toMatchSnapshot();
   });
 

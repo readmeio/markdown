@@ -1,19 +1,31 @@
 const { imgSizeByWidth } = require('../parse/magic-block-parser');
 
+const compileImage = image => {
+  const img = {
+    image: [image.url, image.title],
+    ...(image.data.hProperties.width && { sizing: imgSizeByWidth[image.data.hProperties.width] }),
+    ...(image.border && { border: image.border }),
+  };
+
+  return img;
+};
+
 module.exports = function FigureCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
   visitors.figure = function figureCompiler(node) {
-    const [image, caption] = node.children;
+    let image;
+    let caption;
 
-    const img = {
-      image: [image.url, image.title],
-      caption: this.block(caption),
-      sizing: imgSizeByWidth[image.data.hProperties.width ?? 'auto'],
-    };
+    if (node.children) {
+      [image, caption] = node.children;
+    } else {
+      image = node;
+    }
 
-    if (image.border) img.border = image.border;
+    const img = compileImage(image);
+    if (caption) img.caption = this.block(caption);
 
     const block = {
       images: [img],

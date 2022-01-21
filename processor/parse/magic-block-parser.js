@@ -108,7 +108,7 @@ function tokenize(eat, value) {
             data: {
               hProperties: {
                 className: img.border ? 'border' : '',
-                width: imgWidthBySize[img.sizing ?? 'original'],
+                ...(img.sizing && { width: imgWidthBySize[img.sizing] }),
               },
             },
           };
