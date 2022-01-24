@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.38.0
+
+### ✨ New & Improved
+
+* add width support to image compiler ([#417](https://github.com/readmeio/markdown/issues/417)) ([8fc2d50](https://github.com/readmeio/markdown/commit/8fc2d500900c406f6685f3ed5596257fcaef9b39))
+
 ## Version 6.38.0-next.1
 
 ### ✨ New & Improved
