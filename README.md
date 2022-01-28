@@ -3,7 +3,7 @@
 @readme/markdown
 ===
 
-ReadMe's flavored Markdown parser and MDX rendering engine. ![CI Status](https://github.com/readmeio/markdown/workflows/CI/badge.svg)
+ReadMe's flavored Markdown parser and MDX rendering engine. <img align=center src=https://github.com/readmeio/markdown/workflows/CI/badge.svg alt="RDMD CI Status">
 
 ```
 npm install --save @readme/markdown
