@@ -1,7 +1,7 @@
 Changelog
 ===
 
-## Version 6.38.0-next.2
+## Version 6.38.1
 
 ### 📘 Tests & Docs
 
@@ -12,6 +12,12 @@ Changelog
 
 * **devDeps:** update @readme/variable to 13.6.5 ([#419](https://github.com/readmeio/markdown/issues/419)) ([363f4fe](https://github.com/readmeio/markdown/commit/363f4fe2b441077ddc5a8de7bcc82b5f4d6eb172))
 * **deps:** update @readme/variable to 13.6.5 ([992e275](https://github.com/readmeio/markdown/commit/992e275db48c27231263d0a9bcf0220b57a5eda2)), closes [#419](https://github.com/readmeio/markdown/issues/419)
+
+## Version 6.38.0
+
+### ✨ New & Improved
+
+* add width support to image compiler ([#417](https://github.com/readmeio/markdown/issues/417)) ([8fc2d50](https://github.com/readmeio/markdown/commit/8fc2d500900c406f6685f3ed5596257fcaef9b39))
 
 ## Version 6.38.0-next.1
 
