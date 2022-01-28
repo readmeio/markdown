@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.38.0-next.2
+
+### 📘 Tests & Docs
+
+* align status badge ([f43f035](https://github.com/readmeio/markdown/commit/f43f0354c67b9f2778c1f33272854d565af215f1))
+
+
+### 🛠 Fixes & Updates
+
+* **devDeps:** update @readme/variable to 13.6.5 ([#419](https://github.com/readmeio/markdown/issues/419)) ([363f4fe](https://github.com/readmeio/markdown/commit/363f4fe2b441077ddc5a8de7bcc82b5f4d6eb172))
+* **deps:** update @readme/variable to 13.6.5 ([992e275](https://github.com/readmeio/markdown/commit/992e275db48c27231263d0a9bcf0220b57a5eda2)), closes [#419](https://github.com/readmeio/markdown/issues/419)
+
 ## Version 6.38.0-next.1
 
 ### ✨ New & Improved
