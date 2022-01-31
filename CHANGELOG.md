@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.38.3
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** update @readme/variable to v13.6.7 ([b2af5f3](https://github.com/readmeio/markdown/commit/b2af5f314943dee0829b6168cbd108ce0f2a3642))
+
 ## Version 6.38.2
 
 ### 🛠 Fixes & Updates
