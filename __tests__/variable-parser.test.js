@@ -119,6 +119,35 @@ test('should allow underscored glossary terms', () => {
   );
 });
 
+test('should allow numeric characters in glossary terms', () => {
+  const markdown = 'This is a test <<glossary:P2P 123 Abc>>.';
+  const ast = {
+    type: 'root',
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This is a test ' },
+          {
+            type: 'readme-glossary-item',
+            data: {
+              hName: 'readme-glossary-item',
+              hProperties: {
+                term: 'P2P 123 Abc',
+              },
+            },
+          },
+          { type: 'text', value: '.' },
+        ],
+      },
+    ],
+  };
+
+  expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
+    ast
+  );
+});
+
 test('should allow non-english glossary terms', () => {
   const markdown = 'This is a test <<glossary:ラベル>>.';
   const ast = {
