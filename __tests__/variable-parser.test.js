@@ -90,6 +90,35 @@ test('should allow whitespace in glossary names', () => {
   );
 });
 
+test('should allow underscored glossary terms', () => {
+  const markdown = 'This is a test <<glossary:underscored_term>>.';
+  const ast = {
+    type: 'root',
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This is a test ' },
+          {
+            type: 'readme-glossary-item',
+            data: {
+              hName: 'readme-glossary-item',
+              hProperties: {
+                term: 'underscored_term',
+              },
+            },
+          },
+          { type: 'text', value: '.' },
+        ],
+      },
+    ],
+  };
+
+  expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
+    ast
+  );
+});
+
 test('should allow non-english glossary terms', () => {
   const markdown = 'This is a test <<glossary:ラベル>>.';
   const ast = {
