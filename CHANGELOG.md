@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.38.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump @readme/emojis from 4.0.0 to 4.0.1 ([#384](https://github.com/readmeio/markdown/issues/384)) ([048ee9f](https://github.com/readmeio/markdown/commit/048ee9f913f4dad7422fd3bb979b30d3b0b52aea))
+* **deps-dev:** update @readme/variable to v13.6.6 ([#424](https://github.com/readmeio/markdown/issues/424)) ([2faef66](https://github.com/readmeio/markdown/commit/2faef662f468f3693de3b8bd758ad0c8677cae34))
+* **deps-dev:** update @readme/variable to v13.6.6 ([cbc6cce](https://github.com/readmeio/markdown/commit/cbc6cceb9aa791da9819dee7b7a3f7571bb4a886))
+
 ## Version 6.38.2-next.2
 
 ### 🛠 Fixes & Updates
