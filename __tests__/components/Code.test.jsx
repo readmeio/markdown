@@ -5,7 +5,7 @@ jest.mock('@readme/syntax-highlighter', () => ({
   canonical: lang => lang,
 }));
 
-const { mount } = require('enzyme');
+const { fireEvent, render, screen } = require('@testing-library/react');
 const React = require('react');
 const copy = require('copy-to-clipboard');
 
@@ -17,17 +17,17 @@ describe('Code', () => {
       children: ['console.log("<<name>>");'],
     };
 
-    const code = mount(<Code {...props} />);
+    const { container } = render(<Code {...props} />);
 
-    expect(code.text()).toMatch(/VARIABLE_SUBSTITUTED/);
-    code.find('button').simulate('click');
+    expect(container).toHaveTextContent(/VARIABLE_SUBSTITUTED/);
+    fireEvent.click(screen.getByRole('button'));
 
     expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
   });
 
   it('allows undefined children?!', () => {
-    const code = mount(<Code />);
+    const { container } = render(<Code />);
 
-    expect(code.text()).toBe('');
+    expect(container).toHaveTextContent('');
   });
 });

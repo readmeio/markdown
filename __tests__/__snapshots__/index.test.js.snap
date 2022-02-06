@@ -17,11 +17,11 @@ exports[`anchors 1`] = `
 `;
 
 exports[`anchors with baseUrl 1`] = `
-"<p><a href=\\"doc:slug\\">doc</a><br>
-<a href=\\"ref:slug\\">ref</a><br>
-<a href=\\"blog:slug\\">blog</a><br>
-<a href=\\"changelog:slug\\">changelog</a><br>
-<a href=\\"page:slug\\">page</a></p>"
+"&lt;p&gt;&lt;a href=\\"doc:slug\\"&gt;doc&lt;/a&gt;&lt;br&gt;
+&lt;a href=\\"ref:slug\\"&gt;ref&lt;/a&gt;&lt;br&gt;
+&lt;a href=\\"blog:slug\\"&gt;blog&lt;/a&gt;&lt;br&gt;
+&lt;a href=\\"changelog:slug\\"&gt;changelog&lt;/a&gt;&lt;br&gt;
+&lt;a href=\\"page:slug\\"&gt;page&lt;/a&gt;&lt;/p&gt;"
 `;
 
 exports[`check list items 1`] = `
@@ -1027,8 +1027,6 @@ exports[`list items 1`] = `
 `;
 
 exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. And making an OK gesture.\\" class=\\"img\\" role=\\"button\\" tabindex=\\"0\\"><img src=\\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\" alt=\\"A guy. Eating pizza. And making an OK gesture.\\" title=\\"man-eating-pizza-and-making-an-ok-gesture.jpg\\" class=\\"\\" width=\\"100%\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" loading=\\"lazy\\"><span class=\\"lightbox\\" role=\\"dialog\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img src=\\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\" title=\\"Click to close...\\" class=\\"lightbox-img\\" width=\\"100%\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" alt=\\"A guy. Eating pizza. And making an OK gesture.\\" loading=\\"lazy\\"></span></span></span><figcaption><p>A guy. Eating pizza. And making an OK gesture.</p></figcaption></figure>"`;
-
-exports[`prefix anchors with "section-" "section-" anchors should split on camelCased words: section-camel-cased 1`] = `"section-camel-cased"`;
 
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 

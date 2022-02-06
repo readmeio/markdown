@@ -1,4 +1,4 @@
-const { mount } = require('enzyme');
+const { render } = require('@testing-library/react');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
@@ -12,12 +12,12 @@ describe('HTML Block', () => {
   });
 
   it('runs user scripts in compat mode', () => {
-    mount(<HTMLBlock html="<script>mockFn()</script>" runScripts={true} />);
+    render(<HTMLBlock html="<script>mockFn()</script>" runScripts={true} />);
     expect(global.mockFn).toHaveBeenCalledTimes(1);
   });
 
   it("doesn't run user scripts by default", () => {
-    mount(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
+    render(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
     expect(global.mockFn).toHaveBeenCalledTimes(0);
   });
 

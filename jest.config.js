@@ -25,7 +25,7 @@ const unit = {
     },
   },
   displayName: 'unit',
-  setupFilesAfterEnv: ['<rootDir>/__tests__/helpers'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/browser/'],
   testURL: 'http://localhost',
