@@ -111,6 +111,13 @@ describe('Parse RDMD Syntax', () => {
         const [codeTabs] = ast.children;
         expect(codeTabs.children).toHaveLength(3);
       });
+
+      it('Multiple empty code blocks tabs should render', () => {
+        const mdx = '```\n```\n```\n```';
+        const ast = process(mdx);
+        const [codeTabs] = ast.children;
+        expect(codeTabs.children).toHaveLength(2);
+      });
     });
   });
 
