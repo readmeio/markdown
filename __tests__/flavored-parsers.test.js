@@ -104,6 +104,13 @@ describe('Parse RDMD Syntax', () => {
         const [codeTabs] = ast.children;
         expect(codeTabs.children).toHaveLength(2);
       });
+
+      it('Tabbed code blocks should not require any code', () => {
+        const mdx = '```c++ oh me\nsome code\n```\n```c++ a tab with no code\n```\n```c++ oh my\nsome more\n```';
+        const ast = process(mdx);
+        const [codeTabs] = ast.children;
+        expect(codeTabs.children).toHaveLength(3);
+      });
     });
   });
 
