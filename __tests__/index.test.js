@@ -1,4 +1,4 @@
-const { mount } = require('enzyme');
+const { cleanup, render, screen } = require('@testing-library/react');
 const React = require('react');
 const BaseUrlContext = require('../contexts/BaseUrl');
 
@@ -32,62 +32,66 @@ test('it should have the proper utils exports', () => {
 });
 
 test('image', () => {
-  expect(mount(markdown.default('![Image](http://example.com/image.png)')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('![Image](http://example.com/image.png)'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('heading', () => {
-  expect(mount(markdown.default('## Example Header')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('## Example Header'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('magic image', () => {
-  expect(
-    mount(
-      markdown.default(
-        `
-    [block:image]
-    {
-      "images": [
-        {
-          "image": [
-            "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
-            "man-eating-pizza-and-making-an-ok-gesture.jpg",
-            1024,
-            682,
-            "#d1c8c5"
-          ],
-          "caption": "A guy. Eating pizza. And making an OK gesture.",
-          "sizing": "full"
-        }
-      ]
-    }
-    [/block]
-    `,
-        options
-      )
-    ).html()
-  ).toMatchSnapshot();
+  const { container } = render(
+    markdown.default(
+      `
+  [block:image]
+  {
+    "images": [
+      {
+        "image": [
+          "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
+          "man-eating-pizza-and-making-an-ok-gesture.jpg",
+          1024,
+          682,
+          "#d1c8c5"
+        ],
+        "caption": "A guy. Eating pizza. And making an OK gesture.",
+        "sizing": "full"
+      }
+    ]
+  }
+  [/block]
+  `,
+      options
+    )
+  );
+
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('list items', () => {
-  expect(mount(markdown.default('- listitem1')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('- listitem1'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('check list items', () => {
-  expect(mount(markdown.default('- [ ] checklistitem1\n- [x] checklistitem1')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('- [ ] checklistitem1\n- [x] checklistitem1'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('gemoji generation', () => {
-  const gemoji = mount(markdown.default(':sparkles:'));
-  expect(gemoji.find('.lightbox').exists()).toBe(false);
+  const { container } = render(markdown.default(':sparkles:'));
+  expect(container.querySelector('.lightbox')).not.toBeInTheDocument();
 });
 
 test('should strip out inputs', () => {
-  const wrap = mount(markdown.default('<input type="text" value="value" />'));
-  expect(wrap.exists()).toBe(false);
+  const { container } = render(markdown.default('<input type="text" value="value" />'));
+  expect(container).toBeEmptyDOMElement();
 });
 
 test('tables', () => {
-  const wrap = mount(
+  const { container } = render(
     markdown.default(`| Tables        | Are           | Cool  |
 | ------------- |:-------------:| -----:|
 | col 3 is      | right-aligned | $1600 |
@@ -95,11 +99,12 @@ test('tables', () => {
 | zebra stripes | are neat      |    $1 |
   `)
   );
-  expect(wrap.find('Table').html()).toMatchSnapshot();
+
+  expect(container.innerHTML.trim()).toMatchSnapshot();
 });
 
 test('headings', () => {
-  const wrap = mount(
+  render(
     markdown.default(`# Heading 1
 ## Heading 2
 ### Heading 3
@@ -107,13 +112,13 @@ test('headings', () => {
 ##### Heading 5
 ###### Heading 6`)
   );
-  expect(wrap.find('Heading')).toHaveLength(6);
+
+  expect(screen.getAllByRole('heading')).toHaveLength(6);
 });
 
 test('anchors', () => {
-  expect(
-    mount(
-      markdown.default(`
+  const { container } = render(
+    markdown.default(`
 [link](http://example.com)
 [xss](javascript:alert)
 [doc](doc:slug)
@@ -121,27 +126,29 @@ test('anchors', () => {
 [blog](blog:slug)
 [changelog](changelog:slug)
 [page](page:slug)
-  `)
-    ).html()
-  ).toMatchSnapshot();
+`)
+  );
+
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('anchor target: should default to _self', () => {
-  expect(mount(markdown.default('[test](https://example.com)')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('[test](https://example.com)'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('anchor target: should allow _blank if using HTML', () => {
-  expect(mount(markdown.default('<a href="https://example.com" target="_blank">test</a>')).html()).toMatchSnapshot();
+  const { container } = render(markdown.default('<a href="https://example.com" target="_blank">test</a>'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('anchor target: should allow download if using HTML', () => {
-  expect(
-    mount(markdown.default('<a download="example.png" href="" target="_blank">test</a>')).html()
-  ).toMatchSnapshot();
+  const { container } = render(markdown.default('<a download="example.png" href="" target="_blank">test</a>'));
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('anchors with baseUrl', () => {
-  const wrapper = mount(
+  const { container } = render(
     React.createElement(
       BaseUrlContext.Provider,
       {
@@ -158,24 +165,25 @@ test('anchors with baseUrl', () => {
       )
     )
   );
-  expect(wrapper.html()).toMatchSnapshot();
+
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('emojis', () => {
-  expect(
-    mount(
-      markdown.default(`
+  const { container } = render(
+    markdown.default(`
 :joy:
 :fa-lock:
 :unknown-emoji:
-  `)
-    ).html()
-  ).toMatchSnapshot();
+`)
+  );
+
+  expect(container.innerHTML).toMatchSnapshot();
 });
 
 describe('code samples', () => {
   it('should codify code', () => {
-    const wrap = mount(
+    const { container } = render(
       markdown.default(`
   \`\`\`javascript
   var a = 1;
@@ -186,19 +194,19 @@ describe('code samples', () => {
   \`\`\`
   `)
     );
-    expect(wrap.find('pre')).toHaveLength(2);
-    expect(wrap.find('button')).toHaveLength(2);
+    expect(container.querySelectorAll('pre')).toHaveLength(2);
+    expect(container.querySelectorAll('button')).toHaveLength(2);
   });
 
   describe('`copyButtons` option', () => {
     it('should not insert the CopyCode component if `copyButtons=false`', () => {
-      const elem = mount(
+      render(
         markdown.react('This is a sentence and it contains a piece of `code` wrapped in backticks.', {
           copyButtons: false,
         })
       );
 
-      expect(elem.find('button')).toHaveLength(0);
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
     });
   });
 
@@ -213,10 +221,13 @@ test('should render nothing if nothing passed in', () => {
 });
 
 test('`correctnewlines` option', () => {
-  expect(mount(markdown.react('test\ntest\ntest', { correctnewlines: true })).html()).toBe('<p>test\ntest\ntest</p>');
-  expect(mount(markdown.react('test\ntest\ntest', { correctnewlines: false })).html()).toBe(
-    '<p>test<br>\ntest<br>\ntest</p>'
-  );
+  let { container } = render(markdown.react('test\ntest\ntest', { correctnewlines: true }));
+  expect(container).toContainHTML('<p>test\ntest\ntest</p>');
+
+  cleanup();
+
+  ({ container } = render(markdown.react('test\ntest\ntest', { correctnewlines: false })));
+  expect(container).toContainHTML('<p>test<br>\ntest<br>\ntest</p>');
 });
 
 // TODO not sure if this needs to work or not?
@@ -245,11 +256,13 @@ describe('`stripHtml` option', () => {
 });
 
 test('should strip dangerous iframe tag', () => {
-  expect(mount(markdown.react('<p><iframe src="javascript:alert(\'delta\')"></iframe></p>')).html()).toBe('<p></p>');
+  const { container } = render(markdown.react('<p><iframe src="javascript:alert(\'delta\')"></iframe></p>'));
+  expect(container).toContainHTML('<p></p>');
 });
 
 test('should strip dangerous img attributes', () => {
-  expect(mount(markdown.default('<img src="x" onerror="alert(\'charlie\')">')).html()).toBe(
+  const { container } = render(markdown.default('<img src="x" onerror="alert(\'charlie\')">'));
+  expect(container).toContainHTML(
     '<span aria-label="" class="img" role="button" tabindex="0"><img src="x" align="" alt="" caption="" height="auto" title="" width="auto" loading="lazy"><span class="lightbox" role="dialog" tabindex="0"><span class="lightbox-inner"><img src="x" align="" caption="" height="auto" title="Click to close..." width="auto" alt="" class="lightbox-img" loading="lazy"></span></span></span>'
   );
 });
@@ -385,9 +398,9 @@ describe('prefix anchors with "section-"', () => {
   });
 
   it('"section-" anchors should split on camelCased words', () => {
-    const heading = mount(markdown.react('# camelCased'));
-    const anchor = heading.find('.heading-anchor_backwardsCompatibility').at(0);
+    const { container } = render(markdown.react('# camelCased'));
+    const anchor = container.querySelectorAll('.heading-anchor_backwardsCompatibility')[0];
 
-    expect(anchor.props().id).toMatchSnapshot('section-camel-cased');
+    expect(anchor).toHaveAttribute('id', 'section-camel-cased');
   });
 });

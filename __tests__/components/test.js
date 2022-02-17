@@ -1,5 +1,5 @@
 /* eslint-disable no-eval */
-const { mount } = require('enzyme');
+const { cleanup, fireEvent, render } = require('@testing-library/react');
 const React = require('react');
 const markdown = require('../../index');
 
@@ -7,7 +7,7 @@ const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {
   it('Variables', () => {
-    const wrapper = mount(
+    const { container } = render(
       React.createElement(
         markdown.utils.VariablesContext.Provider,
         {
@@ -19,11 +19,11 @@ describe('Data Replacements', () => {
         markdown.react(`<<test>>`)
       )
     );
-    expect(wrapper.html()).toBe('<p><span>User Override</span></p>');
+    expect(container).toContainHTML('<p><span>User Override</span></p>');
   });
 
   it('Glossary Term', () => {
-    const wrapper = mount(
+    const { container } = render(
       React.createElement(
         markdown.utils.GlossaryContext.Provider,
         {
@@ -38,7 +38,7 @@ describe('Data Replacements', () => {
         markdown.react(`<<glossary:term>>`)
       )
     );
-    expect(wrapper.html()).toBe(
+    expect(container).toContainHTML(
       '<p><span class="glossary-tooltip" v="term"><span class="glossary-item highlight">term</span><span class="tooltip-content"><span class="tooltip-content-body"><strong class="term">term</strong> - a word or phrase used to describe a thing or to express a concept.</span></span></span></p>'
     );
   });
@@ -68,30 +68,34 @@ describe('Components', () => {
 }
 [/block]`,
     ];
-    const wrap = [
-      mount(markdown.react(callout[0])),
-      mount(markdown.react(callout[1])),
-      mount(markdown.react(callout[2])),
-    ];
 
-    expect(wrap[0].html()).toMatchSnapshot();
+    let { container } = render(markdown.react(callout[0]));
+    expect(container.innerHTML).toMatchSnapshot();
+
+    cleanup();
 
     const noTitleExpectation =
       '<blockquote class="callout callout_warn" theme="🚧"><h3 class="callout-heading empty"><span class="callout-icon">🚧</span></h3><p>Callout with no title.</p></blockquote>';
-    expect(wrap[1].html()).toBe(noTitleExpectation);
-    expect(wrap[2].html()).toBe(noTitleExpectation);
+
+    ({ container } = render(markdown.react(callout[1])));
+    expect(container).toContainHTML(noTitleExpectation);
+
+    cleanup();
+
+    ({ container } = render(markdown.react(callout[2])));
+    expect(container).toContainHTML(noTitleExpectation);
   });
 
   it('Multi Code Block', () => {
     const tabs = '```\nhello\n```\n```php\nworld\n```\n\n';
     const rdmd = markdown.react(tabs);
-    const wrap = mount(rdmd);
+    const { container } = render(rdmd);
 
-    expect(wrap.find('pre').at(1).getDOMNode().classList).toHaveLength(0);
+    expect(container.querySelectorAll('pre')[1]).not.toHaveClass();
 
-    wrap.find('.CodeTabs-toolbar button').at(1).simulate('click').simulate('click');
+    fireEvent.click(container.querySelectorAll('.CodeTabs-toolbar button')[1]);
 
-    expect(wrap.find('pre').at(1).getDOMNode().classList).toContain('CodeTabs_active');
+    expect(container.querySelectorAll('pre')[1]).toHaveClass('CodeTabs_active');
   });
 
   it('Embed', () => {
@@ -129,8 +133,8 @@ describe('Components', () => {
 
     silenceConsole()(error => {
       Object.values(fixtures).map(fx => {
-        const wrap = mount(markdown.react(fx));
-        return expect(wrap.html()).toMatchSnapshot();
+        const { container } = render(markdown.react(fx));
+        return expect(container.innerHTML).toMatchSnapshot();
       });
 
       expect(error).toHaveBeenCalledTimes(1);
@@ -141,48 +145,44 @@ describe('Components', () => {
     const text =
       '![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")';
 
-    const wrap = mount(markdown.react(text));
-    expect(wrap.html()).toMatchSnapshot();
+    const { container } = render(markdown.react(text));
+    expect(container.innerHTML).toMatchSnapshot();
 
-    const img = wrap.find('img').at(0);
-    const box = wrap.find('.lightbox').at(0);
+    const img = container.querySelectorAll('img')[0];
+    const box = container.querySelectorAll('.lightbox')[0];
 
-    img.simulate('click');
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
+    fireEvent.click(img);
+    expect(box).toHaveAttribute('open');
 
-    box.simulate('scroll');
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
+    fireEvent.scroll(box);
+    expect(box).not.toHaveAttribute('open');
 
-    img.simulate('keydown', { key: 'Enter' });
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
+    fireEvent.keyDown(img, { key: 'Enter' });
+    expect(box).toHaveAttribute('open');
 
-    img.simulate('keydown', { key: 'Escape' });
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
+    fireEvent.keyDown(img, { key: 'Escape' });
+    expect(box).not.toHaveAttribute('open');
 
-    img.simulate('keydown', { key: ' ' });
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(true);
+    fireEvent.keyDown(img, { key: ' ' });
+    expect(box).toHaveAttribute('open');
 
-    img.simulate('keydown', { key: '.', metaKey: true });
-    // eslint-disable-next-line jest-dom/prefer-to-have-attribute
-    expect(box.getDOMNode(0).hasAttribute('open')).toBe(false);
+    fireEvent.keyDown(img, { key: '.', metaKey: true });
+    expect(box).not.toHaveAttribute('open');
   });
 
   it('Heading', () => {
-    const wrap = mount(markdown.react('### Heading Level 3\n\n### Heading Level 3'));
-    expect(wrap.find('Heading')).toHaveLength(2);
+    let { container } = render(markdown.react('### Heading Level 3\n\n### Heading Level 3'));
+    expect(container.querySelectorAll('.heading')).toHaveLength(2);
 
-    const blank = mount(markdown.react('Pretest.\n\n###\n\nPosttest.'));
-    expect(blank.find('Heading').text()).toBe('');
+    cleanup();
+
+    ({ container } = render(markdown.react('Pretest.\n\n###\n\nPosttest.')));
+    expect(container.querySelector('.heading')).toHaveTextContent('');
   });
 
   it('Heading no children', () => {
-    const wrap = mount(markdown.react('### Heading Level 3'));
-    expect(wrap.find('Heading')).toHaveLength(1);
+    const { container } = render(markdown.react('### Heading Level 3'));
+    expect(container.querySelectorAll('.heading')).toHaveLength(1);
   });
 });
 
@@ -215,14 +215,20 @@ ${JSON.stringify({
   rows: 1,
 })}
 [/block]`;
-  const rdmd = markdown.react(tabs, { compatibilityMode: true });
-  const wrap = mount(rdmd);
 
-  it('Should use h1 tags for magic heading blocks.', () => expect(wrap.find('h1')).toHaveLength(1));
+  let rdmd;
+  let container;
+  beforeEach(() => {
+    rdmd = markdown.react(tabs, { compatibilityMode: true });
+    // eslint-disable-next-line testing-library/no-render-in-setup
+    ({ container } = render(rdmd));
+  });
+
+  it('Should use h1 tags for magic heading blocks.', () => expect(container.querySelectorAll('h1')).toHaveLength(1));
 
   it('Should allow block-level RDMD compoonents in tables.', () => {
-    const table = wrap.find('table');
-    expect(table.find('.CodeTabs')).toHaveLength(1);
-    expect(table.find('blockquote')).toHaveLength(1);
+    const table = container.querySelector('table');
+    expect(table.querySelectorAll('.CodeTabs')).toHaveLength(1);
+    expect(table.querySelectorAll('blockquote')).toHaveLength(1);
   });
 });

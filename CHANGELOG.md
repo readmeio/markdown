@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.38.4-next.1
+
+### 🛠 Fixes & Updates
+
+* code block regex should allow empty tab contents ([#436](https://github.com/readmeio/markdown/issues/436)) ([282cc34](https://github.com/readmeio/markdown/commit/282cc349c2555e7995ec0a776e51f021956f0f12))
+
 ## Version 6.38.3
 
 ### 🛠 Fixes & Updates

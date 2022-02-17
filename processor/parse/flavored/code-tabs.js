@@ -16,7 +16,7 @@ function tokenizer(eat, value) {
    *    - [code] snippet text
    */
   // eslint-disable-next-line unicorn/no-unsafe-regex
-  const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?\n(?<code>((?!\n```).)*)\n```/gs;
+  const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?(?<code>((?!\n```).)*)?\n```/gs;
   while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
