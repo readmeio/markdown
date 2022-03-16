@@ -33,7 +33,7 @@ describe('Table of Contents', () => {
     const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
-    expect(container.querySelectorAll('li > a[href]:not([href=""])')).toHaveLength(2);
+    expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
   it('includes two heading levels', () => {
@@ -42,7 +42,7 @@ describe('Table of Contents', () => {
     const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
-    expect(container.querySelectorAll('li > a[href]:not([href=""])')).toHaveLength(2);
+    expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
     expect(container.innerHTML).toMatchSnapshot();
   });
 
@@ -52,7 +52,7 @@ describe('Table of Contents', () => {
     const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
-    expect(container.querySelectorAll('li > a[href]:not([href=""])')).toHaveLength(2);
+    expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
   it('includes variables', () => {
@@ -61,7 +61,7 @@ describe('Table of Contents', () => {
     const toc = markdown.reactTOC(ast);
     const { container } = render(<VariablesContext.Provider value={variables}>{toc}</VariablesContext.Provider>);
 
-    expect(container.querySelector('li > a[href]:not([href=""])')).toHaveTextContent(`Heading ${variables.user.test}`);
+    expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
   });
 
   it('includes glossary items', () => {
@@ -70,7 +70,7 @@ describe('Table of Contents', () => {
     const toc = markdown.reactTOC(ast);
     const { container } = render(<GlossaryContext.Provider value={glossaryTerms}>{toc}</GlossaryContext.Provider>);
 
-    expect(container.querySelector('li > a[href]:not([href=""])')).toHaveTextContent(
+    expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(
       `Heading ${glossaryTerms[0].term}`
     );
   });
