@@ -7,7 +7,7 @@ function TableOfContents({ children }) {
       <ul className="toc-list">
         <li>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a className="tocHeader" href="#">
+          <a className="tocHeader">
             <i className="icon icon-text-align-left"></i>
             Table of Contents
           </a>
