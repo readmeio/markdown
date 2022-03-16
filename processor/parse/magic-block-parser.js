@@ -201,10 +201,14 @@ function tokenize(eat, value) {
     }
     case 'embed': {
       const { title, url, html } = json;
-      json.provider = new URL(url).hostname
-        .split(/(?:www)?\./)
-        .filter(i => i)
-        .join('.');
+      try {
+        json.provider = new URL(url).hostname
+          .split(/(?:www)?\./)
+          .filter(i => i)
+          .join('.');
+      } catch {
+        json.provider = url;
+      }
       const data = {
         ...json,
         url,
