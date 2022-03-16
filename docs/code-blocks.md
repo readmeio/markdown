@@ -88,12 +88,14 @@ We support syntax highlighting on a number of languages:
 | Docker | `dockerfile` |
 | Erlang | `erl`, `erlang` |
 | Go | `go` |
+| GraphQL | `gql`, `graphql` |
 | Groovy | `gradle`, `groovy` |
 | Handlebars | `handlebars`, `hbs` |
 | HTML/XML | `html`, `xhtml`, `xml` |
 | HTTP | `http` |
 | Java | `java` |
-| JavaScript | `coffeescript`, `ecmascript`, `javascript`, `js`, `jsx`, `node` |
+| JavaScript | `coffeescript`, `ecmascript`, `javascript`, `js`, `node` |
+| JSX | `jsx` |
 | JSON | `json` |
 | Julia | `jl`, `julia` |
 | Kotlin | `kotlin`, `kt` |

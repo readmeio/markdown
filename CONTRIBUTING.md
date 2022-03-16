@@ -32,4 +32,6 @@ feat(api-explorer): add color variants
 
 ### Visual Regression Tests
 
-If you update the docs or the rendering changes, you'll need to update the snapshots. As most environments font configs are different, the simplest thing to do is grab the updated snapshots from github's actions. After a failed tests, the updated snapshots should be available for download.
+If you update the docs or the rendering changes, you'll need to update the snapshots. As most environments font configs are different, the simplest thing to do is grab the updated snapshots from the **Artifacts** section of your GitHub Actions workflow run (see [this failed workflow run](https://github.com/readmeio/markdown/actions/runs/1994189147) for an example).
+
+After a failed test, the updated snapshots should be available for download in the `image-snapshots` artifact. To update the snapshots, unzip the `image-snapshots` file and load its images into the `__tests__/browser/ci` directory. You can also view the (somewhat chaotic) image diffs in the `image-diffs` artifact.
