@@ -3,31 +3,23 @@ on:
   push:
     branches:
       - main
-      - next
 
 jobs:
   Release:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [14.x]
     steps:
-
       # Setup the git repo & Node environemnt.
       #
       - name: Checkout branch (${{ github.ref }})
-        # CI appears to fail on actions/checkout@v3
-        # https://github.com/readmeio/markdown/pull/450
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
         with:
           persist-credentials: false # install breaks with persistant creds!
 
-      - name: Setup node (v${{ matrix.node-version }})
+      - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 14
 
       - name: Update npm
         run: npm i -g npm@7
@@ -44,7 +36,7 @@ jobs:
       - name: Publish release
         run: npm run release # configured in .releaserc
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}                       # auth push to remote repo
+          GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
           NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.GH_TOKEN }} # auth publish to registry
 
       # Push release changes to the remote.
