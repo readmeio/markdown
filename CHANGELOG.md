@@ -1,6 +1,21 @@
 Changelog
 ===
 
+## Version 6.38.5
+
+### 📘 Tests & Docs
+
+* graphql/JSX lang support, contributing ([#448](https://github.com/readmeio/markdown/issues/448)) ([e3c8b43](https://github.com/readmeio/markdown/commit/e3c8b435cdb7f97aa5ffb566c7e0e3a3fdb25534))
+
+
+### 🛠 Fixes & Updates
+
+* **SEO:** add href to TOC ([#447](https://github.com/readmeio/markdown/issues/447)) ([06a463e](https://github.com/readmeio/markdown/commit/06a463e540c94b4a250be9238ea0ee2de245e74a))
+* **deps:** bump actions/checkout from 2.3.4 to 3 ([#442](https://github.com/readmeio/markdown/issues/442)) ([dd78e22](https://github.com/readmeio/markdown/commit/dd78e2289e141e8b116c3bcbc163eb2676cab0db))
+* **deps:** bump actions/setup-node from 2.4.0 to 3 ([#440](https://github.com/readmeio/markdown/issues/440)) ([d134aab](https://github.com/readmeio/markdown/commit/d134aab5447f34cb695bb513f47e1b34f1164442))
+* page crashing on invalid url in embed block ([#449](https://github.com/readmeio/markdown/issues/449)) ([f5715e8](https://github.com/readmeio/markdown/commit/f5715e86a0615201a7beb2b3dfd06e4be79f9945))
+* **deps:** revert actions/checkout@v3 ([#450](https://github.com/readmeio/markdown/issues/450)) ([88460cd](https://github.com/readmeio/markdown/commit/88460cdc223d5aa90d77a2f5d8b993ce8e178592))
+
 ## Version 6.38.4
 
 ### 🛠 Fixes & Updates
