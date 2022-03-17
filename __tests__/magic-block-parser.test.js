@@ -190,6 +190,19 @@ describe('Parse Magic Blocks', () => {
     expect(process(text)).toMatchSnapshot();
   });
 
+  it('Embed Blocks with invalid URL', () => {
+    const text = `[block:embed]
+    {
+      "html": false,
+      "url": "www.youtu.be/J3-uKv1DShQ",
+      "title": null,
+      "favicon": "https://youtu.be/favicon.ico",
+      "iframe": false
+    }
+    [/block]`;
+    expect(process(text)).toMatchSnapshot();
+  });
+
   it('Callout Blocks', () => {
     const text = `[block:callout]
     {
