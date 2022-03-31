@@ -60,7 +60,6 @@ jobs:
       # Sync docs to rdmd.readme.io
       #
       - name: Sync docs to rdmd.readme.io
-        if: "github.ref == 'refs/heads/main'"
-        run: npm run sync -- --key=$KEY
-        env:
-          KEY: ${{ secrets.RDME_KEY }}
+        uses: readmeio/rdme@7.0.1
+        with:
+          rdme: docs ./docs --key=${{ secrets.RDME_KEY }} --version=2
