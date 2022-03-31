@@ -324,6 +324,9 @@
     vertical-align: middle
   }
 
+  p.blank-line {
+    height: 1.5em;
+  }
 }
 
 @mixin markdownOverrides {
