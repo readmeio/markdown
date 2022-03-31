@@ -1,6 +1,25 @@
 Changelog
 ===
 
+## Version 6.38.6
+
+### 🛠 Fixes & Updates
+
+* **seo:** add href to TOC ([#455](https://github.com/readmeio/markdown/issues/455)) ([a99f57f](https://github.com/readmeio/markdown/commit/a99f57f926fdcdfc9791a6904794939d18194344))
+* **deps:** bump readmeio/rdme from 7.0.0 to 7.0.1 ([#453](https://github.com/readmeio/markdown/issues/453)) ([39baac0](https://github.com/readmeio/markdown/commit/39baac074233aa2220ac4892d5fbe9d13dea40f6))
+* **deps:** use `rdme` GitHub Action 🚀  ([#452](https://github.com/readmeio/markdown/issues/452)) ([3d811a6](https://github.com/readmeio/markdown/commit/3d811a629f2c6c1da74cc1effb03cbd292ff9d11))
+
+
+### 📘 Tests & Docs
+
+* also delete SECURITY.md ([6b0eb1f](https://github.com/readmeio/markdown/commit/6b0eb1f2bc3d973dfe028fa54af213dad0c3c14d))
+* delete CoC in favor of shared org files ([6eb18ac](https://github.com/readmeio/markdown/commit/6eb18acce1cf5f77fd5f6417abea245c5bad996e))
+
+
+### ✨ New & Improved
+
+* add class for blank-line ([#457](https://github.com/readmeio/markdown/issues/457)) ([347cfa6](https://github.com/readmeio/markdown/commit/347cfa60cb45a23d3cb50671290b168bd91ce006))
+
 ## Version 6.38.5
 
 ### 📘 Tests & Docs
