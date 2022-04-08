@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.38.7
+
+### 🛠 Fixes & Updates
+
+* **gemoji:** add compiler for font-awesome emojis ([#461](https://github.com/readmeio/markdown/issues/461)) ([36f0b9d](https://github.com/readmeio/markdown/commit/36f0b9d38a3e32cd8a77e0f7dd33e113de54f2a7))
+* **deps:** bump minimist from 1.2.5 to 1.2.6 ([#458](https://github.com/readmeio/markdown/issues/458)) ([adc55c2](https://github.com/readmeio/markdown/commit/adc55c2a54295ecd8978d7d1d0589c18ed724d3c))
+* **deps:** bump readmeio/rdme from 7.0.1 to 7.0.3 ([#459](https://github.com/readmeio/markdown/issues/459)) ([3433623](https://github.com/readmeio/markdown/commit/343362394183d22e9284ec835bd31b0f463a29a5))
+
 ## Version 6.38.6
 
 ### 🛠 Fixes & Updates
