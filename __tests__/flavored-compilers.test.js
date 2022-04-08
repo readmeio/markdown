@@ -199,4 +199,15 @@ ${JSON.stringify(
     const out = compile(ast);
     expect(out).toMatchSnapshot();
   });
+
+  it('font-awesome emojis', () => {
+    const txt = `:fa-rss-square:`;
+
+    const ast = parse(txt);
+    const out = compile(ast);
+    expect(out).toMatchInlineSnapshot(`
+      ":fa-rss-square:
+      "
+    `);
+  });
 });
