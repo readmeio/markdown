@@ -31,7 +31,7 @@ jobs:
     - name: Run visual regression tests
       run: CI=true npm run test.browser
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
         name: image-diffs
@@ -41,7 +41,7 @@ jobs:
       if: ${{ failure() }}
       run: npm run test.browser -- -u
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
       with:
         name: image-snapshots
