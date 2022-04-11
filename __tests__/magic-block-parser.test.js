@@ -203,6 +203,17 @@ describe('Parse Magic Blocks', () => {
     expect(process(text)).toMatchSnapshot();
   });
 
+  it('Embed Blocks with empty URL', () => {
+    const text = `[block:embed]
+    {
+      "url": "",
+      "typeOfEmbed": "youtube",
+      "provider": "embed"
+    }
+    [/block]`;
+    expect(process(text)).toMatchSnapshot();
+  });
+
   it('Callout Blocks', () => {
     const text = `[block:callout]
     {
