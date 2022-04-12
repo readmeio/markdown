@@ -297,6 +297,41 @@ Object {
 }
 `;
 
+exports[`Parse Magic Blocks Embed Blocks with empty URL 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": undefined,
+            },
+          ],
+          "title": "",
+          "type": "link",
+          "url": "",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-embed",
+        "hProperties": Object {
+          "href": "",
+          "html": undefined,
+          "provider": "",
+          "title": undefined,
+          "typeOfEmbed": "youtube",
+          "url": "",
+        },
+      },
+      "type": "embed",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse Magic Blocks Embed Blocks with invalid URL 1`] = `
 Object {
   "children": Array [

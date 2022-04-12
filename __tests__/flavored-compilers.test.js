@@ -210,4 +210,44 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('Tables', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify({
+  data: {
+    'h-0': 'th 1',
+    'h-1': 'th 2',
+    '0-0': 'cell 1',
+    '0-1': 'cell 2',
+  },
+  cols: 2,
+  rows: 1,
+  align: ['center', 'center'],
+})}
+[/block]
+    `;
+
+    expect(compile(parse(md))).toMatchSnapshot();
+  });
+
+  it('Tables with breaks', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify({
+  data: {
+    'h-0': 'th 1',
+    'h-1': 'th 2',
+    '0-0': 'cell 1  \nafter the break',
+    '0-1': 'cell 2',
+  },
+  cols: 2,
+  rows: 1,
+  align: ['center', 'center'],
+})}
+[/block]
+    `;
+
+    expect(compile(parse(md))).toMatchSnapshot();
+  });
 });

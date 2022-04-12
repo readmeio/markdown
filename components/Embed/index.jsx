@@ -12,6 +12,10 @@ class Embed extends React.Component {
   render() {
     const { provider, url, title, html, iframe, image, favicon, ...attrs } = this.props;
 
+    if (!url) {
+      return <div />;
+    }
+
     if ('iframe' in this.props) {
       return <iframe {...attrs} border="none" src={url} style={{ border: 'none' }} />;
     }

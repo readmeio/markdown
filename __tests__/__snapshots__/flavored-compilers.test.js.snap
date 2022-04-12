@@ -99,6 +99,31 @@ exports[`ReadMe Magic Blocks Image with sizing 1`] = `
 "
 `;
 
+exports[`ReadMe Magic Blocks Tables 1`] = `
+"|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+"
+`;
+
+exports[`ReadMe Magic Blocks Tables with breaks 1`] = `
+"[block:parameters]
+{
+  \\"align\\": [
+    \\"center\\",
+    \\"center\\"
+  ],
+  \\"cols\\": 2,
+  \\"rows\\": 2,
+  \\"h-0\\": \\"th 1\\",
+  \\"h-1\\": \\"th 2\\",
+  \\"0-0\\": \\"cell 1  \\\\nafter the break\\",
+  \\"0-1\\": \\"cell 2\\"
+}
+[/block]
+"
+`;
+
 exports[`ReadMe Magic Blocks custom blocks 1`] = `
 "
 [block:tutorial-tile]
