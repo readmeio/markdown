@@ -120,7 +120,7 @@ exports[`ReadMe Magic Blocks Tables with breaks 1`] = `
   \\"0-0\\": \\"cell 1  \\\\nafter the break\\",
   \\"0-1\\": \\"cell 2\\"
 }
-[/block:parameters]
+[/block]
 "
 `;
 
