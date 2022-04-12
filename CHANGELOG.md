@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.38.8
+
+### 📘 Tests & Docs
+
+* updating the pr template ([#462](https://github.com/readmeio/markdown/issues/462)) ([7b513e0](https://github.com/readmeio/markdown/commit/7b513e0fbca17afa03d8b89a61429133b852b487))
+
+
+### 🛠 Fixes & Updates
+
+* new editor embed block empty state ([#466](https://github.com/readmeio/markdown/issues/466)) ([ad1f5f6](https://github.com/readmeio/markdown/commit/ad1f5f6d2c6d485f4977816fa930d2c3cadd8818))
+* **tables:** preserve breaks in tables ([#467](https://github.com/readmeio/markdown/issues/467)) ([ea9ddb9](https://github.com/readmeio/markdown/commit/ea9ddb945fdc72f95c14ea7386f1ed00e7f32159))
+
 ## Version 6.38.7
 
 ### 🛠 Fixes & Updates
