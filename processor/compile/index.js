@@ -1,3 +1,4 @@
+export { default as breakCompiler } from './break';
 export { default as codeTabsCompiler } from './code-tabs';
 export { default as divCompiler } from './div';
 export { default as figureCompiler } from './figure';
