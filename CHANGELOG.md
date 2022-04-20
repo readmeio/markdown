@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.39.0
+
+### ✨ New & Improved
+
+* save newlines with spaces ([#471](https://github.com/readmeio/markdown/issues/471)) ([63649e7](https://github.com/readmeio/markdown/commit/63649e73656f1e41c3c5ef7284ddad22d4831193))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump readmeio/rdme from 7.0.3 to 7.1.1 ([#468](https://github.com/readmeio/markdown/issues/468)) ([6eac32f](https://github.com/readmeio/markdown/commit/6eac32f06196a32d88f661b3169065eb4a2bf3df))
+* save images in markdown format when they don't have a width ([#472](https://github.com/readmeio/markdown/issues/472)) ([b2cc22e](https://github.com/readmeio/markdown/commit/b2cc22ec45dbe05eb7b963e8ec9a3f1bc4aab02b))
+
 ## Version 6.38.8
 
 ### 📘 Tests & Docs
