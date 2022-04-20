@@ -7,7 +7,7 @@ const GlossaryContext = require('../contexts/GlossaryTerms');
 function GlossaryItem({ term, terms }) {
   const foundTerm = terms.find(i => term.toLowerCase() === i.term.toLowerCase());
 
-  if (!foundTerm) return null;
+  if (!foundTerm) return <span>{term}</span>;
 
   return (
     <span className="glossary-tooltip" v={foundTerm.term}>
