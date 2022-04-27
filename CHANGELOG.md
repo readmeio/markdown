@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.39.1
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump readmeio/rdme from 7.1.1 to 7.2.0 ([#474](https://github.com/readmeio/markdown/issues/474)) ([3c1564d](https://github.com/readmeio/markdown/commit/3c1564d9037596e41fbcd12aec5f8992744b101b))
+
 ## Version 6.39.0
 
 ### ✨ New & Improved
