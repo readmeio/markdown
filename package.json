@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.39.0",
+  "version": "6.39.1",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [
@@ -77,7 +77,7 @@
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",
-    "babel-jest": "^27.4.0",
+    "babel-jest": "^28.0.2",
     "babel-loader": "^8.2.3",
     "codemirror": "^5.64.0",
     "core-js": "^3.19.2",
