@@ -132,6 +132,16 @@ test('anchors', () => {
   expect(container.innerHTML).toMatchSnapshot();
 });
 
+test('protocol should be added to links', () => {
+  const { container } = render(
+    markdown.default(`
+[link without protocol](www.example.com)
+`)
+  );
+
+  expect(container.innerHTML).toMatchSnapshot();
+});
+
 test('anchor target: should default to _self', () => {
   const { container } = render(markdown.default('[test](https://example.com)'));
   expect(container.innerHTML).toMatchSnapshot();

@@ -31,7 +31,11 @@ function getHref(href, baseUrl) {
     return `${base}/page/${custompage[1]}`;
   }
 
-  return href;
+  const regex = /^(www.)+/;
+  if (!regex.test(href)) return href;
+
+  const hrefWithAddedProtocol = 'http://'.concat(href);
+  return hrefWithAddedProtocol;
 }
 
 function docLink(href) {
