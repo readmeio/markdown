@@ -34,7 +34,7 @@ function getHref(href, baseUrl) {
   const regex = /^(www.)+/;
   if (!regex.test(href)) return href;
 
-  const hrefWithAddedProtocol = 'http://'.concat(href);
+  const hrefWithAddedProtocol = 'https://'.concat(href);
   return hrefWithAddedProtocol;
 }
 

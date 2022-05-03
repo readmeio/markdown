@@ -1030,6 +1030,6 @@ exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. An
 
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 
-exports[`protocol should be added to links 1`] = `"<p><a href=\\"http://www.example.com\\" target=\\"\\" title=\\"\\">link without protocol</a></p>"`;
+exports[`protocol should be added to links 1`] = `"<p><a href=\\"https://www.example.com\\" target=\\"\\" title=\\"\\">link without protocol</a></p>"`;
 
 exports[`tables 1`] = `"<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div>"`;
