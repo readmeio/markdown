@@ -17,9 +17,10 @@ module.exports = function TableCompiler() {
     }
 
     const data = {
-      align: [...node.align],
+      data: {},
       cols: node.children[0]?.children?.length || 0,
-      rows: node.children.length,
+      rows: node.children.length - 1,
+      align: [...node.align],
     };
 
     node.children.forEach((row, i) => {
@@ -27,7 +28,7 @@ module.exports = function TableCompiler() {
         const col = i === 0 ? 'h' : i - 1;
         const string = this.all(cell).join('').replace(/\\\n/g, '  \n');
 
-        data[`${col}-${j}`] = string;
+        data.data[`${col}-${j}`] = string;
       });
     });
 
