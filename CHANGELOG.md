@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.39.2
+
+### 🛠 Fixes & Updates
+
+* auto-deploy changes to Heroku (markdown-demo) ([#484](https://github.com/readmeio/markdown/issues/484)) ([e425040](https://github.com/readmeio/markdown/commit/e4250404960f2e5b381c0aa57d3dc5ced52b652a))
+* **table:** correctly save magic block ([#485](https://github.com/readmeio/markdown/issues/485)) ([66771c3](https://github.com/readmeio/markdown/commit/66771c3ef77b3f6664430edebbc6f8e1ed3e5bd4))
+* update snapshot ([#479](https://github.com/readmeio/markdown/issues/479)) ([64e87f9](https://github.com/readmeio/markdown/commit/64e87f9be6bf8ddef2bcdc715a22b994b1708516))
+
 ## Version 6.39.1
 
 ### 🛠 Fixes & Updates
