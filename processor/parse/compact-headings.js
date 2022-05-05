@@ -1,11 +1,19 @@
-const rgx = /^(#+)([^\n]+)\n{1,}/;
+const rgx = /^(#{1,6})(?!(?:#|\s))([^\n]+)\n/;
 
 function tokenizer(eat, value) {
   if (!rgx.test(value)) return true;
 
   const [match, hash, text] = rgx.exec(value);
-  const block = this.tokenizeBlock([hash, text].join(' '), eat.now());
-  return eat(match)(block[0]);
+
+  const now = eat.now();
+  now.column += match.length;
+  now.offset += match.length;
+
+  return eat(match)({
+    type: 'heading',
+    depth: hash.length,
+    children: this.tokenizeInline(text, now),
+  });
 }
 
 function parser() {
