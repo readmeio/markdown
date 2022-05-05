@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.39.3
+
+### 🛠 Fixes & Updates
+
+* swap out our custom heading tokenizer to more closely follow remark-parse ([#486](https://github.com/readmeio/markdown/issues/486)) ([9140793](https://github.com/readmeio/markdown/commit/91407939a71616ac9764bc7b20025f69c91acf14))
+
 ## Version 6.39.2
 
 ### 🛠 Fixes & Updates
