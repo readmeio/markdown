@@ -7,7 +7,7 @@ Object {
       "children": Array [
         Object {
           "type": "text",
-          "value": "#  heading 1",
+          "value": "# heading 1",
         },
       ],
       "type": "paragraph",
@@ -75,7 +75,7 @@ Object {
       "children": Array [
         Object {
           "type": "text",
-          "value": "#  heading 1",
+          "value": "# heading 1",
         },
       ],
       "type": "paragraph",
