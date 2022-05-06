@@ -7,7 +7,7 @@ module.exports = function ImageCompiler() {
   visitors.image = function compile(node, ...args) {
     if (node.data?.hProperties?.className === 'emoji') return node.title;
 
-    if (node.data.hProperties.width) return visitors.figure.call(this, node, ...args);
+    if (node.data?.hProperties?.width) return visitors.figure.call(this, node, ...args);
 
     return originalImageCompiler.call(this, node, ...args);
   };
