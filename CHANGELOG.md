@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.39.4
+
+### 🛠 Fixes & Updates
+
+* serializing images 😬 ([#488](https://github.com/readmeio/markdown/issues/488)) ([7b08151](https://github.com/readmeio/markdown/commit/7b08151783648773bd9790a4d6cb07a46ed9ffc4))
+
 ## Version 6.39.3
 
 ### 🛠 Fixes & Updates
