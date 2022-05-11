@@ -18,7 +18,7 @@ metadata:
   "title": "Syntax"
 }
 [/block]
-Callouts are very nearly equivalent to standard Markdown block quotes in their syntax, other than some specific requirements on their content: To be considered a “callout”, a block quote must start with an initial emoji. This is used to determine the callout's theme. Here's an example of how you might write a warning callout.
+Callouts are very nearly equivalent to standard Markdown block quotes in their syntax, other than some specific requirements on their content: To be considered a “callout”, a block quote must start with an initial emoji. This is used to determine the callout's theme. Here's an example of how you might write a success callout.
 
     > 👍 Success
     > 
@@ -139,7 +139,7 @@ With a touch of Custom CSS, we should be able to get a callout using the 📷 em
 ```css Custom CSS
 .callout[theme=📷] {
   --emoji: unset;
-  --icon: "\f083"; /* copied front FontAwesome */
+  --icon: "\f083"; /* copied from FontAwesome */
   --icon-color: #c50a50;
 }
 ```
@@ -178,11 +178,25 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
   "title": "Edge Cases"
 }
 [/block]
-Callouts don't need to have any body text:
+<details><summary>Callouts don't need to have any body text:</summary><br>
+
+```
+> 🥇  No body text.
+```
+
+</details>
 
 > 🥇  No body text.
 
-You can also skip the title, if you're so inclined!
+<details><summary>You can also skip the title, if you're so inclined!</summary><br>
+
+```
+> 🥈  
+> 
+> Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+```
+
+</details>
 
 > 🥈  
 > 
