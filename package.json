@@ -77,7 +77,7 @@
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",
-    "babel-jest": "^27.4.0",
+    "babel-jest": "^28.1.0",
     "babel-loader": "^8.2.3",
     "codemirror": "^5.64.0",
     "core-js": "^3.19.2",
