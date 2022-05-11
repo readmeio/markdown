@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.40.0
+
+### 📘 Tests & Docs
+
+* **callouts:** minor updates ([#445](https://github.com/readmeio/markdown/issues/445)) ([f99df00](https://github.com/readmeio/markdown/commit/f99df00ea2c11e9cae7d7023ae0795b991b04651))
+
+
+### ✨ New & Improved
+
+* add escape type ([#489](https://github.com/readmeio/markdown/issues/489)) ([dd3d851](https://github.com/readmeio/markdown/commit/dd3d851f2d0b165c851adf2469ef1b207e881745))
+
 ## Version 6.39.4
 
 ### 🛠 Fixes & Updates
