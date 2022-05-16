@@ -26,3 +26,45 @@ updates:
     commit-message:
       prefix: chore(deps)
       prefix-development: chore(deps-dev)
+    ignore:
+      hast-util-to-string:
+        versions: ["*2.0.0"]
+      mdast-util-toc:
+        versions: ["*6.1.0"]
+      rehype-raw:
+        versions: ["*6.1.1"]
+      rehype-react:
+        versions: ["*7.1.1"]
+      rehype-sanitize:
+        versions: ["*5.0.1"]
+      rehype-stringify:
+        versions: ["*9.0.3"]
+      remark-breaks:
+        versions: ["*3.0.2"]
+      remark-disable-tokenizers:
+        versions: ["*1.1.0"]
+      remark-frontmatter:
+        versions: ["*4.0.1"]
+      remark-parse:
+        versions: ["*10.0.1"]
+      remark-rehype:
+        versions: ["*10.1.0"]
+      remark-slug:
+        versions: ["*7.0.1"]
+      remark-stringify:
+        versions: ["*10.0.2"]
+      unified:
+        versions: ["*10.1.2"]
+      unist-util-map:
+        versions: ["*3.1.1"]
+      unist-util-select:
+        versions: ["*4.0.1"]
+      "@hot-loader/react-dom":
+        versions: ["*17.0.2"]
+      "@testing-library/react":
+        versions: ["*13.2.0"]
+      react:
+        versions: ["*18.1.0"]
+      react-dom:
+        versions: ["*18.1.0"]
+

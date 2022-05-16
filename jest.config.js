@@ -28,7 +28,9 @@ const unit = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/browser/'],
-  testURL: 'http://localhost',
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
 };
 
 module.exports = { projects: [unit, browser] };
