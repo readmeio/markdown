@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.41.0
+
+### 🛠 Fixes & Updates
+
+* auto-open review apps on Heroku ([#494](https://github.com/readmeio/markdown/issues/494)) ([427c917](https://github.com/readmeio/markdown/commit/427c917ec714409259aa94e9899e0437546efa02))
+* don't run Review App workflow on Markdown PRs opened by Dependabot ([#506](https://github.com/readmeio/markdown/issues/506)) ([53865bd](https://github.com/readmeio/markdown/commit/53865bd86e8c3885428c402807911fef3c3c2e02))
+* update deps ([#496](https://github.com/readmeio/markdown/issues/496)) ([41b8935](https://github.com/readmeio/markdown/commit/41b8935e2b68956053b0228d44c09cea9beb9be3))
+
+
+### ✨ New & Improved
+
+* add yaml compiler ([#509](https://github.com/readmeio/markdown/issues/509)) ([ac238d1](https://github.com/readmeio/markdown/commit/ac238d1d58164071eafeb893992662e4e00c6aec))
+
 ## Version 6.40.0
 
 ### 📘 Tests & Docs
