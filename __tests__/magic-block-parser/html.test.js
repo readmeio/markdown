@@ -46,4 +46,27 @@ ${JSON.stringify(
       </React.Fragment>
     `);
   });
+
+  it('does not allow arbitrary markdown', () => {
+    const text = `
+[block:html]
+${JSON.stringify(
+  {
+    html: `# not a header`,
+  },
+  null,
+  2
+)}
+[/block]
+    `;
+
+    expect(react(text)).toMatchInlineSnapshot(`
+      <React.Fragment>
+        <HTMLBlock
+          html="# not a header"
+          runScripts={false}
+        />
+      </React.Fragment>
+    `);
+  });
 });

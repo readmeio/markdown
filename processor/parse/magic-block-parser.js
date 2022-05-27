@@ -1,8 +1,15 @@
+const unified = require('unified');
+const rehypeParse = require('rehype-parse');
+const rehypeSanitize = require('rehype-sanitize');
+const rehypeStringify = require('rehype-stringify');
+
+const globalSanitizeSchema = require('../../sanitize.schema');
+
+// eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable consistent-return */
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
-let parser;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -31,6 +38,13 @@ const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
     return match ? match[1] : width in sizes ? sizes[width] : width;
   },
 });
+
+const processor = unified()
+  .use(rehypeParse, { fragment: true })
+  .use(rehypeSanitize, globalSanitizeSchema)
+  .use(rehypeStringify);
+
+const sanitize = html => processor.processSync(html).toString();
 
 function tokenize(eat, value) {
   let [match, type, json] = RGXP.exec(value) || [];
@@ -248,7 +262,7 @@ function tokenize(eat, value) {
             data: {
               hName: 'html-block',
               hProperties: {
-                html: parser.transforms.html(json.html),
+                html: sanitize(json.html),
                 runScripts: compatibilityMode,
               },
             },
@@ -276,7 +290,7 @@ function tokenize(eat, value) {
   }
 }
 
-parser = function () {
+function parser() {
   const { Parser } = this;
   const tokenizers = Parser.prototype.blockTokenizers;
   const methods = Parser.prototype.blockMethods;
@@ -285,7 +299,7 @@ parser = function () {
 
   tokenizers.magicBlocks = tokenize;
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');
-};
+}
 
 module.exports = parser;
 
