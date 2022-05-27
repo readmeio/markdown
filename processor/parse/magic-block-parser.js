@@ -1,3 +1,6 @@
+const { html: parseHtml } = require('../../index');
+
+// eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable consistent-return */
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
@@ -247,7 +250,7 @@ function tokenize(eat, value) {
             data: {
               hName: 'html-block',
               hProperties: {
-                html: json.html,
+                html: parseHtml(json.html),
                 runScripts: compatibilityMode,
               },
             },
