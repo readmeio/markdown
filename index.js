@@ -43,7 +43,13 @@ export { Components };
 
 /* Custom Unified Parsers
  */
-const customParsers = Object.values(require('./processor/parse')).map(parser => parser.sanitize(sanitize));
+const customParsers = Object.values(require('./processor/parse')).map(parser => {
+  // eslint-disable-next-line no-use-before-define
+  parser.transforms = { html };
+  parser.sanitize(sanitize);
+
+  return parser;
+});
 
 /* Custom Unified Compilers
  */

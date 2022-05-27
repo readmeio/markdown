@@ -1,10 +1,8 @@
-const { html: parseHtml } = require('../../index');
-
-// eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable consistent-return */
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
+let parser;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -250,7 +248,7 @@ function tokenize(eat, value) {
             data: {
               hName: 'html-block',
               hProperties: {
-                html: parseHtml(json.html),
+                html: parser.transforms.html(json.html),
                 runScripts: compatibilityMode,
               },
             },
@@ -278,7 +276,7 @@ function tokenize(eat, value) {
   }
 }
 
-function parser() {
+parser = function () {
   const { Parser } = this;
   const tokenizers = Parser.prototype.blockTokenizers;
   const methods = Parser.prototype.blockMethods;
@@ -287,7 +285,7 @@ function parser() {
 
   tokenizers.magicBlocks = tokenize;
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');
-}
+};
 
 module.exports = parser;
 
