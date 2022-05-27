@@ -246,11 +246,7 @@ Object {
         "hProperties": Object {
           "html": "<h1>👋🌍</h1>
 <hr>
-<form>
-  <input name=\\"test\\" value=\\"hello\\" type=\\"text\\"/>
-  <br/>
-  <a class=\\"button\\">Go</a>
-</form>",
+<a class=\\"button\\">Go</a>",
           "runScripts": undefined,
         },
       },
