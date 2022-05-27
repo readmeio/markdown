@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const unified = require('unified');
 const rehypeParse = require('rehype-parse');
 const rehypeSanitize = require('rehype-sanitize');
@@ -5,8 +6,6 @@ const rehypeStringify = require('rehype-stringify');
 
 const globalSanitizeSchema = require('../../sanitize.schema');
 
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable consistent-return */
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
