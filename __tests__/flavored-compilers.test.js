@@ -5,7 +5,11 @@ const remarkParse = require('remark-parse');
 const remarkStringify = require('remark-stringify');
 const rehypeSanitize = require('rehype-sanitize');
 
-const parsers = Object.values(require('../processor/parse')).map(parser => parser.sanitize(sanitize));
+const parsers = Object.values(require('../processor/parse')).map(parser => {
+  parser.transforms = { html: n => n };
+  parser.sanitize(sanitize);
+  return parser;
+});
 const compilers = Object.values(require('../processor/compile'));
 const options = require('../options').options.markdownOptions;
 
