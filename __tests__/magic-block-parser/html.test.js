@@ -1,7 +1,7 @@
 import { react } from '../../index';
 
 describe('Html magic block parser', () => {
-  it('sanitizes attributes from react components', () => {
+  it('sanitizes tags from react components', () => {
     const text = `
 [block:html]
 ${JSON.stringify(
@@ -24,12 +24,12 @@ ${JSON.stringify(
     `);
   });
 
-  it('sanitizes tags from react components', () => {
+  it('sanitizes attributes from react components', () => {
     const text = `
 [block:html]
 ${JSON.stringify(
   {
-    html: `<button onclick="alert('oops')">click me!</button>`,
+    html: `<div onmouseover="alert('oops')">Uh oh.</div>`,
   },
   null,
   2
@@ -40,7 +40,7 @@ ${JSON.stringify(
     expect(react(text)).toMatchInlineSnapshot(`
       <React.Fragment>
         <HTMLBlock
-          html="<p>click me!</p>"
+          html="<div>Uh oh.</div>"
           runScripts={false}
         />
       </React.Fragment>
