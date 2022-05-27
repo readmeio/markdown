@@ -240,7 +240,7 @@ describe('Parse Magic Blocks', () => {
   it('Custom HTML Block', () => {
     const text = `[block:html]
     ${JSON.stringify({
-      html: '<h1>👋🌍</h1>\n<hr>\n<form>\n  <input name="test" value="hello" type="text"/>\n  <br/>\n  <a class="button">Go</a>\n</form>',
+      html: '<h1>👋🌍</h1>\n<hr>\n<a class="button">Go</a>',
     })}
     [/block]`;
 
