@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.41.1
+
+### 🛠 Fixes & Updates
+
+* sanitize html blocks ([#510](https://github.com/readmeio/markdown/issues/510)) ([eb9759b](https://github.com/readmeio/markdown/commit/eb9759b279187549415aa3090a3d10ac9e252876))
+
 ## Version 6.41.0
 
 ### 🛠 Fixes & Updates
