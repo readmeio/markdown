@@ -1,6 +1,21 @@
 Changelog
 ===
 
+## Version 6.42.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: Certain tags and a lot of attributes will be stripped from html blocks
+
+### 🛠 Fixes & Updates
+
+* incrementing version ([4eeff92](https://github.com/readmeio/markdown/commit/4eeff927f347dc2ff951a05099acad0770254f1a))
+
+
+### ✨ New & Improved
+
+* incrementing version ([7639794](https://github.com/readmeio/markdown/commit/76397941cb4c454844961fd9fe0402e8067dbd75))
+
 ## Version 6.41.1
 
 ### 🛠 Fixes & Updates
