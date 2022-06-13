@@ -26,6 +26,7 @@ test('it should have the proper utils exports', () => {
       setext: true,
     },
     normalize: true,
+    safeMode: false,
     settings: { position: false },
     theme: 'light',
   });

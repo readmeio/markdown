@@ -252,6 +252,7 @@ Object {
   <a class=\\"button\\">Go</a>
 </form>",
           "runScripts": undefined,
+          "safeMode": undefined,
         },
       },
       "type": "html-block",
