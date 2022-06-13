@@ -13,6 +13,7 @@ const options = {
     setext: true,
   },
   normalize: true,
+  safeMode: false,
   settings: {
     position: false,
   },

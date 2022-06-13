@@ -2,6 +2,7 @@
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
+let safeMode;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -249,6 +250,7 @@ function tokenize(eat, value) {
               hProperties: {
                 html: json.html,
                 runScripts: compatibilityMode,
+                safeMode,
               },
             },
           },
@@ -281,6 +283,7 @@ function parser() {
   const methods = Parser.prototype.blockMethods;
 
   if (this.data('compatibilityMode')) compatibilityMode = true;
+  if (this.data('safeMode')) safeMode = true;
 
   tokenizers.magicBlocks = tokenize;
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');

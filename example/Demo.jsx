@@ -69,7 +69,7 @@ function Demo({ opts }) {
                 <Fixtures
                   ci={ci}
                   getRoute={getRoute}
-                  render={props => <DemoContent {...props} ci={ci} opts={opts} />}
+                  render={({ options, ...props }) => <DemoContent {...props} ci={ci} opts={{ ...opts, ...options }} />}
                   selected={route}
                 />
               );
