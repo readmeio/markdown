@@ -3,7 +3,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script>\n?/gim;
+const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 
 const extractScripts = (html = '') => {
   const scripts = [];
