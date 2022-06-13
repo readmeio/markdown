@@ -1,14 +1,8 @@
 /* eslint-disable consistent-return */
-const unified = require('unified');
-const rehypeParse = require('rehype-parse');
-const rehypeSanitize = require('rehype-sanitize');
-const rehypeStringify = require('rehype-stringify');
-
-const globalSanitizeSchema = require('../../sanitize.schema');
-
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
+let safeMode;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -37,13 +31,6 @@ const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
     return match ? match[1] : width in sizes ? sizes[width] : width;
   },
 });
-
-const processor = unified()
-  .use(rehypeParse, { fragment: true })
-  .use(rehypeSanitize, globalSanitizeSchema)
-  .use(rehypeStringify);
-
-const sanitize = html => processor.processSync(html).toString();
 
 function tokenize(eat, value) {
   let [match, type, json] = RGXP.exec(value) || [];
@@ -261,8 +248,9 @@ function tokenize(eat, value) {
             data: {
               hName: 'html-block',
               hProperties: {
-                html: sanitize(json.html),
+                html: json.html,
                 runScripts: compatibilityMode,
+                safeMode,
               },
             },
           },
@@ -295,6 +283,7 @@ function parser() {
   const methods = Parser.prototype.blockMethods;
 
   if (this.data('compatibilityMode')) compatibilityMode = true;
+  if (this.data('safeMode')) safeMode = true;
 
   tokenizers.magicBlocks = tokenize;
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');

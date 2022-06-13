@@ -3,7 +3,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 
-const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script>\n?/gim;
+const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 
 const extractScripts = (html = '') => {
   const scripts = [];
@@ -27,21 +27,40 @@ class HTMLBlock extends React.Component {
   }
 
   render() {
+    const { html, safeMode } = this.props;
+
+    if (safeMode) {
+      return (
+        <pre className="html-unsafe">
+          <code>{html}</code>
+        </pre>
+      );
+    }
+
     return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html: this.html }} />;
   }
 }
 
 HTMLBlock.defaultProps = {
   runScripts: false,
+  safeMode: false,
 };
 
 HTMLBlock.propTypes = {
   html: PropTypes.string,
   runScripts: PropTypes.any,
+  safeMode: PropTypes.bool,
 };
 
-module.exports = sanitize => {
+const CreateHtmlBlock =
+  ({ safeMode }) =>
+  // eslint-disable-next-line react/display-name
+  props =>
+    <HTMLBlock {...props} safeMode={safeMode} />;
+
+module.exports = (sanitize, opts) => {
   sanitize.tagNames.push('html-block');
   sanitize.attributes['html-block'] = ['html', 'runScripts'];
-  return HTMLBlock;
+
+  return CreateHtmlBlock(opts);
 };

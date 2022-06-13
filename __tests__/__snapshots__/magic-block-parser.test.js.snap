@@ -246,8 +246,13 @@ Object {
         "hProperties": Object {
           "html": "<h1>👋🌍</h1>
 <hr>
-<a class=\\"button\\">Go</a>",
+<form>
+  <input name=\\"test\\" value=\\"hello\\" type=\\"text\\"/>
+  <br/>
+  <a class=\\"button\\">Go</a>
+</form>",
           "runScripts": undefined,
+          "safeMode": undefined,
         },
       },
       "type": "html-block",
