@@ -86,23 +86,28 @@
     flex-direction: row;
   }
 
-  .rdmd-demo--fixture-select {
-    padding: 0 0 1em;
+  .rdmd-demo--fieldset {
+    padding: 1em 0;
     border: none;
     border-top: 1px solid #eee;
     display: flex;
-    justify-content: space-between;
-  }
+    justify-content: flex-end;
 
-  .rdmd-demo--label {
-    text-transform: uppercase;
-    color: #bbb;
-  }
+    legend {
+      text-transform: uppercase;
+      color: #bbb;
+    }
 
-  .rdmd-demo--select {
-    min-width: 50%;
-    color: #555;
-    margin-top: 1em;
+    select {
+      min-width: 50%;
+      color: #555;
+    }
+
+    div {
+      width: 33%;
+      display: flex;
+      justify-content: space-between;
+    }
   }
 
   [name='demo-editor'] {

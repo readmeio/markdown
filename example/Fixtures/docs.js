@@ -2,6 +2,7 @@ import callouts from '../../docs/callouts.md';
 import codeBlocks from '../../docs/code-blocks.md';
 import embeds from '../../docs/embeds.md';
 import features from '../../docs/features.md';
+import gettingStarted from '../../docs/getting-started.md';
 import headings from '../../docs/headings.md';
 import images from '../../docs/images.md';
 import lists from '../../docs/lists.md';
@@ -15,17 +16,18 @@ import varsTest from '../../docs/variable-tests.md';
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
 const fixtureMap = Object.entries({
-  codeBlocks,
+  calloutTests,
   callouts,
+  codeBlockTests,
+  codeBlocks,
   embeds,
-  tables,
-  lists,
+  features,
+  gettingStarted,
   headings,
   images,
-  features,
-  calloutTests,
-  codeBlockTests,
+  lists,
   tableOfContentsTests,
+  tables,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);

@@ -46,6 +46,7 @@ Each processor method takes an options object which you can use to adjust the ou
 - **`copyButtons`** — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
 - **`correctnewlines`** — Render new line delimeters as `<br>` tags.
 - **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
+- **`safeMode`** — Render html blocks as `<pre>` elements. We normally allow all manner of html attributes that could potentially execute JavaScript. 
 
 ## Flavored Syntax
 
