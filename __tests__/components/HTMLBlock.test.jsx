@@ -34,7 +34,7 @@ describe('HTML Block', () => {
     expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
   });
 
-  it('renders in the html in a `<pre>` tag if safeMode={true}', () => {
+  it('renders the html in a `<pre>` tag if safeMode={true}', () => {
     const md = `
 [block:html]
 ${JSON.stringify({
