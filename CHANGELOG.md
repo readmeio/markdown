@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.43.0
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump jest-image-snapshot to ^5.1.0 ([91243a5](https://github.com/readmeio/markdown/commit/91243a52159212ce3ffe541fb38bbc02240475e9))
+
+
+### ✨ New & Improved
+
+* add safeMode flag ([#517](https://github.com/readmeio/markdown/issues/517)) ([4e79005](https://github.com/readmeio/markdown/commit/4e79005f3cc0c1820536657059ad3d2083a66e1d))
+
 ## Version 6.42.0
 
 ### ⚠ BREAKING CHANGES
