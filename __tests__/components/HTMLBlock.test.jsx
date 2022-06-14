@@ -44,7 +44,7 @@ ${JSON.stringify({
     `;
 
     expect(renderToString(react(md, { safeMode: true }))).toMatchInlineSnapshot(
-      `"<pre class=\\"html-unsafe\\" data-reactroot=\\"\\"><code>&amp;lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&amp;gt;</code></pre>"`
+      `"<pre class=\\"html-unsafe\\" data-reactroot=\\"\\"><code>&amp;lt;button onload=&amp;quot;alert(&amp;#39;gotcha!&amp;#39;)&amp;quot;/&amp;gt;</code></pre>"`
     );
   });
 });
