@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.43.1
+
+### 🛠 Fixes & Updates
+
+* escape html when rendering in safeMode ([#519](https://github.com/readmeio/markdown/issues/519)) ([e1ae9e1](https://github.com/readmeio/markdown/commit/e1ae9e143135347a9fdf6df89477680d1e67f604))
+
 ## Version 6.43.0
 
 ### 🛠 Fixes & Updates
