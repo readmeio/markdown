@@ -15,6 +15,13 @@ const extractScripts = (html = '') => {
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
+/**
+ * @hack: https://stackoverflow.com/a/30930653/659661
+ */
+const escapeHTML = html => {
+  return document.createElement('div').appendChild(document.createTextNode(html)).parentNode.innerHTML;
+};
+
 class HTMLBlock extends React.Component {
   constructor(props) {
     super(props);
@@ -32,7 +39,7 @@ class HTMLBlock extends React.Component {
     if (safeMode) {
       return (
         <pre className="html-unsafe">
-          <code>{html}</code>
+          <code>{escapeHTML(html)}</code>
         </pre>
       );
     }
