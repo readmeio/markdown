@@ -27,44 +27,43 @@ updates:
       prefix: chore(deps)
       prefix-development: chore(deps-dev)
     ignore:
-      hast-util-to-string:
+      - dependency-name: hast-util-to-string
         versions: ["*2.0.0"]
-      mdast-util-toc:
+      - dependency-name: mdast-util-toc
         versions: ["*6.1.0"]
-      rehype-raw:
+      - dependency-name: rehype-raw
         versions: ["*6.1.1"]
-      rehype-react:
+      - dependency-name: rehype-react
         versions: ["*7.1.1"]
-      rehype-sanitize:
+      - dependency-name: rehype-sanitize
         versions: ["*5.0.1"]
-      rehype-stringify:
+      - dependency-name: rehype-stringify
         versions: ["*9.0.3"]
-      remark-breaks:
+      - dependency-name: remark-breaks
         versions: ["*3.0.2"]
-      remark-disable-tokenizers:
+      - dependency-name: remark-disable-tokenizers
         versions: ["*1.1.0"]
-      remark-frontmatter:
+      - dependency-name: remark-frontmatter
         versions: ["*4.0.1"]
-      remark-parse:
+      - dependency-name: remark-parse
         versions: ["*10.0.1"]
-      remark-rehype:
+      - dependency-name: remark-rehype
         versions: ["*10.1.0"]
-      remark-slug:
+      - dependency-name: remark-slug
         versions: ["*7.0.1"]
-      remark-stringify:
+      - dependency-name: remark-stringify
         versions: ["*10.0.2"]
-      unified:
+      - dependency-name: unified
         versions: ["*10.1.2"]
-      unist-util-map:
+      - dependency-name: unist-util-map
         versions: ["*3.1.1"]
-      unist-util-select:
+      - dependency-name: unist-util-select
         versions: ["*4.0.1"]
-      "@hot-loader/react-dom":
+      - dependency-name: "@hot-loader/react-dom"
         versions: ["*17.0.2"]
-      "@testing-library/react":
+      - dependency-name: "@testing-library/react"
         versions: ["*13.2.0"]
-      react:
+      - dependency-name: react
         versions: ["*18.1.0"]
-      react-dom:
+      - dependency-name: react-dom
         versions: ["*18.1.0"]
-
