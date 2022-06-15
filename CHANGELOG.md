@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.43.2
+
+### 🛠 Fixes & Updates
+
+* support safeMode in node ([#520](https://github.com/readmeio/markdown/issues/520)) ([e5f7a74](https://github.com/readmeio/markdown/commit/e5f7a746ea80d53e15e95491e3b00fcd470d80de))
+
 ## Version 6.43.1
 
 ### 🛠 Fixes & Updates
