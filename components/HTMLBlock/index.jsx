@@ -33,7 +33,7 @@ class HTMLBlock extends React.Component {
     if (safeMode) {
       return (
         <pre className="html-unsafe">
-          <code>{escape(html)}</code>
+          <code dangerouslySetInnerHTML={{ __html: escape(html) }} />
         </pre>
       );
     }
