@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.44.0
+
+### ✨ New & Improved
+
+* **release:** trigger build ([ff9e757](https://github.com/readmeio/markdown/commit/ff9e757a8db1e2ad5ea4e3d095ecb09d06fb0f10))
+
 ## Version 6.43.2
 
 ### 🛠 Fixes & Updates
