@@ -32,13 +32,6 @@ const Fixtures = ({ render, selected, getRoute }) => {
 
   const fields = (
     <>
-      <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
-        <legend>Options</legend>
-        <div>
-          <label htmlFor="safe-mode">Safe Mode</label>
-          <input id="safe-mode" onChange={onChangeSafeMode} type="checkbox" value={options.safeMode} />
-        </div>
-      </fieldset>
       <fieldset className="rdmd-demo--fieldset">
         <legend>Fixture</legend>
         <select id="fixture-select" onChange={handleSelect} value={selected}>
@@ -51,6 +44,13 @@ const Fixtures = ({ render, selected, getRoute }) => {
             );
           })}
         </select>
+      </fieldset>
+      <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
+        <legend>Options</legend>
+        <div>
+          <label htmlFor="safe-mode">Safe Mode</label>
+          <input id="safe-mode" onChange={onChangeSafeMode} type="checkbox" value={options.safeMode} />
+        </div>
       </fieldset>
     </>
   );
