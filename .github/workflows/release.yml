@@ -60,6 +60,6 @@ jobs:
       # Sync docs to rdmd.readme.io
       #
       - name: Sync docs to rdmd.readme.io
-        uses: readmeio/rdme@7.2.2
+        uses: readmeio/rdme@7.3.0
         with:
           rdme: docs ./docs --key=${{ secrets.RDME_KEY }} --version=2
