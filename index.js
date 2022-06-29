@@ -6,7 +6,7 @@ const unified = require('unified');
 
 /* Unified Plugins
  */
-const sanitize = require('./sanitize.schema');
+const createSchema = require('./sanitize.schema');
 
 const generateTOC = require('mdast-util-toc');
 
@@ -36,14 +36,26 @@ const Variable = require('@readme/variable');
 
 const Components = require('./components');
 
-const { GlossaryItem, Code, Table, Anchor, Heading, Callout, CodeTabs, Image, Embed, HTMLBlock, TableOfContents } =
-  Components;
+const {
+  GlossaryItem,
+  Code,
+  Table,
+  Anchor,
+  Heading,
+  Callout,
+  CodeTabs,
+  Image,
+  Embed,
+  HTMLBlock,
+  Style,
+  TableOfContents,
+} = Components;
 
 export { Components };
 
 /* Custom Unified Parsers
  */
-const customParsers = Object.values(require('./processor/parse')).map(parser => parser.sanitize(sanitize));
+const CustomParsers = Object.values(require('./processor/parse'));
 
 /* Custom Unified Compilers
  */
@@ -109,6 +121,7 @@ export function processor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
+  const { sanitize = createSchema(opts) } = opts;
 
   return unified()
     .use(remarkParse, opts.markdownOptions)
@@ -116,7 +129,7 @@ export function processor(opts = {}) {
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
-    .use(customParsers)
+    .use(CustomParsers.map(parser => parser.sanitize(sanitize)))
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers)
     .use(remarkRehype, { allowDangerousHtml: true })
@@ -145,7 +158,9 @@ const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @tod
 const count = {};
 
 export function reactProcessor(opts = {}, components = {}) {
-  return processor(opts)
+  const { sanitize = createSchema(opts) } = opts;
+
+  return processor({ sanitize, ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
@@ -168,6 +183,7 @@ export function reactProcessor(opts = {}, components = {}) {
         h6: Heading(6, count, opts),
         code: Code(sanitize, opts),
         img: Image(sanitize),
+        style: Style(sanitize, opts),
         ...registerCustomComponents(components, opts.customComponentPrefix),
       },
     });
