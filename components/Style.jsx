@@ -16,16 +16,16 @@ Style.propTypes = {
   safeMode: PropTypes.bool,
 };
 
-export default Style;
-
 const CreateStyle =
   ({ safeMode }) =>
   // eslint-disable-next-line react/display-name
   props =>
     <Style {...props} safeMode={safeMode} />;
 
-module.exports = (sanitize, opts) => {
+CreateStyle.sanitize = sanitize => {
   sanitize.tagNames.push('style');
 
-  return CreateStyle(opts);
+  return sanitize;
 };
+
+module.exports = CreateStyle;

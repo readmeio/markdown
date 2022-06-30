@@ -12,6 +12,7 @@ import calloutTests from '../../docs/callout-tests.md';
 import codeBlockTests from '../../docs/code-block-tests.md';
 import tableOfContentsTests from '../../docs/table-of-contents-tests.md';
 import varsTest from '../../docs/variable-tests.md';
+import sanitizingTests from '../../docs/sanitizing-tests.md';
 
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
@@ -26,6 +27,7 @@ const fixtureMap = Object.entries({
   headings,
   images,
   lists,
+  sanitizingTests,
   tableOfContentsTests,
   tables,
   varsTest,

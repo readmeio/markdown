@@ -9,7 +9,7 @@ const createSchema = ({ safeMode } = {}) => {
   schema.tagNames.push('span');
   schema.attributes['*'].push('class', 'className', 'align');
   if (!safeMode) {
-    schema.attributes['*'] = ['style'];
+    schema.attributes['*'].push('style');
   }
 
   schema.tagNames.push('rdme-pin');

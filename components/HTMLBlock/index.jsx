@@ -59,9 +59,11 @@ const CreateHtmlBlock =
   props =>
     <HTMLBlock {...props} safeMode={safeMode} />;
 
-module.exports = (sanitize, opts) => {
-  sanitize.tagNames.push('html-block');
-  sanitize.attributes['html-block'] = ['html', 'runScripts'];
+CreateHtmlBlock.sanitize = schema => {
+  schema.tagNames.push('html-block');
+  schema.attributes['html-block'] = ['html', 'runScripts'];
 
-  return CreateHtmlBlock(opts);
+  return schema;
 };
+
+module.exports = CreateHtmlBlock;

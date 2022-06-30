@@ -2,8 +2,8 @@ const { render } = require('@testing-library/react');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
-const sanitize = require('../../sanitize.schema');
-const HTMLBlock = require('../../components/HTMLBlock')(sanitize, {});
+const createSchema = require('../../sanitize.schema');
+const HTMLBlock = require('../../components/HTMLBlock')(createSchema(), {});
 const { react } = require('../../index');
 
 describe('HTML Block', () => {

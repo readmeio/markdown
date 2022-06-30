@@ -106,7 +106,10 @@ Image.defaultProps = {
   width: 'auto',
 };
 
-module.exports = sanitizeSchema => {
+Image.sanitize = sanitizeSchema => {
   sanitizeSchema.attributes.img = ['className', 'title', 'alt', 'width', 'height', 'align', 'src', 'longDesc'];
-  return Image;
+
+  return sanitizeSchema;
 };
+
+module.exports = Image;
