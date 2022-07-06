@@ -249,7 +249,7 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  return processor(opts).use(toPlainText).runSync(node);
+  return processor(opts).use(toPlainText).stringify(node);
 }
 
 /**

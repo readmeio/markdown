@@ -1,4 +1,4 @@
-const { render } = require('@testing-library/react');
+const { render, screen } = require('@testing-library/react');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
@@ -20,6 +20,24 @@ describe('HTML Block', () => {
   it("doesn't run user scripts by default", () => {
     render(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
     expect(global.mockFn).toHaveBeenCalledTimes(0);
+  });
+
+  it("doesn't render user scripts by default", () => {
+    render(<HTMLBlock html="<script>mockFn()</script>" runScripts={false} />);
+
+    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+  });
+
+  it("doesn't render user scripts with weird endings", () => {
+    render(<HTMLBlock html="<script>mockFn()</script foo='bar'>" runScripts={false} />);
+
+    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+  });
+
+  it("doesn't render user scripts with a malicious string", () => {
+    render(<HTMLBlock html="<scrip<script></script>t>mockFn()</s<script></script>cript>" runScripts={false} />);
+
+    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
   it("doesn't run scripts on the server (even in compat mode)", () => {

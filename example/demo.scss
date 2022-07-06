@@ -93,20 +93,34 @@
     display: flex;
     justify-content: flex-end;
 
+    &:first-child {
+      position: sticky;
+      top: -3em;
+      background: white;
+      box-shadow: 0 -0.5em white;
+      z-index: 9999999;
+    }
+
     legend {
       text-transform: uppercase;
       color: #bbb;
     }
 
     select {
-      min-width: 50%;
+      border-color: #ccc;
+      border-radius: 3px;
       color: #555;
+      font: inherit;
+      min-width: 50%;
+      padding: 0.2em;
     }
 
     div {
-      width: 33%;
+      max-width: 33%;
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 0.2em;
+      padding: 0.2em 0.4em;
     }
   }
 
@@ -139,10 +153,17 @@
 
   .rdmd-demo--editor-container {
     position: sticky;
-    top: -1px;
+    top: 0;
     height: 100vh;
+    overflow: scroll;
     display: flex;
     flex-flow: nowrap column;
+    & {
+      // pop the editor container to its parent's padding box so
+      // it scrolls to the very top and bottom of the page.
+      margin: -2em 0;
+      padding: 2em 0;
+    }
     > [name='demo-editor'] {
       flex: 1;
     }
