@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.45.0
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump readmeio/rdme from 7.2.0 to 7.2.2 ([#522](https://github.com/readmeio/markdown/issues/522)) ([4b34bb4](https://github.com/readmeio/markdown/commit/4b34bb49deb84482c95726d83e3e8a8627bad01e))
+
+
+### ✨ New & Improved
+
+* fix plain string compiler ([#532](https://github.com/readmeio/markdown/issues/532)) ([278d5ed](https://github.com/readmeio/markdown/commit/278d5ed3e31b58799c46852d98c7d03e248df053))
+* **demo:** polish sticky scrolling ([#523](https://github.com/readmeio/markdown/issues/523)) ([3c6c2e6](https://github.com/readmeio/markdown/commit/3c6c2e623e993ba7d8a2ff950ed12435040d0f6d))
+
 ## Version 6.44.0
 
 ### ✨ New & Improved
