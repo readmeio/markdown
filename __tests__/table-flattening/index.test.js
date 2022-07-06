@@ -9,11 +9,9 @@ describe('astToPlainText with tables', () => {
   | Cell A2 | Cell B2 | Cell C2 |
   | Cell A3 | Cell B3 | Cell C3 |`;
 
-    expect(astToPlainText(hast(text))).toMatchInlineSnapshot(`
-      "
-
-      Col. A Col. B Col. CCell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3"
-    `);
+    expect(astToPlainText(hast(text))).toMatchInlineSnapshot(
+      `"Col. A Col. B Col. C Cell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3"`
+    );
   });
 
   it('includes formatted text', () => {
@@ -23,10 +21,6 @@ describe('astToPlainText with tables', () => {
 | Cell *A1* | *Cell B1* |
 | *Cell* A2 | *Cell* B2 |`;
 
-    expect(astToPlainText(hast(text))).toMatchInlineSnapshot(`
-      "
-
-      Col. A Col.  BCell  A1 Cell B1 Cell  A2 Cell  B2"
-    `);
+    expect(astToPlainText(hast(text))).toMatchInlineSnapshot(`"Col. A Col. B Cell A1 Cell B1 Cell A2 Cell B2"`);
   });
 });
