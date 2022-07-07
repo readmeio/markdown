@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.46.0
+
+### ✨ New & Improved
+
+* don't render style in safeMode ([#525](https://github.com/readmeio/markdown/issues/525)) ([8a68880](https://github.com/readmeio/markdown/commit/8a6888017fdbcfe125353718773b5449952796bd))
+
 ## Version 6.45.0
 
 ### 🛠 Fixes & Updates
