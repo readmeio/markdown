@@ -1,7 +1,7 @@
 const React = require('react');
 const PropTypes = require('prop-types');
 const registerCustomComponents = require('../../lib/registerCustomComponents');
-const sanitize = require('../../sanitize.schema');
+const createSchema = require('../../sanitize.schema');
 
 const hastPrefix = 'prefix';
 const customComponents = {
@@ -20,7 +20,13 @@ customComponents.a.propTypes = { attrToConcatToSafelist: PropTypes.any };
 customComponents.twoWords.propTypes = { attrToBeSafelisted: PropTypes.any };
 
 describe('Custom Component Registrar', () => {
-  const registered = registerCustomComponents(customComponents, hastPrefix);
+  let registered;
+  let sanitize;
+
+  beforeEach(() => {
+    sanitize = createSchema();
+    registered = registerCustomComponents(customComponents, sanitize, hastPrefix);
+  });
 
   it('should take a hash of React components and transform it for use in the RDMD rehype engine', () => {
     expect(Object.keys(registered)).toHaveLength(Object.keys(customComponents).length);

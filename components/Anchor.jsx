@@ -70,12 +70,15 @@ Anchor.defaultProps = {
   title: '',
 };
 
-const AnchorContext = props => (
+const AnchorWithContext = props => (
   <BaseUrlContext.Consumer>{baseUrl => <Anchor baseUrl={baseUrl} {...props} />}</BaseUrlContext.Consumer>
 );
 
-module.exports = sanitizeSchema => {
+AnchorWithContext.sanitize = sanitizeSchema => {
   // This is for our custom link formats
   sanitizeSchema.protocols.href.push('doc', 'target', 'ref', 'blog', 'changelog', 'page');
-  return AnchorContext;
+
+  return sanitizeSchema;
 };
+
+module.exports = AnchorWithContext;

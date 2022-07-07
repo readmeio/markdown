@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import syntaxFixtures from './docs';
 
-const Fixtures = ({ render, selected, getRoute }) => {
+const Fixtures = ({ render, safeMode, selected, getRoute, setQuery }) => {
   const [edited, setEdited] = useState(null);
-  const [options, setOptions] = useState({ safeMode: false });
+  const options = useMemo(() => ({ safeMode }), [safeMode]);
 
   const handleSelect = event => {
     getRoute(event.target.value);
@@ -14,12 +14,9 @@ const Fixtures = ({ render, selected, getRoute }) => {
     setEdited(event.target.value);
     getRoute('edited');
   };
-  const onChangeSafeMode = useCallback(() => {
-    setOptions({
-      ...options,
-      safeMode: !options.safeMode,
-    });
-  }, [options]);
+  const toggleSafeMode = useCallback(() => {
+    setQuery('safe-mode', !safeMode);
+  }, [safeMode, setQuery]);
 
   let fixture;
   let name;
@@ -49,7 +46,7 @@ const Fixtures = ({ render, selected, getRoute }) => {
         <legend>Options</legend>
         <div>
           <label htmlFor="safe-mode">Safe Mode</label>
-          <input id="safe-mode" onChange={onChangeSafeMode} type="checkbox" value={options.safeMode} />
+          <input checked={options.safeMode} id="safe-mode" onChange={toggleSafeMode} type="checkbox" />
         </div>
       </fieldset>
     </>

@@ -79,4 +79,4 @@ Embed.defaultProps = {
   width: '100%',
 };
 
-module.exports = () => Embed;
+module.exports = Embed;

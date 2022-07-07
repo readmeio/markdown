@@ -52,4 +52,4 @@ function CreateCodeTabs({ theme }) {
   return props => <CodeTabs {...props} theme={theme} />;
 }
 
-module.exports = (_, opts) => CreateCodeTabs(opts);
+module.exports = CreateCodeTabs;

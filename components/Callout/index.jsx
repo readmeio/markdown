@@ -40,7 +40,10 @@ Callout.defaultProps = {
   node: null,
 };
 
-module.exports = sanitizeSchema => {
+Callout.sanitize = sanitizeSchema => {
   sanitizeSchema.attributes['rdme-callout'] = ['icon', 'theme', 'title', 'value'];
-  return Callout;
+
+  return sanitizeSchema;
 };
+
+module.exports = Callout;

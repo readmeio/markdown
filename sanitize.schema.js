@@ -1,33 +1,42 @@
-const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema');
+const { defaultSchema } = require('hast-util-sanitize/lib/schema');
 
-// Sanitization Schema Defaults
-sanitize.clobberPrefix = '';
+const createSchema = ({ safeMode } = {}) => {
+  const schema = JSON.parse(JSON.stringify(defaultSchema));
 
-sanitize.tagNames.push('span', 'style');
-sanitize.attributes['*'].push('class', 'className', 'align', 'style');
+  // Sanitization Schema Defaults
+  schema.clobberPrefix = '';
 
-sanitize.tagNames.push('rdme-pin');
+  schema.tagNames.push('span');
+  schema.attributes['*'].push('class', 'className', 'align');
+  if (!safeMode) {
+    schema.attributes['*'].push('style');
+  }
 
-sanitize.tagNames.push('rdme-embed');
-sanitize.attributes['rdme-embed'] = [
-  'url',
-  'provider',
-  'html',
-  'title',
-  'href',
-  'iframe',
-  'width',
-  'height',
-  'image',
-  'favicon',
-];
+  schema.tagNames.push('rdme-pin');
 
-sanitize.attributes.a = ['href', 'title', 'class', 'className', 'download'];
+  schema.tagNames.push('rdme-embed');
+  schema.attributes['rdme-embed'] = [
+    'url',
+    'provider',
+    'html',
+    'title',
+    'href',
+    'iframe',
+    'width',
+    'height',
+    'image',
+    'favicon',
+  ];
 
-sanitize.tagNames.push('figure');
-sanitize.tagNames.push('figcaption');
+  schema.attributes.a = ['href', 'title', 'class', 'className', 'download'];
 
-sanitize.tagNames.push('input'); // allow GitHub-style todo lists
-sanitize.ancestors.input = ['li'];
+  schema.tagNames.push('figure');
+  schema.tagNames.push('figcaption');
 
-module.exports = sanitize;
+  schema.tagNames.push('input'); // allow GitHub-style todo lists
+  schema.ancestors.input = ['li'];
+
+  return schema;
+};
+
+module.exports = createSchema;

@@ -6,7 +6,7 @@ const unified = require('unified');
 
 /* Unified Plugins
  */
-const sanitize = require('./sanitize.schema');
+const createSchema = require('./sanitize.schema');
 
 const generateTOC = require('mdast-util-toc');
 
@@ -36,14 +36,26 @@ const Variable = require('@readme/variable');
 
 const Components = require('./components');
 
-const { GlossaryItem, Code, Table, Anchor, Heading, Callout, CodeTabs, Image, Embed, HTMLBlock, TableOfContents } =
-  Components;
+const {
+  GlossaryItem,
+  Code,
+  Table,
+  Anchor,
+  Heading,
+  Callout,
+  CodeTabs,
+  Image,
+  Embed,
+  HTMLBlock,
+  Style,
+  TableOfContents,
+} = Components;
 
 export { Components };
 
 /* Custom Unified Parsers
  */
-const customParsers = Object.values(require('./processor/parse')).map(parser => parser.sanitize(sanitize));
+const CustomParsers = Object.values(require('./processor/parse'));
 
 /* Custom Unified Compilers
  */
@@ -63,11 +75,18 @@ const { options, parseOptions } = require('./options');
 const registerCustomComponents = require('./lib/registerCustomComponents');
 
 /**
- * Normalize Magic Block Raw Text
+ * Setup Options
+ * !Normalize Magic Block Raw Text!
  */
 export function setup(blocks, opts = {}) {
   // merge default and user options
   opts = parseOptions(opts);
+
+  if (!opts.sanitize) {
+    opts.sanitize = createSchema(opts);
+
+    Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(opts.sanitize));
+  }
 
   // normalize magic block linebreaks
   if (opts.normalize && blocks) {
@@ -109,6 +128,8 @@ export function processor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
+  [, opts] = setup('', opts);
+  const { sanitize } = opts;
 
   return unified()
     .use(remarkParse, opts.markdownOptions)
@@ -116,7 +137,7 @@ export function processor(opts = {}) {
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
-    .use(customParsers)
+    .use(CustomParsers.map(parser => parser.sanitize(sanitize)))
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers)
     .use(remarkRehype, { allowDangerousHtml: true })
@@ -145,30 +166,34 @@ const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @tod
 const count = {};
 
 export function reactProcessor(opts = {}, components = {}) {
-  return processor(opts)
+  [, opts] = setup('', opts);
+  const { sanitize } = opts;
+
+  return processor({ sanitize, ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
       Fragment: React.Fragment,
       components: {
-        'code-tabs': CodeTabs(sanitize, opts),
-        'html-block': HTMLBlock(sanitize, opts),
-        'rdme-callout': Callout(sanitize),
+        'code-tabs': CodeTabs(opts),
+        'html-block': HTMLBlock(opts),
+        'rdme-callout': Callout,
         'readme-variable': Variable,
         'readme-glossary-item': GlossaryItem,
-        'rdme-embed': Embed(sanitize),
+        'rdme-embed': Embed,
         'rdme-pin': PinWrap,
-        table: Table(sanitize),
-        a: Anchor(sanitize),
+        table: Table,
+        a: Anchor,
         h1: Heading(1, count, opts),
         h2: Heading(2, count, opts),
         h3: Heading(3, count, opts),
         h4: Heading(4, count, opts),
         h5: Heading(5, count, opts),
         h6: Heading(6, count, opts),
-        code: Code(sanitize, opts),
-        img: Image(sanitize),
-        ...registerCustomComponents(components, opts.customComponentPrefix),
+        code: Code(opts),
+        img: Image,
+        style: Style(opts),
+        ...registerCustomComponents(components, sanitize, opts.customComponentPrefix),
       },
     });
 }
