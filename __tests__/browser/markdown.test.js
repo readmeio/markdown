@@ -38,5 +38,25 @@ describe('visual regression tests', () => {
       },
       10000
     );
+
+    it('renders html blocks, style tags, and style attributes with safeMode off', async () => {
+      const uri = `http://localhost:9966/?ci=true#sanitizingTests`;
+      await page.goto(uri, { waitUntil: 'networkidle0' });
+      await sleep(500);
+
+      const image = await page.screenshot({ fullPage: true });
+
+      expect(image).toMatchImageSnapshot();
+    }, 10000);
+
+    it('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
+      const uri = `http://localhost:9966/?ci=true&safe-mode=true#sanitizingTests`;
+      await page.goto(uri, { waitUntil: 'networkidle0' });
+      await sleep(500);
+
+      const image = await page.screenshot({ fullPage: true });
+
+      expect(image).toMatchImageSnapshot();
+    }, 10000);
   });
 });

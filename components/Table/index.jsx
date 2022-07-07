@@ -16,4 +16,4 @@ Table.propTypes = {
   children: PropTypes.arrayOf(PropTypes.node).isRequired,
 };
 
-module.exports = () => Table;
+module.exports = Table;

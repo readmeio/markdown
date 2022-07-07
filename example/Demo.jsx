@@ -55,28 +55,31 @@ DemoContent.propTypes = {
 };
 
 function Demo({ opts }) {
-  // eslint-disable-next-line no-restricted-globals
-  const ci = new URLSearchParams(location.search).get('ci');
-
   return (
     <GlossaryContext.Provider value={terms}>
-      {!ci && <Header />}
-      <div className="rdmd-demo--container">
-        <div className="rdmd-demo--content">
-          <Router
-            render={({ route, getRoute }) => {
-              return (
-                <Fixtures
-                  ci={ci}
-                  getRoute={getRoute}
-                  render={({ options, ...props }) => <DemoContent {...props} ci={ci} opts={{ ...opts, ...options }} />}
-                  selected={route}
-                />
-              );
-            }}
-          />
-        </div>
-      </div>
+      <Router
+        render={({ route, getRoute, params, setQuery }) => {
+          return (
+            <>
+              {!params.ci && <Header />}
+              <div className="rdmd-demo--container">
+                <div className="rdmd-demo--content">
+                  <Fixtures
+                    ci={params.ci}
+                    getRoute={getRoute}
+                    render={({ options, ...props }) => (
+                      <DemoContent {...props} ci={params.ci} opts={{ ...opts, ...options }} />
+                    )}
+                    safeMode={params['safe-mode']}
+                    selected={route}
+                    setQuery={setQuery}
+                  />
+                </div>
+              </div>
+            </>
+          );
+        }}
+      />
     </GlossaryContext.Provider>
   );
 }

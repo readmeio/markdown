@@ -69,10 +69,7 @@ function Code(props) {
   );
 }
 
-function CreateCode(sanitizeSchema, { copyButtons, theme }) {
-  // This is for code blocks class name
-  sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
-
+function CreateCode({ copyButtons, theme }) {
   // eslint-disable-next-line react/display-name
   return props => <Code {...props} copyButtons={copyButtons} theme={theme} />;
 }
@@ -93,4 +90,11 @@ Code.defaultProps = {
   meta: '',
 };
 
-module.exports = (sanitizeSchema, opts) => CreateCode(sanitizeSchema, opts);
+CreateCode.sanitize = sanitizeSchema => {
+  // This is for code blocks class name
+  sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
+
+  return sanitizeSchema;
+};
+
+module.exports = CreateCode;
