@@ -55,7 +55,27 @@ exports[`ReadMe Magic Blocks Figure 1`] = `
     {
       \\"image\\": [
         \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
-        \\"rdme-blue.svg\\"
+        \\"rdme-blue.svg\\",
+        \\"Ok, __pizza__ man.\\"
+      ],
+      \\"sizing\\": \\"80\\",
+      \\"caption\\": \\"Ok, **pizza** man.\\"
+    }
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Figure with alt text 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"A man eating pizza and making an OK gesture\\"
       ],
       \\"sizing\\": \\"80\\",
       \\"caption\\": \\"Ok, **pizza** man.\\"
@@ -78,7 +98,8 @@ exports[`ReadMe Magic Blocks Image with sizing 1`] = `
     {
       \\"image\\": [
         \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
-        \\"rdme-blue.svg\\"
+        \\"rdme-blue.svg\\",
+        \\"\\"
       ],
       \\"sizing\\": \\"80px\\"
     }
