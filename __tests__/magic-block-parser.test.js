@@ -109,6 +109,7 @@ describe('Parse Magic Blocks', () => {
           "image": [
             "https://files.readme.io/62083ee-White_Center_Blue_BG.svg",
             "White Center Blue BG.svg",
+            "",
             240,
             150,
             "#000000"

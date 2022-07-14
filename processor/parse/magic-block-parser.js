@@ -99,13 +99,13 @@ function tokenize(eat, value) {
       const imgs = json.images
         .map(img => {
           if (!('image' in img)) return null;
-          const [url, title] = img.image;
+          const [url, title, alt] = img.image;
 
           const block = {
             type: 'image',
             url,
             title,
-            alt: 'caption' in img ? img.caption : '',
+            alt: alt || ('caption' in img ? img.caption : ''),
             data: {
               hProperties: {
                 className: img.border ? 'border' : '',

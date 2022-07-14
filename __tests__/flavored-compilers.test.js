@@ -143,6 +143,27 @@ describe('ReadMe Magic Blocks', () => {
     expect(out).toMatchSnapshot();
   });
 
+  it('Figure with alt text', () => {
+    const txt = `[block:image]
+    {
+      "images": [
+        {
+          "image": [
+            "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
+            "rdme-blue.svg",
+            "A man eating pizza and making an OK gesture"
+          ],
+          "caption": "Ok, __pizza__ man.",
+          "sizing": "80"
+        }
+      ]
+    }
+    [/block]`;
+    const ast = parse(txt);
+    const out = compile(ast);
+    expect(out).toMatchSnapshot();
+  });
+
   it('Image', () => {
     const txt = `[block:image]
     {
