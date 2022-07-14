@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.46.1
+
+### 🛠 Fixes & Updates
+
+* add alt text option for images ([#535](https://github.com/readmeio/markdown/issues/535)) ([4d7876b](https://github.com/readmeio/markdown/commit/4d7876b3bac9013626feef69bad4c879ad73565d))
+
 ## Version 6.46.0
 
 ### ✨ New & Improved
