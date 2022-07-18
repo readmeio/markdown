@@ -54,7 +54,7 @@
     "unist-util-select": "^4.0.0"
   },
   "peerDependencies": {
-    "@readme/variable": "*",
+    "@readme/variable": "^15.1.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
   },
