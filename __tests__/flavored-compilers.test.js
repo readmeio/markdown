@@ -20,7 +20,7 @@ const compile = tree => tree && processor().use(remarkStringify, options).use(co
 
 describe('ReadMe Flavored Blocks', () => {
   it('Embed', () => {
-    const txt = `[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@nyt")`;
+    const txt = '[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@nyt")';
     const ast = parse(txt);
     const out = compile(ast);
     expect(out).toMatchSnapshot();
@@ -222,7 +222,7 @@ ${JSON.stringify(
   });
 
   it('font-awesome emojis', () => {
-    const txt = `:fa-rss-square:`;
+    const txt = ':fa-rss-square:';
 
     const ast = parse(txt);
     const out = compile(ast);
