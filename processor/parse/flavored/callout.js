@@ -1,16 +1,6 @@
 const emojiRegex = require('emoji-regex');
 
-// We're pulling out the necessary regex from `emoji-regex` because it ships itself with regex
-// slashes and if we were to embed `emoji-regex` directly into our regex for matching callouts the
-// callout regex wouldn't work at all.
-let ergx = emojiRegex().toString();
-ergx = ergx.substring(1, ergx.length - 2);
-
-// `emoji-regex` can't match unicode emoji like `✎` that folks might use as callout icons so we
-// need to augment our regex a bit.
-const unicodeRgx = '\u00a9|\u00ae|[\u2000-\u3300]|[\u{1f000}-\u{1fbff}]';
-
-const rgx = new RegExp(`^> ?(${unicodeRgx}|${ergx})(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)`, 'u');
+const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+))?\n((?:>(?: .*)?\n)*)`);
 
 const themes = {
   '\uD83D\uDCD8': 'info',
