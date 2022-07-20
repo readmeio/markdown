@@ -1,5 +1,36 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Parse RDMD Callouts edge cases allows trailing spaces after the icon with no title 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Compact headings must be followed by two line breaks before the following block.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🛑",
+          "theme": "error",
+          "title": "",
+          "value": "Compact headings must be followed by two line breaks before the following block.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse RDMD Callouts edge cases renders html inside a callout 1`] = `
 Object {
   "children": Array [

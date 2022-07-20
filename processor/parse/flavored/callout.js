@@ -1,6 +1,6 @@
 const emojiRegex = require('emoji-regex');
 
-const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+))?\n((?:>(?: .*)?\n)*)`);
+const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\n)*)`);
 
 const themes = {
   '\uD83D\uDCD8': 'info',

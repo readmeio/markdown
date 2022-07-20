@@ -20,6 +20,14 @@ describe('Parse RDMD Callouts', () => {
 
       expect(mdast(text)).toMatchSnapshot();
     });
+
+    it('allows trailing spaces after the icon with no title', () => {
+      const text = `
+> 🛑 
+> Compact headings must be followed by two line breaks before the following block.`;
+
+      expect(mdast(text)).toMatchSnapshot();
+    });
   });
 
   it('requires a space between the icon and title', () => {
