@@ -16,7 +16,7 @@ describe('Data Replacements', () => {
             user: { test: 'User Override' },
           },
         },
-        markdown.react(`<<test>>`)
+        markdown.react('<<test>>')
       )
     );
     expect(container).toContainHTML('<p><span>User Override</span></p>');
@@ -35,7 +35,7 @@ describe('Data Replacements', () => {
             },
           ],
         },
-        markdown.react(`<<glossary:term>>`)
+        markdown.react('<<glossary:term>>')
       )
     );
     expect(container).toContainHTML(
@@ -128,7 +128,7 @@ describe('Components', () => {
         "image": "https://static01.nyt.com/images/2020/05/02/world/02dc-virus-bush-2/merlin_171999921_e857a690-fb9b-462d-a20c-28c8161107c9-facebookJumbo.jpg"
       }
       [/block]`,
-      rdmd: `[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")`,
+      rdmd: '[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")',
     };
 
     silenceConsole()(error => {

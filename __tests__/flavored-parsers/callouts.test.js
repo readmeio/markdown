@@ -20,20 +20,37 @@ describe('Parse RDMD Callouts', () => {
 
       expect(mdast(text)).toMatchSnapshot();
     });
+
+    it('allows trailing spaces after the icon with no title', () => {
+      const text = `
+> 🛑 
+> Compact headings must be followed by two line breaks before the following block.`;
+
+      expect(mdast(text)).toMatchSnapshot();
+    });
   });
 
-  describe('emoji support', () => {
-    const emojis = ['🛈', '✎', '🗹', '🗐', 'ℹ'];
+  it('requires a space between the icon and title', () => {
+    const text = `
+> ℹ️Info Callout
+>
+> Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
+    expect(mdast(text)).toMatchSnapshot();
+  });
+});
 
-    emojis.forEach(emoji => {
-      it(`render a callout for ${emoji}`, () => {
-        const text = `
-> ${emoji} Default Callout
+describe('emoji modifier support', () => {
+  const emojis = ['📘', '⚠️', '🚧', '👍', '✅', '❗', '❗️', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
+
+  emojis.forEach(emoji => {
+    it(`render a callout for ${emoji}`, () => {
+      const text = `
+> ${emoji}
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
-
-        expect(mdast(text)).toMatchSnapshot();
-      });
+      const ast = mdast(text);
+      expect(ast).toMatchSnapshot();
+      expect(ast.children[0].data.hProperties.title).toBe('');
     });
   });
 });

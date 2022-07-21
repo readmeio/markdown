@@ -2,13 +2,13 @@ import { hast, astToPlainText } from '../index';
 
 describe('astToPlainText()', () => {
   it("converts br's to ''", () => {
-    const txt = `<br>`;
+    const txt = '<br>';
 
     expect(astToPlainText(hast(txt))).toBe('');
   });
 
   it("converts hr's to ''", () => {
-    const txt = `<hr>`;
+    const txt = '<hr>';
 
     expect(astToPlainText(hast(txt))).toBe('');
   });
@@ -16,7 +16,7 @@ describe('astToPlainText()', () => {
   it('converts flavored callouts', () => {
     const txt = `
 > 📘 Title
-> 
+>
 > Some body
     `;
 
