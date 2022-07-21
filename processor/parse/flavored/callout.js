@@ -1,9 +1,6 @@
-// @note: We'd like to allow any emoji to match, but included in the emoji
-// character set is [#*0-9].
-// https://www.unicode.org/Public/13.0.0/ucd/emoji/emoji-data.txt
-const rgx =
-  // eslint-disable-next-line unicorn/no-unsafe-regex
-  /^> ?(\u00a9|\u00ae|[\u2000-\u3300]|[\u{1f000}-\u{1fbff}])(?: {0,}(.+))?\n((?:>(?: .*)?\n)*)/u;
+const emojiRegex = require('emoji-regex');
+
+const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\n)*)`);
 
 const themes = {
   '\uD83D\uDCD8': 'info',
@@ -31,7 +28,7 @@ function tokenizer(eat, value) {
   if (!rgx.test(value)) return true;
 
   // eslint-disable-next-line prefer-const
-  let [match, icon, title = '', text] = rgx.exec(value);
+  let [match, icon, title = '', text] = value.match(rgx);
 
   icon = icon.trim();
   text = text.replace(/^>(?:(\n)|(\s)?)/gm, '$1').trim();

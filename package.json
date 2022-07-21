@@ -30,6 +30,7 @@
     "@readme/emojis": "^5.0.0",
     "@readme/syntax-highlighter": "^12.0.1",
     "copy-to-clipboard": "^3.3.1",
+    "emoji-regex": "^10.1.0",
     "hast-util-sanitize": "^4.0.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
