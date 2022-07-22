@@ -1,6 +1,21 @@
 Changelog
 ===
 
+## Version 6.47.0
+
+### ✨ New & Improved
+
+* **release:** trigger build ([00b91cc](https://github.com/readmeio/markdown/commit/00b91ccfac60004ab7d8d78515c67a1ffe8d1797))
+* updating our callout emoji regex to use `emoji-regex` ([#536](https://github.com/readmeio/markdown/issues/536)) ([87fdde2](https://github.com/readmeio/markdown/commit/87fdde2fe48d958694308e0b7facec18a7e6219e))
+* upgrading out of date deps ([#542](https://github.com/readmeio/markdown/issues/542)) ([f8aae4f](https://github.com/readmeio/markdown/commit/f8aae4f9a387974079e8d958917e936755b45820))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump terser from 5.8.0 to 5.14.2 ([#546](https://github.com/readmeio/markdown/issues/546)) ([454eafe](https://github.com/readmeio/markdown/commit/454eafef0b9cf409bb3ef413b265dfca8a3afd7b))
+* re-adding @commitlint/config-conventional back as a devDep ([ba2a4e7](https://github.com/readmeio/markdown/commit/ba2a4e72be7bc2d2251fb75a2151b247f042e518))
+* **build:** try adding commitlint.config.js ([5288d20](https://github.com/readmeio/markdown/commit/5288d2028694cbe381af0bc32cc494783a59245b))
+
 ## Version 6.46.1
 
 ### 🛠 Fixes & Updates
