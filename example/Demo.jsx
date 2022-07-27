@@ -15,6 +15,14 @@ const terms = [
     term: 'demo',
     definition: 'a thing that breaks on presentation',
   },
+  {
+    term: 'exogenous',
+    definition: 'relating to or developing from external factors',
+  },
+  {
+    term: 'endogenous',
+    definition: 'having an internal cause or origin',
+  },
 ];
 
 const Maybe = ({ when, children }) => when && children;

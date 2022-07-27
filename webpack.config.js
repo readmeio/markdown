@@ -7,6 +7,7 @@ const browserConfig = merge(common, {
   entry: './index.js',
   externals: {
     '@readme/variable': '@readme/variable',
+    '@tippyjs/react': '@tippyjs/react',
     react: {
       amd: 'react',
       commonjs: 'react',
