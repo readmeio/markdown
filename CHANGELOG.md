@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.48.0
+
+### ✨ New & Improved
+
+* **glossary-item:** use react-tippy to control tooltips ([#553](https://github.com/readmeio/markdown/issues/553)) ([0302473](https://github.com/readmeio/markdown/commit/03024739dd439ebac3ffc45b35c073d80eb576c4))
+
+
+### 🛠 Fixes & Updates
+
+* correct first line spacing ([#552](https://github.com/readmeio/markdown/issues/552)) ([3495dff](https://github.com/readmeio/markdown/commit/3495dffa8542ab0ff7ef763c20f1e8c7d4d05bb1))
+
 ## Version 6.47.0
 
 ### ✨ New & Improved
