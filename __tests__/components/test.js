@@ -38,9 +38,7 @@ describe('Data Replacements', () => {
         markdown.react('<<glossary:term>>')
       )
     );
-    expect(container).toContainHTML(
-      '<p><span class="glossary-tooltip" v="term"><span class="glossary-item highlight">term</span><span class="tooltip-content"><span class="tooltip-content-body"><strong class="term">term</strong> - a word or phrase used to describe a thing or to express a concept.</span></span></span></p>'
-    );
+    expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
   });
 });
 
