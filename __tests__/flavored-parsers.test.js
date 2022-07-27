@@ -68,6 +68,14 @@ describe('Parse RDMD Syntax', () => {
         expect(codeBlock.lang).toBe('js');
       });
 
+      it('Code blocks should keep spaces entered at start of first line', () => {
+        const mdx =
+          "```javascript tab/a.js\n  function sayHello (state) {\n    console.log(state);\n  }\n\nexport default sayHello;\n```\n```javascript tab/b.js\nimport A from './a.js';\n\nA('Hello world!');\n```\n\n";
+        const ast = process(mdx);
+
+        expect(ast).toMatchSnapshot();
+      });
+
       it('Code blocks should use a "smart" terminating delimiter', () => {
         /**
          * https://github.com/readmeio/api-explorer/issues/724

@@ -1,5 +1,56 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Parse RDMD Syntax Code Blocks Edge Cases Code blocks should keep spaces entered at start of first line 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": "tab/a.js",
+            },
+          },
+          "lang": "javascript",
+          "meta": "tab/a.js",
+          "type": "code",
+          "value": "  function sayHello (state) {
+    console.log(state);
+  }
+
+export default sayHello;",
+        },
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": "tab/b.js",
+            },
+          },
+          "lang": "javascript",
+          "meta": "tab/b.js",
+          "type": "code",
+          "value": "import A from './a.js';
+
+A('Hello world!');",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "code-tabs",
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse RDMD Syntax Code Blocks Single Code Block 1`] = `
 Object {
   "children": Array [
