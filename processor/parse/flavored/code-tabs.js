@@ -25,7 +25,7 @@ function tokenizer(eat, value) {
     kids.push({
       type: 'code',
       className: 'tab-panel',
-      value: code.trim(),
+      value: code.replace(/^\n/, ''),
       meta,
       lang,
       data: {

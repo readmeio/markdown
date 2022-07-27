@@ -1,0 +1,34 @@
+.GlossaryItem {
+  &-trigger {
+    border-bottom: 1px solid #737c83;
+    border-style: dotted;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    cursor: pointer;
+  }
+
+  &-tooltip-content {
+    background-color: #fff;
+    border: 1px solid #e2e3e3;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px -1px #e2e3e3;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 15px;
+    text-align: left;
+    width: 350px; 
+  }
+
+  &-term {
+    font-style: italic;
+  }
+}
+
+.tippy-box {
+  // needed for tippy's default animation
+  &[data-animation='fade'][data-state='hidden'] {
+    opacity: 0;
+  }
+}

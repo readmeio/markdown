@@ -1,7 +1,8 @@
 const React = require('react');
 const PropTypes = require('prop-types');
+const Tooltip = require('@tippyjs/react').default;
 
-const GlossaryContext = require('../contexts/GlossaryTerms');
+const GlossaryContext = require('../../contexts/GlossaryTerms');
 
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/replace-vars.js#L8
 function GlossaryItem({ term, terms }) {
@@ -10,14 +11,17 @@ function GlossaryItem({ term, terms }) {
   if (!foundTerm) return <span>{term}</span>;
 
   return (
-    <span className="glossary-tooltip" v={foundTerm.term}>
-      <span className="glossary-item highlight">{term}</span>
-      <span className="tooltip-content">
-        <span className="tooltip-content-body">
-          <strong className="term">{foundTerm.term}</strong> - {foundTerm.definition}
-        </span>
-      </span>
-    </span>
+    <Tooltip
+      content={
+        <div className="GlossaryItem-tooltip-content">
+          <strong className="GlossaryItem-term">{foundTerm.term}</strong> - {foundTerm.definition}
+        </div>
+      }
+      offset={[-5, 5]}
+      placement="bottom-start"
+    >
+      <span className="GlossaryItem-trigger">{term}</span>
+    </Tooltip>
   );
 }
 
