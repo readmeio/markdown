@@ -10,6 +10,10 @@ function toString(node) {
 }
 
 function one(node) {
+  if (node.tagName === 'img') {
+    return node.properties?.title || '';
+  }
+
   if (node.type === 'text') {
     return node.value;
   }

@@ -59,9 +59,9 @@ ${JSON.stringify(
 
   it('converts images', () => {
     const txt = `
-![image **label**](http://placekitten.com/600/600)
+![image **label**](http://placekitten.com/600/600 "entitled kittens")
     `;
 
-    expect(astToPlainText(hast(txt))).toBe('');
+    expect(astToPlainText(hast(txt))).toBe('entitled kittens');
   });
 });
