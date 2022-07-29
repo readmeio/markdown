@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.48.2
+
+### 🛠 Fixes & Updates
+
+* images to plain text at the root ([#555](https://github.com/readmeio/markdown/issues/555)) ([ce2cc56](https://github.com/readmeio/markdown/commit/ce2cc56b28650b850ad04c6ea531f9bf95a112a5))
+
 ## Version 6.48.1
 
 ### 🛠 Fixes & Updates
