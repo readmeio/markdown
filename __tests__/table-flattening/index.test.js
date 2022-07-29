@@ -21,6 +21,6 @@ describe('astToPlainText with tables', () => {
 | Cell *A1* | *Cell B1* |
 | *Cell* A2 | *Cell* B2 |`;
 
-    expect(astToPlainText(hast(text))).toMatchInlineSnapshot('"Col. A Col. B Cell A1 Cell B1 Cell A2 Cell B2"');
+    expect(astToPlainText(hast(text))).toMatchInlineSnapshot('"Col. A Col.  B Cell  A1 Cell B1 Cell  A2 Cell  B2"');
   });
 });
