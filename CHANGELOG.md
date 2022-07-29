@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.48.1
+
+### 🛠 Fixes & Updates
+
+* use title for images in plain text ([#554](https://github.com/readmeio/markdown/issues/554)) ([bdee9dd](https://github.com/readmeio/markdown/commit/bdee9ddbc79ee5fe16e9633eafbda645b15f69d9))
+
 ## Version 6.48.0
 
 ### ✨ New & Improved
