@@ -1,12 +1,8 @@
 /* @note: copied from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 function toString(node) {
-  if ('children' in node) {
-    // eslint-disable-next-line no-use-before-define
-    return all(node);
-  }
-
-  return 'value' in node ? node.value : ' ';
+  // eslint-disable-next-line no-use-before-define
+  return 'children' in node ? all(node) : one(node);
 }
 
 function one(node) {
@@ -15,6 +11,10 @@ function one(node) {
   }
 
   if (node.type === 'text') {
+    return node.value;
+  }
+
+  if ('value' in node) {
     return node.value;
   }
 
