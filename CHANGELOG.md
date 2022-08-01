@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.48.3
+
+### 🛠 Fixes & Updates
+
+* astToPlainText with lone image ([#561](https://github.com/readmeio/markdown/issues/561)) ([477322a](https://github.com/readmeio/markdown/commit/477322acfd54a03ad785edb6dcf01577d8665fa9))
+* **deps:** bump readmeio/rdme from 7.2.2 to 7.5.0 ([#556](https://github.com/readmeio/markdown/issues/556)) ([7240820](https://github.com/readmeio/markdown/commit/7240820652c81b5391c4552353bf7901945e8288))
+* **deps:** update packages ([#560](https://github.com/readmeio/markdown/issues/560)) ([fe99fbc](https://github.com/readmeio/markdown/commit/fe99fbc22111a50f25a9ef4dbd1e518f2bd71aa6))
+
 ## Version 6.48.2
 
 ### 🛠 Fixes & Updates
