@@ -68,6 +68,10 @@
       "versions": "*17.0.2",
       "reason": ""
     },
+    "@testing-library/react": {
+      "versions": "^13",
+      "reason": "Waiting on react"
+    },
     "react": {
       "versions": "^18",
       "reason": "Haven't tested yet"
