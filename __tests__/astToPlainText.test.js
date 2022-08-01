@@ -82,4 +82,37 @@ ${JSON.stringify(
 
     expect(astToPlainText(find(ast, n => n.tagName === 'img'))).toBe('entitled kittens');
   });
+
+  it('converts magic block images', () => {
+    const txt = `
+      [block:image]
+      {
+        "images": [
+          {
+            "image": ["https://files.readme.io/test.png", "Test Image Title", 100, 100, "#fff"]
+          }
+        ]
+      }
+      [/block]
+    `;
+
+    expect(astToPlainText(hast(txt))).toBe('Test Image Title');
+  });
+
+  it('converts a lone magic block image', () => {
+    const txt = `
+      [block:image]
+      {
+        "images": [
+          {
+            "image": ["https://files.readme.io/test.png", "Test Image Title", 100, 100, "#fff"]
+          }
+        ]
+      }
+      [/block]
+    `;
+    const img = find(hast(txt), n => n.tagName === 'img');
+
+    expect(astToPlainText(img)).toBe('Test Image Title');
+  });
 });
