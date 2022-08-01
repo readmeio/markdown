@@ -69,16 +69,16 @@
       "reason": ""
     },
     "@testing-library/react": {
-      "versions": "*13.2.0",
-      "reason": ""
+      "versions": "^13",
+      "reason": "Waiting on react"
     },
     "react": {
-      "versions": "*18.1.0",
-      "reason": ""
+      "versions": "^18",
+      "reason": "Haven't tested yet"
     },
     "react-dom": {
-      "versions": "*18.1.0",
-      "reason": ""
+      "versions": "^18",
+      "reason": "Waiting on react"
     }
   }
 }
