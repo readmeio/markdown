@@ -2,7 +2,7 @@
  */
 function toString(node) {
   // eslint-disable-next-line no-use-before-define
-  return 'children' in node ? all(node) : one(node);
+  return 'children' in node ? all(node) || one(node) : one(node);
 }
 
 function one(node) {
