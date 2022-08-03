@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.50.0
+
+### 🛠 Fixes & Updates
+
+* callout warning icon ([#564](https://github.com/readmeio/markdown/issues/564)) ([197ce6f](https://github.com/readmeio/markdown/commit/197ce6fce413b60dc3612d652f985cf8ce8fbfb7))
+
+
+### ✨ New & Improved
+
+* throw when parsing invalid magic block json ([#563](https://github.com/readmeio/markdown/issues/563)) ([72a59dc](https://github.com/readmeio/markdown/commit/72a59dcc2790fb2721504e7ddee69042e03163c3))
+
 ## Version 6.49.0
 
 ### ✨ New & Improved
