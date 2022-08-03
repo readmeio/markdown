@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.49.0
+
+### ✨ New & Improved
+
+* try using purecomponent for html ([#562](https://github.com/readmeio/markdown/issues/562)) ([6f44d4b](https://github.com/readmeio/markdown/commit/6f44d4b1cfe2ae2724ab425f08056a78c27138f4))
+
 ## Version 6.48.3
 
 ### 🛠 Fixes & Updates
