@@ -48,7 +48,7 @@ function tokenize(eat, value) {
     // eslint-disable-next-line no-console
     console.error('Invalid Magic Block JSON:', err);
     if (alwaysThrow) {
-      throw new Error('Invalid Magic Block JSON:', { cause: err });
+      throw new Error('Invalid Magic Block JSON');
     }
   }
 

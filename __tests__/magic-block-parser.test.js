@@ -270,4 +270,14 @@ describe('Parse Magic Blocks', () => {
     [/block]`;
     expect(process(text)).toMatchSnapshot();
   });
+
+  it('Block with invalid JSON', () => {
+    const text = `[block:api-header]
+    {,
+      "title": "Uh-oh, I'm invalid",
+      "level": 2
+    }
+    [/block]`;
+    expect(process(text)).toMatchSnapshot();
+  });
 });

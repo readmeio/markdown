@@ -233,6 +233,22 @@ test('`correctnewlines` option', () => {
   expect(container).toContainHTML('<p>test<br>\ntest<br>\ntest</p>');
 });
 
+test('`alwaysThrow` option', () => {
+  const { container } = render(
+    markdown.default(
+      `[block:api-header]
+    {,
+      "title": "Uh-oh, I'm invalid",
+      "level": 2
+    }
+    [/block]`,
+      { alwaysThrow: true }
+    )
+  );
+
+  expect(() => container).toThrow('Invalid Magic Block JSON');
+});
+
 // TODO not sure if this needs to work or not?
 // Isn't it a good thing to always strip HTML?
 describe('`stripHtml` option', () => {
