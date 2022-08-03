@@ -16,7 +16,7 @@ const extractScripts = (html = '') => {
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
-class HTMLBlock extends React.Component {
+class HTMLBlock extends React.PureComponent {
   constructor(props) {
     super(props);
     [this.html, this.exec] = extractScripts(this.props.html);
