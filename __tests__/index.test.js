@@ -233,20 +233,40 @@ test('`correctnewlines` option', () => {
   expect(container).toContainHTML('<p>test<br>\ntest<br>\ntest</p>');
 });
 
-test('`alwaysThrow` option', () => {
-  const { container } = render(
-    markdown.default(
-      `[block:api-header]
+describe('`alwaysThrow` option', () => {
+  it('should throw if `alwaysThrow` is true and magic block has invalid JSON', () => {
+    const shouldThrow = () =>
+      render(
+        markdown.default(
+          `[block:api-header]
     {,
       "title": "Uh-oh, I'm invalid",
       "level": 2
     }
     [/block]`,
-      { alwaysThrow: true }
-    )
-  );
+          { alwaysThrow: true }
+        )
+      );
 
-  expect(() => container).toThrow('Invalid Magic Block JSON');
+    expect(() => shouldThrow()).toThrow('Invalid Magic Block JSON');
+  });
+
+  it('should not throw if `alwaysThrow` is true but magic block has valid JSON', () => {
+    const shouldThrow = () =>
+      render(
+        markdown.default(
+          `[block:api-header]
+    {
+      "title": "Ooh I'm valid 💅",
+      "level": 2
+    }
+    [/block]`,
+          { alwaysThrow: true }
+        )
+      );
+
+    expect(() => shouldThrow()).not.toThrow('Invalid Magic Block JSON');
+  });
 });
 
 // TODO not sure if this needs to work or not?

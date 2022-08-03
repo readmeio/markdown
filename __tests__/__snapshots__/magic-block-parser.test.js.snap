@@ -627,31 +627,6 @@ Object {
 }
 `;
 
-exports[`Parse Magic Blocks does not throw error when flag alwaysThrow is true and block has valid JSON 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "Ooh I'm valid 💅",
-        },
-      ],
-      "depth": 2,
-      "type": "heading",
-    },
-  ],
-  "type": "root",
-}
-`;
-
-exports[`Parse Magic Blocks throws error when flag alwaysThrow is true and block has invalid JSON 1`] = `
-Object {
-  "children": Array [],
-  "type": "root",
-}
-`;
-
 exports[`Sanitize Schema 1`] = `
 Object {
   "attributes": Array [],
