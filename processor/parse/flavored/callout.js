@@ -4,8 +4,8 @@ const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\
 
 const themes = {
   '\uD83D\uDCD8': 'info',
-  '\u26A0\uFE0F': 'warn',
   '\uD83D\uDEA7': 'warn',
+  '\u26A0\uFE0F': 'warn',
   '\uD83D\uDC4D': 'okay',
   '\u2705': 'okay',
   '\u2757': 'error',
