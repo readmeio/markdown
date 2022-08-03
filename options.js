@@ -1,4 +1,5 @@
 const options = {
+  alwaysThrow: false,
   compatibilityMode: false,
   copyButtons: true,
   correctnewlines: false,

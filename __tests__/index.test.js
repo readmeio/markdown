@@ -12,6 +12,7 @@ test('it should have the proper utils exports', () => {
   expect(typeof markdown.utils.VariablesContext).toBe('object');
 
   expect(markdown.utils.options).toStrictEqual({
+    alwaysThrow: false,
     compatibilityMode: false,
     copyButtons: true,
     correctnewlines: false,

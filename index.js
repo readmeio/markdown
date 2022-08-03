@@ -136,6 +136,7 @@ export function processor(opts = {}) {
     .use(remarkFrontmatter, ['yaml', 'toml'])
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
+    .data('alwaysThrow', opts.alwaysThrow)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize(sanitize)))
     .use(remarkSlug)
