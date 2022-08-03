@@ -38,6 +38,13 @@ Object {
 }
 `;
 
+exports[`Parse Magic Blocks Block with invalid JSON 1`] = `
+Object {
+  "children": Array [],
+  "type": "root",
+}
+`;
+
 exports[`Parse Magic Blocks Callout Blocks 1`] = `
 Object {
   "children": Array [

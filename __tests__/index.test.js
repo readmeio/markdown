@@ -12,6 +12,7 @@ test('it should have the proper utils exports', () => {
   expect(typeof markdown.utils.VariablesContext).toBe('object');
 
   expect(markdown.utils.options).toStrictEqual({
+    alwaysThrow: false,
     compatibilityMode: false,
     copyButtons: true,
     correctnewlines: false,
@@ -230,6 +231,42 @@ test('`correctnewlines` option', () => {
 
   ({ container } = render(markdown.react('test\ntest\ntest', { correctnewlines: false })));
   expect(container).toContainHTML('<p>test<br>\ntest<br>\ntest</p>');
+});
+
+describe('`alwaysThrow` option', () => {
+  it('should throw if `alwaysThrow` is true and magic block has invalid JSON', () => {
+    const shouldThrow = () =>
+      render(
+        markdown.default(
+          `[block:api-header]
+    {,
+      "title": "Uh-oh, I'm invalid",
+      "level": 2
+    }
+    [/block]`,
+          { alwaysThrow: true }
+        )
+      );
+
+    expect(() => shouldThrow()).toThrow('Invalid Magic Block JSON');
+  });
+
+  it('should not throw if `alwaysThrow` is true but magic block has valid JSON', () => {
+    const shouldThrow = () =>
+      render(
+        markdown.default(
+          `[block:api-header]
+    {
+      "title": "Ooh I'm valid 💅",
+      "level": 2
+    }
+    [/block]`,
+          { alwaysThrow: true }
+        )
+      );
+
+    expect(() => shouldThrow()).not.toThrow('Invalid Magic Block JSON');
+  });
 });
 
 // TODO not sure if this needs to work or not?
