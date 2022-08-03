@@ -3,6 +3,7 @@ const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 let compatibilityMode;
 let safeMode;
+let alwaysThrow;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -46,6 +47,9 @@ function tokenize(eat, value) {
     json = {};
     // eslint-disable-next-line no-console
     console.error('Invalid Magic Block JSON:', err);
+    if (alwaysThrow) {
+      throw new Error('Invalid Magic Block JSON');
+    }
   }
 
   if (Object.keys(json).length < 1) return eat(match);
@@ -284,6 +288,7 @@ function parser() {
 
   if (this.data('compatibilityMode')) compatibilityMode = true;
   if (this.data('safeMode')) safeMode = true;
+  if (this.data('alwaysThrow')) alwaysThrow = true;
 
   tokenizers.magicBlocks = tokenize;
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');

@@ -40,7 +40,7 @@ describe('Parse RDMD Callouts', () => {
 });
 
 describe('emoji modifier support', () => {
-  const emojis = ['📘', '⚠️', '🚧', '👍', '✅', '❗', '❗️', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
+  const emojis = ['📘', '🚧', '⚠️', '👍', '✅', '❗', '❗️', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
 
   emojis.forEach(emoji => {
     it(`render a callout for ${emoji}`, () => {
