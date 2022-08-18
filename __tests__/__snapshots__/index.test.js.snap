@@ -94,8 +94,7 @@ exports[`export multiple Markdown renderers renders HTML 1`] = `
 `;
 
 exports[`export multiple Markdown renderers renders MD 1`] = `
-"Hello World
-===========
+"# Hello World
 "
 `;
 
