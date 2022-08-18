@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.51.0
+
+### ✨ New & Improved
+
+* always use ATX format for headers ([#571](https://github.com/readmeio/markdown/issues/571)) ([270e86f](https://github.com/readmeio/markdown/commit/270e86f50e93746561f97e3702ec52de5d23bd4c))
+
 ## Version 6.50.0
 
 ### 🛠 Fixes & Updates
