@@ -24,7 +24,6 @@ test('it should have the proper utils exports', () => {
       listItemIndent: '1',
       spacedTable: true,
       paddedTable: true,
-      setext: true,
     },
     normalize: true,
     safeMode: false,

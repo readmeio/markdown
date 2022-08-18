@@ -11,7 +11,6 @@ const options = {
     listItemIndent: '1',
     spacedTable: true,
     paddedTable: true,
-    setext: true,
   },
   normalize: true,
   safeMode: false,
