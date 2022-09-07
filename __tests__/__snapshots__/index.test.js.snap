@@ -24,6 +24,8 @@ exports[`anchors with baseUrl 1`] = `
 &lt;a href=\\"page:slug\\"&gt;page&lt;/a&gt;&lt;/p&gt;"
 `;
 
+exports[`anchors with baseUrl and special characters in url hash 1`] = `"<p><a href=\\"/reference-link/slug#%E6%95%B4\\" target=\\"\\" title=\\"\\">ref</a></p>"`;
+
 exports[`check list items 1`] = `
 "<ul class=\\"contains-task-list\\">
 <li class=\\"task-list-item\\"><input type=\\"checkbox\\" disabled=\\"\\"> checklistitem1</li>

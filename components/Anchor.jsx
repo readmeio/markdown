@@ -6,29 +6,33 @@ const BaseUrlContext = require('../contexts/BaseUrl');
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
 function getHref(href, baseUrl) {
+  const [path, hash] = href.split('#');
+  const hashStr = hash ? `#${hash}` : '';
+
   const base = baseUrl === '/' ? '' : baseUrl;
-  const doc = href.match(/^doc:([-_a-zA-Z0-9#]*)$/);
+  const doc = path.match(/^doc:([-_a-zA-Z0-9#]*)$/);
+
   if (doc) {
-    return `${base}/docs/${doc[1]}`;
+    return `${base}/docs/${doc[1]}${hashStr}`;
   }
 
-  const ref = href.match(/^ref:([-_a-zA-Z0-9#]*)$/);
+  const ref = path.match(/^ref:([-_a-zA-Z0-9#]*)$/);
   if (ref) {
-    return `${base}/reference-link/${ref[1]}`;
+    return `${base}/reference-link/${ref[1]}${hashStr}`;
   }
 
   // we need to perform two matches for changelogs in case
   // of legacy links that use 'blog' instead of 'changelog'
-  const blog = href.match(/^blog:([-_a-zA-Z0-9#]*)$/);
-  const changelog = href.match(/^changelog:([-_a-zA-Z0-9#]*)$/);
+  const blog = path.match(/^blog:([-_a-zA-Z0-9#]*)$/);
+  const changelog = path.match(/^changelog:([-_a-zA-Z0-9#]*)$/);
   const changelogMatch = blog || changelog;
   if (changelogMatch) {
-    return `${base}/changelog/${changelogMatch[1]}`;
+    return `${base}/changelog/${changelogMatch[1]}${hashStr}`;
   }
 
-  const custompage = href.match(/^page:([-_a-zA-Z0-9#]*)$/);
+  const custompage = path.match(/^page:([-_a-zA-Z0-9#]*)$/);
   if (custompage) {
-    return `${base}/page/${custompage[1]}`;
+    return `${base}/page/${custompage[1]}${hashStr}`;
   }
 
   return href;
