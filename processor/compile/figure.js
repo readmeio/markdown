@@ -1,10 +1,11 @@
 const { imgSizeByWidth } = require('../parse/magic-block-parser');
 
 const compileImage = image => {
+  const { className, width } = image.data.hProperties || {};
   const img = {
     image: [image.url, image.title, image.alt],
-    ...(image.data.hProperties.width && { sizing: imgSizeByWidth[image.data.hProperties.width] }),
-    ...(image.border && { border: image.border }),
+    ...(width && { sizing: imgSizeByWidth[width] }),
+    ...(className === 'border' && { border: true }),
   };
 
   return img;
