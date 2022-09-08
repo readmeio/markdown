@@ -181,7 +181,7 @@ describe('ReadMe Magic Blocks', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it('Image with sizing', () => {
+  it('Image with sizing and border', () => {
     const txt = `[block:image]
     {
        "images": [{
@@ -189,7 +189,8 @@ describe('ReadMe Magic Blocks', () => {
             "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
             "rdme-blue.svg"
           ],
-          "sizing": "80px"
+          "sizing": "80px",
+          "border": true
        }]
     }
     [/block]`;

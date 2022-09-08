@@ -91,7 +91,7 @@ exports[`ReadMe Magic Blocks Image 1`] = `
 "
 `;
 
-exports[`ReadMe Magic Blocks Image with sizing 1`] = `
+exports[`ReadMe Magic Blocks Image with sizing and border 1`] = `
 "[block:image]
 {
   \\"images\\": [
@@ -101,7 +101,8 @@ exports[`ReadMe Magic Blocks Image with sizing 1`] = `
         \\"rdme-blue.svg\\",
         \\"\\"
       ],
-      \\"sizing\\": \\"80px\\"
+      \\"sizing\\": \\"80px\\",
+      \\"border\\": true
     }
   ]
 }
