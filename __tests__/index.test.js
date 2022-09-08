@@ -171,6 +171,11 @@ test('anchors with baseUrl', () => {
   expect(container.innerHTML).toMatchSnapshot();
 });
 
+test('anchors with baseUrl and special characters in url hash', () => {
+  const { container } = render(markdown.default('[ref](ref:slug#整)'));
+  expect(container.innerHTML).toMatchSnapshot();
+});
+
 test('emojis', () => {
   const { container } = render(
     markdown.default(`
