@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.52.0
+
+### 🛠 Fixes & Updates
+
+* **anchor:** ignore anchor hash when parsing internal link syntax ([#576](https://github.com/readmeio/markdown/issues/576)) ([25c5460](https://github.com/readmeio/markdown/commit/25c5460c975e7d353009a9610b0c50108cf4ed1d))
+
+
+### ✨ New & Improved
+
+* ensure bordered images are rendered via a magic block ([#579](https://github.com/readmeio/markdown/issues/579)) ([c3fb6f2](https://github.com/readmeio/markdown/commit/c3fb6f299dde6619dea8e789042f746242d486af))
+
 ## Version 6.51.0
 
 ### ✨ New & Improved
