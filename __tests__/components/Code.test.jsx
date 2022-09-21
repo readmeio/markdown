@@ -25,6 +25,13 @@ describe('Code', () => {
     expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
   });
 
+  it('does not nest the button inside the code block', () => {
+    render(<Code>{'console.log("hi");'}</Code>);
+    const btn = screen.getByRole('button');
+
+    expect(btn.parentNode.nodeName.toLowerCase()).not.toBe('code');
+  });
+
   it('allows undefined children?!', () => {
     const { container } = render(<Code />);
 
