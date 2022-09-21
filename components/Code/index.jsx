@@ -55,6 +55,7 @@ function Code(props) {
 
   return (
     <React.Fragment>
+      {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
       <code
         ref={codeRef}
         className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
@@ -62,7 +63,6 @@ function Code(props) {
         name={meta}
         suppressHydrationWarning={true}
       >
-        {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
         {codeContent}
       </code>
     </React.Fragment>
