@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.52.1
+
+### 🛠 Fixes & Updates
+
+* avoid nesting button in code block ([#587](https://github.com/readmeio/markdown/issues/587)) ([a9a5d5d](https://github.com/readmeio/markdown/commit/a9a5d5ded76bcc3ceb23147747342462bad19630))
+
 ## Version 6.52.0
 
 ### 🛠 Fixes & Updates
