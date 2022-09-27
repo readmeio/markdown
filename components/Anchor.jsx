@@ -43,7 +43,7 @@ function docLink(href) {
   if (!doc) return false;
 
   return {
-    className: 'doc-link',
+    className: 'Menu-Item Menu-Item-alignIcon_left Menu-Item_link Menu-Item_blue Menu-Item_external doc-link',
     'data-sidebar': doc[1],
   };
 }
