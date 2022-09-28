@@ -1,3 +1,6 @@
+import getHref from './components/Anchor';
+
+/* eslint-disable-next-line eslint-comments/disable-enable-pair */
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
@@ -100,6 +103,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 
 export const utils = {
   BaseUrlContext,
+  getHref,
   GlossaryContext: GlossaryItem.GlossaryContext,
   options,
   VariablesContext: Variable.VariablesContext,
