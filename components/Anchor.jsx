@@ -86,3 +86,5 @@ AnchorWithContext.sanitize = sanitizeSchema => {
 };
 
 module.exports = AnchorWithContext;
+
+AnchorWithContext.getHref = getHref;
