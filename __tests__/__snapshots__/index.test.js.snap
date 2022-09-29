@@ -9,7 +9,7 @@ exports[`anchor target: should default to _self 1`] = `"<p><a href=\\"https://ex
 exports[`anchors 1`] = `
 "<p><a href=\\"http://example.com\\" target=\\"\\" title=\\"\\">link</a><br>
 <a href=\\"\\" target=\\"\\" title=\\"\\">xss</a><br>
-<a href=\\"/docs/slug\\" target=\\"\\" title=\\"\\" class=\\"Menu-Item Menu-Item-alignIcon_left Menu-Item_link Menu-Item_blue Menu-Item_external doc-link\\" data-sidebar=\\"slug\\">doc</a><br>
+<a href=\\"/docs/slug\\" target=\\"\\" title=\\"\\" class=\\"doc-link\\" data-sidebar=\\"slug\\">doc</a><br>
 <a href=\\"/reference-link/slug\\" target=\\"\\" title=\\"\\">ref</a><br>
 <a href=\\"/changelog/slug\\" target=\\"\\" title=\\"\\">blog</a><br>
 <a href=\\"/changelog/slug\\" target=\\"\\" title=\\"\\">changelog</a><br>
