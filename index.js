@@ -35,6 +35,7 @@ const BaseUrlContext = require('./contexts/BaseUrl');
 const Variable = require('@readme/variable');
 
 const Components = require('./components');
+const { getHref } = require('./components/Anchor');
 
 const {
   GlossaryItem,
@@ -100,6 +101,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 
 export const utils = {
   BaseUrlContext,
+  getHref,
   GlossaryContext: GlossaryItem.GlossaryContext,
   options,
   VariablesContext: Variable.VariablesContext,
