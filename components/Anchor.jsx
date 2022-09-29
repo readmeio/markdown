@@ -5,7 +5,7 @@ const BaseUrlContext = require('../contexts/BaseUrl');
 
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
-export default function getHref(href, baseUrl) {
+function getHref(href, baseUrl) {
   const [path, hash] = href.split('#');
   const hashStr = hash ? `#${hash}` : '';
 
@@ -86,3 +86,5 @@ AnchorWithContext.sanitize = sanitizeSchema => {
 };
 
 module.exports = AnchorWithContext;
+
+AnchorWithContext.getHref = getHref;

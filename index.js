@@ -1,6 +1,3 @@
-import getHref from './components/Anchor';
-
-/* eslint-disable-next-line eslint-comments/disable-enable-pair */
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
@@ -38,6 +35,7 @@ const BaseUrlContext = require('./contexts/BaseUrl');
 const Variable = require('@readme/variable');
 
 const Components = require('./components');
+const { getHref } = require('./components/Anchor');
 
 const {
   GlossaryItem,
