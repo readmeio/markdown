@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.52.2
+
+### ✨ New & Improved
+
+* **anchor:** menu item styling for doc links ([#589](https://github.com/readmeio/markdown/issues/589)) ([31dbf68](https://github.com/readmeio/markdown/commit/31dbf684832cf204eb952b50a2e59d60152975e5))
+
 ## Version 6.52.1
 
 ### 🛠 Fixes & Updates
