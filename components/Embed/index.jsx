@@ -10,7 +10,7 @@ Favicon.propTypes = {
 
 class Embed extends React.Component {
   render() {
-    const { provider, url, title, html, iframe, image, favicon, ...attrs } = this.props;
+    const { lazy = true, provider, url, title, html, iframe, image, favicon, ...attrs } = this.props;
 
     if (!url) {
       return <div />;
@@ -27,14 +27,14 @@ class Embed extends React.Component {
           <div className="embed-media" dangerouslySetInnerHTML={{ __html: html }}></div>
         ) : (
           <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">
-            {!image || <img alt={title} className="embed-img" loading="lazy" src={image} />}
+            {!image || <img alt={title} className="embed-img" loading={lazy ? 'lazy' : ''} src={image} />}
             {title ? (
               <div className="embed-body">
                 {!favicon || (
                   <Favicon
                     alt={provider}
                     className="embed-favicon"
-                    loading="lazy"
+                    loading={lazy ? 'lazy' : ''}
                     src={favicon}
                     style={{ float: 'left' }}
                   />
@@ -69,6 +69,7 @@ Embed.propTypes = {
   html: propTypes.string,
   iframe: propTypes.any,
   image: propTypes.string,
+  lazy: propTypes.bool,
   provider: propTypes.string,
   title: propTypes.string,
   url: propTypes.oneOfType([propTypes.string, propTypes.shape({})]),
@@ -79,4 +80,10 @@ Embed.defaultProps = {
   width: '100%',
 };
 
-module.exports = Embed;
+const CreateEmbed =
+  ({ lazy }) =>
+  // eslint-disable-next-line react/display-name
+  props =>
+    <Embed {...props} lazy={lazy} />;
+
+module.exports = CreateEmbed;
