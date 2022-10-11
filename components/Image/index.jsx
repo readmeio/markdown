@@ -114,7 +114,10 @@ Image.sanitize = sanitizeSchema => {
   return sanitizeSchema;
 };
 
-// eslint-disable-next-line react/display-name
-const CreateImage = opts => props => <Image lazy={opts.lazyImages} {...props} />;
+const CreateImage =
+  ({ lazyImages }) =>
+  // eslint-disable-next-line react/display-name
+  props =>
+    <Image lazy={lazyImages} {...props} />;
 
 module.exports = CreateImage;
