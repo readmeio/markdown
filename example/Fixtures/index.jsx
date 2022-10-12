@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 
 import syntaxFixtures from './docs';
 
-const Fixtures = ({ render, safeMode, selected, getRoute, setQuery }) => {
+const Fixtures = ({ lazyImages, render, safeMode, selected, getRoute, setQuery }) => {
   const [edited, setEdited] = useState(null);
-  const options = useMemo(() => ({ safeMode }), [safeMode]);
+  const options = useMemo(() => ({ lazyImages, safeMode }), [lazyImages, safeMode]);
 
   const handleSelect = event => {
     getRoute(event.target.value);
@@ -17,6 +17,9 @@ const Fixtures = ({ render, safeMode, selected, getRoute, setQuery }) => {
   const toggleSafeMode = useCallback(() => {
     setQuery('safe-mode', !safeMode);
   }, [safeMode, setQuery]);
+  const toggleLazyImages = useCallback(() => {
+    setQuery('lazy-images', !lazyImages);
+  }, [lazyImages, setQuery]);
 
   let fixture;
   let name;
@@ -47,6 +50,10 @@ const Fixtures = ({ render, safeMode, selected, getRoute, setQuery }) => {
         <div>
           <label htmlFor="safe-mode">Safe Mode</label>
           <input checked={options.safeMode} id="safe-mode" onChange={toggleSafeMode} type="checkbox" />
+        </div>
+        <div>
+          <label htmlFor="lazy-images">Lazy Load Images</label>
+          <input checked={options.lazyImages} id="lazy-images" onChange={toggleLazyImages} type="checkbox" />
         </div>
       </fieldset>
     </>
