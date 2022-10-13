@@ -75,6 +75,7 @@ function Demo({ opts }) {
                   <Fixtures
                     ci={params.ci}
                     getRoute={getRoute}
+                    lazyImages={params['lazy-images']}
                     render={({ options, ...props }) => (
                       <DemoContent {...props} ci={params.ci} opts={{ ...opts, ...options }} />
                     )}

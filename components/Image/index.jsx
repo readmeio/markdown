@@ -64,11 +64,12 @@ class Image extends React.Component {
 
   render() {
     const { props } = this;
-    const { alt } = props;
+    const { alt, lazy = true } = props;
 
     if (this.isEmoji) {
-      return <img {...props} alt={alt} loading="lazy" />;
+      return <img {...props} alt={alt} loading={lazy ? 'lazy' : ''} />;
     }
+
     return (
       <span
         aria-label={alt}
@@ -78,7 +79,7 @@ class Image extends React.Component {
         role={'button'}
         tabIndex={0}
       >
-        <img {...props} alt={alt} loading="lazy" />
+        <img {...props} alt={alt} loading={lazy ? 'lazy' : ''} />
         <Lightbox ref={this.lightbox} {...props} onScroll={() => this.toggle(false)} opened={this.state.lightbox} />
       </span>
     );
@@ -91,6 +92,7 @@ Image.propTypes = {
   caption: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   className: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  lazy: PropTypes.bool,
   src: PropTypes.string.isRequired,
   title: PropTypes.string,
   width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -112,4 +114,10 @@ Image.sanitize = sanitizeSchema => {
   return sanitizeSchema;
 };
 
-module.exports = Image;
+const CreateImage =
+  ({ lazyImages }) =>
+  // eslint-disable-next-line react/display-name
+  props =>
+    <Image lazy={lazyImages} {...props} />;
+
+module.exports = CreateImage;

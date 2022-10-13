@@ -24,7 +24,10 @@ const iteratorToObj = iterator => {
 
 const Router = ({ render }) => {
   const [route, getRoute] = useState(trimHash());
-  const [params, setParams] = useState(() => iteratorToObj(new URLSearchParams(window.location.search)));
+  const [params, setParams] = useState(() => ({
+    'lazy-images': true,
+    ...iteratorToObj(new URLSearchParams(window.location.search)),
+  }));
 
   const setQuery = useCallback(
     (...args) => {
