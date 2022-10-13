@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.53.0
+
+### ✨ New & Improved
+
+* add lazy flag for images ([#594](https://github.com/readmeio/markdown/issues/594)) ([fda31b8](https://github.com/readmeio/markdown/commit/fda31b8dcc60706545d5e42e0c4ebbb0c06cdb5b))
+
 ## Version 6.52.2
 
 ### ✨ New & Improved
