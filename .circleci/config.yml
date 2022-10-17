@@ -13,7 +13,7 @@ jobs:
 workflows:
   release-test:
     jobs:
-      release:
-        filters:
-          branches:
-            only: main
+      - release:
+          filters:
+            branches:
+              only: main
