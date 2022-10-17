@@ -25,12 +25,13 @@ jobs:
     - name: Run tests
       run: npm test
 
-  "Visual-tests":
+  "Visual Tests":
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [14.x, 16.x]
+
     steps:
     - uses: actions/checkout@v2.3.4
 
