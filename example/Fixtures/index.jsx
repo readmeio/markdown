@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import syntaxFixtures from './docs';
 

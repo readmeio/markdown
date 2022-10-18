@@ -1,7 +1,6 @@
-const React = require('react');
-const PropTypes = require('prop-types');
-
 const { uppercase } = require('@readme/syntax-highlighter');
+const PropTypes = require('prop-types');
+const React = require('react');
 
 const CodeTabs = props => {
   const { attributes, children, theme } = props;

@@ -2,6 +2,7 @@ const { render, screen } = require('@testing-library/react');
 const React = require('react');
 const { renderToString } = require('react-dom/server');
 
+// eslint-disable-next-line import/order
 const createSchema = require('../../sanitize.schema');
 const HTMLBlock = require('../../components/HTMLBlock')(createSchema(), {});
 const { react } = require('../../index');

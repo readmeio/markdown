@@ -1,5 +1,5 @@
-const React = require('react');
 const PropTypes = require('prop-types');
+const React = require('react');
 
 function Heading({ tag, showAnchorIcons, ...props }) {
   if (!props.children) return '';

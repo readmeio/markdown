@@ -1,10 +1,10 @@
 const { cleanup, render, screen } = require('@testing-library/react');
 const React = require('react');
-const BaseUrlContext = require('../contexts/BaseUrl');
 
+const BaseUrlContext = require('../contexts/BaseUrl');
 const markdown = require('../index');
-const { tableFlattening } = require('../processor/plugin/table-flattening');
 const { options } = require('../options');
+const { tableFlattening } = require('../processor/plugin/table-flattening');
 
 test('it should have the proper utils exports', () => {
   expect(typeof markdown.utils.BaseUrlContext).toBe('object');

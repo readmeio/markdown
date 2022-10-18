@@ -1,6 +1,6 @@
-const React = require('react');
-const PropTypes = require('prop-types');
 const copy = require('copy-to-clipboard');
+const PropTypes = require('prop-types');
+const React = require('react');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:

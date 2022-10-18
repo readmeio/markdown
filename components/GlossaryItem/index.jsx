@@ -1,6 +1,6 @@
-const React = require('react');
-const PropTypes = require('prop-types');
 const Tooltip = require('@tippyjs/react').default;
+const PropTypes = require('prop-types');
+const React = require('react');
 
 const GlossaryContext = require('../../contexts/GlossaryTerms');
 

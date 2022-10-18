@@ -1,7 +1,8 @@
 /* eslint-disable no-param-reassign, react/jsx-props-no-spreading, no-fallthrough */
 
-const React = require('react');
 const PropTypes = require('prop-types');
+const React = require('react');
+
 const Lightbox = require('./Lightbox');
 
 class Image extends React.Component {

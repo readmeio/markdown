@@ -1,41 +1,36 @@
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
-const React = require('react');
-const unified = require('unified');
-
-/* Unified Plugins
- */
-const createSchema = require('./sanitize.schema');
-
+const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
-
+const React = require('react');
+const rehypeRaw = require('rehype-raw');
+const rehypeReact = require('rehype-react');
+const rehypeSanitize = require('rehype-sanitize');
+const rehypeStringify = require('rehype-stringify');
+const remarkBreaks = require('remark-breaks');
+const remarkDisableTokenizers = require('remark-disable-tokenizers');
+const remarkFrontmatter = require('remark-frontmatter');
+const remarkParse = require('remark-parse');
+const remarkRehype = require('remark-rehype');
+const remarkSlug = require('remark-slug');
+const remarkStringify = require('remark-stringify');
+const unified = require('unified');
 const mapNodes = require('unist-util-map');
 const { selectAll } = require('unist-util-select');
 
-// remark plugins
-const remarkRehype = require('remark-rehype');
-const rehypeRaw = require('rehype-raw');
-const remarkParse = require('remark-parse');
-const remarkStringify = require('remark-stringify');
-const remarkBreaks = require('remark-breaks');
-const remarkSlug = require('remark-slug');
-const remarkFrontmatter = require('remark-frontmatter');
-const remarkDisableTokenizers = require('remark-disable-tokenizers');
-
-// rehype plugins
-const rehypeSanitize = require('rehype-sanitize');
-const rehypeStringify = require('rehype-stringify');
-const rehypeReact = require('rehype-react');
-
-/* React Custom Components
- */
-const BaseUrlContext = require('./contexts/BaseUrl');
-
-const Variable = require('@readme/variable');
-
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
+const BaseUrlContext = require('./contexts/BaseUrl');
+const CustomParsers = Object.values(require('./processor/parse'));
+const customCompilers = Object.values(require('./processor/compile'));
+const registerCustomComponents = require('./lib/registerCustomComponents');
+const { options, parseOptions } = require('./options');
+const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
+const toPlainText = require('./processor/plugin/plain-text');
+const sectionAnchorId = require('./processor/plugin/section-anchor-id');
+const tableFlattening = require('./processor/plugin/table-flattening');
+const createSchema = require('./sanitize.schema');
 
 const {
   GlossaryItem,
@@ -53,27 +48,6 @@ const {
 } = Components;
 
 export { Components };
-
-/* Custom Unified Parsers
- */
-const CustomParsers = Object.values(require('./processor/parse'));
-
-/* Custom Unified Compilers
- */
-const customCompilers = Object.values(require('./processor/compile'));
-
-/* Custom Unified Plugins
- */
-const sectionAnchorId = require('./processor/plugin/section-anchor-id');
-const tableFlattening = require('./processor/plugin/table-flattening');
-const toPlainText = require('./processor/plugin/plain-text');
-
-// Processor Option Defaults
-const { options, parseOptions } = require('./options');
-
-/* Utilities
- */
-const registerCustomComponents = require('./lib/registerCustomComponents');
 
 /**
  * Setup Options
@@ -96,8 +70,6 @@ export function setup(blocks, opts = {}) {
 
   return [`${blocks}\n\n `, opts];
 }
-
-const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 
 export const utils = {
   BaseUrlContext,
