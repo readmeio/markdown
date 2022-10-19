@@ -1,4 +1,4 @@
-const emojiRegex = require('emoji-regex').default;
+import emojiRegex from 'emoji-regex';
 
 const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\n)*)`);
 
@@ -17,7 +17,7 @@ const themes = {
   '\u26A0': 'warn',
 };
 
-const icons = Object.entries(themes).reduce((acc, [icon, theme]) => {
+export const icons = Object.entries(themes).reduce((acc, [icon, theme]) => {
   if (!acc[theme]) acc[theme] = [];
   acc[theme].push(icon);
 
@@ -60,11 +60,9 @@ function parser() {
   methods.splice(methods.indexOf('newline'), 0, 'callout');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.icons = icons;
-
-module.exports.sanitize = sanitizeSchema => {
+export function sanitize(sanitizeSchema) {
   const tags = sanitizeSchema.tagNames;
   const attr = sanitizeSchema.attributes;
 
@@ -72,4 +70,6 @@ module.exports.sanitize = sanitizeSchema => {
   attr['rdme-callout'] = ['icon', 'theme', 'title', 'value'];
 
   return parser;
-};
+}
+
+parser.sanitize = sanitize;
