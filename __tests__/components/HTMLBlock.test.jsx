@@ -1,10 +1,12 @@
-const { render, screen } = require('@testing-library/react');
-const React = require('react');
-const { renderToString } = require('react-dom/server');
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 
-const createSchema = require('../../sanitize.schema');
-const HTMLBlock = require('../../components/HTMLBlock')(createSchema(), {});
-const { react } = require('../../index');
+import createHTMLBlock from '../../components/HTMLBlock';
+import { react } from '../../index';
+import createSchema from '../../sanitize.schema';
+
+const HTMLBlock = createHTMLBlock(createSchema(), {});
 
 describe('HTML Block', () => {
   beforeEach(() => {

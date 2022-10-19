@@ -67,3 +67,7 @@ updates:
         versions: ["*18.1.0"]
       - dependency-name: react-dom
         versions: ["*18.1.0"]
+      - dependency-name: jest
+        versions: ["*29.0.0"]
+      - dependency-name: codemirror
+        versions: ["*6.0.0"]

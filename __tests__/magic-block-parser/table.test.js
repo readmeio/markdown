@@ -1,9 +1,9 @@
-const unified = require('unified');
-const remarkParse = require('remark-parse');
 const rehypeSanitize = require('rehype-sanitize');
+const remarkParse = require('remark-parse');
+const unified = require('unified');
 
-const parser = require('../../processor/parse/magic-block-parser');
 const options = require('../../options').options.markdownOptions;
+const parser = require('../../processor/parse/magic-block-parser');
 
 const sanitize = { attributes: [] };
 const process = (text, opts = options) =>

@@ -1,8 +1,8 @@
-const React = require('react');
 const { render } = require('@testing-library/react');
+const React = require('react');
 
-const markdown = require('../../index');
 const TableOfContents = require('../../components/TableOfContents');
+const markdown = require('../../index');
 
 const { GlossaryContext, VariablesContext } = markdown.utils;
 const variables = {

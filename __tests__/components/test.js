@@ -1,8 +1,8 @@
 /* eslint-disable no-eval */
 const { cleanup, fireEvent, render } = require('@testing-library/react');
 const React = require('react');
-const markdown = require('../../index');
 
+const markdown = require('../../index');
 const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {

@@ -56,10 +56,6 @@
       "versions": "*10.1.2",
       "reason": ""
     },
-    "unist-util-map": {
-      "versions": "*3.1.1",
-      "reason": ""
-    },
     "unist-util-select": {
       "versions": "*4.0.1",
       "reason": ""
@@ -79,6 +75,14 @@
     "react-dom": {
       "versions": "^18",
       "reason": "Waiting on react"
+    },
+    "jest": {
+      "versions": "^29",
+      "reason": "jest-image-snapshot's locked to 28"
+    },
+    "codemirror": {
+      "versions": "^6",
+      "reason": "big rewrite, IIRC"
     }
   }
 }

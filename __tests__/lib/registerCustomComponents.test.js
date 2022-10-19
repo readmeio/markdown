@@ -1,5 +1,6 @@
-const React = require('react');
 const PropTypes = require('prop-types');
+const React = require('react');
+
 const registerCustomComponents = require('../../lib/registerCustomComponents');
 const createSchema = require('../../sanitize.schema');
 

@@ -1,5 +1,5 @@
-const React = require('react');
 const { render, fireEvent, screen } = require('@testing-library/react');
+const React = require('react');
 
 const { GlossaryItem } = require('../components/GlossaryItem');
 

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading, jsx-a11y/iframe-has-title */
-const React = require('react');
 const propTypes = require('prop-types');
+const React = require('react');
 
 const Favicon = ({ src, alt = 'favicon', ...attr }) => <img {...attr} alt={alt} height="14" src={src} width="14" />;
 Favicon.propTypes = {
