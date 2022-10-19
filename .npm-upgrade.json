@@ -79,6 +79,10 @@
     "jest": {
       "versions": "^29",
       "reason": "jest-image-snapshot's locked to 28"
+    },
+    "codemirror": {
+      "versions": "^6",
+      "reason": "big rewrite, IIRC"
     }
   }
 }

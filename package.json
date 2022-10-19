@@ -82,7 +82,7 @@
     "@tippyjs/react": "^4.2.6",
     "babel-jest": "^29.2.1",
     "babel-loader": "^8.2.5",
-    "codemirror": "^6.0.1",
+    "codemirror": "^5.54.0",
     "core-js": "^3.25.5",
     "css-loader": "^6.7.1",
     "eslint": "^8.25.0",

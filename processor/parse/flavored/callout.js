@@ -1,4 +1,4 @@
-const emojiRegex = require('emoji-regex');
+const emojiRegex = require('emoji-regex').default;
 
 const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\n)*)`);
 
