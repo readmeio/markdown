@@ -1,7 +1,8 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 
 import markdown, { reactProcessor, reactTOC, utils } from '../index';
+
 import Fixtures from './Fixtures';
 import Header from './Header';
 import Router from './Router';

@@ -1,9 +1,11 @@
 /* eslint-disable import/no-extraneous-dependencies
  */
 const path = require('path');
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common');
+
 const webpack = require('webpack');
+const { merge } = require('webpack-merge');
+
+const common = require('./webpack.common');
 
 const config = merge(common, {
   entry: {

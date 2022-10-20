@@ -1,5 +1,5 @@
-const flatMap = require('unist-util-flatmap');
 const kebabCase = require('lodash.kebabcase');
+const flatMap = require('unist-util-flatmap');
 
 const matchTag = /^h[1-6]$/g;
 

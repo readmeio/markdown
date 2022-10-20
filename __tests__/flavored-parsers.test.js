@@ -1,10 +1,10 @@
-const unified = require('unified');
-const remarkParse = require('remark-parse');
 const rehypeSanitize = require('rehype-sanitize');
+const remarkParse = require('remark-parse');
+const unified = require('unified');
 
+const options = require('../options').options.markdownOptions;
 const parseCallouts = require('../processor/parse/flavored/callout');
 const parseCodeTabs = require('../processor/parse/flavored/code-tabs');
-const options = require('../options').options.markdownOptions;
 
 const sanitize = { attributes: [], tagNames: [] };
 const process = (text, opts = options) =>

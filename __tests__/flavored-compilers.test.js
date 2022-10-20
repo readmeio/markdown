@@ -1,9 +1,8 @@
-const unified = require('unified');
 const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema');
-
+const rehypeSanitize = require('rehype-sanitize');
 const remarkParse = require('remark-parse');
 const remarkStringify = require('remark-stringify');
-const rehypeSanitize = require('rehype-sanitize');
+const unified = require('unified');
 
 const parsers = Object.values(require('../processor/parse')).map(parser => parser.sanitize(sanitize));
 const compilers = Object.values(require('../processor/compile'));

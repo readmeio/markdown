@@ -1,5 +1,6 @@
-import { configureToMatchImageSnapshot } from 'jest-image-snapshot';
 import path from 'path';
+
+import { configureToMatchImageSnapshot } from 'jest-image-snapshot';
 
 const opts = {
   comparisonMethod: 'ssim',

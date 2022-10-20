@@ -1,8 +1,8 @@
 /* eslint-disable no-eval
  */
-const React = require('react');
-const PropTypes = require('prop-types');
 const escape = require('lodash.escape');
+const PropTypes = require('prop-types');
+const React = require('react');
 
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 

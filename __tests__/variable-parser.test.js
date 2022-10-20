@@ -1,5 +1,6 @@
-const unified = require('unified');
 const remarkParse = require('remark-parse');
+const unified = require('unified');
+
 const parser = require('../processor/parse/variable-parser');
 
 test('should output a variable node', () => {

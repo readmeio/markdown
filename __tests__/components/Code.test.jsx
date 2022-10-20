@@ -6,8 +6,8 @@ jest.mock('@readme/syntax-highlighter', () => ({
 }));
 
 const { fireEvent, render, screen } = require('@testing-library/react');
-const React = require('react');
 const copy = require('copy-to-clipboard');
+const React = require('react');
 
 const Code = require('../../components/Code')({ attributes: {} }, { copyButtons: true });
 
