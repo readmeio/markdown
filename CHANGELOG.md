@@ -1,6 +1,28 @@
 Changelog
 ===
 
+## Version 6.53.1
+
+### 📘 Tests & Docs
+
+* add link for emoji list ([#547](https://github.com/readmeio/markdown/issues/547)) ([bab15ff](https://github.com/readmeio/markdown/commit/bab15ff32b750b028e14fe18642b37b0ba2137ea))
+
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump @testing-library/react from 12.1.2 to 12.1.5 ([#504](https://github.com/readmeio/markdown/issues/504)) ([a9ffb70](https://github.com/readmeio/markdown/commit/a9ffb708ee4429710443bc9cd84ce0bcf0dfa954))
+* **deps:** bump npm from 8.10.0 to 8.13.2 ([#533](https://github.com/readmeio/markdown/issues/533)) ([3ca6ac8](https://github.com/readmeio/markdown/commit/3ca6ac886a2e28540aa01522cb3d83765f00724c))
+* **deps:** bump nth-check from 2.0.0 to 2.0.1 ([#444](https://github.com/readmeio/markdown/issues/444)) ([67191cd](https://github.com/readmeio/markdown/commit/67191cd1ddd9bc1589a4b56c232ba6db1e95befc))
+* **deps:** bump scss-tokenizer from 0.3.0 to 0.4.3 ([#596](https://github.com/readmeio/markdown/issues/596)) ([d91f5da](https://github.com/readmeio/markdown/commit/d91f5da4315aa0943013946698ec5b3a97911d4d))
+* **deps:** bump semver-regex from 3.1.2 to 3.1.4 ([#497](https://github.com/readmeio/markdown/issues/497)) ([3171fcb](https://github.com/readmeio/markdown/commit/3171fcbe51438d4ec12f2778025e11af5b670ee9))
+* **deps:** bump undici from 5.8.0 to 5.9.1 ([#572](https://github.com/readmeio/markdown/issues/572)) ([5028530](https://github.com/readmeio/markdown/commit/502853001d0cf10ebfc471c1c5772b42588448ba))
+* dockerize browser tests ([#598](https://github.com/readmeio/markdown/issues/598)) ([c6a43ee](https://github.com/readmeio/markdown/commit/c6a43eeccc508c8e2f9465a2c74a29d0a13113ec))
+
+
+### ✨ New & Improved
+
+* **glossary:** dark mode ([#599](https://github.com/readmeio/markdown/issues/599)) ([6d9e7eb](https://github.com/readmeio/markdown/commit/6d9e7eb92ee958bd9db1e88bfbb316adf6efd3bd))
+
 ## Version 6.53.0
 
 ### ✨ New & Improved
