@@ -214,6 +214,35 @@ Object {
 }
 `;
 
+exports[`Parse RDMD Callouts requires a line break between the title and the body 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "ℹ️Info Callout",
+            },
+            Object {
+              "type": "break",
+            },
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "type": "blockquote",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse RDMD Callouts requires a space between the icon and title 1`] = `
 Object {
   "children": Array [
@@ -239,6 +268,46 @@ Object {
         },
       ],
       "type": "blockquote",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts supports a default theme 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Themeless",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🥇",
+          "theme": "default",
+          "title": "Themeless",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
     },
   ],
   "type": "root",
