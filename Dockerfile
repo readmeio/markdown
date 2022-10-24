@@ -8,6 +8,8 @@ RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
 
+RUN npm install -g npm@latest
+
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 

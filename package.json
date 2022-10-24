@@ -16,7 +16,6 @@
     "lint": "eslint . --ext .jsx --ext .js",
     "prepare": "husky install",
     "pretest": "npm run lint",
-    "pretest.browser": "jest --clearCache",
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx}\"",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
