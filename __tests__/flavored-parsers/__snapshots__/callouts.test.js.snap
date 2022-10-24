@@ -1,6 +1,70 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Parse RDMD Callouts edge cases allows trailing spaces after the icon with no title 1`] = `
+exports[`Parse RDMD Callouts allows nested callouts 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "checked": null,
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "list item",
+                },
+              ],
+              "type": "paragraph",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "Info Callout",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+                Object {
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "data": Object {
+                "hName": "rdme-callout",
+                "hProperties": Object {
+                  "icon": "ℹ️",
+                  "theme": "info",
+                  "title": "Info Callout",
+                  "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+                },
+              },
+              "type": "rdme-callout",
+            },
+          ],
+          "spread": false,
+          "type": "listItem",
+        },
+      ],
+      "ordered": false,
+      "spread": false,
+      "start": null,
+      "type": "list",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts edge cases does not allow trailing spaces after the icon with no title 1`] = `
 Object {
   "children": Array [
     Object {
@@ -70,6 +134,37 @@ Object {
           "theme": "info",
           "title": "Info Callout",
           "value": "<span>With html!</span>",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts parses a callout with no title 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ️",
+          "theme": "info",
+          "title": "",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
         },
       },
       "type": "rdme-callout",
