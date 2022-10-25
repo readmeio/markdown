@@ -55,6 +55,29 @@ Object {
           ],
           "type": "tableRow",
         },
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
       ],
       "type": "table",
     },

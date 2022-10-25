@@ -183,7 +183,8 @@ function tokenize(eat, value) {
         return mapped;
       }, []);
 
-      const children = Array.from({ length: rows }, (_, y) => {
+      // The header row is not counted in the rows
+      const children = Array.from({ length: rows + 1 }, (_, y) => {
         return {
           type: 'tableRow',
           children: Array.from({ length: cols }, (__, x) => ({
