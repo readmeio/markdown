@@ -10,6 +10,7 @@ import images from '../../docs/images.md';
 import lists from '../../docs/lists.md';
 import sanitizingTests from '../../docs/sanitizing-tests.md';
 import tableOfContentsTests from '../../docs/table-of-contents-tests.md';
+import tablesTests from '../../docs/tables-tests.md';
 import tables from '../../docs/tables.md';
 import varsTest from '../../docs/variable-tests.md';
 
@@ -29,6 +30,7 @@ const fixtureMap = Object.entries({
   sanitizingTests,
   tableOfContentsTests,
   tables,
+  tablesTests,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);
