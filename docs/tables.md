@@ -12,6 +12,7 @@ hidden: false
     | L2   | _italic_ |    $1 |
 
 > ❗️ Table cells may contain inline decorations only.
+>
 > Lists, headings, and other block-level Markdown components are not valid and will cause errors.
 
 ### Examples

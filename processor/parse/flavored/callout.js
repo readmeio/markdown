@@ -1,6 +1,8 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable consistent-return */
 import emojiRegex from 'emoji-regex';
-
-const rgx = new RegExp(`^> ?(${emojiRegex().source})(?: +(.+)?)?\n((?:>(?: .*)?\n)*)`);
+import interrupt from 'remark-parse/lib/util/interrupt';
+import trim from 'trim';
 
 const themes = {
   '\uD83D\uDCD8': 'info',
@@ -24,40 +26,155 @@ export const icons = Object.entries(themes).reduce((acc, [icon, theme]) => {
   return acc;
 }, {});
 
-function tokenizer(eat, value) {
-  if (!rgx.test(value)) return true;
+const lineFeed = '\n';
+const tab = '\t';
+const space = ' ';
+const greaterThan = '>';
+const regex = `^(${emojiRegex().source})(\\s+|$)`;
 
-  // eslint-disable-next-line prefer-const
-  let [match, icon, title = '', text] = value.match(rgx);
+// @note: Copied directly from remark-parse, but it's been updated to match our
+// style conventions and to parse Callouts.
+function blockquoteReadme(eat, value, silent) {
+  const self = this;
+  const offsets = self.offset;
+  const tokenizers = self.blockTokenizers;
+  const interruptors = self.interruptBlockquote;
+  const now = eat.now();
+  let currentLine = now.line;
+  let length = value.length;
+  const values = [];
+  let contents = [];
+  const indents = [];
+  let index = 0;
+  let character;
+  let rest;
+  let nextIndex;
+  let content;
+  let line;
+  let startIndex;
+  let prefixed;
+  let icon;
 
-  icon = icon.trim();
-  text = text.replace(/^>(?:(\n)|(\s)?)/gm, '$1').trim();
-  title = title.trim();
+  while (index < length) {
+    character = value.charAt(index);
 
-  const style = themes[icon];
+    if (character !== space && character !== tab) {
+      break;
+    }
 
-  return eat(match)({
-    type: 'rdme-callout',
-    data: {
+    index++;
+  }
+
+  if (value.charAt(index) !== greaterThan) {
+    return;
+  }
+
+  if (silent) {
+    return true;
+  }
+
+  index = 0;
+
+  while (index < length) {
+    nextIndex = value.indexOf(lineFeed, index);
+    startIndex = index;
+    prefixed = false;
+
+    if (nextIndex === -1) {
+      nextIndex = length;
+    }
+
+    while (index < length) {
+      character = value.charAt(index);
+
+      if (character !== space && character !== tab) {
+        break;
+      }
+
+      index++;
+    }
+
+    if (value.charAt(index) === greaterThan) {
+      index++;
+      prefixed = true;
+
+      if (value.charAt(index) === space) {
+        index++;
+      }
+    } else {
+      index = startIndex;
+    }
+
+    content = value.slice(index, nextIndex);
+
+    if (!prefixed && !trim(content)) {
+      index = startIndex;
+      break;
+    }
+
+    if (!prefixed) {
+      rest = value.slice(index);
+
+      // check if the following code contains a possible block.
+      if (interrupt(interruptors, tokenizers, self, [eat, rest, true])) {
+        break;
+      }
+    }
+
+    line = startIndex === index ? content : value.slice(startIndex, nextIndex);
+
+    indents.push(index - startIndex);
+    values.push(line);
+    contents.push(content);
+
+    index = nextIndex + 1;
+  }
+
+  index = -1;
+  length = indents.length;
+  const add = eat(values.join(lineFeed));
+
+  while (++index < length) {
+    offsets[currentLine] = (offsets[currentLine] || 0) + indents[index];
+    currentLine++;
+  }
+
+  let match;
+  let title;
+  let body;
+  if ((match = contents[0].match(regex))) {
+    icon = match[1];
+    contents[0] = contents[0].slice(match[0].length);
+
+    title = contents[0];
+    body = trim(contents.slice(1).join(lineFeed));
+  }
+
+  const exit = self.enterBlock();
+  contents = self.tokenizeBlock(contents.join(lineFeed), now);
+  exit();
+
+  if (icon) {
+    const data = {
       hName: 'rdme-callout',
       hProperties: {
-        theme: style || 'default',
-        icon,
         title,
-        value: text,
+        value: body,
+        icon,
+        theme: themes[icon] || 'default',
       },
-    },
-    children: [...this.tokenizeBlock(title, eat.now()), ...this.tokenizeBlock(text, eat.now())],
-  });
+    };
+    return add({ type: 'rdme-callout', children: contents, data });
+  }
+
+  return add({ type: 'blockquote', children: contents });
 }
 
 function parser() {
   const { Parser } = this;
   const tokenizers = Parser.prototype.blockTokenizers;
-  const methods = Parser.prototype.blockMethods;
 
-  tokenizers.callout = tokenizer;
-  methods.splice(methods.indexOf('newline'), 0, 'callout');
+  tokenizers.blockquote = blockquoteReadme;
 }
 
 export default parser;

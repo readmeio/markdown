@@ -89,10 +89,7 @@ exports[`export multiple Markdown renderers renders HTML 1`] = `
 
 <table><thead><tr><th align=\\"center\\">Col. A</th><th align=\\"center\\">Col. B</th><th align=\\"center\\">Col. C</th></tr></thead><tbody><tr><td align=\\"center\\">Cell A1</td><td align=\\"center\\">Cell B1</td><td align=\\"center\\">Cell C1</td></tr><tr><td align=\\"center\\">Cell A2</td><td align=\\"center\\">Cell B2</td><td align=\\"center\\">Cell C2</td></tr><tr><td align=\\"center\\">Cell A3</td><td align=\\"center\\">Cell B3</td><td align=\\"center\\">Cell C3</td></tr></tbody></table>
 <p>  <a href=\\"https://jsfiddle.net/rafegoldberg/5VA5j/\\" title=\\"@embed\\">Embed Title</a></p>
-<blockquote>
-<p>❗️ UhOh</p>
-<p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-</blockquote>"
+<rdme-callout title=\\"UhOh\\" value=\\"Lorem ipsum dolor sit amet consectetur adipisicing elit.\\" icon=\\"❗️\\" theme=\\"error\\"><p>UhOh</p><p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p></rdme-callout>"
 `;
 
 exports[`export multiple Markdown renderers renders MD 1`] = `
@@ -273,20 +270,22 @@ exports[`export multiple Markdown renderers renders custom React components 1`] 
   </p>
   
 
-  <blockquote>
-    
-
+  <Callout
+    attributes={null}
+    calloutStyle="info"
+    icon="❗️"
+    node={null}
+    theme="error"
+    title="UhOh"
+    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+  >
     <p>
-      ❗️ UhOh
+      UhOh
     </p>
-    
-
     <p>
       Lorem ipsum dolor sit amet consectetur adipisicing elit.
     </p>
-    
-
-  </blockquote>
+  </Callout>
 </React.Fragment>
 `;
 
@@ -581,25 +580,15 @@ Object {
     Object {
       "children": Array [
         Object {
-          "type": "text",
-          "value": "
-",
-        },
-        Object {
           "children": Array [
             Object {
               "type": "text",
-              "value": "❗️ UhOh",
+              "value": "UhOh",
             },
           ],
           "properties": Object {},
           "tagName": "p",
           "type": "element",
-        },
-        Object {
-          "type": "text",
-          "value": "
-",
         },
         Object {
           "children": Array [
@@ -612,14 +601,14 @@ Object {
           "tagName": "p",
           "type": "element",
         },
-        Object {
-          "type": "text",
-          "value": "
-",
-        },
       ],
-      "properties": Object {},
-      "tagName": "blockquote",
+      "properties": Object {
+        "icon": "❗️",
+        "theme": "error",
+        "title": "UhOh",
+        "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+      },
+      "tagName": "rdme-callout",
       "type": "element",
     },
   ],
@@ -807,7 +796,7 @@ Object {
           "children": Array [
             Object {
               "type": "text",
-              "value": "❗️ UhOh",
+              "value": "UhOh",
             },
           ],
           "type": "paragraph",
@@ -822,7 +811,16 @@ Object {
           "type": "paragraph",
         },
       ],
-      "type": "blockquote",
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "❗️",
+          "theme": "error",
+          "title": "UhOh",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
     },
   ],
   "type": "root",
@@ -998,20 +996,19 @@ exports[`export multiple Markdown renderers renders plain markdown as React 1`] 
   </p>
   
 
-  <blockquote>
-    
-
+  <rdme-callout
+    icon="❗️"
+    theme="error"
+    title="UhOh"
+    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+  >
     <p>
-      ❗️ UhOh
+      UhOh
     </p>
-    
-
     <p>
       Lorem ipsum dolor sit amet consectetur adipisicing elit.
     </p>
-    
-
-  </blockquote>
+  </rdme-callout>
 </React.Fragment>
 `;
 

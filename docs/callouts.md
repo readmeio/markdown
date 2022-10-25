@@ -69,6 +69,7 @@ Renders to a plain ol' block quote:
 > Hic,  neque a nisi adipisci non repudiandae ratione id natus.
 
 > ❗️ Error
+>
 > Sunt eius porro assumenda sequi, explicabo dolorem unde.
 
 If a callout starts with an emoji that's not dedicated to one of the themes (above), the component will fall back to a default block quote-style color scheme. See [here](https://unicode.org/Public/emoji/14.0/emoji-test.txt) for the full list of supported emojis.
@@ -76,6 +77,7 @@ If a callout starts with an emoji that's not dedicated to one of the themes (abo
 > 🥇 Themeless
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.
+
 [block:api-header]
 {
   "title": "Custom CSS"
