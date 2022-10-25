@@ -20,6 +20,7 @@ describe('visual regression tests', () => {
       'images',
       'lists',
       'tables',
+      'tablesTests',
       'codeBlockTests',
       'tableOfContentsTests',
       'varsTest',

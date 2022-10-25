@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Parse magic block tables renders an table with missing cells 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "align": Array [
+        "left",
+        "left",
+      ],
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "",
+                },
+              ],
+              "type": "tableHeader",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "Header 1",
+                },
+              ],
+              "type": "tableHeader",
+            },
+          ],
+          "type": "tableRow",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "Cell A 1",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
