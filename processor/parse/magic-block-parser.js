@@ -172,6 +172,8 @@ function tokenize(eat, value) {
       const { data, rows, cols } = json;
       const tokenizeCell = this[compatibilityMode ? 'tokenizeBlock' : 'tokenizeInline'].bind(this);
 
+      if (!Object.keys(data).length) return eat(match); // skip empty tables
+
       const sparseData = Object.entries(data).reduce((mapped, [key, v]) => {
         let [row, col] = key.split('-');
         row = row === 'h' ? 0 : parseInt(row, 10) + 1;
@@ -188,13 +190,11 @@ function tokenize(eat, value) {
         return {
           type: 'tableRow',
           children: Array.from({ length: cols }, (__, x) => ({
-            type: y === 0 ? 'tableHeader' : 'tableCell',
+            type: y === 0 ? 'tableHead' : 'tableCell',
             children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x], eat.now()) : [{ type: 'text', value: '' }],
           })),
         };
       });
-
-      if (!children.length) return eat(match); // skip empty tables
 
       const table = {
         type: 'table',

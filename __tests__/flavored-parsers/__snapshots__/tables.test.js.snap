@@ -18,7 +18,7 @@ Object {
                   "value": "",
                 },
               ],
-              "type": "tableHeader",
+              "type": "tableHead",
             },
             Object {
               "children": Array [
@@ -27,7 +27,7 @@ Object {
                   "value": "Header 1",
                 },
               ],
-              "type": "tableHeader",
+              "type": "tableHead",
             },
           ],
           "type": "tableRow",
