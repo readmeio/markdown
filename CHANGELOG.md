@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.54.0
+
+### ✨ New & Improved
+
+* allow nesting callouts ([#601](https://github.com/readmeio/markdown/issues/601)) ([e624b9a](https://github.com/readmeio/markdown/commit/e624b9a18de59e570e15b5f899de71af06d77d4e))
+
+
+### 🛠 Fixes & Updates
+
+* sparse tables ([#607](https://github.com/readmeio/markdown/issues/607)) ([2f043aa](https://github.com/readmeio/markdown/commit/2f043aa078cd3e21d1853cc2f5d15114ac2bf878))
+
 ## Version 6.53.1
 
 ### 📘 Tests & Docs
