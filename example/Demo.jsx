@@ -56,7 +56,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
 
 DemoContent.propTypes = {
   children: PropTypes.node.isRequired,
-  ci: PropTypes.string,
+  ci: PropTypes.boolean,
   fixture: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
@@ -78,7 +78,7 @@ function Demo({ opts }) {
                     getRoute={getRoute}
                     lazyImages={params['lazy-images']}
                     render={({ options, ...props }) => (
-                      <DemoContent {...props} ci={params.ci} opts={{ ...opts, ...options }} />
+                      <DemoContent {...props} ci={!!params.ci} opts={{ ...opts, ...options }} />
                     )}
                     safeMode={params['safe-mode']}
                     selected={route}

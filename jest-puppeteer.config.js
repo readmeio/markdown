@@ -1,6 +1,7 @@
 module.exports = {
   launch: {
     args: ['--no-sandbox'],
+    dumpio: true,
   },
   server: {
     command: 'npm run start',

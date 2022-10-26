@@ -10,6 +10,24 @@ describe('Parse RDMD Callouts', () => {
     expect(mdast(text)).toMatchSnapshot();
   });
 
+  it('supports a default theme', () => {
+    const text = `
+> 🥇 Themeless
+>
+> Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
+
+    expect(mdast(text)).toMatchSnapshot();
+  });
+
+  it('parses a callout with no title', () => {
+    const text = `
+> ℹ️
+>
+> Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
+
+    expect(mdast(text)).toMatchSnapshot();
+  });
+
   describe('edge cases', () => {
     it('renders html inside a callout', () => {
       const text = `
@@ -21,7 +39,7 @@ describe('Parse RDMD Callouts', () => {
       expect(mdast(text)).toMatchSnapshot();
     });
 
-    it('allows trailing spaces after the icon with no title', () => {
+    it('does not allow trailing spaces after the icon with no title', () => {
       const text = `
 > 🛑 
 > Compact headings must be followed by two line breaks before the following block.`;
@@ -35,6 +53,25 @@ describe('Parse RDMD Callouts', () => {
 > ℹ️Info Callout
 >
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
+
+    expect(mdast(text)).toMatchSnapshot();
+  });
+
+  it('allows nested callouts', () => {
+    const text = `
+- list item
+  > ℹ️ Info Callout
+  >
+  > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
+
+    expect(mdast(text)).toMatchSnapshot();
+  });
+
+  it('requires a line break between the title and the body', () => {
+    const text = `
+> ℹ️Info Callout
+> Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
+
     expect(mdast(text)).toMatchSnapshot();
   });
 });
@@ -50,7 +87,6 @@ describe('emoji modifier support', () => {
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
       const ast = mdast(text);
       expect(ast).toMatchSnapshot();
-      expect(ast.children[0].data.hProperties.title).toBe('');
     });
   });
 });

@@ -172,35 +172,34 @@ function tokenize(eat, value) {
       const { data, rows, cols } = json;
       const tokenizeCell = this[compatibilityMode ? 'tokenizeBlock' : 'tokenizeInline'].bind(this);
 
-      const children = Object.entries(data).reduce((sum, [key, val]) => {
+      if (!Object.keys(data).length) return eat(match); // skip empty tables
+
+      const sparseData = Object.entries(data).reduce((mapped, [key, v]) => {
         let [row, col] = key.split('-');
         row = row === 'h' ? 0 : parseInt(row, 10) + 1;
         col = parseInt(col, 10);
 
-        // NOTE:
-        // The magic block tables allowed decreasing the dimensions, but
-        // would leave the data intact.
-        // Also, note that the header row is required, so having 1 rows,
-        // means we allow up to index 1.
-        if (row > rows || col >= cols) return sum;
+        mapped[row] ||= [];
+        mapped[row][col] = v;
 
-        sum[row] = sum[row] || { type: 'tableRow', children: [] };
-
-        sum[row].children[col] = {
-          type: row ? 'tableCell' : 'tableHead',
-          children: tokenizeCell(val, eat.now()),
-        };
-        // convert falsey values to empty strings
-        sum[row].children = [...sum[row].children].map(v => v || '');
-        return sum;
+        return mapped;
       }, []);
 
-      if (!children.length) return eat(match); // skip empty tables
+      // The header row is not counted in the rows
+      const children = Array.from({ length: rows + 1 }, (_, y) => {
+        return {
+          type: 'tableRow',
+          children: Array.from({ length: cols }, (__, x) => ({
+            type: y === 0 ? 'tableHead' : 'tableCell',
+            children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x], eat.now()) : [{ type: 'text', value: '' }],
+          })),
+        };
+      });
 
       const table = {
         type: 'table',
         align: 'align' in json ? json.align : new Array(json.cols).fill('left'),
-        children: children.filter(v => v || ' '),
+        children,
       };
       return eat(match)(WrapPinnedBlocks(table, json));
     }

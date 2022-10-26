@@ -2,24 +2,17 @@ const PropTypes = require('prop-types');
 const React = require('react');
 
 const Callout = props => {
-  let { children } = props;
-  const { attributes, theme, title, icon } = props;
-
-  let content;
-  if (title) {
-    [children, ...content] = children;
-  } else {
-    [children, content] = ['', children];
-  }
+  const { attributes, theme, icon } = props;
+  const [title, content] = !props.title ? [null, props.children] : props.children;
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      <h3 className={`callout-heading ${!title && 'empty'}`}>
+      <h3 className={`callout-heading${title ? '' : ' empty'}`}>
         <span className="callout-icon">{icon}</span>
-        {children}
+        {title}
       </h3>
-      {(content && content.length && content) || (!title && children)}
+      {content}
     </blockquote>
   );
 };
@@ -41,7 +34,7 @@ Callout.defaultProps = {
 };
 
 Callout.sanitize = sanitizeSchema => {
-  sanitizeSchema.attributes['rdme-callout'] = ['icon', 'theme', 'title', 'value'];
+  sanitizeSchema.attributes['rdme-callout'] = ['icon', 'theme', 'title'];
 
   return sanitizeSchema;
 };

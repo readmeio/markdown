@@ -59,7 +59,8 @@ describe('Components', () => {
 > Callout with no title.
 
 `,
-      `[block:callout]
+      `
+[block:callout]
 {
   "type": "warning",
   "body": "Callout with no title."
