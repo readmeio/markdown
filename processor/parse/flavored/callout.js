@@ -146,7 +146,7 @@ function blockquoteReadme(eat, value, silent) {
     icon = match[1];
     contents[0] = contents[0].slice(match[0].length);
 
-    title = contents[0];
+    title = trim(contents[0]);
     body = trim(contents.slice(1).join(lineFeed));
   }
 
