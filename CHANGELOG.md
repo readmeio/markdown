@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.54.1
+
+### 🛠 Fixes & Updates
+
+* trim callout titles ([#608](https://github.com/readmeio/markdown/issues/608)) ([1d12893](https://github.com/readmeio/markdown/commit/1d12893c4cbaafac440a291c044cce24a51d8970))
+
 ## Version 6.54.0
 
 ### ✨ New & Improved
