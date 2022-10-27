@@ -2,7 +2,7 @@ const blockHtml = htmlTokenizer => {
   return function tokenizer(...args) {
     const node = htmlTokenizer.call(this, ...args);
 
-    if (node) {
+    if (typeof node === 'object') {
       node.block = true;
     }
 
