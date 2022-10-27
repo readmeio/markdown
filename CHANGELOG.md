@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.55.0
+
+### ✨ New & Improved
+
+* html block ([#609](https://github.com/readmeio/markdown/issues/609)) ([6e9d8db](https://github.com/readmeio/markdown/commit/6e9d8db0d901f131206f3ac23400bfd844e0836c))
+
 ## Version 6.54.1
 
 ### 🛠 Fixes & Updates
