@@ -18,12 +18,4 @@ function parser() {
   tokenizers.html = blockHtml(html);
 }
 
-parser.sanitize = sanitizeSchema => {
-  const tags = sanitizeSchema.tagNames;
-
-  tags.push('code-tabs');
-
-  return parser;
-};
-
 export default parser;
