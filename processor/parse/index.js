@@ -8,3 +8,4 @@ export { default as escape } from './escape';
 export { default as compactHeadings } from './compact-headings';
 export { default as variableParser } from './variable-parser';
 export { default as gemojiParser } from './gemoji-parser';
+export { default as htmlBlockParser } from './html-block';
