@@ -112,7 +112,7 @@ export function processor(opts = {}) {
     .data('compatibilityMode', opts.compatibilityMode)
     .data('alwaysThrow', opts.alwaysThrow)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
-    .use(CustomParsers.map(parser => parser.sanitize(sanitize)))
+    .use(CustomParsers.map(parser => parser?.sanitize(sanitize)))
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers)
     .use(remarkRehype, { allowDangerousHtml: true })
