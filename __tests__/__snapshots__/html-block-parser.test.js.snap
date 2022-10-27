@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Parse html block parses an html block 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "block": true,
+      "type": "html",
+      "value": "<div>Some block html</div>
+    ",
+    },
+  ],
+  "type": "root",
+}
+`;
