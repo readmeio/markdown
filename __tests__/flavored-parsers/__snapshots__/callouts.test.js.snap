@@ -64,6 +64,46 @@ Object {
 }
 `;
 
+exports[`Parse RDMD Callouts does not require a line break between the title and the body 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Undocumented Behavior",
+            },
+          ],
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "💁",
+          "theme": "default",
+          "title": "Undocumented Behavior",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse RDMD Callouts edge cases does not allow trailing spaces after the icon with no title 1`] = `
 Object {
   "children": Array [
@@ -208,35 +248,6 @@ Object {
         },
       },
       "type": "rdme-callout",
-    },
-  ],
-  "type": "root",
-}
-`;
-
-exports[`Parse RDMD Callouts requires a line break between the title and the body 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "type": "text",
-              "value": "ℹ️Info Callout",
-            },
-            Object {
-              "type": "break",
-            },
-            Object {
-              "type": "text",
-              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
-            },
-          ],
-          "type": "paragraph",
-        },
-      ],
-      "type": "blockquote",
     },
   ],
   "type": "root",
