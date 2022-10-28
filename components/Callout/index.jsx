@@ -3,7 +3,7 @@ const React = require('react');
 
 const Callout = props => {
   const { attributes, theme, icon } = props;
-  const [title, content] = !props.title ? [null, props.children] : props.children;
+  const [title, ...content] = !props.title ? [null, props.children] : props.children;
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading

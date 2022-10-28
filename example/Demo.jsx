@@ -56,7 +56,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
 
 DemoContent.propTypes = {
   children: PropTypes.node.isRequired,
-  ci: PropTypes.boolean,
+  ci: PropTypes.bool,
   fixture: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
