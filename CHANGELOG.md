@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.55.1
+
+### 🛠 Fixes & Updates
+
+* callouts with multiple blocks ([#610](https://github.com/readmeio/markdown/issues/610)) ([9a01f83](https://github.com/readmeio/markdown/commit/9a01f8391593c2fc830f49dbf54f9e72d68ddcbc))
+
 ## Version 6.55.0
 
 ### ✨ New & Improved
