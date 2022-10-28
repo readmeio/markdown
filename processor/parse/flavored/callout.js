@@ -43,7 +43,7 @@ function blockquoteReadme(eat, value, silent) {
   let currentLine = now.line;
   let length = value.length;
   const values = [];
-  let contents = [];
+  const contents = [];
   const indents = [];
   let index = 0;
   let character;
@@ -53,7 +53,6 @@ function blockquoteReadme(eat, value, silent) {
   let line;
   let startIndex;
   let prefixed;
-  let icon;
 
   while (index < length) {
     character = value.charAt(index);
@@ -139,22 +138,12 @@ function blockquoteReadme(eat, value, silent) {
     currentLine++;
   }
 
-  let match;
-  let title;
-  let body;
-  if ((match = contents[0].match(regex))) {
-    icon = match[1];
-    contents[0] = contents[0].slice(match[0].length);
-
-    title = trim(contents[0]);
-    body = trim(contents.slice(1).join(lineFeed));
-  }
-
-  const exit = self.enterBlock();
-  contents = self.tokenizeBlock(contents.join(lineFeed), now);
-  exit();
+  const [match, icon] = contents[0].match(regex) || [];
 
   if (icon) {
+    const title = trim(contents[0].slice(match.length));
+    const body = trim(contents.slice(1).join(lineFeed));
+
     const data = {
       hName: 'rdme-callout',
       hProperties: {
@@ -164,10 +153,23 @@ function blockquoteReadme(eat, value, silent) {
         theme: themes[icon] || 'default',
       },
     };
-    return add({ type: 'rdme-callout', children: contents, data });
+
+    const exit = self.enterBlock();
+    const children = [...self.tokenizeBlock(title, now), ...self.tokenizeBlock(body, now)];
+    exit();
+
+    return add({
+      type: 'rdme-callout',
+      children,
+      data,
+    });
   }
 
-  return add({ type: 'blockquote', children: contents });
+  const exit = self.enterBlock();
+  const children = self.tokenizeBlock(contents.join(lineFeed), now);
+  exit();
+
+  return add({ type: 'blockquote', children });
 }
 
 function parser() {

@@ -67,9 +67,9 @@ describe('Parse RDMD Callouts', () => {
     expect(mdast(text)).toMatchSnapshot();
   });
 
-  it('requires a line break between the title and the body', () => {
+  it('does not require a line break between the title and the body', () => {
     const text = `
-> ℹ️Info Callout
+> 💁 Undocumented Behavior
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     expect(mdast(text)).toMatchSnapshot();
