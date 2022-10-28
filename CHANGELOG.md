@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.55.2
+
+### 🛠 Fixes & Updates
+
+* allow "compact" callouts ([#611](https://github.com/readmeio/markdown/issues/611)) ([b56d2fc](https://github.com/readmeio/markdown/commit/b56d2fcf854de69713897e9791fccedf2b287b52))
+
 ## Version 6.55.1
 
 ### 🛠 Fixes & Updates
