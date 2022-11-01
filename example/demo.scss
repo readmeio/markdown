@@ -6,6 +6,8 @@
   --rdmd-demo-mono: menlo, monospace;
   --rdmd-demo-blue: #018ef5;
 
+  background: var(--color-bg-page);
+
   // hub overrides
   #hub-content {
     padding-left: 0;

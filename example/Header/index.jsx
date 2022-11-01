@@ -1,6 +1,8 @@
+import PropTypes from 'prop-types';
 import React from 'react';
 
-function Header() {
+function Header({ colorMode, setColorMode }) {
+  const toggleTheme = e => setColorMode(e.target.value);
   return (
     <header className="rdmd-demo--header">
       <div className="rdmd-demo--header-content">
@@ -10,6 +12,11 @@ function Header() {
         <h1>
           <code>@readme/markdown</code>
         </h1>
+        <select onChange={toggleTheme} value={colorMode}>
+          <option value="auto">Same as System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
         <a href="https://rdmd.readme.io" id="docsLink">
           Read the docs→
         </a>
@@ -17,5 +24,10 @@ function Header() {
     </header>
   );
 }
+
+Header.propTypes = {
+  colorMode: PropTypes.oneOf(['auto', 'light', 'dark']),
+  setColorMode: PropTypes.func,
+};
 
 export default Header;

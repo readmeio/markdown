@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import markdown, { reactProcessor, reactTOC, utils } from '../index';
 
@@ -64,13 +64,24 @@ DemoContent.propTypes = {
 };
 
 function Demo({ opts }) {
+  const initialTheme = localStorage.getItem('color-scheme');
+  const [colorMode, setColorMode] = useState(initialTheme || 'auto');
+  const htmlEl = document.querySelector('[data-color-mode]');
+
+  useEffect(() => initialTheme && htmlEl.setAttribute('data-color-mode', initialTheme));
+
+  useEffect(() => {
+    htmlEl.setAttribute('data-color-mode', colorMode);
+    localStorage.setItem('color-scheme', colorMode);
+  }, [colorMode, htmlEl]);
+
   return (
     <GlossaryContext.Provider value={terms}>
       <Router
         render={({ route, getRoute, params, setQuery }) => {
           return (
             <>
-              {!params.ci && <Header />}
+              {!params.ci && <Header colorMode={colorMode} setColorMode={setColorMode} />}
               <div className="rdmd-demo--container">
                 <div className="rdmd-demo--content">
                   <Fixtures
