@@ -1,6 +1,8 @@
 const copy = require('copy-to-clipboard');
 const PropTypes = require('prop-types');
 const React = require('react');
+const { useEffect } = require('react');
+const { useState } = require('react');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -38,16 +40,38 @@ CopyCode.propTypes = {
 };
 
 function Code(props) {
-  const { children, className, copyButtons, lang, meta, theme } = props;
+  const { children, className, copyButtons, lang, meta } = props;
 
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
   const language = canonicalLanguage(lang) || langClass;
 
   const codeRef = React.createRef();
+
+  const useMediaQuery = query => {
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+      const matchQueryList = window.matchMedia(query);
+      if (matchQueryList.matches !== matches) setMatches(matchQueryList.matches);
+      const handleChange = e => setMatches(e.matches);
+      matchQueryList.addEventListener('change', handleChange);
+      return () => matchQueryList.removeEventListener('change', handleChange);
+    }, [matches, query]);
+
+    return matches;
+  };
+
+  const colorMode = document.querySelector('[data-color-mode]').getAttribute('data-color-mode');
+  const initialTheme = localStorage.getItem('color-scheme');
+  const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
+  const colorScheme = colorMode === 'auto' && initialTheme === 'auto' ? userColorScheme : initialTheme || colorMode;
+
+  useEffect(() => {}, [initialTheme]);
+
   const codeOpts = {
+    customTheme: colorScheme === 'light' ? 'neo' : 'material-palenight',
     inline: !lang,
     tokenizeVariables: true,
-    dark: theme === 'dark',
   };
 
   const codeContent =
@@ -58,7 +82,7 @@ function Code(props) {
       {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
       <code
         ref={codeRef}
-        className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
+        className={['rdmd-code', `lang-${language}`, `theme-${colorScheme}`].join(' ')}
         data-lang={language}
         name={meta}
         suppressHydrationWarning={true}
