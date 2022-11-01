@@ -16,7 +16,7 @@ const remarkRehype = require('remark-rehype');
 const remarkSlug = require('remark-slug');
 const remarkStringify = require('remark-stringify');
 const unified = require('unified');
-const { map: mapNodes } = require('unist-util-map');
+const mapNodes = require('unist-util-map');
 const { selectAll } = require('unist-util-select');
 
 const Components = require('./components');
