@@ -17,7 +17,7 @@ class Embed extends React.Component {
     }
 
     if ('iframe' in this.props) {
-      return <iframe {...attrs} border="none" src={url} style={{ border: 'none' }} />;
+      return <iframe {...attrs} border="none" src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
     }
 
     const classes = ['embed', image && 'embed_hasImg'];
