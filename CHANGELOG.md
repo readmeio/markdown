@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.56.0
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump eslint from 8.25.0 to 8.27.0 ([#624](https://github.com/readmeio/markdown/issues/624)) ([bcb6393](https://github.com/readmeio/markdown/commit/bcb63931791d042d5c7e9c1b50cf43db22a1eab8))
+* **deps:** bump readmeio/rdme from 7.5.0 to 8.0.0 ([#612](https://github.com/readmeio/markdown/issues/612)) ([53cdd23](https://github.com/readmeio/markdown/commit/53cdd235db82ba0227ce9293df400697f54a4f3d))
+* **deps:** bump readmeio/rdme from 8.0.0 to 8.0.4 ([#621](https://github.com/readmeio/markdown/issues/621)) ([08d5789](https://github.com/readmeio/markdown/commit/08d5789eb573e30a6225fe7900be544b558c804a))
+
+
+### ✨ New & Improved
+
+* center iframes ([#620](https://github.com/readmeio/markdown/issues/620)) ([28a567b](https://github.com/readmeio/markdown/commit/28a567b6f0d12a3be974849657ba62c2e036df3b))
+
 ## Version 6.55.2
 
 ### 🛠 Fixes & Updates
