@@ -2,7 +2,8 @@ const copy = require('copy-to-clipboard');
 const PropTypes = require('prop-types');
 const React = require('react');
 const { useEffect } = require('react');
-const { useState } = require('react');
+
+const useMediaQuery = require('./useMediaQuery');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -46,20 +47,6 @@ function Code(props) {
   const language = canonicalLanguage(lang) || langClass;
 
   const codeRef = React.createRef();
-
-  const useMediaQuery = query => {
-    const [matches, setMatches] = useState(false);
-
-    useEffect(() => {
-      const matchQueryList = window.matchMedia(query);
-      if (matchQueryList.matches !== matches) setMatches(matchQueryList.matches);
-      const handleChange = e => setMatches(e.matches);
-      matchQueryList.addEventListener('change', handleChange);
-      return () => matchQueryList.removeEventListener('change', handleChange);
-    }, [matches, query]);
-
-    return matches;
-  };
 
   const colorMode = document.querySelector('[data-color-mode]').getAttribute('data-color-mode');
   const initialTheme = localStorage.getItem('color-scheme');
