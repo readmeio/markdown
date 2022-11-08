@@ -51,6 +51,7 @@ function Code(props) {
   const colorMode = document.querySelector('[data-color-mode]').getAttribute('data-color-mode');
   const initialTheme = localStorage.getItem('color-scheme');
   const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
+
   const colorScheme = colorMode === 'auto' && initialTheme === 'auto' ? userColorScheme : initialTheme || colorMode;
 
   useEffect(() => {}, [colorMode, initialTheme]);
