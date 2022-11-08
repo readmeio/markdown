@@ -66,7 +66,7 @@ function Code(props) {
   const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
   const colorScheme = colorMode === 'auto' && initialTheme === 'auto' ? userColorScheme : initialTheme || colorMode;
 
-  useEffect(() => {}, [initialTheme]);
+  useEffect(() => {}, [colorMode, initialTheme]);
 
   const codeOpts = {
     customTheme: colorScheme === 'light' ? 'neo' : 'material-palenight',
