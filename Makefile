@@ -14,7 +14,7 @@ example/img/emojis: node_modules/@readme/emojis
 	cp node_modules/@readme/emojis/src/img/*.png example/img/emojis/
 
 build:
-	docker build -t markdown .
+	docker build --platform linux/amd64 -t markdown .
 
 # This lets us call `make run test.browser`. Make expects cmdline args
 # to be targets. So this creates noop targets out of args. Copied from
