@@ -13,6 +13,9 @@ function Header({ colorMode, setColorMode }) {
           <code>@readme/markdown</code>
         </h1>
         <select onChange={toggleTheme} value={colorMode}>
+          <option disabled value="">
+            Choose Color Scheme
+          </option>
           <option value="auto">Same as System</option>
           <option value="light">Light</option>
           <option value="dark">Dark</option>
