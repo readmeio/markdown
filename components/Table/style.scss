@@ -18,7 +18,7 @@
     thead tr {
       background: var(--table-head, #{$head});
     }
-    
+
     tr {
       background-color: var(--table-row, #{$row});
       & + tr {
@@ -31,7 +31,6 @@
       font-weight: 600;
       &:empty {
         padding: 0;
-        border: none;
       }
     }
 
