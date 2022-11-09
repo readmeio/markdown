@@ -1,9 +1,8 @@
 const copy = require('copy-to-clipboard');
 const PropTypes = require('prop-types');
 const React = require('react');
-const { useEffect } = require('react');
 
-const useMediaQuery = require('./useMediaQuery');
+const useColorScheme = require('../../hooks/useColorScheme');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -48,13 +47,7 @@ function Code(props) {
 
   const codeRef = React.createRef();
 
-  const colorMode = document.querySelector('[data-color-mode]').getAttribute('data-color-mode');
-  const initialTheme = localStorage.getItem('color-scheme');
-  const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
-
-  const colorScheme = colorMode === 'auto' && initialTheme === 'auto' ? userColorScheme : initialTheme || colorMode;
-
-  useEffect(() => {}, [colorMode, initialTheme]);
+  const colorScheme = useColorScheme.default();
 
   const codeOpts = {
     customTheme: colorScheme === 'light' ? 'neo' : 'material-palenight',

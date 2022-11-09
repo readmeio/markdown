@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import markdown, { reactProcessor, reactTOC, utils } from '../index';
 
@@ -30,7 +30,7 @@ const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
   return (
-    <React.Fragment>
+    <>
       <Maybe when={!ci}>
         <div className="rdmd-demo--editor">
           <div className="rdmd-demo--editor-container">
@@ -50,7 +50,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
           </div>
         </section>
       </div>
-    </React.Fragment>
+    </>
   );
 }
 
@@ -64,24 +64,13 @@ DemoContent.propTypes = {
 };
 
 function Demo({ opts }) {
-  const initialTheme = localStorage.getItem('color-scheme');
-  const [colorMode, setColorMode] = useState(initialTheme || 'auto');
-  const htmlEl = document.querySelector('[data-color-mode]');
-
-  useEffect(() => initialTheme && htmlEl.setAttribute('data-color-mode', initialTheme));
-
-  useEffect(() => {
-    htmlEl.setAttribute('data-color-mode', colorMode);
-    localStorage.setItem('color-scheme', colorMode);
-  }, [colorMode, htmlEl]);
-
   return (
     <GlossaryContext.Provider value={terms}>
       <Router
         render={({ route, getRoute, params, setQuery }) => {
           return (
             <>
-              {!params.ci && <Header colorMode={colorMode} setColorMode={setColorMode} />}
+              {!params.ci && <Header />}
               <div className="rdmd-demo--container">
                 <div className="rdmd-demo--content">
                   <Fixtures

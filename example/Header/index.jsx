@@ -1,8 +1,20 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-function Header({ colorMode, setColorMode }) {
-  const toggleTheme = e => setColorMode(e.target.value);
+function Header() {
+  const initialTheme = localStorage.getItem('color-scheme');
+  const [colorMode, setColorMode] = useState(initialTheme || 'auto');
+  const htmlEl = document.querySelector('[data-color-mode]');
+
+  // on load
+  useEffect(() => initialTheme && htmlEl.setAttribute('data-color-mode', initialTheme));
+
+  // on change
+  useEffect(() => {
+    htmlEl.setAttribute('data-color-mode', colorMode);
+    localStorage.setItem('color-scheme', colorMode);
+  }, [colorMode, htmlEl]);
+
   return (
     <header className="rdmd-demo--header">
       <div className="rdmd-demo--header-content">
@@ -12,7 +24,7 @@ function Header({ colorMode, setColorMode }) {
         <h1>
           <code>@readme/markdown</code>
         </h1>
-        <select onChange={toggleTheme} value={colorMode}>
+        <select onChange={e => setColorMode(e.target.value)} value={colorMode}>
           <option disabled value="">
             Choose Color Scheme
           </option>
