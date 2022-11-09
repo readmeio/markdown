@@ -4,6 +4,8 @@ FROM node:${NODE_VERSION}-buster
 ARG NODE_VERSION
 ENV NODE_VERSION=$NODE_VERSION
 
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+
 RUN apt update && apt install -y \
   chromium \
   fonts-noto-color-emoji
