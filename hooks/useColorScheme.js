@@ -15,15 +15,16 @@ const useColorScheme = () => {
   4. Else use project default (light or dark)
   */
   const colorScheme = colorMode === 'auto' && storedTheme === 'auto' ? userColorScheme : storedTheme || colorMode;
-  useEffect(() => {}, [colorMode, userColorScheme]);
-
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-      if (mutation.attributeName === 'data-color-mode')
-        setColorMode(mutation.target.attributes['data-color-mode'].value);
+  useEffect(() => {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.attributeName === 'data-color-mode')
+          setColorMode(mutation.target.attributes['data-color-mode'].value);
+      });
     });
-  });
-  observer.observe(htmlEl, { attributes: true });
+    observer.observe(htmlEl, { attributes: true });
+    return () => observer.disconnect();
+  }, [htmlEl]);
 
   return colorScheme;
 };
