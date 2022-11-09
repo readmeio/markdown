@@ -30,7 +30,7 @@ const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
   return (
-    <>
+    <React.Fragment>
       <Maybe when={!ci}>
         <div className="rdmd-demo--editor">
           <div className="rdmd-demo--editor-container">
@@ -50,7 +50,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
           </div>
         </section>
       </div>
-    </>
+    </React.Fragment>
   );
 }
 

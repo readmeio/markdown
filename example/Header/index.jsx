@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 
 function Header() {
@@ -39,10 +38,5 @@ function Header() {
     </header>
   );
 }
-
-Header.propTypes = {
-  colorMode: PropTypes.oneOf(['auto', 'light', 'dark']),
-  setColorMode: PropTypes.func,
-};
 
 export default Header;
