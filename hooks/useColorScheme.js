@@ -5,7 +5,7 @@ import useMediaQuery from './useMediaQuery';
 const useColorScheme = () => {
   const htmlEl = document.querySelector('[data-color-mode]');
   const [colorMode, setColorMode] = useState(htmlEl.getAttribute('data-color-mode'));
-  const storedTheme = localStorage.getItem('color-scheme');
+  const storedTheme = localStorage.getItem('color-scheme') || 'auto';
   const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
 
   /* color scheme is determined by:

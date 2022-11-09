@@ -6,7 +6,9 @@ function Header() {
   const htmlEl = document.querySelector('[data-color-mode]');
 
   // on load
-  useEffect(() => initialTheme && htmlEl.setAttribute('data-color-mode', initialTheme));
+  useEffect(() => {
+    if (initialTheme) htmlEl.setAttribute('data-color-mode', initialTheme);
+  });
 
   // on change
   useEffect(() => {
