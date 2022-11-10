@@ -1,3 +1,6 @@
+import '../matchMedia.mock';
+
+// eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable no-eval */
 const { cleanup, fireEvent, render } = require('@testing-library/react');
 const React = require('react');
@@ -88,6 +91,7 @@ describe('Components', () => {
   it('Multi Code Block', () => {
     const tabs = '```\nhello\n```\n```php\nworld\n```\n\n';
     const rdmd = markdown.react(tabs);
+    document.querySelector('html').setAttribute('data-color-mode', 'auto');
     const { container } = render(rdmd);
 
     expect(container.querySelectorAll('pre')[1]).not.toHaveClass();
@@ -219,6 +223,7 @@ ${JSON.stringify({
   let container;
   beforeEach(() => {
     rdmd = markdown.react(tabs, { compatibilityMode: true });
+    document.querySelector('html').setAttribute('data-color-mode', 'auto');
     // eslint-disable-next-line testing-library/no-render-in-setup
     ({ container } = render(rdmd));
   });
