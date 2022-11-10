@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.57.0
+
+### ✨ New & Improved
+
+* **code:** dark mode ([#625](https://github.com/readmeio/markdown/issues/625)) ([395a67e](https://github.com/readmeio/markdown/commit/395a67ef92be755811b54375d5b13987e7506648))
+* show border for empty th ([#627](https://github.com/readmeio/markdown/issues/627)) ([804cdb0](https://github.com/readmeio/markdown/commit/804cdb0bc6707d6907ab9be1f4b9a9cf9a829136))
+
+
+### 🛠 Fixes & Updates
+
+* blank api headers crashing reference pages ([#628](https://github.com/readmeio/markdown/issues/628)) ([f40cf99](https://github.com/readmeio/markdown/commit/f40cf9975ef5a03fa22b8604fb6b8c353ada5178))
+
 ## Version 6.56.0
 
 ### 🛠 Fixes & Updates
