@@ -1,3 +1,5 @@
+import './matchMedia.mock';
+
 const { cleanup, render, screen } = require('@testing-library/react');
 const React = require('react');
 
@@ -191,6 +193,7 @@ test('emojis', () => {
 
 describe('code samples', () => {
   it('should codify code', () => {
+    document.querySelector('html').setAttribute('data-color-mode', 'auto');
     const { container } = render(
       markdown.default(`
   \`\`\`javascript
