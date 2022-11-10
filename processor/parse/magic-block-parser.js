@@ -93,7 +93,7 @@ function tokenize(eat, value) {
           {
             type: 'heading',
             depth,
-            children: 'title' in json ? this.tokenizeInline(json.title, eat.now()) : '',
+            children: 'title' in json ? this.tokenizeInline(json.title, eat.now()) : [],
           },
           json
         )

@@ -11,7 +11,7 @@ exports[`Blank Magic Blocks 2`] = `
 Object {
   "children": Array [
     Object {
-      "children": "",
+      "children": Array [],
       "depth": 2,
       "type": "heading",
     },
@@ -21,6 +21,19 @@ Object {
 `;
 
 exports[`Blank Magic Blocks 3`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [],
+      "depth": 2,
+      "type": "heading",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Blank Magic Blocks 4`] = `
 Object {
   "children": Array [
     Object {

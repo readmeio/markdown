@@ -21,6 +21,12 @@ test('Blank Magic Blocks', () => {
   [/block]`;
   expect(process(blank)).toMatchSnapshot();
 
+  const blankBasic = `[block:api-header]
+  { "type": "basic" }
+  [/block]
+  `;
+  expect(process(blankBasic)).toMatchSnapshot();
+
   const noTitle = `[block:api-header]
   { "level": 2 }
   [/block]`;
