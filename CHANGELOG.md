@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.57.1
+
+### 🛠 Fixes & Updates
+
+* immutable options ([#630](https://github.com/readmeio/markdown/issues/630)) ([bac888b](https://github.com/readmeio/markdown/commit/bac888b3029320bf046f3d04c67f6724e2419698))
+
 ## Version 6.57.0
 
 ### ✨ New & Improved
