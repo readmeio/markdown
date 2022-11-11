@@ -72,10 +72,13 @@ export function setup(blocks, opts = {}) {
 }
 
 export const utils = {
+  get options() {
+    return { ...options };
+  },
+
   BaseUrlContext,
   getHref,
   GlossaryContext: GlossaryItem.GlossaryContext,
-  options,
   VariablesContext: Variable.VariablesContext,
   calloutIcons,
 };
