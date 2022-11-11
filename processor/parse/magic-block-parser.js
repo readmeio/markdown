@@ -29,9 +29,8 @@ const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
   },
 });
 
-const tokenize =
-  ({ compatibilityMode, safeMode, alwaysThrow }) =>
-  (eat, value) => {
+function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
+  return function (eat, value) {
     let [match, type, json] = RGXP.exec(value) || [];
 
     if (!type) return;
@@ -277,6 +276,7 @@ const tokenize =
       }
     }
   };
+}
 
 function parser() {
   const { Parser } = this;
