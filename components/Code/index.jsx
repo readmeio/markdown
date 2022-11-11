@@ -47,7 +47,7 @@ function Code(props) {
 
   const codeRef = React.createRef();
 
-  const colorScheme = useColorScheme.default();
+  const colorScheme = useColorScheme();
 
   const codeOpts = {
     customTheme: colorScheme === 'light' ? 'neo' : 'material-palenight',

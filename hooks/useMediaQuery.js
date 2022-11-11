@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+const { useEffect, useState } = require('react');
 
 const useMediaQuery = query => {
   const [matches, setMatches] = useState(false);
@@ -14,4 +14,4 @@ const useMediaQuery = query => {
   return matches;
 };
 
-export default useMediaQuery;
+module.exports = useMediaQuery;
