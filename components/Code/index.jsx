@@ -46,8 +46,7 @@ function Code(props) {
   const language = canonicalLanguage(lang) || langClass;
 
   const codeRef = React.createRef();
-
-  const colorScheme = useColorScheme.default();
+  const colorScheme = typeof document === 'undefined' ? 'light' : useColorScheme.default();
 
   const codeOpts = {
     customTheme: colorScheme === 'light' ? 'neo' : 'material-palenight',
