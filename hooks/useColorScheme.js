@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import useMediaQuery from './useMediaQuery';
 
 const useColorScheme = () => {
-  const htmlEl = document.querySelector('[data-color-mode]');
-  const [colorMode, setColorMode] = useState(htmlEl.getAttribute('data-color-mode'));
-  const storedTheme = localStorage.getItem('color-scheme') || 'auto';
+  const htmlEl = typeof document === 'undefined' ? null : document.querySelector('[data-color-mode]');
+  const [colorMode, setColorMode] = useState(htmlEl ? htmlEl?.getAttribute('data-color-mode') : 'light');
+  const storedTheme = typeof localStorage === 'undefined' ? 'auto' : localStorage?.getItem('color-scheme');
   const userColorScheme = useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light';
 
   /* color scheme is determined by:
@@ -16,6 +16,7 @@ const useColorScheme = () => {
   */
   const colorScheme = colorMode === 'auto' && storedTheme === 'auto' ? userColorScheme : storedTheme || colorMode;
   useEffect(() => {
+    if (!htmlEl) return;
     const observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
         if (mutation.attributeName === 'data-color-mode')
@@ -23,6 +24,7 @@ const useColorScheme = () => {
       });
     });
     observer.observe(htmlEl, { attributes: true });
+    // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
   }, [htmlEl]);
 
