@@ -271,8 +271,8 @@ Object {
   <br/>
   <a class=\\"button\\">Go</a>
 </form>",
-          "runScripts": undefined,
-          "safeMode": undefined,
+          "runScripts": null,
+          "safeMode": null,
         },
       },
       "type": "html-block",
