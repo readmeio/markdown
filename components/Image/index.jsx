@@ -100,7 +100,7 @@ Image.propTypes = {
 };
 
 Image.defaultProps = {
-  align: '',
+  align: 'center',
   alt: '',
   caption: '',
   height: 'auto',
