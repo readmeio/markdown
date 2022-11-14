@@ -6,8 +6,6 @@
   --rdmd-demo-mono: menlo, monospace;
   --rdmd-demo-blue: #018ef5;
 
-  background: var(--color-bg-page);
-
   // hub overrides
   #hub-content {
     padding-left: 0;
@@ -49,10 +47,6 @@
         font-family: var(--rdmd-demo-mono);
         font-weight: bold;
       }
-    }
-    select {
-      color: black;
-      margin-left: 10px;
     }
     #docsLink {
       margin-left: auto;
