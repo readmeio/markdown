@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.58.0
+
+### ✨ New & Improved
+
+* **code:** remove dark mode ([#637](https://github.com/readmeio/markdown/issues/637)) ([f6a3ca4](https://github.com/readmeio/markdown/commit/f6a3ca4b926150120999aaf568ff6fbcc4fec253))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump readmeio/rdme from 8.0.4 to 8.1.1 ([#639](https://github.com/readmeio/markdown/issues/639)) ([bfcee5e](https://github.com/readmeio/markdown/commit/bfcee5ea8ce8153aef56288480a922c24a4ad396))
+* git rid of globals ([#632](https://github.com/readmeio/markdown/issues/632)) ([fb40a33](https://github.com/readmeio/markdown/commit/fb40a3344d762f4f45869876d77c0654097e7f2e))
+* **darkmode:** maybe ([#631](https://github.com/readmeio/markdown/issues/631)) ([c64f9f8](https://github.com/readmeio/markdown/commit/c64f9f8e016a51594422bb0489d2955f9ec5c0d9))
+
 ## Version 6.57.1
 
 ### 🛠 Fixes & Updates
