@@ -26,6 +26,7 @@ const createSchema = ({ safeMode } = {}) => {
     'height',
     'image',
     'favicon',
+    'align',
   ];
 
   schema.attributes.a = ['href', 'title', 'class', 'className', 'download'];

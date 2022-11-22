@@ -424,6 +424,7 @@ Object {
           "alt": "Qui iusto fugiat doloremque? Facilis obcaecati vitae corrupti.",
           "data": Object {
             "hProperties": Object {
+              "align": "center",
               "className": "border",
               "width": "80%",
             },

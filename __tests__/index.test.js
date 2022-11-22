@@ -60,7 +60,8 @@ test('magic image', () => {
           "#d1c8c5"
         ],
         "caption": "A guy. Eating pizza. And making an OK gesture.",
-        "sizing": "full"
+        "sizing": "full",
+        "alignment": "center"
       }
     ]
   }
