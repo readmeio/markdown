@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.58.1
+
+### 🛠 Fixes & Updates
+
+* callout error icon ([#645](https://github.com/readmeio/markdown/issues/645)) ([f33d2c7](https://github.com/readmeio/markdown/commit/f33d2c7e0734a1c23f9cb62db25086a081e5bf5d))
+
 ## Version 6.58.0
 
 ### ✨ New & Improved
