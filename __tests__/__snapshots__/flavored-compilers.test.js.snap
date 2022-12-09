@@ -101,7 +101,7 @@ exports[`ReadMe Magic Blocks Image with sizing and alignment 1`] = `
         \\"rdme-blue.svg\\",
         \\"\\"
       ],
-      \\"alignment\\": \\"right\\",
+      \\"align\\": \\"right\\",
       \\"sizing\\": \\"80px\\"
     }
   ]

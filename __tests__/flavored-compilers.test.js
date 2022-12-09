@@ -208,7 +208,7 @@ describe('ReadMe Magic Blocks', () => {
             "rdme-blue.svg"
           ],
           "sizing": "80px",
-          "alignment": "right"
+          "align": "right"
        }]
     }
     [/block]`;

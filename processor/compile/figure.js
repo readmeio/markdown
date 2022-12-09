@@ -4,7 +4,7 @@ const compileImage = image => {
   const { align, className, width } = image.data.hProperties || {};
   const img = {
     image: [image.url, image.title, image.alt],
-    ...(align && { alignment: align }),
+    ...(align && { align }),
     ...(width && { sizing: imgSizeByWidth[width] }),
     ...(className === 'border' && { border: true }),
   };
