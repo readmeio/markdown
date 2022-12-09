@@ -39,6 +39,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
     type = type.trim();
 
     try {
+      console.log(json);
       json = JSON.parse(json);
     } catch (err) {
       json = {};

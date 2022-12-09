@@ -74,6 +74,59 @@ describe('Parse RDMD Callouts', () => {
 
     expect(mdast(text)).toMatchSnapshot();
   });
+
+  // eslint-disable-next-line jest/no-focused-tests
+  it.only('allows magic block content', () => {
+    const md = `
+> 📘 Title
+>
+> [block:image]
+> {
+>   "images": [
+>     {
+>       "image": [
+>         "http://placekitten.com/g/300/200",
+>         null,
+>         ""
+>       ],
+>       "sizing": "200px"
+>     }
+>   ]
+> }
+> [/block]
+`;
+
+    expect(mdast(md)).toMatchInlineSnapshot(`
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "type": "text",
+                    "value": "Title",
+                  },
+                ],
+                "type": "paragraph",
+              },
+            ],
+            "data": Object {
+              "hName": "rdme-callout",
+              "hProperties": Object {
+                "icon": "📘",
+                "theme": "info",
+                "title": "Title",
+                "value": "",
+              },
+            },
+            "type": "rdme-callout",
+          },
+        ],
+        "type": "root",
+      }
+    `);
+  });
 });
 
 describe('emoji modifier support', () => {
