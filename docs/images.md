@@ -23,8 +23,7 @@ hidden: false
         682,
         "#d1c8c5"
       ],
-      "caption": "Click to zoom.",
-      "align": "left"
+      "caption": "Click to zoom."
     }
   ]
 }
