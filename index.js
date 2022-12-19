@@ -83,10 +83,56 @@ export const utils = {
   calloutIcons,
 };
 
+const traverseWithParent = (node, fn, { parent, index } = {}) => {
+  fn(node, parent, index);
+
+  if (node.children) {
+    node.children.forEach((child, idx) => traverseWithParent(child, fn, { parent: node, index: idx }));
+  }
+};
+
+const exploration = () => tree => {
+  const singleCodeTabs = (node, parent, index) => {
+    if (node.type === 'code' && (node.lang || node.meta) && parent.type !== 'code-tabs') {
+      parent.children[index] = {
+        type: 'code-tabs',
+        className: 'tabs',
+        data: { hName: 'code-tabs' },
+        children: [node],
+      };
+    }
+  };
+
+  traverseWithParent(tree, singleCodeTabs);
+};
+
 /**
- * Core markdown text processor
+ * Core markdown to mdast processor
  */
 export function processor(opts = {}) {
+  [, opts] = setup('', opts);
+  const { sanitize } = opts;
+
+  return unified()
+    .use(remarkParse, opts.markdownOptions)
+    .use(remarkFrontmatter, ['yaml', 'toml'])
+    .data('settings', opts.settings)
+    .data('compatibilityMode', opts.compatibilityMode)
+    .data('alwaysThrow', opts.alwaysThrow)
+    .use(!opts.correctnewlines ? remarkBreaks : () => {})
+    .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
+    .use(exploration)
+    .use(remarkSlug)
+    .use(remarkDisableTokenizers, opts.disableTokenizers);
+}
+
+/**
+ * Full markdown to html processor
+ */
+export function htmlProcessor(opts = {}) {
+  [, opts] = setup('', opts);
+  const { sanitize } = opts;
+
   /*
    * This is kinda complicated: "markdown" within ReadMe is
    * often more than just markdown. It can also include HTML,
@@ -105,29 +151,14 @@ export function processor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
-  [, opts] = setup('', opts);
-  const { sanitize } = opts;
-
-  return unified()
-    .use(remarkParse, opts.markdownOptions)
-    .use(remarkFrontmatter, ['yaml', 'toml'])
-    .data('settings', opts.settings)
-    .data('compatibilityMode', opts.compatibilityMode)
-    .data('alwaysThrow', opts.alwaysThrow)
-    .use(!opts.correctnewlines ? remarkBreaks : () => {})
-    .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
-    .use(remarkSlug)
-    .use(remarkDisableTokenizers, opts.disableTokenizers)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
-    .use(rehypeSanitize, sanitize);
+  return processor(opts).use(remarkRehype, { allowDangerousHtml: true }).use(rehypeRaw).use(rehypeSanitize, sanitize);
 }
 
 export function plain(text, opts = {}, components = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
 
-  return processor(opts)
+  return htmlProcessor(opts)
     .use(rehypeReact, {
       createElement: React.createElement,
       Fragment: React.Fragment,
@@ -141,13 +172,12 @@ export function plain(text, opts = {}, components = {}) {
  */
 // eslint-disable-next-line react/prop-types
 const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @todo: move this to it's own component
-const count = {};
 
 export function reactProcessor(opts = {}, components = {}) {
   [, opts] = setup('', opts);
   const { sanitize } = opts;
 
-  return processor({ sanitize, ...opts })
+  return htmlProcessor({ sanitize, ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
@@ -162,12 +192,12 @@ export function reactProcessor(opts = {}, components = {}) {
         'rdme-pin': PinWrap,
         table: Table,
         a: Anchor,
-        h1: Heading(1, count, opts),
-        h2: Heading(2, count, opts),
-        h3: Heading(3, count, opts),
-        h4: Heading(4, count, opts),
-        h5: Heading(5, count, opts),
-        h6: Heading(6, count, opts),
+        h1: Heading(1, opts),
+        h2: Heading(2, opts),
+        h3: Heading(3, opts),
+        h4: Heading(4, opts),
+        h5: Heading(5, opts),
+        h6: Heading(6, opts),
         code: Code(opts),
         img: Image(opts),
         style: Style(opts),
@@ -191,7 +221,7 @@ export function reactTOC(tree, opts = {}) {
   if (!tree) return null;
   [, opts] = setup('', opts);
 
-  const proc = processor(opts).use(rehypeReact, {
+  const proc = htmlProcessor(opts).use(rehypeReact, {
     createElement: React.createElement,
     components: {
       p: React.Fragment,
@@ -220,7 +250,7 @@ export function html(text, opts = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
 
-  return processor(opts).use(rehypeStringify).processSync(text).contents;
+  return htmlProcessor(opts).use(rehypeStringify).processSync(text).contents;
 }
 
 /**
@@ -230,7 +260,7 @@ export function hast(text, opts = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
 
-  const rdmd = processor(opts).use(tableFlattening);
+  const rdmd = htmlProcessor(opts).use(tableFlattening);
   const node = rdmd.parse(text);
   return rdmd.runSync(node);
 }
@@ -242,7 +272,8 @@ export function mdast(text, opts = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
 
-  return processor(opts).parse(text);
+  const rdmd = processor(opts);
+  return rdmd.runSync(rdmd.parse(text));
 }
 
 /**

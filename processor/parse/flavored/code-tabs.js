@@ -1,7 +1,12 @@
-/* eslint-disable consistent-return */
 function tokenizer(eat, value) {
+  // eslint-disable-next-line unicorn/no-unsafe-regex
+  const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
+
+  const [match] = TAB_BLOCK_RGXP.exec(value) || [];
+
+  if (!match) return true;
+
   const kids = [];
-  let match = '';
   let codeBlock;
 
   /*
@@ -12,12 +17,10 @@ function tokenizer(eat, value) {
    */
   // eslint-disable-next-line unicorn/no-unsafe-regex
   const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?(?<code>((?!\n```).)*)?\n```/gs;
-  while ((codeBlock = CODE_BLOCK_RGXP.exec(value)) !== null) {
+  while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
     meta = meta.trim();
-
-    match += codeBlock[0];
 
     kids.push({
       type: 'code',
@@ -32,19 +35,13 @@ function tokenizer(eat, value) {
     });
   }
 
-  if (!match) return;
-
-  const block =
-    kids.length > 1 || kids[0].meta || kids[0].lang
-      ? {
-          type: 'code-tabs',
-          className: 'tabs',
-          data: { hName: 'code-tabs' },
-          children: kids,
-        }
-      : kids[0];
-
-  return eat(match)(block);
+  // return a tabbed code block
+  return eat(match)({
+    type: 'code-tabs',
+    className: 'tabs',
+    data: { hName: 'code-tabs' },
+    children: kids,
+  });
 }
 
 function parser() {

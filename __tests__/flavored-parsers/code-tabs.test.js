@@ -30,14 +30,4 @@ Second code block
     );
     expect(ast.children[0].children[1]).toStrictEqual(expect.objectContaining({ lang: 'text', meta: '' }));
   });
-
-  it('treats a single code block with a lang as a code tab', () => {
-    const md = `
-\`\`\`text
-First code block
-\`\`\`
-`;
-
-    expect(mdast(md).children[0]).toHaveProperty('type', 'code-tabs');
-  });
 });
