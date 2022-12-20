@@ -1,6 +1,25 @@
 Changelog
 ===
 
+## Version 6.59.0
+
+### 📘 Tests & Docs
+
+* fixing a broken image link in the readme ([90bbb7d](https://github.com/readmeio/markdown/commit/90bbb7d0d6830c5a4725e3c65c239a542fbad6ca))
+* **code blocks:** minor language change ([88f548e](https://github.com/readmeio/markdown/commit/88f548e55f598f67f0bb5921087f2383cbbb3e58))
+* **callouts:** remove unnecessary metadata ([#651](https://github.com/readmeio/markdown/issues/651)) ([e6360be](https://github.com/readmeio/markdown/commit/e6360befd8ce1944b13465736c3947f8e4c46609))
+
+
+### ✨ New & Improved
+
+* **code-tabs:** treat single code blocks as tab ([#652](https://github.com/readmeio/markdown/issues/652)) ([d542538](https://github.com/readmeio/markdown/commit/d5425388ace8ec48edd9473afec9603efb9cd5bc))
+
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump readmeio/rdme from 8.1.1 to 8.2.0 ([#648](https://github.com/readmeio/markdown/issues/648)) ([1d2ce39](https://github.com/readmeio/markdown/commit/1d2ce391bb5f5a48999c9a1684733a294ccb48f6))
+* single code tab title ([#654](https://github.com/readmeio/markdown/issues/654)) ([5a005f5](https://github.com/readmeio/markdown/commit/5a005f54bede97e2312fd8c5260a8c49ff0ee0c5))
+
 ## Version 6.58.1
 
 ### 🛠 Fixes & Updates
