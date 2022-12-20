@@ -23,6 +23,12 @@ Object {
           "value": "Compact Heading",
         },
       ],
+      "data": Object {
+        "hProperties": Object {
+          "id": "compact-heading",
+        },
+        "id": "compact-heading",
+      },
       "depth": 1,
       "position": Position {
         "end": Object {
@@ -81,6 +87,12 @@ Object {
           "value": "Non-compact Heading",
         },
       ],
+      "data": Object {
+        "hProperties": Object {
+          "id": "non-compact-heading",
+        },
+        "id": "non-compact-heading",
+      },
       "depth": 1,
       "position": Position {
         "end": Object {

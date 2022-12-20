@@ -30,6 +30,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 const toPlainText = require('./processor/plugin/plain-text');
 const sectionAnchorId = require('./processor/plugin/section-anchor-id');
 const tableFlattening = require('./processor/plugin/table-flattening');
+const transformers = require('./processor/transform');
 const createSchema = require('./sanitize.schema');
 
 const {
@@ -83,29 +84,6 @@ export const utils = {
   calloutIcons,
 };
 
-const traverseWithParent = (node, fn, { parent, index } = {}) => {
-  fn(node, parent, index);
-
-  if (node.children) {
-    node.children.forEach((child, idx) => traverseWithParent(child, fn, { parent: node, index: idx }));
-  }
-};
-
-const exploration = () => tree => {
-  const singleCodeTabs = (node, parent, index) => {
-    if (node.type === 'code' && (node.lang || node.meta) && parent.type !== 'code-tabs') {
-      parent.children[index] = {
-        type: 'code-tabs',
-        className: 'tabs',
-        data: { hName: 'code-tabs' },
-        children: [node],
-      };
-    }
-  };
-
-  traverseWithParent(tree, singleCodeTabs);
-};
-
 /**
  * Core markdown to mdast processor
  */
@@ -121,7 +99,7 @@ export function processor(opts = {}) {
     .data('alwaysThrow', opts.alwaysThrow)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
-    .use(exploration)
+    .use(transformers)
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers);
 }
