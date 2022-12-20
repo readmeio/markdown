@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Code Tabs can parse code tabs 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": undefined,
+              "meta": "",
+            },
+          },
+          "lang": undefined,
+          "meta": "",
+          "type": "code",
+          "value": "First code block",
+        },
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": undefined,
+              "meta": "",
+            },
+          },
+          "lang": undefined,
+          "meta": "",
+          "type": "code",
+          "value": "Second code block",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "code-tabs",
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "type": "root",
+}
+`;

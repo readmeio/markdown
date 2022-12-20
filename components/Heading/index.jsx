@@ -32,22 +32,20 @@ function Heading({ tag, showAnchorIcons, ...props }) {
   return React.createElement(tag, attrs, children);
 }
 
-function CreateHeading(level, anchors, { showAnchorIcons }) {
+function CreateHeading(level, { showAnchorIcons }) {
   // eslint-disable-next-line react/display-name
-  return props => (
-    <Heading {...props} anchors={anchors} level={level} showAnchorIcons={showAnchorIcons} tag={`h${level}`} />
-  );
+  return props => <Heading {...props} level={level} showAnchorIcons={showAnchorIcons} tag={`h${level}`} />;
 }
 
 Heading.propTypes = {
   align: PropTypes.oneOf(['left', 'center', 'right', '']),
-  anchors: PropTypes.object,
   children: PropTypes.array.isRequired,
   id: PropTypes.string.isRequired,
   level: PropTypes.number,
   showAnchorIcons: PropTypes.bool,
   tag: PropTypes.string.isRequired,
 };
+
 Heading.defaultProps = {
   align: '',
   id: '',
@@ -55,4 +53,4 @@ Heading.defaultProps = {
   showAnchorIcons: true,
 };
 
-module.exports = (level, anchors, opts) => CreateHeading(level, anchors, opts);
+module.exports = CreateHeading;
