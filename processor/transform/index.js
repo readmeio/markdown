@@ -1,1 +1,1 @@
-export { default as singleCodeTabsTransformer } from './single-code-tabs';
+export { default as singleCodeTabs } from './single-code-tabs';

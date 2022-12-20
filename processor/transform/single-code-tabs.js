@@ -1,7 +1,7 @@
-import visit from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
-const singleCodeTabsTransformer = () => tree => {
-  const singleCodeTabs = (node, parent, index) => {
+const singleCodeTabs = () => tree =>
+  visit(tree, (node, index, parent) => {
     if (node.type === 'code' && (node.lang || node.meta) && parent.type !== 'code-tabs') {
       parent.children[index] = {
         type: 'code-tabs',
@@ -10,9 +10,6 @@ const singleCodeTabsTransformer = () => tree => {
         children: [node],
       };
     }
-  };
+  });
 
-  visit(tree, singleCodeTabs);
-};
-
-export default singleCodeTabsTransformer;
+export default singleCodeTabs;

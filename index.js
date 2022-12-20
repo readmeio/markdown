@@ -30,7 +30,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 const toPlainText = require('./processor/plugin/plain-text');
 const sectionAnchorId = require('./processor/plugin/section-anchor-id');
 const tableFlattening = require('./processor/plugin/table-flattening');
-const transformers = require('./processor/transform');
+const transformers = Object.values(require('./processor/transform'));
 const createSchema = require('./sanitize.schema');
 
 const {
