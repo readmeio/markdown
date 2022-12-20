@@ -28,7 +28,7 @@ console.log('a code block');
   "title": "Syntax"
 }
 [/block]
-A tabbed interface for displaying multiple code blocks. These are written nearly identically to a series of vanilla markdown code snippets, except for their distinct *lack* of an additional line break separating each subsequent block:
+We offer both classic single code blocks, as well as a tabbed interface for displaying multiple code blocks concisely! These are written nearly identically to a series of vanilla markdown code snippets, except for their distinct lack of an additional line break separating each subsequent block:
 
     ```javascript I'm A tab
     console.log('Code Tab A');

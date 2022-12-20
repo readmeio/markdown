@@ -203,7 +203,7 @@ describe('code samples', () => {
   `)
     );
     expect(container.querySelectorAll('pre')).toHaveLength(2);
-    expect(container.querySelectorAll('button')).toHaveLength(2);
+    expect(container.querySelectorAll('button')).toHaveLength(3);
   });
 
   describe('`copyButtons` option', () => {
