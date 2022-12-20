@@ -629,6 +629,12 @@ Object {
           "value": "Hello World",
         },
       ],
+      "data": Object {
+        "hProperties": Object {
+          "id": "hello-world",
+        },
+        "id": "hello-world",
+      },
       "depth": 1,
       "type": "heading",
     },
