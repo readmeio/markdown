@@ -9,24 +9,24 @@ jobs:
       matrix:
         node-version: [14.x, 16.x]
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Update npm
-      run: npm i -g npm@7
+      - name: Update npm
+        run: npm i -g npm@7
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      run: npm test
+      - name: Run tests
+        run: npm test
 
   visual:
-    name: "Visual Tests"
+    name: 'Visual Tests'
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
     runs-on: ubuntu-latest
     strategy:
@@ -34,21 +34,21 @@ jobs:
         node-version: [14.x, 16.x]
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Run visual tests (node ${{ matrix.node-version }})
-      run:
-        make ci
+      - name: Run visual tests (node ${{ matrix.node-version }})
+        run: make ci
 
-    - name: Update regression test snapshots
-      if: ${{ failure() }}
-      run: npm run test.browser -- -u
+      - name: Update regression test snapshots
+        if: ${{ failure() }}
+        run: make updateSnapshot
 
-    - uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-    - name: Upload snapshots
-      uses: actions/upload-artifact@v2
-      if: ${{ failure() }}
-      with:
-        name: image-snapshots
-        path: __tests__/browser/__image_snapshots__/
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+
+      - name: Upload snapshots
+        uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: image-snapshots
+          path: __tests__/browser/__image_snapshots__/
