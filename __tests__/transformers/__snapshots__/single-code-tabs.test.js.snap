@@ -1,13 +1,50 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a lang or title set 1`] = `
+exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a lang set 1`] = `
 Object {
   "children": Array [
     Object {
       "children": Array [
         Object {
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": null,
+            },
+          },
           "lang": "javascript",
           "meta": null,
+          "type": "code",
+          "value": "const languageSet = true;",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "code-tabs",
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a title set 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": "Testing",
+            },
+          },
+          "lang": "javascript",
+          "meta": "Testing",
           "type": "code",
           "value": "const languageSet = true;",
         },
