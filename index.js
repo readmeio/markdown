@@ -35,6 +35,7 @@ const createSchema = require('./sanitize.schema');
 
 const {
   GlossaryItem,
+  Div,
   Code,
   Table,
   Anchor,
@@ -129,7 +130,10 @@ export function htmlProcessor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
-  return processor(opts).use(remarkRehype, { allowDangerousHtml: true }).use(rehypeRaw).use(rehypeSanitize, sanitize);
+  return processor(opts)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw, { passThrough: ['readme-element'] })
+    .use(rehypeSanitize, sanitize);
 }
 
 export function plain(text, opts = {}, components = {}) {
@@ -155,7 +159,7 @@ export function reactProcessor(opts = {}, components = {}) {
   [, opts] = setup('', opts);
   const { sanitize } = opts;
 
-  return htmlProcessor({ sanitize, ...opts })
+  return htmlProcessor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement: React.createElement,
@@ -170,6 +174,7 @@ export function reactProcessor(opts = {}, components = {}) {
         'rdme-pin': PinWrap,
         table: Table,
         a: Anchor,
+        div: Div(opts),
         h1: Heading(1, opts),
         h2: Heading(2, opts),
         h3: Heading(3, opts),

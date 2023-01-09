@@ -6,6 +6,7 @@ Object {
     Object {
       "children": Array [
         Object {
+          "className": "tab-panel",
           "data": Object {
             "hName": "code",
             "hProperties": Object {
@@ -21,7 +22,12 @@ Object {
       ],
       "className": "tabs",
       "data": Object {
-        "hName": "code-tabs",
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
       },
       "type": "code-tabs",
     },
@@ -36,6 +42,7 @@ Object {
     Object {
       "children": Array [
         Object {
+          "className": "tab-panel",
           "data": Object {
             "hName": "code",
             "hProperties": Object {
@@ -51,7 +58,12 @@ Object {
       ],
       "className": "tabs",
       "data": Object {
-        "hName": "code-tabs",
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
       },
       "type": "code-tabs",
     },
