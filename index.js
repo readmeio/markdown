@@ -130,10 +130,7 @@ export function htmlProcessor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
-  return processor(opts)
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw, { passThrough: ['readme-element'] })
-    .use(rehypeSanitize, sanitize);
+  return processor(opts).use(remarkRehype, { allowDangerousHtml: true }).use(rehypeRaw).use(rehypeSanitize, sanitize);
 }
 
 export function plain(text, opts = {}, components = {}) {
