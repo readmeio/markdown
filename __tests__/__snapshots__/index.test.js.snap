@@ -99,195 +99,193 @@ exports[`export multiple Markdown renderers renders MD 1`] = `
 
 exports[`export multiple Markdown renderers renders custom React components 1`] = `
 <React.Fragment>
-  <DivWrapper>
-    <Unknown
-      id="hello-world"
+  <Unknown
+    id="hello-world"
+  >
+    <div
+      className="heading-anchor_backwardsCompatibility"
+      id="section-hello-world"
+    />
+    Hello World
+  </Unknown>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <Table>
+    <thead>
+      <tr>
+        <th
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Col. A
+        </th>
+        <th
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Col. B
+        </th>
+        <th
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Col. C
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell A1
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell B1
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell C1
+        </td>
+      </tr>
+      <tr>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell A2
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell B2
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell C2
+        </td>
+      </tr>
+      <tr>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell A3
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell B3
+        </td>
+        <td
+          style={
+            Object {
+              "textAlign": "center",
+            }
+          }
+        >
+          Cell C3
+        </td>
+      </tr>
+    </tbody>
+  </Table>
+  
+
+  <p>
+      
+    <AnchorWithContext
+      href="https://jsfiddle.net/rafegoldberg/5VA5j/"
+      title="@embed"
     >
-      <DivWrapper
-        className="heading-anchor_backwardsCompatibility"
-        id="section-hello-world"
-      />
-      Hello World
-    </Unknown>
-    
+      Embed Title
+    </AnchorWithContext>
+  </p>
+  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <Table>
-      <thead>
-        <tr>
-          <th
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Col. A
-          </th>
-          <th
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Col. B
-          </th>
-          <th
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Col. C
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell A1
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell B1
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell C1
-          </td>
-        </tr>
-        <tr>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell A2
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell B2
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell C2
-          </td>
-        </tr>
-        <tr>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell A3
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell B3
-          </td>
-          <td
-            style={
-              Object {
-                "textAlign": "center",
-              }
-            }
-          >
-            Cell C3
-          </td>
-        </tr>
-      </tbody>
-    </Table>
-    
-
+  <Callout
+    attributes={null}
+    calloutStyle="info"
+    icon="❗️"
+    node={null}
+    theme="error"
+    title="UhOh"
+    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+  >
     <p>
-        
-      <AnchorWithContext
-        href="https://jsfiddle.net/rafegoldberg/5VA5j/"
-        title="@embed"
-      >
-        Embed Title
-      </AnchorWithContext>
+      UhOh
     </p>
-    
-
-    <Callout
-      attributes={null}
-      calloutStyle="info"
-      icon="❗️"
-      node={null}
-      theme="error"
-      title="UhOh"
-      value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-    >
-      <p>
-        UhOh
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-      </p>
-    </Callout>
-  </DivWrapper>
+    <p>
+      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+    </p>
+  </Callout>
 </React.Fragment>
 `;
 
@@ -1036,31 +1034,4 @@ exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. An
 
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 
-exports[`tables 1`] = `
-"<div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div></div>"
-`;
+exports[`tables 1`] = `"<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div>"`;

@@ -22,6 +22,7 @@ const { selectAll } = require('unist-util-select');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
+const createElement = require('./lib/createElement');
 const CustomParsers = Object.values(require('./processor/parse'));
 const customCompilers = Object.values(require('./processor/compile'));
 const registerCustomComponents = require('./lib/registerCustomComponents');
@@ -35,7 +36,6 @@ const createSchema = require('./sanitize.schema');
 
 const {
   GlossaryItem,
-  Div,
   Code,
   Table,
   Anchor,
@@ -159,7 +159,7 @@ export function reactProcessor(opts = {}, components = {}) {
   return htmlProcessor(opts)
     .use(sectionAnchorId)
     .use(rehypeReact, {
-      createElement: React.createElement,
+      createElement,
       Fragment: React.Fragment,
       components: {
         'code-tabs': CodeTabs(opts),
@@ -171,7 +171,6 @@ export function reactProcessor(opts = {}, components = {}) {
         'rdme-pin': PinWrap,
         table: Table,
         a: Anchor,
-        div: Div(opts),
         h1: Heading(1, opts),
         h2: Heading(2, opts),
         h3: Heading(3, opts),
