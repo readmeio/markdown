@@ -156,7 +156,7 @@ export function reactProcessor(opts = {}, components = {}) {
   [, opts] = setup('', opts);
   const { sanitize } = opts;
 
-  return htmlProcessor(opts)
+  return htmlProcessor({ ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
       createElement,
