@@ -22,6 +22,7 @@ const { selectAll } = require('unist-util-select');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
+const createElement = require('./lib/createElement');
 const CustomParsers = Object.values(require('./processor/parse'));
 const customCompilers = Object.values(require('./processor/compile'));
 const registerCustomComponents = require('./lib/registerCustomComponents');
@@ -155,10 +156,10 @@ export function reactProcessor(opts = {}, components = {}) {
   [, opts] = setup('', opts);
   const { sanitize } = opts;
 
-  return htmlProcessor({ sanitize, ...opts })
+  return htmlProcessor({ ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
-      createElement: React.createElement,
+      createElement,
       Fragment: React.Fragment,
       components: {
         'code-tabs': CodeTabs(opts),

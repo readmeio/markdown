@@ -3,7 +3,7 @@ const PropTypes = require('prop-types');
 const React = require('react');
 
 const CodeTabs = props => {
-  const { attributes, children, theme } = props;
+  const { children, theme } = props;
 
   function handleClick({ target }, index) {
     const $wrap = target.parentElement.parentElement;
@@ -18,8 +18,7 @@ const CodeTabs = props => {
   }
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
-    <div {...attributes} className={`CodeTabs CodeTabs_initial theme-${theme}`}>
+    <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
         {children.map(({ props: pre }, i) => {
           const { meta, lang } = pre.children[0].props;
@@ -37,13 +36,8 @@ const CodeTabs = props => {
 };
 
 CodeTabs.propTypes = {
-  attributes: PropTypes.shape({}),
   children: PropTypes.arrayOf(PropTypes.any).isRequired,
   theme: PropTypes.string,
-};
-
-CodeTabs.defaultProps = {
-  attributes: null,
 };
 
 function CreateCodeTabs({ theme }) {
@@ -52,3 +46,4 @@ function CreateCodeTabs({ theme }) {
 }
 
 module.exports = CreateCodeTabs;
+module.exports.CodeTabs = CodeTabs;

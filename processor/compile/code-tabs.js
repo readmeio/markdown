@@ -5,5 +5,6 @@ module.exports = function CodeTabsCompiler() {
   function compile(node) {
     return this.block(node).split('```\n\n').join('```\n');
   }
+
   visitors['code-tabs'] = compile;
 };
