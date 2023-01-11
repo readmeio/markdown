@@ -1,4 +1,4 @@
-import { mdast } from '../../index';
+import { mdast, hast } from '../../index';
 
 describe('Code Tabs', () => {
   it('can parse code tabs', () => {
@@ -29,5 +29,22 @@ Second code block
       expect.objectContaining({ lang: 'javascript', meta: 'First Title' })
     );
     expect(ast.children[0].children[1]).toStrictEqual(expect.objectContaining({ lang: 'text', meta: '' }));
+  });
+
+  it('allows code tabs within html blocks', () => {
+    const md = `
+<p>
+
+\`\`\`
+First code block
+\`\`\`
+\`\`\`
+Second code block
+\`\`\`
+
+</p>
+`;
+
+    expect(hast(md)).toMatchSnapshot();
   });
 });
