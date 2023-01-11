@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.59.1
+
+### 🛠 Fixes & Updates
+
+* treat code-tabs as div in hast ([#664](https://github.com/readmeio/markdown/issues/664)) ([7dc5a98](https://github.com/readmeio/markdown/commit/7dc5a9894efd4e0320edb6c460fd627643d51bec))
+
 ## Version 6.59.0
 
 ### 📘 Tests & Docs
