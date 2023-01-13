@@ -42,7 +42,12 @@ A('Hello world!');",
       ],
       "className": "tabs",
       "data": Object {
-        "hName": "code-tabs",
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
       },
       "type": "code-tabs",
     },
@@ -101,7 +106,12 @@ Object {
       ],
       "className": "tabs",
       "data": Object {
-        "hName": "code-tabs",
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
       },
       "type": "code-tabs",
     },

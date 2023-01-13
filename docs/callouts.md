@@ -3,8 +3,6 @@ title: "Callouts"
 category: 5fdf7610134322007389a6ed
 hidden: false
 metadata: 
-  title: "Callouts — ReadMe-Favored Markdown"
-  description: "Callouts are very nearly equivalent to standard Markdown block quotes in their syntax, other than some specific requirements on their content: To be considered a “callout”, a block quote must start with an initial emoji, which is used to determine the callout's theme."
   image: 
     0: "https://files.readme.io/9134da7-rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png"
     1: "rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png"

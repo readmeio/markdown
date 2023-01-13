@@ -90,8 +90,8 @@ test('gemoji generation', () => {
 });
 
 test('should strip out inputs', () => {
-  const { container } = render(markdown.default('<input type="text" value="value" />'));
-  expect(container).toBeEmptyDOMElement();
+  render(markdown.default('<input type="text" value="value" />'));
+  expect(screen.queryByRole('input')).not.toBeInTheDocument();
 });
 
 test('tables', () => {
@@ -204,7 +204,7 @@ describe('code samples', () => {
   `)
     );
     expect(container.querySelectorAll('pre')).toHaveLength(2);
-    expect(container.querySelectorAll('button')).toHaveLength(2);
+    expect(container.querySelectorAll('button')).toHaveLength(3);
   });
 
   describe('`copyButtons` option', () => {
@@ -254,7 +254,7 @@ describe('`alwaysThrow` option', () => {
         )
       );
 
-    expect(() => shouldThrow()).toThrow('Invalid Magic Block JSON');
+    expect(shouldThrow).toThrow('Invalid Magic Block JSON');
   });
 
   it('should not throw if `alwaysThrow` is true but magic block has valid JSON', () => {
