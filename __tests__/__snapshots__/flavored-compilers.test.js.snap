@@ -91,6 +91,25 @@ exports[`ReadMe Magic Blocks Image 1`] = `
 "
 `;
 
+exports[`ReadMe Magic Blocks Image with sizing and alignment 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"\\"
+      ],
+      \\"align\\": \\"right\\",
+      \\"sizing\\": \\"80px\\"
+    }
+  ]
+}
+[/block]
+"
+`;
+
 exports[`ReadMe Magic Blocks Image with sizing and border 1`] = `
 "[block:image]
 {
