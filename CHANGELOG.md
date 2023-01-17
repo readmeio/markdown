@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.60.0
+
+### ✨ New & Improved
+
+* add align attribute to images ([#644](https://github.com/readmeio/markdown/issues/644)) ([27b7412](https://github.com/readmeio/markdown/commit/27b7412f7f3ed384ff7f00d88c9f8980a0de2579))
+
 ## Version 6.59.1
 
 ### 🛠 Fixes & Updates
