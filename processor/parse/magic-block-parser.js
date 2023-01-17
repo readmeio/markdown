@@ -110,6 +110,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
               alt: alt || ('caption' in img ? img.caption : ''),
               data: {
                 hProperties: {
+                  ...(img.align && { align: img.align }),
                   className: img.border ? 'border' : '',
                   ...(img.sizing && { width: imgWidthBySize[img.sizing] }),
                 },

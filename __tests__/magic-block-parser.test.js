@@ -122,7 +122,8 @@ describe('Parse Magic Blocks', () => {
             ],
           "caption": "Qui iusto fugiat doloremque? Facilis obcaecati vitae corrupti.",
           "sizing": "80",
-          "border": true
+          "border": true,
+          "align": "center"
         }
       ]
     }
