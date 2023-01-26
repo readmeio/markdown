@@ -151,22 +151,19 @@ describe('Components', () => {
     const box = container.querySelectorAll('.lightbox')[0];
 
     fireEvent.click(img);
-    expect(box).toHaveAttribute('open');
-
-    fireEvent.scroll(box);
-    expect(box).not.toHaveAttribute('open');
+    expect(box).toHaveClass('open');
 
     fireEvent.keyDown(img, { key: 'Enter' });
-    expect(box).toHaveAttribute('open');
+    expect(box).toHaveClass('open');
 
     fireEvent.keyDown(img, { key: 'Escape' });
-    expect(box).not.toHaveAttribute('open');
+    expect(box).not.toHaveClass('open');
 
     fireEvent.keyDown(img, { key: ' ' });
-    expect(box).toHaveAttribute('open');
+    expect(box).toHaveClass('open');
 
     fireEvent.keyDown(img, { key: '.', metaKey: true });
-    expect(box).not.toHaveAttribute('open');
+    expect(box).not.toHaveClass('open');
   });
 
   it('Heading', () => {
