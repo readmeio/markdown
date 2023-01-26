@@ -74,7 +74,7 @@
     }
   }
 
-  .lightbox {
+  .lightbox.open {
     & {
       position: fixed;
       z-index: 9999999;
@@ -95,9 +95,6 @@
 
       margin-top: 0;
       margin-bottom: 0;
-    }
-    &:not([open]) {
-      pointer-events: none;
     }
 
     // Close Button
@@ -121,39 +118,20 @@
       transform: scale(1.5);
       transition: .3s .3s ease-in;
     }
-    &:not([open]):after {
+    &:not(.open):after {
       transform: scale(0);
       opacity: 0;
     }
 
-    &-inner {
+    .lightbox-inner {
       position: relative;
       display: inline-flex;
       justify-content: center;
       align-items: center;
       min-height: calc(100vh + 8px);
       margin: auto;
-      margin: 8px auto auto;
-      padding: 5em 0;
+      padding: 0;
       box-sizing: content-box;
-    }
-
-    & { // transition
-      transition: .3s ease-out;
-      transition-property: opacity, z-index, transform;
-      img {
-        transform: scale(1);
-        transition: .25s .05s ease-in;
-      }
-      &:not([open]) {
-        opacity: 0 !important;
-        pointer-events: none;
-        img {
-          transform: scale(0);
-          opacity: 0;
-          transition-delay: 0s;
-        }
-      }
     }
 
     img {
