@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.60.1
+
+### ✨ New & Improved
+
+* **img:** pure css lightbox ([#672](https://github.com/readmeio/markdown/issues/672)) ([995c508](https://github.com/readmeio/markdown/commit/995c508800403f5b0e8b13f6d105f58efcdb2108))
+
 ## Version 6.60.0
 
 ### ✨ New & Improved
