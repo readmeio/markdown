@@ -17,7 +17,7 @@ test('should output an image node for a known emoji', () => {
             type: 'image',
             title: `:${emoji}:`,
             alt: `:${emoji}:`,
-            url: `/img/emojis/${emoji}.png`,
+            url: `/public/img/emojis/${emoji}.png`,
             data: {
               hProperties: {
                 align: 'absmiddle',
