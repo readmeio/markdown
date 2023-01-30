@@ -6,12 +6,13 @@ DOCKER_WORKSPACE := "/markdown"
 MOUNTS = --volume ${PWD}:${DOCKER_WORKSPACE} \
 	--volume ${DOCKER_WORKSPACE}/node_modules
 
-emojis: example/img/emojis ## Install our emojis.
+emojis: example/public/img/emojis ## Install our emojis.
 
-example/img/emojis: node_modules/@readme/emojis
+example/public/img/emojis: node_modules/@readme/emojis
 	rm -rf example/img/emojis
-	mkdir -p example/img/emojis
-	cp node_modules/@readme/emojis/src/img/*.png example/img/emojis/
+	rm -rf example/public/img/emojis
+	mkdir -p example/public/img/emojis
+	cp node_modules/@readme/emojis/src/img/*.png example/public/img/emojis/
 
 build:
 	docker build --platform linux/amd64 -t markdown .
