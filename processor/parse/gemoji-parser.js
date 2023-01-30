@@ -36,7 +36,7 @@ function tokenize(eat, value, silent) {
       type: 'image',
       title: `:${subvalue}:`,
       alt: `:${subvalue}:`,
-      url: `/img/emojis/${subvalue}.png`,
+      url: `/public/img/emojis/${subvalue}.png`,
       data: {
         hProperties: {
           className: 'emoji',
