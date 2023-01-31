@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.61.0
+
+### ✨ New & Improved
+
+* update emoji url ([#677](https://github.com/readmeio/markdown/issues/677)) ([7727d6b](https://github.com/readmeio/markdown/commit/7727d6bb81c6096a676047f940a4a01275f98e84))
+
 ## Version 6.60.1
 
 ### ✨ New & Improved
