@@ -1,18 +1,6 @@
 /* eslint-disable consistent-return */
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
-const WrapPinnedBlocks = (node, json) => {
-  if (!json.sidebar) return node;
-  return {
-    children: [node],
-    type: 'rdme-pin',
-    data: {
-      hName: 'rdme-pin',
-      className: 'pin',
-    },
-  };
-};
-
 const imgSizeValues = {
   full: '100%',
   original: 'auto',
@@ -70,32 +58,22 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         }));
         if (children.length === 1) {
           if (!children[0].value) return eat(match); // skip empty code tabs
-          if (children[0].name) return eat(match)(WrapPinnedBlocks(children[0], json));
+          if (children[0].name) return eat(match)(children[0]);
         }
-        return eat(match)(
-          WrapPinnedBlocks(
-            {
-              children,
-              className: 'tabs',
-              data: { hName: 'code-tabs' },
-              type: 'code-tabs',
-            },
-            json
-          )
-        );
+        return eat(match)({
+          children,
+          className: 'tabs',
+          data: { hName: 'code-tabs' },
+          type: 'code-tabs',
+        });
       }
       case 'api-header': {
         const depth = json.level || (compatibilityMode ? 1 : 2);
-        return eat(match)(
-          WrapPinnedBlocks(
-            {
-              type: 'heading',
-              depth,
-              children: 'title' in json ? this.tokenizeInline(json.title, eat.now()) : [],
-            },
-            json
-          )
-        );
+        return eat(match)({
+          type: 'heading',
+          depth,
+          children: 'title' in json ? this.tokenizeInline(json.title, eat.now()) : [],
+        });
       }
       case 'image': {
         const imgs = json.images
@@ -136,7 +114,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         const img = imgs[0];
 
         if (!img || !img.url) return eat(match);
-        return eat(match)(WrapPinnedBlocks(img, json));
+        return eat(match)(img);
       }
       case 'callout': {
         const types = {
@@ -148,24 +126,19 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         json.type = json.type in types ? types[json.type] : [json.icon || '👍', json.type];
         const [icon, theme] = json.type;
         if (!(json.title || json.body)) return eat(match);
-        return eat(match)(
-          WrapPinnedBlocks(
-            {
-              type: 'rdme-callout',
-              data: {
-                hName: 'rdme-callout',
-                hProperties: {
-                  theme: theme || 'default',
-                  icon,
-                  title: json.title,
-                  value: json.body,
-                },
-              },
-              children: [...this.tokenizeBlock(json.title, eat.now()), ...this.tokenizeBlock(json.body, eat.now())],
+        return eat(match)({
+          type: 'rdme-callout',
+          data: {
+            hName: 'rdme-callout',
+            hProperties: {
+              theme: theme || 'default',
+              icon,
+              title: json.title,
+              value: json.body,
             },
-            json
-          )
-        );
+          },
+          children: [...this.tokenizeBlock(json.title, eat.now()), ...this.tokenizeBlock(json.body, eat.now())],
+        });
       }
       case 'parameters': {
         const { data, rows, cols } = json;
@@ -200,7 +173,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           align: 'align' in json ? json.align : new Array(json.cols).fill('left'),
           children,
         };
-        return eat(match)(WrapPinnedBlocks(table, json));
+        return eat(match)(table);
       }
       case 'embed': {
         const { title, url, html } = json;
@@ -218,63 +191,48 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           html,
           title,
         };
-        return eat(match)(
-          WrapPinnedBlocks(
+        return eat(match)({
+          type: 'embed',
+          children: [
             {
-              type: 'embed',
-              children: [
-                {
-                  type: 'link',
-                  url,
-                  title: json.provider,
-                  children: [{ type: 'text', value: title }],
-                },
-              ],
-              data: {
-                hProperties: {
-                  ...data,
-                  href: url,
-                },
-                hName: 'rdme-embed',
-              },
+              type: 'link',
+              url,
+              title: json.provider,
+              children: [{ type: 'text', value: title }],
             },
-            json
-          )
-        );
+          ],
+          data: {
+            hProperties: {
+              ...data,
+              href: url,
+            },
+            hName: 'rdme-embed',
+          },
+        });
       }
       case 'html': {
-        return eat(match)(
-          WrapPinnedBlocks(
-            {
-              type: 'html-block',
-              data: {
-                hName: 'html-block',
-                hProperties: {
-                  html: json.html,
-                  runScripts: compatibilityMode,
-                  safeMode,
-                },
-              },
+        return eat(match)({
+          type: 'html-block',
+          data: {
+            hName: 'html-block',
+            hProperties: {
+              html: json.html,
+              runScripts: compatibilityMode,
+              safeMode,
             },
-            json
-          )
-        );
+          },
+        });
       }
       default: {
-        return eat(match)(
-          WrapPinnedBlocks(
-            {
-              type: 'div',
-              children: this.tokenizeBlock(json.text || json.html, eat.now()),
-              data: {
-                hName: type || 'div',
-                hProperties: json,
-                ...json,
-              },
-            },
-            json
-          )
-        );
+        return eat(match)({
+          type: 'div',
+          children: this.tokenizeBlock(json.text || json.html, eat.now()),
+          data: {
+            hName: type || 'div',
+            hProperties: json,
+            ...json,
+          },
+        });
       }
     }
   };

@@ -156,36 +156,27 @@ alert('test');",
     Object {
       "children": Array [
         Object {
-          "children": Array [
-            Object {
-              "className": "tab-panel",
-              "data": Object {
-                "hName": "code",
-                "hProperties": Object {
-                  "lang": "javascript",
-                  "meta": null,
-                },
-              },
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
               "lang": "javascript",
               "meta": null,
-              "type": "code",
-              "value": "$http.post('/someUrl', data).success(successCallback);
+            },
+          },
+          "lang": "javascript",
+          "meta": null,
+          "type": "code",
+          "value": "$http.post('/someUrl', data).success(successCallback);
 
 alert('test');",
-            },
-          ],
-          "className": "tabs",
-          "data": Object {
-            "hName": "code-tabs",
-          },
-          "type": "code-tabs",
         },
       ],
+      "className": "tabs",
       "data": Object {
-        "className": "pin",
-        "hName": "rdme-pin",
+        "hName": "code-tabs",
       },
-      "type": "rdme-pin",
+      "type": "code-tabs",
     },
   ],
   "type": "root",
