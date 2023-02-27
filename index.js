@@ -34,20 +34,8 @@ const tableFlattening = require('./processor/plugin/table-flattening');
 const transformers = Object.values(require('./processor/transform'));
 const createSchema = require('./sanitize.schema');
 
-const {
-  GlossaryItem,
-  Code,
-  Table,
-  Anchor,
-  Heading,
-  Callout,
-  CodeTabs,
-  Image,
-  Embed,
-  HTMLBlock,
-  Style,
-  TableOfContents,
-} = Components;
+const { GlossaryItem, Code, Table, Anchor, Heading, Callout, Image, Embed, HTMLBlock, Style, TableOfContents } =
+  Components;
 
 export { Components };
 
@@ -162,7 +150,6 @@ export function reactProcessor(opts = {}, components = {}) {
       createElement,
       Fragment: React.Fragment,
       components: {
-        'code-tabs': CodeTabs(opts),
         'html-block': HTMLBlock(opts),
         'rdme-callout': Callout,
         'readme-variable': Variable,
