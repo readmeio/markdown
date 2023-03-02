@@ -1,10 +1,12 @@
 %img-align {
   &-right {
-    float: right;
+    float: unset;
     margin-left: .75rem;
+    margin-right: 0;
   }
   &-left {
-    float: left;
+    float: unset;
+    margin-left: 0;
     margin-right: .75rem;
   }
   &-center {
@@ -16,8 +18,7 @@
   img {
     & {
       box-sizing: content-box;
-      display: inline-block;
-      vertical-align: middle;
+      display: block;
       max-width: 100%;
       margin-left: auto;
       margin-right: auto;
