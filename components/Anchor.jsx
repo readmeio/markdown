@@ -1,11 +1,11 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import { string, node } from 'prop-types';
+import React from 'react';
 
-const BaseUrlContext = require('../contexts/BaseUrl');
+import BaseUrlContext from '../contexts/BaseUrl';
 
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
-function getHref(href, baseUrl) {
+export function getHref(href, baseUrl) {
   const [path, hash] = href.split('#');
   const hashStr = hash ? `#${hash}` : '';
 
@@ -59,12 +59,12 @@ function Anchor(props) {
 }
 
 Anchor.propTypes = {
-  baseUrl: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  download: PropTypes.string,
-  href: PropTypes.string,
-  target: PropTypes.string,
-  title: PropTypes.string,
+  baseUrl: string,
+  children: node.isRequired,
+  download: string,
+  href: string,
+  target: string,
+  title: string,
 };
 
 Anchor.defaultProps = {
@@ -85,6 +85,4 @@ AnchorWithContext.sanitize = sanitizeSchema => {
   return sanitizeSchema;
 };
 
-module.exports = AnchorWithContext;
-
-AnchorWithContext.getHref = getHref;
+export default AnchorWithContext;

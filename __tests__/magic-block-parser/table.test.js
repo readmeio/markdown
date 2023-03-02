@@ -1,9 +1,10 @@
-const rehypeSanitize = require('rehype-sanitize');
-const remarkParse = require('remark-parse');
-const unified = require('unified');
+import rehypeSanitize from 'rehype-sanitize';
+import remarkParse from 'remark-parse';
+import unified from 'unified';
+
+import { sanitize as magicBlockSanitize } from '../../processor/parse/magic-block-parser';
 
 const options = require('../../options').options.markdownOptions;
-const parser = require('../../processor/parse/magic-block-parser');
 
 const sanitize = { attributes: [] };
 const process = (text, opts = options) =>
@@ -11,7 +12,7 @@ const process = (text, opts = options) =>
   unified()
     .use(remarkParse, opts)
     .data('settings', { position: false })
-    .use(parser.sanitize(sanitize))
+    .use(magicBlockSanitize(sanitize))
     .use(rehypeSanitize)
     .parse(text);
 

@@ -1,4 +1,4 @@
-const { astToPlainText, hast } = require('../../index');
+import { astToPlainText, hast } from '../../index';
 
 describe('astToPlainText with tables', () => {
   it('includes all cells', () => {

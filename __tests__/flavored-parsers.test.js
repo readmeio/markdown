@@ -1,10 +1,11 @@
-const rehypeSanitize = require('rehype-sanitize');
-const remarkParse = require('remark-parse');
-const unified = require('unified');
+import rehypeSanitize from 'rehype-sanitize';
+import remarkParse from 'remark-parse';
+import unified from 'unified';
+
+import { sanitize as calloutSanitize } from '../processor/parse/flavored/callout';
+import { sanitize as codeTabsSanitize } from '../processor/parse/flavored/code-tabs';
 
 const options = require('../options').options.markdownOptions;
-const parseCallouts = require('../processor/parse/flavored/callout');
-const parseCodeTabs = require('../processor/parse/flavored/code-tabs');
 
 const sanitize = { attributes: [], tagNames: [] };
 const process = (text, opts = options) =>
@@ -12,7 +13,7 @@ const process = (text, opts = options) =>
   unified()
     .use(remarkParse, opts)
     .data('settings', { position: false })
-    .use([parseCallouts.sanitize(sanitize), parseCodeTabs.sanitize(sanitize)])
+    .use([calloutSanitize(sanitize), codeTabsSanitize(sanitize)])
     .use(rehypeSanitize)
     .parse(text);
 

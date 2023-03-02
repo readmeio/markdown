@@ -5,7 +5,7 @@ const find = (node, fn) => {
   return null;
 };
 
-module.exports = function TableCompiler() {
+export default function TableCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -34,4 +34,4 @@ module.exports = function TableCompiler() {
 
     return `[block:parameters]\n${JSON.stringify(data, null, 2)}\n[/block]`;
   };
-};
+}

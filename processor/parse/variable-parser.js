@@ -1,4 +1,4 @@
-const { VARIABLE_REGEXP } = require('@readme/variable');
+import { VARIABLE_REGEXP } from '@readme/variable';
 
 function tokenizeVariable(eat, value, silent) {
   // Modifies the regular expression to match from
@@ -51,9 +51,9 @@ function parser() {
   methods.splice(methods.indexOf('text'), 0, 'variable');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.sanitize = sanitizeSchema => {
+export const sanitize = sanitizeSchema => {
   // This is for our custom variable tags <<apiKey>>
   sanitizeSchema.tagNames.push('readme-variable');
   sanitizeSchema.attributes['readme-variable'] = ['variable'];

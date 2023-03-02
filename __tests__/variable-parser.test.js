@@ -1,7 +1,7 @@
-const remarkParse = require('remark-parse');
-const unified = require('unified');
+import remarkParse from 'remark-parse';
+import unified from 'unified';
 
-const parser = require('../processor/parse/variable-parser');
+import parser from '../processor/parse/variable-parser';
 
 test('should output a variable node', () => {
   const markdown = 'This is a test <<apiKey>>.';

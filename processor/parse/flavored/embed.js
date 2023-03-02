@@ -38,9 +38,9 @@ function parser() {
   methods.splice(methods.indexOf('newline'), 0, 'embed');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.sanitize = sanitizeSchema => {
+export const sanitize = sanitizeSchema => {
   const tags = sanitizeSchema.tagNames;
   tags.push('embed');
   return parser;

@@ -53,9 +53,9 @@ function parser() {
   methods.splice(methods.indexOf('newline'), 0, 'CodeTabs');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.sanitize = sanitizeSchema => {
+export const sanitize = sanitizeSchema => {
   const tags = sanitizeSchema.tagNames;
 
   tags.push('code-tabs');

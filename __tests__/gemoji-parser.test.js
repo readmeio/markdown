@@ -1,7 +1,7 @@
-const remarkParse = require('remark-parse');
-const unified = require('unified');
+import remarkParse from 'remark-parse';
+import unified from 'unified';
 
-const parser = require('../processor/parse/gemoji-parser');
+import parser from '../processor/parse/gemoji-parser';
 
 test('should output an image node for a known emoji', () => {
   const emoji = 'joy';

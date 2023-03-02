@@ -1,4 +1,4 @@
-module.exports = function DivCompiler() {
+export default function DivCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -11,4 +11,4 @@ ${JSON.stringify(data, null, 2)}
 [/block]
 `;
   };
-};
+}

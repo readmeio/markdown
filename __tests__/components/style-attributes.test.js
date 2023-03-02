@@ -1,6 +1,6 @@
-const { renderToString } = require('react-dom/server');
+import { renderToString } from 'react-dom/server';
 
-const { react } = require('../../index');
+import { react } from '../../index';
 
 describe('style attributes', () => {
   describe('safeMode = false', () => {

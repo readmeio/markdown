@@ -1,8 +1,8 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import PropTypes from 'prop-types';
+import React from 'react';
 
-const registerCustomComponents = require('../../lib/registerCustomComponents');
-const createSchema = require('../../sanitize.schema');
+import registerCustomComponents from '../../lib/registerCustomComponents';
+import createSchema from '../../sanitize.schema';
 
 const hastPrefix = 'prefix';
 const customComponents = {

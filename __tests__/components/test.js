@@ -1,22 +1,22 @@
 /* eslint-disable no-eval */
-const { cleanup, fireEvent, render } = require('@testing-library/react');
-const React = require('react');
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import React from 'react';
 
-const markdown = require('../../index');
-const { silenceConsole } = require('../helpers');
+import { react, utils } from '../../index';
+import { silenceConsole } from '../helpers';
 
 describe('Data Replacements', () => {
   it('Variables', () => {
     const { container } = render(
       React.createElement(
-        markdown.utils.VariablesContext.Provider,
+        utils.VariablesContext.Provider,
         {
           value: {
             defaults: [{ test: 'Default Value' }],
             user: { test: 'User Override' },
           },
         },
-        markdown.react('<<test>>')
+        react('<<test>>')
       )
     );
     expect(container).toContainHTML('<p><span>User Override</span></p>');
@@ -25,7 +25,7 @@ describe('Data Replacements', () => {
   it('Glossary Term', () => {
     const { container } = render(
       React.createElement(
-        markdown.utils.GlossaryContext.Provider,
+        utils.GlossaryContext.Provider,
         {
           value: [
             {
@@ -35,7 +35,7 @@ describe('Data Replacements', () => {
             },
           ],
         },
-        markdown.react('<<glossary:term>>')
+        react('<<glossary:term>>')
       )
     );
     expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
@@ -68,7 +68,7 @@ describe('Components', () => {
 [/block]`,
     ];
 
-    let { container } = render(markdown.react(callout[0]));
+    let { container } = render(react(callout[0]));
     expect(container.innerHTML).toMatchSnapshot();
 
     cleanup();
@@ -76,18 +76,18 @@ describe('Components', () => {
     const noTitleExpectation =
       '<blockquote class="callout callout_warn" theme="🚧"><h3 class="callout-heading empty"><span class="callout-icon">🚧</span></h3><p>Callout with no title.</p></blockquote>';
 
-    ({ container } = render(markdown.react(callout[1])));
+    ({ container } = render(react(callout[1])));
     expect(container).toContainHTML(noTitleExpectation);
 
     cleanup();
 
-    ({ container } = render(markdown.react(callout[2])));
+    ({ container } = render(react(callout[2])));
     expect(container).toContainHTML(noTitleExpectation);
   });
 
   it('Multi Code Block', () => {
     const tabs = '```\nhello\n```\n```php\nworld\n```\n\n';
-    const rdmd = markdown.react(tabs);
+    const rdmd = react(tabs);
     const { container } = render(rdmd);
 
     expect(container.querySelectorAll('pre')[1]).not.toHaveClass();
@@ -132,7 +132,7 @@ describe('Components', () => {
 
     silenceConsole()(error => {
       Object.values(fixtures).map(fx => {
-        const { container } = render(markdown.react(fx));
+        const { container } = render(react(fx));
         return expect(container.innerHTML).toMatchSnapshot();
       });
 
@@ -144,7 +144,7 @@ describe('Components', () => {
     const text =
       '![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")';
 
-    const { container } = render(markdown.react(text));
+    const { container } = render(react(text));
     expect(container.innerHTML).toMatchSnapshot();
 
     const img = container.querySelectorAll('img')[0];
@@ -167,17 +167,17 @@ describe('Components', () => {
   });
 
   it('Heading', () => {
-    let { container } = render(markdown.react('### Heading Level 3\n\n### Heading Level 3'));
+    let { container } = render(react('### Heading Level 3\n\n### Heading Level 3'));
     expect(container.querySelectorAll('.heading')).toHaveLength(2);
 
     cleanup();
 
-    ({ container } = render(markdown.react('Pretest.\n\n###\n\nPosttest.')));
+    ({ container } = render(react('Pretest.\n\n###\n\nPosttest.')));
     expect(container.querySelector('.heading')).toHaveTextContent('');
   });
 
   it('Heading no children', () => {
-    const { container } = render(markdown.react('### Heading Level 3'));
+    const { container } = render(react('### Heading Level 3'));
     expect(container.querySelectorAll('.heading')).toHaveLength(1);
   });
 });
@@ -215,7 +215,7 @@ ${JSON.stringify({
   let rdmd;
   let container;
   beforeEach(() => {
-    rdmd = markdown.react(tabs, { compatibilityMode: true });
+    rdmd = react(tabs, { compatibilityMode: true });
     // eslint-disable-next-line testing-library/no-render-in-setup
     ({ container } = render(rdmd));
   });

@@ -1,38 +1,39 @@
 /* eslint-disable no-param-reassign */
-require('./styles/main.scss');
+import Variable, { VariablesContext } from '@readme/variable';
+import generateTOC from 'mdast-util-toc';
+import React from 'react';
+import rehypeRaw from 'rehype-raw';
+import rehypeReact from 'rehype-react';
+import rehypeSanitize from 'rehype-sanitize';
+import rehypeStringify from 'rehype-stringify';
+import remarkBreaks from 'remark-breaks';
+import remarkDisableTokenizers from 'remark-disable-tokenizers';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import remarkSlug from 'remark-slug';
+import remarkStringify from 'remark-stringify';
+import unified from 'unified';
+import { map as mapNodes } from 'unist-util-map';
+import { selectAll } from 'unist-util-select';
 
-const Variable = require('@readme/variable');
-const generateTOC = require('mdast-util-toc');
-const React = require('react');
-const rehypeRaw = require('rehype-raw');
-const rehypeReact = require('rehype-react');
-const rehypeSanitize = require('rehype-sanitize');
-const rehypeStringify = require('rehype-stringify');
-const remarkBreaks = require('remark-breaks');
-const remarkDisableTokenizers = require('remark-disable-tokenizers');
-const remarkFrontmatter = require('remark-frontmatter');
-const remarkParse = require('remark-parse');
-const remarkRehype = require('remark-rehype');
-const remarkSlug = require('remark-slug');
-const remarkStringify = require('remark-stringify');
-const unified = require('unified');
-const { map: mapNodes } = require('unist-util-map');
-const { selectAll } = require('unist-util-select');
+import * as Components from './components';
+import { getHref } from './components/Anchor';
+import BaseUrlContext from './contexts/BaseUrl';
+import GlossaryContext from './contexts/GlossaryTerms';
+import createElement from './lib/createElement';
+import registerCustomComponents from './lib/registerCustomComponents';
+import { options, parseOptions } from './options';
+import { icons as calloutIcons } from './processor/parse/flavored/callout';
+import toPlainText from './processor/plugin/plain-text';
+import sectionAnchorId from './processor/plugin/section-anchor-id';
+import tableFlattening from './processor/plugin/table-flattening';
+import createSchema from './sanitize.schema';
+import './styles/main.scss';
 
-const Components = require('./components');
-const { getHref } = require('./components/Anchor');
-const BaseUrlContext = require('./contexts/BaseUrl');
-const createElement = require('./lib/createElement');
 const CustomParsers = Object.values(require('./processor/parse'));
 const customCompilers = Object.values(require('./processor/compile'));
-const registerCustomComponents = require('./lib/registerCustomComponents');
-const { options, parseOptions } = require('./options');
-const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
-const toPlainText = require('./processor/plugin/plain-text');
-const sectionAnchorId = require('./processor/plugin/section-anchor-id');
-const tableFlattening = require('./processor/plugin/table-flattening');
 const transformers = Object.values(require('./processor/transform'));
-const createSchema = require('./sanitize.schema');
 
 const {
   GlossaryItem,
@@ -77,11 +78,10 @@ export const utils = {
   get options() {
     return { ...options };
   },
-
   BaseUrlContext,
   getHref,
-  GlossaryContext: GlossaryItem.GlossaryContext,
-  VariablesContext: Variable.VariablesContext,
+  GlossaryContext,
+  VariablesContext,
   calloutIcons,
 };
 

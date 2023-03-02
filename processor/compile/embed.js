@@ -10,9 +10,9 @@ ${JSON.stringify({ ...data, provider }, null, 2)}
 `;
 }
 
-module.exports = function () {
+export default function Embed() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
   visitors.embed = EmbedCompiler;
-};
+}

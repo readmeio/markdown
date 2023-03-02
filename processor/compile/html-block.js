@@ -1,4 +1,4 @@
-module.exports = function () {
+export default function HtmlBlock() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -6,4 +6,4 @@ module.exports = function () {
     const html = node.data.hProperties.html;
     return `[block:html]\n${JSON.stringify({ html }, null, 2)}\n[/block]`;
   };
-};
+}

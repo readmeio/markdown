@@ -1,4 +1,4 @@
-module.exports = function ImageCompiler() {
+export default function ImageCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -14,4 +14,4 @@ module.exports = function ImageCompiler() {
 
     return originalImageCompiler.call(this, node, ...args);
   };
-};
+}

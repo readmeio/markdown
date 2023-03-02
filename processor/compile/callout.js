@@ -1,4 +1,4 @@
-module.exports = function CalloutCompiler() {
+export default function CalloutCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -8,4 +8,4 @@ module.exports = function CalloutCompiler() {
 
     return block;
   };
-};
+}

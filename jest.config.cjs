@@ -1,5 +1,5 @@
-const browser = require('./jest.browser');
-const common = require('./jest.common');
+const browser = require('./jest.browser.cjs');
+const common = require('./jest.common.cjs');
 
 const unit = {
   ...common,

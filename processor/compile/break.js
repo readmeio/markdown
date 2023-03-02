@@ -1,4 +1,4 @@
-module.exports = function BreakCompiler() {
+export default function BreakCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -7,4 +7,4 @@ module.exports = function BreakCompiler() {
   visitors.break = function compile() {
     return '  \n';
   };
-};
+}

@@ -1,4 +1,4 @@
-module.exports = function CodeTabsCompiler() {
+export default function CodeTabsCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -7,4 +7,4 @@ module.exports = function CodeTabsCompiler() {
   }
 
   visitors['code-tabs'] = compile;
-};
+}

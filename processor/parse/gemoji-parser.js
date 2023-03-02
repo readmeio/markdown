@@ -1,4 +1,4 @@
-const Emoji = require('@readme/emojis').emoji;
+import { emoji as Emoji } from '@readme/emojis';
 
 const emojis = new Emoji();
 
@@ -67,9 +67,9 @@ function parser() {
   methods.splice(methods.indexOf('text'), 0, 'gemoji');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.sanitize = sanitizeSchema => {
+export const sanitize = sanitizeSchema => {
   // This is for font awesome gemoji codes
   sanitizeSchema.attributes.i = ['className'];
   return parser;

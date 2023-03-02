@@ -42,4 +42,4 @@ const toPlainText = function () {
   Object.assign(this, { Compiler });
 };
 
-module.exports = toPlainText;
+export default toPlainText;

@@ -22,7 +22,7 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
   get: (widths, size) => (size?.match(/^\d+$/) ? `${size}%` : size in widths ? widths[size] : size),
 });
 
-const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
+export const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
   get: (sizes, width) => {
     const match = width?.match(/^(\d+)%$/);
     return match ? match[1] : width in sizes ? sizes[width] : width;
@@ -293,9 +293,9 @@ function parser() {
   methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');
 }
 
-module.exports = parser;
+export default parser;
 
-module.exports.sanitize = sanitizeSchema => {
+export function sanitize(sanitizeSchema) {
   // const tags = sanitizeSchema.tagNames;
   const attr = sanitizeSchema.attributes;
   attr.li = ['className', 'checked'];
@@ -304,6 +304,4 @@ module.exports.sanitize = sanitizeSchema => {
   attr.table = ['align'];
 
   return parser;
-};
-
-module.exports.imgSizeByWidth = imgSizeByWidth;
+}

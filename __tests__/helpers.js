@@ -1,4 +1,4 @@
-module.exports.silenceConsole =
+export const silenceConsole =
   (prop = 'error', impl = () => {}) =>
   fn => {
     let spy;

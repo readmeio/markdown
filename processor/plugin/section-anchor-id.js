@@ -1,5 +1,5 @@
-const kebabCase = require('lodash.kebabcase');
-const flatMap = require('unist-util-flatmap');
+import kebabCase from 'lodash.kebabcase';
+import flatMap from 'unist-util-flatmap';
 
 const matchTag = /^h[1-6]$/g;
 
@@ -17,8 +17,8 @@ const getTexts = node => {
 /** Adds an empty <div id=section-slug> next to all headings
  *  for backwards-compatibility with how we used to do slugs.
  */
-function transformer(ast) {
-  return flatMap(ast, node => {
+const SectionAnchorId = () => ast =>
+  flatMap(ast, node => {
     if (matchTag.test(node.tagName)) {
       // Parse the node texts to construct
       // a backwards-compatible anchor ID.
@@ -43,6 +43,5 @@ function transformer(ast) {
     }
     return [node];
   });
-}
 
-module.exports = () => transformer;
+export default SectionAnchorId;

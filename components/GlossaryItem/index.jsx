@@ -1,11 +1,11 @@
-const Tooltip = require('@tippyjs/react').default;
-const PropTypes = require('prop-types');
-const React = require('react');
+import Tooltip from '@tippyjs/react';
+import PropTypes from 'prop-types';
+import React from 'react';
 
-const GlossaryContext = require('../../contexts/GlossaryTerms');
+import GlossaryContext from '../../contexts/GlossaryTerms';
 
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/replace-vars.js#L8
-function GlossaryItem({ term, terms }) {
+export function GlossaryItem({ term, terms }) {
   const foundTerm = terms.find(i => term.toLowerCase() === i.term.toLowerCase());
 
   if (!foundTerm) return <span>{term}</span>;
@@ -35,10 +35,8 @@ GlossaryItem.propTypes = {
   ).isRequired,
 };
 
-// eslint-disable-next-line react/display-name
-module.exports = props => (
+const GlossaryWithContext = props => (
   <GlossaryContext.Consumer>{terms => terms && <GlossaryItem {...props} terms={terms} />}</GlossaryContext.Consumer>
 );
 
-module.exports.GlossaryItem = GlossaryItem;
-module.exports.GlossaryContext = GlossaryContext;
+export default GlossaryWithContext;

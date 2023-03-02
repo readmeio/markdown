@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   launch: {
     args: ['--no-sandbox'],
     dumpio: true,

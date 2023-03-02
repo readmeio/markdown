@@ -1,15 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import markdown, { reactProcessor, reactTOC, utils } from '../index';
+import GlossaryContext from '../contexts/GlossaryTerms';
+import markdown, { reactProcessor, reactTOC } from '../index';
 
 import Fixtures from './Fixtures';
 import Header from './Header';
 import Router from './Router';
 
 require('./demo.scss');
-
-const { GlossaryContext } = utils;
 
 const terms = [
   {
