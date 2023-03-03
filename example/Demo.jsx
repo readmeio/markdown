@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import markdown, { reactProcessor, reactTOC, utils } from '../index';
+import markdown, { mdx, reactProcessor, reactTOC, utils } from '../index';
 
 import Fixtures from './Fixtures';
 import Header from './Header';
@@ -29,6 +29,8 @@ const terms = [
 const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
+  const Mdx = mdx(fixture);
+
   return (
     <React.Fragment>
       <Maybe when={!ci}>
@@ -47,6 +49,14 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
           <div id="content-container">
             <div className="markdown-body">{markdown(fixture, opts)}</div>
             <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
+          </div>
+        </section>
+        <section id="hub-content">
+          <h2 className="rdmd-demo--markdown-header">{name} (MDX)</h2>
+          <div id="content-container">
+            <div className="markdown-body">
+              <Mdx />
+            </div>
           </div>
         </section>
       </div>

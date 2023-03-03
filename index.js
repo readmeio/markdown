@@ -1,9 +1,11 @@
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
+const mdxProc = require('@mdx-js/mdx');
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
+const jsxRuntime = require('react/jsx-runtime');
 const rehypeRaw = require('rehype-raw');
 const rehypeReact = require('rehype-react');
 const rehypeSanitize = require('rehype-sanitize');
@@ -195,6 +197,16 @@ export function react(content, opts = {}, components = {}) {
 
   return proc.stringify(proc.runSync(content));
 }
+
+export const mdx = content => {
+  try {
+    const jsx = mdxProc.evaluateSync(content, { ...jsxRuntime, development: false }).default;
+    return jsx;
+  } catch (e) {
+    console.warn(e);
+    return 'div';
+  }
+};
 
 export function reactTOC(tree, opts = {}) {
   if (!tree) return null;
