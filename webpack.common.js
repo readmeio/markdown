@@ -11,7 +11,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.mjs$/,
+        test: /(\.mjs$/,
         include: /node_modules/,
         type: 'javascript/auto',
         resolve: {
@@ -19,7 +19,7 @@ module.exports = {
         },
       },
       {
-        test: /node_modules\/.*(@mdx-js|is-plain-obj|parse5)\/.*.js$/,
+        test: /node_modules\/.*(@mdx-js|estree-util-build-jsx|is-plain-obj|parse5)\/.*.js$/,
         use: {
           loader: 'babel-loader',
           options: { extends: './.babelrc' },
