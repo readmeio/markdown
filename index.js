@@ -51,6 +51,8 @@ const {
   TableOfContents,
 } = Components;
 
+const { magicBlockParser } = CustomParsers;
+
 export { Components };
 
 /**
@@ -199,8 +201,16 @@ export function react(content, opts = {}, components = {}) {
 }
 
 export const mdx = content => {
+  const opts = {
+    ...jsxRuntime,
+    remarkPlugins: [magicBlockParser],
+    development: false,
+  };
+
+  console.log(opts);
+
   try {
-    const jsx = mdxProc.evaluateSync(content, { ...jsxRuntime, development: false }).default;
+    const jsx = mdxProc(content, opts).default;
     return jsx;
   } catch (e) {
     console.warn(e);

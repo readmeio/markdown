@@ -33,6 +33,7 @@
     "emoji-regex": "^10.2.1",
     "estree-walker": "^3.0.3",
     "hast-util-sanitize": "^4.0.0",
+    "he": "^1.2.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-toc": "^5.1.0",

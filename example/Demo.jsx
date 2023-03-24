@@ -43,15 +43,6 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
       </Maybe>
       <div className="rdmd-demo--display">
         <section id="hub-content">
-          <Maybe when={!ci}>
-            <h2 className="rdmd-demo--markdown-header">{name}</h2>
-          </Maybe>
-          <div id="content-container">
-            <div className="markdown-body">{markdown(fixture, opts)}</div>
-            <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
-          </div>
-        </section>
-        <section id="hub-content">
           <h2 className="rdmd-demo--markdown-header">{name} (MDX)</h2>
           <div id="content-container">
             <div className="markdown-body">

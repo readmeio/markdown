@@ -54,6 +54,8 @@ function blockquoteReadme(eat, value, silent) {
   let startIndex;
   let prefixed;
 
+  console.log('welp');
+
   while (index < length) {
     character = value.charAt(index);
 
@@ -157,6 +159,8 @@ function blockquoteReadme(eat, value, silent) {
     const exit = self.enterBlock();
     const children = [...self.tokenizeBlock(title, now), ...self.tokenizeBlock(body, now)];
     exit();
+
+    console.log('what the heck');
 
     return add({
       type: 'rdme-callout',
