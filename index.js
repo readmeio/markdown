@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
-const mdxProc = require('@mdx-js/mdx');
+const MDX = require('@mdx-js/mdx');
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
@@ -203,19 +203,20 @@ export function react(content, opts = {}, components = {}) {
 export const mdx = content => {
   const opts = {
     ...jsxRuntime,
-    remarkPlugins: [magicBlockParser],
     development: false,
   };
 
-  console.log(opts);
-
   try {
-    const jsx = mdxProc(content, opts).default;
-    return jsx;
+    return MDX.evaluateSync(content, opts).default;
   } catch (e) {
     console.warn(e);
-    return 'div';
+    return null;
   }
+};
+
+export const mdxast = (content, opts = {}) => {
+  const mdxProcessor = MDX.createProcessor(opts);
+  return mdxProcessor().parse(content, opts);
 };
 
 export function reactTOC(tree, opts = {}) {
