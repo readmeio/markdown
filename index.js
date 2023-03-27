@@ -51,8 +51,6 @@ const {
   TableOfContents,
 } = Components;
 
-const { magicBlockParser } = CustomParsers;
-
 export { Components };
 
 /**
