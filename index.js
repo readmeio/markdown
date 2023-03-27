@@ -10,9 +10,11 @@ const rehypeRaw = require('rehype-raw');
 const rehypeReact = require('rehype-react');
 const rehypeSanitize = require('rehype-sanitize');
 const rehypeStringify = require('rehype-stringify');
+const { remark } = require('remark');
 const remarkBreaks = require('remark-breaks');
 const remarkDisableTokenizers = require('remark-disable-tokenizers');
 const remarkFrontmatter = require('remark-frontmatter');
+const remarkMdx = require('remark-mdx');
 const remarkParse = require('remark-parse');
 const remarkRehype = require('remark-rehype');
 const remarkSlug = require('remark-slug');
@@ -198,7 +200,7 @@ export function react(content, opts = {}, components = {}) {
   return proc.stringify(proc.runSync(content));
 }
 
-export const mdx = content => {
+export const mdxReact = content => {
   const opts = {
     ...jsxRuntime,
     development: false,
@@ -207,14 +209,16 @@ export const mdx = content => {
   try {
     return MDX.evaluateSync(content, opts).default;
   } catch (e) {
-    console.warn(e);
     return null;
   }
 };
 
 export const mdxast = (content, opts = {}) => {
-  const mdxProcessor = MDX.createProcessor(opts);
-  return mdxProcessor().parse(content, opts);
+  return remark().use(remarkMdx).parse(content, opts);
+};
+
+export const mdx = (ast, opts = {}) => {
+  return remark().use(remarkMdx).stringify(ast, opts);
 };
 
 export function reactTOC(tree, opts = {}) {
