@@ -200,27 +200,6 @@ export function react(content, opts = {}, components = {}) {
   return proc.stringify(proc.runSync(content));
 }
 
-export const mdxReact = content => {
-  const opts = {
-    ...jsxRuntime,
-    development: false,
-  };
-
-  try {
-    return MDX.evaluateSync(content, opts).default;
-  } catch (e) {
-    return null;
-  }
-};
-
-export const mdxast = (content, opts = {}) => {
-  return remark().use(remarkMdx).parse(content, opts);
-};
-
-export const mdx = (ast, opts = {}) => {
-  return remark().use(remarkMdx).stringify(ast, opts);
-};
-
 export function reactTOC(tree, opts = {}) {
   if (!tree) return null;
   [, opts] = setup('', opts);
@@ -299,6 +278,34 @@ export function md(tree, opts = {}) {
 
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
 }
+
+/**
+ * evaluate MDX to React
+ * @xxx: be sure to trust your input
+ */
+export const mdxReact = (content, userOpts = {}) => {
+  const opts = {
+    ...jsxRuntime,
+    development: false,
+    ...userOpts,
+  };
+
+  return MDX.evaluateSync(content, opts).default;
+};
+
+/**
+ * parse MDX into an ast
+ */
+export const mdxast = (content, opts = {}) => {
+  return remark().use(remarkMdx).parse(content, opts);
+};
+
+/**
+ * compile MDXast to MDX
+ */
+export const mdx = (ast, opts = {}) => {
+  return remark().use(remarkMdx).stringify(ast, opts);
+};
 
 const ReadMeMarkdown = (text, opts = {}) => react(text, opts);
 
