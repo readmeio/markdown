@@ -23,7 +23,7 @@ ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 COPY . ./
 
