@@ -1,5 +1,4 @@
 const TerserPlugin = require('terser-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { merge } = require('webpack-merge');
 
 const common = require('./webpack.common');
@@ -24,7 +23,6 @@ const browserConfig = merge(common, {
       umd: 'react-dom',
     },
   },
-  plugins: [new BundleAnalyzerPlugin()],
   output: {
     library: {
       type: 'umd',
