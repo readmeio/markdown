@@ -58,7 +58,6 @@
     "unist-util-visit": "^4.1.1"
   },
   "peerDependencies": {
-    "@mdx-js/mdx": "^2.3.0",
     "@readme/variable": "^15.1.0",
     "@tippyjs/react": "^4.1.0",
     "react": "^16.14.0",

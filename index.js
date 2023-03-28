@@ -1,11 +1,9 @@
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
-const MDX = require('@mdx-js/mdx');
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
-const jsxRuntime = require('react/jsx-runtime');
 const rehypeRaw = require('rehype-raw');
 const rehypeReact = require('rehype-react');
 const rehypeSanitize = require('rehype-sanitize');
@@ -278,20 +276,6 @@ export function md(tree, opts = {}) {
 
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
 }
-
-/**
- * evaluate MDX to React
- * @xxx: be sure to trust your input
- */
-export const mdxReact = (content, userOpts = {}) => {
-  const opts = {
-    ...jsxRuntime,
-    development: false,
-    ...userOpts,
-  };
-
-  return MDX.evaluateSync(content, opts).default;
-};
 
 /**
  * parse MDX into an ast
