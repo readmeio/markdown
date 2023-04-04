@@ -10,15 +10,15 @@ require('./styles/main.scss');
 
 const unimplemented = debug('mdx:unimplemented');
 
-export const react = async (text: string, opts = {}) => {
-  const code = await compile(text, opts);
-  const Tree = await run(code, opts);
+export const react = (text: string, opts = {}) => {
+  const code = compile(text, opts);
+  const Tree = run(code, opts);
 
   return Tree;
 };
 
-export const compile = async (text: string, opts = {}) => {
-  const code = await MDX.compile(text, {
+export const compile = (text: string, opts = {}): VFile => {
+  const code = MDX.compileSync(text, {
     outputFormat: 'function-body',
     development: false,
   });
@@ -26,8 +26,8 @@ export const compile = async (text: string, opts = {}) => {
   return code;
 };
 
-export const run = async (code: VFile | string, opts = {}) => {
-  const { default: Tree } = await MDX.run(code, { ...runtime });
+export const run = (code: VFile | string, opts = {}) => {
+  const { default: Tree } = MDX.runSync(code, { ...runtime });
   return Tree;
 };
 
