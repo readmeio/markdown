@@ -23,14 +23,16 @@ export default ({ body }) => <div className="markdown-body">{rdmdx(body)}</div>;
 
 In addition to the default React processor, the package exports some other methods for transforming ReadMe-flavored markdown:
 
-|    Export | Description                                    | Arguments         |
-| --------: | :--------------------------------------------- | :---------------- |
-| _`react`_ | _(default)_ returns a VDOM tree object         | `text`, `options` |
-|   _`mdx`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
-|  _`html`_ | transform markdown in to HTML                  | `text`, `options` |
-| _`mdast`_ | transform markdown to an mdast object          | `text`, `options` |
-|  _`hast`_ | transform markdown to HAST object              | `text`, `options` |
-| _`plain`_ | transform markdown to plain text               | `text`, `options` |
+|      Export | Description                                    | Arguments         |
+| ----------: | :--------------------------------------------- | :---------------- |
+|   _`react`_ | _(default)_ returns a VDOM tree object         | `text`, `options` |
+| _`compile`_ | transform mdx into runnable code               | `text`, `options` |
+|     _`run`_ | execute runnable code into a VDOM tree object  | `text`, `options` |
+|     _`mdx`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
+|    _`html`_ | transform markdown in to HTML                  | `text`, `options` |
+|   _`mdast`_ | transform markdown to an mdast object          | `text`, `options` |
+|    _`hast`_ | transform markdown to HAST object              | `text`, `options` |
+|   _`plain`_ | transform markdown to plain text               | `text`, `options` |
 
 ### Settings & Options
 
