@@ -15,7 +15,6 @@ module.exports = {
         use: {
           loader: 'ts-loader',
           options: {
-            happyPackMode: true,
             transpileOnly: true,
           },
         },
