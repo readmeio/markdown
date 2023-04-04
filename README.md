@@ -14,9 +14,9 @@ By default, the updated markdown package exports a function which takes a string
 
 ```jsx
 import React from 'react';
-import rdmd from '@readme/markdown';
+import rdmdx from '@readme/mdx';
 
-export default ({ body }) => <div className="markdown-body">{rdmd(body)}</div>;
+export default ({ body }) => <div className="markdown-body">{rdmdx(body)}</div>;
 ```
 
 ### Export Methods
@@ -26,18 +26,16 @@ In addition to the default React processor, the package exports some other metho
 |    Export | Description                                    | Arguments         |
 | --------: | :--------------------------------------------- | :---------------- |
 | _`react`_ | _(default)_ returns a VDOM tree object         | `text`, `options` |
-|    _`md`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
+|   _`mdx`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
 |  _`html`_ | transform markdown in to HTML                  | `text`, `options` |
 | _`mdast`_ | transform markdown to an mdast object          | `text`, `options` |
 |  _`hast`_ | transform markdown to HAST object              | `text`, `options` |
 | _`plain`_ | transform markdown to plain text               | `text`, `options` |
-| _`utils`_ | contexts, defaults, helpers, etc.              | N/A               |
 
 ### Settings & Options
 
 Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
 
-- **`compatibilityMode`** — Enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
 - **`copyButtons`** — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
 - **`correctnewlines`** — Render new line delimeters as `<br>` tags.
 - **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
