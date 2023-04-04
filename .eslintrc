@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "@readme/eslint-config",
-    "@readme/eslint-config/react"
-  ],
+  "extends": ["@readme/eslint-config", "@readme/eslint-config/react"],
   "parser": "@babel/eslint-parser",
   "root": true
 }

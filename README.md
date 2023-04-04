@@ -1,11 +1,11 @@
-@readme/markdown
+@readme/mdx
 ===
 <img align="right" width="26%" src="https://owlbertsio-resized.s3.amazonaws.com/Reading.psd.full.png">
 
-ReadMe's flavored Markdown parser and MDX rendering engine. <img align=center src=https://github.com/readmeio/markdown/workflows/CI/badge.svg alt="RDMD CI Status">
+A fork of ReadMe's flavored Markdown parser and MDX rendering engine. <img align=center src=https://github.com/readmeio/markdown/workflows/CI/badge.svg alt="RDMD CI Status">
 
 ```
-npm install --save @readme/markdown
+npm install --save @readme/mdx
 ```
 
 ## Usage
