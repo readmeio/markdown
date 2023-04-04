@@ -4,7 +4,7 @@ const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
 
 const browserConfig = merge(common, {
-  entry: './index.js',
+  entry: './index',
   externals: {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
@@ -32,9 +32,7 @@ const browserConfig = merge(common, {
     minimize: false,
     minimizer: [new TerserPlugin()],
   },
-  resolve: {
-    fallback: { path: require.resolve('path-browserify') },
-  },
+  resolve: {},
 });
 
 const serverConfig = merge(browserConfig, {

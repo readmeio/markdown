@@ -11,11 +11,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /node_modules\/.*(is-plain-obj|parse5)\/.*.js$/,
+        test: /\.tsx?$/,
         use: {
-          loader: 'babel-loader',
-          options: { extends: './.babelrc' },
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+          },
         },
+        exclude: /node_modules/,
       },
       {
         test: /\.jsx?$/,
@@ -51,6 +54,6 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.json', '.jsx'],
+    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx'],
   },
 };
