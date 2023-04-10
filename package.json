@@ -4,6 +4,7 @@
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "7.0.0",
   "main": "dist/main.node.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/main.js",
   "files": [
     "styles",
