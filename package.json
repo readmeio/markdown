@@ -4,6 +4,7 @@
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "7.0.0",
   "main": "dist/main.node.js",
+  "types": "dist/index.d.ts",
   "browser": "dist/main.js",
   "files": [
     "styles",
@@ -14,7 +15,6 @@
     "build": "webpack --mode production",
     "heroku-postbuild": "make emojis && webpack --mode production --config ./webpack.dev.js",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
-    "prepare": "npm run build",
     "pretest": "npm run lint",
     "prettier": "prettier --list-different --write \"./**/**.{js,jsx,ts,tsx}\"",
     "release": "npx semantic-release",
