@@ -8441,7 +8441,7 @@ function wrap(middleware, callback) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/unified/node_modules/unist-util-stringify-position/lib/index.js
+;// CONCATENATED MODULE: ./node_modules/unist-util-stringify-position/lib/index.js
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Point} Point
@@ -8527,7 +8527,7 @@ function index(value) {
   return value && typeof value === 'number' ? value : 1
 }
 
-;// CONCATENATED MODULE: ./node_modules/unified/node_modules/vfile-message/lib/index.js
+;// CONCATENATED MODULE: ./node_modules/vfile-message/lib/index.js
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Position} Position
@@ -8758,7 +8758,7 @@ VFileMessage.prototype.position = null
 const external_path_namespaceObject = require("path");
 ;// CONCATENATED MODULE: external "process"
 const external_process_namespaceObject = require("process");
-;// CONCATENATED MODULE: ./node_modules/unified/node_modules/vfile/lib/minurl.shared.js
+;// CONCATENATED MODULE: ./node_modules/vfile/lib/minurl.shared.js
 /**
  * @typedef URL
  * @property {string} hash
@@ -8799,7 +8799,7 @@ function isUrl(fileUrlOrPath) {
 
 ;// CONCATENATED MODULE: external "url"
 const external_url_namespaceObject = require("url");
-;// CONCATENATED MODULE: ./node_modules/unified/node_modules/vfile/lib/index.js
+;// CONCATENATED MODULE: ./node_modules/vfile/lib/index.js
 /**
  * @typedef {import('unist').Node} Node
  * @typedef {import('unist').Position} Position
@@ -16009,319 +16009,6 @@ function numberOrUndefined(value) {
   return typeof value === 'number' && value > -1 ? value : undefined
 }
 
-;// CONCATENATED MODULE: ./node_modules/micromark-factory-mdx-expression/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function lib_point(point) {
-  return lib_index(point && point.line) + ':' + lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function lib_position(pos) {
-  return lib_point(pos && pos.start) + '-' + lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
-;// CONCATENATED MODULE: ./node_modules/micromark-factory-mdx-expression/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-lib_VFileMessage.prototype.file = ''
-lib_VFileMessage.prototype.name = ''
-lib_VFileMessage.prototype.reason = ''
-lib_VFileMessage.prototype.message = ''
-lib_VFileMessage.prototype.stack = ''
-lib_VFileMessage.prototype.fatal = null
-lib_VFileMessage.prototype.column = null
-lib_VFileMessage.prototype.line = null
-lib_VFileMessage.prototype.source = null
-lib_VFileMessage.prototype.ruleId = null
-lib_VFileMessage.prototype.position = null
-
 ;// CONCATENATED MODULE: ./node_modules/estree-util-visit/lib/color.js
 /**
  * @param {string} d
@@ -16562,319 +16249,6 @@ function nodelike(value) {
   )
 }
 
-;// CONCATENATED MODULE: ./node_modules/micromark-util-events-to-acorn/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function unist_util_stringify_position_lib_point(point) {
-  return unist_util_stringify_position_lib_index(point && point.line) + ':' + unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function unist_util_stringify_position_lib_position(pos) {
-  return unist_util_stringify_position_lib_point(pos && pos.start) + '-' + unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
-;// CONCATENATED MODULE: ./node_modules/micromark-util-events-to-acorn/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class vfile_message_lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = unist_util_stringify_position_lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-vfile_message_lib_VFileMessage.prototype.file = ''
-vfile_message_lib_VFileMessage.prototype.name = ''
-vfile_message_lib_VFileMessage.prototype.reason = ''
-vfile_message_lib_VFileMessage.prototype.message = ''
-vfile_message_lib_VFileMessage.prototype.stack = ''
-vfile_message_lib_VFileMessage.prototype.fatal = null
-vfile_message_lib_VFileMessage.prototype.column = null
-vfile_message_lib_VFileMessage.prototype.line = null
-vfile_message_lib_VFileMessage.prototype.source = null
-vfile_message_lib_VFileMessage.prototype.ruleId = null
-vfile_message_lib_VFileMessage.prototype.position = null
-
 ;// CONCATENATED MODULE: ./node_modules/vfile-location/lib/index.js
 /**
  * @typedef {import('vfile').VFile} VFile
@@ -17079,7 +16453,7 @@ function eventsToAcorn(events, options) {
   const isEmptyExpression = options.expression && micromark_util_events_to_acorn_empty(source);
   const place = lib_location(source);
   if (isEmptyExpression && !options.allowEmpty) {
-    throw new vfile_message_lib_VFileMessage('Unexpected empty expression', parseOffsetToUnistPoint(0), 'micromark-extension-mdx-expression:unexpected-empty-expression');
+    throw new VFileMessage('Unexpected empty expression', parseOffsetToUnistPoint(0), 'micromark-extension-mdx-expression:unexpected-empty-expression');
   }
   try {
     estree = options.expression && !isEmptyExpression ? options.acorn.parseExpressionAt(value, 0, acornConfig) : options.acorn.parse(value, acornConfig);
@@ -17336,7 +16710,7 @@ function factoryMdxExpression(
     if (code === null) {
       throw (
         lastCrash ||
-        new lib_VFileMessage(
+        new VFileMessage(
           'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
           self.now(),
           'micromark-extension-mdx-expression:unexpected-eof'
@@ -17371,7 +16745,7 @@ function factoryMdxExpression(
       !allowLazy &&
       self.parser.lazy[now.line]
     ) {
-      throw new lib_VFileMessage(
+      throw new VFileMessage(
         'Unexpected end of file in expression, expected a corresponding closing brace for `{`',
         self.now(),
         'micromark-extension-mdx-expression:unexpected-eof'
@@ -17437,7 +16811,7 @@ function factoryMdxExpression(
         head.type !== 'ExpressionStatement' ||
         head.expression.type !== 'ObjectExpression'
       ) {
-        throw new lib_VFileMessage(
+        throw new VFileMessage(
           'Unexpected `' +
             head.type +
             '` in code: expected an object spread (`{...spread}`)',
@@ -17445,7 +16819,7 @@ function factoryMdxExpression(
           'micromark-extension-mdx-expression:non-spread'
         )
       } else if (head.expression.properties[1]) {
-        throw new lib_VFileMessage(
+        throw new VFileMessage(
           'Unexpected extra content in spread: only a single spread is supported',
           positionFromEstree(head.expression.properties[1]).start,
           'micromark-extension-mdx-expression:spread-extra'
@@ -17454,7 +16828,7 @@ function factoryMdxExpression(
         head.expression.properties[0] &&
         head.expression.properties[0].type !== 'SpreadElement'
       ) {
-        throw new lib_VFileMessage(
+        throw new VFileMessage(
           'Unexpected `' +
             head.expression.properties[0].type +
             '` in code: only spread elements are supported',
@@ -17464,7 +16838,7 @@ function factoryMdxExpression(
       }
     }
     if (result.error) {
-      lastCrash = new lib_VFileMessage(
+      lastCrash = new VFileMessage(
         'Could not parse expression with acorn: ' + result.error.message,
         {
           // @ts-expect-error: fine.
@@ -17700,319 +17074,6 @@ function lib_name(name) {
   // `false` if `name` is empty.
   return index > 0
 }
-
-;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdx-jsx/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function node_modules_unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return node_modules_unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return node_modules_unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return node_modules_unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function node_modules_unist_util_stringify_position_lib_point(point) {
-  return node_modules_unist_util_stringify_position_lib_index(point && point.line) + ':' + node_modules_unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function node_modules_unist_util_stringify_position_lib_position(pos) {
-  return node_modules_unist_util_stringify_position_lib_point(pos && pos.start) + '-' + node_modules_unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function node_modules_unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
-;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdx-jsx/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class node_modules_vfile_message_lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = node_modules_unist_util_stringify_position_lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-node_modules_vfile_message_lib_VFileMessage.prototype.file = ''
-node_modules_vfile_message_lib_VFileMessage.prototype.name = ''
-node_modules_vfile_message_lib_VFileMessage.prototype.reason = ''
-node_modules_vfile_message_lib_VFileMessage.prototype.message = ''
-node_modules_vfile_message_lib_VFileMessage.prototype.stack = ''
-node_modules_vfile_message_lib_VFileMessage.prototype.fatal = null
-node_modules_vfile_message_lib_VFileMessage.prototype.column = null
-node_modules_vfile_message_lib_VFileMessage.prototype.line = null
-node_modules_vfile_message_lib_VFileMessage.prototype.source = null
-node_modules_vfile_message_lib_VFileMessage.prototype.ruleId = null
-node_modules_vfile_message_lib_VFileMessage.prototype.position = null
 
 ;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdx-jsx/lib/factory-tag.js
 /**
@@ -18782,7 +17843,7 @@ function factoryTag(
   /** @type {State} */
 
   function crashEol() {
-    throw new node_modules_vfile_message_lib_VFileMessage(
+    throw new VFileMessage(
       'Unexpected lazy line in container, expected line to be prefixed with `>` when in a block quote, whitespace when in a list, etc',
       self.now(),
       'micromark-extension-mdx-jsx:unexpected-eof'
@@ -18796,7 +17857,7 @@ function factoryTag(
    */
 
   function crash(code, at, expect) {
-    throw new node_modules_vfile_message_lib_VFileMessage(
+    throw new VFileMessage(
       'Unexpected ' +
         (code === null
           ? 'end of file'
@@ -19073,319 +18134,6 @@ function tokenizeBlankLine(effects, ok, nok) {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdxjs-esm/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_point(point) {
-  return micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_index(point && point.line) + ':' + micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_position(pos) {
-  return micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_point(pos && pos.start) + '-' + micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
-;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdxjs-esm/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = micromark_extension_mdxjs_esm_node_modules_unist_util_stringify_position_lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.file = ''
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.name = ''
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.reason = ''
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.message = ''
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.stack = ''
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.fatal = null
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.column = null
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.line = null
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.source = null
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.ruleId = null
-micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage.prototype.position = null
-
 ;// CONCATENATED MODULE: ./node_modules/micromark-extension-mdxjs-esm/lib/syntax.js
 /**
  * @typedef {import('micromark-util-types').Extension} Extension
@@ -19553,7 +18301,7 @@ function mdxjsEsm(options) {
       }
 
       if (result.error) {
-        throw new micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage(
+        throw new VFileMessage(
           'Could not parse import/exports with acorn: ' + String(result.error),
           {
             // @ts-expect-error: hush
@@ -19576,7 +18324,7 @@ function mdxjsEsm(options) {
         const node = result.estree.body[index]
 
         if (!allowedAcornTypes.has(node.type)) {
-          throw new micromark_extension_mdxjs_esm_node_modules_vfile_message_lib_VFileMessage(
+          throw new VFileMessage(
             'Unexpected `' +
               node.type +
               '` in code: only import/exports are supported',
@@ -22577,319 +21325,6 @@ function disallowed(code) {
   )
 }
 
-;// CONCATENATED MODULE: ./node_modules/mdast-util-mdx-jsx/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_point(point) {
-  return mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_index(point && point.line) + ':' + mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_position(pos) {
-  return mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_point(pos && pos.start) + '-' + mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
-;// CONCATENATED MODULE: ./node_modules/mdast-util-mdx-jsx/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.file = ''
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.name = ''
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.reason = ''
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.message = ''
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.stack = ''
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.fatal = null
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.column = null
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.line = null
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.source = null
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.ruleId = null
-mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage.prototype.position = null
-
 ;// CONCATENATED MODULE: ./node_modules/mdast-util-mdx-jsx/node_modules/stringify-entities/lib/core.js
 /**
  * @typedef CoreOptions
@@ -23495,7 +21930,7 @@ function mdxJsxFromMarkdown() {
     const stack = /** @type {Array<Tag>} */ (this.getData('mdxJsxTagStack'))
 
     if (stack.length === 0) {
-      throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+      throw new VFileMessage(
         'Unexpected closing slash `/` in tag, expected an open tag first',
         {start: token.start, end: token.end},
         'mdast-util-mdx-jsx:unexpected-closing-slash'
@@ -23511,7 +21946,7 @@ function mdxJsxFromMarkdown() {
     const tag = /** @type {Tag} */ (this.getData('mdxJsxTag'))
 
     if (tag.close) {
-      throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+      throw new VFileMessage(
         'Unexpected attribute in closing tag, expected the end of the tag',
         {start: token.start, end: token.end},
         'mdast-util-mdx-jsx:unexpected-attribute'
@@ -23527,7 +21962,7 @@ function mdxJsxFromMarkdown() {
     const tag = /** @type {Tag} */ (this.getData('mdxJsxTag'))
 
     if (tag.close) {
-      throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+      throw new VFileMessage(
         'Unexpected self-closing slash `/` in closing tag, expected the end of the tag',
         {start: token.start, end: token.end},
         'mdast-util-mdx-jsx:unexpected-self-closing-slash'
@@ -23690,13 +22125,13 @@ function mdxJsxFromMarkdown() {
     const tail = stack[stack.length - 1]
 
     if (tag.close && tail.name !== tag.name) {
-      throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+      throw new VFileMessage(
         'Unexpected closing tag `' +
           serializeAbbreviatedTag(tag) +
           '`, expected corresponding closing tag for `' +
           serializeAbbreviatedTag(tail) +
           '` (' +
-          mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition(tail) +
+          stringifyPosition(tail) +
           ')',
         {start: token.start, end: token.end},
         'mdast-util-mdx-jsx:end-tag-mismatch'
@@ -23742,11 +22177,11 @@ function mdxJsxFromMarkdown() {
       ? {start: closing.start, end: closing.end}
       : undefined
 
-    throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+    throw new VFileMessage(
       'Expected a closing tag for `' +
         serializeAbbreviatedTag(tag) +
         '` (' +
-        mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition({start: open.start, end: open.end}) +
+        stringifyPosition({start: open.start, end: open.end}) +
         ')' +
         place,
       position,
@@ -23760,17 +22195,17 @@ function mdxJsxFromMarkdown() {
    */
   function onErrorLeftIsTag(a, b) {
     const tag = /** @type {Tag} */ (this.getData('mdxJsxTag'))
-    throw new mdast_util_mdx_jsx_node_modules_vfile_message_lib_VFileMessage(
+    throw new VFileMessage(
       'Expected the closing tag `' +
         serializeAbbreviatedTag(tag) +
         '` either after the end of `' +
         b.type +
         '` (' +
-        mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition(b.end) +
+        stringifyPosition(b.end) +
         ') or another opening tag after the start of `' +
         b.type +
         '` (' +
-        mdast_util_mdx_jsx_node_modules_unist_util_stringify_position_lib_stringifyPosition(b.start) +
+        stringifyPosition(b.start) +
         ')',
       {start: a.start, end: a.end},
       'mdast-util-mdx-jsx:end-tag-mismatch'
@@ -30348,92 +28783,6 @@ function decode($0, $1, $2) {
   return decodeNamedCharacterReference($2) || $0
 }
 
-;// CONCATENATED MODULE: ./node_modules/mdast-util-from-markdown/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_point(point) {
-  return mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_index(point && point.line) + ':' + mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_position(pos) {
-  return mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_point(pos && pos.start) + '-' + mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
 ;// CONCATENATED MODULE: ./node_modules/mdast-util-from-markdown/lib/index.js
 /**
  * @typedef {import('micromark-util-types').Encoding} Encoding
@@ -30808,7 +29157,7 @@ function compiler(options) {
 
     // Figure out `root` position.
     tree.position = {
-      start: mdast_util_from_markdown_lib_point(
+      start: lib_point(
         events.length > 0
           ? events[0][1].start
           : {
@@ -30817,7 +29166,7 @@ function compiler(options) {
               offset: 0
             }
       ),
-      end: mdast_util_from_markdown_lib_point(
+      end: lib_point(
         events.length > 0
           ? events[events.length - 2][1].end
           : {
@@ -31055,7 +29404,7 @@ function compiler(options) {
     this.tokenStack.push([token, errorHandler])
     // @ts-expect-error: `end` will be patched later.
     node.position = {
-      start: mdast_util_from_markdown_lib_point(token.start)
+      start: lib_point(token.start)
     }
     return node
   }
@@ -31100,7 +29449,7 @@ function compiler(options) {
         'Cannot close `' +
           token.type +
           '` (' +
-          mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_stringifyPosition({
+          stringifyPosition({
             start: token.start,
             end: token.end
           }) +
@@ -31114,7 +29463,7 @@ function compiler(options) {
         handler.call(this, token, open[0])
       }
     }
-    node.position.end = mdast_util_from_markdown_lib_point(token.end)
+    node.position.end = lib_point(token.end)
     return node
   }
 
@@ -31285,7 +29634,7 @@ function compiler(options) {
       tail = text()
       // @ts-expect-error: we’ll add `end` later.
       tail.position = {
-        start: mdast_util_from_markdown_lib_point(token.start)
+        start: lib_point(token.start)
       }
       // @ts-expect-error: Assume `parent` accepts `text`.
       node.children.push(tail)
@@ -31301,7 +29650,7 @@ function compiler(options) {
   function onexitdata(token) {
     const tail = this.stack.pop()
     tail.value += this.sliceSerialize(token)
-    tail.position.end = mdast_util_from_markdown_lib_point(token.end)
+    tail.position.end = lib_point(token.end)
   }
 
   /**
@@ -31314,7 +29663,7 @@ function compiler(options) {
     // If we’re at a hard break, include the line ending in there.
     if (getData('atHardBreak')) {
       const tail = context.children[context.children.length - 1]
-      tail.position.end = mdast_util_from_markdown_lib_point(token.end)
+      tail.position.end = lib_point(token.end)
       setData('atHardBreak')
       return
     }
@@ -31551,7 +29900,7 @@ function compiler(options) {
     }
     const tail = this.stack.pop()
     tail.value += value
-    tail.position.end = mdast_util_from_markdown_lib_point(token.end)
+    tail.position.end = lib_point(token.end)
   }
 
   /**
@@ -31737,7 +30086,7 @@ function compiler(options) {
  * @returns {Point}
  *   unist point.
  */
-function mdast_util_from_markdown_lib_point(d) {
+function lib_point(d) {
   return {
     line: d.line,
     column: d.column,
@@ -31799,14 +30148,14 @@ function defaultOnError(left, right) {
       'Cannot close `' +
         left.type +
         '` (' +
-        mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_stringifyPosition({
+        stringifyPosition({
           start: left.start,
           end: left.end
         }) +
         '): a different token (`' +
         right.type +
         '`, ' +
-        mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_stringifyPosition({
+        stringifyPosition({
           start: right.start,
           end: right.end
         }) +
@@ -31817,7 +30166,7 @@ function defaultOnError(left, right) {
       'Cannot close document, a token (`' +
         right.type +
         '`, ' +
-        mdast_util_from_markdown_node_modules_unist_util_stringify_position_lib_stringifyPosition({
+        stringifyPosition({
           start: right.start,
           end: right.end
         }) +
@@ -32637,7 +30986,7 @@ const pointEnd = unist_util_position_lib_point('end')
  * @returns {Position}
  *   Position.
  */
-function unist_util_position_lib_position(node) {
+function lib_position(node) {
   return {start: pointStart(node), end: pointEnd(node)}
 }
 
@@ -34364,7 +32713,7 @@ function createState(tree, options) {
  *   Nothing.
  */
 function patch(from, to) {
-  if (from.position) to.position = unist_util_position_lib_position(from)
+  if (from.position) to.position = lib_position(from)
 }
 
 /**
@@ -36228,92 +34577,6 @@ function extract_identifiers(param, nodes = []) {
 	return nodes;
 }
 
-;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/node_modules/unist-util-stringify-position/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Point} Point
- * @typedef {import('unist').Position} Position
- */
-
-/**
- * @typedef NodeLike
- * @property {string} type
- * @property {PositionLike | null | undefined} [position]
- *
- * @typedef PositionLike
- * @property {PointLike | null | undefined} [start]
- * @property {PointLike | null | undefined} [end]
- *
- * @typedef PointLike
- * @property {number | null | undefined} [line]
- * @property {number | null | undefined} [column]
- * @property {number | null | undefined} [offset]
- */
-
-/**
- * Serialize the positional info of a point, position (start and end points),
- * or node.
- *
- * @param {Node | NodeLike | Position | PositionLike | Point | PointLike | null | undefined} [value]
- *   Node, position, or point.
- * @returns {string}
- *   Pretty printed positional info of a node (`string`).
- *
- *   In the format of a range `ls:cs-le:ce` (when given `node` or `position`)
- *   or a point `l:c` (when given `point`), where `l` stands for line, `c` for
- *   column, `s` for `start`, and `e` for end.
- *   An empty string (`''`) is returned if the given value is neither `node`,
- *   `position`, nor `point`.
- */
-function mdx_node_modules_unist_util_stringify_position_lib_stringifyPosition(value) {
-  // Nothing.
-  if (!value || typeof value !== 'object') {
-    return ''
-  }
-
-  // Node.
-  if ('position' in value || 'type' in value) {
-    return mdx_node_modules_unist_util_stringify_position_lib_position(value.position)
-  }
-
-  // Position.
-  if ('start' in value || 'end' in value) {
-    return mdx_node_modules_unist_util_stringify_position_lib_position(value)
-  }
-
-  // Point.
-  if ('line' in value || 'column' in value) {
-    return mdx_node_modules_unist_util_stringify_position_lib_point(value)
-  }
-
-  // ?
-  return ''
-}
-
-/**
- * @param {Point | PointLike | null | undefined} point
- * @returns {string}
- */
-function mdx_node_modules_unist_util_stringify_position_lib_point(point) {
-  return mdx_node_modules_unist_util_stringify_position_lib_index(point && point.line) + ':' + mdx_node_modules_unist_util_stringify_position_lib_index(point && point.column)
-}
-
-/**
- * @param {Position | PositionLike | null | undefined} pos
- * @returns {string}
- */
-function mdx_node_modules_unist_util_stringify_position_lib_position(pos) {
-  return mdx_node_modules_unist_util_stringify_position_lib_point(pos && pos.start) + '-' + mdx_node_modules_unist_util_stringify_position_lib_point(pos && pos.end)
-}
-
-/**
- * @param {number | null | undefined} value
- * @returns {number}
- */
-function mdx_node_modules_unist_util_stringify_position_lib_index(value) {
-  return value && typeof value === 'number' ? value : 1
-}
-
 ;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/lib/util/estree-util-declaration-to-expression.js
 /**
  * @typedef {import('estree-jsx').Declaration} Declaration
@@ -36519,7 +34782,7 @@ function recmaDocument(options) {
         if (layout) {
           file.fail(
             'Cannot specify multiple layouts (previous: ' +
-              mdx_node_modules_unist_util_stringify_position_lib_stringifyPosition(positionFromEstree(layout)) +
+              stringifyPosition(positionFromEstree(layout)) +
               ')',
             positionFromEstree(child),
             'recma-document:duplicate-layout'
@@ -36553,7 +34816,7 @@ function recmaDocument(options) {
             if (layout) {
               file.fail(
                 'Cannot specify multiple layouts (previous: ' +
-                  mdx_node_modules_unist_util_stringify_position_lib_stringifyPosition(positionFromEstree(layout)) +
+                  stringifyPosition(positionFromEstree(layout)) +
                   ')',
                 positionFromEstree(child),
                 'recma-document:duplicate-layout'
@@ -37429,7 +35692,7 @@ function recmaJsxRewrite(options) {
           while (++index < references.length) {
             const id = references[index]
             const info = scope.references[id]
-            const place = mdx_node_modules_unist_util_stringify_position_lib_stringifyPosition(positionFromEstree(info.node))
+            const place = stringifyPosition(positionFromEstree(info.node))
             /** @type {Array<Expression>} */
             const parameters = [
               {type: 'Literal', value: id},
@@ -40600,7 +38863,7 @@ const lib_pointEnd = node_modules_unist_util_position_lib_point('end')
  * @returns {Position}
  *   Position.
  */
-function node_modules_unist_util_position_lib_position(node) {
+function unist_util_position_lib_position(node) {
   return {start: lib_pointStart(node), end: lib_pointEnd(node)}
 }
 
@@ -42174,7 +40437,7 @@ function inherit(from, to) {
  *   Nothing.
  */
 function state_patch(from, to) {
-  const p = node_modules_unist_util_position_lib_position(from)
+  const p = unist_util_position_lib_position(from)
 
   if (
     p.start.line &&
@@ -42712,794 +40975,6 @@ function core_createProcessor(options) {
   return pipeline
 }
 
-;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/node_modules/vfile-message/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {object & {type: string, position?: Position | undefined}} NodeLike
- */
-
-
-
-/**
- * Message.
- */
-class mdx_node_modules_vfile_message_lib_VFileMessage extends Error {
-  /**
-   * Create a message for `reason` at `place` from `origin`.
-   *
-   * When an error is passed in as `reason`, the `stack` is copied.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   *
-   *   > 👉 **Note**: you should use markdown.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns
-   *   Instance of `VFileMessage`.
-   */
-  // To do: next major: expose `undefined` everywhere instead of `null`.
-  constructor(reason, place, origin) {
-    /** @type {[string | null, string | null]} */
-    const parts = [null, null]
-    /** @type {Position} */
-    let position = {
-      // @ts-expect-error: we always follows the structure of `position`.
-      start: {line: null, column: null},
-      // @ts-expect-error: "
-      end: {line: null, column: null}
-    }
-
-    super()
-
-    if (typeof place === 'string') {
-      origin = place
-      place = undefined
-    }
-
-    if (typeof origin === 'string') {
-      const index = origin.indexOf(':')
-
-      if (index === -1) {
-        parts[1] = origin
-      } else {
-        parts[0] = origin.slice(0, index)
-        parts[1] = origin.slice(index + 1)
-      }
-    }
-
-    if (place) {
-      // Node.
-      if ('type' in place || 'position' in place) {
-        if (place.position) {
-          // To do: next major: deep clone.
-          // @ts-expect-error: looks like a position.
-          position = place.position
-        }
-      }
-      // Position.
-      else if ('start' in place || 'end' in place) {
-        // @ts-expect-error: looks like a position.
-        // To do: next major: deep clone.
-        position = place
-      }
-      // Point.
-      else if ('line' in place || 'column' in place) {
-        // To do: next major: deep clone.
-        position.start = place
-      }
-    }
-
-    // Fields from `Error`.
-    /**
-     * Serialized positional info of error.
-     *
-     * On normal errors, this would be something like `ParseError`, buit in
-     * `VFile` messages we use this space to show where an error happened.
-     */
-    this.name = mdx_node_modules_unist_util_stringify_position_lib_stringifyPosition(place) || '1:1'
-
-    /**
-     * Reason for message.
-     *
-     * @type {string}
-     */
-    this.message = typeof reason === 'object' ? reason.message : reason
-
-    /**
-     * Stack of message.
-     *
-     * This is used by normal errors to show where something happened in
-     * programming code, irrelevant for `VFile` messages,
-     *
-     * @type {string}
-     */
-    this.stack = ''
-
-    if (typeof reason === 'object' && reason.stack) {
-      this.stack = reason.stack
-    }
-
-    /**
-     * Reason for message.
-     *
-     * > 👉 **Note**: you should use markdown.
-     *
-     * @type {string}
-     */
-    this.reason = this.message
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * State of problem.
-     *
-     * * `true` — marks associated file as no longer processable (error)
-     * * `false` — necessitates a (potential) change (warning)
-     * * `null | undefined` — for things that might not need changing (info)
-     *
-     * @type {boolean | null | undefined}
-     */
-    this.fatal
-
-    /**
-     * Starting line of error.
-     *
-     * @type {number | null}
-     */
-    this.line = position.start.line
-
-    /**
-     * Starting column of error.
-     *
-     * @type {number | null}
-     */
-    this.column = position.start.column
-
-    /**
-     * Full unist position.
-     *
-     * @type {Position | null}
-     */
-    this.position = position
-
-    /**
-     * Namespace of message (example: `'my-package'`).
-     *
-     * @type {string | null}
-     */
-    this.source = parts[0]
-
-    /**
-     * Category of message (example: `'my-rule'`).
-     *
-     * @type {string | null}
-     */
-    this.ruleId = parts[1]
-
-    /**
-     * Path of a file (used throughout the `VFile` ecosystem).
-     *
-     * @type {string | null}
-     */
-    this.file
-
-    // The following fields are “well known”.
-    // Not standard.
-    // Feel free to add other non-standard fields to your messages.
-
-    /**
-     * Specify the source value that’s being reported, which is deemed
-     * incorrect.
-     *
-     * @type {string | null}
-     */
-    this.actual
-
-    /**
-     * Suggest acceptable values that can be used instead of `actual`.
-     *
-     * @type {Array<string> | null}
-     */
-    this.expected
-
-    /**
-     * Link to docs for the message.
-     *
-     * > 👉 **Note**: this must be an absolute URL that can be passed as `x`
-     * > to `new URL(x)`.
-     *
-     * @type {string | null}
-     */
-    this.url
-
-    /**
-     * Long form description of the message (you should use markdown).
-     *
-     * @type {string | null}
-     */
-    this.note
-    /* eslint-enable no-unused-expressions */
-  }
-}
-
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.file = ''
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.name = ''
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.reason = ''
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.message = ''
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.stack = ''
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.fatal = null
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.column = null
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.line = null
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.source = null
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.ruleId = null
-mdx_node_modules_vfile_message_lib_VFileMessage.prototype.position = null
-
-;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/node_modules/vfile/lib/minurl.shared.js
-/**
- * @typedef URL
- * @property {string} hash
- * @property {string} host
- * @property {string} hostname
- * @property {string} href
- * @property {string} origin
- * @property {string} password
- * @property {string} pathname
- * @property {string} port
- * @property {string} protocol
- * @property {string} search
- * @property {any} searchParams
- * @property {string} username
- * @property {() => string} toString
- * @property {() => string} toJSON
- */
-
-/**
- * Check if `fileUrlOrPath` looks like a URL.
- *
- * @param {unknown} fileUrlOrPath
- *   File path or URL.
- * @returns {fileUrlOrPath is URL}
- *   Whether it’s a URL.
- */
-// From: <https://github.com/nodejs/node/blob/fcf8ba4/lib/internal/url.js#L1501>
-function minurl_shared_isUrl(fileUrlOrPath) {
-  return (
-    fileUrlOrPath !== null &&
-    typeof fileUrlOrPath === 'object' &&
-    // @ts-expect-error: indexable.
-    fileUrlOrPath.href &&
-    // @ts-expect-error: indexable.
-    fileUrlOrPath.origin
-  )
-}
-
-;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/node_modules/vfile/lib/index.js
-/**
- * @typedef {import('unist').Node} Node
- * @typedef {import('unist').Position} Position
- * @typedef {import('unist').Point} Point
- * @typedef {import('./minurl.shared.js').URL} URL
- * @typedef {import('../index.js').Data} Data
- * @typedef {import('../index.js').Value} Value
- */
-
-/**
- * @typedef {Record<string, unknown> & {type: string, position?: Position | undefined}} NodeLike
- *
- * @typedef {'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' | 'ucs-2' | 'base64' | 'base64url' | 'latin1' | 'binary' | 'hex'} BufferEncoding
- *   Encodings supported by the buffer class.
- *
- *   This is a copy of the types from Node, copied to prevent Node globals from
- *   being needed.
- *   Copied from: <https://github.com/DefinitelyTyped/DefinitelyTyped/blob/90a4ec8/types/node/buffer.d.ts#L170>
- *
- * @typedef {Options | URL | Value | VFile} Compatible
- *   Things that can be passed to the constructor.
- *
- * @typedef VFileCoreOptions
- *   Set multiple values.
- * @property {Value | null | undefined} [value]
- *   Set `value`.
- * @property {string | null | undefined} [cwd]
- *   Set `cwd`.
- * @property {Array<string> | null | undefined} [history]
- *   Set `history`.
- * @property {URL | string | null | undefined} [path]
- *   Set `path`.
- * @property {string | null | undefined} [basename]
- *   Set `basename`.
- * @property {string | null | undefined} [stem]
- *   Set `stem`.
- * @property {string | null | undefined} [extname]
- *   Set `extname`.
- * @property {string | null | undefined} [dirname]
- *   Set `dirname`.
- * @property {Data | null | undefined} [data]
- *   Set `data`.
- *
- * @typedef Map
- *   Raw source map.
- *
- *   See:
- *   <https://github.com/mozilla/source-map/blob/58819f0/source-map.d.ts#L15-L23>.
- * @property {number} version
- *   Which version of the source map spec this map is following.
- * @property {Array<string>} sources
- *   An array of URLs to the original source files.
- * @property {Array<string>} names
- *   An array of identifiers which can be referenced by individual mappings.
- * @property {string | undefined} [sourceRoot]
- *   The URL root from which all sources are relative.
- * @property {Array<string> | undefined} [sourcesContent]
- *   An array of contents of the original source files.
- * @property {string} mappings
- *   A string of base64 VLQs which contain the actual mappings.
- * @property {string} file
- *   The generated file this source map is associated with.
- *
- * @typedef {{[key: string]: unknown} & VFileCoreOptions} Options
- *   Configuration.
- *
- *   A bunch of keys that will be shallow copied over to the new file.
- *
- * @typedef {Record<string, unknown>} ReporterSettings
- *   Configuration for reporters.
- */
-
-/**
- * @template {ReporterSettings} Settings
- *   Options type.
- * @callback Reporter
- *   Type for a reporter.
- * @param {Array<VFile>} files
- *   Files to report.
- * @param {Settings} options
- *   Configuration.
- * @returns {string}
- *   Report.
- */
-
-
-
-
-
-
-
-/**
- * Order of setting (least specific to most), we need this because otherwise
- * `{stem: 'a', path: '~/b.js'}` would throw, as a path is needed before a
- * stem can be set.
- *
- * @type {Array<'basename' | 'dirname' | 'extname' | 'history' | 'path' | 'stem'>}
- */
-const lib_order = ['history', 'path', 'basename', 'stem', 'extname', 'dirname']
-
-class lib_VFile {
-  /**
-   * Create a new virtual file.
-   *
-   * `options` is treated as:
-   *
-   * *   `string` or `Buffer` — `{value: options}`
-   * *   `URL` — `{path: options}`
-   * *   `VFile` — shallow copies its data over to the new file
-   * *   `object` — all fields are shallow copied over to the new file
-   *
-   * Path related fields are set in the following order (least specific to
-   * most specific): `history`, `path`, `basename`, `stem`, `extname`,
-   * `dirname`.
-   *
-   * You cannot set `dirname` or `extname` without setting either `history`,
-   * `path`, `basename`, or `stem` too.
-   *
-   * @param {Compatible | null | undefined} [value]
-   *   File value.
-   * @returns
-   *   New instance.
-   */
-  constructor(value) {
-    /** @type {Options | VFile} */
-    let options
-
-    if (!value) {
-      options = {}
-    } else if (typeof value === 'string' || lib_buffer(value)) {
-      options = {value}
-    } else if (minurl_shared_isUrl(value)) {
-      options = {path: value}
-    } else {
-      options = value
-    }
-
-    /**
-     * Place to store custom information (default: `{}`).
-     *
-     * It’s OK to store custom data directly on the file but moving it to
-     * `data` is recommended.
-     *
-     * @type {Data}
-     */
-    this.data = {}
-
-    /**
-     * List of messages associated with the file.
-     *
-     * @type {Array<VFileMessage>}
-     */
-    this.messages = []
-
-    /**
-     * List of filepaths the file moved between.
-     *
-     * The first is the original path and the last is the current path.
-     *
-     * @type {Array<string>}
-     */
-    this.history = []
-
-    /**
-     * Base of `path` (default: `process.cwd()` or `'/'` in browsers).
-     *
-     * @type {string}
-     */
-    this.cwd = external_process_namespaceObject.cwd()
-
-    /* eslint-disable no-unused-expressions */
-    /**
-     * Raw value.
-     *
-     * @type {Value}
-     */
-    this.value
-
-    // The below are non-standard, they are “well-known”.
-    // As in, used in several tools.
-
-    /**
-     * Whether a file was saved to disk.
-     *
-     * This is used by vfile reporters.
-     *
-     * @type {boolean}
-     */
-    this.stored
-
-    /**
-     * Custom, non-string, compiled, representation.
-     *
-     * This is used by unified to store non-string results.
-     * One example is when turning markdown into React nodes.
-     *
-     * @type {unknown}
-     */
-    this.result
-
-    /**
-     * Source map.
-     *
-     * This type is equivalent to the `RawSourceMap` type from the `source-map`
-     * module.
-     *
-     * @type {Map | null | undefined}
-     */
-    this.map
-    /* eslint-enable no-unused-expressions */
-
-    // Set path related properties in the correct order.
-    let index = -1
-
-    while (++index < lib_order.length) {
-      const prop = lib_order[index]
-
-      // Note: we specifically use `in` instead of `hasOwnProperty` to accept
-      // `vfile`s too.
-      if (
-        prop in options &&
-        options[prop] !== undefined &&
-        options[prop] !== null
-      ) {
-        // @ts-expect-error: TS doesn’t understand basic reality.
-        this[prop] = prop === 'history' ? [...options[prop]] : options[prop]
-      }
-    }
-
-    /** @type {string} */
-    let prop
-
-    // Set non-path related properties.
-    for (prop in options) {
-      // @ts-expect-error: fine to set other things.
-      if (!lib_order.includes(prop)) {
-        // @ts-expect-error: fine to set other things.
-        this[prop] = options[prop]
-      }
-    }
-  }
-
-  /**
-   * Get the full path (example: `'~/index.min.js'`).
-   *
-   * @returns {string}
-   */
-  get path() {
-    return this.history[this.history.length - 1]
-  }
-
-  /**
-   * Set the full path (example: `'~/index.min.js'`).
-   *
-   * Cannot be nullified.
-   * You can set a file URL (a `URL` object with a `file:` protocol) which will
-   * be turned into a path with `url.fileURLToPath`.
-   *
-   * @param {string | URL} path
-   */
-  set path(path) {
-    if (minurl_shared_isUrl(path)) {
-      path = (0,external_url_namespaceObject.fileURLToPath)(path)
-    }
-
-    lib_assertNonEmpty(path, 'path')
-
-    if (this.path !== path) {
-      this.history.push(path)
-    }
-  }
-
-  /**
-   * Get the parent path (example: `'~'`).
-   */
-  get dirname() {
-    return typeof this.path === 'string' ? external_path_namespaceObject.dirname(this.path) : undefined
-  }
-
-  /**
-   * Set the parent path (example: `'~'`).
-   *
-   * Cannot be set if there’s no `path` yet.
-   */
-  set dirname(dirname) {
-    lib_assertPath(this.basename, 'dirname')
-    this.path = external_path_namespaceObject.join(dirname || '', this.basename)
-  }
-
-  /**
-   * Get the basename (including extname) (example: `'index.min.js'`).
-   */
-  get basename() {
-    return typeof this.path === 'string' ? external_path_namespaceObject.basename(this.path) : undefined
-  }
-
-  /**
-   * Set basename (including extname) (`'index.min.js'`).
-   *
-   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
-   * on windows).
-   * Cannot be nullified (use `file.path = file.dirname` instead).
-   */
-  set basename(basename) {
-    lib_assertNonEmpty(basename, 'basename')
-    lib_assertPart(basename, 'basename')
-    this.path = external_path_namespaceObject.join(this.dirname || '', basename)
-  }
-
-  /**
-   * Get the extname (including dot) (example: `'.js'`).
-   */
-  get extname() {
-    return typeof this.path === 'string' ? external_path_namespaceObject.extname(this.path) : undefined
-  }
-
-  /**
-   * Set the extname (including dot) (example: `'.js'`).
-   *
-   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
-   * on windows).
-   * Cannot be set if there’s no `path` yet.
-   */
-  set extname(extname) {
-    lib_assertPart(extname, 'extname')
-    lib_assertPath(this.dirname, 'extname')
-
-    if (extname) {
-      if (extname.charCodeAt(0) !== 46 /* `.` */) {
-        throw new Error('`extname` must start with `.`')
-      }
-
-      if (extname.includes('.', 1)) {
-        throw new Error('`extname` cannot contain multiple dots')
-      }
-    }
-
-    this.path = external_path_namespaceObject.join(this.dirname, this.stem + (extname || ''))
-  }
-
-  /**
-   * Get the stem (basename w/o extname) (example: `'index.min'`).
-   */
-  get stem() {
-    return typeof this.path === 'string'
-      ? external_path_namespaceObject.basename(this.path, this.extname)
-      : undefined
-  }
-
-  /**
-   * Set the stem (basename w/o extname) (example: `'index.min'`).
-   *
-   * Cannot contain path separators (`'/'` on unix, macOS, and browsers, `'\'`
-   * on windows).
-   * Cannot be nullified (use `file.path = file.dirname` instead).
-   */
-  set stem(stem) {
-    lib_assertNonEmpty(stem, 'stem')
-    lib_assertPart(stem, 'stem')
-    this.path = external_path_namespaceObject.join(this.dirname || '', stem + (this.extname || ''))
-  }
-
-  /**
-   * Serialize the file.
-   *
-   * @param {BufferEncoding | null | undefined} [encoding='utf8']
-   *   Character encoding to understand `value` as when it’s a `Buffer`
-   *   (default: `'utf8'`).
-   * @returns {string}
-   *   Serialized file.
-   */
-  toString(encoding) {
-    return (this.value || '').toString(encoding || undefined)
-  }
-
-  /**
-   * Create a warning message associated with the file.
-   *
-   * Its `fatal` is set to `false` and `file` is set to the current file path.
-   * Its added to `file.messages`.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns {VFileMessage}
-   *   Message.
-   */
-  message(reason, place, origin) {
-    const message = new mdx_node_modules_vfile_message_lib_VFileMessage(reason, place, origin)
-
-    if (this.path) {
-      message.name = this.path + ':' + message.name
-      message.file = this.path
-    }
-
-    message.fatal = false
-
-    this.messages.push(message)
-
-    return message
-  }
-
-  /**
-   * Create an info message associated with the file.
-   *
-   * Its `fatal` is set to `null` and `file` is set to the current file path.
-   * Its added to `file.messages`.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns {VFileMessage}
-   *   Message.
-   */
-  info(reason, place, origin) {
-    const message = this.message(reason, place, origin)
-
-    message.fatal = null
-
-    return message
-  }
-
-  /**
-   * Create a fatal error associated with the file.
-   *
-   * Its `fatal` is set to `true` and `file` is set to the current file path.
-   * Its added to `file.messages`.
-   *
-   * > 👉 **Note**: a fatal error means that a file is no longer processable.
-   *
-   * @param {string | Error | VFileMessage} reason
-   *   Reason for message, uses the stack and message of the error if given.
-   * @param {Node | NodeLike | Position | Point | null | undefined} [place]
-   *   Place in file where the message occurred.
-   * @param {string | null | undefined} [origin]
-   *   Place in code where the message originates (example:
-   *   `'my-package:my-rule'` or `'my-rule'`).
-   * @returns {never}
-   *   Message.
-   * @throws {VFileMessage}
-   *   Message.
-   */
-  fail(reason, place, origin) {
-    const message = this.message(reason, place, origin)
-
-    message.fatal = true
-
-    throw message
-  }
-}
-
-/**
- * Assert that `part` is not a path (as in, does not contain `path.sep`).
- *
- * @param {string | null | undefined} part
- *   File path part.
- * @param {string} name
- *   Part name.
- * @returns {void}
- *   Nothing.
- */
-function lib_assertPart(part, name) {
-  if (part && part.includes(external_path_namespaceObject.sep)) {
-    throw new Error(
-      '`' + name + '` cannot be a path: did not expect `' + external_path_namespaceObject.sep + '`'
-    )
-  }
-}
-
-/**
- * Assert that `part` is not empty.
- *
- * @param {string | undefined} part
- *   Thing.
- * @param {string} name
- *   Part name.
- * @returns {asserts part is string}
- *   Nothing.
- */
-function lib_assertNonEmpty(part, name) {
-  if (!part) {
-    throw new Error('`' + name + '` cannot be empty')
-  }
-}
-
-/**
- * Assert `path` exists.
- *
- * @param {string | undefined} path
- *   Path.
- * @param {string} name
- *   Dependency name.
- * @returns {asserts path is string}
- *   Nothing.
- */
-function lib_assertPath(path, name) {
-  if (!path) {
-    throw new Error('Setting `' + name + '` requires `path` to be set too')
-  }
-}
-
-/**
- * Assert `value` is a buffer.
- *
- * @param {unknown} value
- *   thing.
- * @returns {value is Buffer}
- *   Whether `value` is a Node.js buffer.
- */
-function lib_buffer(value) {
-  return is_buffer(value)
-}
-
 // EXTERNAL MODULE: ./node_modules/markdown-extensions/index.js
 var markdown_extensions = __webpack_require__(24);
 ;// CONCATENATED MODULE: ./node_modules/@mdx-js/mdx/lib/util/extnames.js
@@ -43531,7 +41006,7 @@ const md = markdown_extensions.map((/** @type {string} */ d) => '.' + d)
 function resolve_file_and_options_resolveFileAndOptions(vfileCompatible, options) {
   const file = resolve_file_and_options_looksLikeAVFile(vfileCompatible)
     ? vfileCompatible
-    : new lib_VFile(vfileCompatible)
+    : new VFile(vfileCompatible)
   const {format, ...rest} = options || {}
   return {
     file,
@@ -46597,6 +44072,7 @@ const remark = unified().use(remark_parse).use(remark_stringify).freeze()
 
 
 
+
 /* eslint-disable no-param-reassign */
 __webpack_require__(787);
 const unimplemented = src_default()('mdx:unimplemented');
@@ -46606,15 +44082,25 @@ const react = (text, opts = {}) => {
     return Tree;
 };
 const index_compile = (text, opts = {}) => {
-    const code = compileSync(text, {
-        outputFormat: 'function-body',
-        development: false,
-    });
-    return code;
+    try {
+        const code = compileSync(text, {
+            outputFormat: 'function-body',
+            development: false,
+        });
+        return code;
+    }
+    catch (e) {
+        return new VFile();
+    }
 };
 const index_run = (code, opts = {}) => {
-    const { default: Tree } = runSync(code, Object.assign({}, jsx_runtime_namespaceObject));
-    return Tree;
+    try {
+        const { default: Tree } = runSync(code, Object.assign({}, jsx_runtime_namespaceObject));
+        return Tree;
+    }
+    catch (e) {
+        return null;
+    }
 };
 const reactToc = (text, opts = {}) => {
     unimplemented('reactToc export');
@@ -46626,7 +44112,12 @@ const index_html = (text, opts = {}) => {
     unimplemented('html export');
 };
 const mdast = (text, opts = {}) => {
-    return remark().use(remarkMdx).parse(text);
+    try {
+        return remark().use(remarkMdx).parse(text);
+    }
+    catch (e) {
+        return { type: 'root', children: [] };
+    }
 };
 const hast = (text, opts = {}) => {
     unimplemented('hast export');

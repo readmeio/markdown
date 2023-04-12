@@ -3,7 +3,7 @@ import * as MDX from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
-import { VFile } from '@mdx-js/mdx/lib/compile';
+import { VFile } from 'vfile';
 
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
@@ -18,17 +18,25 @@ export const react = (text: string, opts = {}) => {
 };
 
 export const compile = (text: string, opts = {}): VFile => {
-  const code = MDX.compileSync(text, {
-    outputFormat: 'function-body',
-    development: false,
-  });
+  try {
+    const code = MDX.compileSync(text, {
+      outputFormat: 'function-body',
+      development: false,
+    });
 
-  return code;
+    return code;
+  } catch (e) {
+    return new VFile();
+  }
 };
 
 export const run = (code: VFile | string, opts = {}) => {
-  const { default: Tree } = MDX.runSync(code, { ...runtime });
-  return Tree;
+  try {
+    const { default: Tree } = MDX.runSync(code, { ...runtime });
+    return Tree;
+  } catch (e) {
+    return null;
+  }
 };
 
 export const reactToc = (text: string, opts = {}) => {
@@ -44,7 +52,11 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast = (text: string, opts = {}) => {
-  return remark().use(remarkMdx).parse(text);
+  try {
+    return remark().use(remarkMdx).parse(text);
+  } catch (e) {
+    return { type: 'root', children: [] };
+  }
 };
 
 export const hast = (text: string, opts = {}) => {
