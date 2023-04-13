@@ -28,7 +28,8 @@
   "dependencies": {
     "@mdx-js/mdx": "^2.3.0",
     "remark": "^14.0.2",
-    "remark-mdx": "^2.3.0"
+    "remark-mdx": "^2.3.0",
+    "vfile": "^5.3.7"
   },
   "peerDependencies": {
     "@readme/variable": "^15.1.0",
