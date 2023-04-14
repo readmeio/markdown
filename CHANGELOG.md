@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.0
+
+### ✨ New & Improved
+
+* allow colgroup + col ([#738](https://github.com/readmeio/markdown/issues/738)) ([9e1bd0d](https://github.com/readmeio/markdown/commit/9e1bd0d8f4bc95303583481b6d9bb3d9fdb28e80))
+
 ## Version 6.61.1
 
 ### 🛠 Fixes & Updates
