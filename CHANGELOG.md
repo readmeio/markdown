@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.61.1
+
+### 🛠 Fixes & Updates
+
+* centering in firefox ([#721](https://github.com/readmeio/markdown/issues/721)) ([6a62281](https://github.com/readmeio/markdown/commit/6a62281827dd47e5fb0677232565b05e8e3d535e))
+* **image:** force SVG dimensions in lightbox ([#734](https://github.com/readmeio/markdown/issues/734)) ([71fc4e5](https://github.com/readmeio/markdown/commit/71fc4e5033326a2a47772366d7fe4501f7b191df))
+
 ## Version 6.61.0
 
 ### ✨ New & Improved
