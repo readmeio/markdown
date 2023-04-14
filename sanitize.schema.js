@@ -37,6 +37,9 @@ const createSchema = ({ safeMode } = {}) => {
   schema.tagNames.push('input'); // allow GitHub-style todo lists
   schema.ancestors.input = ['li'];
 
+  schema.tagNames.push('colgroup'); // wat
+  schema.tagNames.push('col');
+
   return schema;
 };
 
