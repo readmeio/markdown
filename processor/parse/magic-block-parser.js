@@ -31,11 +31,11 @@ const imgSizeByWidth = new Proxy(new Map(Array.from(imgSizeValues).reverse()), {
 
 function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
   return function (eat, value) {
+    // eslint-disable-next-line prefer-const
     let [match, type, json] = RGXP.exec(value) || [];
 
     if (!type) return;
 
-    match = match.trim();
     type = type.trim();
 
     try {
