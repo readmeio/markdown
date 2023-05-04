@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.1
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump @readme/syntax-highlighter ([#746](https://github.com/readmeio/markdown/issues/746)) ([24a4986](https://github.com/readmeio/markdown/commit/24a49864d459cc97706f7d5746a7e1bac6344c83))
+
 ## Version 6.62.0
 
 ### ✨ New & Improved
