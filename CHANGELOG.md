@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.2
+
+### 🛠 Fixes & Updates
+
+* **deps:** bumping syntax-highlighter ([#751](https://github.com/readmeio/markdown/issues/751)) ([f801658](https://github.com/readmeio/markdown/commit/f8016585b149884552e680ce67df572520f08041))
+
 ## Version 6.62.1
 
 ### 🛠 Fixes & Updates
