@@ -79,7 +79,7 @@
   }
 
   hr {
-    @include _clearfix;
+    @include clearfix;
 
     background: transparent;
     border-bottom: 1px solid var(--markdown-edge, #dfe2e5);
