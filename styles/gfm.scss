@@ -1,19 +1,22 @@
+/* stylelint-disable no-duplicate-selectors */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-block-no-duplicate-properties */
+/* stylelint-disable custom-property-pattern */
+/* stylelint-disable scss/selector-no-redundant-nesting-selector */
 @mixin gfm {
-  @include markdownDefaults;
-  @include markdownOverrides;
+  @include markdown-defaults;
+  @include markdown-overrides;
 }
 
-@mixin markdownDefaults {
-  & {
-    -ms-text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%;
-    position: relative;
-    font-family: var(--markdown-font);
-    line-height: var(--markdown-line-height);
-    color: var(--markdown-text);
-    word-wrap: break-word;
-    @include _clearfix();
-  }
+@mixin markdown-defaults {
+  @include clearfix;
+
+  color: var(--markdown-text);
+  font-family: var(--markdown-font);
+  line-height: var(--markdown-line-height);
+  position: relative;
+  text-size-adjust: 100%;
+  word-wrap: break-word;
 
   ul {
     list-style: initial;
@@ -76,17 +79,15 @@
   }
 
   hr {
-    box-sizing: content-box;
+    @include clearfix;
 
-    height: 0;
-    overflow: hidden;
-    margin: 15px 0;
-
-    border-width: 0 0 1px;
-    border-bottom: 1px solid var(--markdown-edge, #dfe2e5);
     background: transparent;
-
-    @include _clearfix();
+    border-bottom: 1px solid var(--markdown-edge, #dfe2e5);
+    border-width: 0 0 1px;
+    box-sizing: content-box;
+    height: 0;
+    margin: 15px 0;
+    overflow: hidden;
   }
 
   input {
@@ -127,13 +128,13 @@
   h4,
   h5,
   h6 {
-    line-height: 1.25;
     color: var(--markdown-title);
     font-family: var(--markdown-title-font);
     font-size: var(--markdown-title-size);
     font-weight: var(--markdown-title-weight, 600);
-    margin-top: var(--markdown-title-marginTop, 1em);
+    line-height: 1.25;
     margin-bottom: var(--markdown-title-marginBottom, 1rem);
+    margin-top: var(--markdown-title-marginTop, 1em);
   }
 
   h1 {
@@ -184,9 +185,9 @@
   }
 
   h6 {
+    color: var(--markdown-title, #6a737d);
     font-size: 0.85em;
     font-size: var(--markdown-title-size, 0.85em);
-    color: var(--markdown-title, #6a737d);
   }
 
   p,
@@ -224,7 +225,7 @@
 
   input::-webkit-inner-spin-button,
   input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
+    appearance: none;
     appearance: none;
     margin: 0;
   }
@@ -244,14 +245,14 @@
   pre,
   table,
   ul {
-    margin-top: 0;
     margin-bottom: 15px;
+    margin-top: 0;
   }
 
   blockquote {
-    display: block;
     border-left: 0.25em solid #dfe2e5;
     color: #6a737d;
+    display: block;
     padding: 0 1em;
   }
 
@@ -329,7 +330,7 @@
   }
 }
 
-@mixin markdownOverrides {
+@mixin markdown-overrides {
   h5,
   h6 {
     font-size: 0.9em;
@@ -341,8 +342,8 @@
   }
 
   > * {
-    margin-top: 15px;
     margin-bottom: 15px !important;
+    margin-top: 15px;
   }
 
   .task-list-item input {
@@ -355,13 +356,14 @@
   }
 }
 
-@mixin _clearfix() {
-  &:before,
-  &:after {
+@mixin clearfix() {
+  &::before,
+  &::after {
     content: '';
     display: table;
   }
-  &:after {
+
+  &::after {
     clear: both;
   }
 }

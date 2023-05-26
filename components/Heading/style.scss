@@ -1,36 +1,42 @@
 .heading.heading {
+  align-items: center;
   display: flex;
   justify-content: flex-start;
-  align-items: center;
   position: relative;
+
   .heading-text {
     flex: 1 100%;
   }
+
   .heading-anchor-deprecated {
     position: absolute;
     top: 0;
   }
+
   .heading-anchor {
     top: -1rem !important;
   }
+
   .heading-anchor,
   .heading-anchor-icon {
-    position: absolute !important;
-    display: inline !important;
-    order: -1;
-    right: 100%;
-    top: unset !important;
-    margin-right: -.8rem;
-    padding: .8rem .2rem .8rem 0 !important;
-    font-size: .8rem !important;
-    text-decoration: none;
     color: inherit;
+    display: inline !important;
+    font-size: 0.8rem !important;
+    margin-right: -0.8rem;
+    order: -1;
+    padding: 0.8rem 0.2rem 0.8rem 0 !important;
+    position: absolute !important;
+    right: 100%;
+    text-decoration: none;
+    top: unset !important;
     transform: translateX(-100%);
-    transition: .2s ease;
+    transition: 0.2s ease;
+
     &:hover {
       opacity: 1;
     }
   }
+
   &:not(:hover) .heading-anchor-icon {
     opacity: 0;
   }

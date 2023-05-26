@@ -6,7 +6,7 @@ const Callout = props => {
   const [title, ...content] = !props.title ? [null, props.children] : props.children;
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
+    // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
       <h3 className={`callout-heading${title ? '' : ' empty'}`}>
         <span className="callout-icon">{icon}</span>

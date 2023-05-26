@@ -1,5 +1,5 @@
-@import './gfm.scss';
-@import './components.scss';
+@import './gfm';
+@import './components';
 
 :root {
   // --markdown-radius: 3px;
@@ -15,5 +15,6 @@
 .field-description,
 .markdown-body {
   @include gfm;
+
   font-size: var(--markdown-font-size, 14px);
 }
