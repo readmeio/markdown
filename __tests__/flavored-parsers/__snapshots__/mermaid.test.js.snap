@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Parse Mermaid blocks parses a mermaid block 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "data": Object {
+        "hName": "mermaid",
+        "hProperties": Object {
+          "value": "graph LR
+    A[Will it blend?] -> B[Yes]",
+        },
+      },
+      "type": "mermaid",
+      "value": "graph LR
+    A[Will it blend?] -> B[Yes]",
+    },
+  ],
+  "type": "root",
+}
+`;

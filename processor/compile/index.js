@@ -6,6 +6,7 @@ export { default as figureCompiler } from './figure';
 export { default as htmlBlockCompiler } from './html-block';
 export { default as iconCompiler } from './i';
 export { default as imageCompiler } from './image';
+export { default as mermaidCompiler } from './mermaid';
 export { default as rdmeCalloutCompiler } from './callout';
 export { default as rdmeEmbedCompiler } from './embed';
 export { default as rdmeGlossaryCompiler } from './glossary';

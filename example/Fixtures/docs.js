@@ -8,6 +8,7 @@ import gettingStarted from '../../docs/getting-started.md';
 import headings from '../../docs/headings.md';
 import images from '../../docs/images.md';
 import lists from '../../docs/lists.md';
+import mermaidTests from '../../docs/mermaid-tests.md';
 import sanitizingTests from '../../docs/sanitizing-tests.md';
 import tableOfContentsTests from '../../docs/table-of-contents-tests.md';
 import tablesTests from '../../docs/tables-tests.md';
@@ -27,6 +28,7 @@ const fixtureMap = Object.entries({
   headings,
   images,
   lists,
+  mermaidTests,
   sanitizingTests,
   tableOfContentsTests,
   tables,
