@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.3
+
+### 🛠 Fixes & Updates
+
+* add css semi-colons ([#755](https://github.com/readmeio/markdown/issues/755)) ([70b0328](https://github.com/readmeio/markdown/commit/70b0328d16a8f5067d94ddff6f9af2e97a052caa))
+
 ## Version 6.62.2
 
 ### 🛠 Fixes & Updates
