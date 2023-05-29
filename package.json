@@ -96,7 +96,7 @@
     "jest-environment-jsdom": "^29.2.1",
     "jest-environment-puppeteer": "^6.1.1",
     "jest-image-snapshot": "^5.2.0",
-    "jest-puppeteer": "^6.1.1",
+    "jest-puppeteer": "^9.0.0",
     "mini-css-extract-plugin": "^2.6.1",
     "node-sass": "^7.0.3",
     "postcss": "^8.4.23",
