@@ -48,10 +48,10 @@ class Image extends React.Component {
 
   render() {
     const { props } = this;
-    const { alt, lazy = true } = props;
+    const { alt, lazy = true, ...otherProps } = props;
 
     if (this.isEmoji) {
-      return <img {...props} alt={alt} loading={lazy ? 'lazy' : ''} />;
+      return <img {...otherProps} alt={alt} loading={lazy ? 'lazy' : ''} />;
     }
 
     return (
@@ -64,7 +64,7 @@ class Image extends React.Component {
         tabIndex={0}
       >
         <span className="lightbox-inner">
-          <img {...props} alt={alt} loading={lazy ? 'lazy' : ''} />
+          <img {...otherProps} alt={alt} loading={lazy ? 'lazy' : ''} />
         </span>
       </span>
     );
