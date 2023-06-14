@@ -308,7 +308,7 @@ test('should strip dangerous iframe tag', () => {
 test('should strip dangerous img attributes', () => {
   const { container } = render(markdown.default('<img src="x" onerror="alert(\'charlie\')">'));
   expect(container).toContainHTML(
-    '<span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img align="" alt="" caption="" height="auto" loading="lazy" src="x" title="" width="auto"></span></span>'
+    '<span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img align="" alt="" caption="" height="auto" loading="lazy" src="x" title="" width="auto" /></span></span>'
   );
 });
 
