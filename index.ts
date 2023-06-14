@@ -8,7 +8,33 @@ import { VFile } from 'vfile';
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
+const Variable = require('@readme/variable');
+const generateTOC = require('mdast-util-toc');
+const Components = require('./components');
+const { getHref } = require('./components/Anchor');
+const BaseUrlContext = require('./contexts/BaseUrl');
+const { options } = require('./options');
+const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
+
 const unimplemented = debug('mdx:unimplemented');
+
+const {
+  GlossaryItem,
+} = Components;
+
+export { Components };
+
+export const utils = {
+  get options() {
+    return { ...options };
+  },
+
+  BaseUrlContext,
+  getHref,
+  GlossaryContext: GlossaryItem.GlossaryContext,
+  VariablesContext: Variable.VariablesContext,
+  calloutIcons,
+};
 
 export const react = (text: string, opts = {}) => {
   const code = compile(text, opts);
@@ -39,8 +65,12 @@ export const run = (code: VFile | string, opts = {}) => {
   }
 };
 
-export const reactToc = (text: string, opts = {}) => {
-  unimplemented('reactToc export');
+export const reactTOC = (text: string, opts = {}) => {
+  unimplemented('reactTOC export');
+};
+
+export const reactProcessor = (text: string, opts = {}) => {
+  unimplemented('reactProcessor export');
 };
 
 export const mdx = (tree: Root, opts = {}) => {
