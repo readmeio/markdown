@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.62.4
+
+### 🛠 Fixes & Updates
+
+* **deps-dev:** bump codeql scanner ([#764](https://github.com/readmeio/markdown/issues/764)) ([6fa1d08](https://github.com/readmeio/markdown/commit/6fa1d08a939bcec3f03938d40a69b4f1f22df283))
+* react warning in image component ([#763](https://github.com/readmeio/markdown/issues/763)) ([5683f38](https://github.com/readmeio/markdown/commit/5683f3850a3254947e6e296a416d63fc7970393e))
+* stylelint ([#756](https://github.com/readmeio/markdown/issues/756)) ([0412c1f](https://github.com/readmeio/markdown/commit/0412c1ff57f427aceb7fdf8c660e3658c7973157))
+
 ## Version 6.62.3
 
 ### 🛠 Fixes & Updates
