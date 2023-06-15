@@ -1,10 +1,10 @@
-name: "CodeQL"
+name: 'CodeQL'
 
 on:
   push:
-    branches: [ next ]
+    branches: [next]
   pull_request:
-    branches: [ next ]
+    branches: [next]
   schedule:
     - cron: '0 0 1 * *'
 
@@ -17,19 +17,12 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript' ]
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
-      with:
-        languages: ${{ matrix.language }}
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
