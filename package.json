@@ -107,7 +107,7 @@
     "react-hot-loader": "^4.13.0",
     "regenerator-runtime": "^0.13.10",
     "sass-loader": "^13.1.0",
-    "semantic-release": "^19.0.5",
+    "semantic-release": "^21.0.5",
     "string.prototype.trimend": "^1.0.5",
     "stylelint": "^14.16.1",
     "terser-webpack-plugin": "^5.3.6",
