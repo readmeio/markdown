@@ -1,12 +1,13 @@
 /* stylelint-disable declaration-property-value-disallowed-list */
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable order/order */
+/* stylelint-disable order/properties-alphabetical-order */
 .GlossaryItem {
   &-trigger {
+    border-style: dotted;
     border-bottom: 1px solid #737c83;
     border-left: none;
     border-right: none;
-    border-style: dotted;
     border-top: none;
     cursor: pointer;
   }
