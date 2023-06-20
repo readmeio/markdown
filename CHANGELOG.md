@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.5
+
+### 🛠 Fixes & Updates
+
+* glossary item border styles ([#768](https://github.com/readmeio/markdown/issues/768)) ([423e171](https://github.com/readmeio/markdown/commit/423e1715111d8a9d0a45e8ab1e14ab588238c9ab))
+
 ## Version 6.62.4
 
 ### 🛠 Fixes & Updates
