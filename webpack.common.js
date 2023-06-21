@@ -26,6 +26,15 @@ module.exports = {
         },
       },
       {
+        test: /\.m?js$/,
+        include: /node_modules/,
+        type: 'javascript/auto',
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+
+      {
         test: /\.css$/,
         use: [ExtractCSS.loader, 'css-loader'],
       },

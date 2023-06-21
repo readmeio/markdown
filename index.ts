@@ -18,9 +18,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 
 const unimplemented = debug('mdx:unimplemented');
 
-const {
-  GlossaryItem,
-} = Components;
+const { GlossaryItem } = Components;
 
 export { Components };
 

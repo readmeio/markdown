@@ -34,6 +34,7 @@ const browserConfig = merge(common, {
   },
   resolve: {
     fallback: {
+      fs: false,
       path: require.resolve('path-browserify'),
     },
   },
