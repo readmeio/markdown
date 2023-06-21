@@ -3,6 +3,7 @@ import * as runtime from 'react/jsx-runtime';
 import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
 import { VFile } from 'vfile';
+import * as CustomParsers from "./processor/parse/index.js";
 
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
@@ -31,6 +32,14 @@ export const utils = {
   GlossaryContext: GlossaryItem.GlossaryContext,
   VariablesContext: Variable.VariablesContext,
   calloutIcons,
+};
+
+export const processor = (opts = {}) => {
+  return MDX.createProcessor(opts).use(CustomParsers);
+};
+
+export const reactProcessor = (opts = {}) => {
+  return MDX.createProcessor(opts).use(CustomParsers);
 };
 
 export const react = (text: string, opts = {}) => {
@@ -64,10 +73,6 @@ export const run = (code: VFile | string, opts = {}) => {
 
 export const reactTOC = (text: string, opts = {}) => {
   unimplemented('reactTOC export');
-};
-
-export const reactProcessor = (text: string, opts = {}) => {
-  unimplemented('reactProcessor export');
 };
 
 export const mdx = (tree: Root, opts = {}) => {
