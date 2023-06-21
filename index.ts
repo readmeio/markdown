@@ -1,5 +1,4 @@
 import debug from 'debug';
-import * as MDX from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
@@ -8,8 +7,8 @@ import { VFile } from 'vfile';
 /* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
+const MDX = require('@mdx-js/mdx');
 const Variable = require('@readme/variable');
-const generateTOC = require('mdast-util-toc');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
