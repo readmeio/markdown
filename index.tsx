@@ -1,26 +1,25 @@
+import React from 'react';
 import debug from 'debug';
-import * as MDX from '@mdx-js/mdx';
-import * as runtime from 'react/jsx-runtime';
 import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
-import { VFile } from 'vfile';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 
-/* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
+const MDX = require('@mdx-js/mdx');
+const MDXRuntime = require('@mdx-js/runtime').default;
+
 const Variable = require('@readme/variable');
-const generateTOC = require('mdast-util-toc');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
 const { options } = require('./options');
-const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
+const calloutTransformer = require('./processor/transform/callouts').default;
 
 const unimplemented = debug('mdx:unimplemented');
 
-const {
-  GlossaryItem,
-} = Components;
+const { GlossaryItem } = Components;
 
 export { Components };
 
@@ -33,44 +32,19 @@ export const utils = {
   getHref,
   GlossaryContext: GlossaryItem.GlossaryContext,
   VariablesContext: Variable.VariablesContext,
-  calloutIcons,
+  calloutIcons: {},
+};
+
+export const reactProcessor = (opts = {}) => {
+  return MDX.createCompiler(opts);
 };
 
 export const react = (text: string, opts = {}) => {
-  const code = compile(text, opts);
-  const Tree = run(code, opts);
-
-  return Tree;
-};
-
-export const compile = (text: string, opts = {}): VFile => {
-  try {
-    const code = MDX.compileSync(text, {
-      outputFormat: 'function-body',
-      development: false,
-    });
-
-    return code;
-  } catch (e) {
-    return new VFile();
-  }
-};
-
-export const run = (code: VFile | string, opts = {}) => {
-  try {
-    const { default: Tree } = MDX.runSync(code, { ...runtime });
-    return Tree;
-  } catch (e) {
-    return null;
-  }
+  return <MDXRuntime>{text}</MDXRuntime>;
 };
 
 export const reactTOC = (text: string, opts = {}) => {
   unimplemented('reactTOC export');
-};
-
-export const reactProcessor = (text: string, opts = {}) => {
-  unimplemented('reactProcessor export');
 };
 
 export const mdx = (tree: Root, opts = {}) => {
@@ -82,8 +56,11 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast = (text: string, opts = {}) => {
+  const processor = unified().use(remarkParse).use(calloutTransformer);
+
   try {
-    return remark().use(remarkMdx).parse(text);
+    const tree = processor.parse(text);
+    return processor.runSync(tree);
   } catch (e) {
     return { type: 'root', children: [] };
   }
@@ -101,4 +78,6 @@ export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
 
-export default react;
+const ReadMeMarkdown = (text: string, opts = {}) => react(text, opts);
+
+export default ReadMeMarkdown;

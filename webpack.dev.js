@@ -31,7 +31,9 @@ const config = merge(common, {
       'react-dom': '@hot-loader/react-dom',
     },
     fallback: {
+      fs: require.resolve('browserify-fs'),
       path: require.resolve('path-browserify'),
+      stream: require.resolve('stream-browserify'),
     },
   },
 });
