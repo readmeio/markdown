@@ -4,9 +4,7 @@ import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-//import * as CustomParsers from './processor/parse/index.js';
 
-/* eslint-disable no-param-reassign */
 require('./styles/main.scss');
 
 const MDX = require('@mdx-js/mdx');
@@ -17,7 +15,6 @@ const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
 const { options } = require('./options');
-//const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 const calloutTransformer = require('./processor/transform/callouts').default;
 
 const unimplemented = debug('mdx:unimplemented');
