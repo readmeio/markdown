@@ -16,6 +16,7 @@ import varsTest from '../../docs/variable-tests.md';
 
 const lowerCase = str => str.replaceAll(/([a-z])([A-Z])/g, (_, p1, p2) => `${p1} ${p2.toLowerCase()}`);
 
+console.log(calloutTests);
 const fixtureMap = Object.entries({
   calloutTests,
   callouts,

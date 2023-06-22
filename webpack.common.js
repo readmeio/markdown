@@ -64,10 +64,6 @@ module.exports = {
         test: /\.(txt|md)$/i,
         type: 'asset/source',
       },
-      {
-        test: /\.mdx?$/,
-        use: ['babel-loader', '@mdx-js/loader'],
-      },
     ],
   },
   resolve: {

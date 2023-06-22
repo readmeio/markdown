@@ -7,6 +7,8 @@ import Fixtures from './Fixtures';
 import Header from './Header';
 import Router from './Router';
 
+const MDXRuntime = require('@mdx-js/runtime');
+
 require('./demo.scss');
 
 const { GlossaryContext } = utils;
