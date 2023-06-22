@@ -41,7 +41,7 @@
     "process": "^0.11.10",
     "remark": "^14.0.2",
     "remark-mdx": "^2.3.0",
-    "remark-parse": "^7.0.2",
+    "remark-parse": "^10.0.2",
     "trim": "^1.0.1",
     "vfile": "^5.3.7"
   },
