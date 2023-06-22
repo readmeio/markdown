@@ -1,3 +1,4 @@
+import React from 'react';
 import debug from 'debug';
 import * as runtime from 'react/jsx-runtime';
 import { remark } from 'remark';
@@ -9,6 +10,10 @@ import * as CustomParsers from "./processor/parse/index.js";
 require('./styles/main.scss');
 
 const MDX = require('@mdx-js/mdx');
+const MDXRuntime = require('@mdx-js/runtime');
+import {renderToString} from 'react-dom/server'
+
+
 const Variable = require('@readme/variable');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
@@ -35,41 +40,58 @@ export const utils = {
 };
 
 export const processor = (opts = {}) => {
-  return MDX.createProcessor(opts).use(CustomParsers);
+  return MDX.createCompiler(opts).use(CustomParsers);
 };
 
 export const reactProcessor = (opts = {}) => {
-  return MDX.createProcessor(opts).use(CustomParsers);
+  return MDX.createCompiler(opts).use(CustomParsers);
 };
+
+// export const reactProcessor = (opts = {}) => {
+//   unimplemented('reactProcessor export');
+// };
+
+// export const react = (text: string, opts = {}) => {
+//   const code = compile(text, opts);
+//   const Tree = run(code, opts);
+
+//   return Tree;
+// };
 
 export const react = (text: string, opts = {}) => {
-  const code = compile(text, opts);
-  const Tree = run(code, opts);
-
-  return Tree;
+  return () => (
+    <MDXRuntime>
+      {text}
+    </MDXRuntime> 
+  )
 };
 
-export const compile = (text: string, opts = {}): VFile => {
-  try {
-    const code = MDX.compileSync(text, {
-      outputFormat: 'function-body',
-      development: false,
-    });
+// export const compile = (text: string, opts = {}): string => {
+//   try {
+//     const code = MDX.sync(text, {
+//       outputFormat: 'function-body',
+//       development: false,
+//     });
+//     console.log('code', code)
 
-    return code;
-  } catch (e) {
-    return new VFile();
-  }
-};
+//     return code;
+//   } catch (e) {
+//     console.log('compile', e);
+//     return '';
+//   }
+// };
 
-export const run = (code: VFile | string, opts = {}) => {
-  try {
-    const { default: Tree } = MDX.runSync(code, { ...runtime });
-    return Tree;
-  } catch (e) {
-    return null;
-  }
-};
+// export const run = (code: string | string, opts = {}) => {
+//   try {
+//     const { default: Tree } = MDX.sync(code, { ...runtime });
+//     const { default: Tree } = MDX.createCompiler().run(code)
+//     console.log('Tree', Tree)
+//     return Tree;
+//   } catch (e) {
+//     console.log('run', e)
+//     return null;
+//   }
+// };
 
 export const reactTOC = (text: string, opts = {}) => {
   unimplemented('reactTOC export');
@@ -103,4 +125,6 @@ export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
 
-export default react;
+const ReadMeMarkdown = (text: string, opts = {}) => react(text, opts);
+
+export default ReadMeMarkdown;

@@ -1,11 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies
  */
 const ExtractCSS = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
     }),
   ],
   module: {
@@ -57,9 +64,14 @@ module.exports = {
         test: /\.(txt|md)$/i,
         type: 'asset/source',
       },
+      {
+        test: /\.mdx?$/,
+        use: ['babel-loader', '@mdx-js/loader'],
+      },
     ],
   },
   resolve: {
     extensions: ['.js', '.json', '.jsx', '.ts', '.tsx'],
+    fallback: { buffer: require.resolve('buffer') },
   },
 };
