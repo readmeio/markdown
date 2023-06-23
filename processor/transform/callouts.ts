@@ -2,7 +2,6 @@ import { visit } from 'unist-util-visit';
 import { Node } from 'unist';
 import emojiRegex from 'emoji-regex';
 import { Root } from 'remark-mdx';
-import { VFile } from 'vfile';
 import { Blockquote, BlockContent, Parent, DefinitionContent } from 'mdast';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;

@@ -3,13 +3,13 @@ import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
 import remarkParse from 'remark-parse';
-import { unified } from 'unified';
 
 require('./styles/main.scss');
 
 const MDX = require('@mdx-js/mdx');
 const MDXRuntime = require('@mdx-js/runtime').default;
 
+const unified = require('unified');
 const Variable = require('@readme/variable');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
