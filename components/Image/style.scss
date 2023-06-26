@@ -72,11 +72,7 @@
   }
 
   figure .img {
-    display: inline-block;
-
-    > img:only-of-type {
-      display: block;
-    }
+    display: block;
   }
 
   .lightbox.open {
