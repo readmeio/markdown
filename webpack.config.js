@@ -32,7 +32,12 @@ const browserConfig = merge(common, {
     minimize: false,
     minimizer: [new TerserPlugin()],
   },
-  resolve: {},
+  resolve: {
+    fallback: {
+      fs: false,
+      path: require.resolve('path-browserify'),
+    },
+  },
 });
 
 const serverConfig = merge(browserConfig, {
