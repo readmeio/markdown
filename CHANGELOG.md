@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.62.6
+
+### 🛠 Fixes & Updates
+
+* **image:** center align ([#770](https://github.com/readmeio/markdown/issues/770)) ([06281f8](https://github.com/readmeio/markdown/commit/06281f84e8a0158ca1418b412733c8289aadfdd8))
+
 ## Version 6.62.5
 
 ### 🛠 Fixes & Updates
