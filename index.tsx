@@ -4,7 +4,7 @@ import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
 import remarkParse from 'remark-parse';
 
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundary from './lib/ErrorBoundary';
 
 require('./styles/main.scss');
 
