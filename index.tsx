@@ -4,6 +4,8 @@ import { remark } from 'remark';
 import remarkMdx, { Root } from 'remark-mdx';
 import remarkParse from 'remark-parse';
 
+import ErrorBoundary from './lib/ErrorBoundary';
+
 require('./styles/main.scss');
 
 const MDX = require('@mdx-js/mdx');
@@ -40,7 +42,12 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const react = (text: string, opts = {}) => {
-  return <MDXRuntime>{text}</MDXRuntime>;
+  const Mdx = <MDXRuntime components={{'rdme-callout': Components.Callout}} remarkPlugins={[calloutTransformer]}>{text}</MDXRuntime>
+  return (
+   <ErrorBoundary key={text}>
+      {Mdx}
+   </ErrorBoundary>
+  )
 };
 
 export const reactTOC = (text: string, opts = {}) => {

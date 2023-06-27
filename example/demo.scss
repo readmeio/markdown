@@ -1,5 +1,9 @@
 @import '../styles/main.scss';
 
+#webpack-dev-server-client-overlay {
+  display: none;
+}
+
 #rdmd-demo {
   --rdmd-demo-container: 100vw;
   --rdmd-demo-content-width: 50vw;
