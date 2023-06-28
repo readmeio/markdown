@@ -3,7 +3,6 @@ function tokenizer(eat, value) {
   const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
 
   const [match] = TAB_BLOCK_RGXP.exec(value) || [];
-
   if (!match) return true;
 
   const kids = [];
@@ -49,8 +48,8 @@ function parser() {
   const tokenizers = Parser.prototype.blockTokenizers;
   const methods = Parser.prototype.blockMethods;
 
-  tokenizers.CodeTabs = tokenizer;
-  methods.splice(methods.indexOf('newline'), 0, 'CodeTabs');
+  tokenizers.codeTabs = tokenizer;
+  methods.splice(methods.indexOf('indentedCode') - 1, 0, 'codeTabs');
 }
 
 module.exports = parser;
