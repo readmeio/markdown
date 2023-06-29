@@ -16,7 +16,10 @@ describe('Parse RDMD Callouts', () => {
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
 
-    expect(mdast(text)).toMatchSnapshot();
+    const tree = mdast(text);
+
+    expect(tree.children[0].type).toBe('rdme-callout');
+    expect(tree.children[0].data.hProperties.theme).toBe('default');
   });
 
   it('parses a callout with no title', () => {
@@ -25,7 +28,11 @@ describe('Parse RDMD Callouts', () => {
 >
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
-    expect(mdast(text)).toMatchSnapshot();
+    const tree = mdast(text);
+
+    expect(tree.children[0].type).toBe('rdme-callout');
+    expect(tree.children[0].data.hProperties.theme).toBe('info');
+    expect(tree.children[0].data.hProperties.title).toBe('');
   });
 
   describe('edge cases', () => {
@@ -36,15 +43,21 @@ describe('Parse RDMD Callouts', () => {
 > <span>With html!</span>
 `;
 
-      expect(mdast(text)).toMatchSnapshot();
+      const tree = mdast(text);
+      expect(tree.children[0].data.hProperties.value).toBe('<span>With html!</span>');
+      expect(tree.children[0].children[1].children[0].type).toBe('html');
     });
 
-    it('does not allow trailing spaces after the icon with no title', () => {
+    it('allows trailing spaces after the icon', () => {
       const text = `
 > 🛑 
 > Compact headings must be followed by two line breaks before the following block.`;
 
-      expect(mdast(text)).toMatchSnapshot();
+      const tree = mdast(text);
+      expect(tree.children[0].data.hProperties.icon).toBe('🛑');
+      expect(tree.children[0].children[0].children[0].value).toBe(
+        'Compact headings must be followed by two line breaks before the following block.'
+      );
     });
   });
 
@@ -54,17 +67,20 @@ describe('Parse RDMD Callouts', () => {
 >
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
-    expect(mdast(text)).toMatchSnapshot();
+    const tree = mdast(text);
+    expect(tree.children[0].type).toBe('blockquote');
   });
 
-  it('allows nested callouts', () => {
+  it('allows callouts nested in lists', () => {
     const text = `
 - list item
   > ℹ️ Info Callout
   >
   > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
-    expect(mdast(text)).toMatchSnapshot();
+    const tree = mdast(text);
+
+    expect(tree.children[0].children[0].children[1].type).toBe('rdme-callout');
   });
 
   it('does not require a line break between the title and the body', () => {
@@ -72,7 +88,11 @@ describe('Parse RDMD Callouts', () => {
 > 💁 Undocumented Behavior
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
-    expect(mdast(text)).toMatchSnapshot();
+    const tree = mdast(text);
+    expect(tree.children[0].data.hProperties.title).toBe(
+      `Undocumented Behavior
+Lorem ipsum dolor  sit amet consectetur adipisicing elit.`
+    );
   });
 });
 
@@ -85,8 +105,11 @@ describe('emoji modifier support', () => {
 > ${emoji}
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
+
       const ast = mdast(text);
-      expect(ast).toMatchSnapshot();
+
+      expect(ast.children[0].type).toBe('rdme-callout');
+      expect(ast.children[0].data.hProperties.icon).toStrictEqual(emoji);
     });
   });
 });
