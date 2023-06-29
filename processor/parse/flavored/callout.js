@@ -175,7 +175,6 @@ function blockquoteReadme(eat, value, silent) {
 function parser() {
   const { Parser } = this;
   const tokenizers = Parser.prototype.blockTokenizers;
-
   tokenizers.blockquote = blockquoteReadme;
 }
 
