@@ -11,6 +11,7 @@ const rehypeStringify = require('rehype-stringify');
 const remarkBreaks = require('remark-breaks');
 const remarkDisableTokenizers = require('remark-disable-tokenizers');
 const remarkFrontmatter = require('remark-frontmatter');
+const remarkMdx = require('remark-mdx');
 const remarkParse = require('remark-parse');
 const remarkRehype = require('remark-rehype');
 const remarkSlug = require('remark-slug');
@@ -94,6 +95,7 @@ export function processor(opts = {}) {
 
   return unified()
     .use(remarkParse, opts.markdownOptions)
+    .use(opts.mdx ? remarkMdx : () => {})
     .use(remarkFrontmatter, ['yaml', 'toml'])
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
