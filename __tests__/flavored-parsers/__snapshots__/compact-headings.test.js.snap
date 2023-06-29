@@ -6,6 +6,19 @@ Object {
     Object {
       "children": Array [
         Object {
+          "position": Position {
+            "end": Object {
+              "column": 33,
+              "line": 1,
+              "offset": 32,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
+          },
           "type": "text",
           "value": "Compact Heading",
         },
@@ -17,9 +30,36 @@ Object {
         "id": "compact-heading",
       },
       "depth": 1,
+      "position": Position {
+        "end": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 17,
+        },
+        "indent": Array [
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "heading",
     },
   ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 3,
+      "offset": 19,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
@@ -30,6 +70,19 @@ Object {
     Object {
       "children": Array [
         Object {
+          "position": Position {
+            "end": Object {
+              "column": 22,
+              "line": 1,
+              "offset": 21,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
           "type": "text",
           "value": "Non-compact Heading",
         },
@@ -41,9 +94,34 @@ Object {
         "id": "non-compact-heading",
       },
       "depth": 1,
+      "position": Position {
+        "end": Object {
+          "column": 22,
+          "line": 1,
+          "offset": 21,
+        },
+        "indent": Array [],
+        "start": Object {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "heading",
     },
   ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 3,
+      "offset": 24,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
