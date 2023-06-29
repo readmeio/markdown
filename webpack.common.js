@@ -1,11 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies
  */
 const ExtractCSS = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
     }),
   ],
   module: {
@@ -52,5 +59,10 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.json', '.jsx'],
+    fallback: {
+      util: require.resolve('util/'),
+      assert: require.resolve('assert/'),
+      buffer: require.resolve('buffer'),
+    },
   },
 };

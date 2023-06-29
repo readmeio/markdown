@@ -4,8 +4,8 @@
 @import '../styles/main.scss';
 
 #rdmd-demo {
-  --rdmd-demo-container: 1400px;
-  --rdmd-demo-content-width: 600px;
+  --rdmd-demo-container: 100vw;
+  --rdmd-demo-content-width: 50vw;
   --rdmd-demo-mono: menlo, monospace;
   --rdmd-demo-blue: #018ef5;
 
@@ -134,7 +134,6 @@
     font-family: var(--rdmd-demo-mono);
     min-height: 32em;
     height: calc(100vh - 20em);
-    width: 100%;
     overflow: auto;
     border: 1px solid #eee;
     border-radius: 2px;

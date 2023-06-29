@@ -3,9 +3,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import syntaxFixtures from './docs';
 
-const Fixtures = ({ lazyImages, render, safeMode, selected, getRoute, setQuery }) => {
+const Fixtures = ({ lazyImages, mdx, render, safeMode, selected, getRoute, setQuery }) => {
   const [edited, setEdited] = useState(null);
-  const options = useMemo(() => ({ lazyImages, safeMode }), [lazyImages, safeMode]);
+  const options = useMemo(() => ({ lazyImages, safeMode, mdx }), [lazyImages, safeMode, mdx]);
 
   const handleSelect = event => {
     getRoute(event.target.value);
@@ -20,6 +20,9 @@ const Fixtures = ({ lazyImages, render, safeMode, selected, getRoute, setQuery }
   const toggleLazyImages = useCallback(() => {
     setQuery('lazy-images', !lazyImages);
   }, [lazyImages, setQuery]);
+  const toggleMDX = useCallback(() => {
+    setQuery('mdx', !mdx);
+  }, [mdx, setQuery]);
 
   let fixture;
   let name;
@@ -54,6 +57,10 @@ const Fixtures = ({ lazyImages, render, safeMode, selected, getRoute, setQuery }
         <div>
           <label htmlFor="lazy-images">Lazy Load Images</label>
           <input checked={options.lazyImages} id="lazy-images" onChange={toggleLazyImages} type="checkbox" />
+        </div>
+        <div>
+          <label htmlFor="mdx">Enable MDX</label>
+          <input checked={options.mdx} id="mdx" onChange={toggleMDX} type="checkbox" />
         </div>
       </fieldset>
     </>

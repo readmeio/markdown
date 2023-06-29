@@ -30,7 +30,11 @@ const config = merge(common, {
     alias: {
       'react-dom': '@hot-loader/react-dom',
     },
-    fallback: { path: require.resolve('path-browserify') },
+    fallback: {
+      fs: require.resolve('browserify-fs'),
+      path: require.resolve('path-browserify'),
+      stream: require.resolve('stream-browserify'),
+    },
   },
 });
 

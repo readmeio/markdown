@@ -1,6 +1,9 @@
 /* eslint-disable no-param-reassign */
+import ErrorBoundary from './lib/ErrorBoundary';
+
 require('./styles/main.scss');
 
+const MDXRuntime = require('@mdx-js/runtime').default;
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
@@ -191,6 +194,48 @@ export function react(content, opts = {}, components = {}) {
   if (!content) return null;
   else if (typeof content === 'string') [content, opts] = setup(content, opts);
   else [, opts] = setup('', opts);
+
+  const reactComponents = {
+    'code-tabs': CodeTabs(opts),
+    'html-block': HTMLBlock(opts),
+    'rdme-callout': Callout,
+    'readme-variable': Variable,
+    'readme-glossary-item': GlossaryItem,
+    'rdme-embed': Embed(opts),
+    'rdme-pin': PinWrap,
+    table: Table,
+    a: Anchor,
+    h1: Heading(1, opts),
+    h2: Heading(2, opts),
+    h3: Heading(3, opts),
+    h4: Heading(4, opts),
+    h5: Heading(5, opts),
+    h6: Heading(6, opts),
+    code: Code(opts),
+    img: Image(opts),
+    style: Style(opts),
+    ...registerCustomComponents(components, opts.sanitize, opts.customComponentPrefix),
+  };
+
+  const remarkPlugins = [
+    [remarkFrontmatter, ['yaml', 'toml']],
+    !opts.correctnewlines ? remarkBreaks : () => {},
+    CustomParsers.map(parser => parser.sanitize?.(opts.sanitize) || parser),
+    transformers,
+    remarkSlug,
+    [remarkDisableTokenizers, opts.disableTokenizers],
+  ];
+
+  // mdx
+  if (opts.mdx) {
+    return (
+      <ErrorBoundary key={content}>
+        <MDXRuntime components={reactComponents} rehypePlugins={[sectionAnchorId]} remarkPlugins={remarkPlugins}>
+          {content}
+        </MDXRuntime>
+      </ErrorBoundary>
+    );
+  }
 
   const proc = reactProcessor(opts, components);
   if (typeof content === 'string') content = proc.parse(content);
