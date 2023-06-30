@@ -143,7 +143,7 @@ export function plain(text, opts = {}, components = {}) {
     components,
   });
 
-  return proc.stringify(proc.runSync(proc.parse(text)));
+  return proc.processSync(text).result;
 }
 
 /**
