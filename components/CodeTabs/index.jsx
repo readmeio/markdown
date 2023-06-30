@@ -3,7 +3,7 @@ const PropTypes = require('prop-types');
 const React = require('react');
 
 const CodeTabs = props => {
-  const { children, theme } = props;
+  const { children, tabs, theme } = props;
 
   function handleClick({ target }, index) {
     const $wrap = target.parentElement.parentElement;
@@ -20,8 +20,7 @@ const CodeTabs = props => {
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
-        {children.map(({ props: pre }, i) => {
-          const { meta, lang } = pre.children[0].props;
+        {tabs.map(({ meta, lang }, i) => {
           /* istanbul ignore next */
           return (
             <button key={i} onClick={e => handleClick(e, i)} type="button">
@@ -37,6 +36,7 @@ const CodeTabs = props => {
 
 CodeTabs.propTypes = {
   children: PropTypes.arrayOf(PropTypes.any).isRequired,
+  tabs: PropTypes.arrayOf(PropTypes.shape({ lang: PropTypes.string, meta: PropTypes.string })).isRequired,
   theme: PropTypes.string,
 };
 

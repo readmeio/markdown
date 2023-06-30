@@ -2,6 +2,7 @@ export { default as Anchor } from './Anchor';
 export { default as Callout } from './Callout';
 export { default as Code } from './Code';
 export { default as CodeTabs } from './CodeTabs';
+export { default as Div } from './Div';
 export { default as Embed } from './Embed';
 export { default as GlossaryItem } from './GlossaryItem';
 export { default as HTMLBlock } from './HTMLBlock';
