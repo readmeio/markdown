@@ -40,7 +40,7 @@ function tokenizer(eat, value) {
     className: 'tabs',
     data: {
       hName: 'div',
-      hProperties: { className: ['code-tabs'], tabs: kids.map(({ meta, lang }) => ({ meta, lang })) },
+      hProperties: { className: ['code-tabs'] },
     },
     children: kids,
   });

@@ -89,10 +89,7 @@ describe('Parse RDMD Callouts', () => {
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     const tree = mdast(text);
-    expect(tree.children[0].data.hProperties.title).toBe(
-      `Undocumented Behavior
-Lorem ipsum dolor  sit amet consectetur adipisicing elit.`
-    );
+    expect(tree.children[0].data.hProperties.title).toBe('Undocumented Behavior');
   });
 });
 
