@@ -26,7 +26,6 @@ const { selectAll } = require('unist-util-select');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
-const createElement = require('./lib/createElement');
 const CustomParsers = Object.values(require('./processor/parse'));
 const customCompilers = Object.values(require('./processor/compile'));
 const registerCustomComponents = require('./lib/registerCustomComponents');
@@ -39,17 +38,18 @@ const transformers = Object.values(require('./processor/transform'));
 const createSchema = require('./sanitize.schema');
 
 const {
-  GlossaryItem,
-  Code,
-  Table,
   Anchor,
-  Heading,
   Callout,
+  Code,
   CodeTabs,
-  Image,
+  Div,
   Embed,
+  GlossaryItem,
   HTMLBlock,
+  Heading,
+  Image,
   Style,
+  Table,
   TableOfContents,
 } = Components;
 
@@ -164,7 +164,7 @@ export function reactProcessor(opts = {}, components = {}) {
   return htmlProcessor({ ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
-      createElement,
+      createElement: React.createElement,
       Fragment: React.Fragment,
       components: {
         'code-tabs': CodeTabs(opts),
@@ -185,6 +185,7 @@ export function reactProcessor(opts = {}, components = {}) {
         code: Code(opts),
         img: Image(opts),
         style: Style(opts),
+        div: Div({ 'code-tabs': CodeTabs(opts) }),
         ...registerCustomComponents(components, sanitize, opts.customComponentPrefix),
       },
     });
@@ -214,6 +215,7 @@ export function react(content, opts = {}, components = {}) {
     code: Code(opts),
     img: Image(opts),
     style: Style(opts),
+    div: Div({ 'code-tabs': CodeTabs(opts) }),
     ...registerCustomComponents(components, opts.sanitize, opts.customComponentPrefix),
   };
 
@@ -221,7 +223,7 @@ export function react(content, opts = {}, components = {}) {
     [remarkFrontmatter, ['yaml', 'toml']],
     !opts.correctnewlines ? remarkBreaks : () => {},
     ...CustomParsers.map(parser => parser.sanitize?.(opts.sanitize) || parser),
-    transformers,
+    ...transformers,
     remarkSlug,
     [remarkDisableTokenizers, opts.disableTokenizers],
   ];

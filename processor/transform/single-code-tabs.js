@@ -14,7 +14,7 @@ const singleCodeTabs = () => tree => {
       parent.children[index] = {
         type: 'code-tabs',
         className: 'tabs',
-        data: { hName: 'div', hProperties: { className: ['code-tabs'] } },
+        data: { hName: 'div', hProperties: { className: ['code-tabs'], tabs: [{ meta: node.meta, lang: node.lang }] } },
         children: [node],
       };
     }

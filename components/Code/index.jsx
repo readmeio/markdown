@@ -51,8 +51,8 @@ function Code(props) {
     dark: theme === 'dark',
   };
 
-  const codeContent =
-    syntaxHighlighter && children ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
+  const code = Array.isArray(children) ? children[0] : children;
+  const codeContent = syntaxHighlighter && children ? syntaxHighlighter(code, language, codeOpts) : code || '';
 
   return (
     <React.Fragment>
