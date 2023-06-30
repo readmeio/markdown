@@ -2,8 +2,24 @@ const { uppercase } = require('@readme/syntax-highlighter');
 const PropTypes = require('prop-types');
 const React = require('react');
 
+const traverseProps = (props, fn) => {
+  if (props?.children) {
+    if (props.children.forEach) {
+      props.children.forEach(child => {
+        if (child.props) {
+          traverseProps(child.props, fn);
+        }
+      });
+    } else {
+      fn(props.children.props);
+    }
+  }
+
+  fn(props);
+};
+
 const CodeTabs = props => {
-  const { children, tabs, theme } = props;
+  const { children, theme } = props;
 
   function handleClick({ target }, index) {
     const $wrap = target.parentElement.parentElement;
@@ -16,6 +32,13 @@ const CodeTabs = props => {
 
     target.classList.add('CodeTabs_active');
   }
+
+  const tabs = [];
+  traverseProps(props, childProps => {
+    if ('meta' in childProps || 'lang' in childProps) {
+      tabs.push({ meta: childProps.meta, lang: childProps.lang });
+    }
+  });
 
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
@@ -36,7 +59,6 @@ const CodeTabs = props => {
 
 CodeTabs.propTypes = {
   children: PropTypes.arrayOf(PropTypes.any).isRequired,
-  tabs: PropTypes.arrayOf(PropTypes.shape({ lang: PropTypes.string, meta: PropTypes.string })).isRequired,
   theme: PropTypes.string,
 };
 
@@ -44,6 +66,12 @@ function CreateCodeTabs({ theme }) {
   // eslint-disable-next-line react/display-name
   return props => <CodeTabs {...props} theme={theme} />;
 }
+
+CreateCodeTabs.sanitize = sanitizeSchema => {
+  sanitizeSchema.attributes.div = ['className', 'tabs'];
+
+  return sanitizeSchema;
+};
 
 module.exports = CreateCodeTabs;
 module.exports.CodeTabs = CodeTabs;
