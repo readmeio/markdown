@@ -220,7 +220,7 @@ export function react(content, opts = {}, components = {}) {
   const remarkPlugins = [
     [remarkFrontmatter, ['yaml', 'toml']],
     !opts.correctnewlines ? remarkBreaks : () => {},
-    CustomParsers.map(parser => parser.sanitize?.(opts.sanitize) || parser),
+    ...CustomParsers.map(parser => parser.sanitize?.(opts.sanitize) || parser),
     transformers,
     remarkSlug,
     [remarkDisableTokenizers, opts.disableTokenizers],
