@@ -4,7 +4,6 @@ const React = require('react');
 const Div = ({ components, ...props }) => {
   if (Object.keys(components).includes(props.className)) {
     const Component = components[props.className];
-    console.log(props);
     return <Component {...props} />;
   }
   // eslint-disable-next-line react/jsx-props-no-spreading
