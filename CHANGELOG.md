@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.63.0
+
+### 🛠 Fixes & Updates
+
+* **stylelint:** upgrade to latest and fix all issues ([#774](https://github.com/readmeio/markdown/issues/774)) ([e12967c](https://github.com/readmeio/markdown/commit/e12967c35f67e6ca94c63d77d79a1aa14788114c))
+
+
+### ✨ New & Improved
+
+* trigger release ([a52d43a](https://github.com/readmeio/markdown/commit/a52d43adc5dcc2dbc364423355595b4d3bbd07b8))
+
 ## Version 6.62.6
 
 ### 🛠 Fixes & Updates
