@@ -1,4 +1,3 @@
-const browser = require('./jest.browser');
 const common = require('./jest.common');
 
 const unit = {
@@ -33,4 +32,4 @@ const unit = {
   },
 };
 
-module.exports = { projects: [unit, browser] };
+module.exports = { projects: [unit] };

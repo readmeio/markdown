@@ -6,8 +6,6 @@ function tokenizer(eat, value) {
   const [match, hash, text] = rgx.exec(value);
 
   const now = eat.now();
-  now.column += match.length;
-  now.offset += match.length;
 
   return eat(match)({
     type: 'heading',
