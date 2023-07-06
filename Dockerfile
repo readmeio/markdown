@@ -22,12 +22,12 @@ RUN npm install -g npm@latest
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
-RUN mkdir __tests__/browser/__image_snapshots__/__diff_output__
-
 COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . ./
+
+RUN mkdir -p __tests__/browser/__image_snapshots__/__diff_output__
 
 RUN make emojis
 
