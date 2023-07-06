@@ -6,8 +6,8 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
-      // At 1025 the TOC disappears
-      await page.setViewport({ width: 1026, height: 800 });
+      // The ToC disappears somewhere below 1200, 1175-ish?
+      await page.setViewport({ width: 1200, height: 800 });
     });
 
     const docs = [
