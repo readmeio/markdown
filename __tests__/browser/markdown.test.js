@@ -7,7 +7,7 @@ describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
     beforeEach(async () => {
       // The ToC disappears somewhere below 1200, 1175-ish?
-      await page.setViewport({ width: 1200, height: 800 });
+      await page.setViewport({ width: 1400, height: 800 });
     });
 
     const docs = [
