@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 6.64.0
+
+### 🛠 Fixes & Updates
+
+* code tabs with * ([#787](https://github.com/readmeio/markdown/issues/787)) ([6068041](https://github.com/readmeio/markdown/commit/606804135feb2af5edae4e456cd2da4702860448))
+* styles and toc ([#777](https://github.com/readmeio/markdown/issues/777)) ([a50de42](https://github.com/readmeio/markdown/commit/a50de4247d323ad45c7ffe3950898d65b6920912))
+
+
+### ✨ New & Improved
+
+* add focus and active states ([#788](https://github.com/readmeio/markdown/issues/788)) ([fd9ce0a](https://github.com/readmeio/markdown/commit/fd9ce0ac336125d56cd76ec88f17ca24528f2008))
+* remove custom actions for deploying and launching Markdown review apps ([#784](https://github.com/readmeio/markdown/issues/784)) ([ac3af11](https://github.com/readmeio/markdown/commit/ac3af11f38c0dffafb36a323a0e8a9c4b544c587))
+
 ## Version 6.63.0
 
 ### 🛠 Fixes & Updates
