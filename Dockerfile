@@ -27,6 +27,8 @@ RUN npm install
 
 COPY . ./
 
+RUN mkdir -p __tests__/browser/__image_snapshots__/__diff_output__
+
 RUN make emojis
 
 EXPOSE 9966

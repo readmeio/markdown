@@ -1,3 +1,6 @@
+@import url('https://cdn.readme.io/public/hub/web/main.3f4ed9ef7e8b221de43c.css');
+@import url('https://cdn.readme.io/public/hub/web/3435.9200159a8fec79d971c4.css');
+
 @import '../styles/main.scss';
 
 #rdmd-demo {
@@ -17,6 +20,7 @@
 
   #content-container {
     padding-top: 0 !important;
+    display: flex;
   }
   // end hub overrides
 

@@ -137,13 +137,13 @@ export function plain(text, opts = {}, components = {}) {
   if (!text) return null;
   [text, opts] = setup(text, opts);
 
-  return htmlProcessor(opts)
-    .use(rehypeReact, {
-      createElement: React.createElement,
-      Fragment: React.Fragment,
-      components,
-    })
-    .processSync(text).contents;
+  const proc = htmlProcessor(opts).use(rehypeReact, {
+    createElement: React.createElement,
+    Fragment: React.Fragment,
+    components,
+  });
+
+  return proc.processSync(text).result;
 }
 
 /**

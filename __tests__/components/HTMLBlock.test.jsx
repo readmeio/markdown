@@ -10,7 +10,6 @@ const HTMLBlock = createHTMLBlock(createSchema(), {});
 
 describe('HTML Block', () => {
   beforeEach(() => {
-    global.window = true;
     global.mockFn = jest.fn();
   });
 
