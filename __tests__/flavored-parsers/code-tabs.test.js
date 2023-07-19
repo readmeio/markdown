@@ -47,4 +47,56 @@ Second code block
 
     expect(hast(md)).toMatchSnapshot();
   });
+
+  it('unescapes the language', () => {
+    const markdown = `\`\`\`js\\*
+const works = true;
+\`\`\`
+\`\`\`
+const cool = true;
+\`\`\`
+`;
+
+    const tree = mdast(markdown);
+    expect(tree.children[0].children[0].lang).toBe('js*');
+  });
+
+  it('unescapes the meta data', () => {
+    const markdown = `\`\`\`js Testing\\*
+const works = true;
+\`\`\`
+\`\`\`
+const cool = true;
+\`\`\`
+`;
+
+    const tree = mdast(markdown);
+    expect(tree.children[0].children[0].meta).toBe('Testing*');
+  });
+
+  it('decodes entities in the language', () => {
+    const markdown = `\`\`\`&copy
+const works = true;
+\`\`\`
+\`\`\`
+const cool = true;
+\`\`\`
+`;
+
+    const tree = mdast(markdown);
+    expect(tree.children[0].children[0].lang).toBe('©');
+  });
+
+  it('decodes entities in the meta', () => {
+    const markdown = `\`\`\`js &copy
+const works = true;
+\`\`\`
+\`\`\`
+const cool = true;
+\`\`\`
+`;
+
+    const tree = mdast(markdown);
+    expect(tree.children[0].children[0].meta).toBe('©');
+  });
 });
