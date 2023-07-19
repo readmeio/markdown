@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.65.0
+
+### ✨ New & Improved
+
+* escaping code titles ([#790](https://github.com/readmeio/markdown/issues/790)) ([14395f8](https://github.com/readmeio/markdown/commit/14395f8ba5980f14007bf53f126c3dc489f22d37))
+
 ## Version 6.64.0
 
 ### 🛠 Fixes & Updates
