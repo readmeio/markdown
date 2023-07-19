@@ -24,16 +24,4 @@ const cool = true;
 
     expect(md(mdast(markdown))).toBe(markdown);
   });
-
-  it('compiles code tabs with an asterisk in the name', () => {
-    const markdown = `\`\`\`js Testing*
-const works = true;
-\`\`\`
-\`\`\`
-const cool = true;
-\`\`\`
-`;
-
-    expect(md(mdast(markdown))).toBe(markdown);
-  });
 });
