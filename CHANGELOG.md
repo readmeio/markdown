@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.65.1
+
+### 🛠 Fixes & Updates
+
+* better variable parsing ([#792](https://github.com/readmeio/markdown/issues/792)) ([357a300](https://github.com/readmeio/markdown/commit/357a300b059f325b6bdef294e080a09801d8c923))
+
 ## Version 6.65.0
 
 ### ✨ New & Improved
