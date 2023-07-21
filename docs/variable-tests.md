@@ -21,4 +21,6 @@ should \<< be escaped >>
 
 should <<
 not be a var >>
+
+also not a <<variable\r>>
 ```
