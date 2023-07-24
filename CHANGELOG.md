@@ -1,6 +1,42 @@
 Changelog
 ===
 
+## Version 6.65.1
+
+### 🛠 Fixes & Updates
+
+* better variable parsing ([#792](https://github.com/readmeio/markdown/issues/792)) ([357a300](https://github.com/readmeio/markdown/commit/357a300b059f325b6bdef294e080a09801d8c923))
+
+## Version 6.65.0
+
+### ✨ New & Improved
+
+* escaping code titles ([#790](https://github.com/readmeio/markdown/issues/790)) ([14395f8](https://github.com/readmeio/markdown/commit/14395f8ba5980f14007bf53f126c3dc489f22d37))
+
+## Version 6.64.0
+
+### 🛠 Fixes & Updates
+
+* code tabs with * ([#787](https://github.com/readmeio/markdown/issues/787)) ([6068041](https://github.com/readmeio/markdown/commit/606804135feb2af5edae4e456cd2da4702860448))
+* styles and toc ([#777](https://github.com/readmeio/markdown/issues/777)) ([a50de42](https://github.com/readmeio/markdown/commit/a50de4247d323ad45c7ffe3950898d65b6920912))
+
+
+### ✨ New & Improved
+
+* add focus and active states ([#788](https://github.com/readmeio/markdown/issues/788)) ([fd9ce0a](https://github.com/readmeio/markdown/commit/fd9ce0ac336125d56cd76ec88f17ca24528f2008))
+* remove custom actions for deploying and launching Markdown review apps ([#784](https://github.com/readmeio/markdown/issues/784)) ([ac3af11](https://github.com/readmeio/markdown/commit/ac3af11f38c0dffafb36a323a0e8a9c4b544c587))
+
+## Version 6.63.0
+
+### 🛠 Fixes & Updates
+
+* **stylelint:** upgrade to latest and fix all issues ([#774](https://github.com/readmeio/markdown/issues/774)) ([e12967c](https://github.com/readmeio/markdown/commit/e12967c35f67e6ca94c63d77d79a1aa14788114c))
+
+
+### ✨ New & Improved
+
+* trigger release ([a52d43a](https://github.com/readmeio/markdown/commit/a52d43adc5dcc2dbc364423355595b4d3bbd07b8))
+
 ## Version 6.62.6
 
 ### 🛠 Fixes & Updates
