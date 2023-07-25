@@ -23,4 +23,7 @@ Div.propTypes = {
   components: PropTypes.object,
 };
 
-module.exports = components => props => <Div components={components} {...props} />;
+module.exports =
+  (components, { theme }) =>
+  props =>
+    <Div components={components} theme={theme} {...props} />;

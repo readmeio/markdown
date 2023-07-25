@@ -177,7 +177,7 @@ const reactComponents = (opts, components = {}) => {
     code: Code(opts),
     img: Image(opts),
     style: Style(opts),
-    div: Div({ 'code-tabs': CodeTabs(opts) }),
+    div: Div({ 'code-tabs': CodeTabs(opts) }, opts),
     ...registerCustomComponents(components, opts.sanitize, opts.customComponentPrefix),
   };
 };
