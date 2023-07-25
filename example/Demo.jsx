@@ -80,8 +80,8 @@ function Demo({ opts }) {
                     render={({ options, ...props }) => (
                       <DemoContent {...props} ci={!!params.ci} opts={{ ...opts, ...options }} />
                     )}
+                    route={route}
                     safeMode={params['safe-mode']}
-                    selected={route}
                     setQuery={setQuery}
                   />
                 </div>

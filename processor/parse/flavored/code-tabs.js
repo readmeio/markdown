@@ -41,7 +41,6 @@ function tokenizer(eat, value) {
   return eat(match)({
     type: 'code-tabs',
     className: 'tabs',
-    data: { hName: 'div', hProperties: { className: ['code-tabs'] } },
     children: kids,
   });
 }
