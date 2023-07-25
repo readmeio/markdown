@@ -1022,7 +1022,7 @@ exports[`export multiple Markdown renderers renders plain markdown as React 1`] 
 
 exports[`export multiple Markdown renderers renders plainText from AST 1`] = `"Hello World"`;
 
-exports[`heading 1`] = `"<h2 class=\\"heading heading-2 header-scroll\\" align=\\"\\"><div class=\\"heading-anchor anchor waypoint\\" id=\\"example-header\\"></div><div class=\\"heading-text\\"><div id=\\"section-example-header\\" class=\\"heading-anchor_backwardsCompatibility\\"></div>Example Header</div><a aria-label=\\"Skip link to Example Header\\" class=\\"heading-anchor-icon fa fa-anchor\\" href=\\"#example-header\\"></a></h2>"`;
+exports[`heading 1`] = `"<h2 class=\\"heading heading-2 header-scroll\\" align=\\"\\"><div class=\\"heading-anchor anchor waypoint\\" id=\\"example-header\\"></div><div class=\\"heading-text\\"><div theme=\\"light\\" id=\\"section-example-header\\" class=\\"heading-anchor_backwardsCompatibility\\"></div>Example Header</div><a aria-label=\\"Skip link to Example Header\\" class=\\"heading-anchor-icon fa fa-anchor\\" href=\\"#example-header\\"></a></h2>"`;
 
 exports[`image 1`] = `"<p><span aria-label=\\"Image\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img alt=\\"Image\\" loading=\\"lazy\\" src=\\"http://example.com/image.png\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"\\" width=\\"auto\\"></span></span></p>"`;
 
@@ -1037,7 +1037,7 @@ exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. An
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 
 exports[`tables 1`] = `
-"<div>
+"<div theme=\\"light\\">
 
 
 
