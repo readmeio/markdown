@@ -159,7 +159,6 @@ const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @tod
 
 const reactComponents = (opts, components = {}) => {
   return {
-    'code-tabs': CodeTabs(opts),
     'html-block': HTMLBlock(opts),
     'rdme-callout': Callout,
     'readme-variable': Variable,
