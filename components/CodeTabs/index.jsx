@@ -2,21 +2,19 @@ const { uppercase } = require('@readme/syntax-highlighter');
 const PropTypes = require('prop-types');
 const React = require('react');
 
-const CodeTabs = props => {
-  const { children, theme } = props;
+function handleClick({ target }, index) {
+  const $wrap = target.parentElement.parentElement;
+  const $open = [].slice.call($wrap.querySelectorAll('.CodeTabs_active'));
+  $open.forEach(el => el.classList.remove('CodeTabs_active'));
+  $wrap.classList.remove('CodeTabs_initial');
 
-  function handleClick({ target }, index) {
-    const $wrap = target.parentElement.parentElement;
-    const $open = [].slice.call($wrap.querySelectorAll('.CodeTabs_active'));
-    $open.forEach(el => el.classList.remove('CodeTabs_active'));
-    $wrap.classList.remove('CodeTabs_initial');
+  const codeblocks = $wrap.querySelectorAll('pre');
+  codeblocks[index].classList.add('CodeTabs_active');
 
-    const codeblocks = $wrap.querySelectorAll('pre');
-    codeblocks[index].classList.add('CodeTabs_active');
+  target.classList.add('CodeTabs_active');
+}
 
-    target.classList.add('CodeTabs_active');
-  }
-
+const CodeTabs = ({ theme, children }) => {
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
@@ -36,7 +34,7 @@ const CodeTabs = props => {
 };
 
 CodeTabs.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any).isRequired,
+  children: PropTypes.oneOf([PropTypes.arrayOf(PropTypes.any), PropTypes.any]).isRequired,
   theme: PropTypes.string,
 };
 

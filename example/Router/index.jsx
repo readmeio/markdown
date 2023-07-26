@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const trimHash = () => window.location.hash.replace(/^#/, '');
+const parseHash = () => decodeURI(window.location.hash.replace(/^#/, ''));
 const coerceValue = value => {
   switch (value) {
     case 'true':
@@ -23,7 +23,7 @@ const iteratorToObj = iterator => {
 };
 
 const Router = ({ render }) => {
-  const [route, getRoute] = useState(trimHash());
+  const [route, getRoute] = useState(parseHash());
   const [params, setParams] = useState(() => ({
     'lazy-images': true,
     ...iteratorToObj(new URLSearchParams(window.location.search)),
@@ -41,14 +41,14 @@ const Router = ({ render }) => {
 
   useEffect(() => {
     const handleStateChange = () => {
-      getRoute(trimHash());
+      getRoute(parseHash());
     };
 
     const url = new URL(window.location.href);
     url.search = new URLSearchParams(params).toString();
-    url.hash = route;
+    url.hash = encodeURI(route);
 
-    window.history.replaceState({}, '', url);
+    window.history.pushState({}, '', url);
     window.addEventListener('popstate', handleStateChange);
 
     return () => {
