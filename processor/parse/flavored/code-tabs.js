@@ -42,6 +42,9 @@ function tokenizer(eat, value) {
     type: 'code-tabs',
     className: 'tabs',
     children: kids,
+    data: {
+      hName: 'code-tabs',
+    },
   });
 }
 

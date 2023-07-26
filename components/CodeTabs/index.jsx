@@ -15,6 +15,7 @@ function handleClick({ target }, index) {
 }
 
 const CodeTabs = ({ theme, children }) => {
+  console.log(children);
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
