@@ -1,3 +1,5 @@
+const { insertBlockTokenizerBefore } = require('../utils');
+
 const rgx = /^\[([^\]]*)\]\((\S*) ["'](@\w+)"\)/;
 
 function tokenizer(eat, value) {
@@ -30,12 +32,11 @@ function tokenizer(eat, value) {
 }
 
 function parser() {
-  const { Parser } = this;
-  const tokenizers = Parser.prototype.blockTokenizers;
-  const methods = Parser.prototype.blockMethods;
-
-  tokenizers.embed = tokenizer;
-  methods.splice(methods.indexOf('newline'), 0, 'embed');
+  insertBlockTokenizerBefore.call(this, {
+    name: 'embed',
+    before: 'blankLine',
+    tokenizer,
+  });
 }
 
 module.exports = parser;
