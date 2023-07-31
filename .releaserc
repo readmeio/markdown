@@ -1,6 +1,7 @@
 {
   "branches": [
-    "main"
+    "main",
+    { "beta([-/]*)?", prerelease: true }
   ],
   "plugins": [
     [
