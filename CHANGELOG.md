@@ -1,6 +1,27 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.1
+
+### ✨ New & Improved
+
+* add mdx stuff ([0740749](https://github.com/readmeio/markdown/commit/0740749fa1ac07ae280fe97431ae0047d694cf3c))
+* adding mdx ([9f2ba50](https://github.com/readmeio/markdown/commit/9f2ba506011f1f42cbfd90f719057a04dc12edb9))
+* cleanup index + comment ([7a1c06f](https://github.com/readmeio/markdown/commit/7a1c06f4b9cb22a5ebf60bf6bd8dbeff8289f6e9))
+* wip code-tabs ([3452eb2](https://github.com/readmeio/markdown/commit/3452eb2e16f1c70fadb4cca1e3df7e1e1d0660d1))
+
+
+### 🛠 Fixes & Updates
+
+* code tabs ([6dbb641](https://github.com/readmeio/markdown/commit/6dbb641235446ae5c3027ad714a6b4d26e992b0c))
+* code-tabs ([ca5eb9e](https://github.com/readmeio/markdown/commit/ca5eb9eb8f91999de826c548233616c3ed15c590))
+* code-tabs in html ([298eea9](https://github.com/readmeio/markdown/commit/298eea95d520e1a2233203904901692d5a4baa35))
+* delint ([d883d0a](https://github.com/readmeio/markdown/commit/d883d0adc7c1f060d88144edf618a2d9d7925242))
+* parsers! ([534cbdf](https://github.com/readmeio/markdown/commit/534cbdf26ffb1fd034c6334a63e5de80afbce667))
+* remove console.log ([a0f43d6](https://github.com/readmeio/markdown/commit/a0f43d624790db0126b52112cb3dabc319258a3e))
+* **code-tabs:** setting theme ([#786](https://github.com/readmeio/markdown/issues/786)) ([0be0a91](https://github.com/readmeio/markdown/commit/0be0a91560eaba0995e783e7cb6ae0292b432e53))
+* tabindex for code and callouts without h3 ([#796](https://github.com/readmeio/markdown/issues/796)) ([1963bb0](https://github.com/readmeio/markdown/commit/1963bb0e4a1ead667e427ebf653c4118ce7325c7))
+
 ## Version 6.65.1
 
 ### 🛠 Fixes & Updates
