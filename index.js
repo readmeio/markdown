@@ -159,7 +159,7 @@ export function reactProcessor(opts = {}, components = {}) {
   return htmlProcessor({ ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
-      createElement,
+      createElement: createElement(opts),
       Fragment: React.Fragment,
       components: {
         'code-tabs': CodeTabs(opts),
