@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.65.2-beta.1
+
+### 🛠 Fixes & Updates
+
+* **code-tabs:** setting theme ([#786](https://github.com/readmeio/markdown/issues/786)) ([0be0a91](https://github.com/readmeio/markdown/commit/0be0a91560eaba0995e783e7cb6ae0292b432e53))
+* tabindex for code and callouts without h3 ([#796](https://github.com/readmeio/markdown/issues/796)) ([1963bb0](https://github.com/readmeio/markdown/commit/1963bb0e4a1ead667e427ebf653c4118ce7325c7))
+
 ## Version 6.65.1
 
 ### 🛠 Fixes & Updates
