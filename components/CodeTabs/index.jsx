@@ -1,6 +1,7 @@
 const { uppercase } = require('@readme/syntax-highlighter');
 const PropTypes = require('prop-types');
 const React = require('react');
+const { useState } = require('react');
 
 const traverseProps = (props, fn) => {
   if (props?.children) {
@@ -20,6 +21,7 @@ const traverseProps = (props, fn) => {
 
 const CodeTabs = props => {
   const { children, theme } = props;
+  const [activeIndex, setActiveIndex] = useState(0);
 
   function handleClick({ target }, index) {
     const $wrap = target.parentElement.parentElement;
@@ -30,7 +32,7 @@ const CodeTabs = props => {
     const codeblocks = $wrap.querySelectorAll('pre');
     codeblocks[index].classList.add('CodeTabs_active');
 
-    target.classList.add('CodeTabs_active');
+    setActiveIndex(index);
   }
 
   const tabs = [];
@@ -42,17 +44,26 @@ const CodeTabs = props => {
 
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
-      <div className="CodeTabs-toolbar">
+      <div className="CodeTabs-toolbar" role="tablist">
         {tabs.map(({ meta, lang }, i) => {
           /* istanbul ignore next */
           return (
-            <button key={i} onClick={e => handleClick(e, i)} type="button">
+            <button
+              key={i}
+              aria-selected={activeIndex === i}
+              className={activeIndex === i ? 'CodeTabs_active' : ''}
+              onClick={e => handleClick(e, i)}
+              role="tab"
+              type="button"
+            >
               {meta || `${!lang ? 'Text' : uppercase(lang)}`}
             </button>
           );
         })}
       </div>
-      <div className="CodeTabs-inner">{children}</div>
+      <div className="CodeTabs-inner" role="tabpanel">
+        {children}
+      </div>
     </div>
   );
 };
