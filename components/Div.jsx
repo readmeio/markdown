@@ -13,12 +13,13 @@ const Div = ({ components, ...props }) => {
     const Component = components[props.className];
     return <Component {...props} />;
   }
+
   // eslint-disable-next-line react/jsx-props-no-spreading
   return <div {...props} />;
 };
 
 Div.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any).isRequired,
+  children: PropTypes.arrayOf(PropTypes.any),
   className: PropTypes.string,
   components: PropTypes.object,
 };

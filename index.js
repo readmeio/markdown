@@ -3,7 +3,7 @@ import ErrorBoundary from './lib/ErrorBoundary';
 
 require('./styles/main.scss');
 
-const MDXRuntime = require('@mdx-js/runtime').default;
+const MDXRuntime = require('@mdx-js/runtime');
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
@@ -209,6 +209,7 @@ export function react(content, opts = {}, components = {}) {
       [remarkDisableTokenizers, opts.disableTokenizers],
     ];
 
+    console.log(MDXRuntime);
     return (
       <ErrorBoundary key={content}>
         <MDXRuntime

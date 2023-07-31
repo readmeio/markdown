@@ -14,6 +14,20 @@ Second code block
     expect(mdast(md)).toMatchSnapshot();
   });
 
+  it.skip('can parse code tabs as mdx', () => {
+    const md = `
+\`\`\`
+First code block
+\`\`\`
+\`\`\`
+Second code block
+\`\`\`
+`;
+    const tree = mdast(md, { mdx: true });
+
+    expect(tree.children[0].type).toBe('code-tabs');
+  });
+
   it('can parse lang and meta', () => {
     const md = `
 \`\`\`javascript First Title
