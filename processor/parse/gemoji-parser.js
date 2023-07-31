@@ -1,5 +1,7 @@
 const Emoji = require('@readme/emojis').emoji;
 
+const { insertInlineTokenizerBefore } = require('./utils');
+
 const emojis = new Emoji();
 
 const colon = ':';
@@ -58,13 +60,11 @@ function locate(value, fromIndex) {
 tokenize.locator = locate;
 
 function parser() {
-  const { Parser } = this;
-  const tokenizers = Parser.prototype.inlineTokenizers;
-  const methods = Parser.prototype.inlineMethods;
-
-  tokenizers.gemoji = tokenize;
-
-  methods.splice(methods.indexOf('text'), 0, 'gemoji');
+  insertInlineTokenizerBefore.call(this, {
+    name: 'gemoji',
+    before: 'text',
+    tokenizer: tokenize,
+  });
 }
 
 module.exports = parser;
