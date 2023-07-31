@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.65.3
+
+### 🛠 Fixes & Updates
+
+* compact headings ([#801](https://github.com/readmeio/markdown/issues/801)) ([64d707e](https://github.com/readmeio/markdown/commit/64d707ee561c7aa46d4581d458029be730efc030))
+
 ## Version 6.65.2
 
 ### 🛠 Fixes & Updates
