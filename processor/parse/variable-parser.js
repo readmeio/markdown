@@ -1,5 +1,7 @@
 const { VARIABLE_REGEXP } = require('@readme/variable');
 
+const { insertInlineTokenizerBefore } = require('./utils');
+
 function tokenizeVariable(eat, value, silent) {
   // Modifies the regular expression to match from
   // the start of the line
@@ -42,13 +44,11 @@ function locate(value, fromIndex) {
 tokenizeVariable.locator = locate;
 
 function parser() {
-  const { Parser } = this;
-  const tokenizers = Parser.prototype.inlineTokenizers;
-  const methods = Parser.prototype.inlineMethods;
-
-  tokenizers.variable = tokenizeVariable;
-
-  methods.splice(methods.indexOf('text'), 0, 'variable');
+  insertInlineTokenizerBefore.call(this, {
+    name: 'variable',
+    before: 'text',
+    tokenizer: tokenizeVariable,
+  });
 }
 
 module.exports = parser;

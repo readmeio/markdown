@@ -1,4 +1,6 @@
 /* eslint-disable consistent-return */
+const { insertBlockTokenizerBefore } = require('./utils');
+
 const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
 
 const WrapPinnedBlocks = (node, json) => {
@@ -281,16 +283,17 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
 }
 
 function parser() {
-  const { Parser } = this;
-  const tokenizers = Parser.prototype.blockTokenizers;
-  const methods = Parser.prototype.blockMethods;
-
-  tokenizers.magicBlocks = tokenize({
+  const tokenizer = tokenize({
     compatibilityMode: this.data('compatibilityMode'),
     safeMode: this.data('safeMode'),
     alwaysThrow: this.data('alwaysThrow'),
   });
-  methods.splice(methods.indexOf('newline'), 0, 'magicBlocks');
+
+  insertBlockTokenizerBefore.call(this, {
+    name: 'magicBlocks',
+    before: 'blankLine',
+    tokenizer,
+  });
 }
 
 module.exports = parser;
