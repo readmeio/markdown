@@ -209,7 +209,6 @@ export function react(content, opts = {}, components = {}) {
       [remarkDisableTokenizers, opts.disableTokenizers],
     ];
 
-    console.log(MDXRuntime);
     return (
       <ErrorBoundary key={content}>
         <MDXRuntime
