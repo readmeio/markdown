@@ -5,7 +5,7 @@ function insertTokenizerBefore({ name, before, tokenizer, type = 'block' }) {
 
   const index = methods.indexOf(before);
   if (index === -1) {
-    throw new Error(`The '${before}' tokenizer doesn't exist!`);
+    throw new Error(`The '${before}' tokenizer does not exist!`);
   }
 
   tokenizers[name] = tokenizer;
