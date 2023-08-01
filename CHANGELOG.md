@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.2
+
+### 🛠 Fixes & Updates
+
+* munged require ([ad3fb42](https://github.com/readmeio/markdown/commit/ad3fb42ee7eb7746810dc7b6c68a55dfd11e71ee))
+
 ## Version 6.66.0-beta.1
 
 ### ✨ New & Improved
