@@ -3,7 +3,7 @@ import ErrorBoundary from './lib/ErrorBoundary';
 
 require('./styles/main.scss');
 
-const MDXRuntime = require('@mdx-js/runtime');
+const MDXRuntime = require('@mdx-js/runtime').default;
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
