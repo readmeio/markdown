@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.3
+
+### ✨ New & Improved
+
+* trigger release ([1caa9b6](https://github.com/readmeio/markdown/commit/1caa9b609aa0e7e0a86f950a2a05e40c9fdb09d0))
+
 ## Version 6.66.0-beta.2
 
 ### 🛠 Fixes & Updates
