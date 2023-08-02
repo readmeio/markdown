@@ -4,7 +4,7 @@ const { merge } = require('webpack-merge');
 const common = require('./webpack.common');
 
 const browserConfig = merge(common, {
-  entry: './index.js',
+  entry: './index.jsx',
   externals: {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
