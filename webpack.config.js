@@ -8,6 +8,8 @@ const browserConfig = merge(common, {
   externals: {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
+    '@mdx-js/runtime': '@mdx-js/runtime',
+    'remark-mdx': 'remark-mdx',
     react: {
       amd: 'react',
       commonjs: 'react',

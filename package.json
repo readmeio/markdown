@@ -28,7 +28,6 @@
     "watch": "webpack -w --progress --mode production"
   },
   "dependencies": {
-    "@mdx-js/runtime": "^1.6.22",
     "@readme/emojis": "^5.0.0",
     "@readme/syntax-highlighter": "^12.1.2",
     "copy-to-clipboard": "^3.3.2",
@@ -48,7 +47,6 @@
     "remark-breaks": "^1.0.0",
     "remark-disable-tokenizers": "^1.0.24",
     "remark-frontmatter": "^2.0.0",
-    "remark-mdx": "^1.6.22",
     "remark-parse": "^8.0.3",
     "remark-rehype": "^8.1.0",
     "remark-slug": "^6.0.0",
@@ -61,10 +59,12 @@
     "unist-util-visit": "^4.1.1"
   },
   "peerDependencies": {
+    "@mdx-js/runtime": "^1.6.22",
     "@readme/variable": "^15.1.3",
     "@tippyjs/react": "^4.1.0",
     "react": "^16.14.0",
-    "react-dom": "^16.14.0"
+    "react-dom": "^16.14.0",
+    "remark-mdx": "^1.6.22"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
