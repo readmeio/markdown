@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.5
+
+### ✨ New & Improved
+
+* peer deps ([06fa680](https://github.com/readmeio/markdown/commit/06fa68004b8c8bf2cbb5e68961dfde1c4c280476))
+
 ## Version 6.66.0-beta.4
 
 ### ✨ New & Improved
