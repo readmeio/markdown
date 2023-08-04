@@ -4,19 +4,16 @@ const React = require('react');
 const { useState } = require('react');
 
 const traverseProps = (props, fn) => {
-  if (props?.children) {
-    if (props.children.forEach) {
-      props.children.forEach(child => {
-        if (child.props) {
-          traverseProps(child.props, fn);
-        }
-      });
+  if (!props) return;
+  fn(props);
+
+  if (props && 'children' in props) {
+    if (Array.isArray(props.children)) {
+      props.children.forEach(child => child.props && traverseProps(child.props, fn));
     } else {
-      fn(props.children.props);
+      traverseProps(props.children.props, fn);
     }
   }
-
-  fn(props);
 };
 
 const CodeTabs = props => {
@@ -69,7 +66,7 @@ const CodeTabs = props => {
 };
 
 CodeTabs.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any).isRequired,
+  children: PropTypes.oneOf(PropTypes.arrayOf(PropTypes.any), PropTypes.object),
   theme: PropTypes.string,
 };
 

@@ -3,7 +3,7 @@ import ErrorBoundary from './lib/ErrorBoundary';
 
 require('./styles/main.scss');
 
-const MDXRuntime = require('@mdx-js/runtime').default;
+const Mdx = require('@mdx-js/runtime').default;
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
 const React = require('react');
@@ -211,13 +211,13 @@ export function react(content, opts = {}, components = {}) {
 
     return (
       <ErrorBoundary key={content}>
-        <MDXRuntime
+        <Mdx
           components={reactComponents(opts, components)}
           rehypePlugins={[sectionAnchorId]}
           remarkPlugins={remarkPlugins}
         >
           {content}
-        </MDXRuntime>
+        </Mdx>
       </ErrorBoundary>
     );
   }

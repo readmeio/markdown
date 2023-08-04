@@ -19,7 +19,7 @@ const Div = ({ components, ...props }) => {
 };
 
 Div.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any),
+  children: PropTypes.oneOf(PropTypes.arrayOf(PropTypes.any), PropTypes.object),
   className: PropTypes.string,
   components: PropTypes.object,
 };
