@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.6
+
+### 🛠 Fixes & Updates
+
+* single code tabs ([23b5438](https://github.com/readmeio/markdown/commit/23b54389f743994aefab18efbf71785a46ccc5f6))
+
 ## Version 6.66.0-beta.5
 
 ### ✨ New & Improved
