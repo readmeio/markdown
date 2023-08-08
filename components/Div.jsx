@@ -5,13 +5,13 @@ const React = require('react');
  * To get around hast/html sanitation, we pass custom components through using
  * className's. Then this Div component, can render the associated component
  * instead. This used to be done with a custom `React.createElement`, but for
- * mdx@v1.5, I don't see a way to customize that.
+ * mdx@v1.6, I don't see a way to customize that.
  */
 
-const Div = ({ components, ...props }) => {
+const Div = ({ components, theme, ...props }) => {
   if (Object.keys(components).includes(props.className)) {
     const Component = components[props.className];
-    return <Component {...props} />;
+    return <Component theme={theme} {...props} />;
   }
 
   // eslint-disable-next-line react/jsx-props-no-spreading
@@ -22,6 +22,7 @@ Div.propTypes = {
   children: PropTypes.oneOf(PropTypes.arrayOf(PropTypes.any), PropTypes.object),
   className: PropTypes.string,
   components: PropTypes.object,
+  theme: PropTypes.string.isRequired,
 };
 
 module.exports =
