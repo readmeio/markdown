@@ -3,6 +3,8 @@ import ErrorBoundary from './lib/ErrorBoundary';
 
 require('./styles/main.scss');
 
+const { createMdxAstCompiler } = require('@mdx-js/mdx');
+const { mdx: createElement } = require('@mdx-js/react');
 const Mdx = require('@mdx-js/runtime').default;
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
@@ -141,7 +143,8 @@ export function htmlProcessor(opts = {}) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSanitize, sanitize)
-    .use(...rehypeTransformers);
+    .use(...rehypeTransformers)
+    .use(() => tree => console.log('hast?', tree));
 }
 
 export function plain(text, opts = {}, components = {}) {
@@ -218,6 +221,7 @@ export function react(content, opts = {}, components = {}) {
       ...remarkTransformers,
       remarkSlug,
       [remarkDisableTokenizers, opts.disableTokenizers],
+      () => tree => console.log(tree),
     ];
 
     return (
@@ -243,8 +247,8 @@ export function reactTOC(tree, opts = {}) {
   if (!tree) return null;
   [, opts] = setup('', opts);
 
-  const proc = htmlProcessor(opts).use(rehypeReact, {
-    createElement: React.createElement,
+  const proc = (opts.mdx ? createMdxAstCompiler({ remarkPlugins: [] }) : htmlProcessor(opts)).use(rehypeReact, {
+    createElement,
     components: {
       p: React.Fragment,
       'readme-variable': Variable,

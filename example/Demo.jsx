@@ -46,7 +46,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
           </Maybe>
           <div id="content-container">
             <div className="markdown-body">{markdown(fixture, opts)}</div>
-            <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
+            <section className="content-toc">{reactTOC(reactProcessor(opts).parse(fixture), opts)}</section>
           </div>
         </section>
       </div>
