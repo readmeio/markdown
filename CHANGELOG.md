@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.0-beta.7
+
+### 🛠 Fixes & Updates
+
+* set theme? ([dcf0992](https://github.com/readmeio/markdown/commit/dcf0992d405f4a01b87e6b9e725eeb40e5eaab9b))
+
 ## Version 6.66.0-beta.6
 
 ### 🛠 Fixes & Updates
