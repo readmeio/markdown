@@ -1,0 +1,193 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tableCellInlineCode preserves escaped pipe chars inside text table cells 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "align": Array [
+        "left",
+        "left",
+      ],
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "these ",
+                },
+                Object {
+                  "type": "escape",
+                  "value": "|",
+                },
+                Object {
+                  "type": "text",
+                  "value": " stay ",
+                },
+                Object {
+                  "type": "escape",
+                  "value": "|",
+                },
+                Object {
+                  "type": "text",
+                  "value": " escaped ",
+                },
+                Object {
+                  "type": "escape",
+                  "value": "|",
+                },
+                Object {
+                  "type": "text",
+                  "value": " inside ",
+                },
+                Object {
+                  "type": "escape",
+                  "value": "|",
+                },
+                Object {
+                  "type": "text",
+                  "value": " a single cell",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`tableCellInlineCode splits table cells when inline code contains "unescaped" pipe chars 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "align": Array [
+        "left",
+        "left",
+      ],
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "\`this",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "splits",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "up",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "to",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "more",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "cells\`",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "two",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`tableCellInlineCode unescapes escaped pipe chars inside inline code within table cells 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "align": Array [
+        "left",
+        "left",
+      ],
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "inlineCode",
+                  "value": "one | two | three | four",
+                },
+              ],
+              "type": "tableCell",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "two",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
