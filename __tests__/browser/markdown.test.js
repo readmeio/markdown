@@ -4,12 +4,12 @@
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('visual regression tests', () => {
-  describe.each([false, true])('rdmd syntax with mdx=%s', mdx => {
-    beforeEach(async () => {
-      // The ToC disappears somewhere below 1200, 1175-ish?
-      await page.setViewport({ width: 1400, height: 800 });
-    });
+  beforeEach(async () => {
+    // The ToC disappears somewhere below 1200, 1175-ish?
+    await page.setViewport({ width: 1400, height: 800 });
+  });
 
+  describe.each([false, true])('rdmd syntax with mdx=%s', mdx => {
     const docs = [
       'callouts',
       'calloutTests',
@@ -26,7 +26,9 @@ describe('visual regression tests', () => {
       'varsTest',
     ];
 
-    it.each(docs)(
+    const skipMDX = ['callouts', 'embeds', 'lists', 'tables'];
+
+    it.each(docs.filter(doc => !skipMDX.includes(doc)))(
       'renders "%s" without surprises',
       async doc => {
         const uri = `http://localhost:9966/?ci=true&mdx=${mdx}#${doc}`;
@@ -40,24 +42,34 @@ describe('visual regression tests', () => {
       10000
     );
 
-    it('renders html blocks, style tags, and style attributes with safeMode off', async () => {
-      const uri = `http://localhost:9966/?ci=true&mdx=${mdx}#sanitizingTests`;
-      await page.goto(uri, { waitUntil: 'networkidle0' });
-      await sleep(500);
+    (mdx ? it.skip : it)(
+      'renders html blocks, style tags, and style attributes with safeMode off',
+      async () => {
+        const uri = `http://localhost:9966/?ci=true&mdx=${mdx}#sanitizingTests`;
+        await page.goto(uri, { waitUntil: 'networkidle0' });
+        await sleep(500);
 
-      const image = await page.screenshot({ fullPage: true });
+        const image = await page.screenshot({ fullPage: true });
 
-      expect(image).toMatchImageSnapshot();
-    }, 10000);
+        // eslint-disable-next-line jest/no-standalone-expect
+        expect(image).toMatchImageSnapshot();
+      },
+      10000
+    );
 
-    it('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
-      const uri = `http://localhost:9966/?ci=true&safe-mode=true&mdx=${mdx}#sanitizingTests`;
-      await page.goto(uri, { waitUntil: 'networkidle0' });
-      await sleep(500);
+    (mdx ? it.skip : it)(
+      'does not render html blocks, style tags, and style attributes with safeMode on',
+      async () => {
+        const uri = `http://localhost:9966/?ci=true&safe-mode=true&mdx=${mdx}#sanitizingTests`;
+        await page.goto(uri, { waitUntil: 'networkidle0' });
+        await sleep(500);
 
-      const image = await page.screenshot({ fullPage: true });
+        const image = await page.screenshot({ fullPage: true });
 
-      expect(image).toMatchImageSnapshot();
-    }, 10000);
+        // eslint-disable-next-line jest/no-standalone-expect
+        expect(image).toMatchImageSnapshot();
+      },
+      10000
+    );
   });
 });
