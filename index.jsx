@@ -225,7 +225,13 @@ export function react(content, opts = {}, components = {}) {
   const proc = reactProcessor(opts, components);
   if (typeof content === 'string') content = proc.parse(content);
 
-  return proc.stringify(proc.runSync(content));
+  let tree = proc.stringify(proc.runSync(content));
+  // @xxx: https://github.com/rehypejs/rehype-react/issues/36
+  if (tree.type === React.Fragment && tree.props.children.length === 1) {
+    tree = <>{tree.props.children[0].props.children}</>;
+  }
+
+  return tree;
 }
 
 export function reactTOC(tree, opts = {}) {
