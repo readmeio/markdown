@@ -28,7 +28,7 @@ describe('visual regression tests', () => {
 
     const skipMDX = ['callouts', 'embeds', 'lists', 'tables'];
 
-    it.each(docs.filter(doc => !skipMDX.includes(doc)))(
+    it.each(docs.filter(doc => !mdx || !skipMDX.includes(doc)))(
       'renders "%s" without surprises',
       async doc => {
         const uri = `http://localhost:9966/?ci=true&mdx=${mdx}#${doc}`;
