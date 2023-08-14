@@ -1,2 +1,5 @@
-export { default as singleCodeTabs } from './single-code-tabs';
-export { default as tableCellInlineCode } from './table-cell-inline-code';
+import singleCodeTabs from './single-code-tabs';
+import tableCellInlineCode from './table-cell-inline-code';
+
+export const remarkTransformers = [singleCodeTabs];
+export const rehypeTransformers = [tableCellInlineCode];

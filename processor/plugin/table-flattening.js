@@ -26,11 +26,13 @@ function transformer(ast) {
               ...node.children[0],
               value: valuesToString(header),
             },
-            {
-              ...node.children[1],
-              value: valuesToString(body),
-            },
-          ],
+            body
+              ? {
+                  ...node.children[1],
+                  value: valuesToString(body),
+                }
+              : null,
+          ].filter(x => x),
         },
       ];
     }

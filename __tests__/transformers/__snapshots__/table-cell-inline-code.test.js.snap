@@ -4,65 +4,63 @@ exports[`tableCellInlineCode preserves escaped pipe chars inside text table cell
 Object {
   "children": Array [
     Object {
-      "align": Array [
-        "left",
-        "left",
-      ],
+      "type": "text",
+      "value": "
+
+
+
+
+
+
+",
+    },
+    Object {
       "children": Array [
         Object {
           "children": Array [
             Object {
               "children": Array [
                 Object {
-                  "type": "text",
-                  "value": "these ",
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "these | stay | escaped | inside | a single cell",
+                    },
+                  ],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
                 Object {
-                  "type": "escape",
-                  "value": "|",
-                },
-                Object {
-                  "type": "text",
-                  "value": " stay ",
-                },
-                Object {
-                  "type": "escape",
-                  "value": "|",
-                },
-                Object {
-                  "type": "text",
-                  "value": " escaped ",
-                },
-                Object {
-                  "type": "escape",
-                  "value": "|",
-                },
-                Object {
-                  "type": "text",
-                  "value": " inside ",
-                },
-                Object {
-                  "type": "escape",
-                  "value": "|",
-                },
-                Object {
-                  "type": "text",
-                  "value": " a single cell",
+                  "children": Array [],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
               ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [],
-              "type": "tableCell",
+              "properties": Object {},
+              "tagName": "tr",
+              "type": "element",
             },
           ],
-          "type": "tableRow",
+          "properties": Object {},
+          "tagName": "thead",
+          "type": "element",
+          "value": "these | stay | escaped | inside | a single cell",
         },
       ],
-      "type": "table",
+      "properties": Object {},
+      "tagName": "table",
+      "type": "element",
     },
   ],
+  "data": Object {
+    "quirksMode": false,
+  },
   "type": "root",
 }
 `;
@@ -71,83 +69,68 @@ exports[`tableCellInlineCode splits table cells when inline code contains "unesc
 Object {
   "children": Array [
     Object {
-      "align": Array [
-        "left",
-        "left",
-      ],
+      "type": "text",
+      "value": "
+
+
+
+
+
+
+",
+    },
+    Object {
       "children": Array [
         Object {
           "children": Array [
             Object {
               "children": Array [
                 Object {
-                  "type": "text",
-                  "value": "\`this",
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "\`this",
+                    },
+                  ],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
                 Object {
-                  "type": "text",
-                  "value": "splits",
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "splits",
+                    },
+                  ],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
               ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "up",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "to",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "more",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "cells\`",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "two",
-                },
-              ],
-              "type": "tableCell",
+              "properties": Object {},
+              "tagName": "tr",
+              "type": "element",
             },
           ],
-          "type": "tableRow",
+          "properties": Object {},
+          "tagName": "thead",
+          "type": "element",
+          "value": "\`this splits",
         },
       ],
-      "type": "table",
+      "properties": Object {},
+      "tagName": "table",
+      "type": "element",
     },
   ],
+  "data": Object {
+    "quirksMode": false,
+  },
   "type": "root",
 }
 `;
@@ -156,38 +139,75 @@ exports[`tableCellInlineCode unescapes escaped pipe chars inside inline code wit
 Object {
   "children": Array [
     Object {
-      "align": Array [
-        "left",
-        "left",
-      ],
+      "type": "text",
+      "value": "
+
+
+
+
+
+
+",
+    },
+    Object {
       "children": Array [
         Object {
           "children": Array [
             Object {
               "children": Array [
                 Object {
-                  "type": "inlineCode",
-                  "value": "one | two | three | four",
+                  "children": Array [
+                    Object {
+                      "children": Array [
+                        Object {
+                          "type": "text",
+                          "value": "one | two | three | four",
+                        },
+                      ],
+                      "properties": Object {},
+                      "tagName": "code",
+                      "type": "element",
+                    },
+                  ],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
                 Object {
-                  "type": "text",
-                  "value": "two",
+                  "children": Array [
+                    Object {
+                      "type": "text",
+                      "value": "two",
+                    },
+                  ],
+                  "properties": Object {
+                    "align": "left",
+                  },
+                  "tagName": "th",
+                  "type": "element",
                 },
               ],
-              "type": "tableCell",
+              "properties": Object {},
+              "tagName": "tr",
+              "type": "element",
             },
           ],
-          "type": "tableRow",
+          "properties": Object {},
+          "tagName": "thead",
+          "type": "element",
+          "value": "one | two | three | four two",
         },
       ],
-      "type": "table",
+      "properties": Object {},
+      "tagName": "table",
+      "type": "element",
     },
   ],
+  "data": Object {
+    "quirksMode": false,
+  },
   "type": "root",
 }
 `;
