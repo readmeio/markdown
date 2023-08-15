@@ -14,6 +14,7 @@ const options = {
   },
   lazyImages: true,
   normalize: true,
+  mdx: false,
   safeMode: false,
   settings: {
     position: false,
