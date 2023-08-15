@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.66.0
+
+### 🛠 Fixes & Updates
+
+* **dependabot:** only notify on prod deps ([#802](https://github.com/readmeio/markdown/issues/802)) ([fb8cb96](https://github.com/readmeio/markdown/commit/fb8cb96c5101a4fc00bcc389e1e9387882ff4400))
+
+
+### ✨ New & Improved
+
+* adds new transformer for inline code nodes inside table cells ([#805](https://github.com/readmeio/markdown/issues/805)) ([9e42dd9](https://github.com/readmeio/markdown/commit/9e42dd9dedfee9da59ce7887dde947f940fa34f7))
+
 ## Version 6.65.3
 
 ### 🛠 Fixes & Updates
