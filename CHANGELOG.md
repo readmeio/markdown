@@ -1,62 +1,27 @@
 Changelog
 ===
 
-## Version 6.66.0-beta.7
+## Version 6.66.0
 
 ### 🛠 Fixes & Updates
 
-* set theme? ([dcf0992](https://github.com/readmeio/markdown/commit/dcf0992d405f4a01b87e6b9e725eeb40e5eaab9b))
+* **dependabot:** only notify on prod deps ([#802](https://github.com/readmeio/markdown/issues/802)) ([fb8cb96](https://github.com/readmeio/markdown/commit/fb8cb96c5101a4fc00bcc389e1e9387882ff4400))
 
-## Version 6.66.0-beta.6
+### ✨ New & Improved
+
+* adds new transformer for inline code nodes inside table cells ([#805](https://github.com/readmeio/markdown/issues/805)) ([9e42dd9](https://github.com/readmeio/markdown/commit/9e42dd9dedfee9da59ce7887dde947f940fa34f7))
+
+## Version 6.65.3
 
 ### 🛠 Fixes & Updates
 
-* single code tabs ([23b5438](https://github.com/readmeio/markdown/commit/23b54389f743994aefab18efbf71785a46ccc5f6))
+* compact headings ([#801](https://github.com/readmeio/markdown/issues/801)) ([64d707e](https://github.com/readmeio/markdown/commit/64d707ee561c7aa46d4581d458029be730efc030))
 
-## Version 6.66.0-beta.5
-
-### ✨ New & Improved
-
-* peer deps ([06fa680](https://github.com/readmeio/markdown/commit/06fa68004b8c8bf2cbb5e68961dfde1c4c280476))
-
-## Version 6.66.0-beta.4
-
-### ✨ New & Improved
-
-* trigger build ([01041c9](https://github.com/readmeio/markdown/commit/01041c9fde78c9083ac3b8722da2820cc94e4200))
-
-## Version 6.66.0-beta.3
-
-### ✨ New & Improved
-
-* trigger release ([1caa9b6](https://github.com/readmeio/markdown/commit/1caa9b609aa0e7e0a86f950a2a05e40c9fdb09d0))
-
-## Version 6.66.0-beta.2
+## Version 6.65.2
 
 ### 🛠 Fixes & Updates
 
-* munged require ([ad3fb42](https://github.com/readmeio/markdown/commit/ad3fb42ee7eb7746810dc7b6c68a55dfd11e71ee))
-
-## Version 6.66.0-beta.1
-
-### ✨ New & Improved
-
-* add mdx stuff ([0740749](https://github.com/readmeio/markdown/commit/0740749fa1ac07ae280fe97431ae0047d694cf3c))
-* adding mdx ([9f2ba50](https://github.com/readmeio/markdown/commit/9f2ba506011f1f42cbfd90f719057a04dc12edb9))
-* cleanup index + comment ([7a1c06f](https://github.com/readmeio/markdown/commit/7a1c06f4b9cb22a5ebf60bf6bd8dbeff8289f6e9))
-* wip code-tabs ([3452eb2](https://github.com/readmeio/markdown/commit/3452eb2e16f1c70fadb4cca1e3df7e1e1d0660d1))
-
-
-### 🛠 Fixes & Updates
-
-* code tabs ([6dbb641](https://github.com/readmeio/markdown/commit/6dbb641235446ae5c3027ad714a6b4d26e992b0c))
-* code-tabs ([ca5eb9e](https://github.com/readmeio/markdown/commit/ca5eb9eb8f91999de826c548233616c3ed15c590))
-* code-tabs in html ([298eea9](https://github.com/readmeio/markdown/commit/298eea95d520e1a2233203904901692d5a4baa35))
-* delint ([d883d0a](https://github.com/readmeio/markdown/commit/d883d0adc7c1f060d88144edf618a2d9d7925242))
-* parsers! ([534cbdf](https://github.com/readmeio/markdown/commit/534cbdf26ffb1fd034c6334a63e5de80afbce667))
-* remove console.log ([a0f43d6](https://github.com/readmeio/markdown/commit/a0f43d624790db0126b52112cb3dabc319258a3e))
 * **code-tabs:** setting theme ([#786](https://github.com/readmeio/markdown/issues/786)) ([0be0a91](https://github.com/readmeio/markdown/commit/0be0a91560eaba0995e783e7cb6ae0292b432e53))
-* tabindex for code and callouts without h3 ([#796](https://github.com/readmeio/markdown/issues/796)) ([1963bb0](https://github.com/readmeio/markdown/commit/1963bb0e4a1ead667e427ebf653c4118ce7325c7))
 
 ## Version 6.65.1
 

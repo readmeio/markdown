@@ -35,7 +35,7 @@ const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
 const toPlainText = require('./processor/plugin/plain-text');
 const sectionAnchorId = require('./processor/plugin/section-anchor-id');
 const tableFlattening = require('./processor/plugin/table-flattening');
-const transformers = Object.values(require('./processor/transform'));
+const { remarkTransformers, rehypeTransformers } = require('./processor/transform');
 const createSchema = require('./sanitize.schema');
 
 const {
@@ -107,7 +107,7 @@ export function processor(opts = {}) {
     .data('mdx', opts.mdx)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
-    .use(transformers)
+    .use(...remarkTransformers)
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers);
 }
@@ -137,7 +137,11 @@ export function htmlProcessor(opts = {}) {
    * - sanitize and remove any disallowed attributes
    * - output the hast to a React vdom with our custom components
    */
-  return processor(opts).use(remarkRehype, { allowDangerousHtml: true }).use(rehypeRaw).use(rehypeSanitize, sanitize);
+  return processor(opts)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
+    .use(rehypeSanitize, sanitize)
+    .use(...rehypeTransformers);
 }
 
 export function plain(text, opts = {}, components = {}) {
@@ -211,7 +215,7 @@ export function react(content, opts = {}, components = {}) {
       [remarkFrontmatter, ['yaml', 'toml']],
       !opts.correctnewlines ? remarkBreaks : () => {},
       ...CustomParsers.map(parser => parser.sanitize?.(opts.sanitize) || parser),
-      ...transformers,
+      ...remarkTransformers,
       remarkSlug,
       [remarkDisableTokenizers, opts.disableTokenizers],
     ];
@@ -220,7 +224,7 @@ export function react(content, opts = {}, components = {}) {
       <ErrorBoundary key={content}>
         <Mdx
           components={reactComponents(opts, components)}
-          rehypePlugins={[sectionAnchorId]}
+          rehypePlugins={[sectionAnchorId, ...rehypeTransformers]}
           remarkPlugins={remarkPlugins}
         >
           {content}
