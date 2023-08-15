@@ -12,6 +12,8 @@ updates:
     commit-message:
       prefix: chore(deps)
       prefix-development: chore(deps-dev)
+    allow:
+      - dependency-type: production
 
   - package-ecosystem: npm
     directory: "/"
@@ -71,3 +73,5 @@ updates:
         versions: ["*29.0.0"]
       - dependency-name: codemirror
         versions: ["*6.0.0"]
+    allow:
+      - dependency-type: production
