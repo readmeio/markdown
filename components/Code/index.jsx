@@ -78,7 +78,7 @@ function CreateCode({ copyButtons, theme }) {
 }
 
 Code.propTypes = {
-  children: PropTypes.oneOf(PropTypes.arrayOf(PropTypes.string), PropTypes.string),
+  children: PropTypes.oneOf([PropTypes.arrayOf(PropTypes.string), PropTypes.string]),
   className: PropTypes.string,
   copyButtons: PropTypes.bool,
   lang: PropTypes.string,

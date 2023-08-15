@@ -26,6 +26,7 @@ const { selectAll } = require('unist-util-select');
 const Components = require('./components');
 const { getHref } = require('./components/Anchor');
 const BaseUrlContext = require('./contexts/BaseUrl');
+const createElement = require('./lib/createElement');
 const CustomParsers = Object.values(require('./processor/parse'));
 const customCompilers = Object.values(require('./processor/compile'));
 const registerCustomComponents = require('./lib/registerCustomComponents');
@@ -103,6 +104,7 @@ export function processor(opts = {}) {
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
     .data('alwaysThrow', opts.alwaysThrow)
+    .data('mdx', opts.mdx)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
     .use(transformers)
@@ -143,7 +145,7 @@ export function plain(text, opts = {}, components = {}) {
   [text, opts] = setup(text, opts);
 
   const proc = htmlProcessor(opts).use(rehypeReact, {
-    createElement: React.createElement,
+    createElement: createElement(opts),
     Fragment: React.Fragment,
     components,
   });
@@ -176,7 +178,7 @@ const reactComponents = (opts, components = {}) => {
     code: Code(opts),
     img: Image(opts),
     style: Style(opts),
-    div: Div({ 'code-tabs': CodeTabs(opts) }, opts),
+    ...(opts.mdx ? { div: Div({ 'code-tabs': CodeTabs(opts) }, opts) } : {}),
     ...registerCustomComponents(components, opts.sanitize, opts.customComponentPrefix),
   };
 };
@@ -184,13 +186,18 @@ const reactComponents = (opts, components = {}) => {
 export function reactProcessor(opts = {}, components = {}) {
   [, opts] = setup('', opts);
 
-  return htmlProcessor({ ...opts })
+  const rdmdComponents = reactComponents(opts, components);
+
+  const proc = htmlProcessor({ ...opts })
     .use(sectionAnchorId)
     .use(rehypeReact, {
-      createElement: React.createElement,
+      createElement: createElement(opts),
       Fragment: React.Fragment,
-      components: reactComponents(opts, components),
+      components: rdmdComponents,
     });
+  proc.components = rdmdComponents;
+
+  return proc;
 }
 
 export function react(content, opts = {}, components = {}) {
@@ -225,13 +232,7 @@ export function react(content, opts = {}, components = {}) {
   const proc = reactProcessor(opts, components);
   if (typeof content === 'string') content = proc.parse(content);
 
-  let tree = proc.stringify(proc.runSync(content));
-  // @xxx: https://github.com/rehypejs/rehype-react/issues/36
-  if (tree.type === React.Fragment && tree.props.children.length === 1) {
-    tree = <>{tree.props.children[0].props.children}</>;
-  }
-
-  return tree;
+  return proc.stringify(proc.runSync(content));
 }
 
 export function reactTOC(tree, opts = {}) {

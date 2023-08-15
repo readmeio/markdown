@@ -66,7 +66,7 @@ const CodeTabs = props => {
 };
 
 CodeTabs.propTypes = {
-  children: PropTypes.oneOf(PropTypes.arrayOf(PropTypes.any), PropTypes.object),
+  children: PropTypes.oneOf([PropTypes.arrayOf(PropTypes.any), PropTypes.object]),
   theme: PropTypes.string,
 };
 
