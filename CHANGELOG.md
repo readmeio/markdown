@@ -1,6 +1,31 @@
 Changelog
 ===
 
+## Version 6.67.0-beta.1
+
+### ✨ New & Improved
+
+* add mdx stuff ([0740749](https://github.com/readmeio/markdown/commit/0740749fa1ac07ae280fe97431ae0047d694cf3c))
+* adding mdx ([9f2ba50](https://github.com/readmeio/markdown/commit/9f2ba506011f1f42cbfd90f719057a04dc12edb9))
+* cleanup index + comment ([7a1c06f](https://github.com/readmeio/markdown/commit/7a1c06f4b9cb22a5ebf60bf6bd8dbeff8289f6e9))
+* peer deps ([06fa680](https://github.com/readmeio/markdown/commit/06fa68004b8c8bf2cbb5e68961dfde1c4c280476))
+* trigger build ([01041c9](https://github.com/readmeio/markdown/commit/01041c9fde78c9083ac3b8722da2820cc94e4200))
+* trigger release ([1caa9b6](https://github.com/readmeio/markdown/commit/1caa9b609aa0e7e0a86f950a2a05e40c9fdb09d0))
+* wip code-tabs ([3452eb2](https://github.com/readmeio/markdown/commit/3452eb2e16f1c70fadb4cca1e3df7e1e1d0660d1))
+
+
+### 🛠 Fixes & Updates
+
+* code tabs ([6dbb641](https://github.com/readmeio/markdown/commit/6dbb641235446ae5c3027ad714a6b4d26e992b0c))
+* code-tabs ([ca5eb9e](https://github.com/readmeio/markdown/commit/ca5eb9eb8f91999de826c548233616c3ed15c590))
+* code-tabs in html ([298eea9](https://github.com/readmeio/markdown/commit/298eea95d520e1a2233203904901692d5a4baa35))
+* delint ([d883d0a](https://github.com/readmeio/markdown/commit/d883d0adc7c1f060d88144edf618a2d9d7925242))
+* munged require ([ad3fb42](https://github.com/readmeio/markdown/commit/ad3fb42ee7eb7746810dc7b6c68a55dfd11e71ee))
+* parsers! ([534cbdf](https://github.com/readmeio/markdown/commit/534cbdf26ffb1fd034c6334a63e5de80afbce667))
+* remove console.log ([a0f43d6](https://github.com/readmeio/markdown/commit/a0f43d624790db0126b52112cb3dabc319258a3e))
+* set theme? ([dcf0992](https://github.com/readmeio/markdown/commit/dcf0992d405f4a01b87e6b9e725eeb40e5eaab9b))
+* single code tabs ([23b5438](https://github.com/readmeio/markdown/commit/23b54389f743994aefab18efbf71785a46ccc5f6))
+
 ## Version 6.66.0
 
 ### 🛠 Fixes & Updates
