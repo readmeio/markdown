@@ -4,7 +4,7 @@ import ErrorBoundary from './lib/ErrorBoundary';
 require('./styles/main.scss');
 
 const { createMdxAstCompiler } = require('@mdx-js/mdx');
-const { mdx: createElement } = require('@mdx-js/react');
+const { mdx: mdxCreateElement } = require('@mdx-js/react');
 const Mdx = require('@mdx-js/runtime').default;
 const Variable = require('@readme/variable');
 const generateTOC = require('mdast-util-toc');
@@ -248,7 +248,7 @@ export function reactTOC(tree, opts = {}) {
   [, opts] = setup('', opts);
 
   const proc = (opts.mdx ? createMdxAstCompiler({ remarkPlugins: [] }) : htmlProcessor(opts)).use(rehypeReact, {
-    createElement,
+    createElement: opts.mdx ? mdxCreateElement : createElement(opts),
     components: {
       p: React.Fragment,
       'readme-variable': Variable,
