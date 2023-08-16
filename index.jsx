@@ -143,8 +143,7 @@ export function htmlProcessor(opts = {}) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSanitize, sanitize)
-    .use(...rehypeTransformers)
-    .use(() => tree => console.log('hast?', tree));
+    .use(...rehypeTransformers);
 }
 
 export function plain(text, opts = {}, components = {}) {
@@ -221,7 +220,6 @@ export function react(content, opts = {}, components = {}) {
       ...remarkTransformers,
       remarkSlug,
       [remarkDisableTokenizers, opts.disableTokenizers],
-      () => tree => console.log(tree),
     ];
 
     return (
