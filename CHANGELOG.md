@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.67.0-beta.2
+
+### ✨ New & Improved
+
+* mdx flavored TOCs ([#804](https://github.com/readmeio/markdown/issues/804)) ([43d1541](https://github.com/readmeio/markdown/commit/43d15411e7691f668a76532909075eb68e599549))
+
 ## Version 6.67.0-beta.1
 
 ### ✨ New & Improved
