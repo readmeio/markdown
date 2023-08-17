@@ -27,7 +27,7 @@ const browserConfig = merge(common, {
   },
   output: {
     library: {
-      type: 'commonjs2',
+      type: 'umd',
     },
   },
   optimization: {
