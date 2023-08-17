@@ -46,4 +46,12 @@ describe('mdast(text, opts)', () => {
 
     expect(tree.children[0].type).toBe('table');
   });
+
+  it('should parse mdx at the end of the line', () => {
+    const mdx = '# Heading <span>content</span>';
+    const tree = mdast(mdx, { mdx: true });
+
+    expect(tree.children[0].type).toBe('heading');
+    expect(tree.children[0].children[1].type).toBe('jsx');
+  });
 });

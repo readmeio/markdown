@@ -115,4 +115,28 @@ ${JSON.stringify(
 
     expect(astToPlainText(img)).toBe('Test Image Title');
   });
+
+  it('converts with mdx=true', () => {
+    const txt = `
+This is some content!
+    `;
+    const ast = hast(txt, { mdx: true });
+
+    expect(astToPlainText(ast, { mdx: true })).toBe('This is some content!');
+  });
+
+  it('converts with mdx=true and strips html tags', () => {
+    const txt = `
+This is some content!
+
+<p>Should be plain text</p>
+
+\`<h1>heading</h1>\`
+    `;
+    const ast = hast(txt, { mdx: true });
+
+    expect(astToPlainText(ast, { mdx: true })).toBe(
+      'This is some content! \n<p>Should be plain text</p>\n <h1>heading</h1>'
+    );
+  });
 });
