@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import markdown, { reactProcessor, reactTOC, utils } from '../index';
+import markdown, { mdast, reactProcessor, reactTOC, utils } from '../index';
 
 import Fixtures from './Fixtures';
 import Header from './Header';
@@ -30,15 +30,7 @@ const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
   const reusableContentBlocks = {
-    demo: {
-      type: 'paragraph',
-      children: [
-        {
-          type: 'text',
-          value: 'Hello, World!',
-        },
-      ],
-    },
+    demo: mdast('# Hello, World!'),
   };
 
   return (
