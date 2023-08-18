@@ -100,7 +100,7 @@ export function processor(opts = {}) {
     .data('alwaysThrow', opts.alwaysThrow)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
-    .use(...remarkTransformers)
+    .use(remarkTransformers.map(transformer => transformer(opts)))
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers);
 }
@@ -134,7 +134,7 @@ export function htmlProcessor(opts = {}) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSanitize, sanitize)
-    .use(...rehypeTransformers);
+    .use(rehypeTransformers);
 }
 
 export function plain(text, opts = {}, components = {}) {
