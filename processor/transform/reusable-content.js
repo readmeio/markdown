@@ -1,27 +1,29 @@
 import { visit } from 'unist-util-visit';
 
-const reusableContent =
-  ({ reusableContentBlocks }) =>
-  () =>
-  tree => {
-    const parser = new DOMParser();
-    console.log(reusableContentBlocks);
+const type = 'reusable-content';
 
+const regexp = /^\s*<ReadMeReusableContent name="(?<name>.*)" \/>\s*$/;
+
+const reusableContentTransformer = function () {
+  const reusableContent = this.data('reusableContent');
+
+  return tree => {
     visit(tree, 'html', (node, index, parent) => {
-      const dom = parser.parseFromString(node.value, 'text/html');
-      const maybe = dom.body.children[0];
+      const result = regexp.exec(node.value);
+      if (!result || !result.groups.name) return;
 
-      if (maybe?.tagName === 'README-REUSABLECONTENT') {
-        const name = maybe.getAttribute('name');
-        const block = reusableContentBlocks[name];
+      const { name } = result.groups;
+      const block = {
+        type,
+        name,
+        children: name in reusableContent ? reusableContent[name] : [],
+      };
 
-        if (block) {
-          parent.children[index] = block;
-        }
-      }
+      parent.children[index] = block;
     });
 
     return tree;
   };
+};
 
-export default reusableContent;
+export default reusableContentTransformer;

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import markdown, { mdast, reactProcessor, reactTOC, utils } from '../index';
+import markdown, { reactProcessor, reactTOC, utils } from '../index';
 
 import Fixtures from './Fixtures';
 import Header from './Header';
@@ -29,8 +29,8 @@ const terms = [
 const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
-  const reusableContentBlocks = {
-    demo: mdast('# Hello, World!'),
+  const reusableContent = {
+    demo: '# Hello, World!',
   };
 
   return (
@@ -49,7 +49,7 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
             <h2 className="rdmd-demo--markdown-header">{name}</h2>
           </Maybe>
           <div id="content-container">
-            <div className="markdown-body">{markdown(fixture, { ...opts, reusableContentBlocks })}</div>
+            <div className="markdown-body">{markdown(fixture, { ...opts, reusableContent })}</div>
             <section className="content-toc">{reactTOC(reactProcessor().parse(fixture), opts)}</section>
           </div>
         </section>

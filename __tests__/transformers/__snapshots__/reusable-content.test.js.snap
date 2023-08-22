@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reusable content transfomer should replace a reusable content block if the block is provided 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "type": "text",
+          "value": "Test",
+        },
+      ],
+      "data": Object {
+        "hProperties": Object {
+          "id": "test",
+        },
+        "id": "test",
+      },
+      "depth": 1,
+      "type": "heading",
+    },
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "type": "text",
+              "value": "link",
+            },
+          ],
+          "title": null,
+          "type": "link",
+          "url": "http://example.com",
+        },
+      ],
+      "type": "paragraph",
+    },
+  ],
+  "name": "test",
+  "type": "reusable-content",
+}
+`;
