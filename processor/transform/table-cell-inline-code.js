@@ -14,7 +14,7 @@ const tableCellInlineCode = () => tree => {
     visit(tableCellNode, { tagName: 'code' }, inlineCodeNode => {
       const textNode = inlineCodeNode.children[0];
 
-      if (rxEscapedPipe.test(textNode.value)) {
+      if (textNode && rxEscapedPipe.test(textNode.value)) {
         textNode.value = textNode.value.replace(rxEscapedPipe, '|');
       }
     });
