@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.66.1
+
+### 🛠 Fixes & Updates
+
+* tables with invalid html ([#809](https://github.com/readmeio/markdown/issues/809)) ([6e98c6a](https://github.com/readmeio/markdown/commit/6e98c6a4b355cbcedc95c7b8315cae52736ba6ae))
+
 ## Version 6.66.0
 
 ### 🛠 Fixes & Updates
