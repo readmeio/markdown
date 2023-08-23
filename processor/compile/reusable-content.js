@@ -1,6 +1,8 @@
-module.exports = function ReusableContentCompiler() {
+import { type, tag } from '../transform/reusable-content';
+
+export default function ReusableContentCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors['reusable-content'] = node => `<ReadMeReusableContent name="${node.name}" />`;
-};
+  visitors[type] = node => `<${tag} name="${node.name}" />`;
+}

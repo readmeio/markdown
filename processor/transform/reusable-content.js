@@ -1,8 +1,9 @@
 import { visit } from 'unist-util-visit';
 
-const type = 'reusable-content';
+export const type = 'reusable-content';
+export const tag = 'RMReusableContent';
 
-const regexp = /^\s*<ReadMeReusableContent name="(?<name>.*)" \/>\s*$/;
+const regexp = /^\s*<RMReusableContent name="(?<name>.*)" \/>\s*$/;
 
 const reusableContentTransformer = function () {
   const reusableContent = this.data('reusableContent');
