@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.68.0-beta.2
+
+### ✨ New & Improved
+
+* review + cleanup ([f987d2b](https://github.com/readmeio/markdown/commit/f987d2b70d7db365624930141a92b4f7860515b7))
+
 ## Version 6.68.0-beta.1
 
 ### 🛠 Fixes & Updates
