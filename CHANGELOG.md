@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.68.0-beta.1
+
+### 🛠 Fixes & Updates
+
+* mdast ([dfc8f20](https://github.com/readmeio/markdown/commit/dfc8f204a7db559a5757ac780a78514dc950f43f))
+
+
+### ✨ New & Improved
+
+* resuable-content initial pass ([f25b0ad](https://github.com/readmeio/markdown/commit/f25b0adcb35208cbb58d58065735e8aea2b25cdb))
+* reusable-content mdx-less demo ([cf43f2c](https://github.com/readmeio/markdown/commit/cf43f2c8a98afe1e48946358ce64c334be9c3b27))
+
 ## Version 6.67.0
 
 ### ✨ New & Improved
