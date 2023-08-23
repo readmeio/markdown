@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.68.0-beta.3
+
+### 🛠 Fixes & Updates
+
+* tests + regex ([b0ace0d](https://github.com/readmeio/markdown/commit/b0ace0dc5ffd18d97496f0464fbabc5faad96721))
+
 ## Version 6.68.0-beta.2
 
 ### ✨ New & Improved
