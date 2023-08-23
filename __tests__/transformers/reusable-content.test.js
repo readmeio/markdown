@@ -12,7 +12,7 @@ describe('reusable content transfomer', () => {
     const md = `
 Before
 
-<ReadMeReusableContent name="test" />
+<RMReusableContent name="test" />
 
 After
     `;
@@ -25,7 +25,7 @@ After
   });
 
   it('should parse a reusable content block that is not defined', () => {
-    const md = '<ReadMeReusableContent name="not-defined" />';
+    const md = '<RMReusableContent name="not-defined" />';
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe('reusable-content');
@@ -34,9 +34,9 @@ After
 
   it('does not expand reusable content recursively', () => {
     const reusableContent = {
-      test: '<ReadMeReusableContent name="test" />',
+      test: '<RMReusableContent name="test" />',
     };
-    const md = '<ReadMeReusableContent name="test" />';
+    const md = '<RMReusableContent name="test" />';
     const tree = mdast(md, { reusableContent });
 
     expect(tree.children[0].children[0].type).toBe('reusable-content');
