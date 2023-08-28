@@ -27,6 +27,7 @@ test('it should have the proper utils exports', () => {
       paddedTable: true,
     },
     normalize: true,
+    reusableContent: {},
     safeMode: false,
     settings: { position: false },
     theme: 'light',
