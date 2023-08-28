@@ -86,11 +86,26 @@ export const utils = {
 };
 
 /**
+ * Pre-parse reusable content blocks. Note that they do not pass the content
+ * blocks recursively.
+ */
+const parseReusableContent = ({ reusableContent, ...opts }) => {
+  const parsedReusableContent = Object.entries(reusableContent).reduce((memo, [name, content]) => {
+    // eslint-disable-next-line no-use-before-define
+    memo[name] = mdast(content, opts).children;
+    return memo;
+  }, {});
+
+  return [parsedReusableContent, opts];
+};
+
+/**
  * Core markdown to mdast processor
  */
-export function processor(opts = {}) {
-  [, opts] = setup('', opts);
-  const { sanitize } = opts;
+export function processor(userOpts = {}) {
+  const [, parsedOpts] = setup('', userOpts);
+  const { sanitize } = parsedOpts;
+  const [reusableContent, opts] = parseReusableContent(parsedOpts);
 
   return unified()
     .use(remarkParse, opts.markdownOptions)
@@ -98,9 +113,10 @@ export function processor(opts = {}) {
     .data('settings', opts.settings)
     .data('compatibilityMode', opts.compatibilityMode)
     .data('alwaysThrow', opts.alwaysThrow)
+    .data('reusableContent', reusableContent)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
-    .use(...remarkTransformers)
+    .use(remarkTransformers)
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers);
 }
@@ -134,7 +150,7 @@ export function htmlProcessor(opts = {}) {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeSanitize, sanitize)
-    .use(...rehypeTransformers);
+    .use(rehypeTransformers);
 }
 
 export function plain(text, opts = {}, components = {}) {
