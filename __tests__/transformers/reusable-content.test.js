@@ -24,7 +24,7 @@ After
     expect(tree.children[2].children[0].value).toBe('After');
   });
 
-  it('should parse a reusable content block that is not defined', () => {
+  it('should insert an empty node if the reusable content block is not defined', () => {
     const md = '<RMReusableContent name="not-defined" />';
     const tree = mdast(md);
 
