@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.68.0
+
+### ✨ New & Improved
+
+* mdx-less reusable content ([#811](https://github.com/readmeio/markdown/issues/811)) ([cdebefd](https://github.com/readmeio/markdown/commit/cdebefdd3cb55c2f2c724cc397e98887c5d9867d))
+
 ## Version 6.67.0
 
 ### ✨ New & Improved
