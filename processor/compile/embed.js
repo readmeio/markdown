@@ -1,16 +1,16 @@
+import magicBlock from './magic-block';
+
 function EmbedCompiler(node) {
   const data = node.data.hProperties;
   let { provider = 'embed' } = data;
   provider = provider.replace(/^@/, '');
 
-  return `
-[block:embed]${JSON.stringify({ ...data, provider })}[/block]
-`;
+  return magicBlock('embed', { ...data, provider });
 }
 
-module.exports = function () {
+export default function EmbedCompilerPlugin() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
   visitors.embed = EmbedCompiler;
-};
+}

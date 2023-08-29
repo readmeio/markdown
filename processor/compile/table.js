@@ -1,3 +1,5 @@
+const { default: magicBlock } = require('./magic-block');
+
 const find = (node, fn) => {
   if (fn(node)) return node;
   if (node.children) return node.children.find(n => find(n, fn));
@@ -32,8 +34,6 @@ module.exports = function TableCompiler() {
       });
     });
 
-    return `
-[block:parameters]${JSON.stringify(data)}[/block]
-`;
+    return magicBlock('parameters', data);
   };
 };

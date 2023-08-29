@@ -1,5 +1,7 @@
 const { imgSizeByWidth } = require('../parse/magic-block-parser');
 
+const magicBlock = require('./magic-block').default;
+
 const compileImage = image => {
   const { align, className, width } = image.data.hProperties || {};
   const img = {
@@ -33,8 +35,6 @@ module.exports = function FigureCompiler() {
       images: [img],
     };
 
-    return `
-[block:image]${JSON.stringify(block)}[/block]
-`;
+    return magicBlock('image', block);
   };
 };
