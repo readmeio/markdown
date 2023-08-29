@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 const { insertBlockTokenizerBefore } = require('./utils');
 
-const RGXP = /^\[block:([^\]]*)\]([^]+?)\[\/block\]/;
+const RGXP = /^\s*\[block:([^\]]*)\]([^]+?)\[\/block\]/;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;

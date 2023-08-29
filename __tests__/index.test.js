@@ -48,25 +48,25 @@ test('magic image', () => {
   const { container } = render(
     markdown.default(
       `
-  [block:image]
-  {
-    "images": [
-      {
-        "image": [
-          "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
-          "man-eating-pizza-and-making-an-ok-gesture.jpg",
-          "",
-          1024,
-          682,
-          "#d1c8c5"
-        ],
-        "caption": "A guy. Eating pizza. And making an OK gesture.",
-        "sizing": "full",
-        "align": "center"
-      }
-    ]
-  }
-  [/block]
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg",
+        "man-eating-pizza-and-making-an-ok-gesture.jpg",
+        "",
+        1024,
+        682,
+        "#d1c8c5"
+      ],
+      "caption": "A guy. Eating pizza. And making an OK gesture.",
+      "sizing": "full",
+      "align": "center"
+    }
+  ]
+}
+[/block]
   `,
       options
     )

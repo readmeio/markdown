@@ -65,11 +65,6 @@ export function setup(blocks, opts = {}) {
     Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(opts.sanitize));
   }
 
-  // normalize magic block linebreaks
-  if (opts.normalize && blocks) {
-    blocks = blocks.replace(/\[block:/g, '\n\n[block:').replace(/\[\/block\]/g, '[/block]\n');
-  }
-
   return [`${blocks}\n\n `, opts];
 }
 
