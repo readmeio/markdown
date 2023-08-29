@@ -45,6 +45,7 @@ Renders to a plain ol' block quote:
 > **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
 
 </details><hr>
+
 [block:api-header]
 {
   "title": "Examples"
@@ -58,6 +59,7 @@ Renders to a plain ol' block quote:
   "title": "[Success](#edge-cases)"
 }
 [/block]
+
 > 📘 Info
 > 
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.
@@ -201,6 +203,7 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
 > 🥈  
 > 
 > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+
 [block:html]
 {
   "html": "<style>\n.markdown-body .callout[theme=\"🎅\"] {\n  --background: #c50a4f;\n  --border: #ffffff6b;\n  --text: #f5fffa;\n}\n</style>"
