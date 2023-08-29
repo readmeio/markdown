@@ -4,6 +4,8 @@ module.exports = function () {
 
   visitors['html-block'] = node => {
     const html = node.data.hProperties.html;
-    return `[block:html]\n${JSON.stringify({ html }, null, 2)}\n[/block]`;
+    return `
+[block:html]${JSON.stringify({ html })}[/block]
+`;
   };
 };

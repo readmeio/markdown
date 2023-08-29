@@ -32,6 +32,8 @@ module.exports = function TableCompiler() {
       });
     });
 
-    return `[block:parameters]\n${JSON.stringify(data, null, 2)}\n[/block]`;
+    return `
+[block:parameters]${JSON.stringify(data)}[/block]
+`;
   };
 };

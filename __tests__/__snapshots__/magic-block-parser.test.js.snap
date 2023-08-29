@@ -51,6 +51,19 @@ Object {
 }
 `;
 
+exports[`Parse Magic Blocks Block on a single line 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [],
+      "depth": 2,
+      "type": "heading",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`Parse Magic Blocks Block with invalid JSON 1`] = `
 Object {
   "children": Array [],

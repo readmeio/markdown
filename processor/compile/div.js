@@ -6,9 +6,7 @@ module.exports = function DivCompiler() {
     const data = node.data.hProperties;
 
     return `
-[block:${node.data.hName}]
-${JSON.stringify(data, null, 2)}
-[/block]
+[block:${node.data.hName}]${JSON.stringify(data)}[/block]
 `;
   };
 };

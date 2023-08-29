@@ -287,4 +287,9 @@ describe('Parse Magic Blocks', () => {
     [/block]`;
     expect(process(text)).toMatchSnapshot();
   });
+
+  it('Block on a single line', () => {
+    const singleLine = '[block:api-header]{"type": "basic"}[/block]';
+    expect(process(singleLine)).toMatchSnapshot();
+  });
 });

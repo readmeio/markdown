@@ -33,8 +33,8 @@ module.exports = function FigureCompiler() {
       images: [img],
     };
 
-    return `[block:image]
-${JSON.stringify(block, null, 2)}
-[/block]`;
+    return `
+[block:image]${JSON.stringify(block)}[/block]
+`;
   };
 };

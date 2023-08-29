@@ -4,9 +4,7 @@ function EmbedCompiler(node) {
   provider = provider.replace(/^@/, '');
 
   return `
-[block:embed]
-${JSON.stringify({ ...data, provider }, null, 2)}
-[/block]
+[block:embed]${JSON.stringify({ ...data, provider })}[/block]
 `;
 }
 
