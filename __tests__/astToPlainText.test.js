@@ -111,7 +111,8 @@ ${JSON.stringify(
       }
       [/block]
     `;
-    const img = find(hast(txt), n => n.tagName === 'img');
+    const tree = hast(txt);
+    const img = find(tree, n => n.tagName === 'img');
 
     expect(astToPlainText(img)).toBe('Test Image Title');
   });

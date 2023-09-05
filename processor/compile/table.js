@@ -1,3 +1,5 @@
+import magicBlock from './magic-block';
+
 const find = (node, fn) => {
   if (fn(node)) return node;
   if (node.children) return node.children.find(n => find(n, fn));
@@ -5,7 +7,7 @@ const find = (node, fn) => {
   return null;
 };
 
-module.exports = function TableCompiler() {
+export default function TableCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -32,6 +34,6 @@ module.exports = function TableCompiler() {
       });
     });
 
-    return `[block:parameters]\n${JSON.stringify(data, null, 2)}\n[/block]`;
+    return magicBlock('parameters', data);
   };
-};
+}
