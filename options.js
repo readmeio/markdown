@@ -13,7 +13,6 @@ const options = {
     paddedTable: true,
   },
   lazyImages: true,
-  normalize: true,
   reusableContent: {},
   safeMode: false,
   settings: {

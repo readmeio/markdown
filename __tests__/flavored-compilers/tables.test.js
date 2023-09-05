@@ -49,23 +49,7 @@ describe('table compiler', () => {
 [/block]
 `;
 
-    expect(md(mdast(markdown))).toBe(`[block:parameters]
-{
-  "data": {
-    "h-0": "th 1",
-    "h-1": "th 2",
-    "0-0": "cell 1  \\nextra line",
-    "0-1": "cell 2"
-  },
-  "cols": 2,
-  "rows": 1,
-  "align": [
-    "center",
-    "center"
-  ]
-}
-[/block]
-`);
+    expect(md(mdast(markdown))).toMatchSnapshot();
   });
 
   it('converts to magic block syntax if there are breaks', () => {
@@ -78,22 +62,6 @@ describe('table compiler', () => {
     const cell = nodes.children[0].children[1].children[0];
     cell.children = [...cell.children, { type: 'break' }, { type: 'text', value: 'extra line' }];
 
-    expect(md(nodes)).toBe(`[block:parameters]
-{
-  "data": {
-    "h-0": "th 1",
-    "h-1": "th 2",
-    "0-0": "cell 1  \\nextra line",
-    "0-1": "cell 2"
-  },
-  "cols": 2,
-  "rows": 1,
-  "align": [
-    "center",
-    "center"
-  ]
-}
-[/block]
-`);
+    expect(md(nodes)).toMatchSnapshot();
   });
 });

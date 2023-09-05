@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 const { insertBlockTokenizerBefore } = require('./utils');
 
-const RGXP = /^\[block:(.*)\]([^]+?)\[\/block\]/;
+const RGXP = /^\s*\[block:([^\]]*)\]([^]+?)\[\/block\]/;
 
 const WrapPinnedBlocks = (node, json) => {
   if (!json.sidebar) return node;
@@ -37,6 +37,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
 
     if (!type) return;
 
+    const originalMatch = match;
     match = match.trim();
     type = type.trim();
 
@@ -52,7 +53,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
       }
     }
 
-    if (Object.keys(json).length < 1) return eat(match);
+    if (Object.keys(json).length < 1) return eat(originalMatch);
 
     switch (type) {
       case 'code': {
@@ -71,10 +72,10 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           },
         }));
         if (children.length === 1) {
-          if (!children[0].value) return eat(match); // skip empty code tabs
-          if (children[0].name) return eat(match)(WrapPinnedBlocks(children[0], json));
+          if (!children[0].value) return eat(originalMatch); // skip empty code tabs
+          if (children[0].name) return eat(originalMatch)(WrapPinnedBlocks(children[0], json));
         }
-        return eat(match)(
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               children,
@@ -88,7 +89,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
       }
       case 'api-header': {
         const depth = json.level || (compatibilityMode ? 1 : 2);
-        return eat(match)(
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               type: 'heading',
@@ -137,8 +138,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           .filter(e => e); // eslint-disable-line unicorn/prefer-array-find
         const img = imgs[0];
 
-        if (!img || !img.url) return eat(match);
-        return eat(match)(WrapPinnedBlocks(img, json));
+        if (!img || !img.url) return eat(originalMatch);
+        return eat(originalMatch)(WrapPinnedBlocks(img, json));
       }
       case 'callout': {
         const types = {
@@ -149,8 +150,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         };
         json.type = json.type in types ? types[json.type] : [json.icon || '👍', json.type];
         const [icon, theme] = json.type;
-        if (!(json.title || json.body)) return eat(match);
-        return eat(match)(
+        if (!(json.title || json.body)) return eat(originalMatch);
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               type: 'rdme-callout',
@@ -173,7 +174,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         const { data, rows, cols } = json;
         const tokenizeCell = this[compatibilityMode ? 'tokenizeBlock' : 'tokenizeInline'].bind(this);
 
-        if (!Object.keys(data).length) return eat(match); // skip empty tables
+        if (!Object.keys(data).length) return eat(originalMatch); // skip empty tables
 
         const sparseData = Object.entries(data).reduce((mapped, [key, v]) => {
           let [row, col] = key.split('-');
@@ -202,7 +203,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           align: 'align' in json ? json.align : new Array(json.cols).fill('left'),
           children,
         };
-        return eat(match)(WrapPinnedBlocks(table, json));
+        return eat(originalMatch)(WrapPinnedBlocks(table, json));
       }
       case 'embed': {
         const { title, url, html } = json;
@@ -220,7 +221,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
           html,
           title,
         };
-        return eat(match)(
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               type: 'embed',
@@ -245,7 +246,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         );
       }
       case 'html': {
-        return eat(match)(
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               type: 'html-block',
@@ -263,7 +264,7 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
         );
       }
       default: {
-        return eat(match)(
+        return eat(originalMatch)(
           WrapPinnedBlocks(
             {
               type: 'div',

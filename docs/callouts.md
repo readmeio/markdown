@@ -45,6 +45,7 @@ Renders to a plain ol' block quote:
 > **👋** Lorem ipsum dolor sit amet consectetur adipisicing elit.
 
 </details><hr>
+
 [block:api-header]
 {
   "title": "Examples"
@@ -58,6 +59,7 @@ Renders to a plain ol' block quote:
   "title": "[Success](#edge-cases)"
 }
 [/block]
+
 > 📘 Info
 > 
 > Lorem ipsum dolor sit amet consectetur adipisicing elit.
@@ -155,6 +157,7 @@ This works like a charm:
 
 > 📸 Cool pix!
 > Vitae reprehenderit at aliquid error voluptates eum dignissimos.
+
 [block:html]
 {
   "html": "<style>\n  #my-theme .callout[theme=📸] {\n    --emoji: unset;\n    --icon: \"\";\n  }\n  #my-theme .callout[theme=📷],\n  #my-theme .callout[theme=📸] {\n    --icon-color: #c50a50;\n    --border: var(--icon-color);\n    --title: var(--icon-color);\n  }\n  summary {\n    outline: none;\n    user-select: none;\n  }\n</style>"
@@ -173,11 +176,13 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
 ```
 
 </details><hr>
+
 [block:api-header]
 {
   "title": "Edge Cases"
 }
 [/block]
+
 <details><summary>Callouts don't need to have any body text:</summary><br>
 
 ```
@@ -201,6 +206,7 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
 > 🥈  
 > 
 > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+
 [block:html]
 {
   "html": "<style>\n.markdown-body .callout[theme=\"🎅\"] {\n  --background: #c50a4f;\n  --border: #ffffff6b;\n  --text: #f5fffa;\n}\n</style>"

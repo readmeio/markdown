@@ -1,4 +1,6 @@
-const { imgSizeByWidth } = require('../parse/magic-block-parser');
+import { imgSizeByWidth } from '../parse/magic-block-parser';
+
+import magicBlock from './magic-block';
 
 const compileImage = image => {
   const { align, className, width } = image.data.hProperties || {};
@@ -12,7 +14,7 @@ const compileImage = image => {
   return img;
 };
 
-module.exports = function FigureCompiler() {
+export default function FigureCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
@@ -33,8 +35,6 @@ module.exports = function FigureCompiler() {
       images: [img],
     };
 
-    return `[block:image]
-${JSON.stringify(block, null, 2)}
-[/block]`;
+    return magicBlock('image', block);
   };
-};
+}
