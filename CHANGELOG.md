@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.69.0
+
+### ✨ New & Improved
+
+* single line magic blocks ([#812](https://github.com/readmeio/markdown/issues/812)) ([29585c1](https://github.com/readmeio/markdown/commit/29585c1998679ff1b598a732c74a38d552530603))
+
 ## Version 6.68.0
 
 ### ✨ New & Improved
