@@ -18,7 +18,7 @@ export default function FigureCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors.figure = function figureCompiler(node) {
+  visitors.figure = function figureCompiler(node, parent) {
     let image;
     let caption;
 
@@ -35,6 +35,6 @@ export default function FigureCompiler() {
       images: [img],
     };
 
-    return magicBlock('image', block);
+    return magicBlock('image', block, parent);
   };
 }
