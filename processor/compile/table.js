@@ -13,7 +13,7 @@ export default function TableCompiler() {
 
   const { table: original } = visitors;
 
-  visitors.table = function (node) {
+  visitors.table = function (node, parent) {
     if (!find(node, n => n.type === 'break')) {
       return original.call(this, node);
     }
@@ -34,6 +34,6 @@ export default function TableCompiler() {
       });
     });
 
-    return magicBlock('parameters', data);
+    return magicBlock('parameters', data, parent);
   };
 }
