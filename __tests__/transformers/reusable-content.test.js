@@ -12,7 +12,7 @@ describe('reusable content transfomer', () => {
     const md = `
 Before
 
-<RMReusableContent name="test" />
+<RMReusableContent slug="test" />
 
 After
     `;
@@ -25,7 +25,7 @@ After
   });
 
   it('should insert an empty node if the reusable content block is not defined', () => {
-    const md = '<RMReusableContent name="not-defined" />';
+    const md = '<RMReusableContent slug="not-defined" />';
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe('reusable-content');
@@ -34,9 +34,9 @@ After
 
   it('does not expand reusable content recursively', () => {
     const reusableContent = {
-      test: '<RMReusableContent name="test" />',
+      test: '<RMReusableContent slug="test" />',
     };
-    const md = '<RMReusableContent name="test" />';
+    const md = '<RMReusableContent slug="test" />';
     const tree = mdast(md, { reusableContent });
 
     expect(tree.children[0].children[0].type).toBe('reusable-content');

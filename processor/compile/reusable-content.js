@@ -4,5 +4,5 @@ export default function ReusableContentCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors[type] = node => `<${tag} name="${node.name}" />`;
+  visitors[type] = node => `<${tag} slug="${node.slug}" />`;
 }
