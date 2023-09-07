@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.70.0
+
+### 🛠 Fixes & Updates
+
+* use slug instead of name ([#815](https://github.com/readmeio/markdown/issues/815)) ([48b7ecd](https://github.com/readmeio/markdown/commit/48b7ecdf4f662bf32ca4ef0c60ef3e50aa8f36a9))
+
+
+### ✨ New & Improved
+
+* only save inlined magic when in a container ([#814](https://github.com/readmeio/markdown/issues/814)) ([227f12b](https://github.com/readmeio/markdown/commit/227f12b4f4653c98a6e661435daf91c26607874f))
+
 ## Version 6.69.0
 
 ### ✨ New & Improved
