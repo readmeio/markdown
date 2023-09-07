@@ -36,7 +36,7 @@ Object {
       "type": "paragraph",
     },
   ],
-  "name": "test",
+  "slug": "test",
   "type": "reusable-content",
 }
 `;
