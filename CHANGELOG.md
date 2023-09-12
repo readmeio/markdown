@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.70.1
+
+### 🛠 Fixes & Updates
+
+* normalize root level magic blocks ([#816](https://github.com/readmeio/markdown/issues/816)) ([a4db15f](https://github.com/readmeio/markdown/commit/a4db15fe97f3fedb35b400e03118ca5e125341b1))
+
 ## Version 6.70.0
 
 ### 🛠 Fixes & Updates
