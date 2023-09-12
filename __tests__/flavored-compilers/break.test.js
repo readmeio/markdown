@@ -1,4 +1,4 @@
-import { mdast, md } from '../..';
+import { mdast, md } from '../../index';
 
 describe('break compiler', () => {
   it('uses two spaces with `correctnewlines: false`', () => {
