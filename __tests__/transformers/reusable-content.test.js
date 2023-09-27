@@ -3,7 +3,7 @@ import { mdast } from '../../index';
 describe('reusable content transfomer', () => {
   it('should replace a reusable content block if the block is provided', () => {
     const reusableContent = {
-      test: `
+      Test: `
 # Test
 
 [link](http://example.com)
@@ -12,7 +12,7 @@ describe('reusable content transfomer', () => {
     const md = `
 Before
 
-<RMReusableContent slug="test" />
+<Test />
 
 After
     `;
@@ -24,8 +24,23 @@ After
     expect(tree.children[2].children[0].value).toBe('After');
   });
 
+  it('should replace a reusable content block with multiple words if the block is provided', () => {
+    const reusableContent = {
+      MyCustomComponent: `
+# Test
+
+[link](http://example.com)
+    `,
+    };
+    const md = '<MyCustomComponent />';
+
+    const tree = mdast(md, { reusableContent });
+
+    expect(tree.children[0]).toMatchSnapshot();
+  });
+
   it('should insert an empty node if the reusable content block is not defined', () => {
-    const md = '<RMReusableContent slug="not-defined" />';
+    const md = '<NotDefined />';
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe('reusable-content');
@@ -34,9 +49,9 @@ After
 
   it('does not expand reusable content recursively', () => {
     const reusableContent = {
-      test: '<RMReusableContent slug="test" />',
+      Test: '<Test />',
     };
-    const md = '<RMReusableContent slug="test" />';
+    const md = '<Test />';
     const tree = mdast(md, { reusableContent });
 
     expect(tree.children[0].children[0].type).toBe('reusable-content');
