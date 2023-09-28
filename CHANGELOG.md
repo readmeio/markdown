@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.71.0
+
+### ✨ New & Improved
+
+* reusable content syntax ([#817](https://github.com/readmeio/markdown/issues/817)) ([62afb7d](https://github.com/readmeio/markdown/commit/62afb7dfc5ee7a2ab0f7297e0ed4439ecd3cbbc7))
+
 ## Version 6.70.1
 
 ### 🛠 Fixes & Updates
