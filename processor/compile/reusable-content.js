@@ -1,8 +1,8 @@
-import { type, tag } from '../transform/reusable-content';
+import { type } from '../transform/reusable-content';
 
 export default function ReusableContentCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors[type] = node => `<${tag} slug="${node.slug}" />`;
+  visitors[type] = node => `<${node.tag} />`;
 }
