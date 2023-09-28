@@ -1,9 +1,8 @@
 import { visit } from 'unist-util-visit';
 
 export const type = 'reusable-content';
-export const tag = 'RMReusableContent';
 
-const regexp = new RegExp(`^\\s*<${tag} slug="(?<slug>.*)" />\\s*$`);
+const regexp = /^\s*<(?<tag>[A-Z]\S+)\s*\/>\s*$/;
 
 const reusableContentTransformer = function () {
   const reusableContent = this.data('reusableContent');
@@ -11,13 +10,14 @@ const reusableContentTransformer = function () {
   return tree => {
     visit(tree, 'html', (node, index, parent) => {
       const result = regexp.exec(node.value);
-      if (!result || !result.groups.slug) return;
+      if (!result || !result.groups.tag) return;
 
-      const { slug } = result.groups;
+      const { tag } = result.groups;
+
       const block = {
         type,
-        slug,
-        children: slug in reusableContent ? reusableContent[slug] : [],
+        tag,
+        children: tag in reusableContent ? reusableContent[tag] : [],
       };
 
       parent.children[index] = block;
