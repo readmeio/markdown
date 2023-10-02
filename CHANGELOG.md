@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.71.1
+
+### 🛠 Fixes & Updates
+
+* darkmode typo ([#818](https://github.com/readmeio/markdown/issues/818)) ([9be0a84](https://github.com/readmeio/markdown/commit/9be0a84d45eae82bdbfcb484abaae08735cf1a50))
+
 ## Version 6.71.0
 
 ### ✨ New & Improved
