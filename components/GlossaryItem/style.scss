@@ -33,7 +33,7 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      [data-color-mode='auto'] & {
+      [data-color-mode='system'] & {
         --GlossaryItem-bg: var(--Tooltip-bg, var(--gray0));
         --GlossaryItem-color: var(--color-text-default, var(--white));
         --GlossaryItem-shadow: var(
