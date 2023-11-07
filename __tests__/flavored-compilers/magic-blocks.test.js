@@ -39,6 +39,7 @@ describe('Compile Magic Blocks', () => {
     expect(compiled).toMatchInlineSnapshot(`
       "> 👍 It works!
       > 
+      > 
       > [block:image]{\\"images\\":[{\\"image\\":[\\"https://owlbertsio-resized.s3.amazonaws.com/This-Is-Fine.jpg.full.png\\",\\"\\",\\"\\"],\\"align\\":\\"center\\"}]}[/block]
       "
     `);
