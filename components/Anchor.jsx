@@ -18,7 +18,7 @@ function getHref(href, baseUrl) {
 
   const ref = path.match(/^ref:([-_a-zA-Z0-9#]*)$/);
   if (ref) {
-    return `${base}/reference-link/${ref[1]}${hashStr}`;
+    return `${base}/reference/${ref[1]}${hashStr}`;
   }
 
   // we need to perform two matches for changelogs in case
