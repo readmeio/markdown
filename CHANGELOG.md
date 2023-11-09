@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.71.2
+
+### 🛠 Fixes & Updates
+
+* remove reference-link ([#819](https://github.com/readmeio/markdown/issues/819)) ([36487d5](https://github.com/readmeio/markdown/commit/36487d534eb5642e8c1875a882ac721b77718e17))
+
+
+### ✨ New & Improved
+
+* li clear float ([#825](https://github.com/readmeio/markdown/issues/825)) ([b5cc2e3](https://github.com/readmeio/markdown/commit/b5cc2e3a923adb79b3a20b4555b5145a4a7c671a))
+
 ## Version 6.71.1
 
 ### 🛠 Fixes & Updates
