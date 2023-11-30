@@ -16,6 +16,7 @@ test('it should have the proper utils exports', () => {
     compatibilityMode: false,
     copyButtons: true,
     correctnewlines: false,
+    disableReusableContent: false,
     lazyImages: true,
     markdownOptions: {
       fences: true,
