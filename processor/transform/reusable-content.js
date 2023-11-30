@@ -6,6 +6,7 @@ const regexp = /^\s*<(?<tag>[A-Z]\S+)\s*\/>\s*$/;
 
 const reusableContentTransformer = function () {
   const reusableContent = this.data('reusableContent');
+  if (!reusableContent) return () => undefined;
 
   return tree => {
     visit(tree, 'html', (node, index, parent) => {
