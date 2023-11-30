@@ -90,6 +90,8 @@ export const utils = {
  * blocks recursively.
  */
 const parseReusableContent = ({ reusableContent, ...opts }) => {
+  if (opts.disableReusableContent) return [null, opts];
+
   const parsedReusableContent = Object.entries(reusableContent).reduce((memo, [name, content]) => {
     // eslint-disable-next-line no-use-before-define
     memo[name] = mdast(content, opts).children;

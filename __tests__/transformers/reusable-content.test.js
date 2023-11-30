@@ -57,4 +57,15 @@ After
     expect(tree.children[0].children[0].type).toBe('reusable-content');
     expect(tree.children[0].children[0].children).toStrictEqual([]);
   });
+
+  it('does not replace reusable content if it is disabled', () => {
+    const reusableContent = {
+      Test: '<Test />',
+    };
+    const md = '<Test />';
+    const tree = mdast(md, { disableReusableContent: true, reusableContent });
+
+    expect(tree.children[0].type).toBe('html');
+    expect(tree.children[0].value).toBe('<Test />');
+  });
 });

@@ -3,6 +3,7 @@ const options = {
   compatibilityMode: false,
   copyButtons: true,
   correctnewlines: false,
+  disableReusableContent: false,
   markdownOptions: {
     fences: true,
     commonmark: true,
