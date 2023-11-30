@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.72.0
+
+### ✨ New & Improved
+
+* allow disabling reusable content ([#826](https://github.com/readmeio/markdown/issues/826)) ([3c94936](https://github.com/readmeio/markdown/commit/3c9493649167a4244a2c4c6b30bf6b7862e7cd6d))
+
 ## Version 6.71.2
 
 ### 🛠 Fixes & Updates
