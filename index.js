@@ -90,15 +90,15 @@ export const utils = {
  * blocks recursively.
  */
 const parseReusableContent = ({ reusableContent, ...opts }) => {
-  if (opts.disableReusableContent) return [null, opts];
+  if (reusableContent.disabled) return [{ disabled: true, writeTags: true }, opts];
 
-  const parsedReusableContent = Object.entries(reusableContent).reduce((memo, [name, content]) => {
+  const tags = Object.entries(reusableContent.tags).reduce((memo, [name, content]) => {
     // eslint-disable-next-line no-use-before-define
     memo[name] = mdast(content, opts).children;
     return memo;
   }, {});
 
-  return [parsedReusableContent, opts];
+  return [{ ...reusableContent, tags }, opts];
 };
 
 /**
@@ -290,9 +290,11 @@ export function astToPlainText(node, opts = {}) {
 /**
  *  compile mdast to ReadMe-flavored markdown
  */
-export function md(tree, opts = {}) {
-  if (!tree) return null;
+export function md(treeOrString, opts = {}) {
+  if (!treeOrString) return null;
   [, opts] = setup('', opts);
+
+  const tree = typeof treeOrString === 'string' ? mdast(treeOrString, opts) : treeOrString;
 
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
 }

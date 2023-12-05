@@ -2,7 +2,7 @@ import { mdast } from '../../index';
 
 describe('reusable content transfomer', () => {
   it('should replace a reusable content block if the block is provided', () => {
-    const reusableContent = {
+    const tags = {
       Test: `
 # Test
 
@@ -17,7 +17,7 @@ Before
 After
     `;
 
-    const tree = mdast(md, { reusableContent });
+    const tree = mdast(md, { reusableContent: { tags } });
 
     expect(tree.children[0].children[0].value).toBe('Before');
     expect(tree.children[1]).toMatchSnapshot();
@@ -25,7 +25,7 @@ After
   });
 
   it('should replace a reusable content block with multiple words if the block is provided', () => {
-    const reusableContent = {
+    const tags = {
       MyCustomComponent: `
 # Test
 
@@ -34,7 +34,7 @@ After
     };
     const md = '<MyCustomComponent />';
 
-    const tree = mdast(md, { reusableContent });
+    const tree = mdast(md, { reusableContent: { tags } });
 
     expect(tree.children[0]).toMatchSnapshot();
   });
@@ -48,22 +48,22 @@ After
   });
 
   it('does not expand reusable content recursively', () => {
-    const reusableContent = {
+    const tags = {
       Test: '<Test />',
     };
     const md = '<Test />';
-    const tree = mdast(md, { reusableContent });
+    const tree = mdast(md, { reusableContent: { tags } });
 
     expect(tree.children[0].children[0].type).toBe('reusable-content');
     expect(tree.children[0].children[0].children).toStrictEqual([]);
   });
 
   it('does not replace reusable content if it is disabled', () => {
-    const reusableContent = {
+    const tags = {
       Test: '<Test />',
     };
     const md = '<Test />';
-    const tree = mdast(md, { disableReusableContent: true, reusableContent });
+    const tree = mdast(md, { reusableContent: { tags, disabled: true } });
 
     expect(tree.children[0].type).toBe('html');
     expect(tree.children[0].value).toBe('<Test />');

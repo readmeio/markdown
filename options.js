@@ -3,7 +3,6 @@ const options = {
   compatibilityMode: false,
   copyButtons: true,
   correctnewlines: false,
-  disableReusableContent: false,
   markdownOptions: {
     fences: true,
     commonmark: true,
@@ -15,7 +14,11 @@ const options = {
   },
   normalize: true,
   lazyImages: true,
-  reusableContent: {},
+  reusableContent: {
+    tags: {},
+    disabled: false,
+    writeTags: true,
+  },
   safeMode: false,
   settings: {
     position: false,
@@ -77,8 +80,17 @@ const disableTokenizers = {
   },
 };
 
-const parseOptions = (userOpts = {}) => {
-  let opts = { ...options, ...userOpts };
+const parseOptions = ({ markdownOptions = {}, reusableContent = {}, settings = {}, ...userOpts } = {}) => {
+  let opts = {
+    ...options,
+    markdownOptions: { ...options.markdownOptions, ...markdownOptions },
+    reusableContent: {
+      ...options.reusableContent,
+      ...reusableContent,
+    },
+    settings: { ...options.settings, ...settings },
+    ...userOpts,
+  };
 
   if (opts.disableTokenizers in disableTokenizers) {
     opts = { ...opts, ...disableTokenizers[opts.disableTokenizers] };
