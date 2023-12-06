@@ -1,7 +1,7 @@
 import { type } from '../transform/reusable-content';
 
 export default function ReusableContentCompiler() {
-  const { writeTags } = this.data('reusableContent');
+  const { writeTags = true } = this.data('reusableContent') || {};
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
