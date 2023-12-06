@@ -16,7 +16,6 @@ test('it should have the proper utils exports', () => {
     compatibilityMode: false,
     copyButtons: true,
     correctnewlines: false,
-    disableReusableContent: false,
     lazyImages: true,
     markdownOptions: {
       fences: true,
@@ -28,7 +27,11 @@ test('it should have the proper utils exports', () => {
       paddedTable: true,
     },
     normalize: true,
-    reusableContent: {},
+    reusableContent: {
+      disabled: false,
+      tags: {},
+      writeTags: true,
+    },
     safeMode: false,
     settings: { position: false },
     theme: 'light',
