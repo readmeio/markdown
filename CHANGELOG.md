@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.73.0
+
+### ✨ New & Improved
+
+* write out reusable content as tags ([#827](https://github.com/readmeio/markdown/issues/827)) ([5b3e0e2](https://github.com/readmeio/markdown/commit/5b3e0e2e50d15a141d0ff842fd52451f2ab79689))
+
 ## Version 6.72.0
 
 ### ✨ New & Improved
