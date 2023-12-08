@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.73.1
+
+### 🛠 Fixes & Updates
+
+* use semantic h3 ([#828](https://github.com/readmeio/markdown/issues/828)) ([372ca7b](https://github.com/readmeio/markdown/commit/372ca7b0e4fc6da85ed2582e68d7a9bccfc08aa6))
+
 ## Version 6.73.0
 
 ### ✨ New & Improved
