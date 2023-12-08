@@ -32,7 +32,7 @@
     "@readme/syntax-highlighter": "^12.1.2",
     "copy-to-clipboard": "^3.3.2",
     "emoji-regex": "^10.2.1",
-    "hast-util-sanitize": "^4.0.0",
+    "hast-util-sanitize": "^5.0.1",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-toc": "^5.1.0",
