@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.74.0
+
+### ✨ New & Improved
+
+* callout titles h2 ([#829](https://github.com/readmeio/markdown/issues/829)) ([be8b901](https://github.com/readmeio/markdown/commit/be8b9011ff88ab032ba819788c6a8b7058ab87f4)), closes [#828](https://github.com/readmeio/markdown/issues/828)
+
 ## Version 6.73.1
 
 ### 🛠 Fixes & Updates
