@@ -8,10 +8,10 @@ const Callout = props => {
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      <h3 className={`callout-heading${title ? '' : ' empty'}`}>
+      <h2 className={`callout-heading${title ? '' : ' empty'}`}>
         <span className="callout-icon">{icon}</span>
         {title}
-      </h3>
+      </h2>
       {content}
     </blockquote>
   );
