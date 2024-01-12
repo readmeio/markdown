@@ -63,7 +63,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    expect(astToPlainText(hast(txt))).toBe('Header 1 Header 2 Cell 1 Cell 2 \nCell 2.1');
+    expect(astToPlainText(hast(txt))).toBe('Header 1 Header 2 Cell 1 Cell 2 Cell 2.1');
   });
 
   it('converts images', () => {
