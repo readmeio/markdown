@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.74.1
+
+### 🛠 Fixes & Updates
+
+* table flattening ([#830](https://github.com/readmeio/markdown/issues/830)) ([54e75f4](https://github.com/readmeio/markdown/commit/54e75f43db8c0424039ba8d3ff439dc069e012cb))
+
 ## Version 6.74.0
 
 ### ✨ New & Improved
