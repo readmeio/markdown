@@ -6,6 +6,19 @@ Object {
     Object {
       "children": Array [
         Object {
+          "position": Position {
+            "end": Object {
+              "column": 7,
+              "line": 2,
+              "offset": 7,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
           "type": "text",
           "value": "Test",
         },
@@ -17,6 +30,19 @@ Object {
         "id": "test",
       },
       "depth": 1,
+      "position": Position {
+        "end": Object {
+          "column": 7,
+          "line": 2,
+          "offset": 7,
+        },
+        "indent": Array [],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
       "type": "heading",
     },
     Object {
@@ -24,15 +50,54 @@ Object {
         Object {
           "children": Array [
             Object {
+              "position": Position {
+                "end": Object {
+                  "column": 6,
+                  "line": 4,
+                  "offset": 14,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 2,
+                  "line": 4,
+                  "offset": 10,
+                },
+              },
               "type": "text",
               "value": "link",
             },
           ],
+          "position": Position {
+            "end": Object {
+              "column": 27,
+              "line": 4,
+              "offset": 35,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 1,
+              "line": 4,
+              "offset": 9,
+            },
+          },
           "title": null,
           "type": "link",
           "url": "http://example.com",
         },
       ],
+      "position": Position {
+        "end": Object {
+          "column": 27,
+          "line": 4,
+          "offset": 35,
+        },
+        "indent": Array [],
+        "start": Object {
+          "column": 1,
+          "line": 4,
+          "offset": 9,
+        },
+      },
       "type": "paragraph",
     },
   ],
@@ -47,6 +112,19 @@ Object {
     Object {
       "children": Array [
         Object {
+          "position": Position {
+            "end": Object {
+              "column": 7,
+              "line": 2,
+              "offset": 7,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
           "type": "text",
           "value": "Test",
         },
@@ -58,6 +136,19 @@ Object {
         "id": "test",
       },
       "depth": 1,
+      "position": Position {
+        "end": Object {
+          "column": 7,
+          "line": 2,
+          "offset": 7,
+        },
+        "indent": Array [],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
       "type": "heading",
     },
     Object {
@@ -65,15 +156,54 @@ Object {
         Object {
           "children": Array [
             Object {
+              "position": Position {
+                "end": Object {
+                  "column": 6,
+                  "line": 4,
+                  "offset": 14,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 2,
+                  "line": 4,
+                  "offset": 10,
+                },
+              },
               "type": "text",
               "value": "link",
             },
           ],
+          "position": Position {
+            "end": Object {
+              "column": 27,
+              "line": 4,
+              "offset": 35,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 1,
+              "line": 4,
+              "offset": 9,
+            },
+          },
           "title": null,
           "type": "link",
           "url": "http://example.com",
         },
       ],
+      "position": Position {
+        "end": Object {
+          "column": 27,
+          "line": 4,
+          "offset": 35,
+        },
+        "indent": Array [],
+        "start": Object {
+          "column": 1,
+          "line": 4,
+          "offset": 9,
+        },
+      },
       "type": "paragraph",
     },
   ],
