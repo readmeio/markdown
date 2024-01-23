@@ -263,7 +263,7 @@ export function hast(text, opts = {}) {
 
   const rdmd = htmlProcessor(opts).use(tableFlattening);
   const node = rdmd.parse(text);
-  return rdmd.runSync(node);
+  return rdmd.runSync(node, text);
 }
 
 /**
