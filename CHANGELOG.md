@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.74.2
+
+### 🛠 Fixes & Updates
+
+* positional data in hast ([#831](https://github.com/readmeio/markdown/issues/831)) ([98789f1](https://github.com/readmeio/markdown/commit/98789f1d44ae2174a3837b9d6fa4672d489cb10d))
+
 ## Version 6.74.1
 
 ### 🛠 Fixes & Updates
