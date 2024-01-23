@@ -33,7 +33,7 @@ test('it should have the proper utils exports', () => {
       writeTags: true,
     },
     safeMode: false,
-    settings: { position: false },
+    settings: { position: true },
     theme: 'light',
   });
 });

@@ -21,7 +21,7 @@ const options = {
   },
   safeMode: false,
   settings: {
-    position: false,
+    position: true,
   },
   theme: 'light',
 };

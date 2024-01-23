@@ -1,5 +1,5 @@
-@readme/markdown
-===
+# @readme/markdown
+
 <img align="right" width="26%" src="https://owlbertsio-resized.s3.amazonaws.com/Reading.psd.full.png">
 
 ReadMe's flavored Markdown parser and MDX rendering engine. <img align=center src=https://github.com/readmeio/markdown/workflows/CI/badge.svg alt="RDMD CI Status">
@@ -14,28 +14,24 @@ By default, the updated markdown package exports a function which takes a string
 
 ```jsx
 import React from 'react';
-import rdmd from "@readme/markdown";
+import rdmd from '@readme/markdown';
 
-export default ({ body }) => (
-  <div className="markdown-body">
-    {rdmd(body)}
-  </div>
-);
+export default ({ body }) => <div className="markdown-body">{rdmd(body)}</div>;
 ```
 
 ### Export Methods
 
 In addition to the default React processor, the package exports some other methods for transforming ReadMe-flavored markdown:
 
-| Export  | Description                                    | Arguments       |
-| -------:|:---------------------------------------------- |:--------------- |
-|*`react`*|_(default)_ returns a VDOM tree object          |`text`, `options`|
-|*`md`*   | transform mdast in to ReadMe-flavored markdown |`tree`, `options`|
-|*`html`* | transform markdown in to HTML                  |`text`, `options`|
-|*`mdast`*| transform markdown to an mdast object          |`text`, `options`|
-|*`hast`* | transform markdown to HAST object              |`text`, `options`|
-|*`plain`*| transform markdown to plain text               |`text`, `options`|
-|*`utils`*| contexts, defaults, helpers, etc.              | N/A             |
+|    Export | Description                                    | Arguments         |
+| --------: | :--------------------------------------------- | :---------------- |
+| _`react`_ | _(default)_ returns a VDOM tree object         | `text`, `options` |
+|    _`md`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
+|  _`html`_ | transform markdown in to HTML                  | `text`, `options` |
+| _`mdast`_ | transform markdown to an mdast object          | `text`, `options` |
+|  _`hast`_ | transform markdown to HAST object              | `text`, `options` |
+| _`plain`_ | transform markdown to plain text               | `text`, `options` |
+| _`utils`_ | contexts, defaults, helpers, etc.              | N/A               |
 
 ### Settings & Options
 
