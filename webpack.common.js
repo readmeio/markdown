@@ -1,21 +1,28 @@
 /* eslint-disable import/no-extraneous-dependencies
  */
 const ExtractCSS = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
     }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
   ],
   module: {
     rules: [
       {
-        test: /node_modules\/.*(is-plain-obj|parse5)\/.*.js$/,
+        test: /\.tsx?$/,
         use: {
-          loader: 'babel-loader',
-          options: { extends: './.babelrc' },
+          loader: 'ts-loader',
         },
+        exclude: /node_modules/,
       },
       {
         test: /\.jsx?$/,
@@ -25,6 +32,15 @@ module.exports = {
           options: { extends: './.babelrc' },
         },
       },
+      {
+        test: /\.m?js$/,
+        include: /node_modules/,
+        type: 'javascript/auto',
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+
       {
         test: /\.css$/,
         use: [ExtractCSS.loader, 'css-loader'],
@@ -51,6 +67,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.json', '.jsx'],
+    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx'],
+    fallback: { buffer: require.resolve('buffer') },
   },
 };
