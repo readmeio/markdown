@@ -87,6 +87,7 @@
     "puppeteer": "^19.8.3",
     "react-hot-loader": "^4.13.1",
     "sass-loader": "^13.2.2",
+    "semantic-release": "^22.0.12",
     "stream-browserify": "^3.0.0",
     "string.prototype.trimend": "^1.0.6",
     "terser-webpack-plugin": "^5.3.7",
