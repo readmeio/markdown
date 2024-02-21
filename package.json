@@ -1,5 +1,5 @@
 {
-  "name": "@readme/mdx",
+  "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "7.0.0",
@@ -14,6 +14,8 @@
   "scripts": {
     "build": "webpack --mode production",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
+    "release": "npx semantic-release",
+    "release.dry": "npx semantic-release --dry-run",
     "test": "jest --coverage --runInBand",
     "test.watch": "jest --watch --coverage=false",
     "watch": "webpack --watch --progress --mode development"
@@ -97,6 +99,18 @@
   },
   "license": "MIT",
   "homepage": "https://rdmd.readme.io",
-  "repository": "https://github.com/readmeio/mdx",
-  "prettier": "@readme/eslint-config/prettier"
+  "repository": "https://github.com/readmeio/markdown",
+  "prettier": "@readme/eslint-config/prettier",
+  "bundlewatch": {
+    "files": [
+      {
+        "path": "dist/main.js",
+        "maxSize": "450KB"
+      },
+      {
+        "path": "dist/main.node.js",
+        "maxSize": "250KB"
+      }
+    ]
+  }
 }
