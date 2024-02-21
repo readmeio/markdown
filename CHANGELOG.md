@@ -1,6 +1,39 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.1
+
+### 📘 Tests & Docs
+
+* tweaks ([6a4d831](https://github.com/readmeio/markdown/commit/6a4d831ee8b155c764a3c3e8dba0c0e282e6dba1))
+
+
+### ✨ New & Improved
+
+* compile + run ([aa95a65](https://github.com/readmeio/markdown/commit/aa95a65fae77fd9ffa7ec8a23b053aba4026c356))
+* initial commit ([201162a](https://github.com/readmeio/markdown/commit/201162a1590f1cb83b41fbef0541436d69720852))
+* mdx v1 ([a5faf6d](https://github.com/readmeio/markdown/commit/a5faf6d8202743340b320526db48bac936ae0331))
+* mdx v1 ([3250aff](https://github.com/readmeio/markdown/commit/3250aff9669481feb3cf7c839ec96ba98e3a2cda))
+
+
+### 🛠 Fixes & Updates
+
+* ?? ([2e86b60](https://github.com/readmeio/markdown/commit/2e86b6087677f23901b220bb2de5c44440cd594e))
+* cleanup ([5bef7c4](https://github.com/readmeio/markdown/commit/5bef7c485142913c4fd161ebe4a6569c72348893))
+* cleanup ([ca4a841](https://github.com/readmeio/markdown/commit/ca4a841fbfcde172f85d4737f3dea572807dc505))
+* dont raise ([c4e8a51](https://github.com/readmeio/markdown/commit/c4e8a516494e3b01a43cb33e3148845e3ae5f8b5))
+* errors ([b6ed87e](https://github.com/readmeio/markdown/commit/b6ed87e0f80b32d5385d8c4ad23dea1fd4e3087b))
+* fix some build stuff ([7147bad](https://github.com/readmeio/markdown/commit/7147bad85f1f1db1b0317bfdae79affa6e07962e))
+* more deps + config ([b6cd0f1](https://github.com/readmeio/markdown/commit/b6cd0f1d349ae4faa83e7c473a68ea7407177c09))
+* more errors ([2518d47](https://github.com/readmeio/markdown/commit/2518d47570c354fb2177ba43c724417a921897c0))
+* reactProcessor ([a74109c](https://github.com/readmeio/markdown/commit/a74109cfda878ddb7997c80e2bc7c08002cee7c1))
+* render callouts ([aaf5a75](https://github.com/readmeio/markdown/commit/aaf5a75277e17da130e5041b89c665b036b1dff2))
+* render callouts + error boundary ([2dedb0a](https://github.com/readmeio/markdown/commit/2dedb0ab27b356902c2733066e5bab5c54b53fa0))
+* types error ([518f698](https://github.com/readmeio/markdown/commit/518f698f937f89b6eea26daaf672badb8a77fb05))
+* update demo styling ([bc7198e](https://github.com/readmeio/markdown/commit/bc7198e6c5c8573cec092554e5afe90d501ed8e0))
+* update error boundary ([589f23d](https://github.com/readmeio/markdown/commit/589f23d5aba70458d96d26ab2a0ae77397a7aa62))
+* update remark-parse version ([cd94111](https://github.com/readmeio/markdown/commit/cd94111ef9541dee8ba41eb8f31aef8351a1ace1))
+
 ## Version 6.74.2
 
 ### 🛠 Fixes & Updates
