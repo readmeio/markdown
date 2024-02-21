@@ -1,5 +1,3 @@
-const { insertBlockTokenizerBefore } = require('./utils');
-
 const rgx = /^(#{1,6})(?!(?:#|\s))([^\n]+)\n/;
 
 function tokenizer(eat, value) {
@@ -8,6 +6,8 @@ function tokenizer(eat, value) {
   const [match, hash, text] = rgx.exec(value);
 
   const now = eat.now();
+  now.column += match.length;
+  now.offset += match.length;
 
   return eat(match)({
     type: 'heading',
@@ -17,11 +17,12 @@ function tokenizer(eat, value) {
 }
 
 function parser() {
-  insertBlockTokenizerBefore.call(this, {
-    name: 'compactHeading',
-    before: 'atxHeading',
-    tokenizer,
-  });
+  const { Parser } = this;
+  const tokenizers = Parser.prototype.blockTokenizers;
+  const methods = Parser.prototype.blockMethods;
+
+  tokenizers.compactHeading = tokenizer;
+  methods.splice(methods.indexOf('newline'), 0, 'compactHeading');
 }
 
 module.exports = parser;

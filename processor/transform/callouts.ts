@@ -22,8 +22,8 @@ const themes: Record<string, string> = {
 };
 
 const toString = (node: Node): string => {
-  if (node.value) return node.value as string;
-  if (node.children) return (node.children as Node[]).map(child => toString(child)).join('');
+  if ('value' in node && node.value) return node.value as string;
+  if ('children' in node && node.children) return (node.children as Node[]).map(child => toString(child)).join('');
   return '';
 };
 

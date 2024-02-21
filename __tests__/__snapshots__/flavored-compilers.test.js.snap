@@ -1,7 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ReadMe Flavored Blocks Embed 1`] = `
-"[block:embed]
+"
+[block:embed]
 {
   \\"title\\": \\"Embedded meta links.\\",
   \\"url\\": \\"https://nyti.me/s/gzoa2xb2v3\\",
@@ -33,7 +34,8 @@ console.log('an unnamed sample snippet');
 `;
 
 exports[`ReadMe Magic Blocks Embed 1`] = `
-"[block:embed]
+"
+[block:embed]
 {
   \\"html\\": false,
   \\"url\\": \\"https://youtu.be/J3-uKv1DShQ\\",
@@ -155,7 +157,8 @@ exports[`ReadMe Magic Blocks Tables with breaks 1`] = `
 `;
 
 exports[`ReadMe Magic Blocks custom blocks 1`] = `
-"[block:tutorial-tile]
+"
+[block:tutorial-tile]
 {
   \\"backgroundColor\\": \\"#ffffff\\",
   \\"title\\": \\"Tutorial Title\\",

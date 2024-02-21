@@ -11,18 +11,6 @@ Object {
 ",
         },
       ],
-      "position": Object {
-        "end": Object {
-          "column": 1,
-          "line": 4,
-          "offset": 6,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 2,
-          "offset": 1,
-        },
-      },
       "properties": Object {},
       "tagName": "p",
       "type": "element",
@@ -72,18 +60,6 @@ Object {
           "type": "element",
         },
       ],
-      "position": Object {
-        "end": Object {
-          "column": 4,
-          "line": 9,
-          "offset": 56,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 4,
-          "offset": 6,
-        },
-      },
       "properties": Object {
         "className": Array [
           "code-tabs",
@@ -106,18 +82,6 @@ Object {
   ],
   "data": Object {
     "quirksMode": false,
-  },
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 14,
-      "offset": 66,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
   },
   "type": "root",
 }
@@ -166,40 +130,9 @@ Object {
           ],
         },
       },
-      "position": Position {
-        "end": Object {
-          "column": 4,
-          "line": 7,
-          "offset": 51,
-        },
-        "indent": Array [
-          1,
-          1,
-          1,
-          1,
-          1,
-        ],
-        "start": Object {
-          "column": 1,
-          "line": 2,
-          "offset": 1,
-        },
-      },
       "type": "code-tabs",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 10,
-      "offset": 55,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;

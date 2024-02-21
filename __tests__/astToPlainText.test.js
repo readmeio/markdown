@@ -63,7 +63,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    expect(astToPlainText(hast(txt))).toBe('Header 1 Header 2 Cell 1 Cell 2 Cell 2.1');
+    expect(astToPlainText(hast(txt))).toBe('Header 1 Header 2 Cell 1 Cell 2 \nCell 2.1');
   });
 
   it('converts images', () => {
@@ -111,8 +111,7 @@ ${JSON.stringify(
       }
       [/block]
     `;
-    const tree = hast(txt);
-    const img = find(tree, n => n.tagName === 'img');
+    const img = find(hast(txt), n => n.tagName === 'img');
 
     expect(astToPlainText(img)).toBe('Test Image Title');
   });

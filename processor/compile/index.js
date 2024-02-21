@@ -11,7 +11,6 @@ export { default as rdmeEmbedCompiler } from './embed';
 export { default as rdmeGlossaryCompiler } from './glossary';
 export { default as rdmePinCompiler } from './pin';
 export { default as rdmeVarCompiler } from './var';
-export { default as reusableContentCompiler } from './reusable-content';
 export { default as tableCompiler } from './table';
 export { default as tableHeadCompiler } from './table-head';
 export { default as yamlCompiler } from './yaml';

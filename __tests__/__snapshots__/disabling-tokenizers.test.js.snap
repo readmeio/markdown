@@ -6,51 +6,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 12,
-              "line": 1,
-              "offset": 11,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "# heading 1",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 12,
-          "line": 1,
-          "offset": 11,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 14,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;
@@ -61,51 +23,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 18,
-              "line": 1,
-              "offset": 17,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "~~strikethrough~~",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 18,
-          "line": 1,
-          "offset": 17,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 20,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;
@@ -116,51 +40,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 31,
-              "line": 1,
-              "offset": 30,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "*emphatic **strong** emphatic*",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 31,
-          "line": 1,
-          "offset": 30,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 33,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;
@@ -171,51 +57,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 19,
-              "line": 1,
-              "offset": 18,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "\`const js = true \`",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 19,
-          "line": 1,
-          "offset": 18,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 21,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;
@@ -226,51 +74,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 12,
-              "line": 1,
-              "offset": 11,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "# heading 1",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 12,
-          "line": 1,
-          "offset": 11,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 14,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;
@@ -281,51 +91,13 @@ Object {
     Object {
       "children": Array [
         Object {
-          "position": Position {
-            "end": Object {
-              "column": 18,
-              "line": 1,
-              "offset": 17,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 1,
-              "offset": 0,
-            },
-          },
           "type": "text",
           "value": "\`const js = true\`",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 18,
-          "line": 1,
-          "offset": 17,
-        },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 20,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;

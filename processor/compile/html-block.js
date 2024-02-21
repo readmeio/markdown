@@ -1,12 +1,9 @@
-import magicBlock from './magic-block';
-
-export default function HtmlBlockCompiler() {
+module.exports = function () {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors['html-block'] = (node, parent) => {
+  visitors['html-block'] = node => {
     const html = node.data.hProperties.html;
-
-    return magicBlock('html', { html }, parent);
+    return `[block:html]\n${JSON.stringify({ html }, null, 2)}\n[/block]`;
   };
-}
+};

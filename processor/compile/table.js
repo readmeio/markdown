@@ -1,5 +1,3 @@
-import magicBlock from './magic-block';
-
 const find = (node, fn) => {
   if (fn(node)) return node;
   if (node.children) return node.children.find(n => find(n, fn));
@@ -7,13 +5,13 @@ const find = (node, fn) => {
   return null;
 };
 
-export default function TableCompiler() {
+module.exports = function TableCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
   const { table: original } = visitors;
 
-  visitors.table = function (node, parent) {
+  visitors.table = function (node) {
     if (!find(node, n => n.type === 'break')) {
       return original.call(this, node);
     }
@@ -34,6 +32,6 @@ export default function TableCompiler() {
       });
     });
 
-    return magicBlock('parameters', data, parent);
+    return `[block:parameters]\n${JSON.stringify(data, null, 2)}\n[/block]`;
   };
-}
+};

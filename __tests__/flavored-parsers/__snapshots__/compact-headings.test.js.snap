@@ -8,15 +8,15 @@ Object {
         Object {
           "position": Position {
             "end": Object {
-              "column": 16,
+              "column": 33,
               "line": 1,
-              "offset": 15,
+              "offset": 32,
             },
             "indent": Array [],
             "start": Object {
-              "column": 1,
+              "column": 18,
               "line": 1,
-              "offset": 0,
+              "offset": 17,
             },
           },
           "type": "text",

@@ -12,3 +12,5 @@ node_modules
 __diff_output__
 
 example/public/img/emojis
+
+dist

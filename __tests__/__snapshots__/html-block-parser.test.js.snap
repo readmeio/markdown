@@ -5,38 +5,11 @@ Object {
   "children": Array [
     Object {
       "block": true,
-      "position": Position {
-        "end": Object {
-          "column": 5,
-          "line": 3,
-          "offset": 32,
-        },
-        "indent": Array [
-          1,
-        ],
-        "start": Object {
-          "column": 1,
-          "line": 2,
-          "offset": 1,
-        },
-      },
       "type": "html",
       "value": "<div>Some block html</div>
     ",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 5,
-      "offset": 35,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;

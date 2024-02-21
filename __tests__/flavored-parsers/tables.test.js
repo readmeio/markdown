@@ -1,4 +1,4 @@
-import { mdast, hast } from '../../index';
+import { mdast } from '../../index';
 
 describe('Parse magic block tables', () => {
   it('renders an table with missing cells', () => {
@@ -20,19 +20,5 @@ ${JSON.stringify(
     `;
 
     expect(mdast(text)).toMatchSnapshot();
-  });
-});
-
-describe('GFM style tables', () => {
-  it('renders a table with invalid html in code tags', () => {
-    const md = `
-| Alpha     | Beta                   |
-| :-------- | :--------------------- |
-| \`<valid>\` | <code><invalid></code> |
-`;
-
-    const tree = hast(md);
-
-    expect(tree.children[1].tagName).toBe('table');
   });
 });

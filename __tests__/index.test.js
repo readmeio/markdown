@@ -27,13 +27,8 @@ test('it should have the proper utils exports', () => {
       paddedTable: true,
     },
     normalize: true,
-    reusableContent: {
-      disabled: false,
-      tags: {},
-      writeTags: true,
-    },
     safeMode: false,
-    settings: { position: true },
+    settings: { position: false },
     theme: 'light',
   });
 });
@@ -312,7 +307,9 @@ test('should strip dangerous iframe tag', () => {
 
 test('should strip dangerous img attributes', () => {
   const { container } = render(markdown.default('<img src="x" onerror="alert(\'charlie\')">'));
-  expect(container).not.toContainHTML('onerror');
+  expect(container).toContainHTML(
+    '<span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="x" align="" alt="" caption="" height="auto" title="" width="auto" loading="lazy"></span></span>'
+  );
 });
 
 describe('tree flattening', () => {

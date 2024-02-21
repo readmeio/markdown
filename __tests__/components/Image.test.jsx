@@ -1,30 +1,25 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import createImage from '../../components/Image';
+import CreateImage from '../../components/Image';
 
-describe('Callout', () => {
-  it('render image with alt text', () => {
-    const altText = 'test alt text';
-    const Image = createImage({ lazyImages: true });
-    render(<Image alt={altText} src="https://example.com" />);
+const Image = CreateImage({ lazyImages: true });
 
-    expect(screen.getByAltText(altText)).toBeInTheDocument();
-  });
+describe('Image', () => {
+  it('render _all_ its children', () => {
+    render(<Image align="center" src="https://files.readme.io/b8674d6-pizzabro.jpg"></Image>);
 
-  it('render non-lazy image with alt text', () => {
-    const altText = 'test alt text';
-    const Image = createImage({ lazyImages: false });
-    render(<Image alt={altText} src="https://example.com" />);
-
-    expect(screen.getByAltText(altText)).toBeInTheDocument();
-  });
-
-  it('render emoji with alt text', () => {
-    const altText = 'test alt text';
-    const Image = createImage({ lazyImages: true });
-    render(<Image alt={altText} className="emoji" src="https://example.com" />);
-
-    expect(screen.getByAltText(altText)).toBeInTheDocument();
+    expect(screen.getByRole('img')).toMatchInlineSnapshot(`
+      <img
+        align="middle"
+        alt=""
+        caption=""
+        height="auto"
+        loading="lazy"
+        src="https://files.readme.io/b8674d6-pizzabro.jpg"
+        title=""
+        width="auto"
+      />
+    `);
   });
 });

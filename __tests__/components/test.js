@@ -74,7 +74,7 @@ describe('Components', () => {
     cleanup();
 
     const noTitleExpectation =
-      '<blockquote class="callout callout_warn" theme="🚧"><h2 class="callout-heading empty"><span class="callout-icon">🚧</span></h2><p>Callout with no title.</p></blockquote>';
+      '<blockquote class="callout callout_warn" theme="🚧"><h3 class="callout-heading empty"><span class="callout-icon">🚧</span></h3><p>Callout with no title.</p></blockquote>';
 
     ({ container } = render(markdown.react(callout[1])));
     expect(container).toContainHTML(noTitleExpectation);

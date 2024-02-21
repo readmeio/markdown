@@ -23,19 +23,6 @@ Object {
             Object {
               "children": Array [
                 Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 9,
-                      "line": 1,
-                      "offset": 8,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 1,
-                      "line": 1,
-                      "offset": 0,
-                    },
-                  },
                   "type": "text",
                   "value": "Header 1",
                 },
@@ -50,19 +37,6 @@ Object {
             Object {
               "children": Array [
                 Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 9,
-                      "line": 1,
-                      "offset": 8,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 1,
-                      "line": 1,
-                      "offset": 0,
-                    },
-                  },
                   "type": "text",
                   "value": "Cell A 1",
                 },
@@ -105,46 +79,9 @@ Object {
           "type": "tableRow",
         },
       ],
-      "position": Position {
-        "end": Object {
-          "column": 9,
-          "line": 12,
-          "offset": 120,
-        },
-        "indent": Array [
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-          1,
-        ],
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
       "type": "table",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 16,
-      "offset": 129,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
   "type": "root",
 }
 `;

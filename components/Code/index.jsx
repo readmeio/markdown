@@ -63,8 +63,6 @@ function Code(props) {
         data-lang={language}
         name={meta}
         suppressHydrationWarning={true}
-        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-        tabIndex={0}
       >
         {codeContent}
       </code>

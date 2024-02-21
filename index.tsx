@@ -1,22 +1,19 @@
-import React from 'react';
 import debug from 'debug';
 import { remark } from 'remark';
-import remarkMdx, { Root } from 'remark-mdx';
-import remarkParse from 'remark-parse';
+import remarkMdx from 'remark-mdx';
 
-import ErrorBoundary from './lib/ErrorBoundary';
+import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
+import * as runtime from 'react/jsx-runtime';
+
+import unified from 'unified';
+import Variable from '@readme/variable';
+import * as Components from './components';
+import { getHref } from './components/Anchor';
+import BaseUrlContext from './contexts/BaseUrl';
+import { options } from './options';
 
 require('./styles/main.scss');
 
-const MDX = require('@mdx-js/mdx');
-const MDXRuntime = require('@mdx-js/runtime').default;
-
-const unified = require('unified');
-const Variable = require('@readme/variable');
-const Components = require('./components');
-const { getHref } = require('./components/Anchor');
-const BaseUrlContext = require('./contexts/BaseUrl');
-const { options } = require('./options');
 const calloutTransformer = require('./processor/transform/callouts').default;
 
 const unimplemented = debug('mdx:unimplemented');
@@ -38,23 +35,32 @@ export const utils = {
 };
 
 export const reactProcessor = (opts = {}) => {
-  return MDX.createCompiler(opts);
+  return createProcessor(opts);
 };
 
 export const react = (text: string, opts = {}) => {
-  const Mdx = <MDXRuntime components={{'rdme-callout': Components.Callout}} remarkPlugins={[calloutTransformer]}>{text}</MDXRuntime>
-  return (
-   <ErrorBoundary key={text}>
-      {Mdx}
-   </ErrorBoundary>
-  )
+  //const Mdx = (
+  //<MDXRuntime components={{ 'rdme-callout': Components.Callout }} remarkPlugins={[calloutTransformer]}>
+  //{text}
+  //</MDXRuntime>
+  //);
+  //return <ErrorBoundary key={text}>{Mdx}</ErrorBoundary>;
+
+  const code = compileSync(text, { outputFormat: 'function-body' });
+
+  return code;
+};
+
+export const run = (code: string, opts = {}) => {
+  const { default: Content } = runSync(code, { ...runtime, baseUrl: '' });
+  return Content;
 };
 
 export const reactTOC = (text: string, opts = {}) => {
   unimplemented('reactTOC export');
 };
 
-export const mdx = (tree: Root, opts = {}) => {
+export const mdx = (tree: any, opts = {}) => {
   return remark().use(remarkMdx).stringify(tree, opts);
 };
 
@@ -63,7 +69,7 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast = (text: string, opts = {}) => {
-  const processor = unified().use(remarkParse).use(calloutTransformer);
+  const processor = unified().use(remark).use(calloutTransformer);
 
   try {
     const tree = processor.parse(text);
@@ -84,7 +90,3 @@ export const esast = (text: string, opts = {}) => {
 export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
-
-const ReadMeMarkdown = (text: string, opts = {}) => react(text, opts);
-
-export default ReadMeMarkdown;

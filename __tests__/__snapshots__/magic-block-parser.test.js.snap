@@ -402,6 +402,14 @@ Object {
       "depth": 2,
       "type": "heading",
     },
+    Object {
+      "lang": null,
+      "meta": null,
+      "type": "code",
+      "value": "[block:api-header]
+{}
+[/block]",
+    },
   ],
   "type": "root",
 }

@@ -1,16 +1,18 @@
-import magicBlock from './magic-block';
-
-function EmbedCompiler(node, parent) {
+function EmbedCompiler(node) {
   const data = node.data.hProperties;
   let { provider = 'embed' } = data;
   provider = provider.replace(/^@/, '');
 
-  return magicBlock('embed', { ...data, provider }, parent);
+  return `
+[block:embed]
+${JSON.stringify({ ...data, provider }, null, 2)}
+[/block]
+`;
 }
 
-export default function EmbedCompilerPlugin() {
+module.exports = function () {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
   visitors.embed = EmbedCompiler;
-}
+};

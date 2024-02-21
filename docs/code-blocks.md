@@ -60,7 +60,6 @@ console.log('Tab One');
 ```
 
 </div>
-
 [block:html]
 {
   "html": "<style>\n#EXAMPLE-CUSTOM-CODE {\n  --md-code-background: #e3dcef;\n  --md-code-text: #4a2b7b;\n  --md-code-tabs: #c6b8dd;\n  --md-code-radius: 4px;\n}\n</style>"

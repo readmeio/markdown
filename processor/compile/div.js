@@ -1,12 +1,14 @@
-import magicBlock from './magic-block';
-
-export default function DivCompiler() {
+module.exports = function DivCompiler() {
   const { Compiler } = this;
   const { visitors } = Compiler.prototype;
 
-  visitors.div = function compile(node, parent) {
+  visitors.div = function compile(node) {
     const data = node.data.hProperties;
 
-    return magicBlock(node.data.hName, data, parent);
+    return `
+[block:${node.data.hName}]
+${JSON.stringify(data, null, 2)}
+[/block]
+`;
   };
-}
+};

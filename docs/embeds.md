@@ -67,7 +67,6 @@ Embedded content is written as a simple Markdown link, with a title of "@embed",
 
 ## Known Issues
 At the moment, embed links written in the new ReadMe-flavored markdown syntax will simply display the link. (Magic block embeds will continue to work, though!) We're aware of the shortcoming, and plan to refactor this component as we move forward.
-
 [block:html]
 {
   "html": "<style>\n  summary {\n    outline: none;\n    user-select: none;\n  }\n</style>"
