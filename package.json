@@ -66,6 +66,8 @@
     "@commitlint/config-conventional": "^17.4.4",
     "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^10.5.2",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.2",
     "babel-jest": "^29.5.0",
