@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.2
+
+### ✨ New & Improved
+
+* build ([46aac0a](https://github.com/readmeio/markdown/commit/46aac0afd92b4d0318565b57ed845d1f8abe89a6))
+
 ## Version 6.75.0-beta.1
 
 ### 📘 Tests & Docs
