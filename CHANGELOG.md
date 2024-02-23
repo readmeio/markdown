@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.5
+
+### ✨ New & Improved
+
+* dont optimize? ([69c3a2e](https://github.com/readmeio/markdown/commit/69c3a2eb4a125ebd8352ff41b788be403ca95d9b))
+
 ## Version 6.75.0-beta.4
 
 ### ✨ New & Improved
