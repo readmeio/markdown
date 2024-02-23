@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.4
+
+### ✨ New & Improved
+
+* add default?! ([160d78b](https://github.com/readmeio/markdown/commit/160d78b74e41a3c342fe20357d53798329e3d34e))
+
 ## Version 6.75.0-beta.3
 
 ### ✨ New & Improved
