@@ -70,7 +70,7 @@ const getConfig = ({ target }) => ({
   },
   output: {
     library: {
-      type: 'commonjs2',
+      type: 'commonjs-static',
     },
   },
   resolve: {
