@@ -90,3 +90,5 @@ export const esast = (text: string, opts = {}) => {
 export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
+
+export default react;
