@@ -1,6 +1,7 @@
 import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
+import React from 'react';
 
 import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -39,13 +40,6 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const react = (text: string, opts = {}) => {
-  //const Mdx = (
-  //<MDXRuntime components={{ 'rdme-callout': Components.Callout }} remarkPlugins={[calloutTransformer]}>
-  //{text}
-  //</MDXRuntime>
-  //);
-  //return <ErrorBoundary key={text}>{Mdx}</ErrorBoundary>;
-
   const code = compileSync(text, { outputFormat: 'function-body' });
 
   return code;
@@ -57,7 +51,7 @@ export const run = (code: string, opts = {}) => {
 };
 
 export const reactTOC = (text: string, opts = {}) => {
-  unimplemented('reactTOC export');
+  unimplemented('reactTOC');
 };
 
 export const mdx = (tree: any, opts = {}) => {

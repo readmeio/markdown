@@ -68,9 +68,12 @@ const getConfig = ({ target }) => ({
       },
     ],
   },
+  optimization: {
+    minimize: false,
+  },
   output: {
     library: {
-      type: 'commonjs-static',
+      type: 'commonjs2',
     },
   },
   resolve: {
@@ -97,10 +100,6 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
       umd: 'react-dom',
     },
   },
-  // optimization: {
-  // minimize: false,
-  // minimizer: [new TerserPlugin()],
-  // },
   resolve: {
     fallback: {
       buffer: require.resolve('buffer'),
