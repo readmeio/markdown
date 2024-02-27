@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.7
+
+### ✨ New & Improved
+
+* try umd ([ae038b1](https://github.com/readmeio/markdown/commit/ae038b1544a630b3c9b5218056a5195ec229de30))
+
 ## Version 6.75.0-beta.6
 
 ### ✨ New & Improved
