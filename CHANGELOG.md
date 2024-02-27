@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.6
+
+### ✨ New & Improved
+
+* import ([ed72644](https://github.com/readmeio/markdown/commit/ed72644b87c02e308e73de0069d647842910e852))
+
 ## Version 6.75.0-beta.5
 
 ### ✨ New & Improved
