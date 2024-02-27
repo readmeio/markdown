@@ -1,7 +1,6 @@
 import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
-import React from 'react';
 
 import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -15,7 +14,7 @@ import { options } from './options';
 
 require('./styles/main.scss');
 
-const calloutTransformer = require('./processor/transform/callouts').default;
+import calloutTransformer from './processor/transform/callouts';
 
 const unimplemented = debug('mdx:unimplemented');
 
