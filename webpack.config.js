@@ -100,6 +100,11 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
       umd: 'react-dom',
     },
   },
+  output: {
+    library: {
+      type: 'umd',
+    },
+  },
   resolve: {
     fallback: {
       buffer: require.resolve('buffer'),
