@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.8
+
+### ✨ New & Improved
+
+* fix name, oops ([32f090a](https://github.com/readmeio/markdown/commit/32f090a660cb8493776526b1af52c038a748c3ca))
+
 ## Version 6.75.0-beta.7
 
 ### ✨ New & Improved
