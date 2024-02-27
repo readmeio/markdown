@@ -4,7 +4,7 @@ export const type = 'reusable-content';
 
 const regexp = /^\s*<(?<tag>[A-Z]\S+)\s*\/>\s*$/;
 
-function reusableContentTransformer() {
+const reusableContentTransformer = function () {
   const { tags, disabled } = this.data('reusableContent');
   if (disabled) return () => undefined;
 
@@ -26,6 +26,6 @@ function reusableContentTransformer() {
 
     return tree;
   };
-}
+};
 
 export default reusableContentTransformer;

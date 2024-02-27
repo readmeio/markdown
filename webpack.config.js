@@ -71,6 +71,11 @@ const getConfig = ({ target }) => ({
   optimization: {
     minimize: false,
   },
+  output: {
+    library: {
+      type: 'commonjs2',
+    },
+  },
   resolve: {
     extensions: ['.js', '.json', '.jsx', '.ts', '.tsx'],
   },
@@ -95,11 +100,6 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
       umd: 'react-dom',
     },
   },
-  output: {
-    library: {
-      type: 'module',
-    },
-  },
   resolve: {
     fallback: {
       buffer: require.resolve('buffer'),
@@ -112,9 +112,6 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
 const serverConfig = merge(getConfig({ target: 'node' }), {
   output: {
     filename: '[name].node.js',
-    library: {
-      type: 'commonjs2',
-    },
   },
 });
 
