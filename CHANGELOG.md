@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.9
+
+### ✨ New & Improved
+
+* mdx callouts ([664dfc0](https://github.com/readmeio/markdown/commit/664dfc07b6b4a58a1b1ad67ec6efb434a2ceadab))
+
 ## Version 6.75.0-beta.8
 
 ### ✨ New & Improved
