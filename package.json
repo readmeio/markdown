@@ -1,5 +1,5 @@
 {
-  "name": "@readme/markdown",
+  "name": "@readme/mdx",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "6.75.0-beta.8",
@@ -36,9 +36,9 @@
     "process": "^0.11.10",
     "prop-types": "^15.8.1",
     "rehype-sanitize": "^4.0.0",
-    "remark": "^14.0.2",
+    "remark": "^15.0.1",
     "remark-mdx": "^3.0.0",
-    "remark-parse": "^10.0.2",
+    "remark-parse": "^11.0.0",
     "trim": "^1.0.1",
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",

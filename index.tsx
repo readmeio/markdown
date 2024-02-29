@@ -62,12 +62,14 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast = (text: string, opts = {}) => {
-  const processor = unified().use(remark).use(calloutTransformer);
+  const processor = remark().use(remarkMdx);
 
   try {
+    console.log(processor.parse('wtf'));
     const tree = processor.parse(text);
     return processor.runSync(tree);
   } catch (e) {
+    console.log(e);
     return { type: 'root', children: [] };
   }
 };
