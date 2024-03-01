@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.11
+
+### ✨ New & Improved
+
+* actually use options ([3858c6e](https://github.com/readmeio/markdown/commit/3858c6e7682cd26804500104dc7c5daacc57fe5b))
+
 ## Version 6.75.0-beta.10
 
 ### ✨ New & Improved
