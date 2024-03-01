@@ -45,7 +45,7 @@ export const react = (text: string, opts = {}) => {
 };
 
 export const run = (code: string, opts = {}) => {
-  const { default: Content } = runSync(code, { ...runtime, baseUrl: '' });
+  const { default: Content } = runSync(code, { ...runtime, baseUrl: '', ...opts });
   return Content;
 };
 
