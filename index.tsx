@@ -1,11 +1,11 @@
 import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
+import { useMDXComponents } from '@mdx-js/react';
 
 import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 
-import unified from 'unified';
 import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
@@ -39,13 +39,27 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const react = (text: string, opts = {}) => {
-  const code = compileSync(text, { outputFormat: 'function-body' });
+  const code = compileSync(text, {
+    development: true,
+    outputFormat: 'function-body',
+    providerImportSource: '@mdx-js/react',
+    ...opts,
+  });
 
   return code;
 };
 
 export const run = (code: string, opts = {}) => {
-  const { default: Content } = runSync(code, { ...runtime, baseUrl: '', ...opts });
+  // @ts-ignore
+  const Fragment = runtime.Fragment;
+
+  const { default: Content } = runSync(code, {
+    ...runtime,
+    Fragment,
+    baseUrl: '',
+    useMDXComponents,
+    ...opts,
+  });
   return Content;
 };
 
@@ -65,11 +79,9 @@ export const mdast = (text: string, opts = {}) => {
   const processor = remark().use(remarkMdx);
 
   try {
-    console.log(processor.parse('wtf'));
     const tree = processor.parse(text);
     return processor.runSync(tree);
   } catch (e) {
-    console.log(e);
     return { type: 'root', children: [] };
   }
 };
