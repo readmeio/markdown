@@ -12,14 +12,9 @@ const reusableContentTransformer = function () {
     visit(tree, 'html', (node, index, parent) => {
       const result = regexp.exec(node.value);
       if (!result || !result.groups.tag) return;
-
       const { tag } = result.groups;
 
-      const block = {
-        type,
-        tag,
-        children: tag in tags ? tags[tag] : [],
-      };
+      const block = tag in tags ? [...tags[tag]].pop() : null;
 
       parent.children[index] = block;
     });
