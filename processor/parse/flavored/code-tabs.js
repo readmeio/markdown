@@ -1,4 +1,4 @@
-const decode = require('parse-entities');
+const { parseEntities } = require('parse-entities');
 
 const { insertBlockTokenizerBefore } = require('../utils');
 
@@ -22,8 +22,8 @@ function tokenizer(eat, value) {
   while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
-    lang = lang ? decode(this.unescape(lang)) : lang;
-    meta = decode(this.unescape(meta.trim()));
+    lang = lang ? parseEntities(this.unescape(lang)) : lang;
+    meta = parseEntities(this.unescape(meta.trim()));
 
     kids.push({
       type: 'code',
