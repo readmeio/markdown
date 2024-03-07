@@ -2,7 +2,6 @@
 /* eslint-disable consistent-return */
 import emojiRegex from 'emoji-regex';
 import interrupt from 'remark-parse/lib/util/interrupt';
-import trim from 'trim';
 
 const themes = {
   '\uD83D\uDCD8': 'info',
@@ -106,7 +105,7 @@ function blockquoteReadme(eat, value, silent) {
 
     content = value.slice(index, nextIndex);
 
-    if (!prefixed && !trim(content)) {
+    if (!prefixed && !content.trim()) {
       index = startIndex;
       break;
     }
@@ -141,8 +140,8 @@ function blockquoteReadme(eat, value, silent) {
   const [match, icon] = contents[0].match(regex) || [];
 
   if (icon) {
-    const title = trim(contents[0].slice(match.length));
-    const body = trim(contents.slice(1).join(lineFeed));
+    const title = contents[0].slice(match.length).trim();
+    const body = contents.slice(1).join(lineFeed).trim();
 
     const data = {
       hName: 'rdme-callout',
