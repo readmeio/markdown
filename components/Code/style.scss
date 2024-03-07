@@ -102,7 +102,9 @@
     background: var(--md-code-background, inherit);
     border: none;
     border-radius: 3px;
-    box-shadow: inset 0 0 0 1px rgba(#aaa, 0.66), -1px 2px 6px -3px rgba(black, 0.1);
+    box-shadow:
+      inset 0 0 0 1px rgba(#aaa, 0.66),
+      -1px 2px 6px -3px rgba(black, 0.1);
     color: inherit;
     color: var(--md-code-text, inherit);
     cursor: copy;
@@ -122,12 +124,16 @@
 
     &:hover {
       &:not(:active) {
-        box-shadow: inset 0 0 0 1px rgba(#8b8b8b, 0.75), -1px 2px 6px -3px rgba(black, 0.2);
+        box-shadow:
+          inset 0 0 0 1px rgba(#8b8b8b, 0.75),
+          -1px 2px 6px -3px rgba(black, 0.2);
       }
     }
 
     &:active {
-      box-shadow: inset 0 0 0 1px rgba(#8b8b8b, 0.5), inset 1px 4px 6px -2px rgba(0, 0, 0, 0.175);
+      box-shadow:
+        inset 0 0 0 1px rgba(#8b8b8b, 0.5),
+        inset 1px 4px 6px -2px rgba(0, 0, 0, 0.175);
 
       &::before,
       &::after {
@@ -138,7 +144,9 @@
     &::before,
     &::after {
       display: inline-block;
-      font: normal normal normal 1em/1 'Font Awesome 5 Free', FontAwesome;
+      font:
+        normal normal normal 1em/1 'Font Awesome 5 Free',
+        FontAwesome;
       font-family: ReadMe-Icons;
       font-feature-settings: 'liga';
       font-variant-ligatures: discretionary-ligatures;

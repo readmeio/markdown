@@ -1,9 +1,8 @@
-const decode = require('parse-entities');
+const { parseEntities } = require('parse-entities');
 
 const { insertBlockTokenizerBefore } = require('../utils');
 
 function tokenizer(eat, value) {
-  // eslint-disable-next-line unicorn/no-unsafe-regex
   const TAB_BLOCK_RGXP = /^(?:(?:^|\n)```(?:(?!\n```).)*\n```[^\S\n]*){2,}/gs;
 
   const [match] = TAB_BLOCK_RGXP.exec(value) || [];
@@ -18,13 +17,13 @@ function tokenizer(eat, value) {
    *    - [meta] tab name (optional)
    *    - [code] snippet text
    */
-  // eslint-disable-next-line unicorn/no-unsafe-regex
+
   const CODE_BLOCK_RGXP = /(?:^|\n)```[ \t]*(?<lang>[^\s]+)?(?: *(?<meta>[^\n]+))?(?<code>((?!\n```).)*)?\n```/gs;
   while ((codeBlock = CODE_BLOCK_RGXP.exec(match)) !== null) {
     // eslint-disable-next-line prefer-const
     let { lang, meta = '', code = '' } = codeBlock.groups;
-    lang = lang ? decode(this.unescape(lang)) : lang;
-    meta = decode(this.unescape(meta.trim()));
+    lang = lang ? parseEntities(this.unescape(lang)) : lang;
+    meta = parseEntities(this.unescape(meta.trim()));
 
     kids.push({
       type: 'code',

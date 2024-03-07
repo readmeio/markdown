@@ -16,8 +16,8 @@ describe('Data Replacements', () => {
             user: { test: 'User Override' },
           },
         },
-        markdown.react('<<test>>')
-      )
+        markdown.react('<<test>>'),
+      ),
     );
     expect(container).toContainHTML('<p><span>User Override</span></p>');
   });
@@ -35,8 +35,8 @@ describe('Data Replacements', () => {
             },
           ],
         },
-        markdown.react('<<glossary:term>>')
-      )
+        markdown.react('<<glossary:term>>'),
+      ),
     );
     expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
   });
@@ -216,7 +216,6 @@ ${JSON.stringify({
   let container;
   beforeEach(() => {
     rdmd = markdown.react(tabs, { compatibilityMode: true });
-    // eslint-disable-next-line testing-library/no-render-in-setup
     ({ container } = render(rdmd));
   });
 

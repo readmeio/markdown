@@ -73,8 +73,8 @@ test('magic image', () => {
   }
   [/block]
   `,
-      options
-    )
+      options,
+    ),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -107,7 +107,7 @@ test('tables', () => {
 | col 3 is      | right-aligned | $1600 |
 | col 2 is      | centered      |   $12 |
 | zebra stripes | are neat      |    $1 |
-  `)
+  `),
   );
 
   expect(container.innerHTML.trim()).toMatchSnapshot();
@@ -120,7 +120,7 @@ test('headings', () => {
 ### Heading 3
 #### Heading 4
 ##### Heading 5
-###### Heading 6`)
+###### Heading 6`),
   );
 
   expect(screen.getAllByRole('heading')).toHaveLength(6);
@@ -136,7 +136,7 @@ test('anchors', () => {
 [blog](blog:slug)
 [changelog](changelog:slug)
 [page](page:slug)
-`)
+`),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -171,9 +171,9 @@ test('anchors with baseUrl', () => {
 [blog](blog:slug)
 [changelog](changelog:slug)
 [page](page:slug)
-  `
-      )
-    )
+  `,
+      ),
+    ),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -190,7 +190,7 @@ test('emojis', () => {
 :joy:
 :fa-lock:
 :unknown-emoji:
-`)
+`),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -207,7 +207,7 @@ describe('code samples', () => {
   \`\`\`
   code-without-language
   \`\`\`
-  `)
+  `),
     );
     expect(container.querySelectorAll('pre')).toHaveLength(2);
     expect(container.querySelectorAll('button')).toHaveLength(3);
@@ -218,7 +218,7 @@ describe('code samples', () => {
       render(
         markdown.react('This is a sentence and it contains a piece of `code` wrapped in backticks.', {
           copyButtons: false,
-        })
+        }),
       );
 
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -256,8 +256,8 @@ describe('`alwaysThrow` option', () => {
       "level": 2
     }
     [/block]`,
-          { alwaysThrow: true }
-        )
+          { alwaysThrow: true },
+        ),
       );
 
     expect(shouldThrow).toThrow('Invalid Magic Block JSON');
@@ -273,8 +273,8 @@ describe('`alwaysThrow` option', () => {
       "level": 2
     }
     [/block]`,
-          { alwaysThrow: true }
-        )
+          { alwaysThrow: true },
+        ),
       );
 
     expect(() => shouldThrow()).not.toThrow('Invalid Magic Block JSON');

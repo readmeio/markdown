@@ -1,5 +1,5 @@
 {
-  "extends": "@readme/eslint-config/testing",
+  "extends": "@readme/eslint-config/testing/jest",
   "rules": {
     "testing-library/no-container": "off",
     "testing-library/no-node-access": "off"

@@ -83,7 +83,6 @@ Embed.defaultProps = {
 const CreateEmbed =
   ({ lazyImages }) =>
   // eslint-disable-next-line react/display-name
-  props =>
-    <Embed {...props} lazy={lazyImages} />;
+  props => <Embed {...props} lazy={lazyImages} />;
 
 module.exports = CreateEmbed;

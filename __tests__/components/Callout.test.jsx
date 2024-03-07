@@ -10,7 +10,7 @@ describe('Callout', () => {
         <p>Title</p>
         <p>First Paragraph</p>
         <p>Second Paragraph</p>
-      </Callout>
+      </Callout>,
     );
 
     expect(screen.getByText('Second Paragraph')).toBeVisible();
