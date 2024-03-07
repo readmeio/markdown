@@ -25,7 +25,7 @@ function Heading({ tag, showAnchorIcons, ...props }) {
         aria-label={`Skip link to ${headingText}`}
         className="heading-anchor-icon fa fa-anchor"
         href={`#${props.id}`}
-      />
+      />,
     );
   }
 

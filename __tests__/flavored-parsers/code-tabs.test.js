@@ -26,7 +26,7 @@ Second code block
     const ast = mdast(md);
 
     expect(ast.children[0].children[0]).toStrictEqual(
-      expect.objectContaining({ lang: 'javascript', meta: 'First Title' })
+      expect.objectContaining({ lang: 'javascript', meta: 'First Title' }),
     );
     expect(ast.children[0].children[1]).toStrictEqual(expect.objectContaining({ lang: 'text', meta: '' }));
   });

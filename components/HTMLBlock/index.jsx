@@ -56,8 +56,7 @@ HTMLBlock.propTypes = {
 const CreateHtmlBlock =
   ({ safeMode }) =>
   // eslint-disable-next-line react/display-name
-  props =>
-    <HTMLBlock {...props} safeMode={safeMode} />;
+  props => <HTMLBlock {...props} safeMode={safeMode} />;
 
 CreateHtmlBlock.sanitize = schema => {
   schema.tagNames.push('html-block');

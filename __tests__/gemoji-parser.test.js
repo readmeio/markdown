@@ -34,7 +34,7 @@ test('should output an image node for a known emoji', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -64,7 +64,7 @@ test('should output an <i> for a font awesome icon', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -82,6 +82,6 @@ test('should output nothing for unknown emojis', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });

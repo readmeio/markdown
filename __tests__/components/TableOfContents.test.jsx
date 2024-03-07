@@ -21,7 +21,7 @@ describe('Table of Contents', () => {
     const { container } = render(
       <TableOfContents>
         <h1>Heading 1</h1>
-      </TableOfContents>
+      </TableOfContents>,
     );
 
     expect(container.querySelectorAll('li')[0]).toHaveTextContent('Table of Contents');
@@ -71,7 +71,7 @@ describe('Table of Contents', () => {
     const { container } = render(<GlossaryContext.Provider value={glossaryTerms}>{toc}</GlossaryContext.Provider>);
 
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(
-      `Heading ${glossaryTerms[0].term}`
+      `Heading ${glossaryTerms[0].term}`,
     );
   });
 });

@@ -8,7 +8,7 @@ describe('Style tag', () => {
       const md = '<style>{ background-color: salmon }</style>';
 
       expect(renderToString(react(md))).toMatchInlineSnapshot(
-        '"<style data-reactroot=\\"\\">{ background-color: salmon }</style>"'
+        '"<style data-reactroot=\\"\\">{ background-color: salmon }</style>"',
       );
     });
   });

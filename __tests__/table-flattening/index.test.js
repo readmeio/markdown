@@ -10,7 +10,7 @@ describe('astToPlainText with tables', () => {
   | Cell A3 | Cell B3 | Cell C3 |`;
 
     expect(astToPlainText(hast(text))).toMatchInlineSnapshot(
-      '"Col. A Col. B Col. C Cell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3"'
+      '"Col. A Col. B Col. C Cell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3"',
     );
   });
 

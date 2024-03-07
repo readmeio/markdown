@@ -63,7 +63,7 @@ ${JSON.stringify({
     `;
 
     expect(renderToString(react(md, { safeMode: true }))).toMatchInlineSnapshot(
-      '"<pre class=\\"html-unsafe\\" data-reactroot=\\"\\"><code>&lt;button onload=&quot;alert(&#39;gotcha!&#39;)&quot;/&gt;</code></pre>"'
+      '"<pre class=\\"html-unsafe\\" data-reactroot=\\"\\"><code>&lt;button onload=&quot;alert(&#39;gotcha!&#39;)&quot;/&gt;</code></pre>"',
     );
   });
 });

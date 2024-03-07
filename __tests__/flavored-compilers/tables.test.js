@@ -25,7 +25,7 @@ describe('table compiler', () => {
       `|  th 1  |  th 2  |
 | :----: | :----: |
 | cell 1 | cell 2 |
-`
+`,
     );
   });
 

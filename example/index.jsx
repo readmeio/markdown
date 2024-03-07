@@ -11,7 +11,7 @@ function render(Component) {
     <AppContainer>
       <Component />
     </AppContainer>,
-    document.getElementById('rdmd-demo')
+    document.getElementById('rdmd-demo'),
   );
 }
 

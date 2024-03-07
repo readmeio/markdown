@@ -113,6 +113,7 @@
     margin-right: -0.25rem;
   }
 }
+
 @mixin callout-custom-icons($R: callout) {
   --emoji: 1em;
   --icon-font: fontawesome;
@@ -135,6 +136,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
 
@@ -170,6 +172,7 @@
     // bump specificity
     @include callout;
   }
+
   @include callout-custom-icons;
 
   border-top-right-radius: var(--markdown-radius);
