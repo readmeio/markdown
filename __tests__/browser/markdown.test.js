@@ -1,6 +1,7 @@
 /* global page */
 
-// const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+// eslint-disable-next-line no-promise-executor-return
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
@@ -33,6 +34,7 @@ describe('visual regression tests', () => {
         await page.evaluate(() => {
           window.scrollTo(0, window.document.body.scrollHeight);
         });
+        await sleep(500);
 
         const image = await page.screenshot({ fullPage: true });
 
@@ -47,6 +49,7 @@ describe('visual regression tests', () => {
       await page.evaluate(() => {
         window.scrollTo(0, window.document.body.scrollHeight);
       });
+      await sleep(500);
 
       const image = await page.screenshot({ fullPage: true });
 
@@ -59,6 +62,7 @@ describe('visual regression tests', () => {
       await page.evaluate(() => {
         window.scrollTo(0, window.document.body.scrollHeight);
       });
+      await sleep(500);
 
       const image = await page.screenshot({ fullPage: true });
 
