@@ -37,7 +37,7 @@ describe('visual regression tests', () => {
 
         expect(image).toMatchImageSnapshot();
       },
-      10000
+      10000,
     );
 
     it('renders html blocks, style tags, and style attributes with safeMode off', async () => {

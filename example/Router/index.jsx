@@ -36,7 +36,7 @@ const Router = ({ render }) => {
 
       setParams(iteratorToObj(search.entries()));
     },
-    [params]
+    [params],
   );
 
   useEffect(() => {

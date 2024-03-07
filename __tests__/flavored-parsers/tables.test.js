@@ -14,7 +14,7 @@ ${JSON.stringify(
     rows: 2,
   },
   null,
-  2
+  2,
 )}
 [/block]
     `;

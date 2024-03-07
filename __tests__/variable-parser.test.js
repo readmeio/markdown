@@ -29,7 +29,7 @@ test('should output a variable node', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -58,7 +58,7 @@ test('should output a glossary node', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -87,7 +87,7 @@ test('should allow whitespace in glossary names', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -116,7 +116,7 @@ test('should allow underscored glossary terms', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -145,7 +145,7 @@ test('should allow numeric characters in glossary terms', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -174,7 +174,7 @@ test('should allow non-english glossary terms', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });
 
@@ -195,6 +195,6 @@ test('should allow escape variables to remain', () => {
   };
 
   expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
-    ast
+    ast,
   );
 });

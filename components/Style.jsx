@@ -19,8 +19,7 @@ Style.propTypes = {
 const CreateStyle =
   ({ safeMode }) =>
   // eslint-disable-next-line react/display-name
-  props =>
-    <Style {...props} safeMode={safeMode} />;
+  props => <Style {...props} safeMode={safeMode} />;
 
 CreateStyle.sanitize = sanitize => {
   sanitize.tagNames.push('style');

@@ -83,8 +83,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
               data: { hName: 'code-tabs' },
               type: 'code-tabs',
             },
-            json
-          )
+            json,
+          ),
         );
       }
       case 'api-header': {
@@ -96,8 +96,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
               depth,
               children: 'title' in json ? this.tokenizeInline(json.title, eat.now()) : [],
             },
-            json
-          )
+            json,
+          ),
         );
       }
       case 'image': {
@@ -166,8 +166,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
               },
               children: [...this.tokenizeBlock(json.title, eat.now()), ...this.tokenizeBlock(json.body, eat.now())],
             },
-            json
-          )
+            json,
+          ),
         );
       }
       case 'parameters': {
@@ -241,8 +241,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
                 hName: 'rdme-embed',
               },
             },
-            json
-          )
+            json,
+          ),
         );
       }
       case 'html': {
@@ -259,8 +259,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
                 },
               },
             },
-            json
-          )
+            json,
+          ),
         );
       }
       default: {
@@ -275,8 +275,8 @@ function tokenize({ compatibilityMode, safeMode, alwaysThrow }) {
                 ...json,
               },
             },
-            json
-          )
+            json,
+          ),
         );
       }
     }

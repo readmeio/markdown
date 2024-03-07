@@ -33,7 +33,7 @@ describe('insertBlockTokenizerBefore', () => {
         name: 'test',
         before: 'oh no',
         tokenizer: () => {},
-      })
+      }),
     ).toThrow("The 'oh no' tokenizer does not exist!");
   });
 });
@@ -56,7 +56,7 @@ describe('insertInlineTokenizerBefore', () => {
         name: 'test',
         before: 'oh no',
         tokenizer: () => {},
-      })
+      }),
     ).toThrow("The 'oh no' tokenizer does not exist!");
   });
 });

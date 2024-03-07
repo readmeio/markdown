@@ -51,7 +51,7 @@ describe('ReadMe Flavored Blocks', () => {
 [block:html]
 {
   "html": ${JSON.stringify(
-    '<style>\n  summary {\n    padding-top: 8px;\n    outline: none !important;\n    user-select: none;\n  }\n  details[open] + details > summary {\n    padding-top: 0;\n  }\n  details > summary + hr {\n    opacity: .66;\n  }\n</style>'
+    '<style>\n  summary {\n    padding-top: 8px;\n    outline: none !important;\n    user-select: none;\n  }\n  details[open] + details > summary {\n    padding-top: 0;\n  }\n  details > summary + hr {\n    opacity: .66;\n  }\n</style>',
   )}
 }
 [/block]
@@ -229,7 +229,7 @@ ${JSON.stringify(
     link: 'http://test.com',
   },
   null,
-  2
+  2,
 )}
 [/block]
 
