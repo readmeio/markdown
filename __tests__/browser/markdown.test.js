@@ -5,15 +5,6 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
-    beforeAll(async () => {
-      // @xxx: preload slow page????
-      const uri = 'http://localhost:9966/?ci=true#features';
-      await page.goto(uri, { waitUntil: 'networkidle0' });
-      await page.evaluate(() => {
-        window.scrollTo(0, window.document.body.scrollHeight);
-      });
-    });
-
     beforeEach(async () => {
       // The ToC disappears somewhere below 1200, 1175-ish?
       await page.setViewport({ width: 1400, height: 800 });
@@ -40,6 +31,10 @@ describe('visual regression tests', () => {
       async doc => {
         const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
+        // eslint-disable-next-line jest/no-if
+        if (doc === 'features') {
+          await page.goto(uri, { waitUntil: 'networkidle0' });
+        }
         await page.evaluate(() => {
           window.scrollTo(0, window.document.body.scrollHeight);
         });
@@ -55,9 +50,6 @@ describe('visual regression tests', () => {
     it('renders html blocks, style tags, and style attributes with safeMode off', async () => {
       const uri = 'http://localhost:9966/?ci=true#sanitizingTests';
       await page.goto(uri, { waitUntil: 'networkidle0' });
-      await page.evaluate(() => {
-        window.scrollTo(0, window.document.body.scrollHeight);
-      });
       await sleep(500);
 
       const image = await page.screenshot({ fullPage: true });
@@ -68,9 +60,6 @@ describe('visual regression tests', () => {
     it('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
       const uri = 'http://localhost:9966/?ci=true&safe-mode=true#sanitizingTests';
       await page.goto(uri, { waitUntil: 'networkidle0' });
-      await page.evaluate(() => {
-        window.scrollTo(0, window.document.body.scrollHeight);
-      });
       await sleep(500);
 
       const image = await page.screenshot({ fullPage: true });
