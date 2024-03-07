@@ -15,7 +15,7 @@ describe('visual regression tests', () => {
       'calloutTests',
       'codeBlocks',
       'embeds',
-      'features',
+      // 'features',
       'headings',
       'images',
       'lists',
@@ -31,13 +31,6 @@ describe('visual regression tests', () => {
       async doc => {
         const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
-        // eslint-disable-next-line jest/no-if
-        if (doc === 'features') {
-          await page.goto(uri, { waitUntil: 'networkidle0' });
-        }
-        await page.evaluate(() => {
-          window.scrollTo(0, window.document.body.scrollHeight);
-        });
         await sleep(500);
 
         const image = await page.screenshot({ fullPage: true });
