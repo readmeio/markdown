@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.74.3
+
+### 🛠 Fixes & Updates
+
+* add conditional to reusable content transformer ([#833](https://github.com/readmeio/markdown/issues/833)) ([fee6a85](https://github.com/readmeio/markdown/commit/fee6a855d0a58857621def8f2319c47f9d137267))
+* **deps:** updates ([#834](https://github.com/readmeio/markdown/issues/834)) ([591c0e9](https://github.com/readmeio/markdown/commit/591c0e90e76e56966951155d7864c3e7db2e3a4b))
+
 ## Version 6.74.2
 
 ### 🛠 Fixes & Updates
