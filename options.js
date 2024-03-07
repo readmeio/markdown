@@ -17,7 +17,8 @@ const options = {
   reusableContent: {
     tags: {},
     disabled: false,
-    writeTags: true,
+    serialize: true,
+    wrap: true,
   },
   safeMode: false,
   settings: {

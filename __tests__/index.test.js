@@ -30,7 +30,8 @@ test('it should have the proper utils exports', () => {
     reusableContent: {
       disabled: false,
       tags: {},
-      writeTags: true,
+      serialize: true,
+      wrap: true,
     },
     safeMode: false,
     settings: { position: true },
