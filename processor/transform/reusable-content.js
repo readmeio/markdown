@@ -5,7 +5,7 @@ export const type = 'reusable-content';
 const regexp = /^\s*<(?<tag>[A-Z]\S+)\s*\/>\s*$/;
 
 const reusableContentTransformer = function () {
-  const { tags, disabled, writeTag = true } = this.data('reusableContent');
+  const { tags, disabled, writeTags = true } = this.data('reusableContent');
   if (disabled) return () => undefined;
 
   return tree => {
@@ -14,7 +14,7 @@ const reusableContentTransformer = function () {
       if (!result || !result.groups.tag) return;
       const { tag } = result.groups;
 
-      if (writeTag) {
+      if (writeTags) {
         parent.children[index] = { type, tag, children: tag in tags ? tags[tag] : [] };
       } else {
         parent.children[index] = tag in tags ? [...tags[tag]].pop() : {};
