@@ -30,13 +30,13 @@ describe('reusable content compiler', () => {
     expect(md(tree)).toMatch(doc);
   });
 
-  describe('writeTags = false', () => {
+  describe('serialize = false', () => {
     it('writes a reusable content block as content', () => {
       const tags = {
         Defined: '# Whoa',
       };
       const doc = '<Defined />';
-      const string = md(doc, { reusableContent: { tags, writeTags: false } });
+      const string = md(doc, { reusableContent: { tags, serialize: false } });
 
       expect(string).toBe('# Whoa\n');
     });
