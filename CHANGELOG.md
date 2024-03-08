@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.74.4
+
+### 🛠 Fixes & Updates
+
+* **deps:** more security updates ([#835](https://github.com/readmeio/markdown/issues/835)) ([74bfdc0](https://github.com/readmeio/markdown/commit/74bfdc0dd131c8587e1eaeb9cc1186b8f520cac6))
+
 ## Version 6.74.3
 
 ### 🛠 Fixes & Updates
