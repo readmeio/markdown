@@ -22,7 +22,7 @@ RUN npm install -g npm@latest
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
-COPY package.json package-lock.json ./
+COPY package.json npm-shrinkwrap.json ./
 RUN npm install
 
 COPY . ./
