@@ -1,12 +1,12 @@
 {
   "name": "@readme/markdown",
-  "version": "6.74.4",
+  "version": "6.75.0",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@readme/markdown",
-      "version": "6.74.4",
+      "version": "6.75.0",
       "license": "MIT",
       "dependencies": {
         "@readme/emojis": "^5.1.0",
