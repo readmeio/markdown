@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.1
+
+### 🛠 Fixes & Updates
+
+* include shrinkwrap in npm output ([#837](https://github.com/readmeio/markdown/issues/837)) ([d7b2634](https://github.com/readmeio/markdown/commit/d7b2634270d94dc7a9df5d04733c5c72fcdd01d9))
+
 ## Version 6.75.0
 
 ### ✨ New & Improved
