@@ -1,8 +1,0 @@
-.babelrc
-.eslint*
-.jsinspectrc
-.prettier*
-__tests__/
-coverage/
-jest.config.js
-wepback.*.js
