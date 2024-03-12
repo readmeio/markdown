@@ -1,5 +1,7 @@
 const { insertBlockTokenizerBefore } = require('./utils');
 
+export const type = 'reusable-content';
+
 function tokenizeReusableContent(eat, value, silent) {
   const { tags, disabled, wrap = true } = this.data('reusableContent');
   if (disabled) return false;
@@ -33,4 +35,4 @@ function parser() {
   });
 }
 
-module.exports = parser;
+export default parser;
