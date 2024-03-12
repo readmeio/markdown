@@ -8,8 +8,7 @@
   "files": [
     "styles",
     "components",
-    "dist",
-    "npm-shrinkwrap.json"
+    "dist"
   ],
   "scripts": {
     "build": "webpack --mode production",
