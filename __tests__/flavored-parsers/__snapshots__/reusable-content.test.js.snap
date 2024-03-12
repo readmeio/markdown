@@ -101,6 +101,22 @@ Object {
       "type": "paragraph",
     },
   ],
+  "position": Position {
+    "end": Object {
+      "column": 1,
+      "line": 6,
+      "offset": 19,
+    },
+    "indent": Array [
+      1,
+      1,
+    ],
+    "start": Object {
+      "column": 1,
+      "line": 4,
+      "offset": 9,
+    },
+  },
   "tag": "Test",
   "type": "reusable-content",
 }
@@ -207,6 +223,22 @@ Object {
       "type": "paragraph",
     },
   ],
+  "position": Position {
+    "end": Object {
+      "column": 1,
+      "line": 3,
+      "offset": 23,
+    },
+    "indent": Array [
+      1,
+      1,
+    ],
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "tag": "MyCustomComponent",
   "type": "reusable-content",
 }
