@@ -1,4 +1,4 @@
-import { type } from '../transform/reusable-content';
+import { type } from '../parse/reusable-content-parser';
 
 export default function ReusableContentCompiler() {
   const { serialize = true } = this.data('reusableContent') || {};

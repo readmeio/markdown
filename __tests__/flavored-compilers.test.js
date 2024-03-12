@@ -1,46 +1,29 @@
-const { defaultSchema: sanitize } = require('hast-util-sanitize/lib/schema');
-const rehypeSanitize = require('rehype-sanitize');
-const remarkParse = require('remark-parse');
-const remarkStringify = require('remark-stringify');
-const unified = require('unified');
-
-const parsers = Object.values(require('../processor/parse')).map(parser => parser.sanitize?.(sanitize) || parser);
-const compilers = Object.values(require('../processor/compile'));
-const options = require('../options').options.markdownOptions;
-
-const processor = unified()
-  .use(remarkParse, options)
-  .data('settings', { position: false })
-  .use(parsers)
-  .use(rehypeSanitize);
-
-const parse = text => text && processor().parse(text);
-const compile = tree => tree && processor().use(remarkStringify, options).use(compilers).stringify(tree);
+import { mdast, md } from '../index';
 
 describe('ReadMe Flavored Blocks', () => {
   it('Embed', () => {
     const txt = '[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@nyt")';
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
   it('Variables', () => {
-    expect(compile(parse('<<variable:user>>'))).toMatchInlineSnapshot(`
+    expect(md(mdast('<<variable:user>>'))).toMatchInlineSnapshot(`
       "<<variable:user>>
       "
     `);
   });
 
   it('Glossary Items', () => {
-    expect(compile(parse('<<glossary:owl>>'))).toMatchInlineSnapshot(`
+    expect(md(mdast('<<glossary:owl>>'))).toMatchInlineSnapshot(`
       "<<glossary:owl>>
       "
     `);
   });
 
   it('Emojis', () => {
-    expect(compile(parse(':smiley:'))).toMatchInlineSnapshot(`
+    expect(md(mdast(':smiley:'))).toMatchInlineSnapshot(`
       ":smiley:
       "
     `);
@@ -56,9 +39,9 @@ describe('ReadMe Flavored Blocks', () => {
 }
 [/block]
 `;
-    const ast = parse(text);
+    const ast = mdast(text);
 
-    expect(compile(ast)).toMatchInlineSnapshot(`
+    expect(md(ast)).toMatchInlineSnapshot(`
       "[block:html]
       {
         \\"html\\": \\"<style>\\\\n  summary {\\\\n    padding-top: 8px;\\\\n    outline: none !important;\\\\n    user-select: none;\\\\n  }\\\\n  details[open] + details > summary {\\\\n    padding-top: 0;\\\\n  }\\\\n  details > summary + hr {\\\\n    opacity: .66;\\\\n  }\\\\n</style>\\"
@@ -79,8 +62,8 @@ describe('ReadMe Magic Blocks', () => {
       "favicon": "https://youtu.be/favicon.ico"
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
@@ -101,8 +84,8 @@ describe('ReadMe Magic Blocks', () => {
     }
     [/block]
     `;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
@@ -117,8 +100,8 @@ describe('ReadMe Magic Blocks', () => {
 
     And this is a paragraph!
     `;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
@@ -137,8 +120,8 @@ describe('ReadMe Magic Blocks', () => {
       ]
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
@@ -158,8 +141,8 @@ describe('ReadMe Magic Blocks', () => {
       ]
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
@@ -174,8 +157,8 @@ describe('ReadMe Magic Blocks', () => {
        }]
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
 
     expect(out).toMatchSnapshot();
   });
@@ -193,8 +176,8 @@ describe('ReadMe Magic Blocks', () => {
        }]
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
 
     expect(out).toMatchSnapshot();
   });
@@ -212,8 +195,8 @@ describe('ReadMe Magic Blocks', () => {
        }]
     }
     [/block]`;
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
 
     expect(out).toMatchSnapshot();
   });
@@ -235,16 +218,16 @@ ${JSON.stringify(
 
     `;
 
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchSnapshot();
   });
 
   it('font-awesome emojis', () => {
     const txt = ':fa-rss-square:';
 
-    const ast = parse(txt);
-    const out = compile(ast);
+    const ast = mdast(txt);
+    const out = md(ast);
     expect(out).toMatchInlineSnapshot(`
       ":fa-rss-square:
       "
@@ -252,7 +235,7 @@ ${JSON.stringify(
   });
 
   it('Tables', () => {
-    const md = `
+    const text = `
 [block:parameters]
 ${JSON.stringify({
   data: {
@@ -268,11 +251,11 @@ ${JSON.stringify({
 [/block]
     `;
 
-    expect(compile(parse(md))).toMatchSnapshot();
+    expect(md(mdast(text))).toMatchSnapshot();
   });
 
   it('Tables with breaks', () => {
-    const md = `
+    const text = `
 [block:parameters]
 ${JSON.stringify({
   data: {
@@ -288,6 +271,6 @@ ${JSON.stringify({
 [/block]
     `;
 
-    expect(compile(parse(md))).toMatchSnapshot();
+    expect(md(mdast(text))).toMatchSnapshot();
   });
 });
