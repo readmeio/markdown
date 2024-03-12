@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.77.1
+
+### 🛠 Fixes & Updates
+
+* match tippy version to react-stylguidist ([#840](https://github.com/readmeio/markdown/issues/840)) ([9c0bea9](https://github.com/readmeio/markdown/commit/9c0bea9d78c141fa33aa9820a4dbed1c53f75a4f))
+
 ## Version 6.77.0
 
 ### ✨ New & Improved
