@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.77.0
+
+### ✨ New & Improved
+
+* reusable content parser ([#838](https://github.com/readmeio/markdown/issues/838)) ([c9a1c1b](https://github.com/readmeio/markdown/commit/c9a1c1bc7b98e826b7532f53cea2b446354b0939))
+
 ## Version 6.76.0
 
 ### ✨ New & Improved
