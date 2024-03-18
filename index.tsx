@@ -67,7 +67,7 @@ export const reactTOC = (text: string, opts = {}) => {
   unimplemented('reactTOC');
 };
 
-export const mdx = (tree: any, opts = {}) => {
+export const md = (tree: any, opts = {}) => {
   return remark().use(remarkMdx).stringify(tree, opts);
 };
 
