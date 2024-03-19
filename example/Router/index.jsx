@@ -11,6 +11,7 @@ const coerceValue = value => {
       return value;
   }
 };
+
 const iteratorToObj = iterator => {
   const obj = {};
 

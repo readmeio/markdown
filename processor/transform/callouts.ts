@@ -1,8 +1,7 @@
 import { visit } from 'unist-util-visit';
 import { Node } from 'unist';
 import emojiRegex from 'emoji-regex';
-import { Root } from 'remark-mdx';
-import { Blockquote, BlockContent, Parent, DefinitionContent } from 'mdast';
+import { Blockquote, BlockContent, Parent, DefinitionContent, Root } from 'mdast';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -42,12 +41,12 @@ const calloutTransformer = () => {
         const [match, icon] = startText.match(regex) || [];
 
         if (icon && match) {
-          const title = startText.slice(match.length);
+          const heading = startText.slice(match.length);
           const body = toString({ type: 'root', children: node.children.slice(1) } as Node);
           const data = {
-            hName: 'rdme-callout',
+            hName: 'Callout',
             hProperties: {
-              title,
+              heading,
               value: body,
               icon,
               theme: themes[icon] || 'default',

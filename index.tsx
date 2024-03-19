@@ -1,7 +1,6 @@
 import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
-import { useMDXComponents } from '@mdx-js/react';
 
 import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -34,15 +33,19 @@ export const utils = {
   calloutIcons: {},
 };
 
+const useMDXComponents = () => ({
+  ...Components,
+});
+
 export const reactProcessor = (opts = {}) => {
-  return createProcessor(opts);
+  return createProcessor({ remarkPlugins: [calloutTransformer], ...opts });
 };
 
 export const react = (text: string, opts = {}) => {
   const code = compileSync(text, {
-    development: true,
     outputFormat: 'function-body',
     providerImportSource: '@mdx-js/react',
+    remarkPlugins: [calloutTransformer],
     ...opts,
   });
 

@@ -16,6 +16,7 @@
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
+    "start": "webpack serve --open --mode development --config ./webpack.dev.js",
     "test": "true # jest --coverage --runInBand",
     "test.watch": "jest --watch --coverage=false",
     "watch": "webpack --watch --progress --mode development"
@@ -44,8 +45,8 @@
     "unist-util-visit": "^4.1.1"
   },
   "peerDependencies": {
-    "@readme/variable": "^15.1.0",
     "@mdx-js/react": "^3.0.0",
+    "@readme/variable": "^15.1.0",
     "@tippyjs/react": "^4.1.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
@@ -70,6 +71,7 @@
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.2",
+    "@types/mdast": "^4.0.3",
     "babel-jest": "^29.5.0",
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
@@ -87,7 +89,7 @@
     "node-sass": "^8.0.0",
     "prettier": "^2.8.7",
     "puppeteer": "^19.8.3",
-    "react-hot-loader": "^4.13.1",
+    "react-router-dom": "^6.22.3",
     "sass-loader": "^13.2.2",
     "semantic-release": "^22.0.12",
     "stream-browserify": "^3.0.0",
