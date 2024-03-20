@@ -23,6 +23,8 @@ ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
+
+RUN npm config set registry https://registry.npmjs.org/
 RUN npm install
 
 COPY . ./

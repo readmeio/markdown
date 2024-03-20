@@ -2,7 +2,7 @@ import React from 'react';
 
 import Header from './Header';
 import Doc from './Doc';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import Form from './Form';
 
 const Root = () => {

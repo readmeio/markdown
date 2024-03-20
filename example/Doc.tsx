@@ -6,6 +6,7 @@ import docs from './docs';
 const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
+  const ci = searchParams.has('ci');
 
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
@@ -21,7 +22,7 @@ const Doc = () => {
     <React.Fragment>
       <div className="rdmd-demo--display">
         <section id="hub-content">
-          <h2 className="rdmd-demo--markdown-header">{name}</h2>
+          {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
           <div id="content-container">
             <div className="markdown-body">
               <Content />
