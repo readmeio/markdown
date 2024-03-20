@@ -2,11 +2,12 @@ import React from 'react';
 
 import Header from './Header';
 import Doc from './Doc';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import Form from './Form';
 
 const Root = () => {
-  const { ci } = useParams();
+  const [searchParams] = useSearchParams();
+  const ci = searchParams.has('ci');
 
   return (
     <>

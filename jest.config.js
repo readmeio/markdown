@@ -1,5 +1,3 @@
-const path = require('path');
-
 module.exports = {
   collectCoverageFrom: ['**/*.{js,jsx}'],
   coveragePathIgnorePatterns: [
@@ -22,12 +20,10 @@ module.exports = {
     },
   },
   modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
-  preset: '@readme/jest-preset/react',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironmentOptions: {
     url: 'http://localhost',
   },
-  transform: { '^.+\\.[jt]sx?$': ['babel-jest', { configFile: path.resolve(__dirname, '.babelrc') }] },
   transformIgnorePatterns: [
     // Since `@readme/variable` doesn't ship any transpiled code, we need to transform it as we're running tests.
     '<rootDir>/node_modules/@readme/variable/^.+\\.jsx?$',
