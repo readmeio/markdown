@@ -1,5 +1,4 @@
 const ExtractCSS = require('mini-css-extract-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 const { merge } = require('webpack-merge');
 
 const env = process.env.NODE_ENV || 'development';
