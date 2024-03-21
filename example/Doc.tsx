@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
+import RenderError from './RenderError';
 
 const Doc = () => {
   const { fixture } = useParams();
@@ -24,9 +25,11 @@ const Doc = () => {
         <section id="hub-content">
           {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
           <div id="content-container">
-            <div className="markdown-body">
-              <Content />
-            </div>
+            <RenderError>
+              <div className="markdown-body">
+                <Content />
+              </div>
+            </RenderError>
           </div>
         </section>
       </div>

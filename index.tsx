@@ -42,28 +42,34 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const react = (text: string, opts = {}) => {
-  const code = compileSync(text, {
-    outputFormat: 'function-body',
-    providerImportSource: '@mdx-js/react',
-    remarkPlugins: [calloutTransformer],
-    ...opts,
-  });
+  try {
+    const code = compileSync(text, {
+      outputFormat: 'function-body',
+      providerImportSource: '@mdx-js/react',
+      remarkPlugins: [calloutTransformer],
+      ...opts,
+    });
 
-  return code;
+    return code;
+  } catch (e) {
+    console.error(e);
+    return '';
+  }
 };
 
 export const run = (code: string, opts = {}) => {
   // @ts-ignore
   const Fragment = runtime.Fragment;
 
-  const { default: Content } = runSync(code, {
+  const file = runSync(code, {
     ...runtime,
     Fragment,
     baseUrl: '',
     useMDXComponents,
     ...opts,
   });
-  return Content;
+
+  return file?.default || (() => null);
 };
 
 export const reactTOC = (text: string, opts = {}) => {
