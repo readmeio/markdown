@@ -29,7 +29,6 @@ module.exports = {
         exclude: /node_modules\/(?!@readme\/[\w-]+\/)/,
         use: {
           loader: 'babel-loader',
-          options: { extends: './.babelrc' },
         },
       },
       {

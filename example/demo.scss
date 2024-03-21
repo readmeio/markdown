@@ -189,4 +189,16 @@
   .markdown-body {
     width: 508px;
   }
+
+  .error {
+    background-color: #f99;
+    color: black;
+    border-radius: 0.5em;
+    padding: 0 1em;
+
+    > * {
+      max-width: 508px;
+      overflow-x: auto;
+    }
+  }
 }

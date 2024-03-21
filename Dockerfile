@@ -1,5 +1,5 @@
-ARG NODE_VERSION=18
-FROM node:${NODE_VERSION}-buster
+ARG NODE_VERSION=20
+FROM node:${NODE_VERSION}-bookworm
 
 ARG NODE_VERSION
 ENV NODE_VERSION=$NODE_VERSION
@@ -23,6 +23,8 @@ ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
+
+RUN npm config set registry https://registry.npmjs.org/
 RUN npm install
 
 COPY . ./

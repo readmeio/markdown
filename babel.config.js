@@ -9,13 +9,14 @@ function isWebpack(caller) {
 module.exports = api => {
   const web = api.caller(isWebTarget);
   const webpack = api.caller(isWebpack);
+
   return {
     presets: [
       [
         '@babel/preset-env',
         {
           useBuiltIns: web ? 'usage' : undefined,
-          corejs: web ? 2 : false,
+          corejs: web ? 3 : false,
           targets: !web ? { node: 'current' } : undefined,
           modules: webpack ? false : 'commonjs',
         },
@@ -28,6 +29,7 @@ module.exports = api => {
       '@babel/plugin-proposal-export-default-from',
       '@babel/plugin-proposal-object-rest-spread',
       '@babel/plugin-proposal-optional-chaining',
+      '@babel/plugin-proposal-private-methods',
     ],
     sourceType: 'unambiguous',
   };

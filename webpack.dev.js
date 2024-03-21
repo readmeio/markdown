@@ -9,7 +9,7 @@ const common = require('./webpack.common');
 
 const config = merge(common, {
   entry: {
-    demo: './example/index.jsx',
+    demo: './example/index.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'example/'),
