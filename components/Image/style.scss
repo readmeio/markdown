@@ -40,6 +40,7 @@
 
     &[width='80%'],
     &[align='center'],
+    &[align='middle'],
     &[alt~='align-center'] {
       @extend %img-align-center;
     }
