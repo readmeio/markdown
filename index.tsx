@@ -42,19 +42,14 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const react = (text: string, opts = {}) => {
-  try {
-    const code = compileSync(text, {
-      outputFormat: 'function-body',
-      providerImportSource: '@mdx-js/react',
-      remarkPlugins: [calloutTransformer],
-      ...opts,
-    });
+  const code = compileSync(text, {
+    outputFormat: 'function-body',
+    providerImportSource: '@mdx-js/react',
+    remarkPlugins: [calloutTransformer],
+    ...opts,
+  });
 
-    return code;
-  } catch (e) {
-    console.error(e);
-    return '';
-  }
+  return code;
 };
 
 export const run = (code: string, opts = {}) => {
