@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.16
+
+### ✨ New & Improved
+
+* throw ([#844](https://github.com/readmeio/markdown/issues/844)) ([ecdba1b](https://github.com/readmeio/markdown/commit/ecdba1b4c6f7ef8396818c29f329c63aae570147))
+
 ## Version 6.75.0-beta.15
 
 ### ✨ New & Improved
