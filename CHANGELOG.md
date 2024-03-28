@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.15
+
+### ✨ New & Improved
+
+* rename react ot compile ([#843](https://github.com/readmeio/markdown/issues/843)) ([52111ce](https://github.com/readmeio/markdown/commit/52111cef8482c18e1ec3be333f71d90f46284b4d))
+
 ## Version 6.75.0-beta.14
 
 ### 🛠 Fixes & Updates
