@@ -42,20 +42,17 @@ const calloutTransformer = () => {
 
         if (icon && match) {
           const heading = startText.slice(match.length);
-          const body = toString({ type: 'root', children: node.children.slice(1) } as Node);
-          const data = {
+
+          node.children.shift();
+          node.type = 'rdme-callout';
+          node.data = {
             hName: 'Callout',
             hProperties: {
               heading,
-              value: body,
               icon,
               theme: themes[icon] || 'default',
             },
           };
-
-          node.type = 'rdme-callout';
-          node.data = data;
-          node.children[0].children[0].value = startText.slice(match.length);
         }
       } catch (e) {
         console.log(e);
