@@ -17,7 +17,7 @@ const Doc = () => {
     safeMode: searchParams.has('safeMode'),
   };
 
-  const Content = mdx.run(String(mdx.react(doc, opts)));
+  const Content = mdx.run(String(mdx.compile(doc, opts)));
 
   return (
     <React.Fragment>
