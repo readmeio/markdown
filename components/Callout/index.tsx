@@ -8,7 +8,7 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteEl
 }
 
 const Callout = (props: Props) => {
-  const { attributes, theme, icon, heading } = props;
+  const { attributes, children, theme, icon, heading } = props;
 
   return (
     // @ts-ignore
@@ -19,7 +19,7 @@ const Callout = (props: Props) => {
           {heading}
         </h3>
       )}
-      {props.children}
+      {children}
     </blockquote>
   );
 };

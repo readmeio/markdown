@@ -41,7 +41,7 @@ export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins: [calloutTransformer], ...opts });
 };
 
-export const react = (text: string, opts = {}) => {
+export const compile = (text: string, opts = {}) => {
   return String(
     compileSync(text, {
       outputFormat: 'function-body',
