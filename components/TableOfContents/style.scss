@@ -1,5 +1,16 @@
+/* REMEMBVER TO DELETE THIS */
+.content-toc {
+  position: fixed;
+  top: 100px;
+  right: 0;
+}
+
 .toc-list {
   .glossary-tooltip {
     pointer-events: none;
+  }
+
+  a.active {
+    color: red;
   }
 }

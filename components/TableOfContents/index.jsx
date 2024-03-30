@@ -1,14 +1,32 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import PropTypes from 'prop-types';
+import React, { useEffect, useRef } from 'react';
 
-function TableOfContents({ children }) {
+const TableOfContents = ({ children }) => {
+  const tableOfContentsEl = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.getAttribute('id');
+
+        if (entry.intersectionRatio > 0) {
+          tableOfContentsEl.current.querySelectorAll('a')?.forEach(el => el.classList.remove('active'));
+          tableOfContentsEl.current.querySelector(`a[href="#${id}"]`)?.classList.add('active');
+        }
+      });
+    });
+
+    document.querySelectorAll('.heading-anchor[id]').forEach(heading => {
+      observer.observe(heading);
+    });
+  }, []);
+
   return (
-    <nav>
+    <nav ref={tableOfContentsEl} className="rm-TableOfContents">
       <ul className="toc-list">
         <li>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <a className="tocHeader" href="#">
-            <i className="icon icon-text-align-left"></i>
             Table of Contents
           </a>
         </li>
@@ -16,10 +34,10 @@ function TableOfContents({ children }) {
       </ul>
     </nav>
   );
-}
+};
 
 TableOfContents.propTypes = {
   children: PropTypes.element,
 };
 
-module.exports = TableOfContents;
+export default TableOfContents;
