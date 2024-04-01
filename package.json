@@ -1,5 +1,5 @@
 {
-  "name": "@readme/markdown",
+  "name": "@readme/mdx",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "6.75.0-beta.16",
@@ -74,6 +74,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^12.1.2",
     "@types/mdast": "^4.0.3",
+    "@types/mdx": "^2.0.12",
     "babel-jest": "^29.5.0",
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
