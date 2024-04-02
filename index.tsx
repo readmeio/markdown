@@ -52,6 +52,7 @@ export const compile = (text: string, opts = {}) => {
   return String(
     compileSync(text, {
       outputFormat: 'function-body',
+      providerImportSource: '#',
       remarkPlugins: [calloutTransformer],
       ...opts,
     })
