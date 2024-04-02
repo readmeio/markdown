@@ -18,8 +18,7 @@
     "release.dry": "npx semantic-release --dry-run",
     "start": "webpack serve --open --mode development --config ./webpack.dev.js",
     "test": "vitest",
-    "test.browser": "jest --config jest.browser.js",
-    "test.watch": "jest --watch --coverage=false",
+    "test.browser": "jest",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {
