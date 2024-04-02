@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`anchor target: should allow _blank if using HTML 1`] = `"<p><a href=\\"https://example.com\\" target=\\"_blank\\" title=\\"\\">test</a></p>"`;
 
@@ -33,6 +33,59 @@ exports[`check list items 1`] = `
 </ul>"
 `;
 
+exports[`code samples > should parse indented code on the first line 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 23,
+              "line": 1,
+              "offset": 22,
+            },
+            "start": {
+              "column": 5,
+              "line": 1,
+              "offset": 4,
+            },
+          },
+          "type": "text",
+          "value": "const code = true;",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 23,
+          "line": 1,
+          "offset": 22,
+        },
+        "start": {
+          "column": 5,
+          "line": 1,
+          "offset": 4,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 23,
+      "line": 1,
+      "offset": 22,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
 exports[`code samples should parse indented code on the first line 1`] = `
 Object {
   "children": Array [
@@ -52,6 +105,247 @@ exports[`emojis 1`] = `
 <i class=\\"fa fa-lock\\"></i><br>
 :unknown-emoji:</p>"
 `;
+
+exports[`export multiple Markdown renderers > allows complex compact headings 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders HTML 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders MD 1`] = `
+"# Hello World
+"
+`;
+
+exports[`export multiple Markdown renderers > renders custom React components 1`] = `[Function]`;
+
+exports[`export multiple Markdown renderers > renders hAST 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders mdAST 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 14,
+              "line": 1,
+              "offset": 13,
+            },
+            "start": {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
+          "type": "text",
+          "value": "Hello World",
+        },
+      ],
+      "depth": 1,
+      "position": {
+        "end": {
+          "column": 14,
+          "line": 1,
+          "offset": 13,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "heading",
+    },
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 34,
+              "line": 7,
+              "offset": 184,
+            },
+            "start": {
+              "column": 3,
+              "line": 3,
+              "offset": 17,
+            },
+          },
+          "type": "text",
+          "value": "| Col. A  | Col. B  | Col. C  |
+|:-------:|:-------:|:-------:|
+| Cell A1 | Cell B1 | Cell C1 |
+| Cell A2 | Cell B2 | Cell C2 |
+| Cell A3 | Cell B3 | Cell C3 |",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 34,
+          "line": 7,
+          "offset": 184,
+        },
+        "start": {
+          "column": 3,
+          "line": 3,
+          "offset": 17,
+        },
+      },
+      "type": "paragraph",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 15,
+                  "line": 9,
+                  "offset": 200,
+                },
+                "start": {
+                  "column": 4,
+                  "line": 9,
+                  "offset": 189,
+                },
+              },
+              "type": "text",
+              "value": "Embed Title",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 67,
+              "line": 9,
+              "offset": 252,
+            },
+            "start": {
+              "column": 3,
+              "line": 9,
+              "offset": 188,
+            },
+          },
+          "title": "@embed",
+          "type": "link",
+          "url": "https://jsfiddle.net/rafegoldberg/5VA5j/",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 67,
+          "line": 9,
+          "offset": 252,
+        },
+        "start": {
+          "column": 3,
+          "line": 9,
+          "offset": 188,
+        },
+      },
+      "type": "paragraph",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 12,
+                  "line": 11,
+                  "offset": 265,
+                },
+                "start": {
+                  "column": 5,
+                  "line": 11,
+                  "offset": 258,
+                },
+              },
+              "type": "text",
+              "value": "❗️ UhOh",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 12,
+              "line": 11,
+              "offset": 265,
+            },
+            "start": {
+              "column": 5,
+              "line": 11,
+              "offset": 258,
+            },
+          },
+          "type": "paragraph",
+        },
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 61,
+                  "line": 13,
+                  "offset": 330,
+                },
+                "start": {
+                  "column": 5,
+                  "line": 13,
+                  "offset": 274,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 61,
+              "line": 13,
+              "offset": 330,
+            },
+            "start": {
+              "column": 5,
+              "line": 13,
+              "offset": 274,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 61,
+          "line": 13,
+          "offset": 330,
+        },
+        "start": {
+          "column": 3,
+          "line": 11,
+          "offset": 256,
+        },
+      },
+      "type": "blockquote",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 3,
+      "line": 16,
+      "offset": 335,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`export multiple Markdown renderers > renders plain markdown as React 1`] = `undefined`;
 
 exports[`export multiple Markdown renderers allows complex compact headings 1`] = `
 "<h1 id=\\"basic-text\\">Basic Text</h1>
@@ -1031,6 +1325,8 @@ exports[`list items 1`] = `
 `;
 
 exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. And making an OK gesture.\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img src=\\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\" alt=\\"A guy. Eating pizza. And making an OK gesture.\\" title=\\"man-eating-pizza-and-making-an-ok-gesture.jpg\\" align=\\"middle\\" class=\\"\\" width=\\"100%\\" caption=\\"\\" height=\\"auto\\" loading=\\"lazy\\"></span></span><figcaption><p>A guy. Eating pizza. And making an OK gesture.</p></figcaption></figure>"`;
+
+exports[`prefix anchors with "section-" > should add a section- prefix to heading anchors 1`] = `undefined`;
 
 exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
 

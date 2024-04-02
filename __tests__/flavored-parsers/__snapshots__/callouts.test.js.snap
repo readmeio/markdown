@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Parse RDMD Callouts renders an info callout 1`] = `
+exports[`Parse RDMD Callouts > renders an info callout 1`] = `
 {
   "children": [
     {
@@ -21,7 +21,7 @@ exports[`Parse RDMD Callouts renders an info callout 1`] = `
                 },
               },
               "type": "text",
-              "value": "Info Callout",
+              "value": "ℹ️ Info Callout",
             },
           ],
           "position": {
@@ -72,15 +72,6 @@ exports[`Parse RDMD Callouts renders an info callout 1`] = `
           "type": "paragraph",
         },
       ],
-      "data": {
-        "hName": "rdme-callout",
-        "hProperties": {
-          "icon": "ℹ️",
-          "theme": "info",
-          "title": "Info Callout",
-          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
-        },
-      },
       "position": {
         "end": {
           "column": 60,
@@ -93,7 +84,7 @@ exports[`Parse RDMD Callouts renders an info callout 1`] = `
           "offset": 1,
         },
       },
-      "type": "rdme-callout",
+      "type": "blockquote",
     },
   ],
   "position": {

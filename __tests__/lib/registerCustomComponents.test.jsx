@@ -1,8 +1,8 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import { any } from 'prop-types';
+import React from 'react';
 
-const registerCustomComponents = require('../../lib/registerCustomComponents');
-const createSchema = require('../../sanitize.schema');
+import registerCustomComponents from '../../lib/registerCustomComponents';
+import createSchema from '../../sanitize.schema';
 
 const hastPrefix = 'prefix';
 const customComponents = {
@@ -17,8 +17,8 @@ const customComponents = {
   },
 };
 
-customComponents.a.propTypes = { attrToConcatToSafelist: PropTypes.any };
-customComponents.twoWords.propTypes = { attrToBeSafelisted: PropTypes.any };
+customComponents.a.propTypes = { attrToConcatToSafelist: any };
+customComponents.twoWords.propTypes = { attrToBeSafelisted: any };
 
 describe('Custom Component Registrar', () => {
   let registered;

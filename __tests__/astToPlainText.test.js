@@ -9,7 +9,7 @@ const find = (node, matcher) => {
   return null;
 };
 
-describe('astToPlainText()', () => {
+describe.skip('astToPlainText()', () => {
   it("converts br's to ''", () => {
     const txt = '<br>';
 

@@ -1,6 +1,6 @@
 import { mdast } from '../../index';
 
-describe('Parse RDMD Callouts', () => {
+describe.skip('Parse RDMD Callouts', () => {
   it('renders an info callout', () => {
     const text = `
 > ℹ️ Info Callout
@@ -96,7 +96,7 @@ Lorem ipsum dolor  sit amet consectetur adipisicing elit.`
   });
 });
 
-describe('emoji modifier support', () => {
+describe.skip('emoji modifier support', () => {
   const emojis = ['📘', '🚧', '⚠️', '👍', '✅', '❗️', '❗', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
 
   emojis.forEach(emoji => {

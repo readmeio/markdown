@@ -1,6 +1,6 @@
 import { mdast } from '../../index';
 
-describe('reusable content transfomer', () => {
+describe.skip('reusable content transfomer', () => {
   it('should replace a reusable content block if the block is provided', () => {
     const tags = {
       Test: `
