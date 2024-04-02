@@ -48,7 +48,7 @@ export const compile = (text: string, opts = {}) => {
       providerImportSource: '@mdx-js/react',
       remarkPlugins: [calloutTransformer],
       ...opts,
-    }),
+    })
   );
 };
 
@@ -101,5 +101,3 @@ export const esast = (text: string, opts = {}) => {
 export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
-
-export default react;
