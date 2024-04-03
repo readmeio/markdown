@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
-    "@readme/variable": "^15.1.0",
+    "@readme/variable": "^16.0.0",
     "@tippyjs/react": "^4.1.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"
