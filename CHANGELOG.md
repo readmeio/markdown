@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.17
+
+### ✨ New & Improved
+
+* add usemdxcomponents option ([#848](https://github.com/readmeio/markdown/issues/848)) ([48351a2](https://github.com/readmeio/markdown/commit/48351a2961fd57f18a869bd714ab42ea2817a2f9))
+
 ## Version 6.75.0-beta.16
 
 ### ✨ New & Improved
