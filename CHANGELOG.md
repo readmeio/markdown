@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.22
+
+### ✨ New & Improved
+
+* update shighlighter ([3bbed6a](https://github.com/readmeio/markdown/commit/3bbed6a9268d0296486b4db7f3fcd6239d74b581))
+
 ## Version 6.75.0-beta.21
 
 ### ✨ New & Improved
