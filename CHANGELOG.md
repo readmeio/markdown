@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.21
+
+### ✨ New & Improved
+
+* fix package name ([82ffcfe](https://github.com/readmeio/markdown/commit/82ffcfe5c49e6a8215c8c9958b5faacc5b7e26b6))
+
 ## Version 6.75.0-beta.20
 
 ### ✨ New & Improved
