@@ -1,5 +1,5 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import { element } from 'prop-types';
+import React from 'react';
 
 function TableOfContents({ children }) {
   return (
@@ -19,7 +19,7 @@ function TableOfContents({ children }) {
 }
 
 TableOfContents.propTypes = {
-  children: PropTypes.element,
+  children: element,
 };
 
-module.exports = TableOfContents;
+export default TableOfContents;

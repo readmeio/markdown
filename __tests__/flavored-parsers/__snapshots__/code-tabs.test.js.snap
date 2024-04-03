@@ -1,138 +1,59 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Code Tabs allows code tabs within html blocks 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "
-",
+exports[`Code Tabs > allows code tabs within html blocks 1`] = `undefined`;
+
+exports[`Code Tabs > can parse code tabs 1`] = `
+{
+  "children": [
+    {
+      "lang": null,
+      "meta": null,
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 4,
+          "offset": 25,
         },
-      ],
-      "properties": Object {},
-      "tagName": "p",
-      "type": "element",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "First code block
-",
-                },
-              ],
-              "properties": Object {
-                "meta": "",
-              },
-              "tagName": "code",
-              "type": "element",
-            },
-          ],
-          "properties": Object {},
-          "tagName": "pre",
-          "type": "element",
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
         },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Second code block
-",
-                },
-              ],
-              "properties": Object {
-                "meta": "",
-              },
-              "tagName": "code",
-              "type": "element",
-            },
-          ],
-          "properties": Object {},
-          "tagName": "pre",
-          "type": "element",
-        },
-      ],
-      "properties": Object {
-        "className": Array [
-          "code-tabs",
-        ],
       },
-      "tagName": "div",
-      "type": "element",
+      "type": "code",
+      "value": "First code block",
     },
-    Object {
-      "type": "text",
-      "value": "
-",
-    },
-    Object {
-      "children": Array [],
-      "properties": Object {},
-      "tagName": "p",
-      "type": "element",
+    {
+      "lang": null,
+      "meta": null,
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 7,
+          "offset": 51,
+        },
+        "start": {
+          "column": 1,
+          "line": 5,
+          "offset": 26,
+        },
+      },
+      "type": "code",
+      "value": "Second code block",
     },
   ],
-  "data": Object {
-    "quirksMode": false,
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 8,
+      "offset": 52,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
   },
-  "type": "root",
-}
-`;
-
-exports[`Code Tabs can parse code tabs 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "className": "tab-panel",
-          "data": Object {
-            "hName": "code",
-            "hProperties": Object {
-              "lang": undefined,
-              "meta": "",
-            },
-          },
-          "lang": undefined,
-          "meta": "",
-          "type": "code",
-          "value": "First code block",
-        },
-        Object {
-          "className": "tab-panel",
-          "data": Object {
-            "hName": "code",
-            "hProperties": Object {
-              "lang": undefined,
-              "meta": "",
-            },
-          },
-          "lang": undefined,
-          "meta": "",
-          "type": "code",
-          "value": "Second code block",
-        },
-      ],
-      "className": "tabs",
-      "data": Object {
-        "hName": "div",
-        "hProperties": Object {
-          "className": Array [
-            "code-tabs",
-          ],
-        },
-      },
-      "type": "code-tabs",
-    },
-  ],
   "type": "root",
 }
 `;

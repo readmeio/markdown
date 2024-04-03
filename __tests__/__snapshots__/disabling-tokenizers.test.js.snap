@@ -1,103 +1,387 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`disableTokenizers: "blocks" disabling block tokenizer 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
+exports[`disableTokenizers: "blocks" > disabling block tokenizer 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 12,
+              "line": 1,
+              "offset": 11,
+            },
+            "start": {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
           "type": "text",
-          "value": "# heading 1",
+          "value": "heading 1",
         },
       ],
-      "type": "paragraph",
+      "depth": 1,
+      "position": {
+        "end": {
+          "column": 12,
+          "line": 1,
+          "offset": 11,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "heading",
     },
   ],
+  "position": {
+    "end": {
+      "column": 12,
+      "line": 1,
+      "offset": 11,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`disableTokenizers: "inlines" disabling delete 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
+exports[`disableTokenizers: "inlines" > disabling delete 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
           "type": "text",
           "value": "~~strikethrough~~",
         },
       ],
+      "position": {
+        "end": {
+          "column": 18,
+          "line": 1,
+          "offset": 17,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "paragraph",
     },
   ],
+  "position": {
+    "end": {
+      "column": 18,
+      "line": 1,
+      "offset": 17,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`disableTokenizers: "inlines" disabling emphasis 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "*emphatic **strong** emphatic*",
+exports[`disableTokenizers: "inlines" > disabling emphasis 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 11,
+                  "line": 1,
+                  "offset": 10,
+                },
+                "start": {
+                  "column": 2,
+                  "line": 1,
+                  "offset": 1,
+                },
+              },
+              "type": "text",
+              "value": "emphatic ",
+            },
+            {
+              "children": [
+                {
+                  "position": {
+                    "end": {
+                      "column": 19,
+                      "line": 1,
+                      "offset": 18,
+                    },
+                    "start": {
+                      "column": 13,
+                      "line": 1,
+                      "offset": 12,
+                    },
+                  },
+                  "type": "text",
+                  "value": "strong",
+                },
+              ],
+              "position": {
+                "end": {
+                  "column": 21,
+                  "line": 1,
+                  "offset": 20,
+                },
+                "start": {
+                  "column": 11,
+                  "line": 1,
+                  "offset": 10,
+                },
+              },
+              "type": "strong",
+            },
+            {
+              "position": {
+                "end": {
+                  "column": 30,
+                  "line": 1,
+                  "offset": 29,
+                },
+                "start": {
+                  "column": 21,
+                  "line": 1,
+                  "offset": 20,
+                },
+              },
+              "type": "text",
+              "value": " emphatic",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 31,
+              "line": 1,
+              "offset": 30,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "emphasis",
         },
       ],
+      "position": {
+        "end": {
+          "column": 31,
+          "line": 1,
+          "offset": 30,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "paragraph",
     },
   ],
+  "position": {
+    "end": {
+      "column": 31,
+      "line": 1,
+      "offset": 30,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`disableTokenizers: "inlines" disabling inlineCode 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "\`const js = true \`",
+exports[`disableTokenizers: "inlines" > disabling inlineCode 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 19,
+              "line": 1,
+              "offset": 18,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "inlineCode",
+          "value": "const js = true ",
         },
       ],
+      "position": {
+        "end": {
+          "column": 19,
+          "line": 1,
+          "offset": 18,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "paragraph",
     },
   ],
+  "position": {
+    "end": {
+      "column": 19,
+      "line": 1,
+      "offset": 18,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`disableTokenizers: {} disables a block tokenizer 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
+exports[`disableTokenizers: {} > disables a block tokenizer 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 12,
+              "line": 1,
+              "offset": 11,
+            },
+            "start": {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
           "type": "text",
-          "value": "# heading 1",
+          "value": "heading 1",
         },
       ],
-      "type": "paragraph",
+      "depth": 1,
+      "position": {
+        "end": {
+          "column": 12,
+          "line": 1,
+          "offset": 11,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "heading",
     },
   ],
+  "position": {
+    "end": {
+      "column": 12,
+      "line": 1,
+      "offset": 11,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`disableTokenizers: {} disables an inline tokenizer 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "\`const js = true\`",
+exports[`disableTokenizers: {} > disables an inline tokenizer 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "inlineCode",
+          "value": "const js = true",
         },
       ],
+      "position": {
+        "end": {
+          "column": 18,
+          "line": 1,
+          "offset": 17,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "paragraph",
     },
   ],
+  "position": {
+    "end": {
+      "column": 18,
+      "line": 1,
+      "offset": 17,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
