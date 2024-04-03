@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.20
+
+### ✨ New & Improved
+
+* package-lock ([6747a1f](https://github.com/readmeio/markdown/commit/6747a1fa94e26702377067cb058f75a0dadfc720))
+
 ## Version 6.75.0-beta.19
 
 ### ✨ New & Improved
