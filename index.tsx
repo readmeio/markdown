@@ -39,8 +39,6 @@ export const utils = {
 const makeUseMDXComponents = (more: RunOpts['components']) => {
   const components = { ...Components, ...more };
 
-  console.log({ components });
-
   return () => components;
 };
 
@@ -55,7 +53,7 @@ export const compile = (text: string, opts = {}) => {
       providerImportSource: '#',
       remarkPlugins: [calloutTransformer],
       ...opts,
-    })
+    }),
   );
 };
 
