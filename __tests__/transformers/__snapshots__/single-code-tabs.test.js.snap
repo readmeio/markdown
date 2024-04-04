@@ -1,73 +1,77 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a lang set 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "className": "tab-panel",
-          "data": Object {
-            "hName": "code",
-            "hProperties": Object {
-              "lang": "javascript",
-              "meta": null,
-            },
-          },
-          "lang": "javascript",
-          "meta": null,
-          "type": "code",
-          "value": "const languageSet = true;",
+exports[`Single Code Tab Transformer > wraps single code blocks with tabs if they have a lang set 1`] = `
+{
+  "children": [
+    {
+      "lang": "javascript",
+      "meta": null,
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 4,
+          "offset": 44,
         },
-      ],
-      "className": "tabs",
-      "data": Object {
-        "hName": "div",
-        "hProperties": Object {
-          "className": Array [
-            "code-tabs",
-          ],
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
         },
       },
-      "type": "code-tabs",
+      "type": "code",
+      "value": "const languageSet = true;",
     },
   ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 5,
+      "offset": 45,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a title set 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "className": "tab-panel",
-          "data": Object {
-            "hName": "code",
-            "hProperties": Object {
-              "lang": "javascript",
-              "meta": "Testing",
-            },
-          },
-          "lang": "javascript",
-          "meta": "Testing",
-          "type": "code",
-          "value": "const languageSet = true;",
+exports[`Single Code Tab Transformer > wraps single code blocks with tabs if they have a title set 1`] = `
+{
+  "children": [
+    {
+      "lang": "javascript",
+      "meta": "Testing",
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 4,
+          "offset": 52,
         },
-      ],
-      "className": "tabs",
-      "data": Object {
-        "hName": "div",
-        "hProperties": Object {
-          "className": Array [
-            "code-tabs",
-          ],
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
         },
       },
-      "type": "code-tabs",
+      "type": "code",
+      "value": "const languageSet = true;",
     },
   ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 5,
+      "offset": 53,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;

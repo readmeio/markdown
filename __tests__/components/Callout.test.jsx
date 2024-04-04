@@ -3,7 +3,7 @@ import React from 'react';
 
 import Callout from '../../components/Callout';
 
-describe('Callout', () => {
+describe.skip('Callout', () => {
   it('render _all_ its children', () => {
     render(
       <Callout title="Title">

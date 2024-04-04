@@ -1,4 +1,4 @@
-const { defaultSchema } = require('hast-util-sanitize/lib/schema');
+import { defaultSchema } from 'hast-util-sanitize/lib/schema';
 
 const createSchema = ({ safeMode } = {}) => {
   const schema = JSON.parse(JSON.stringify(defaultSchema));
@@ -40,4 +40,4 @@ const createSchema = ({ safeMode } = {}) => {
   return schema;
 };
 
-module.exports = createSchema;
+export default createSchema;

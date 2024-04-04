@@ -1,6 +1,42 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.22
+
+### ✨ New & Improved
+
+* update shighlighter ([3bbed6a](https://github.com/readmeio/markdown/commit/3bbed6a9268d0296486b4db7f3fcd6239d74b581))
+
+## Version 6.75.0-beta.21
+
+### ✨ New & Improved
+
+* fix package name ([82ffcfe](https://github.com/readmeio/markdown/commit/82ffcfe5c49e6a8215c8c9958b5faacc5b7e26b6))
+
+## Version 6.75.0-beta.20
+
+### ✨ New & Improved
+
+* package-lock ([6747a1f](https://github.com/readmeio/markdown/commit/6747a1fa94e26702377067cb058f75a0dadfc720))
+
+## Version 6.75.0-beta.19
+
+### ✨ New & Improved
+
+* revert updates ([98eafe7](https://github.com/readmeio/markdown/commit/98eafe745e4ecc3b8de53a730e0eb6d7f654419b))
+
+## Version 6.75.0-beta.18
+
+### ✨ New & Improved
+
+* build ([c3f2f5c](https://github.com/readmeio/markdown/commit/c3f2f5ce318bf8fb1f84c91a4154ae0ad839ff47))
+
+## Version 6.75.0-beta.17
+
+### ✨ New & Improved
+
+* add usemdxcomponents option ([#848](https://github.com/readmeio/markdown/issues/848)) ([48351a2](https://github.com/readmeio/markdown/commit/48351a2961fd57f18a869bd714ab42ea2817a2f9))
+
 ## Version 6.75.0-beta.16
 
 ### ✨ New & Improved

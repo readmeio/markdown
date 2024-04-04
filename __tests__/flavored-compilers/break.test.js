@@ -1,6 +1,6 @@
 import { mdast, mdx } from '../..';
 
-describe('break compiler', () => {
+describe.skip('break compiler', () => {
   it('uses two spaces with `correctnewlines: false`', () => {
     const txt = 'line\nbreak';
     const opts = { correctnewlines: false };

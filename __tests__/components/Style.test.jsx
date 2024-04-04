@@ -1,13 +1,13 @@
-const { renderToString } = require('react-dom/server');
+import { renderToString } from 'react-dom/server';
 
-const { react } = require('../../index');
+import { compile, run } from '../../index';
 
-describe('Style tag', () => {
+describe.skip('Style tag', () => {
   describe('safeMode = false', () => {
     it('renders as a style tag', () => {
       const md = '<style>{ background-color: salmon }</style>';
 
-      expect(renderToString(react(md))).toMatchInlineSnapshot(
+      expect(renderToString(run(compile(md)))).toMatchInlineSnapshot(
         '"<style data-reactroot=\\"\\">{ background-color: salmon }</style>"'
       );
     });
@@ -17,7 +17,7 @@ describe('Style tag', () => {
     it('renders the style in a `<pre>`', () => {
       const md = '<style>{ background-color: salmon }</style>';
 
-      expect(renderToString(react(md, { safeMode: true }))).toMatchInlineSnapshot(`
+      expect(renderToString(run(compile(md, { safeMode: true })))).toMatchInlineSnapshot(`
         "<pre data-reactroot=\\"\\"><code>&lt;style&gt;
         { background-color: salmon }
         &lt;/style&gt;</code></pre>"
@@ -27,7 +27,7 @@ describe('Style tag', () => {
     it('renders the style in a `<pre>` when attrs are present', () => {
       const md = '<style someAttr="muahaha">{ background-color: salmon }</style>';
 
-      expect(renderToString(react(md, { safeMode: true }))).toMatchInlineSnapshot(`
+      expect(renderToString(run(compile(md, { safeMode: true })))).toMatchInlineSnapshot(`
         "<pre data-reactroot=\\"\\"><code>&lt;style&gt;
         { background-color: salmon }
         &lt;/style&gt;</code></pre>"

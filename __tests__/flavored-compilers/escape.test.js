@@ -1,9 +1,9 @@
-import { mdast, md } from '../../index';
+import { mdast, mdx } from '../../index';
 
 describe('escape compiler', () => {
   it('handles escapes', () => {
     const txt = '\\&para;';
 
-    expect(md(mdast(txt))).toBe('\\&para;\n');
+    expect(mdx(mdast(txt))).toBe('\\&para;\n');
   });
 });

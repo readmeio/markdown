@@ -1,6 +1,6 @@
-const copy = require('copy-to-clipboard');
-const PropTypes = require('prop-types');
-const React = require('react');
+import copy from 'copy-to-clipboard';
+import { string, oneOfType, func, shape, instanceOf, arrayOf, bool } from 'prop-types';
+import React, { createRef, Element, Fragment } from 'react';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
-  const button = React.createRef();
+  const button = createRef();
   /* istanbul ignore next */
   const copier = () => {
     const code = codeRef.current.textContent;
@@ -31,10 +31,9 @@ function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
 }
 
 CopyCode.propTypes = {
-  className: PropTypes.string,
-  codeRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.instanceOf(React.Element) })])
-    .isRequired,
-  rootClass: PropTypes.string,
+  className: string,
+  codeRef: oneOfType([func, shape({ current: instanceOf(Element) })]).isRequired,
+  rootClass: string,
 };
 
 function Code(props) {
@@ -43,7 +42,7 @@ function Code(props) {
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
   const language = canonicalLanguage(lang) || langClass;
 
-  const codeRef = React.createRef();
+  const codeRef = createRef();
 
   const codeOpts = {
     inline: !lang,
@@ -55,7 +54,7 @@ function Code(props) {
     syntaxHighlighter && children ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
 
   return (
-    <React.Fragment>
+    <Fragment>
       {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
       <code
         ref={codeRef}
@@ -66,7 +65,7 @@ function Code(props) {
       >
         {codeContent}
       </code>
-    </React.Fragment>
+    </Fragment>
   );
 }
 
@@ -76,12 +75,12 @@ function CreateCode({ copyButtons, theme }) {
 }
 
 Code.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.string),
-  className: PropTypes.string,
-  copyButtons: PropTypes.bool,
-  lang: PropTypes.string,
-  meta: PropTypes.string,
-  theme: PropTypes.string,
+  children: arrayOf(string),
+  className: string,
+  copyButtons: bool,
+  lang: string,
+  meta: string,
+  theme: string,
 };
 
 Code.defaultProps = {
@@ -98,4 +97,4 @@ CreateCode.sanitize = sanitizeSchema => {
   return sanitizeSchema;
 };
 
-module.exports = CreateCode;
+export default CreateCode;

@@ -2,7 +2,7 @@ import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 
-import { createProcessor, compileSync, runSync } from '@mdx-js/mdx';
+import { createProcessor, compileSync, runSync, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 
 import Variable from '@readme/variable';
@@ -14,10 +14,13 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
+import react from 'react';
 
 const unimplemented = debug('mdx:unimplemented');
 
-const { GlossaryItem } = Components;
+type RunOpts = Omit<RunOptions, 'Fragment'> & {
+  components?: Record<string, React.Component>;
+};
 
 export { Components };
 
@@ -28,14 +31,16 @@ export const utils = {
 
   BaseUrlContext,
   getHref,
-  GlossaryContext: GlossaryItem.GlossaryContext,
+  GlossaryContext: Components.GlossaryItem.GlossaryContext,
   VariablesContext: Variable.VariablesContext,
   calloutIcons: {},
 };
 
-const useMDXComponents = () => ({
-  ...Components,
-});
+const makeUseMDXComponents = (more: RunOpts['components']) => {
+  const components = { ...Components, ...more };
+
+  return () => components;
+};
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins: [calloutTransformer], ...opts });
@@ -45,22 +50,24 @@ export const compile = (text: string, opts = {}) => {
   return String(
     compileSync(text, {
       outputFormat: 'function-body',
-      providerImportSource: '@mdx-js/react',
+      providerImportSource: '#',
       remarkPlugins: [calloutTransformer],
       ...opts,
     }),
   );
 };
 
-export const run = (code: string, opts = {}) => {
+export const run = (code: string, _opts: RunOpts = {}) => {
   // @ts-ignore
   const Fragment = runtime.Fragment;
+
+  const { components, ...opts } = _opts;
 
   const file = runSync(code, {
     ...runtime,
     Fragment,
     baseUrl: '',
-    useMDXComponents,
+    useMDXComponents: makeUseMDXComponents(components),
     ...opts,
   });
 
@@ -101,5 +108,3 @@ export const esast = (text: string, opts = {}) => {
 export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
-
-export default compile;
