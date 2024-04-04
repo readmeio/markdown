@@ -102,4 +102,4 @@ export const plain = (text: string, opts = {}) => {
   unimplemented('plain export');
 };
 
-export default react;
+export default compile;
