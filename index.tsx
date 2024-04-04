@@ -14,7 +14,6 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
-import react from 'react';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -86,7 +85,7 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-export const mdast = (text: string, opts = {}) => {
+export const mdast = (text: string, opts: any = {}) => {
   const processor = remark().use(remarkMdx);
 
   try {

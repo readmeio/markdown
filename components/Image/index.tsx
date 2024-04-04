@@ -81,7 +81,7 @@ const Image = (props: Props) => {
             />
           </span>
         </span>
-        <figcaption className=''>{caption}</figcaption>
+        <figcaption>{caption}</figcaption>
       </figure>
     );
   }
