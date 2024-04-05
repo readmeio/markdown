@@ -8,6 +8,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 21.x]
+        react: [16, 17, 18]
     steps:
       - uses: actions/checkout@v3
 
@@ -22,6 +23,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install React ${{ matrix.react }}
+        run: npm i react@${{ matrix.react }} react-dom@${{ matrix.react }}
+
+      # `@testing-library/react@13` dropped support for React 16 and 17 so to ensure that we run
+      # fine under React 18 we should upgrade it if we're testing React 18.
+      - name: Install testing-library react for React 18
+        if: matrix.react == '18'
+        run: npm i @testing-library/react@13
+
       - name: Run tests
         run: npm test
 
@@ -32,12 +42,22 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 21.x]
+        react: [16, 17, 18]
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Run visual tests (node ${{ matrix.node-version }})
         run: make ci
+
+      - name: Install React ${{ matrix.react }}
+        run: npm i react@${{ matrix.react }} react-dom@${{ matrix.react }}
+
+      # `@testing-library/react@13` dropped support for React 16 and 17 so to ensure that we run
+      # fine under React 18 we should upgrade it if we're testing React 18.
+      - name: Install testing-library react for React 18
+        if: matrix.react == '18'
+        run: npm i @testing-library/react@13
 
       - name: Upload snapshot diffs
         uses: actions/upload-artifact@v3
