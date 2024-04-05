@@ -8,7 +8,7 @@ function tokenizeReusableContent(eat, value, silent) {
 
   // Modifies the regular expression to match from
   // the start of the line
-  const match = /^<(?<tag>[A-Z]\S+)\s*\/>\s*\n/.exec(value);
+  const match = /^<(?<tag>[A-Z]\S+)\s*\/>\s*/.exec(value);
 
   if (!match || !match.groups.tag) return false;
   const { tag } = match.groups;
