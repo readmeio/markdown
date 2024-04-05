@@ -7,6 +7,9 @@ ENV NODE_VERSION=$NODE_VERSION
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
+ARG REACT_VERSION=18
+ENV REACT_VERSION=$REACT_VERSION
+
 RUN apt-get update && apt-get install -y \
   curl \
   gnupg \

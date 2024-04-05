@@ -9,7 +9,7 @@ const common = require('./webpack.common');
 
 const config = merge(common, {
   entry: {
-    demo: './example/index.jsx',
+    demo: ['16', '17'].includes(process.env.REACT_VERSION) ? './example/index.legacy.jsx' : './example/index.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'example/'),
