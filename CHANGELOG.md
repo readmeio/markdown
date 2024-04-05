@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.77.2
+
+### 🛠 Fixes & Updates
+
+* add css attribute selector for firefox ([#845](https://github.com/readmeio/markdown/issues/845)) ([f289c1b](https://github.com/readmeio/markdown/commit/f289c1b3f90d75cb637e13361627b23144232cb2))
+* dont require newline ([#854](https://github.com/readmeio/markdown/issues/854)) ([3b48c90](https://github.com/readmeio/markdown/commit/3b48c909b1a06fcf3224e99f8a2d63e4a0114725))
+
 ## Version 6.77.1
 
 ### 🛠 Fixes & Updates
