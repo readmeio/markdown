@@ -225,9 +225,9 @@ Object {
   ],
   "position": Position {
     "end": Object {
-      "column": 1,
+      "column": 2,
       "line": 3,
-      "offset": 23,
+      "offset": 24,
     },
     "indent": Array [
       1,

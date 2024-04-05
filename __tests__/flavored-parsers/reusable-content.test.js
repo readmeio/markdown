@@ -1,6 +1,23 @@
 import { mdast } from '../../index';
 
 describe('reusable content transfomer', () => {
+  it('parses camel cased content', () => {
+    const md = '<TestComponent />';
+    const tree = mdast(md);
+
+    expect(tree.children[0].type).toBe('reusable-content');
+    expect(tree.children[0].tag).toBe('TestComponent');
+  });
+
+  it('parses content in a container', () => {
+    const md = '> <TestComponent />';
+    const tree = mdast(md);
+
+    expect(tree.children[0].type).toBe('blockquote');
+    expect(tree.children[0].children[0].type).toBe('reusable-content');
+    expect(tree.children[0].children[0].tag).toBe('TestComponent');
+  });
+
   it('should replace a reusable content block if the block is provided', () => {
     const tags = {
       Test: `
