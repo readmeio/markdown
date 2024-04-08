@@ -3,7 +3,7 @@ const { insertBlockTokenizerBefore } = require('./utils');
 export const type = 'reusable-content';
 
 function tokenizeReusableContent(eat, value, silent) {
-  const { tags, disabled, wrap = true } = this.data('reusableContent');
+  const { tags, disabled } = this.data('reusableContent');
   if (disabled) return false;
 
   // Modifies the regular expression to match from
@@ -16,13 +16,11 @@ function tokenizeReusableContent(eat, value, silent) {
   /* istanbul ignore if */
   if (silent) return true;
 
-  const node = wrap
-    ? {
-        type: 'reusable-content',
-        tag,
-        children: tag in tags ? tags[tag] : [],
-      }
-    : tags[tag];
+  const node = {
+    type: 'reusable-content',
+    tag,
+    children: tag in tags ? tags[tag] : [],
+  };
 
   return eat(match[0])(node);
 }
