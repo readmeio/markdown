@@ -27,6 +27,8 @@ WORKDIR ${DOCKER_WORKSPACE}
 COPY package.json package-lock.json ./
 RUN npm install
 
+RUN npm install react@${REACT_VERSION} react-dom@${REACT_VERSION} @testing-library/react@12
+
 COPY . ./
 
 RUN mkdir -p __tests__/browser/__image_snapshots__/__diff_output__

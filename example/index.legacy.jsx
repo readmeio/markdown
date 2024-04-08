@@ -1,24 +1,7 @@
 /* eslint-disable import/no-import-module-exports */
 import React from 'react';
 import ReactDOM from 'react-dom';
-// eslint-disable-next-line import/no-unresolved
-import { AppContainer } from 'react-hot-loader';
 
 import Demo from './Demo';
 
-function render(Component) {
-  // eslint-disable-next-line react/no-deprecated
-  ReactDOM.render(
-    <AppContainer>
-      <Component />
-    </AppContainer>,
-    document.getElementById('rdmd-demo'),
-  );
-}
-
-render(Demo);
-
-// Webpack Hot Module Replacement API
-if (module.hot) {
-  module.hot.accept('./Demo', () => render(Demo));
-}
+ReactDOM.render(<Demo />, document.getElementById('rdmd-demo'));

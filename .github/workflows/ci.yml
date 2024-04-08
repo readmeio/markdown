@@ -45,6 +45,7 @@ jobs:
 
     env:
       USE_LEGACY: ${{ matrix.react == '16' || matrix.react == '17' }}
+      REACT_VERSION: ${{ matrix.react }}
 
     steps:
       - uses: actions/checkout@v3
