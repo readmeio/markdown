@@ -9,6 +9,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 ENV USE_LEGACY=true
 
+ARG REACT_VERSION
+ENV REACT_VERSION=$REACT_VERSION
+
 RUN apt-get update && apt-get install -y \
   curl \
   gnupg \
