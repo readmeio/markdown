@@ -14,14 +14,13 @@ example/public/img/emojis: node_modules/@readme/emojis
 	mkdir -p example/public/img/emojis
 	cp node_modules/@readme/emojis/src/img/*.png example/public/img/emojis/
 
-ifeq $(USE_LEGACY)
-	FILE=-f Dockerfile.legacy
-else
-	FILE=""
+ifeq ($(USE_LEGACY), true)
+dockerfile = -f Dockerfile.legacy
 endif
 
 build:
-	docker build --platform linux/amd64 -t markdown $(FILE) .
+	@echo USE_LEGACY=$(USE_LEGACY)
+	docker build --platform linux/amd64 -t markdown $(dockerfile) .
 
 # This lets us call `make run test.browser`. Make expects cmdline args
 # to be targets. So this creates noop targets out of args. Copied from
