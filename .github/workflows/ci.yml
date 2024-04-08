@@ -44,21 +44,13 @@ jobs:
         react: [16, 17, 18]
 
     env:
-      REACT_VERSION: ${{ matrix.react }}
+      USE_LEGACY: ${{ matrix.react == '16' || matrix.react == '17' }}
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Run visual tests (node ${{ matrix.node-version }})
         run: make ci
-
-      - name: Install React 18 deps
-        if: matrix.react == '18'
-        run: npm uninstall react-hot-loader && npm i react@${{ matrix.react }} react-dom@${{ matrix.react }} @testing-library/react@14
-
-      - name: Install React <18 deps
-        if: matrix.react == '16' || matrix.react == '17'
-        run: npm i react@${{ matrix.react }} react-dom@${{ matrix.react }}
 
       - name: Upload snapshot diffs
         uses: actions/upload-artifact@v3
