@@ -29,9 +29,6 @@ const config = merge(common, {
     }),
   ],
   resolve: {
-    alias: {
-      'react-dom': '@hot-loader/react-dom',
-    },
     fallback: { path: require.resolve('path-browserify') },
   },
 });
