@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.77.3
+
+### 🛠 Fixes & Updates
+
+* wrap: false ([#855](https://github.com/readmeio/markdown/issues/855)) ([9372f59](https://github.com/readmeio/markdown/commit/9372f594727c16c079058f1c36c4b9344390ffb6))
+
 ## Version 6.77.2
 
 ### 🛠 Fixes & Updates
