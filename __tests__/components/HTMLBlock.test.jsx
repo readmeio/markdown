@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { renderToString } from 'react-dom/server';
 
 import createHTMLBlock from '../../components/HTMLBlock';
 import { react } from '../../index';
@@ -46,11 +45,9 @@ describe('HTML Block', () => {
     <h1>Hello World</h1>
     <script>mockFn()</script>
     `;
-    const elem = <HTMLBlock html={html} runScripts={true} />;
-    const view = renderToString(elem);
-    expect(elem.props.runScripts).toBe(true);
-    expect(view.indexOf('<script>')).toBeLessThan(0);
-    expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
+    const { container } = render(<HTMLBlock html={html} runScripts={true} />);
+
+    expect(container.querySelector('script')).not.toBeInTheDocument();
   });
 
   it('renders the html in a `<pre>` tag if safeMode={true}', () => {
@@ -62,8 +59,8 @@ ${JSON.stringify({
 [/block]
     `;
 
-    expect(renderToString(react(md, { safeMode: true }))).toMatchInlineSnapshot(
-      '"<pre class=\\"html-unsafe\\" data-reactroot=\\"\\"><code>&lt;button onload=&quot;alert(&#39;gotcha!&#39;)&quot;/&gt;</code></pre>"',
-    );
+    const { container } = render(react(md, { safeMode: true }));
+
+    expect(container.querySelector('pre > code').innerHTML).toBe('&lt;button onload="alert(\'gotcha!\')"/&gt;');
   });
 });
