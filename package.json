@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.75.0-beta.22",
+  "version": "6.75.0-beta.23",
   "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
   "browser": "dist/main.js",
@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
-    "@readme/variable": "^15.1.0",
+    "@readme/variable": "^16.0.0",
     "@tippyjs/react": "^4.1.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0"

@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.23
+
+### ✨ New & Improved
+
+* force release ([073ac1d](https://github.com/readmeio/markdown/commit/073ac1db504046b36d1d3f8618c5dc12700cd19b))
+
 ## Version 6.75.0-beta.22
 
 ### ✨ New & Improved
