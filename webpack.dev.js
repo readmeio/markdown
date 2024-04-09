@@ -9,7 +9,7 @@ const common = require('./webpack.common');
 
 const config = merge(common, {
   entry: {
-    demo: './example/index.jsx',
+    demo: process.env.USE_LEGACY ? './example/index.legacy.jsx' : './example/index.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'example/'),
@@ -27,9 +27,6 @@ const config = merge(common, {
     }),
   ],
   resolve: {
-    alias: {
-      'react-dom': '@hot-loader/react-dom',
-    },
     fallback: { path: require.resolve('path-browserify') },
   },
 });
