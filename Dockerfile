@@ -10,6 +10,7 @@ ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium-browser
 RUN apk update && apk add \
   make \
   font-noto-emoji \
+  font-roboto \
   chromium
 
 RUN npm install -g npm@latest
