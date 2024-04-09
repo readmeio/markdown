@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.78.0
+
+### ✨ New & Improved
+
+* loosen react deps ([#852](https://github.com/readmeio/markdown/issues/852)) ([eba64ad](https://github.com/readmeio/markdown/commit/eba64ade9cac3119d20f857e3ef24e66e3276459))
+
 ## Version 6.77.3
 
 ### 🛠 Fixes & Updates
