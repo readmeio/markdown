@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, FunctionComponent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
@@ -14,7 +14,7 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [Content, setContent] = useState(null);
+  const [Content, setContent] = useState<FunctionComponent>(null);
 
   useEffect(() => {
     const render = async () => {
@@ -23,7 +23,10 @@ const Doc = () => {
         safeMode,
       };
 
-      setContent(await mdx.run(String(mdx.compile(doc, opts))));
+      const code = mdx.compile(doc, opts);
+      const content = await mdx.run(code);
+
+      setContent(() => content);
     };
     render();
   }, [doc, lazyImages, safeMode]);
@@ -35,9 +38,7 @@ const Doc = () => {
           {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
           <div id="content-container">
             <RenderError>
-              <div className="markdown-body">
-                <Content />
-              </div>
+              <div className="markdown-body">{Content && <Content />}</div>
             </RenderError>
           </div>
         </section>
