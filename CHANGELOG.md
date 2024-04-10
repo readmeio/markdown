@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.24
+
+### ✨ New & Improved
+
+* async run ([#858](https://github.com/readmeio/markdown/issues/858)) ([61a3e19](https://github.com/readmeio/markdown/commit/61a3e196d449e2df8393b1c7db56cf7901d54490))
+
 ## Version 6.75.0-beta.23
 
 ### ✨ New & Improved
