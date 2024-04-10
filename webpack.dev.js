@@ -21,15 +21,20 @@ const config = merge(common, {
     port: 9966,
     hot: true,
   },
+  module: {
+    rules: [
+      {
+        test: /\.(txt|md)$/i,
+        type: 'asset/source',
+      },
+    ],
+  },
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
   ],
   resolve: {
-    alias: {
-      'react-dom': '@hot-loader/react-dom',
-    },
     fallback: {
       fs: require.resolve('browserify-fs'),
       path: require.resolve('path-browserify'),

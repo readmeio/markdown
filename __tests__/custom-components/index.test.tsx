@@ -11,22 +11,22 @@ describe('Custom Components', () => {
     </>
   );
 
-  it('renders custom components', () => {
+  it('renders custom components', async () => {
     const doc = `
 <Example />
     `;
-    const Page = run(compile(doc), { components: { Example } });
+    const Page = await run(compile(doc), { components: { Example } });
     const output = renderToString(<Page />);
 
     expect(output).toBe('<div data-reactroot="">It works!</div>');
   });
 
-  it('renders custom components recursively', () => {
+  it('renders custom components recursively', async () => {
     const doc = `
 <Composite />
     `;
 
-    const Page = run(compile(doc), { components: { Example, Composite } });
+    const Page = await run(compile(doc), { components: { Example, Composite } });
     const output = renderToString(<Page />);
 
     expect(output).toBe('<div>Does it work?</div><div>It works!</div>');
