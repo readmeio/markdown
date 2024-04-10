@@ -59,14 +59,10 @@ module.exports = {
           },
         },
       },
-      {
-        test: /\.(txt|md)$/i,
-        type: 'asset/source',
-      },
     ],
   },
   resolve: {
-    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx', '.md'],
     fallback: { buffer: require.resolve('buffer') },
   },
 };
