@@ -2,7 +2,7 @@ import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 
-import { createProcessor, compileSync, runSync, RunOptions } from '@mdx-js/mdx';
+import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 
 import Variable from '@readme/variable';
@@ -57,13 +57,11 @@ export const compile = (text: string, opts = {}) => {
   );
 };
 
-export const run = (code: string, _opts: RunOpts = {}) => {
-  // @ts-ignore
-  const Fragment = runtime.Fragment;
-
+export const run = async (code: string, _opts: RunOpts = {}) => {
+  const { Fragment } = runtime as any;
   const { components, ...opts } = _opts;
 
-  const file = runSync(code, {
+  const file = await mdxRun(code, {
     ...runtime,
     Fragment,
     baseUrl: '',

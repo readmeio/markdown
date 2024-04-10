@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
@@ -8,16 +8,25 @@ const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
   const ci = searchParams.has('ci');
+  const lazyImages = searchParams.has('lazyImages');
+  const safeMode = searchParams.has('safeMode');
 
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const opts = {
-    lazyImages: searchParams.has('lazyImages'),
-    safeMode: searchParams.has('safeMode'),
-  };
+  const [Content, setContent] = useState(null);
 
-  const Content = mdx.run(String(mdx.compile(doc, opts)));
+  useEffect(() => {
+    const render = async () => {
+      const opts = {
+        lazyImages,
+        safeMode,
+      };
+
+      setContent(await mdx.run(String(mdx.compile(doc, opts))));
+    };
+    render();
+  }, [doc, lazyImages, safeMode]);
 
   return (
     <React.Fragment>
