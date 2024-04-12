@@ -24,7 +24,7 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.0.0",
     "@readme/emojis": "^5.0.0",
-    "@readme/syntax-highlighter": "^12.1.5",
+    "@readme/syntax-highlighter": "^13.0.0",
     "copy-to-clipboard": "^3.3.2",
     "core-js": "^3.36.1",
     "debug": "^4.3.4",
