@@ -1,7 +1,6 @@
 import { visit } from 'unist-util-visit';
-import { Node } from 'unist';
 import emojiRegex from 'emoji-regex';
-import { Blockquote, BlockContent, Parent, DefinitionContent, Root } from 'mdast';
+import { Blockquote, BlockContent, Parent, DefinitionContent } from 'mdast';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -32,7 +31,7 @@ interface Callout extends Parent {
 }
 
 const calloutTransformer = () => {
-  return (tree: Root) => {
+  return (tree: any) => {
     visit(tree, 'blockquote', (node: Blockquote | Callout) => {
       try {
         if (!(node.children[0].type === 'paragraph' && node.children[0].children[0].type === 'text')) return;
