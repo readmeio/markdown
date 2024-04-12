@@ -14,12 +14,11 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
-import react from 'react';
 
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, React.Component>;
+  components?: Record<string, () => React.ReactNode>;
 };
 
 export { Components };
