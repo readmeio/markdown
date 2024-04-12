@@ -12,7 +12,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "webpack --mode production && npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
+    "build-types": "npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
