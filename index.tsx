@@ -20,7 +20,7 @@ import { imageCompiler, rdmeCalloutCompiler } from './processor/compile';
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, React.Component>;
+  components?: Record<string, () => React.ReactNode>;
   imports?: Record<string, unknown>;
 };
 
@@ -87,7 +87,8 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-export const mdast = (text: string, opts: any = {}) => {
+
+export const mdast: any = (text: string, opts = {}) => {
   const processor = remark().use(remarkMdx);
 
   try {

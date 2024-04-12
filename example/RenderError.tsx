@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 
 interface Props {}
 
@@ -7,7 +7,7 @@ interface State {
   message?: string;
 }
 
-class RenderError extends React.Component<Props, State> {
+class RenderError extends React.Component<PropsWithChildren<Props>, State> {
   state = { hasError: false, message: null };
 
   static getDerivedStateFromError(error: Error) {

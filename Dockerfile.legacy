@@ -4,8 +4,13 @@ FROM node:${NODE_VERSION}-alpine3.18
 ARG NODE_VERSION
 ENV NODE_VERSION=$NODE_VERSION
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium-browser
+
+ENV USE_LEGACY=true
+
+ARG REACT_VERSION
+ENV REACT_VERSION=$REACT_VERSION
 
 RUN apk update && apk add \
   make \
@@ -20,6 +25,8 @@ WORKDIR ${DOCKER_WORKSPACE}
 
 COPY package.json package-lock.json ./
 RUN npm install
+
+RUN npm install react@${REACT_VERSION} react-dom@${REACT_VERSION} @testing-library/react@12
 
 COPY . ./
 
