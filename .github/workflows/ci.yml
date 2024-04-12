@@ -25,7 +25,7 @@ jobs:
 
       - name: Install React <18 deps
         if: matrix.react == '16' || matrix.react == '17'
-        run: npm i react@${{ matrix.react }} react-dom@${{ matrix.react }} @testing-library/react@12
+        run: npm i react@${{ matrix.react }} react-dom@${{ matrix.react }} @testing-library/react@12 --legacy-peer-deps
 
       - name: Run tests
         run: npm test
