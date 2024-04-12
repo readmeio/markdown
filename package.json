@@ -49,8 +49,8 @@
     "@mdx-js/react": "^3.0.0",
     "@readme/variable": "^16.0.0",
     "@tippyjs/react": "^4.1.0",
-    "react": "17",
-    "react-dom": "^17.0.2"
+    "react": "16.x || 17.x || 18.x",
+    "react-dom": "16.x || 17.x || 18.x"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -67,12 +67,11 @@
     "@commitlint/cli": "^17.5.1",
     "@commitlint/config-angular": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
-    "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^14.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^12.1.2",
+    "@testing-library/react": "^14",
     "@types/mdast": "^4.0.3",
     "@types/mdx": "^2.0.12",
     "babel-jest": "^29.5.0",
