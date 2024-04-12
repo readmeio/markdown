@@ -15,6 +15,8 @@ require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
 
+import { imageCompiler, rdmeCalloutCompiler } from './processor/compile';
+
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
@@ -76,7 +78,7 @@ export const reactTOC = (text: string, opts = {}) => {
 };
 
 export const mdx = (tree: any, opts = {}) => {
-  return remark().use(remarkMdx).stringify(tree, opts);
+  return remark().use(remarkMdx).use([imageCompiler, rdmeCalloutCompiler]).stringify(tree, opts);
 };
 
 export const html = (text: string, opts = {}) => {
