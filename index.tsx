@@ -19,7 +19,7 @@ import React from 'react';
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, () => React.ReactNode>;
+  components?: Record<string, string>;
   imports?: Record<string, unknown>;
 };
 
@@ -37,8 +37,14 @@ export const utils = {
   calloutIcons: {},
 };
 
-const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...Components, ...more };
+const makeUseMDXComponents = async (more: RunOpts['components'] = {}) => {
+  const components = { ...Components };
+
+  Object.entries(more).forEach(async ([tag, doc]) => {
+    components[tag] = await run(compile(doc));
+  });
+
+  await Promise.all(Object.values(components));
 
   return () => components;
 };
@@ -67,7 +73,7 @@ export const run = async (code: string, _opts: RunOpts = {}) => {
     Fragment,
     baseUrl: import.meta.url,
     imports: { React },
-    useMDXComponents: makeUseMDXComponents(components),
+    useMDXComponents: await makeUseMDXComponents(components),
     ...opts,
   });
 
