@@ -86,7 +86,7 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-export const mdast = (text: string, opts = {}) => {
+export const mdast: any = (text: string, opts = {}) => {
   const processor = remark().use(remarkMdx);
 
   try {
