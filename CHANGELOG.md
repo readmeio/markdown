@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.26
+
+### ✨ New & Improved
+
+* bump release ([f5dd329](https://github.com/readmeio/markdown/commit/f5dd329e159f105b2e5c3c78d5f68e667b58c266))
+* bump release ([#863](https://github.com/readmeio/markdown/issues/863)) ([a8bc8d8](https://github.com/readmeio/markdown/commit/a8bc8d83bdfa6b60bd51c2955a41f2ddcaee137a))
+
+
+### 🛠 Fixes & Updates
+
+* update ci ([#860](https://github.com/readmeio/markdown/issues/860)) ([6f54f75](https://github.com/readmeio/markdown/commit/6f54f754dbe7ee906092de402a801ed6055e703b))
+
 ## Version 6.75.0-beta.25
 
 ### ✨ New & Improved
