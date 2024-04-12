@@ -1,4 +1,5 @@
 import debug from 'debug';
+import React from 'react';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 
@@ -14,13 +15,13 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
-
 import { imageCompiler, rdmeCalloutCompiler } from './processor/compile';
 
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: Record<string, React.Component>;
+  imports?: Record<string, unknown>;
 };
 
 export { Components };
@@ -55,7 +56,7 @@ export const compile = (text: string, opts = {}) => {
       remarkPlugins: [calloutTransformer],
       ...opts,
     }),
-  );
+  ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
 };
 
 export const run = async (code: string, _opts: RunOpts = {}) => {
@@ -65,7 +66,8 @@ export const run = async (code: string, _opts: RunOpts = {}) => {
   const file = await mdxRun(code, {
     ...runtime,
     Fragment,
-    baseUrl: '',
+    baseUrl: import.meta.url,
+    imports: { React },
     useMDXComponents: makeUseMDXComponents(components),
     ...opts,
   });

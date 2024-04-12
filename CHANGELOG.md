@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.25
+
+### ✨ New & Improved
+
+* pass in react ([#859](https://github.com/readmeio/markdown/issues/859)) ([34d9bb6](https://github.com/readmeio/markdown/commit/34d9bb6ae876c1c87784579a3691a115b3512b92))
+
 ## Version 6.75.0-beta.24
 
 ### ✨ New & Improved
