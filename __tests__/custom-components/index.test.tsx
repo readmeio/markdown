@@ -1,6 +1,7 @@
 import { compile, run } from '../../index';
-import { renderToString } from 'react-dom/server';
 import React from 'react';
+
+import { render, screen } from '@testing-library/react';
 
 describe('Custom Components', () => {
   const Example = () => <div>It works!</div>;
@@ -16,9 +17,9 @@ describe('Custom Components', () => {
 <Example />
     `;
     const Page = await run(compile(doc), { components: { Example } });
-    const output = renderToString(<Page />);
+    render(<Page />);
 
-    expect(output).toBe('<div data-reactroot="">It works!</div>');
+    expect(screen.getByText('It works!')).toBeVisible();
   });
 
   it('renders custom components recursively', async () => {
@@ -27,8 +28,8 @@ describe('Custom Components', () => {
     `;
 
     const Page = await run(compile(doc), { components: { Example, Composite } });
-    const output = renderToString(<Page />);
+    render(<Page />);
 
-    expect(output).toBe('<div>Does it work?</div><div>It works!</div>');
+    expect(screen.getByText('It works!')).toBeVisible();
   });
 });

@@ -24,7 +24,7 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.0.0",
     "@readme/emojis": "^5.0.0",
-    "@readme/syntax-highlighter": "^12.1.5",
+    "@readme/syntax-highlighter": "^13.0.0",
     "copy-to-clipboard": "^3.3.2",
     "core-js": "^3.36.1",
     "debug": "^4.3.4",
@@ -49,8 +49,8 @@
     "@mdx-js/react": "^3.0.0",
     "@readme/variable": "^16.0.0",
     "@tippyjs/react": "^4.1.0",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0"
+    "react": "16.x || 17.x || 18.x",
+    "react-dom": "16.x || 17.x || 18.x"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -67,12 +67,11 @@
     "@commitlint/cli": "^17.5.1",
     "@commitlint/config-angular": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
-    "@hot-loader/react-dom": "^16.14.0",
     "@readme/eslint-config": "^14.0.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
+    "@testing-library/react": "^14",
     "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^14.5.2",
     "@types/mdast": "^4.0.3",
     "@types/mdx": "^2.0.12",

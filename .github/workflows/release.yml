@@ -20,10 +20,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-
-      - name: Update npm
-        run: npm i -g npm@7
+          node-version: 20
 
       - name: Install dependencies
         run: |

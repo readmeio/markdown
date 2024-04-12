@@ -19,7 +19,7 @@ import React from 'react';
 const unimplemented = debug('mdx:unimplemented');
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, React.Component>;
+  components?: Record<string, () => React.ReactNode>;
   imports?: Record<string, unknown>;
 };
 
