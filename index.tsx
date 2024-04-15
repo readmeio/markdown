@@ -44,8 +44,10 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
   return () => components;
 };
 
+const remarkPlugins = [remarkFrontmatter, calloutTransformer];
+
 export const reactProcessor = (opts = {}) => {
-  return createProcessor({ remarkPlugins: [remarkFrontmatter, calloutTransformer], ...opts });
+  return createProcessor({ remarkPlugins, ...opts });
 };
 
 export const compile = (text: string, opts = {}) => {
@@ -53,7 +55,7 @@ export const compile = (text: string, opts = {}) => {
     compileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
-      remarkPlugins: [remarkFrontmatter, calloutTransformer],
+      remarkPlugins,
       ...opts,
     }),
   ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
