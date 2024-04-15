@@ -9,7 +9,7 @@ module.exports = function ImageCompiler() {
 
     const { align, className, width } = node.data?.hProperties || {};
     const complexImage = Boolean(width) || className?.length || Boolean(align);
-    if (complexImage) return <Image {...node.data.hProperties} />;
+    if (complexImage) return `<Image ${{...node.data.hProperties}} />`;
 
     return originalImageCompiler.call(this, node, ...args);
   };
