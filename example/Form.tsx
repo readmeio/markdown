@@ -21,11 +21,8 @@ const Form = () => {
 
   const onSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSearchParams(params => {
-      console.log(params);
       return params;
     });
-
-    console.log(event.target.value);
 
     navigate(`/${event.target.value}`);
   };

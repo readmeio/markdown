@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
