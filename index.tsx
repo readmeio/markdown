@@ -38,7 +38,7 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...Components, ...more };
+  const components = { ...more, ...Components, Variable };
 
   return () => components;
 };
