@@ -28,6 +28,7 @@ const Doc = () => {
 
       setContent(() => content);
     };
+
     render();
   }, [doc, lazyImages, safeMode]);
 
