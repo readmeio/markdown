@@ -23,7 +23,7 @@ describe('visual regression tests', () => {
       // 'tablesTests',
       // 'codeBlockTests',
       // 'tableOfContentsTests',
-      // 'varsTest',
+      'varsTest',
     ];
 
     it.each(docs)(
@@ -37,7 +37,7 @@ describe('visual regression tests', () => {
 
         expect(image).toMatchImageSnapshot();
       },
-      10000
+      10000,
     );
 
     it.skip('renders html blocks, style tags, and style attributes with safeMode off', async () => {

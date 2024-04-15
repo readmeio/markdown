@@ -1,0 +1,229 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Parse RDMD Syntax > Code Blocks > Edge Cases > Code blocks should keep spaces entered at start of first line 1`] = `
+{
+  "children": [
+    {
+      "lang": "javascript",
+      "meta": "tab/a.js",
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 7,
+          "offset": 110,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "code",
+      "value": "  function sayHello (state) {
+    console.log(state);
+  }
+
+export default sayHello;",
+    },
+    {
+      "lang": "javascript",
+      "meta": "tab/b.js",
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 12,
+          "offset": 181,
+        },
+        "start": {
+          "column": 1,
+          "line": 8,
+          "offset": 111,
+        },
+      },
+      "type": "code",
+      "value": "import A from './a.js';
+
+A('Hello world!');",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 14,
+      "offset": 183,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Syntax > Code Blocks > Single Code Block 1`] = `
+{
+  "children": [
+    {
+      "lang": "javascript",
+      "meta": "single.js",
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 5,
+          "offset": 70,
+        },
+        "start": {
+          "column": 1,
+          "line": 3,
+          "offset": 2,
+        },
+      },
+      "type": "code",
+      "value": "console.log('a single-file code block');",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 7,
+      "offset": 72,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Syntax > Code Blocks > Tabbed Code Block 1`] = `
+{
+  "children": [
+    {
+      "lang": "javascript",
+      "meta": "multiple.js",
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 5,
+          "offset": 71,
+        },
+        "start": {
+          "column": 1,
+          "line": 3,
+          "offset": 2,
+        },
+      },
+      "type": "code",
+      "value": "console.log('a multi-file code block');",
+    },
+    {
+      "lang": "javascript",
+      "meta": null,
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 8,
+          "offset": 131,
+        },
+        "start": {
+          "column": 1,
+          "line": 6,
+          "offset": 72,
+        },
+      },
+      "type": "code",
+      "value": "console.log('an unnamed sample snippet');",
+    },
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 6,
+              "line": 10,
+              "offset": 138,
+            },
+            "start": {
+              "column": 1,
+              "line": 10,
+              "offset": 133,
+            },
+          },
+          "type": "text",
+          "value": " ",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 7,
+          "line": 10,
+          "offset": 139,
+        },
+        "start": {
+          "column": 1,
+          "line": 10,
+          "offset": 133,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 7,
+      "line": 10,
+      "offset": 139,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Syntax > Code Blocks > allows indented code 1`] = `
+{
+  "children": [
+    {
+      "lang": null,
+      "meta": null,
+      "position": {
+        "end": {
+          "column": 4,
+          "line": 5,
+          "offset": 73,
+        },
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "code",
+      "value": "  const shouldBeIndented = true;
+  if (shouldBeIndented) pass();",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 6,
+      "offset": 74,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
