@@ -28,7 +28,7 @@
     "watch": "webpack -w --progress --mode production"
   },
   "dependencies": {
-    "@readme/emojis": "^5.1.0",
+    "@readme/emojis": "^6.0.0",
     "@readme/syntax-highlighter": "^13.0.0",
     "copy-to-clipboard": "^3.3.3",
     "emoji-regex": "^10.3.0",
