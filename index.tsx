@@ -16,7 +16,7 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
-import gemojiTransformer from './processor/transform/gemoji';
+import gemojiTransformer from './processor/transform/gemoji+';
 import gemojiCompiler from './processor/compile/gemoji';
 
 const unimplemented = debug('mdx:unimplemented');
@@ -95,7 +95,7 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast: any = (text: string, opts = {}) => {
-  const processor = remark().use(remarkMdx).use(remarkFrontmatter);
+  const processor = remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
 
   const tree = processor.parse(text);
   return processor.runSync(tree);

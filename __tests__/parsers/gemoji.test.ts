@@ -3,8 +3,9 @@ import { mdast } from '../../index';
 describe('gemoji parser', () => {
   it('should output an emoji node for a known emoji', () => {
     const markdown = `This is a gemoji :joy:.`;
+    const tree = mdast(markdown);
 
-    expect(mdast(markdown).children[0].children[1]).toMatchInlineSnapshot(`
+    expect(tree.children[0].children[1]).toMatchInlineSnapshot(`
       {
         "name": "joy",
         "type": "emoji",
