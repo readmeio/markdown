@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.27
+
+### ✨ New & Improved
+
+* variables and glossary ([#865](https://github.com/readmeio/markdown/issues/865)) ([aeebd7c](https://github.com/readmeio/markdown/commit/aeebd7ccc51356bdcaf286c8becfa979ae7ce22b))
+
 ## Version 6.75.0-beta.26
 
 ### ✨ New & Improved
