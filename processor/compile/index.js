@@ -3,6 +3,7 @@ export { default as codeTabsCompiler } from './code-tabs';
 export { default as divCompiler } from './div';
 export { default as escapeCompiler } from './escape';
 export { default as figureCompiler } from './figure';
+export { default as gemojiCompiler } from './gemoji';
 export { default as htmlBlockCompiler } from './html-block';
 export { default as iconCompiler } from './i';
 export { default as imageCompiler } from './image';
