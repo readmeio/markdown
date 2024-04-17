@@ -32,6 +32,7 @@
     "@readme/syntax-highlighter": "^13.0.0",
     "copy-to-clipboard": "^3.3.3",
     "emoji-regex": "^10.3.0",
+    "gemoji": "^8.1.0",
     "hast-util-sanitize": "^4.0.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",

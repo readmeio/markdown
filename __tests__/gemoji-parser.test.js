@@ -3,8 +3,34 @@ const unified = require('unified');
 
 const parser = require('../processor/parse/gemoji-parser');
 
-test('should output an image node for a known emoji', () => {
+test('should output emoji', () => {
   const emoji = 'joy';
+  const markdown = `This is a gemoji :${emoji}:.`;
+  const ast = {
+    type: 'root',
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This is a gemoji ' },
+          {
+            type: 'gemoji',
+            value: '😂',
+            name: emoji,
+          },
+          { type: 'text', value: '.' },
+        ],
+      },
+    ],
+  };
+
+  expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
+    ast,
+  );
+});
+
+test('should output an image node for a custom readme emoji', () => {
+  const emoji = 'owlbert';
   const markdown = `This is a gemoji :${emoji}:.`;
   const ast = {
     type: 'root',

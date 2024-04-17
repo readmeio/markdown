@@ -1,4 +1,5 @@
 const Emoji = require('@readme/emojis').emoji;
+const { nameToEmoji } = require('gemoji');
 
 const { insertInlineTokenizerBefore } = require('./utils');
 
@@ -14,31 +15,35 @@ function tokenize(eat, value, silent) {
 
   if (pos === -1) return false;
 
-  const subvalue = value.slice(1, pos);
+  const name = value.slice(1, pos);
 
   // Exit with true in silent
   if (silent) return true;
 
-  const match = colon + subvalue + colon;
+  const match = colon + name + colon;
 
-  if (subvalue.substr(0, 3) === 'fa-') {
+  if (name in nameToEmoji) {
+    return eat(match)({
+      type: 'gemoji',
+      value: nameToEmoji[name],
+      name,
+    });
+  } else if (name.substr(0, 3) === 'fa-') {
     return eat(match)({
       type: 'i',
       data: {
         hName: 'i',
         hProperties: {
-          className: ['fa', subvalue],
+          className: ['fa', name],
         },
       },
     });
-  }
-
-  if (emojis.is(subvalue)) {
+  } else if (emojis.is(name)) {
     return eat(match)({
       type: 'image',
-      title: `:${subvalue}:`,
-      alt: `:${subvalue}:`,
-      url: `/public/img/emojis/${subvalue}.png`,
+      title: `:${name}:`,
+      alt: `:${name}:`,
+      url: `/public/img/emojis/${name}.png`,
       data: {
         hProperties: {
           className: 'emoji',
