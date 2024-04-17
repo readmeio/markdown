@@ -21,11 +21,10 @@ const Form = () => {
 
   const onSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSearchParams(params => {
-      params.delete('edit');
       return params;
     });
 
-    navigate(event.target.value);
+    navigate(`/${event.target.value}`);
   };
 
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -36,7 +35,7 @@ const Form = () => {
         params.set('edit', value);
         return params;
       },
-      { replace: true }
+      { replace: true },
     );
 
     if (!edited) {
@@ -51,7 +50,7 @@ const Form = () => {
           params.delete('edit');
           return params;
         },
-        { replace: true }
+        { replace: true },
       );
     }
   }, [edited, searchParams]);

@@ -1,6 +1,7 @@
 import debug from 'debug';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
+import remarkFrontmatter from 'remark-frontmatter';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -38,13 +39,13 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...Components, ...more };
+  const components = { ...more, ...Components, Variable };
 
   return () => components;
 };
 
 export const reactProcessor = (opts = {}) => {
-  return createProcessor({ remarkPlugins: [calloutTransformer], ...opts });
+  return createProcessor({ remarkPlugins: [remarkFrontmatter, calloutTransformer], ...opts });
 };
 
 export const compile = (text: string, opts = {}) => {
@@ -52,7 +53,7 @@ export const compile = (text: string, opts = {}) => {
     compileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
-      remarkPlugins: [calloutTransformer],
+      remarkPlugins: [remarkFrontmatter, calloutTransformer],
       ...opts,
     }),
   ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
@@ -87,7 +88,7 @@ export const html = (text: string, opts = {}) => {
 };
 
 export const mdast: any = (text: string, opts = {}) => {
-  const processor = remark().use(remarkMdx);
+  const processor = remark().use(remarkMdx).use(remarkFrontmatter);
 
   try {
     const tree = processor.parse(text);
