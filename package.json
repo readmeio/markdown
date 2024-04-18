@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "webpack --mode production",
-    "heroku-postbuild": "make emojis && webpack --mode production --config ./webpack.dev.js",
+    "heroku-postbuild": "webpack --mode production --config ./webpack.dev.js",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:css": "stylelint '{components,styles}/**/*.{css,scss}'",
     "lint:js": "eslint --ext ts,tsx,js,jsx .",
@@ -28,10 +28,10 @@
     "watch": "webpack -w --progress --mode production"
   },
   "dependencies": {
-    "@readme/emojis": "^6.0.0",
     "@readme/syntax-highlighter": "^13.0.0",
     "copy-to-clipboard": "^3.3.3",
     "emoji-regex": "^10.3.0",
+    "gemoji": "^8.1.0",
     "hast-util-sanitize": "^4.0.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",

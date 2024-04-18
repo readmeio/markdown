@@ -1,8 +1,6 @@
-const Emoji = require('@readme/emojis').emoji;
+const Emoji = require('../../lib/gemoji');
 
 const { insertInlineTokenizerBefore } = require('./utils');
-
-const emojis = new Emoji();
 
 const colon = ':';
 
@@ -11,46 +9,50 @@ function tokenize(eat, value, silent) {
   if (value.charAt(0) !== colon) return false;
 
   const pos = value.indexOf(colon, 1);
-
   if (pos === -1) return false;
 
-  const subvalue = value.slice(1, pos);
+  const name = value.slice(1, pos);
 
   // Exit with true in silent
   if (silent) return true;
 
-  const match = colon + subvalue + colon;
+  const match = colon + name + colon;
 
-  if (subvalue.substr(0, 3) === 'fa-') {
-    return eat(match)({
-      type: 'i',
-      data: {
-        hName: 'i',
-        hProperties: {
-          className: ['fa', subvalue],
+  switch (Emoji.kind(name)) {
+    case 'gemoji':
+      return eat(match)({
+        type: 'gemoji',
+        value: Emoji.nameToEmoji[name],
+        name,
+      });
+    case 'fontawesome':
+      return eat(match)({
+        type: 'i',
+        data: {
+          hName: 'i',
+          hProperties: {
+            className: ['fa', name],
+          },
         },
-      },
-    });
-  }
-
-  if (emojis.is(subvalue)) {
-    return eat(match)({
-      type: 'image',
-      title: `:${subvalue}:`,
-      alt: `:${subvalue}:`,
-      url: `/public/img/emojis/${subvalue}.png`,
-      data: {
-        hProperties: {
-          className: 'emoji',
-          align: 'absmiddle',
-          height: '20',
-          width: '20',
+      });
+    case 'owlmoji':
+      return eat(match)({
+        type: 'image',
+        title: `:${name}:`,
+        alt: `:${name}:`,
+        url: `/public/img/emojis/${name}.png`,
+        data: {
+          hProperties: {
+            className: 'emoji',
+            align: 'absmiddle',
+            height: '20',
+            width: '20',
+          },
         },
-      },
-    });
+      });
+    default:
+      return false;
   }
-
-  return false;
 }
 
 function locate(value, fromIndex) {
