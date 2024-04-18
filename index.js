@@ -301,4 +301,6 @@ export function md(treeOrString, opts = {}) {
 
 const ReadMeMarkdown = (text, opts = {}) => react(text, opts);
 
+export { default as Owlmoji } from './lib/owlmoji';
+
 export default ReadMeMarkdown;
