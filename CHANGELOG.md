@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.80.0
+
+### ✨ New & Improved
+
+* use unicode emoji! ([#868](https://github.com/readmeio/markdown/issues/868)) ([b3fa92d](https://github.com/readmeio/markdown/commit/b3fa92d2c757880d940af50cda9de59b2ad6b17c))
+
 ## Version 6.79.0
 
 ### ✨ New & Improved
