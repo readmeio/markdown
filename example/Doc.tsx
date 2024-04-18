@@ -11,6 +11,8 @@ const Doc = () => {
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
 
+  console.log(docs, fixture);
+
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
