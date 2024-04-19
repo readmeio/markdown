@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.82.0
+
+### ✨ New & Improved
+
+* full emoji list ([#870](https://github.com/readmeio/markdown/issues/870)) ([2edc9db](https://github.com/readmeio/markdown/commit/2edc9db79a6b70db91f405d23b784490f555c83d))
+
 ## Version 6.81.0
 
 ### ✨ New & Improved
