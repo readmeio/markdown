@@ -1,4 +1,4 @@
-const Emoji = require('../../lib/gemoji');
+const Owlmoji = require('../../lib/owlmoji');
 
 const { insertInlineTokenizerBefore } = require('./utils');
 
@@ -18,11 +18,11 @@ function tokenize(eat, value, silent) {
 
   const match = colon + name + colon;
 
-  switch (Emoji.kind(name)) {
+  switch (Owlmoji.kind(name)) {
     case 'gemoji':
       return eat(match)({
         type: 'gemoji',
-        value: Emoji.nameToEmoji[name],
+        value: Owlmoji.nameToEmoji[name],
         name,
       });
     case 'fontawesome':
