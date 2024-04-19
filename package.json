@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.80.0",
+  "version": "6.81.0",
   "main": "dist/main.node.js",
   "browser": "dist/main.js",
   "files": [

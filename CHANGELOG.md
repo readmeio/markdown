@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.81.0
+
+### ✨ New & Improved
+
+* export owlmoji ([#869](https://github.com/readmeio/markdown/issues/869)) ([58da953](https://github.com/readmeio/markdown/commit/58da95338044c872a1ba2cfe9270af156ffcdbd2))
+
 ## Version 6.80.0
 
 ### ✨ New & Improved
