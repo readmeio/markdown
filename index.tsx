@@ -3,6 +3,7 @@ import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import React from 'react';
+import remarkRehype from 'remark-rehype';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -16,6 +17,7 @@ import { options } from './options';
 require('./styles/main.scss');
 
 import calloutTransformer from './processor/transform/callouts';
+import codeTabsTransfromer from './processor/transform/code-tabs';
 import gemojiTransformer from './processor/transform/gemoji+';
 import gemojiCompiler from './processor/compile/gemoji';
 
@@ -46,7 +48,18 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer];
+const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer, codeTabsTransfromer];
+
+const remarkRehypeOptions = {
+  passThrough: [
+    'mdxjsEsm',
+    'mdxFlowExpression',
+    'mdxJsxFlowElement',
+    'mdxJsxTextElement',
+    'mdxTextExpression',
+    'code-tabs',
+  ],
+};
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
@@ -58,6 +71,7 @@ export const compile = (text: string, opts = {}) => {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
+      remarkRehypeOptions,
       ...opts,
     }),
   ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
@@ -94,15 +108,20 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
+const astProcessor = (opts = {}) => remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+
 export const mdast: any = (text: string, opts = {}) => {
-  const processor = remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+  const processor = astProcessor(opts);
 
   const tree = processor.parse(text);
   return processor.runSync(tree);
 };
 
 export const hast = (text: string, opts = {}) => {
-  unimplemented('hast export');
+  const processor = astProcessor(opts).use(remarkRehype, remarkRehypeOptions);
+
+  const tree = processor.parse(text);
+  return processor.runSync(tree);
 };
 
 export const esast = (text: string, opts = {}) => {
