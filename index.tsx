@@ -43,23 +43,12 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...more, ...Components, Variable };
+  const components = { ...more, ...Components, Variable, 'code-tabs': Components.CodeTabs };
 
   return () => components;
 };
 
 const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer, codeTabsTransfromer];
-
-const remarkRehypeOptions = {
-  passThrough: [
-    'mdxjsEsm',
-    'mdxFlowExpression',
-    'mdxJsxFlowElement',
-    'mdxJsxTextElement',
-    'mdxTextExpression',
-    'code-tabs',
-  ],
-};
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
@@ -71,7 +60,6 @@ export const compile = (text: string, opts = {}) => {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
-      remarkRehypeOptions,
       ...opts,
     }),
   ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
@@ -118,7 +106,7 @@ export const mdast: any = (text: string, opts = {}) => {
 };
 
 export const hast = (text: string, opts = {}) => {
-  const processor = astProcessor(opts).use(remarkRehype, remarkRehypeOptions);
+  const processor = astProcessor(opts).use(remarkRehype);
 
   const tree = processor.parse(text);
   return processor.runSync(tree);

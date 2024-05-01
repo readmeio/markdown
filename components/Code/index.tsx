@@ -1,12 +1,11 @@
 import copy from 'copy-to-clipboard';
-import { string, oneOfType, func, shape, instanceOf, arrayOf, bool } from 'prop-types';
 import React, { createRef, Element, Fragment } from 'react';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
 // https://github.com/codemirror/CodeMirror/issues/3701#issuecomment-164904534
 let syntaxHighlighter;
-let canonicalLanguage = () => {};
+let canonicalLanguage = _ => '';
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line global-require
   syntaxHighlighter = require('@readme/syntax-highlighter').default;
@@ -30,17 +29,10 @@ function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
-CopyCode.propTypes = {
-  className: string,
-  codeRef: oneOfType([func, shape({ current: instanceOf(Element) })]).isRequired,
-  rootClass: string,
-};
-
 function Code(props) {
-  const { children, className, copyButtons, lang, meta, theme } = props;
+  const { children, copyButtons, lang, meta, theme, value } = props;
 
-  const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
-  const language = canonicalLanguage(lang) || langClass;
+  const language = canonicalLanguage(lang);
 
   const codeRef = createRef();
 
@@ -50,11 +42,11 @@ function Code(props) {
     dark: theme === 'dark',
   };
 
-  const codeContent =
-    syntaxHighlighter && children ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
+  const code = value ?? children?.[0] ?? children ?? '';
+  const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts) : code;
 
   return (
-    <Fragment>
+    <>
       {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
       <code
         ref={codeRef}
@@ -63,38 +55,10 @@ function Code(props) {
         name={meta}
         suppressHydrationWarning={true}
       >
-        {codeContent}
+        {highlightedCode}
       </code>
-    </Fragment>
+    </>
   );
 }
 
-function CreateCode({ copyButtons, theme }) {
-  // eslint-disable-next-line react/display-name
-  return props => <Code {...props} copyButtons={copyButtons} theme={theme} />;
-}
-
-Code.propTypes = {
-  children: arrayOf(string),
-  className: string,
-  copyButtons: bool,
-  lang: string,
-  meta: string,
-  theme: string,
-};
-
-Code.defaultProps = {
-  className: '',
-  copyButtons: true,
-  lang: '',
-  meta: '',
-};
-
-CreateCode.sanitize = sanitizeSchema => {
-  // This is for code blocks class name
-  sanitizeSchema.attributes.code = ['className', 'lang', 'meta', 'value'];
-
-  return sanitizeSchema;
-};
-
-export default CreateCode;
+export default Code;

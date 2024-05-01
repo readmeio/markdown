@@ -1,8 +1,17 @@
 import { visit } from 'unist-util-visit';
 
 const codeTabs = () => tree => {
-  visit(tree, (node, index, parent) => {
-    if (node.type !== 'code' || parent.type === 'code-tabs') return;
+  visit(tree, 'code', node => {
+    const { lang, meta, value } = node;
+
+    node.data = {
+      hName: 'Code',
+      hProperties: { lang, meta, value },
+    };
+  });
+
+  visit(tree, 'code', (node, index, parent) => {
+    if (parent.type === 'code-tabs') return;
 
     let children = [node];
     let walker = index + 1;
@@ -25,14 +34,16 @@ const codeTabs = () => tree => {
     parent.children.splice(index, children.length, {
       type: 'code-tabs',
       children,
+      data: {
+        hName: 'CodeTabs',
+        hProperties: {},
+      },
       position: {
         start: children[0].position.start,
         end: children[children.length - 1].position.end,
       },
     });
   });
-
-  console.log(JSON.stringify({ tree }, null, 2));
 
   return tree;
 };
