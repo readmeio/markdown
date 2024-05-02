@@ -11,7 +11,6 @@ hidden: true
 ```php
 <b><?= "Hello world!" ?></b>;
 ```
-
 ```js
 console.log('Hello world!');
 ```
@@ -21,7 +20,6 @@ console.log('Hello world!');
 ```Zed
 Tab Number Zero
 ```
-
 ```One
 Tab Number One
 ```
@@ -31,11 +29,9 @@ Tab Number One
 ```js English
 console.log('Hello world!');
 ```
-
 ```js French
 console.log('Bonjour le monde!');
 ```
-
 ```js German
 console.log('Hallo welt!');
 ```
