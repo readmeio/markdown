@@ -97,6 +97,7 @@
     "node-sass": "^9.0.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
+    "prettier-2": "npm:prettier@^2.8.8",
     "puppeteer": "^22.4.0",
     "regenerator-runtime": "^0.14.1",
     "sass-loader": "^14.1.1",
