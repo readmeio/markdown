@@ -1,4 +1,8 @@
+import { visit } from 'unist-util-visit';
+
 import magicBlock from './magic-block';
+
+const FlowContent = ['blockquote', 'code', 'heading', 'html', 'list', 'thematicBreak', 'paragraph', 'definition'];
 
 const find = (node, fn) => {
   if (fn(node)) return node;
@@ -14,7 +18,13 @@ export default function TableCompiler() {
   const { table: original } = visitors;
 
   visitors.table = function (node, parent) {
-    if (!find(node, n => n.type === 'break')) {
+    let hasMultipleBlocks = false;
+    visit(node, childNode => {
+      if (childNode.children?.filter(childChildNode => FlowContent.includes(childChildNode.type))?.length > 1)
+        hasMultipleBlocks = true;
+    });
+
+    if (!find(node, n => n.type === 'break') && !hasMultipleBlocks) {
       return original.call(this, node);
     }
 
