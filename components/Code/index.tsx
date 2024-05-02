@@ -1,5 +1,5 @@
 import copy from 'copy-to-clipboard';
-import React, { createRef, Element, Fragment } from 'react';
+import React, { createRef } from 'react';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -26,6 +26,7 @@ function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
       setTimeout(() => $el.classList.remove(copyClass), 1500);
     }
   };
+
   return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
@@ -34,7 +35,7 @@ function Code(props) {
 
   const language = canonicalLanguage(lang);
 
-  const codeRef = createRef();
+  const codeRef = createRef<HTMLElement>();
 
   const codeOpts = {
     inline: !lang,
@@ -52,7 +53,6 @@ function Code(props) {
         ref={codeRef}
         className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
         data-lang={language}
-        name={meta}
         suppressHydrationWarning={true}
       >
         {highlightedCode}

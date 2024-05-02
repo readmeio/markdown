@@ -19,7 +19,7 @@ const CodeTabs = props => {
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
-        {children.map((pre, i) => {
+        {(Array.isArray(children) ? children : [children]).map((pre, i) => {
           const { meta, lang } = pre.props.children.props;
 
           /* istanbul ignore next */

@@ -4,6 +4,7 @@ import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import React from 'react';
 import remarkRehype from 'remark-rehype';
+import remarkGfm from 'remark-gfm';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -48,7 +49,7 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer, codeTabsTransfromer];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, calloutTransformer, gemojiTransformer, codeTabsTransfromer];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
