@@ -1,6 +1,7 @@
 import { Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import Owlmoji from '../../lib/owlmoji';
+import { NodeTypes } from '../../enums';
 
 const regex = /:(?<name>\+1|[-\w]+):/g;
 
@@ -11,7 +12,7 @@ const gemojiTransformer = () => (tree: Root) => {
       switch (Owlmoji.kind(name)) {
         case 'gemoji':
           return {
-            type: 'emoji',
+            type: NodeTypes.emoji,
             value: Owlmoji.nameToEmoji[name],
             name,
           };
@@ -47,10 +48,6 @@ const gemojiTransformer = () => (tree: Root) => {
   ]);
 
   return tree;
-};
-
-export const sanitize = sanitizeSchema => {
-  sanitizeSchema.attributes.i = ['className'];
 };
 
 export default gemojiTransformer;

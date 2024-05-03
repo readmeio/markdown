@@ -17,10 +17,8 @@ import { options } from './options';
 
 require('./styles/main.scss');
 
-import calloutTransformer from './processor/transform/callouts';
-import codeTabsTransfromer from './processor/transform/code-tabs';
-import gemojiTransformer from './processor/transform/gemoji+';
-import gemojiCompiler from './processor/compile/gemoji';
+import transformers from './processor/transform';
+import compilers from './processor/compile';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -49,7 +47,7 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, calloutTransformer, gemojiTransformer, codeTabsTransfromer];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
@@ -89,7 +87,7 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [gemojiCompiler] }] })
+    .data({ toMarkdownExtensions: [{ extensions: [compilers] }] })
     .stringify(tree, opts);
 };
 
