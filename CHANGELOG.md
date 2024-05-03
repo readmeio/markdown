@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.82.1
+
+### 🛠 Fixes & Updates
+
+* saving multiple blocks in tables ([#872](https://github.com/readmeio/markdown/issues/872)) ([1e02182](https://github.com/readmeio/markdown/commit/1e02182ef5a3bc5b853d7017271134f371491166))
+* update node-versions ([1242dc7](https://github.com/readmeio/markdown/commit/1242dc7f9ebfabe51387497e1ec2377d0f9726a4))
+
 ## Version 6.82.0
 
 ### ✨ New & Improved
