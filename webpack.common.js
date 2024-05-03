@@ -39,7 +39,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'dist/fons/[hash].[ext]',
+            name: 'dist/fonts/[hash].[ext]',
           },
         },
       },

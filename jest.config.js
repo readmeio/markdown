@@ -24,6 +24,7 @@ const unit = {
     },
   },
   displayName: 'unit',
+  prettierPath: require.resolve('prettier-2'),
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testPathIgnorePatterns: ['/browser/'],
