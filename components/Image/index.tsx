@@ -16,7 +16,7 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLImageEl
 const Image = (props: Props) => {
   const [lightbox, setLightbox] = React.useState(false);
 
-  const { 
+  const {
     align = '',
     alt = '',
     border = false,
@@ -26,7 +26,7 @@ const Image = (props: Props) => {
     lazy,
     src = '',
     title = '',
-    width = 'auto'
+    width = 'auto',
   } = props;
 
   if (className === 'emoji') {
@@ -50,13 +50,12 @@ const Image = (props: Props) => {
         preventDefault();
       default:
     }
-
-  }
+  };
 
   const toggle = () => {
     if (className === 'emoji') return;
     setLightbox(!lightbox);
-  }
+  };
 
   if (caption) {
     return (
@@ -70,7 +69,7 @@ const Image = (props: Props) => {
           tabIndex={0}
         >
           <span className="lightbox-inner">
-            <img 
+            <img
               src={src}
               width={width}
               height={height}
@@ -97,7 +96,7 @@ const Image = (props: Props) => {
         tabIndex={0}
       >
         <span className="lightbox-inner">
-          <img 
+          <img
             src={src}
             width={width}
             height={height}
@@ -110,23 +109,6 @@ const Image = (props: Props) => {
       </span>
     </p>
   );
-};
-
-Image.sanitize = sanitizeSchema => {
-  sanitizeSchema.attributes['image'] = [
-    'align',
-    'alt',
-    'border',
-    'caption',
-    'className',
-    'height',
-    'lazy',
-    'src',
-    'title',
-    'width'
-  ];
-
-  return sanitizeSchema;
 };
 
 export default Image;
