@@ -14,6 +14,7 @@ const codeTabs = () => tree => {
 
   visit(tree, 'code', (node: Code, index: number, parent: BlockContent) => {
     if (parent.type === 'code-tabs') return;
+    console.log(JSON.stringify({ parent }, null, 2));
 
     let children = [node];
     let walker = index + 1;

@@ -106,4 +106,23 @@ Second code block
 
     expect(tree.children[0].children[0].tagName).toBe('CodeTabs');
   });
+
+  it.only('allows code tabs within container blocks', () => {
+    const md = `
+- ~~~Name
+  {{company_name}}
+  ~~~
+  ~~~Email
+  {{company_email}}
+  ~~~
+  ~~~URL
+  {{company_url}}
+  ~~~
+`;
+
+    const tree = mdast(md);
+
+    expect(tree.children[0].children[0].children[0].type).toBe('code-tabs');
+    expect(tree.children[0].children[0].children.length).toBe(1);
+  });
 });
