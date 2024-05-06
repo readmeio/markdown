@@ -107,7 +107,7 @@ test('should support legacy dashes', () => {
           {
             type: 'gemoji',
             value: '✅',
-            name: emoji,
+            name: 'white_check_mark',
           },
           { type: 'text', value: '.' },
         ],

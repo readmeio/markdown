@@ -50,8 +50,20 @@ function tokenize(eat, value, silent) {
           },
         },
       });
-    default:
+    default: {
+      if (name.match(/-/)) {
+        const standardized = name.replaceAll(/-/g, '_');
+        if (Owlmoji.kind(standardized) === 'gemoji') {
+          return eat(match)({
+            type: 'gemoji',
+            value: Owlmoji.nameToEmoji[standardized],
+            name: standardized,
+          });
+        }
+      }
+
       return false;
+    }
   }
 }
 

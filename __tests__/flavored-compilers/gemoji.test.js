@@ -7,4 +7,11 @@ describe('gemoji compiler', () => {
 
     expect(md(tree)).toMatch(doc);
   });
+
+  it('writes legacy gemojis back to shortcodes', () => {
+    const doc = ':white-check-mark:';
+    const tree = mdast(doc);
+
+    expect(md(tree)).toMatch(doc.replaceAll(/-/g, '_'));
+  });
 });
