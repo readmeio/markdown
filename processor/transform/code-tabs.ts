@@ -1,4 +1,5 @@
 import { BlockContent, Code } from 'mdast';
+import { CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 
@@ -13,7 +14,7 @@ const codeTabs = () => tree => {
   });
 
   visit(tree, 'code', (node: Code, index: number, parent: BlockContent) => {
-    if (parent.type === 'code-tabs') return;
+    if (parent.type === 'code-tabs' || !('children' in parent)) return;
 
     const length = parent.children.length;
     let children = [node];
@@ -35,18 +36,19 @@ const codeTabs = () => tree => {
     // Othewise, we can leave early!
     if (children.length === 1 && !(node.lang || node.meta)) return;
 
-    parent.children.splice(index, children.length, {
+    const codeTabs: CodeTabs = {
       type: NodeTypes.codeTabs,
       children,
       data: {
         hName: 'CodeTabs',
-        hProperties: {},
       },
       position: {
         start: children[0].position.start,
         end: children[children.length - 1].position.end,
       },
-    });
+    };
+
+    parent.children.splice(index, children.length, codeTabs);
   });
 
   return tree;

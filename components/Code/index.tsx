@@ -15,23 +15,32 @@ if (typeof window !== 'undefined') {
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
-  const button = createRef();
-  /* istanbul ignore next */
+  const button = createRef<HTMLButtonElement>();
+
   const copier = () => {
     const code = codeRef.current.textContent;
 
     if (copy(code)) {
-      const $el = button.current;
-      $el.classList.add(copyClass);
-      setTimeout(() => $el.classList.remove(copyClass), 1500);
+      const el = button.current;
+      el.classList.add(copyClass);
+
+      setTimeout(() => el.classList.remove(copyClass), 1500);
     }
   };
 
   return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
-function Code(props) {
-  const { children, copyButtons, lang, meta, theme, value } = props;
+interface Props extends Omit<HTMLElement, 'lang'> {
+  copyButtons?: boolean;
+  lang?: string;
+  meta?: string;
+  theme?: string;
+  value?: string;
+}
+
+const Code = (props: Props) => {
+  const { children, copyButtons, lang, theme, value } = props;
 
   const language = canonicalLanguage(lang);
 
@@ -59,6 +68,6 @@ function Code(props) {
       </code>
     </>
   );
-}
+};
 
 export default Code;

@@ -1,7 +1,7 @@
-import { Code, Data, Literal } from 'mdast';
+import { Code, Data, Literal, Parent } from 'mdast';
 import { NodeTypes } from './enums';
 
-interface CodeTabs extends Literal {
+interface CodeTabs extends Parent {
   type: NodeTypes.codeTabs;
   children: Code[];
   data: Data & {
@@ -14,6 +14,10 @@ interface Gemoji extends Literal {
   name: string;
 }
 
+interface FaEmoji extends Literal {
+  type: NodeTypes.i;
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.codeTabs]: CodeTabs;
@@ -22,10 +26,12 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.emoji]: Gemoji;
+    [NodeTypes.i]: FaEmoji;
   }
 
   interface RootContentMap {
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.emoji]: Gemoji;
+    [NodeTypes.i]: FaEmoji;
   }
 }
