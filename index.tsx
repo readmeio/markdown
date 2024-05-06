@@ -3,7 +3,6 @@ import React from 'react';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
-import React from 'react';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -86,14 +85,13 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [ gemojiCompiler, imageCompiler, rdmeCalloutCompiler ] }] })
+    .data({ toMarkdownExtensions: [{ extensions: [gemojiCompiler, imageCompiler, rdmeCalloutCompiler] }] })
     .stringify(tree, opts);
 };
 
 export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
-
 
 export const mdast: any = (text: string, opts = {}) => {
   const processor = remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
