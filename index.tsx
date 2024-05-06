@@ -2,6 +2,8 @@ import debug from 'debug';
 import React from 'react';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
+import remarkFrontmatter from 'remark-frontmatter';
+import React from 'react';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -14,8 +16,8 @@ import { options } from './options';
 
 require('./styles/main.scss');
 
-import calloutTransformer from './processor/transform/callouts';
-import { imageCompiler, rdmeCalloutCompiler } from './processor/compile';
+import { calloutTransformer, gemojiTransformer } from './processor/transform';
+import { gemojiCompiler, imageCompiler, rdmeCalloutCompiler } from './processor/compile';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -39,13 +41,15 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...Components, ...more };
+  const components = { ...more, ...Components, Variable };
 
   return () => components;
 };
 
+const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer];
+
 export const reactProcessor = (opts = {}) => {
-  return createProcessor({ remarkPlugins: [calloutTransformer], ...opts });
+  return createProcessor({ remarkPlugins, ...opts });
 };
 
 export const compile = (text: string, opts = {}) => {
@@ -53,7 +57,7 @@ export const compile = (text: string, opts = {}) => {
     compileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
-      remarkPlugins: [calloutTransformer],
+      remarkPlugins,
       ...opts,
     }),
   ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
@@ -80,7 +84,10 @@ export const reactTOC = (text: string, opts = {}) => {
 };
 
 export const mdx = (tree: any, opts = {}) => {
-  return remark().use(remarkMdx).use([imageCompiler, rdmeCalloutCompiler]).stringify(tree, opts);
+  return remark()
+    .use(remarkMdx)
+    .data({ toMarkdownExtensions: [{ extensions: [ gemojiCompiler, imageCompiler, rdmeCalloutCompiler ] }] })
+    .stringify(tree, opts);
 };
 
 export const html = (text: string, opts = {}) => {
@@ -89,14 +96,10 @@ export const html = (text: string, opts = {}) => {
 
 
 export const mdast: any = (text: string, opts = {}) => {
-  const processor = remark().use(remarkMdx);
+  const processor = remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
 
-  try {
-    const tree = processor.parse(text);
-    return processor.runSync(tree);
-  } catch (e) {
-    return { type: 'root', children: [] };
-  }
+  const tree = processor.parse(text);
+  return processor.runSync(tree);
 };
 
 export const hast = (text: string, opts = {}) => {

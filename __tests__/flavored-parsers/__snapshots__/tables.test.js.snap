@@ -1,8 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`Parse magic block tables > renders an table with missing cells 1`] = `
-{
-  "children": [],
-  "type": "root",
-}
-`;
