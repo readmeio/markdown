@@ -94,6 +94,32 @@ test('should output an <i> for a font awesome icon', () => {
   );
 });
 
+test('should support legacy dashes', () => {
+  const emoji = 'white-check-mark';
+  const markdown = `This is a gemoji :${emoji}:.`;
+  const ast = {
+    type: 'root',
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This is a gemoji ' },
+          {
+            type: 'gemoji',
+            value: '✅',
+            name: emoji,
+          },
+          { type: 'text', value: '.' },
+        ],
+      },
+    ],
+  };
+
+  expect(unified().use(remarkParse).use(parser).data('settings', { position: false }).parse(markdown)).toStrictEqual(
+    ast,
+  );
+});
+
 test('should output nothing for unknown emojis', () => {
   const emoji = 'unknown-emoji';
   const markdown = `This is a gemoji :${emoji}:.`;
