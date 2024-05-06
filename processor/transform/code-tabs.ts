@@ -14,16 +14,17 @@ const codeTabs = () => tree => {
 
   visit(tree, 'code', (node: Code, index: number, parent: BlockContent) => {
     if (parent.type === 'code-tabs') return;
-    console.log(JSON.stringify({ parent }, null, 2));
 
+    const length = parent.children.length;
     let children = [node];
     let walker = index + 1;
-    while (walker <= parent.children.length) {
+
+    while (walker <= length) {
       const sibling = parent.children[walker];
       if (sibling?.type !== 'code') break;
 
       const olderSibling = parent.children[walker - 1];
-      if (olderSibling.position.end.offset !== sibling.position.start.offset - 1) break;
+      if (olderSibling.position.end.offset + sibling.position.start.column !== sibling.position.start.offset) break;
 
       children.push(sibling);
       walker++;

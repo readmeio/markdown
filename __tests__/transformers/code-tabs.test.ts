@@ -107,7 +107,7 @@ Second code block
     expect(tree.children[0].children[0].tagName).toBe('CodeTabs');
   });
 
-  it.only('allows code tabs within container blocks', () => {
+  it('allows code tabs within container blocks', () => {
     const md = `
 - ~~~Name
   {{company_name}}
