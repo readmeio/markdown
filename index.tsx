@@ -90,7 +90,7 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: compilers }] })
+    .data({ toMarkdownExtensions: [{ extensions: [compilers] }] })
     .stringify(tree, opts);
 };
 
