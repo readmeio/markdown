@@ -29,7 +29,6 @@ Second code block
     expect(tree.children[0].data).toMatchInlineSnapshot(`
       {
         "hName": "CodeTabs",
-        "hProperties": {},
       }
     `);
   });
