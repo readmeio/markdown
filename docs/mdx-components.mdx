@@ -1,0 +1,23 @@
+## Tables
+
+If you have some tabular data, it may be easier to write it with mdx:
+
+```jsx MDX
+export const table = [
+  ['Left', 'Center', 'Right'],
+  ['L0', '**bold**', '$1600'],
+  ['L1', '`code`', '$12'],
+  ['L2', '_italic_', '$1'],
+];
+
+<Table align={['left', 'center', 'right']} rows={table} />;
+```
+
+export const table = [
+  ['Left', 'Center', 'Right'],
+  ['L0', '**bold**', '$1600'],
+  ['L1', '`code`', '$12'],
+  ['L2', '_italic_', '$1'],
+];
+
+<Table align={['left', 'center', 'right']} rows={table} />

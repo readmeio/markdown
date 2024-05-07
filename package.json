@@ -50,7 +50,8 @@
     "trim": "^1.0.1",
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
-    "unist-util-visit": "^4.1.1"
+    "unist-util-visit": "^4.1.1",
+    "util": "^0.12.5"
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",

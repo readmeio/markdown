@@ -15,10 +15,9 @@ import { getHref } from './components/Anchor';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
-require('./styles/main.scss');
-
 import transformers from './processor/transform';
 import compilers from './processor/compile';
+import MdxSyntaxError from './errors/mdx-syntax-error';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -54,14 +53,18 @@ export const reactProcessor = (opts = {}) => {
 };
 
 export const compile = (text: string, opts = {}) => {
-  return String(
-    compileSync(text, {
-      outputFormat: 'function-body',
-      providerImportSource: '#',
-      remarkPlugins,
-      ...opts,
-    }),
-  ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
+  try {
+    return String(
+      compileSync(text, {
+        outputFormat: 'function-body',
+        providerImportSource: '#',
+        remarkPlugins,
+        ...opts,
+      }),
+    ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
+  } catch (error) {
+    throw new MdxSyntaxError(error, text);
+  }
 };
 
 export const run = async (code: string, _opts: RunOpts = {}) => {
@@ -87,7 +90,7 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [compilers] }] })
+    .data({ toMarkdownExtensions: [{ extensions: compilers }] })
     .stringify(tree, opts);
 };
 

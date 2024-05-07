@@ -19,6 +19,8 @@ import images from '../docs/images.md';
 // @ts-ignore
 import lists from '../docs/lists.md';
 // @ts-ignore
+import mdxComponents from '../docs/mdx-components.mdx';
+// @ts-ignore
 import sanitizingTests from '../docs/sanitizing-tests.md';
 // @ts-ignore
 import tableOfContentsTests from '../docs/table-of-contents-tests.md';
@@ -43,6 +45,7 @@ const fixtures = Object.entries({
   headings,
   images,
   lists,
+  mdxComponents,
   sanitizingTests,
   tableOfContentsTests,
   tables,

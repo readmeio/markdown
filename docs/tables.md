@@ -1,8 +1,9 @@
 ---
-title: "Tables"
+title: 'Tables'
 category: 5fdf7610134322007389a6ed
 hidden: false
 ---
+
 ## Syntax
 
     | Left |  Center  | Right |
@@ -20,7 +21,7 @@ hidden: false
 This example also shows off custom theming!
 
 | Left |  Center  | Right |
-|:-----|:--------:|------:|
+| :--- | :------: | ----: |
 | L0   | **bold** | $1600 |
 | L1   |  `code`  |   $12 |
 | L2   | _italic_ |    $1 |
@@ -35,25 +36,32 @@ Tables have been simplified to mirror a more standard implementation. We've also
   --table-head: #5b1c9f;
   --table-head-text: white;
   --table-stripe: #f0eaf7;
-  --table-edges: rgba(34, 5, 64, .5);
+  --table-edges: rgba(34, 5, 64, 0.5);
   --table-row: white;
 }
 ```
+
 ```scss CSS Selectors
 /* Table
  */
-.markdown-body .rdmd-table table {}
+.markdown-body .rdmd-table table {
+}
 
 /* Rows
  */
-.markdown-body .rdmd-table tr {}
-.markdown-body .rdmd-table thead tr {} /* header row's background */
-.markdown-body .rdmd-table tr:nth-child(2n) {} /* striped rows' background */
+.markdown-body .rdmd-table tr {
+}
+.markdown-body .rdmd-table thead tr {
+} /* header row's background */
+.markdown-body .rdmd-table tr:nth-child(2n) {
+} /* striped rows' background */
 
 /* Cells
  */
-.markdown-body .rdmd-table th {}
-.markdown-body .rdmd-table td {}
+.markdown-body .rdmd-table th {
+}
+.markdown-body .rdmd-table td {
+}
 ```
 
 <style>
