@@ -24,10 +24,4 @@ const Callout = (props: Props) => {
   );
 };
 
-Callout.sanitize = sanitizeSchema => {
-  sanitizeSchema.attributes['rdme-callout'] = ['icon', 'theme', 'heading'];
-
-  return sanitizeSchema;
-};
-
 export default Callout;

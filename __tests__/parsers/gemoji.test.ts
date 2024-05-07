@@ -51,6 +51,7 @@ describe('gemoji parser', () => {
           },
         },
         "type": "i",
+        "value": "fa-lock",
       }
     `);
   });

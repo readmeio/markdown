@@ -13,7 +13,7 @@ describe('visual regression tests', () => {
     const docs = [
       // 'callouts',
       'calloutTests',
-      // 'codeBlocks',
+      'codeBlocks',
       // 'embeds',
       //'features',
       // 'headings',
@@ -21,7 +21,7 @@ describe('visual regression tests', () => {
       // 'lists',
       // 'tables',
       // 'tablesTests',
-      // 'codeBlockTests',
+      'codeBlockTests',
       // 'tableOfContentsTests',
       'varsTest',
     ];

@@ -3,6 +3,8 @@ import React from 'react';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
+import remarkRehype from 'remark-rehype';
+import remarkGfm from 'remark-gfm';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -15,8 +17,8 @@ import { options } from './options';
 
 require('./styles/main.scss');
 
-import { calloutTransformer, gemojiTransformer } from './processor/transform';
-import { gemojiCompiler, imageCompiler, rdmeCalloutCompiler } from './processor/compile';
+import transformers from './processor/transform';
+import compilers from './processor/compile';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -40,12 +42,12 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...more, ...Components, Variable };
+  const components = { ...more, ...Components, Variable, 'code-tabs': Components.CodeTabs };
 
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, calloutTransformer, gemojiTransformer];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
@@ -85,8 +87,7 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [gemojiCompiler] }] })
-    .use([imageCompiler, rdmeCalloutCompiler])
+    .data({ toMarkdownExtensions: [{ extensions: [compilers] }] })
     .stringify(tree, opts);
 };
 
@@ -94,15 +95,20 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
+const astProcessor = (opts = {}) => remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+
 export const mdast: any = (text: string, opts = {}) => {
-  const processor = remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+  const processor = astProcessor(opts);
 
   const tree = processor.parse(text);
   return processor.runSync(tree);
 };
 
 export const hast = (text: string, opts = {}) => {
-  unimplemented('hast export');
+  const processor = astProcessor(opts).use(remarkRehype);
+
+  const tree = processor.parse(text);
+  return processor.runSync(tree);
 };
 
 export const esast = (text: string, opts = {}) => {

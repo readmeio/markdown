@@ -1,14 +1,13 @@
-const { uppercase } = require('@readme/syntax-highlighter');
-const PropTypes = require('prop-types');
-const React = require('react');
+import { uppercase } from '@readme/syntax-highlighter';
+import React from 'react';
 
 const CodeTabs = props => {
   const { children, theme } = props;
 
-  function handleClick({ target }, index) {
+  function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
     const $open = [].slice.call($wrap.querySelectorAll('.CodeTabs_active'));
-    $open.forEach(el => el.classList.remove('CodeTabs_active'));
+    $open.forEach((el: Element) => el.classList.remove('CodeTabs_active'));
     $wrap.classList.remove('CodeTabs_initial');
 
     const codeblocks = $wrap.querySelectorAll('pre');
@@ -20,8 +19,9 @@ const CodeTabs = props => {
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
-        {children.map(({ props: pre }, i) => {
-          const { meta, lang } = pre.children[0].props;
+        {(Array.isArray(children) ? children : [children]).map((pre, i) => {
+          const { meta, lang } = pre.props.children.props;
+
           /* istanbul ignore next */
           return (
             <button key={i} onClick={e => handleClick(e, i)} type="button">
@@ -35,15 +35,4 @@ const CodeTabs = props => {
   );
 };
 
-CodeTabs.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any).isRequired,
-  theme: PropTypes.string,
-};
-
-function CreateCodeTabs({ theme }) {
-  // eslint-disable-next-line react/display-name
-  return props => <CodeTabs {...props} theme={theme} />;
-}
-
-module.exports = CreateCodeTabs;
-module.exports.CodeTabs = CodeTabs;
+export default CodeTabs;
