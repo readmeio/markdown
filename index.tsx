@@ -85,7 +85,8 @@ export const reactTOC = (text: string, opts = {}) => {
 export const mdx = (tree: any, opts = {}) => {
   return remark()
     .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [gemojiCompiler, imageCompiler, rdmeCalloutCompiler] }] })
+    .data({ toMarkdownExtensions: [{ extensions: [gemojiCompiler] }] })
+    .use([imageCompiler, rdmeCalloutCompiler])
     .stringify(tree, opts);
 };
 
