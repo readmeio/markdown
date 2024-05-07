@@ -1,7 +1,7 @@
 import { VFileMessage } from 'vfile-message';
 
 export default class MdxSyntaxError extends SyntaxError {
-  original = '';
+  original: VFileMessage = null;
 
   constructor(error: VFileMessage, doc: string) {
     const { message, line, column, url } = error;

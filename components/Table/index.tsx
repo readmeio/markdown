@@ -3,10 +3,15 @@ import React from 'react';
 interface Props extends JSX.IntrinsicAttributes {
   align?: ('left' | 'center' | 'right')[];
   children: [React.ReactElement<HTMLTableCaptionElement | HTMLTableSectionElement | HTMLTableRowElement>];
-  rows?: [[any]];
+  rows?: any[][];
 }
 
-const TableContent = ({ rows, align = [] }: Omit<Props, 'children'>) => {
+interface TableContentProps {
+  align?: Props['align'];
+  rows: Props['rows'];
+}
+
+const TableContent = ({ rows, align = [] }: TableContentProps) => {
   const [head, ...body] = rows;
 
   return (
@@ -32,12 +37,12 @@ const TableContent = ({ rows, align = [] }: Omit<Props, 'children'>) => {
 };
 
 const Table = (props: Props) => {
-  const { children, ...rest } = props;
+  const { children, rows, align } = props;
 
   return (
     <div className="rdmd-table">
       <div className="rdmd-table-inner">
-        <table>{rest.rows ? <TableContent {...rest} /> : children}</table>
+        <table>{rows ? <TableContent align={align} rows={rows} /> : children}</table>
       </div>
     </div>
   );
