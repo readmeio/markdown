@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.28
+
+### ✨ New & Improved
+
+* **mdx:** gemoji ([#867](https://github.com/readmeio/markdown/issues/867)) ([21ff6f3](https://github.com/readmeio/markdown/commit/21ff6f3a16d9c6602daa6c8ed5af975e60756a12))
+* mdx code tabs ([#871](https://github.com/readmeio/markdown/issues/871)) ([7cc4d30](https://github.com/readmeio/markdown/commit/7cc4d309811265aba9ac031c000b3e527a4526df))
+
+
+### 🛠 Fixes & Updates
+
+* update node-versions ([7d367a7](https://github.com/readmeio/markdown/commit/7d367a7532252c898089203e4e4839318fb19df8))
+
 ## Version 6.75.0-beta.27
 
 ### ✨ New & Improved
