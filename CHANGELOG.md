@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.83.0
+
+### ✨ New & Improved
+
+* support legacy gemoji ([#873](https://github.com/readmeio/markdown/issues/873)) ([c34b8fe](https://github.com/readmeio/markdown/commit/c34b8fe20581b96956aa3e17624e407e41a6e5e3))
+
 ## Version 6.82.1
 
 ### 🛠 Fixes & Updates
