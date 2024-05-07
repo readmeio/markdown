@@ -1,56 +1,63 @@
-import { Root } from 'mdast';
+import { Image, Root } from 'mdast';
 import { findAndReplace } from 'mdast-util-find-and-replace';
 import Owlmoji from '../../lib/owlmoji';
+import { NodeTypes } from '../../enums';
+import { FaEmoji, Gemoji } from '../../types';
 
 const regex = /:(?<name>\+1|[-\w]+):/g;
 
-const gemojiTransformer = () => (tree: Root) => {
-  findAndReplace(tree, [
-    regex,
-    (_, name) => {
-      switch (Owlmoji.kind(name)) {
-        case 'gemoji':
-          return {
-            type: 'emoji',
-            value: Owlmoji.nameToEmoji[name],
-            name,
-          };
-        case 'fontawesome':
-          return {
-            type: 'i',
-            data: {
-              hName: 'i',
-              hProperties: {
-                className: ['fa', name],
-              },
-            },
-          };
-        case 'owlmoji':
-          return {
-            type: 'image',
-            title: `:${name}:`,
-            alt: `:${name}:`,
-            url: `/public/img/emojis/${name}.png`,
-            data: {
-              hProperties: {
-                className: 'emoji',
-                align: 'absmiddle',
-                height: '20',
-                width: '20',
-              },
-            },
-          };
-        default:
-          return false;
-      }
-    },
-  ]);
+const gemojiReplacer = (_, name: string) => {
+  switch (Owlmoji.kind(name)) {
+    case 'gemoji': {
+      const node: Gemoji = {
+        type: NodeTypes.emoji,
+        value: Owlmoji.nameToEmoji[name],
+        name,
+      };
 
-  return tree;
+      return node;
+    }
+    case 'fontawesome': {
+      const node: FaEmoji = {
+        type: NodeTypes.i,
+        value: name,
+        data: {
+          hName: 'i',
+          hProperties: {
+            className: ['fa', name],
+          },
+        },
+      };
+
+      return node;
+    }
+    case 'owlmoji': {
+      const node: Image = {
+        type: 'image',
+        title: `:${name}:`,
+        alt: `:${name}:`,
+        url: `/public/img/emojis/${name}.png`,
+        data: {
+          hProperties: {
+            className: 'emoji',
+            align: 'absmiddle',
+            height: '20',
+            width: '20',
+          },
+        },
+      };
+
+      return node;
+    }
+    default:
+      return false;
+  }
 };
 
-export const sanitize = sanitizeSchema => {
-  sanitizeSchema.attributes.i = ['className'];
+const gemojiTransformer = () => (tree: Root) => {
+  findAndReplace(tree, [regex, gemojiReplacer]);
+
+  return tree;
 };
 
 export default gemojiTransformer;

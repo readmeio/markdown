@@ -1,13 +1,5 @@
-import { Node } from 'unist';
+import { Gemoji } from '../../types';
 
-interface GemojiNode extends Node {
-  name: string;
-}
-
-const gemoji = {
-  handlers: {
-    emoji: (node: GemojiNode) => `:${node.name}:`,
-  },
-};
+const gemoji = (node: Gemoji) => `:${node.name}:`;
 
 export default gemoji;
