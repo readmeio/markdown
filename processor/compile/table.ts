@@ -14,8 +14,8 @@ import { Table } from 'mdast';
 //};
 //};
 
-const table = (table: Table) => {
-  return 'oops';
+const table = original => (table: Table, _, state, info) => {
+  return original(table, _, state, info);
 };
 
 export default table;

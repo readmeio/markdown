@@ -3,18 +3,27 @@ import codeTabs from './code-tabs';
 import { NodeTypes } from '../../enums';
 import table from './table';
 
-const handlers = {
-  [NodeTypes.emoji]: gemoji,
-  [NodeTypes.codeTabs]: codeTabs,
-  table,
-};
-
 function compilers() {
   const data = this.data();
 
   const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
+  let originalTable;
+  toMarkdownExtensions.find(plugin =>
+    plugin.extensions.find(extension => {
+      console.log(extension);
+      if (extension.handlers?.table) {
+        originalTable = extension.handlers.table;
+        return true;
+      }
+    }),
+  );
 
-  debugger;
+  const handlers = {
+    [NodeTypes.emoji]: gemoji,
+    [NodeTypes.codeTabs]: codeTabs,
+    table: table(originalTable),
+  };
+
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
 }
 

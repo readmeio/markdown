@@ -38,7 +38,7 @@ const Doc = () => {
     render();
   }, [doc, lazyImages, safeMode]);
 
-  mdx.mdx(mdx.mdast(doc));
+  console.log(mdx.mdx(mdx.mdast(doc)));
 
   return (
     <React.Fragment>
