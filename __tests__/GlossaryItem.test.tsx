@@ -9,6 +9,7 @@ test.skip('should output a glossary item if the term exists', () => {
   const { container } = render(<GlossaryItem term={term} terms={[{ term, definition }]} />);
 
   const trigger = container.querySelector('.GlossaryItem-trigger');
+  expect(trigger).toHaveTextContent(term);
   if (trigger) {
     fireEvent.mouseEnter(trigger);
   }
