@@ -88,10 +88,7 @@ export const reactTOC = (text: string, opts = {}) => {
 };
 
 export const mdx = (tree: any, opts = {}) => {
-  return remark()
-    .use(remarkMdx)
-    .data({ toMarkdownExtensions: [{ extensions: [compilers] }] })
-    .stringify(tree, opts);
+  return remark().use(remarkMdx).use(remarkGfm).use(compilers).stringify(tree, opts);
 };
 
 export const html = (text: string, opts = {}) => {
