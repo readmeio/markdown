@@ -7,7 +7,7 @@ export default class MdxSyntaxError extends SyntaxError {
     const { message, line, column, url } = error;
 
     const messages = [
-      `Uh oh! We ran into a syntax error at { line: ${line}, column: ${column} }, please see this url for more details: ${url}`,
+      `Oh no! We ran into a syntax error at { line: ${line}, column: ${column} }, please see this url for more details: ${url}`,
     ];
 
     if (typeof line !== 'undefined') {
