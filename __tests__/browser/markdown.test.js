@@ -19,6 +19,7 @@ describe('visual regression tests', () => {
       // 'headings',
       // 'images',
       // 'lists',
+      'mdxComponents',
       // 'tables',
       // 'tablesTests',
       'codeBlockTests',
