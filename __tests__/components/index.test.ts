@@ -70,16 +70,7 @@ describe('Components', () => {
     component = await run(code1);
     ({ container } = render(React.createElement(component)));
 
-    expect(container).toMatchInlineSnapshot(`<div>
-  <blockquote
-    class="callout callout_warn"
-    theme="🚧"
-  >
-    <p>
-      Callout with no title.
-    </p>
-  </blockquote>
-</div>`);
+    expect(container.innerHTML).toMatchInlineSnapshot(`"<blockquote class="callout callout_warn" theme="🚧"><p>Callout with no title.</p></blockquote>"`);
 
     cleanup();
   });
