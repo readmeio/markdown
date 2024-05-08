@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { createElement } from 'react';
+import React, { createElement } from 'react';
 
 import { Provider } from '../contexts/BaseUrl';
 import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, astToPlainText } from '../index';
@@ -33,8 +33,10 @@ test.skip('it should have the proper utils exports', () => {
   });
 });
 
-test.skip('image', () => {
-  const { container } = render(run(compile('![Image](http://example.com/image.png)')));
+test('image', async () => {
+  const code = compile('![Image](http://example.com/image.png)');
+  const component = await run(code);
+  const { container } = render(React.createElement(component));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
