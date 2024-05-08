@@ -5,7 +5,7 @@ const image = (node: Image) => {
   const complexImage: boolean = Boolean(width) || Boolean(className) || Boolean(align);
   if (complexImage) return `<Image ${{...node.data?.hProperties}} />`;
 
-  return `![${node.alt}](${node.url} "${node.title}")`;
+  return `![${node.alt}](${node.url}${node.title ? ` "${node.title}")` : ')'}`;
 }
 
 export default image;

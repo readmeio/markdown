@@ -33,7 +33,7 @@ const Image = (props: Props) => {
     return <img src={src} width={width} height={height} title={title} alt={alt} loading={lazy ? 'lazy' : 'eager'} />;
   }
 
-  const handleKeyDown = ({ key, metaKey: cmd, preventDefault }: React.KeyboardEvent<HTMLImageElement>) => {
+  const handleKeyDown = ({ key, metaKey: cmd }: React.KeyboardEvent<HTMLImageElement>) => {
     const cmdKey = cmd ? 'cmd+' : '';
     key = `${cmdKey}${key.toLowerCase()}`;
 
@@ -47,7 +47,6 @@ const Image = (props: Props) => {
       case 'enter':
         // OPEN
         if (!lightbox) setLightbox(true);
-        preventDefault();
       default:
     }
   };
@@ -86,28 +85,26 @@ const Image = (props: Props) => {
   }
 
   return (
-    <p>
-      <span
-        aria-label={alt}
-        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">
-          <img
-            src={src}
-            width={width}
-            height={height}
-            title={title}
-            className={`img img-align-${align} ${border ? 'border' : ''}`}
-            alt={alt}
-            loading={lazy ? 'lazy' : 'eager'}
-          />
-        </span>
+    <span
+      aria-label={alt}
+      className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+      onClick={toggle}
+      onKeyDown={handleKeyDown}
+      role={'button'}
+      tabIndex={0}
+    >
+      <span className="lightbox-inner">
+        <img
+          src={src}
+          width={width}
+          height={height}
+          title={title}
+          className={`img img-align-${align} ${border ? 'border' : ''}`}
+          alt={alt}
+          loading={lazy ? 'lazy' : 'eager'}
+        />
       </span>
-    </p>
+    </span>
   );
 };
 

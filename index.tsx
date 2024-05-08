@@ -12,6 +12,7 @@ import * as runtime from 'react/jsx-runtime';
 import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
+import { GlossaryContext } from './components/GlossaryItem';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
@@ -36,7 +37,7 @@ export const utils = {
 
   BaseUrlContext,
   getHref,
-  GlossaryContext: Components.GlossaryItem.GlossaryContext,
+  GlossaryContext,
   VariablesContext: Variable.VariablesContext,
   calloutIcons: {},
 };

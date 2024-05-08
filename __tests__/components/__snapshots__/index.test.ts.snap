@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Components > Callout 1`] = `"<blockquote class="callout callout_error" theme="❗️"><h3 class="callout-heading"><span class="callout-icon">❗️</span>Error Callout</h3><p>Lorem ipsum dolor.</p></blockquote>"`;
+
+exports[`Components > Image 1`] = `"<p><span aria-label="Bro eats pizza and makes an OK gesture." class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" width="auto" height="auto" title="Pizza Face" class="img img-align- " alt="Bro eats pizza and makes an OK gesture." loading="eager"></span></span></p>"`;
