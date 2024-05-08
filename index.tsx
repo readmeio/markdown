@@ -42,7 +42,13 @@ export const utils = {
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...more, ...Components, Variable, 'code-tabs': Components.CodeTabs };
+  const components = {
+    ...more,
+    ...Components,
+    Variable,
+    'code-tabs': Components.CodeTabs,
+    img: Components.Image,
+  };
 
   return () => components;
 };
