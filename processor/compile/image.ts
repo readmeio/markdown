@@ -1,18 +1,11 @@
 import type { Image } from "mdast";
 
-export default function ImageCompiler() {
-  const { Compiler } = this;
-  const { visitors } = Compiler.prototype;
+const image = (node: Image) => {
+  const { align, className, width } = node.data?.hProperties || {};
+  const complexImage: boolean = Boolean(width) || Boolean(className) || Boolean(align);
+  if (complexImage) return `<Image ${{...node.data?.hProperties}} />`;
 
-  const originalImageCompiler = visitors.image;
+  return `![${node.alt}](${node.url} "${node.title}")`;
+}
 
-  visitors.image = function compile(node: Image, ...args: any[]): string {
-    if (node.data?.hProperties?.className === 'emoji') return node.title;
-
-    const { align, className, width } = node.data?.hProperties || {};
-    const complexImage: boolean = Boolean(width) || Boolean(className) || Boolean(align);
-    if (complexImage) return `<Image ${{...node.data?.hProperties}} />`;
-
-    return originalImageCompiler.call(this, node, ...args);
-  };
-};
+export default image;
