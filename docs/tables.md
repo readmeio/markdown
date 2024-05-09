@@ -6,7 +6,7 @@ hidden: false
 
 ## Syntax
 
-```
+```markdown
 | Left |  Center  | Right |
 |:-----|:--------:|------:|
 | L0   | **bold** | $1600 |
@@ -38,48 +38,41 @@ Tables have been simplified to mirror a more standard implementation. We've also
   --table-row: white;
 }
 ```
-
 ```scss CSS Selectors
 /* Table
  */
-.markdown-body .rdmd-table table {
-}
+.markdown-body .rdmd-table table {}
 
 /* Rows
  */
-.markdown-body .rdmd-table tr {
-}
-.markdown-body .rdmd-table thead tr {
-}
+.markdown-body .rdmd-table tr {}
+.markdown-body .rdmd-table thead tr {}
 /* header row's background */
-.markdown-body .rdmd-table tr:nth-child(2n) {
-}
+.markdown-body .rdmd-table tr:nth-child(2n) {}
 /* striped rows' background */
 
 /* Cells
  */
-.markdown-body .rdmd-table th {
-}
-.markdown-body .rdmd-table td {
-}
+.markdown-body .rdmd-table th {}
+.markdown-body .rdmd-table td {}
 ```
 
 export const stylesheet = `
 .markdown-body .rdmd-table {
---table-text: black;
---table-head: #5b1c9f;
---table-head-text: white;
---table-stripe: #f0eaf7;
---table-edges: rgba(34, 5, 64, .5);
---table-row: white;
+	--table-text: black;
+	--table-head: #5b1c9f;
+	--table-head-text: white;
+	--table-stripe: #f0eaf7;
+	--table-edges: rgba(34, 5, 64, .5);
+	--table-row: white;
 }
 
 #rdmd-demo .markdown-body .rdmd-table thead tr {
-box-shadow: none;
+	box-shadow: none;
 }
 
 #rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
-box-shadow: none;
+	box-shadow: none;
 }
 `;
 
