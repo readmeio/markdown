@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.29
+
+### ✨ New & Improved
+
+* image components! ([#857](https://github.com/readmeio/markdown/issues/857)) ([0e015ce](https://github.com/readmeio/markdown/commit/0e015ce7b461c6c544ef34a76e997ea65af7eee8))
+
 ## Version 6.75.0-beta.28
 
 ### ✨ New & Improved
