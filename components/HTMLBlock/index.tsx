@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { renderToString, renderToStaticMarkup } from 'react-dom/server';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 
@@ -15,7 +15,10 @@ const extractScripts = (html: string = ''): [string, () => void] => {
 
 const HTMLBlock = props => {
   const { children, runScripts, safeMode = false } = props;
-  const html = renderToString(<>{children}</>);
+  let html = children;
+
+  if (typeof html !== 'string') html = renderToStaticMarkup(html);
+
   const [cleanedHtml, exec] = extractScripts(html);
 
   useEffect(() => {
@@ -25,7 +28,7 @@ const HTMLBlock = props => {
   if (safeMode) {
     return (
       <pre className="html-unsafe">
-        <code dangerouslySetInnerHTML={{ __html: renderToStaticMarkup(cleanedHtml) }} />
+        <code>{cleanedHtml}</code>
       </pre>
     );
   }
