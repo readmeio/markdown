@@ -1,21 +1,7 @@
 import * as React from 'react';
 
-interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLImageElement>> {
-  align: string;
-  alt: string;
-  border: boolean;
-  caption: string;
-  className: string;
-  height: string;
-  lazy: boolean;
-  src: string;
-  title: string;
-  width: string;
-}
-
-const Image = (props: Props) => {
+const Image = props => {
   const [lightbox, setLightbox] = React.useState(false);
-
   const {
     align = '',
     alt = '',
@@ -23,10 +9,10 @@ const Image = (props: Props) => {
     caption,
     className = '',
     height = 'auto',
-    lazy,
     src = '',
     title = '',
     width = 'auto',
+    lazyImages: lazy = true,
   } = props;
 
   if (className === 'emoji') {

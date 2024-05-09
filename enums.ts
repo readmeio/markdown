@@ -3,4 +3,5 @@ export enum NodeTypes {
   emoji = 'emoji',
   i = 'i',
   image = 'image',
+  htmlBlock = 'html-block',
 }

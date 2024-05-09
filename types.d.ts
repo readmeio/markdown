@@ -9,6 +9,16 @@ interface CodeTabs extends Parent {
   };
 }
 
+interface HTMLBlock extends Parent {
+  type: NodeTypes.htmlBlock;
+  data: Data & {
+    hName: 'html-block';
+    hProperties: {
+      html: string;
+    };
+  };
+}
+
 interface Gemoji extends Literal {
   type: NodeTypes.emoji;
   name: string;
