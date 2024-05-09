@@ -1,7 +1,7 @@
 import React from 'react';
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
-import GlossaryContext from '../contexts/GlossaryTerms.js';
+import GlossaryContext from '../contexts/GlossaryTerms';
 
 require('./demo.scss');
 

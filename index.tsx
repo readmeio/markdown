@@ -1,8 +1,8 @@
 import debug from 'debug';
+import React from 'react';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
-import React from 'react';
 import remarkRehype from 'remark-rehype';
 import remarkGfm from 'remark-gfm';
 
@@ -12,6 +12,7 @@ import * as runtime from 'react/jsx-runtime';
 import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
+import { GlossaryContext } from './components/GlossaryItem';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
@@ -36,13 +37,19 @@ export const utils = {
 
   BaseUrlContext,
   getHref,
-  GlossaryContext: Components.GlossaryItem.GlossaryContext,
+  GlossaryContext,
   VariablesContext: Variable.VariablesContext,
   calloutIcons: {},
 };
 
 const makeUseMDXComponents = (more: RunOpts['components']) => {
-  const components = { ...more, ...Components, Variable, 'code-tabs': Components.CodeTabs };
+  const components = {
+    ...more,
+    ...Components,
+    Variable,
+    'code-tabs': Components.CodeTabs,
+    img: Components.Image,
+  };
 
   return () => components;
 };

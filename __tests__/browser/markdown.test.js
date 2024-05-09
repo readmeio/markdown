@@ -17,7 +17,7 @@ describe('visual regression tests', () => {
       // 'embeds',
       //'features',
       // 'headings',
-      // 'images',
+      'images',
       // 'lists',
       // 'tables',
       // 'tablesTests',
