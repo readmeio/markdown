@@ -6,11 +6,13 @@ hidden: false
 
 ## Syntax
 
-    | Left |  Center  | Right |
-    |:-----|:--------:|------:|
-    | L0   | **bold** | $1600 |
-    | L1   |  `code`  |   $12 |
-    | L2   | _italic_ |    $1 |
+```
+| Left |  Center  | Right |
+|:-----|:--------:|------:|
+| L0   | **bold** | $1600 |
+| L1   |  `code`  |   $12 |
+| L2   | _italic_ |    $1 |
+```
 
 ### Examples
 
@@ -48,9 +50,11 @@ Tables have been simplified to mirror a more standard implementation. We've also
 .markdown-body .rdmd-table tr {
 }
 .markdown-body .rdmd-table thead tr {
-} /* header row's background */
+}
+/* header row's background */
 .markdown-body .rdmd-table tr:nth-child(2n) {
-} /* striped rows' background */
+}
+/* striped rows' background */
 
 /* Cells
  */
