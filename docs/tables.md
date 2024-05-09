@@ -12,10 +12,6 @@ hidden: false
     | L1   |  `code`  |   $12 |
     | L2   | _italic_ |    $1 |
 
-> ❗️ Table cells may contain inline decorations only.
->
-> Lists, headings, and other block-level Markdown components are not valid and will cause errors.
-
 ### Examples
 
 This example also shows off custom theming!
@@ -64,21 +60,25 @@ Tables have been simplified to mirror a more standard implementation. We've also
 }
 ```
 
+export const stylesheet = `
+.markdown-body .rdmd-table {
+--table-text: black;
+--table-head: #5b1c9f;
+--table-head-text: white;
+--table-stripe: #f0eaf7;
+--table-edges: rgba(34, 5, 64, .5);
+--table-row: white;
+}
+
+#rdmd-demo .markdown-body .rdmd-table thead tr {
+box-shadow: none;
+}
+
+#rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
+box-shadow: none;
+}
+`;
+
 <style>
-  .markdown-body .rdmd-table {
-    --table-text: black;
-    --table-head: #5b1c9f;
-    --table-head-text: white;
-    --table-stripe: #f0eaf7;
-    --table-edges: rgba(34, 5, 64, .5);
-    --table-row: white;
-  }
-
-  #rdmd-demo .markdown-body .rdmd-table thead tr {
-    box-shadow: none;
-  }
-
-  #rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
-    box-shadow: none;
-  }
+  {stylesheet}
 </style>

@@ -48,6 +48,7 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
     Variable,
     'code-tabs': Components.CodeTabs,
     img: Components.Image,
+    table: Components.Table,
   };
 
   return () => components;

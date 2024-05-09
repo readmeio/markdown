@@ -1,6 +1,6 @@
 ## Tables
 
-If you have some tabular data, it may be easier to write it with mdx:
+You can use our `Table` component to match the ReadMe theming.
 
 ```jsx MDX
 export const table = [
@@ -10,7 +10,24 @@ export const table = [
   ['L2', '_italic_', '$1'],
 ];
 
-<Table align={['left', 'center', 'right']} rows={table} />;
+<Table>
+  <thead>
+    <tr>
+      {table[0].map((cell, index) => (
+        <th style={{ textAlign: table[0][index].toLowerCase() }}>{cell}</th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {table.slice(1).map(row => (
+      <tr>
+        {table[0].map((cell, index) => (
+          <td style={{ textAlign: table[0][index].toLowerCase() }}>{cell}</td>
+        ))}
+      </tr>
+    ))}
+  </tbody>
+</Table>;
 ```
 
 export const table = [
@@ -20,4 +37,21 @@ export const table = [
   ['L2', '_italic_', '$1'],
 ];
 
-<Table align={['left', 'center', 'right']} rows={table} />
+<Table>
+  <thead>
+    <tr>
+      {table[0].map((cell, index) => (
+        <th style={{ textAlign: table[0][index].toLowerCase() }}>{cell}</th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {table.slice(1).map(row => (
+      <tr>
+        {row.map((cell, index) => (
+          <td style={{ textAlign: table[0][index].toLowerCase() }}>{cell}</td>
+        ))}
+      </tr>
+    ))}
+  </tbody>
+</Table>

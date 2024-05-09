@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent } from 'mdast';
+import { Code, Data, Literal, Table, Parent } from 'mdast';
 import { NodeTypes } from './enums';
 
 interface CodeTabs extends Parent {

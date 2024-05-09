@@ -25,8 +25,6 @@ import sanitizingTests from '../docs/sanitizing-tests.md';
 // @ts-ignore
 import tableOfContentsTests from '../docs/table-of-contents-tests.md';
 // @ts-ignore
-import tablesTests from '../docs/tables-tests.md';
-// @ts-ignore
 import tables from '../docs/tables.md';
 // @ts-ignore
 import varsTest from '../docs/variable-tests.md';
@@ -49,7 +47,6 @@ const fixtures = Object.entries({
   sanitizingTests,
   tableOfContentsTests,
   tables,
-  tablesTests,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);
