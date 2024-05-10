@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.30
+
+### ✨ New & Improved
+
+* tables ([#874](https://github.com/readmeio/markdown/issues/874)) ([ec439ef](https://github.com/readmeio/markdown/commit/ec439ef36e869195c398ebce2c2b86d80be3d6c1))
+
 ## Version 6.75.0-beta.29
 
 ### ✨ New & Improved
