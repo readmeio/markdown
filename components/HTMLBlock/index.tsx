@@ -13,12 +13,9 @@ const extractScripts = (html: string = ''): [string, () => void] => {
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
-const HTMLBlock = props => {
-  const { children, runScripts, safeMode = false } = props;
+const HTMLBlock = ({ children = '', runScripts = false, safeMode = false }) => {
   let html = children;
-
   if (typeof html !== 'string') html = renderToStaticMarkup(html);
-
   const [cleanedHtml, exec] = extractScripts(html);
 
   useEffect(() => {
@@ -28,12 +25,12 @@ const HTMLBlock = props => {
   if (safeMode) {
     return (
       <pre className="html-unsafe">
-        <code>{cleanedHtml}</code>
+        <code>{html}</code>
       </pre>
     );
   }
 
-  return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div className="rdmd-html" dangerouslySetInnerHTML={{ __html: cleanedHtml }} />;
 };
 
 export default HTMLBlock;

@@ -1,19 +1,18 @@
 import * as React from 'react';
 
-const Image = props => {
+const Image = ({
+  align = '',
+  alt = '',
+  border = false,
+  caption,
+  className = '',
+  height = 'auto',
+  src = '',
+  title = '',
+  width = 'auto',
+  lazy = false,
+}) => {
   const [lightbox, setLightbox] = React.useState(false);
-  const {
-    align = '',
-    alt = '',
-    border = false,
-    caption,
-    className = '',
-    height = 'auto',
-    src = '',
-    title = '',
-    width = 'auto',
-    lazyImages: lazy = true,
-  } = props;
 
   if (className === 'emoji') {
     return <img src={src} width={width} height={height} title={title} alt={alt} loading={lazy ? 'lazy' : 'eager'} />;

@@ -15,7 +15,7 @@ import gettingStarted from '../docs/getting-started.md';
 // @ts-ignore
 import headings from '../docs/headings.md';
 // @ts-ignore
-import htmlBlocks from '../docs/html-tests.md';
+import htmlTests from '../docs/html-tests.md';
 // @ts-ignore
 import images from '../docs/images.md';
 // @ts-ignore
@@ -43,7 +43,7 @@ const fixtures = Object.entries({
   features,
   gettingStarted,
   headings,
-  htmlBlocks,
+  htmlTests,
   images,
   lists,
   sanitizingTests,
