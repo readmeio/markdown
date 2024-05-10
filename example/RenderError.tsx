@@ -1,6 +1,8 @@
 import React, { PropsWithChildren } from 'react';
 
-interface Props {}
+interface Props {
+  error?: string;
+}
 
 interface State {
   hasError: boolean;
@@ -19,13 +21,13 @@ class RenderError extends React.Component<PropsWithChildren<Props>, State> {
   }
 
   render() {
-    const { children } = this.props;
+    const { children, error } = this.props;
     const { hasError, message } = this.state;
 
-    return hasError ? (
+    return hasError || error ? (
       <div className="error">
         <pre>
-          <code>{message}</code>
+          <code>{message || error}</code>
         </pre>
       </div>
     ) : (
