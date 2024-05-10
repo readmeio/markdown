@@ -1,6 +1,6 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
-import { renderToString } from 'react-dom/server';
+import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { vi } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
@@ -57,7 +57,7 @@ describe('HTML Block', () => {
     const md = '<HTMLBlock safeMode={true}>{`<button onload="alert(\'gotcha!\')"/>`}</HTMLBlock>';
     const code = compile(md);
     const Component = await run(code);
-    expect(renderToString(<Component />)).toMatchInlineSnapshot(
+    expect(renderToStaticMarkup(<Component />)).toMatchInlineSnapshot(
       '"<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>"',
     );
   });
