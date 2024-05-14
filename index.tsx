@@ -16,7 +16,7 @@ import { GlossaryContext } from './components/GlossaryItem';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
-import transformers from './processor/transform';
+import transformers, { readmeComponentsTransformer } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 
@@ -103,7 +103,10 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-const astProcessor = (opts = {}) => remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+const astProcessor = (opts = {}) =>
+  remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins).use(readmeComponentsTransformer, {
+    readmeComponents: Components,
+  });
 
 export const mdast: any = (text: string, opts = {}) => {
   const processor = astProcessor(opts);
