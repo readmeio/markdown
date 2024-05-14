@@ -1,26 +1,25 @@
 ---
-title: "Tables"
+title: 'Tables'
 category: 5fdf7610134322007389a6ed
 hidden: false
 ---
+
 ## Syntax
 
-    | Left |  Center  | Right |
-    |:-----|:--------:|------:|
-    | L0   | **bold** | $1600 |
-    | L1   |  `code`  |   $12 |
-    | L2   | _italic_ |    $1 |
-
-> ❗️ Table cells may contain inline decorations only.
->
-> Lists, headings, and other block-level Markdown components are not valid and will cause errors.
+```markdown
+| Left |  Center  | Right |
+|:-----|:--------:|------:|
+| L0   | **bold** | $1600 |
+| L1   |  `code`  |   $12 |
+| L2   | _italic_ |    $1 |
+```
 
 ### Examples
 
 This example also shows off custom theming!
 
 | Left |  Center  | Right |
-|:-----|:--------:|------:|
+| :--- | :------: | ----: |
 | L0   | **bold** | $1600 |
 | L1   |  `code`  |   $12 |
 | L2   | _italic_ |    $1 |
@@ -35,7 +34,7 @@ Tables have been simplified to mirror a more standard implementation. We've also
   --table-head: #5b1c9f;
   --table-head-text: white;
   --table-stripe: #f0eaf7;
-  --table-edges: rgba(34, 5, 64, .5);
+  --table-edges: rgba(34, 5, 64, 0.5);
   --table-row: white;
 }
 ```
@@ -47,8 +46,10 @@ Tables have been simplified to mirror a more standard implementation. We've also
 /* Rows
  */
 .markdown-body .rdmd-table tr {}
-.markdown-body .rdmd-table thead tr {} /* header row's background */
-.markdown-body .rdmd-table tr:nth-child(2n) {} /* striped rows' background */
+.markdown-body .rdmd-table thead tr {}
+/* header row's background */
+.markdown-body .rdmd-table tr:nth-child(2n) {}
+/* striped rows' background */
 
 /* Cells
  */
@@ -56,21 +57,25 @@ Tables have been simplified to mirror a more standard implementation. We've also
 .markdown-body .rdmd-table td {}
 ```
 
+export const stylesheet = `
+.markdown-body .rdmd-table {
+	--table-text: black;
+	--table-head: #5b1c9f;
+	--table-head-text: white;
+	--table-stripe: #f0eaf7;
+	--table-edges: rgba(34, 5, 64, .5);
+	--table-row: white;
+}
+
+#rdmd-demo .markdown-body .rdmd-table thead tr {
+	box-shadow: none;
+}
+
+#rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
+	box-shadow: none;
+}
+`;
+
 <style>
-  .markdown-body .rdmd-table {
-    --table-text: black;
-    --table-head: #5b1c9f;
-    --table-head-text: white;
-    --table-stripe: #f0eaf7;
-    --table-edges: rgba(34, 5, 64, .5);
-    --table-row: white;
-  }
-
-  #rdmd-demo .markdown-body .rdmd-table thead tr {
-    box-shadow: none;
-  }
-
-  #rdmd-demo .markdown-body .rdmd-table thead tr th:last-child {
-    box-shadow: none;
-  }
+  {stylesheet}
 </style>

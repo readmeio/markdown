@@ -15,6 +15,7 @@ const Doc = () => {
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
   const [Content, setContent] = useState<FunctionComponent>(null);
+  const [error, setError] = useState<string>(null);
 
   useEffect(() => {
     const render = async () => {
@@ -23,10 +24,15 @@ const Doc = () => {
         safeMode,
       };
 
-      const code = mdx.compile(doc, opts);
-      const content = await mdx.run(code);
+      try {
+        const code = mdx.compile(doc, opts);
+        const content = await mdx.run(code);
 
-      setContent(() => content);
+        setError(() => null);
+        setContent(() => content);
+      } catch (e) {
+        setError(() => e.message);
+      }
     };
 
     render();
@@ -38,7 +44,7 @@ const Doc = () => {
         <section id="hub-content">
           {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
           <div id="content-container">
-            <RenderError>
+            <RenderError error={error}>
               <div className="markdown-body">{Content && <Content />}</div>
             </RenderError>
           </div>

@@ -63,6 +63,6 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.json', '.jsx', '.ts', '.tsx', '.md'],
-    fallback: { buffer: require.resolve('buffer') },
+    fallback: { buffer: require.resolve('buffer'), util: require.resolve('util/') },
   },
 };

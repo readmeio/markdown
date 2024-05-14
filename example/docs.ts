@@ -21,11 +21,11 @@ import images from '../docs/images.md';
 // @ts-ignore
 import lists from '../docs/lists.md';
 // @ts-ignore
+import mdxComponents from '../docs/mdx-components.mdx';
+// @ts-ignore
 import sanitizingTests from '../docs/sanitizing-tests.md';
 // @ts-ignore
 import tableOfContentsTests from '../docs/table-of-contents-tests.md';
-// @ts-ignore
-import tablesTests from '../docs/tables-tests.md';
 // @ts-ignore
 import tables from '../docs/tables.md';
 // @ts-ignore
@@ -46,10 +46,10 @@ const fixtures = Object.entries({
   htmlTests,
   images,
   lists,
+  mdxComponents,
   sanitizingTests,
   tableOfContentsTests,
   tables,
-  tablesTests,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);

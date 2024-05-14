@@ -24,7 +24,7 @@ const config = merge(common, {
   module: {
     rules: [
       {
-        test: /\.(txt|md)$/i,
+        test: /\.(txt|mdx?)$/i,
         type: 'asset/source',
       },
     ],

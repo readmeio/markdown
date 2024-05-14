@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "6.75.0-beta.29",
+  "version": "6.75.0-beta.30",
   "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
   "browser": "dist/main.js",
@@ -51,7 +51,8 @@
     "trim": "^1.0.1",
     "unified": "^8.4.0",
     "unist-util-flatmap": "^1.0.0",
-    "unist-util-visit": "^4.1.1"
+    "unist-util-visit": "^4.1.1",
+    "util": "^0.12.5"
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
