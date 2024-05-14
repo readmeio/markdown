@@ -1,33 +1,18 @@
 import * as React from 'react';
 
-interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLImageElement>> {
-  align: string;
-  alt: string;
-  border: boolean;
-  caption: string;
-  className: string;
-  height: string;
-  lazy: boolean;
-  src: string;
-  title: string;
-  width: string;
-}
-
-const Image = (props: Props) => {
+const Image = ({
+  align = '',
+  alt = '',
+  border = false,
+  caption,
+  className = '',
+  height = 'auto',
+  src = '',
+  title = '',
+  width = 'auto',
+  lazy = false,
+}) => {
   const [lightbox, setLightbox] = React.useState(false);
-
-  const {
-    align = '',
-    alt = '',
-    border = false,
-    caption,
-    className = '',
-    height = 'auto',
-    lazy,
-    src = '',
-    title = '',
-    width = 'auto',
-  } = props;
 
   if (className === 'emoji') {
     return <img src={src} width={width} height={height} title={title} alt={alt} loading={lazy ? 'lazy' : 'eager'} />;

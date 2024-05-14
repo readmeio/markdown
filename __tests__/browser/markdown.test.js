@@ -18,6 +18,7 @@ describe('visual regression tests', () => {
       //'features',
       // 'headings',
       'images',
+      'htmlTests',
       // 'lists',
       'mdxComponents',
       'tables',
