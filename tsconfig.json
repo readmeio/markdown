@@ -15,21 +15,9 @@
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "sourceMap": true,
-    "types": [
-      "vitest/globals",
-    ]
+    "types": ["vitest/globals"]
   },
-  "include": [
-    "./index.ts",
-    "./options.js",
-    "./components",
-    "./contexts",
-    "./example",
-    "./lib",
-    "./processor"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["./index.ts", "./options.js", "./components", "./contexts", "./example", "./lib", "./processor"],
+  "exclude": ["node_modules", "dist"]
 }
+

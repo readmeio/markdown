@@ -46,6 +46,7 @@ const makeUseMDXComponents = (more: RunOpts['components']) => {
     ...more,
     ...Components,
     Variable,
+    code: Components.Code,
     'code-tabs': Components.CodeTabs,
     img: Components.Image,
     table: Components.Table,
@@ -104,9 +105,7 @@ export const html = (text: string, opts = {}) => {
 };
 
 const astProcessor = (opts = {}) =>
-  remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins).use(readmeComponentsTransformer, {
-    readmeComponents: Components,
-  });
+  remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins).use(readmeComponentsTransformer, {});
 
 export const mdast: any = (text: string, opts = {}) => {
   const processor = astProcessor(opts);

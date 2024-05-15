@@ -4,15 +4,6 @@ import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 
 const codeTabs = () => tree => {
-  visit(tree, 'code', (node: Code) => {
-    const { lang, meta, value } = node;
-
-    node.data = {
-      hName: 'Code',
-      hProperties: { lang, meta, value },
-    };
-  });
-
   visit(tree, 'code', (node: Code, index: number, parent: BlockContent) => {
     if (parent.type === 'code-tabs' || !('children' in parent)) return;
 
