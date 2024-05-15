@@ -52,8 +52,10 @@ const Code = (props: Props) => {
     dark: theme === 'dark',
   };
 
-  const code = value ?? children?.[0] ?? children ?? '';
+  const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
   const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts) : code;
+
+  console.log(JSON.stringify({ props }, null, 2));
 
   return (
     <>

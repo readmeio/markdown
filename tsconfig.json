@@ -15,9 +15,9 @@
     "moduleResolution": "Bundler",
     "outDir": "dist",
     "sourceMap": true,
+    "target": "ES2015",
     "types": ["vitest/globals"]
   },
   "include": ["./index.ts", "./options.js", "./components", "./contexts", "./example", "./lib", "./processor"],
   "exclude": ["node_modules", "dist"]
 }
-
