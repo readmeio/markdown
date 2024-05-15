@@ -32,6 +32,9 @@ const readmeComponents =
           position,
           type: 'code',
           value,
+          data: {
+            hProperties: { value, lang, meta },
+          },
         };
 
         parent.children[index] = mdNode;
