@@ -3,7 +3,9 @@ import { map } from 'unist-util-map';
 
 const removePosition = ({ position, ...node }) => node;
 
-function toStrictEqualExceptPosition(received, expected) {
+import type { ExpectationResult } from '@vitest/expect';
+
+function toStrictEqualExceptPosition(received, expected): ExpectationResult {
   const { equals } = this;
   const receivedTrimmed = map(received, removePosition);
   const expectedTrimmed = map(expected, removePosition);
