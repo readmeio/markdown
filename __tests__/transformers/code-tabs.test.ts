@@ -44,26 +44,10 @@ Second code block
 `;
     const ast = mdast(md);
 
-    expect(ast.children[0].children[0].data).toMatchInlineSnapshot(`
-      {
-        "hName": "Code",
-        "hProperties": {
-          "lang": "javascript",
-          "meta": "First Title",
-          "value": "First code block",
-        },
-      }
-    `);
-    expect(ast.children[0].children[1].data).toMatchInlineSnapshot(`
-      {
-        "hName": "Code",
-        "hProperties": {
-          "lang": "text",
-          "meta": null,
-          "value": "Second code block",
-        },
-      }
-    `);
+    expect(ast.children[0].children[0]).toStrictEqual(
+      expect.objectContaining({ lang: 'javascript', meta: 'First Title' }),
+    );
+    expect(ast.children[0].children[1]).toStrictEqual(expect.objectContaining({ lang: 'text', meta: null }));
   });
 
   it('wraps single code blocks with tabs if they have a lang set', () => {

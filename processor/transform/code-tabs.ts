@@ -8,7 +8,6 @@ const codeTabs = () => tree => {
     const { lang, meta, value } = node;
 
     node.data = {
-      hName: 'Code',
       hProperties: { lang, meta, value },
     };
   });
