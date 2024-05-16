@@ -19,9 +19,11 @@ const attributes = (jsx: MdxJsxFlowElement) =>
   }, {});
 
 const readmeComponents =
-  ({ components }) =>
+  ({ components = {} } = {}) =>
   (tree: Root) => {
     visit(tree, ['mdxJsxFlowElement', 'mdxJsxTextElement'], (node, index, parent) => {
+      if (node.name in components) return;
+
       if (node.name === 'Code') {
         const { position } = node;
         const { value, lang = null, meta = null } = attributes(node);

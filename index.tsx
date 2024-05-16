@@ -22,9 +22,15 @@ import MdxSyntaxError from './errors/mdx-syntax-error';
 
 const unimplemented = debug('mdx:unimplemented');
 
+type ComponentOpts = Record<string, () => React.ReactNode>;
+
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, () => React.ReactNode>;
+  components?: ComponentOpts;
   imports?: Record<string, unknown>;
+};
+
+type MdastOpts = {
+  components?: ComponentOpts;
 };
 
 export { Components };
@@ -72,7 +78,8 @@ export const compile = (text: string, opts = {}) => {
       }),
     ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
   } catch (error) {
-    throw new MdxSyntaxError(error, text);
+    console.error(error);
+    throw error.line ? new MdxSyntaxError(error, text) : error;
   }
 };
 
@@ -105,9 +112,13 @@ export const html = (text: string, opts = {}) => {
 };
 
 const astProcessor = (opts = {}) =>
-  remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins).use(readmeComponentsTransformer, {});
+  remark()
+    .use(remarkMdx)
+    .use(remarkFrontmatter)
+    .use(remarkPlugins)
+    .use(readmeComponentsTransformer, { components: opts.components });
 
-export const mdast: any = (text: string, opts = {}) => {
+export const mdast: any = (text: string, opts: MdastOpts = {}) => {
   const processor = astProcessor(opts);
 
   const tree = processor.parse(text);

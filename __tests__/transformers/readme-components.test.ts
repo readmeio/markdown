@@ -82,4 +82,19 @@ Second
 
     expect(mdxTree).toStrictEqualExceptPosition(mdTree);
   });
+
+  it('does not convert components that have custom implementations', () => {
+    const mdx = `
+<Callout heading="Much wow" icon="❗" />
+`;
+
+    const tree = mdast(mdx, {
+      components: {
+        Callout: () => null,
+      },
+    });
+
+    expect(tree.children[0].type).toBe('mdxJsxFlowElement');
+    expect(tree.children[0].name).toBe('Callout');
+  });
 });
