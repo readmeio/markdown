@@ -98,6 +98,9 @@ const coerceJsxToMd =
   };
 
 const readmeComponents = (opts: Options) => (): Transform => tree => {
+  // @TODO: unist-util-visit does a really good job with types, **but** it
+  // can't seem to infer allowing multiple types passed to the visitor
+  // function. Otherwise, I would have these two function calls be one?
   visit(tree, 'mdxJsxFlowElement', coerceJsxToMd(opts));
   visit(tree, 'mdxJsxTextElement', coerceJsxToMd(opts));
 
