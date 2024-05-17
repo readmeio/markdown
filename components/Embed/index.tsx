@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface FaviconProps {
-  src?: string;
+  src: string;
   alt?: string;
 }
 
@@ -11,23 +11,25 @@ const Favicon = ({ src, alt = 'favicon', ...attr }: FaviconProps) => (
 
 interface EmbedProps {
   lazy?: boolean;
+  url: string;
+  title: string;
   provider?: string;
-  url?: string;
-  title?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
   favicon?: string;
 }
 
-const Embed = ({ lazy = true, provider, url, title, html, iframe, image, favicon, ...attrs }: EmbedProps) => {
-  if (!url) {
-    return <div />;
-  }
-
+const Embed = ({ lazy = true, url, provider, title, html, iframe, image, favicon, ...attrs }: EmbedProps) => {
   if (iframe) {
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
   }
+
+  if (!provider)
+    provider = new URL(url).hostname
+      .split(/(?:www)?\./)
+      .filter(i => i)
+      .join('.');
 
   const classes = ['embed', image ? 'embed_hasImg' : ''];
 

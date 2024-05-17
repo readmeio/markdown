@@ -4,4 +4,5 @@ export enum NodeTypes {
   i = 'i',
   image = 'image',
   htmlBlock = 'html-block',
+  embed = 'rdme-embed'
 }

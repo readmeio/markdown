@@ -1,5 +1,20 @@
-import { Code, Data, Literal, Table, Parent } from 'mdast';
+import { 
+  BlockContent,
+  Blockquote,
+  Code,
+  Data,
+  DefinitionContent,
+  Link,
+  Literal,
+  Node,
+  Parent,
+  Table,
+} from 'mdast';
 import { NodeTypes } from './enums';
+
+type Callout = Omit<Blockquote, 'type'> & {
+  type: 'rdme-callout';
+}
 
 interface CodeTabs extends Parent {
   type: NodeTypes.codeTabs;
@@ -9,7 +24,22 @@ interface CodeTabs extends Parent {
   };
 }
 
-interface HTMLBlock extends Parent {
+interface Embed extends Parent {
+  type: NodeTypes.embed;
+  children: Link[];
+  data: Data & {
+    hName: 'Embed';
+    hProperties: {
+      title: string;
+      url: string;
+      image?: string;
+      favicon?: string;
+      iframe?: boolean;
+    };
+  };
+}
+
+interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
   data: Data & {
     hName: 'html-block';
@@ -31,6 +61,8 @@ interface FaEmoji extends Literal {
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.embed]: Embed;
+    [NodeTypes.htmlBlock]: HTMLBlock;
   }
 
   interface PhrasingContentMap {
