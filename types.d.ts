@@ -1,11 +1,14 @@
-import { Code, Data, Literal, Parent, BlockContent, Node } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
 import { NodeTypes } from './enums';
 
-interface Callout extends Parent {
+type Callout = Omit<Blockquote, 'type'> & {
   type: NodeTypes.callout;
-  children: BlockContent[];
   data: Data & {
     hName: 'Callout';
+    hProperties: {
+      heading: string;
+      icon: string;
+    };
   };
 }
 
