@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.32
+
+### ✨ New & Improved
+
+* fix dynamic require ([2482231](https://github.com/readmeio/markdown/commit/24822311b1f6126a28e6b29d8f4f48d39ba0f78d))
+* jsx-coercion ([#876](https://github.com/readmeio/markdown/issues/876)) ([b742c6c](https://github.com/readmeio/markdown/commit/b742c6c734cfef3bdf0a6657221a727a475e9eef))
+
+
+### 🛠 Fixes & Updates
+
+* types ([#877](https://github.com/readmeio/markdown/issues/877)) ([c0a4d66](https://github.com/readmeio/markdown/commit/c0a4d66723618a9bea8798e65006130015696bdf))
+
 ## Version 6.75.0-beta.31
 
 ### ✨ New & Improved

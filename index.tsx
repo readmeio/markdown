@@ -16,15 +16,21 @@ import { GlossaryContext } from './components/GlossaryItem';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
-import transformers from './processor/transform';
+import transformers, { readmeComponentsTransformer } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 
 const unimplemented = debug('mdx:unimplemented');
 
+type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
+
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: Record<string, () => React.ReactNode>;
+  components?: ComponentOpts;
   imports?: Record<string, unknown>;
+};
+
+type MdastOpts = {
+  components?: Record<string, string>;
 };
 
 export { Components };
@@ -41,11 +47,12 @@ export const utils = {
   calloutIcons: {},
 };
 
-const makeUseMDXComponents = (more: RunOpts['components']) => {
+const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
   const components = {
     ...more,
     ...Components,
     Variable,
+    code: Components.Code,
     'code-tabs': Components.CodeTabs,
     'html-block': Components.HTMLBlock,
     img: Components.Image,
@@ -72,7 +79,8 @@ export const compile = (text: string, opts = {}) => {
       }),
     ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
   } catch (error) {
-    throw new MdxSyntaxError(error, text);
+    console.error(error);
+    throw error.line ? new MdxSyntaxError(error, text) : error;
   }
 };
 
@@ -104,9 +112,14 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-const astProcessor = (opts = {}) => remark().use(remarkMdx).use(remarkFrontmatter).use(remarkPlugins);
+const astProcessor = (opts: MdastOpts = { components: {} }) =>
+  remark()
+    .use(remarkMdx)
+    .use(remarkFrontmatter)
+    .use(remarkPlugins)
+    .use(readmeComponentsTransformer({ components: opts.components }));
 
-export const mdast: any = (text: string, opts = {}) => {
+export const mdast: any = (text: string, opts: MdastOpts = {}) => {
   const processor = astProcessor(opts);
 
   const tree = processor.parse(text);

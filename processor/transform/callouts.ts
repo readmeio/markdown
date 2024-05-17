@@ -2,29 +2,9 @@ import { visit } from 'unist-util-visit';
 import emojiRegex from 'emoji-regex';
 import { Blockquote } from 'mdast';
 import { Callout } from 'types';
+import { NodeTypes } from '../../enums';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
-
-const themes: Record<string, string> = {
-  '\uD83D\uDCD8': 'info',
-  '\uD83D\uDEA7': 'warn',
-  '\u26A0\uFE0F': 'warn',
-  '\uD83D\uDC4D': 'okay',
-  '\u2705': 'okay',
-  '\u2757\uFE0F': 'error',
-  '\u2757': 'error',
-  '\uD83D\uDED1': 'error',
-  '\u2049\uFE0F': 'error',
-  '\u203C\uFE0F': 'error',
-  '\u2139\uFE0F': 'info',
-  '\u26A0': 'warn',
-};
-
-const toString = (node: Node): string => {
-  if ('value' in node && node.value) return node.value as string;
-  if ('children' in node && node.children) return (node.children as Node[]).map(child => toString(child)).join('');
-  return '';
-};
 
 const calloutTransformer = () => {
   return (tree: any) => {
@@ -38,13 +18,12 @@ const calloutTransformer = () => {
           const heading = startText.slice(match.length);
 
           node.children.shift();
-          node.type = 'rdme-callout';
+          node.type = NodeTypes.callout;
           node.data = {
             hName: 'Callout',
             hProperties: {
               heading,
               icon,
-              theme: themes[icon] || 'default',
             },
           };
         }
