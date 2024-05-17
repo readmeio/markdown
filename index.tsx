@@ -30,7 +30,7 @@ type RunOpts = Omit<RunOptions, 'Fragment'> & {
 };
 
 type MdastOpts = {
-  components?: ComponentOpts;
+  components?: Record<string, string>;
 };
 
 export { Components };
@@ -112,12 +112,12 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-const astProcessor = (opts = {}) =>
+const astProcessor = (opts: MdastOpts = { components: {} }) =>
   remark()
     .use(remarkMdx)
     .use(remarkFrontmatter)
     .use(remarkPlugins)
-    .use(readmeComponentsTransformer, { components: opts.components });
+    .use(readmeComponentsTransformer({ components: opts.components }));
 
 export const mdast: any = (text: string, opts: MdastOpts = {}) => {
   const processor = astProcessor(opts);
