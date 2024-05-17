@@ -3,7 +3,7 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import GlossaryContext from '../contexts/GlossaryTerms';
 
-require('./demo.scss');
+import './demo.scss';
 
 import Root from './Root';
 import docs from './docs';

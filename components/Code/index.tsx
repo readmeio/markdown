@@ -6,12 +6,15 @@ import React, { createRef } from 'react';
 // https://github.com/codemirror/CodeMirror/issues/3701#issuecomment-164904534
 let syntaxHighlighter;
 let canonicalLanguage = _ => '';
+
 if (typeof window !== 'undefined') {
-  // eslint-disable-next-line global-require
-  syntaxHighlighter = require('@readme/syntax-highlighter').default;
-  // eslint-disable-next-line global-require
-  ({ canonical: canonicalLanguage } = require('@readme/syntax-highlighter'));
+  const module = await import('@readme/syntax-highlighter');
+
+  syntaxHighlighter = module.default;
+  canonicalLanguage = module.canonical;
 }
+
+console.log(syntaxHighlighter);
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
