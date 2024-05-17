@@ -22,7 +22,7 @@ import MdxSyntaxError from './errors/mdx-syntax-error';
 
 const unimplemented = debug('mdx:unimplemented');
 
-type ComponentOpts = Record<string, () => React.ReactNode>;
+type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
 type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: ComponentOpts;
@@ -47,7 +47,7 @@ export const utils = {
   calloutIcons: {},
 };
 
-const makeUseMDXComponents = (more: RunOpts['components']) => {
+const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
   const components = {
     ...more,
     ...Components,
