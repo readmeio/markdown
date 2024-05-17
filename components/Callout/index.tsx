@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
-  attributes: {};
+  attributes?: {};
   icon: string;
   theme: string;
   heading?: React.ReactElement;

@@ -5,7 +5,7 @@ const embed = (node: Embed) => {
   const complexEmbed: boolean = Boolean(image) || Boolean(favicon) || iframe;
   if (complexEmbed) return `<Embed ${{...node.data?.hProperties}} />`;
 
-  return `[${title}](${url} "@embed")'}`;
+  return `[${title}](${url} "@embed")'`;
 }
 
 export default embed;

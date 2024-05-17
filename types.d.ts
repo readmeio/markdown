@@ -1,14 +1,11 @@
 import { 
-  BlockContent,
   Blockquote,
   Code,
   Data,
-  DefinitionContent,
   Link,
   Literal,
   Node,
   Parent,
-  Table,
 } from 'mdast';
 import { NodeTypes } from './enums';
 
