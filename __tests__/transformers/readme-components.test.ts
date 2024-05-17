@@ -46,7 +46,7 @@ Second
     },
     image: {
       md: `![](http://placekitten.com/600/200)`,
-      mdx: `<Image url="http://placekitten.com/600/200" />`,
+      mdx: `<Image src="http://placekitten.com/600/200" />`,
     },
     table: {
       md: `

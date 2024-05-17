@@ -51,14 +51,14 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'Image') {
       const { position } = node;
-      const { alt = '', url, title = null } = attributes<Pick<Image, 'alt' | 'url' | 'title'>>(node);
+      const { alt = '', src, title = null } = attributes<Pick<Image, 'alt' | 'title'> & { src: string }>(node);
 
       const mdNode: Image = {
         alt,
         position,
         title,
         type: 'image',
-        url,
+        url: src,
       };
 
       parent.children[index] = mdNode;
