@@ -29,7 +29,7 @@ interface Options {
 }
 
 const coerceJsxToMd =
-  ({ components }) =>
+  ({ components = {} } = {}) =>
   (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents) => {
     if (node.name in components) return;
 
