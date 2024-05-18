@@ -13,7 +13,7 @@ const embedTransformer = () => {
             hProperties: { title: node.children[0]?.value ?? node.url, url: node.url, provider: node.url },
             hName: 'Embed',
           },
-          position: parent.node.position,
+          position: node.position,
           children: [],
         };
         parent = newNode;
