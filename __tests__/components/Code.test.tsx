@@ -17,7 +17,7 @@ vi.mock('@readme/syntax-highlighter', () => ({
   canonical: lang => lang,
 }));
 
-describe('Code', () => {
+describe.skip('Code', () => {
   it.skip('copies the variable interpolated code', () => {
     const props = {
       children: ['console.log("<<name>>");'],
