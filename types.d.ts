@@ -69,6 +69,7 @@ declare module 'mdast' {
   interface RootContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.embed]: Embed;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
   }

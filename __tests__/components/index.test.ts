@@ -115,7 +115,6 @@ describe('Components', () => {
     Object.values(fixtures).map(async fx => {
       const component = await run(compile(fx));
       const { container } = render(React.createElement(component));
-      console.log(container.innerHTML);
       return expect(container.innerHTML).toMatchSnapshot();
     });
   });
