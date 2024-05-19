@@ -8,13 +8,11 @@ let syntaxHighlighter;
 let canonicalLanguage = _ => '';
 
 if (typeof window !== 'undefined') {
-  const module = await import('@readme/syntax-highlighter');
-
-  syntaxHighlighter = module.default;
-  canonicalLanguage = module.canonical;
+  import('@readme/syntax-highlighter').then(module => {
+    syntaxHighlighter = module.default;
+    canonicalLanguage = module.canonical;
+  });
 }
-
-console.log(syntaxHighlighter);
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
