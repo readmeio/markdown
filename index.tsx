@@ -77,7 +77,7 @@ export const compile = (text: string, opts = {}) => {
         remarkPlugins,
         ...opts,
       }),
-    ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'\)\)/, 'arguments[0].imports.React');
+    ).replace(/await import\(_resolveDynamicMdxSpecifier\('react'|"react"\)\)/, 'arguments[0].imports.React');
   } catch (error) {
     console.error(error);
     throw error.line ? new MdxSyntaxError(error, text) : error;
