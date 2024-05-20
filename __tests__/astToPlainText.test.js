@@ -58,7 +58,7 @@ ${JSON.stringify(
     align: ['left', 'left', 'left'],
   },
   null,
-  2
+  2,
 )}
 [/block]
     `;
