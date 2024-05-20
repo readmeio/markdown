@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.33
+
+### 🛠 Fixes & Updates
+
+* dynamic import ([06a22ba](https://github.com/readmeio/markdown/commit/06a22bac10e95788f6703c174a1ab22b84697f9e))
+
 ## Version 6.75.0-beta.32
 
 ### ✨ New & Improved
