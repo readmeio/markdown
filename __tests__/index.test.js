@@ -55,8 +55,9 @@ test.skip('check list items', () => {
   expect(container.innerHTML).toMatchSnapshot();
 });
 
-test.skip('gemoji generation', () => {
-  const { container } = render(run(compile(':sparkles:')));
+test('gemoji generation', async () => {
+  const component = await run(compile(':sparkles:'));
+  const { container } = render(React.createElement(component));
   expect(container.querySelector('.lightbox')).not.toBeInTheDocument();
 });
 
@@ -65,9 +66,8 @@ test.skip('should strip out inputs', () => {
   expect(screen.queryByRole('input')).not.toBeInTheDocument();
 });
 
-test.skip('tables', () => {
-  const { container } = render(
-    run(
+test('tables', async () => {
+  const component = await run(
       compile(`| Tables        | Are           | Cool  |
 | ------------- |:-------------:| -----:|
 | col 3 is      | right-aligned | $1600 |
@@ -75,7 +75,8 @@ test.skip('tables', () => {
 | zebra stripes | are neat      |    $1 |
   `)
     )
-  );
+  
+  const { container } = render(React.createElement(component));
 
   expect(container.innerHTML.trim()).toMatchSnapshot();
 });

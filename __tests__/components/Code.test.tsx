@@ -1,12 +1,14 @@
 import React from 'react';
 import { vi } from 'vitest';
 
-import CreateCode from '../../components/Code';
+import Code from '../../components/Code';
 
-const { fireEvent, render, screen } = require('@testing-library/react');
-const copy = require('copy-to-clipboard');
+import { fireEvent, render, screen } from '@testing-library/react';
+import copy from 'copy-to-clipboard';
 
-const Code = CreateCode({ attributes: {} }, { copyButtons: true });
+const codeProps = {
+  copyButtons: true,
+};
 
 vi.mock('@readme/syntax-highlighter', () => ({
   default: code => {
@@ -16,12 +18,12 @@ vi.mock('@readme/syntax-highlighter', () => ({
 }));
 
 describe.skip('Code', () => {
-  it('copies the variable interpolated code', () => {
+  it.skip('copies the variable interpolated code', () => {
     const props = {
       children: ['console.log("<<name>>");'],
     };
 
-    const { container } = render(<Code {...props} />);
+    const { container } = render(<Code {...codeProps} {...props} />);
 
     expect(container).toHaveTextContent(/VARIABLE_SUBSTITUTED/);
     fireEvent.click(screen.getByRole('button'));
@@ -29,14 +31,14 @@ describe.skip('Code', () => {
     expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
   });
 
-  it('does not nest the button inside the code block', () => {
-    render(<Code>{'console.log("hi");'}</Code>);
+  it.skip('does not nest the button inside the code block', () => {
+    render(<Code {...codeProps}>{'console.log("hi");'}</Code>);
     const btn = screen.getByRole('button');
 
-    expect(btn.parentNode.nodeName.toLowerCase()).not.toBe('code');
+    expect(btn.parentNode?.nodeName.toLowerCase()).not.toBe('code');
   });
 
-  it('allows undefined children?!', () => {
+  it.skip('allows undefined children?!', () => {
     const { container } = render(<Code />);
 
     expect(container).toHaveTextContent('');

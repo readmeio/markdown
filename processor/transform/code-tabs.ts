@@ -3,7 +3,7 @@ import { CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 
-const codeTabs = () => tree => {
+const codeTabsTransformer = () => tree => {
   visit(tree, 'code', (node: Code) => {
     const { lang, meta, value } = node;
 
@@ -53,4 +53,4 @@ const codeTabs = () => tree => {
   return tree;
 };
 
-export default codeTabs;
+export default codeTabsTransformer;

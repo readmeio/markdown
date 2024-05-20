@@ -14,7 +14,7 @@ describe('visual regression tests', () => {
       // 'callouts',
       'calloutTests',
       'codeBlocks',
-      // 'embeds',
+      'embeds',
       //'features',
       // 'headings',
       'images',

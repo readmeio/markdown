@@ -1,7 +1,8 @@
 import gemoji from './gemoji';
 import codeTabs from './code-tabs';
-import image from './image';
+import embed from './embed';
 import htmlBlock from './html-block';
+import image from './image';
 import { NodeTypes } from '../../enums';
 
 function compilers() {
@@ -12,8 +13,9 @@ function compilers() {
   const handlers = {
     [NodeTypes.emoji]: gemoji,
     [NodeTypes.codeTabs]: codeTabs,
-    [NodeTypes.image]: image,
+    [NodeTypes.embed]: embed,
     [NodeTypes.htmlBlock]: htmlBlock,
+    [NodeTypes.image]: image,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
