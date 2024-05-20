@@ -12,7 +12,7 @@ import * as runtime from 'react/jsx-runtime';
 import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
-import { GlossaryContext } from './components/GlossaryItem';
+import { GlossaryContext } from './components/Glossary';
 import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 

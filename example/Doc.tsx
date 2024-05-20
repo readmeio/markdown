@@ -38,6 +38,8 @@ const Doc = () => {
     render();
   }, [doc, lazyImages, safeMode]);
 
+  console.log(mdx.mdast(doc));
+
   return (
     <React.Fragment>
       <div className="rdmd-demo--display">

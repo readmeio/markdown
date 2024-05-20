@@ -3,7 +3,7 @@ export { default as Callout } from './Callout';
 export { default as Code } from './Code';
 export { default as CodeTabs } from './CodeTabs';
 export { default as Embed } from './Embed';
-export { default as GlossaryItem } from './GlossaryItem';
+export { default as Glossary } from './Glossary';
 export { default as HTMLBlock } from './HTMLBlock';
 export { default as Heading } from './Heading';
 export { default as Image } from './Image';

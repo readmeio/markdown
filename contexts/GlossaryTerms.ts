@@ -1,4 +1,4 @@
-import { ReactNode, createContext } from "react";
+import { createContext } from 'react';
 
 export type GlossaryTerm = {
   term: string;
@@ -6,17 +6,6 @@ export type GlossaryTerm = {
   _id?: string;
 };
 
-export type GlossaryItem = {
-  term?: string;
-  terms: GlossaryTerm[];
-};
-
 const GlossaryContext = createContext<GlossaryTerm[]>([]);
 
 export default GlossaryContext;
-
-// haxx
-export function Provider(Provider: any, arg1: { value: GlossaryTerm[] }): ReactNode {
-  throw new Error('Function not implemented.');
-}
-
