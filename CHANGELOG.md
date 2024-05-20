@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.34
+
+### ✨ New & Improved
+
+* embeds! ([#878](https://github.com/readmeio/markdown/issues/878)) ([9dee309](https://github.com/readmeio/markdown/commit/9dee30984b10411016e625eba1f4bfe8b26e4233))
+
 ## Version 6.75.0-beta.33
 
 ### 🛠 Fixes & Updates
