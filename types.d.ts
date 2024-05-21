@@ -1,16 +1,15 @@
-import { Code, Data, Literal, Parent, BlockContent } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
 import { NodeTypes } from './enums';
 
-interface Callout extends Parent {
+type Callout = Omit<Blockquote, 'type'> & {
   type: NodeTypes.callout;
-  children: BlockContent[];
   data: Data & {
     hName: 'Callout';
     hProperties: {
       icon: string;
     };
   };
-}
+};
 
 interface CodeTabs extends Parent {
   type: NodeTypes.codeTabs;
@@ -20,7 +19,21 @@ interface CodeTabs extends Parent {
   };
 }
 
-interface HTMLBlock extends Parent {
+interface Embed extends Parent {
+  type: NodeTypes.embed;
+  data: Data & {
+    hName: 'Embed';
+    hProperties: {
+      title: string;
+      url: string;
+      image?: string;
+      favicon?: string;
+      iframe?: boolean;
+    };
+  };
+}
+
+interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
   data: Data & {
     hName: 'html-block';
@@ -43,6 +56,8 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.embed]: Embed;
+    [NodeTypes.htmlBlock]: HTMLBlock;
   }
 
   interface PhrasingContentMap {
@@ -53,6 +68,7 @@ declare module 'mdast' {
   interface RootContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.embed]: Embed;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
   }

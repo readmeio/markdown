@@ -3,16 +3,15 @@ import React from 'react';
 
 import Callout from '../../components/Callout';
 
-describe.skip('Callout', () => {
+describe('Callout', () => {
   it('render _all_ its children', () => {
     render(
-      <Callout title="Title">
+      <Callout title="Title" icon="icon" theme="theme">
         <p>Title</p>
         <p>First Paragraph</p>
         <p>Second Paragraph</p>
-      </Callout>
+      </Callout>,
     );
-
     expect(screen.getByText('Second Paragraph')).toBeVisible();
   });
 });

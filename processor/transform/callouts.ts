@@ -1,14 +1,10 @@
 import { visit } from 'unist-util-visit';
 import emojiRegex from 'emoji-regex';
-import { Blockquote, BlockContent, Parent, DefinitionContent } from 'mdast';
+import { Blockquote } from 'mdast';
 import { NodeTypes } from '../../enums';
+import { Callout } from 'types';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
-
-interface Callout extends Parent {
-  type: 'rdme-callout';
-  children: Array<BlockContent | DefinitionContent>;
-}
 
 const calloutTransformer = () => {
   return (tree: any) => {

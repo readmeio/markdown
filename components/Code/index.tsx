@@ -8,10 +8,10 @@ let syntaxHighlighter;
 let canonicalLanguage = _ => '';
 
 if (typeof window !== 'undefined') {
-  const module = await import('@readme/syntax-highlighter');
-
-  syntaxHighlighter = module.default;
-  canonicalLanguage = module.canonical;
+  import('@readme/syntax-highlighter').then(module => {
+    syntaxHighlighter = module.default;
+    canonicalLanguage = module.canonical;
+  });
 }
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
@@ -32,7 +32,8 @@ function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
-interface Props extends Omit<HTMLElement, 'lang'> {
+interface CodeProps {
+  children?: string[] | string;
   copyButtons?: boolean;
   lang?: string;
   meta?: string;
@@ -40,7 +41,7 @@ interface Props extends Omit<HTMLElement, 'lang'> {
   value?: string;
 }
 
-const Code = (props: Props) => {
+const Code = (props: CodeProps) => {
   const { children, copyButtons, lang, theme, value } = props;
 
   const language = canonicalLanguage(lang);
