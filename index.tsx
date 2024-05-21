@@ -25,7 +25,7 @@ const unimplemented = debug('mdx:unimplemented');
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
 interface Variables {
-  user: Record<string, string>;
+  user: { keys: string[] };
   defaults: { name: string; default: string }[];
 }
 
@@ -91,7 +91,7 @@ export const compile = (text: string, opts = {}) => {
 
 export const run = async (code: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
-  const { components, ...opts } = _opts;
+  const { components, terms, variables, baseUrl, ...opts } = _opts;
 
   const file = await mdxRun(code, {
     ...runtime,
@@ -104,7 +104,7 @@ export const run = async (code: string, _opts: RunOpts = {}) => {
   const Content = file?.default || (() => null);
 
   return () => (
-    <Contexts terms={opts.terms}>
+    <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
       <Content />
     </Contexts>
   );
