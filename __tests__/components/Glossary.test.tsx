@@ -5,7 +5,7 @@ import { run, compile } from '../../index';
 
 describe('Glossary', () => {
   it('renders a glossary item', async () => {
-    const md = `<Glossary term="parliament" />`;
+    const md = `<Glossary>parliament</Glossary>`;
     const Content = await run(compile(md));
     render(<Content />);
 

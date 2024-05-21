@@ -3,7 +3,13 @@ import Tooltip from '@tippyjs/react';
 import GlossaryContext from '../../contexts/GlossaryTerms';
 import type { GlossaryTerm } from '../../contexts/GlossaryTerms';
 
-const Glossary = ({ term, terms }: { term: string; terms: GlossaryTerm[] }) => {
+interface Props extends React.PropsWithChildren {
+  term?: string;
+  terms: GlossaryTerm[];
+}
+
+const Glossary = ({ children, term: termProp, terms }: Props) => {
+  const term = (Array.isArray(children) ? children[0] : children) || termProp;
   const foundTerm = terms.find(i => term.toLowerCase() === i?.term?.toLowerCase());
 
   if (!foundTerm) return <span>{term}</span>;
