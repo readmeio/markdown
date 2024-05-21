@@ -6,6 +6,9 @@ interface Callout extends Parent {
   children: BlockContent[];
   data: Data & {
     hName: 'Callout';
+    hProperties: {
+      icon: string;
+    };
   };
 }
 

@@ -14,8 +14,6 @@ if (typeof window !== 'undefined') {
   canonicalLanguage = module.canonical;
 }
 
-console.log(syntaxHighlighter);
-
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
   const button = createRef<HTMLButtonElement>();

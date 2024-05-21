@@ -11,12 +11,20 @@ const callout = (node: Callout, _, state, info) => {
 
   exit();
 
-  const [first, ...rest] = value.split('\n');
-  const blocks = [first, '', ...rest]
-    .map((line: string, index) => (index > 0 ? `>${line.length > 0 ? ' ' : ''}${line}` : line))
+  let lines = value.split('\n');
+
+  if (lines.length > 1) {
+    const [first, ...rest] = lines;
+    lines = [first, '', ...rest];
+  }
+
+  let content = lines
+    .map((line: string, index: number) => (index > 0 ? `>${line.length > 0 ? ' ' : ''}${line}` : line))
     .join('\n');
 
-  const block = `> ${node.data.hProperties.icon} ${blocks}`;
+  if (content.match(/^[^\n]/)) content = ' ' + content;
+
+  const block = `> ${node.data.hProperties.icon}${content}`;
 
   return block;
 };

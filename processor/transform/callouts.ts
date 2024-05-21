@@ -26,7 +26,6 @@ const calloutTransformer = () => {
         node.data = {
           hName: 'Callout',
           hProperties: {
-            heading,
             icon,
           },
         };

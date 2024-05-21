@@ -23,20 +23,20 @@ const themes: Record<string, string> = {
 };
 
 const Callout = (props: Props) => {
-  const { attributes, children, icon, heading } = props;
+  const { attributes, children, icon } = props;
 
   let theme = props.theme || themes[icon] || 'default';
+  const [heading, ...body] = Array.isArray(children) ? children : [children];
+  const empty = !heading.props.children;
 
   return (
     // @ts-ignore
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      {heading && (
-        <h3 className={`callout-heading${heading ? '' : ' empty'}`}>
-          <span className="callout-icon">{icon}</span>
-          {heading}
-        </h3>
-      )}
-      {children}
+      <h3 className={`callout-heading${empty ? ' empty' : ''}`}>
+        <span className="callout-icon">{icon}</span>
+        {!empty && heading}
+      </h3>
+      {body}
     </blockquote>
   );
 };
