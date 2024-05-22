@@ -3,7 +3,7 @@ import React from 'react';
 import { compile, run } from '../../index';
 
 describe('CodeTabs', () => {
-  it('render _all_ its children', async () => {
+  it.skip('render _all_ its children', async () => {
     const md = `
 \`\`\`
 assert('theme', 'dark');

@@ -1,14 +1,16 @@
-import { BlockContent, Code, Image, Paragraph, Parents, Table, TableRow } from 'mdast';
+import { NodeTypes } from '../../enums';
+import { Code, Image, Parents, Table } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { Callout, CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
+import { mdast } from '../../index';
 
 const types = {
-  Callout: 'rdme-callout',
+  Callout: NodeTypes['callout'],
   Code: 'code',
-  CodeTabs: 'code-tabs',
+  CodeTabs: NodeTypes['codeTabs'],
   Image: 'image',
   Table: 'table',
   tr: 'tableRow',
@@ -75,11 +77,28 @@ const coerceJsxToMd =
       };
 
       parent.children[index] = mdNode;
+    } else if (node.name === 'Callout') {
+      const { heading, icon } = attributes<{ heading?: string; icon: string }>(node);
+
+      const child = mdast(heading);
+
+      // @ts-ignore
+      const mdNode: Callout = {
+        children: [child?.children?.[0], ...node.children].filter(Boolean) as any,
+        type: NodeTypes.callout,
+        data: {
+          hName: node.name,
+          hProperties: { icon },
+        },
+        position: node.position,
+      };
+
+      parent.children[index] = mdNode;
     } else if (node.name in types) {
       const hProperties = attributes(node);
 
       // @ts-ignore
-      const mdNode: Callout | CodeTabs = {
+      const mdNode: CodeTabs = {
         children: node.children as any,
         type: types[node.name],
         ...(['tr', 'td'].includes(node.name)

@@ -6,11 +6,10 @@ type Callout = Omit<Blockquote, 'type'> & {
   data: Data & {
     hName: 'Callout';
     hProperties: {
-      heading: string;
       icon: string;
     };
   };
-}
+};
 
 interface CodeTabs extends Parent {
   type: NodeTypes.codeTabs;
