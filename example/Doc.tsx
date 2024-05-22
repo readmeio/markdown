@@ -4,6 +4,21 @@ import * as mdx from '../index';
 import docs from './docs';
 import RenderError from './RenderError';
 
+const terms = [
+  {
+    term: 'demo',
+    definition: 'a thing that breaks on presentation',
+  },
+  {
+    term: 'exogenous',
+    definition: 'relating to or developing from external factors',
+  },
+  {
+    term: 'endogenous',
+    definition: 'having an internal cause or origin',
+  },
+];
+
 const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
@@ -26,7 +41,7 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, opts);
-        const content = await mdx.run(code);
+        const content = await mdx.run(code, { terms });
 
         setError(() => null);
         setContent(() => content);

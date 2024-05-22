@@ -1,11 +1,11 @@
-const PropTypes = require('prop-types');
-const React = require('react');
+import { string, node } from 'prop-types';
+import React from 'react';
 
-const BaseUrlContext = require('../contexts/BaseUrl');
+import BaseUrlContext from '../contexts/BaseUrl';
 
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
-function getHref(href, baseUrl) {
+export function getHref(href, baseUrl) {
   const [path, hash] = href.split('#');
   const hashStr = hash ? `#${hash}` : '';
 
@@ -49,7 +49,9 @@ function docLink(href) {
 }
 
 function Anchor(props) {
-  const { baseUrl, children, href, target, title, ...attrs } = props;
+  const { children, href, target, title, ...attrs } = props;
+  const baseUrl = useContext(BaseUrlContext);
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <a {...attrs} href={getHref(href, baseUrl)} target={target} title={title} {...docLink(href)}>
@@ -59,12 +61,12 @@ function Anchor(props) {
 }
 
 Anchor.propTypes = {
-  baseUrl: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  download: PropTypes.string,
-  href: PropTypes.string,
-  target: PropTypes.string,
-  title: PropTypes.string,
+  baseUrl: string,
+  children: node.isRequired,
+  download: string,
+  href: string,
+  target: string,
+  title: string,
 };
 
 Anchor.defaultProps = {
@@ -74,17 +76,4 @@ Anchor.defaultProps = {
   title: '',
 };
 
-const AnchorWithContext = props => (
-  <BaseUrlContext.Consumer>{baseUrl => <Anchor baseUrl={baseUrl} {...props} />}</BaseUrlContext.Consumer>
-);
-
-AnchorWithContext.sanitize = sanitizeSchema => {
-  // This is for our custom link formats
-  sanitizeSchema.protocols.href.push('doc', 'target', 'ref', 'blog', 'changelog', 'page');
-
-  return sanitizeSchema;
-};
-
-module.exports = AnchorWithContext;
-
-AnchorWithContext.getHref = getHref;
+export default Anchor;

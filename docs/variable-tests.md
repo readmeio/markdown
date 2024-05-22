@@ -18,4 +18,4 @@ const xyz = "<Variable variable="defvar" />";
 
 ## Glossary Items
 
-<GlossaryItem term="demo" />
+<Glossary>demo</Glossary>

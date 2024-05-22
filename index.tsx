@@ -12,21 +12,29 @@ import * as runtime from 'react/jsx-runtime';
 import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
-import { GlossaryContext } from './components/GlossaryItem';
-import BaseUrlContext from './contexts/BaseUrl';
 import { options } from './options';
 
 import transformers, { readmeComponentsTransformer } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
+import { GlossaryTerm } from './contexts/GlossaryTerms';
+import Contexts from './contexts';
 
 const unimplemented = debug('mdx:unimplemented');
 
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
-type RunOpts = Omit<RunOptions, 'Fragment'> & {
+interface Variables {
+  user: { keys: string[] };
+  defaults: { name: string; default: string }[];
+}
+
+export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: ComponentOpts;
   imports?: Record<string, unknown>;
+  baseUrl?: string;
+  terms?: GlossaryTerm[];
+  variables?: Variables;
 };
 
 type MdastOpts = {
@@ -40,10 +48,7 @@ export const utils = {
     return { ...options };
   },
 
-  BaseUrlContext,
   getHref,
-  GlossaryContext,
-  VariablesContext: Variable.VariablesContext,
   calloutIcons: {},
 };
 
@@ -86,7 +91,7 @@ export const compile = (text: string, opts = {}) => {
 
 export const run = async (code: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
-  const { components, ...opts } = _opts;
+  const { components, terms, variables, baseUrl, ...opts } = _opts;
 
   const file = await mdxRun(code, {
     ...runtime,
@@ -96,8 +101,13 @@ export const run = async (code: string, _opts: RunOpts = {}) => {
     useMDXComponents: makeUseMDXComponents(components),
     ...opts,
   });
+  const Content = file?.default || (() => null);
 
-  return file?.default || (() => null);
+  return () => (
+    <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
+      <Content />
+    </Contexts>
+  );
 };
 
 export const reactTOC = (text: string, opts = {}) => {

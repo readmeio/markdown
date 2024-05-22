@@ -3,9 +3,9 @@ import React from 'react';
 
 import { run, compile } from '../../index';
 
-describe('GlossaryItem', () => {
+describe('Glossary', () => {
   it('renders a glossary item', async () => {
-    const md = `<GlossaryItem term="parliament" />`;
+    const md = `<Glossary>parliament</Glossary>`;
     const Content = await run(compile(md));
     render(<Content />);
 
