@@ -3,6 +3,20 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
 import RenderError from './RenderError';
+import { MDXContent, MDXModule } from 'mdx/types';
+
+const mdxComponents = {
+  Demo: `
+## This is a Demo Component!
+
+> 📘 It can render JSX components!
+`,
+};
+
+const components = {};
+Object.keys(mdxComponents).forEach(async comp => {
+  components[comp] = await mdx.run(mdx.compile(comp));
+});
 
 const terms = [
   {
@@ -29,7 +43,10 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [Content, setContent] = useState<FunctionComponent>(null);
+  const [{ default: Content, toc: Toc }, setContent] = useState<{ default: MDXContent; toc?: MDXContent }>({
+    default: null,
+    toc: null,
+  });
   const [error, setError] = useState<string>(null);
 
   useEffect(() => {
@@ -41,7 +58,7 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, opts);
-        const content = await mdx.run(code, { terms });
+        const content = await mdx.run(code, { components, terms });
 
         setError(() => null);
         setContent(() => content);
@@ -54,18 +71,21 @@ const Doc = () => {
   }, [doc, lazyImages, safeMode]);
 
   return (
-    <React.Fragment>
-      <div className="rdmd-demo--display">
-        <section id="hub-content">
-          {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
-          <div id="content-container">
-            <RenderError error={error}>
-              <div className="markdown-body">{Content && <Content />}</div>
-            </RenderError>
-          </div>
+    <div className="rdmd-demo--display">
+      <section id="hub-content">
+        {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
+        <div id="content-container">
+          <RenderError error={error}>
+            <div className="markdown-body">{Content && <Content />}</div>
+          </RenderError>
+        </div>
+      </section>
+      {Toc && (
+        <section className="content-toc">
+          <Toc />
         </section>
-      </div>
-    </React.Fragment>
+      )}
+    </div>
   );
 };
 

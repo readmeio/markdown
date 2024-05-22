@@ -5,6 +5,8 @@ import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkRehype from 'remark-rehype';
 import remarkGfm from 'remark-gfm';
+import remarkSlug from 'remark-slug';
+import { VFile } from 'vfile';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -14,11 +16,11 @@ import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
 
-import transformers, { readmeComponentsTransformer } from './processor/transform';
+import transformers, { readmeComponentsTransformer, remarkToc } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
-import { GlossaryTerm } from './contexts/GlossaryTerms';
 import Contexts from './contexts';
+import { GlossaryTerm } from './contexts/GlossaryTerms';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -39,6 +41,10 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
 
 type MdastOpts = {
   components?: Record<string, string>;
+};
+
+type VFileWithToc = VFile & {
+  data: VFile['data'] & { toc?: VFile };
 };
 
 export { Components };
@@ -67,52 +73,69 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, remarkSlug, remarkToc, ...transformers];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
 };
 
 export const compile = (text: string, opts = {}) => {
-  try {
-    return String(
-      compileSync(text, {
+  const exec = (string: string): VFileWithToc => {
+    try {
+      return compileSync(string, {
         outputFormat: 'function-body',
         providerImportSource: '#',
         remarkPlugins,
         ...opts,
-      }),
-    ).replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React');
-  } catch (error) {
-    console.error(error);
-    throw error.line ? new MdxSyntaxError(error, text) : error;
-  }
+      });
+    } catch (error) {
+      throw error.line ? new MdxSyntaxError(error, text) : error;
+    }
+  };
+
+  const vfile = exec(text);
+  vfile.data.toc = exec(vfile.data.toc.toString());
+
+  vfile.value = String(vfile).replace(
+    /await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/,
+    'arguments[0].imports.React',
+  );
+
+  return vfile;
 };
 
-export const run = async (code: string, _opts: RunOpts = {}) => {
+export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components, terms, variables, baseUrl, ...opts } = _opts;
+  const vfile = new VFile(stringOrFile) as VFileWithToc;
 
-  const file = await mdxRun(code, {
-    ...runtime,
-    Fragment,
-    baseUrl: import.meta.url,
-    imports: { React },
-    useMDXComponents: makeUseMDXComponents(components),
-    ...opts,
-  });
-  const Content = file?.default || (() => null);
+  const exec = (file: VFile | string) =>
+    mdxRun(file, {
+      ...runtime,
+      Fragment,
+      baseUrl: import.meta.url,
+      imports: { React },
+      useMDXComponents: makeUseMDXComponents(components),
+      ...opts,
+    });
 
-  return () => (
+  const file = await exec(vfile);
+  const toc = 'toc' in vfile.data ? await exec(vfile.data.toc) : null;
+
+  const Content = file.default;
+  const body = () => (
     <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
       <Content />
     </Contexts>
   );
+
+  return {
+    default: body,
+    toc: toc.default,
+  };
 };
 
-export const reactTOC = (text: string, opts = {}) => {
-  unimplemented('reactTOC');
-};
+const astProcessor = (opts: MdastOpts = { components: {} }) => remark().use(remarkMdx).use(remarkPlugins);
 
 export const mdx = (tree: any, opts = {}) => {
   return remark().use(remarkMdx).use(remarkGfm).use(compilers).stringify(tree, opts);
@@ -122,15 +145,8 @@ export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-const astProcessor = (opts: MdastOpts = { components: {} }) =>
-  remark()
-    .use(remarkMdx)
-    .use(remarkFrontmatter)
-    .use(remarkPlugins)
-    .use(readmeComponentsTransformer({ components: opts.components }));
-
 export const mdast: any = (text: string, opts: MdastOpts = {}) => {
-  const processor = astProcessor(opts);
+  const processor = astProcessor(opts).use(readmeComponentsTransformer({ components: opts.components }));
 
   const tree = processor.parse(text);
   return processor.runSync(tree);
