@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.36
+
+### ✨ New & Improved
+
+* glossary niceness and more ([#879](https://github.com/readmeio/markdown/issues/879)) ([43b5256](https://github.com/readmeio/markdown/commit/43b525686b64f216dae32dbf0b64b03620f39ef3))
+
 ## Version 6.75.0-beta.35
 
 ### 🛠 Fixes & Updates
