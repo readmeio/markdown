@@ -20,8 +20,6 @@ const rehypeToc = (): Transformer<Root, Root> => {
     ) as Heading[];
     if (!headings.length) return;
 
-    console.log(JSON.stringify({ tree }, null, 2));
-
     const min = Math.min(...headings.map(getDepth));
     const root = h();
     root.children.push(h('ul'));

@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
+import { run, compile } from '../index';
 
-const silenceConsole =
+export const silenceConsole =
   (prop: keyof Console = 'error', impl = () => {}) =>
   fn => {
     let spy;
@@ -14,4 +15,7 @@ const silenceConsole =
     }
   };
 
-export { silenceConsole };
+export const execute = async (doc: string, compileOpts = {}, runOpts = {}) => {
+  const module = await run(compile(doc, compileOpts), runOpts);
+  return module.default;
+};

@@ -102,7 +102,6 @@ export const compile = (text: string, opts = {}) => {
   const vfile = exec(text);
   if (vfile.data.toc) {
     const toc = mdx(vfile.data.toc, { hast: true });
-    console.log(JSON.stringify({ toc }, null, 2));
     vfile.data.toc = toc ? exec(toc) : null;
   } else {
     delete vfile.data.toc;
@@ -148,7 +147,6 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
 };
 
 export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
-  console.log(JSON.stringify({ tree }, null, 2));
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)

@@ -6,6 +6,8 @@ import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, a
 import { options } from '../options';
 import { tableFlattening } from '../processor/plugin/table-flattening';
 
+import { execute } from './helpers';
+
 test.skip('it should have the proper utils exports', () => {
   expect(typeof utils.BaseUrlContext).toBe('object');
   expect(typeof utils.GlossaryContext).toBe('object');
@@ -34,48 +36,46 @@ test.skip('it should have the proper utils exports', () => {
 });
 
 test('image', async () => {
-  const code = compile('![Image](http://example.com/image.png)');
-  const component = await run(code);
+  const md = '![Image](http://example.com/image.png)';
+  const component = await execute(md);
   const { container } = render(React.createElement(component));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('heading', () => {
-  const { container } = render(run(compile('## Example Header')));
+  const { container } = render(execute('## Example Header'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('list items', () => {
-  const { container } = render(run(compile('- listitem1')));
+  const { container } = render(execute('- listitem1'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('check list items', () => {
-  const { container } = render(run(compile('- [ ] checklistitem1\n- [x] checklistitem1')));
+  const { container } = render(execute('- [ ] checklistitem1\n- [x] checklistitem1'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test('gemoji generation', async () => {
-  const component = await run(compile(':sparkles:'));
+  const component = await execute(':sparkles:');
   const { container } = render(React.createElement(component));
   expect(container.querySelector('.lightbox')).not.toBeInTheDocument();
 });
 
 test.skip('should strip out inputs', () => {
-  render(run(compile('<input type="text" value="value" />')));
+  render(execute('<input type="text" value="value" />'));
   expect(screen.queryByRole('input')).not.toBeInTheDocument();
 });
 
 test('tables', async () => {
-  const component = await run(
-      compile(`| Tables        | Are           | Cool  |
+  const component = await execute(`| Tables        | Are           | Cool  |
 | ------------- |:-------------:| -----:|
 | col 3 is      | right-aligned | $1600 |
 | col 2 is      | centered      |   $12 |
 | zebra stripes | are neat      |    $1 |
-  `)
-    )
-  
+  `);
+
   const { container } = render(React.createElement(component));
 
   expect(container.innerHTML.trim()).toMatchSnapshot();
@@ -89,8 +89,8 @@ test.skip('headings', () => {
 ### Heading 3
 #### Heading 4
 ##### Heading 5
-###### Heading 6`)
-    )
+###### Heading 6`),
+    ),
   );
 
   expect(screen.getAllByRole('heading')).toHaveLength(6);
@@ -107,25 +107,25 @@ test.skip('anchors', () => {
 [blog](blog:slug)
 [changelog](changelog:slug)
 [page](page:slug)
-`)
-    )
+`),
+    ),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('anchor target: should default to _self', () => {
-  const { container } = render(run(compile('[test](https://example.com)')));
+  const { container } = render(execute('[test](https://example.com)'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('anchor target: should allow _blank if using HTML', () => {
-  const { container } = render(run(compile('<a href="https://example.com" target="_blank">test</a>')));
+  const { container } = render(execute('<a href="https://example.com" target="_blank">test</a>'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('anchor target: should allow download if using HTML', () => {
-  const { container } = render(run(compile('<a download="example.png" href="" target="_blank">test</a>')));
+  const { container } = render(execute('<a download="example.png" href="" target="_blank">test</a>'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
@@ -143,16 +143,16 @@ test.skip('anchors with baseUrl', () => {
 [blog](blog:slug)
 [changelog](changelog:slug)
 [page](page:slug)
-  `
-      )
-    )
+  `,
+      ),
+    ),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
 });
 
 test.skip('anchors with baseUrl and special characters in url hash', () => {
-  const { container } = render(run(compile('[ref](ref:slug#整)')));
+  const { container } = render(execute('[ref](ref:slug#整)'));
   expect(container.innerHTML).toMatchSnapshot();
 });
 
@@ -162,7 +162,7 @@ test.skip('emojis', () => {
 :joy:
 :fa-lock:
 :unknown-emoji:
-`)
+`),
   );
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -179,7 +179,7 @@ describe.skip('code samples', () => {
   \`\`\`
   code-without-language
   \`\`\`
-  `)
+  `),
     );
     expect(container.querySelectorAll('pre')).toHaveLength(2);
     expect(container.querySelectorAll('button')).toHaveLength(3);
@@ -191,8 +191,8 @@ describe.skip('code samples', () => {
         run(
           compile('This is a sentence and it contains a piece of `code` wrapped in backticks.', {
             copyButtons: false,
-          })
-        )
+          }),
+        ),
       );
 
       expect(screen.queryByRole('button')).not.toBeInTheDocument();
@@ -230,8 +230,8 @@ describe.skip('`alwaysThrow` option', () => {
       "level": 2
     }
     [/block]`,
-          { alwaysThrow: true }
-        )
+          { alwaysThrow: true },
+        ),
       );
 
     expect(shouldThrow).toThrow('Invalid Magic Block JSON');
@@ -247,8 +247,8 @@ describe.skip('`alwaysThrow` option', () => {
       "level": 2
     }
     [/block]`,
-          { alwaysThrow: true }
-        )
+          { alwaysThrow: true },
+        ),
       );
 
     expect(() => shouldThrow()).not.toThrow('Invalid Magic Block JSON');
@@ -281,14 +281,14 @@ describe.skip('`stripHtml` option', () => {
 });
 
 test.skip('should strip dangerous iframe tag', () => {
-  const { container } = render(run(compile('<p><iframe src="javascript:alert(\'delta\')"></iframe></p>')));
+  const { container } = render(execute('<p><iframe src="javascript:alert(\'delta\')"></iframe></p>'));
   expect(container).toContainHTML('<p></p>');
 });
 
 test.skip('should strip dangerous img attributes', () => {
-  const { container } = render(run(compile('<img src="x" onerror="alert(\'charlie\')">')));
+  const { container } = render(execute('<img src="x" onerror="alert(\'charlie\')">'));
   expect(container).toContainHTML(
-    '<span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="x" align="" alt="" caption="" height="auto" title="" width="auto" loading="lazy"></span></span>'
+    '<span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="x" align="" alt="" caption="" height="auto" title="" width="auto" loading="lazy"></span></span>',
   );
 });
 
@@ -369,7 +369,7 @@ describe.skip('export multiple Markdown renderers', () => {
   });
 
   it('renders custom React components', () => {
-    expect(run(compile(text))).toMatchSnapshot();
+    expect(execute(text)).toMatchSnapshot();
   });
 
   it('renders hAST', () => {
@@ -410,7 +410,7 @@ Lorem ipsum dolor!`;
   it('returns null for blank input', () => {
     expect(_html('')).toBeNull();
     expect(plain('')).toBeNull();
-    expect(run(compile(''))).toBeNull();
+    expect(execute('')).toBeNull();
     expect(_hast('')).toBeNull();
     expect(mdast('')).toBeNull();
     expect(mdx('')).toBeNull();
@@ -423,7 +423,7 @@ describe.skip('prefix anchors with "section-"', () => {
   });
 
   it('"section-" anchors should split on camelCased words', () => {
-    const { container } = render(run(compile('# camelCased')));
+    const { container } = render(execute('# camelCased'));
     const anchor = container.querySelectorAll('.heading-anchor_backwardsCompatibility')[0];
 
     expect(anchor).toHaveAttribute('id', 'section-camel-cased');
