@@ -7,7 +7,7 @@ type CompatNodes =
   | { type: NodeTypes.reusableContent; tag: string }
   | Html;
 
-const compatability = (node: CompatNodes) => {
+const compatibility = (node: CompatNodes) => {
   switch (node.type) {
     case NodeTypes.variable:
       return `<Variable name="${node.text}" />`;
@@ -22,4 +22,4 @@ const compatability = (node: CompatNodes) => {
   }
 };
 
-export default compatability;
+export default compatibility;
