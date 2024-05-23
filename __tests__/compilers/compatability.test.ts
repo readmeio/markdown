@@ -37,4 +37,13 @@ describe('compatability with RDMD', () => {
 
     expect(mdx(ast).trim()).toBe('<Parliament />');
   });
+
+  it('compiles html comments to JSX comments', () => {
+    const ast = {
+      type: 'html',
+      value: '<!-- commentable -->',
+    };
+
+    expect(mdx(ast).trim()).toBe('{/* commentable */}');
+  });
 });

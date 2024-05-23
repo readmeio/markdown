@@ -22,6 +22,7 @@ function compilers() {
     [NodeTypes.variable]: compatability,
     [NodeTypes.glossary]: compatability,
     [NodeTypes.reusableContent]: compatability,
+    html: compatability,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });

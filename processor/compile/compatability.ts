@@ -1,9 +1,11 @@
+import { Html } from 'mdast';
 import { NodeTypes } from '../../enums';
 
 type CompatNodes =
   | { type: NodeTypes.variable; text: string }
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
-  | { type: NodeTypes.reusableContent; tag: string };
+  | { type: NodeTypes.reusableContent; tag: string }
+  | Html;
 
 const compatability = (node: CompatNodes) => {
   switch (node.type) {
@@ -13,6 +15,8 @@ const compatability = (node: CompatNodes) => {
       return `<Glossary>${node.data.hProperties.term}</Glossary>`;
     case NodeTypes.reusableContent:
       return `<${node.tag} />`;
+    case 'html':
+      return node.value.replaceAll(/<!--(.*)-->/g, '{/*$1*/}');
     default:
       throw new Error('Unhandled node type!');
   }

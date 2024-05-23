@@ -21,7 +21,7 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
                 },
               },
               "type": "text",
-              "value": "ℹ️ Info Callout",
+              "value": "Info Callout",
             },
           ],
           "position": {
@@ -72,6 +72,13 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
           "type": "paragraph",
         },
       ],
+      "data": {
+        "hName": "Callout",
+        "hProperties": {
+          "empty": false,
+          "icon": "ℹ️",
+        },
+      },
       "position": {
         "end": {
           "column": 60,
@@ -84,7 +91,7 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
           "offset": 1,
         },
       },
-      "type": "blockquote",
+      "type": "rdme-callout",
     },
   ],
   "position": {
