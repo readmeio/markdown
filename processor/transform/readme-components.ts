@@ -78,17 +78,15 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
     } else if (node.name === 'Callout') {
-      const { heading, icon } = attributes<{ heading?: string; icon: string }>(node);
-
-      const child = mdast(heading);
+      const { icon, empty = false } = attributes<{ empty?: boolean; icon: string }>(node);
 
       // @ts-ignore
       const mdNode: Callout = {
-        children: [child?.children?.[0], ...node.children].filter(Boolean) as any,
+        children: node.children as any,
         type: NodeTypes.callout,
         data: {
           hName: node.name,
-          hProperties: { icon },
+          hProperties: { icon, empty },
         },
         position: node.position,
       };
