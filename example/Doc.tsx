@@ -15,7 +15,7 @@ const mdxComponents = {
 
 const components = {};
 Object.keys(mdxComponents).forEach(async comp => {
-  components[comp] = await mdx.run(mdx.compile(comp));
+  components[comp] = (await mdx.run(mdx.compile(comp))).default;
 });
 
 const terms = [

@@ -148,7 +148,7 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
 };
 
 export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
-  console.log(JSON.stringify({ tree, hast }, null, 2));
+  console.log(JSON.stringify({ tree }, null, 2));
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
