@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.38
+
+### ✨ New & Improved
+
+* compatibility ([#881](https://github.com/readmeio/markdown/issues/881)) ([6432be8](https://github.com/readmeio/markdown/commit/6432be8bb67dd8423ec223eb6355c8b2fa0c217a))
+
 ## Version 6.75.0-beta.37
 
 ### 🛠 Fixes & Updates
