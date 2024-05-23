@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.37
+
+### 🛠 Fixes & Updates
+
+* compilers ([#882](https://github.com/readmeio/markdown/issues/882)) ([6caaafd](https://github.com/readmeio/markdown/commit/6caaafd19de9c13ea4f48df23f74d889725b77ba))
+
 ## Version 6.75.0-beta.36
 
 ### ✨ New & Improved
