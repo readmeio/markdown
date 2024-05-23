@@ -5,5 +5,8 @@ export enum NodeTypes {
   i = 'i',
   image = 'image',
   htmlBlock = 'html-block',
-  embed = 'rdme-embed'
+  embed = 'rdme-embed',
+  variable = 'readme-variable',
+  glossary = 'readme-glossary-item',
+  reusableContent = 'reusable-content',
 }

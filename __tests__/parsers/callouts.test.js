@@ -1,6 +1,6 @@
 import { mdast } from '../../index';
 
-describe.skip('Parse RDMD Callouts', () => {
+describe('Parse RDMD Callouts', () => {
   it('renders an info callout', () => {
     const text = `
 > ℹ️ Info Callout
@@ -8,18 +8,6 @@ describe.skip('Parse RDMD Callouts', () => {
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     expect(mdast(text)).toMatchSnapshot();
-  });
-
-  it('supports a default theme', () => {
-    const text = `
-> 🥇 Themeless
->
-> Lorem ipsum dolor sit amet consectetur adipisicing elit.`;
-
-    const tree = mdast(text);
-
-    expect(tree.children[0].type).toBe('rdme-callout');
-    expect(tree.children[0].data.hProperties.theme).toBe('default');
   });
 
   it('parses a callout with no title', () => {
@@ -31,8 +19,8 @@ describe.skip('Parse RDMD Callouts', () => {
     const tree = mdast(text);
 
     expect(tree.children[0].type).toBe('rdme-callout');
-    expect(tree.children[0].data.hProperties.theme).toBe('info');
-    expect(tree.children[0].data.hProperties.title).toBe('');
+    expect(tree.children[0].data.hProperties.icon).toBe('ℹ️');
+    expect(tree.children[0].data.hProperties.empty).toBe(true);
   });
 
   describe('edge cases', () => {
@@ -44,8 +32,8 @@ describe.skip('Parse RDMD Callouts', () => {
 `;
 
       const tree = mdast(text);
-      expect(tree.children[0].data.hProperties.value).toBe('<span>With html!</span>');
-      expect(tree.children[0].children[1].children[0].type).toBe('html');
+      expect(tree.children[0].children[1].children[0].children[0].value).toBe('With html!');
+      expect(tree.children[0].children[1].children[0].type).toBe('mdxJsxTextElement');
     });
 
     it('allows trailing spaces after the icon', () => {
@@ -56,7 +44,7 @@ describe.skip('Parse RDMD Callouts', () => {
       const tree = mdast(text);
       expect(tree.children[0].data.hProperties.icon).toBe('🛑');
       expect(tree.children[0].children[0].children[0].value).toBe(
-        'Compact headings must be followed by two line breaks before the following block.'
+        'Compact headings must be followed by two line breaks before the following block.',
       );
     });
   });
@@ -83,20 +71,20 @@ describe.skip('Parse RDMD Callouts', () => {
     expect(tree.children[0].children[0].children[1].type).toBe('rdme-callout');
   });
 
-  it('does not require a line break between the title and the body', () => {
+  it('does require a line break between the title and the body', () => {
     const text = `
 > 💁 Undocumented Behavior
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     const tree = mdast(text);
-    expect(tree.children[0].data.hProperties.title).toBe(
+    expect(tree.children[0].children[0].children[0].value).toBe(
       `Undocumented Behavior
-Lorem ipsum dolor  sit amet consectetur adipisicing elit.`
+Lorem ipsum dolor  sit amet consectetur adipisicing elit.`,
     );
   });
 });
 
-describe.skip('emoji modifier support', () => {
+describe('emoji modifier support', () => {
   const emojis = ['📘', '🚧', '⚠️', '👍', '✅', '❗️', '❗', '🛑', '⁉️', '‼️', 'ℹ️', '⚠'];
 
   emojis.forEach(emoji => {

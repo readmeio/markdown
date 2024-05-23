@@ -7,6 +7,7 @@ type Callout = Omit<Blockquote, 'type'> & {
     hName: 'Callout';
     hProperties: {
       icon: string;
+      empty: boolean;
     };
   };
 };
