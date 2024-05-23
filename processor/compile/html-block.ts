@@ -2,7 +2,8 @@ import { HTMLBlock } from '../../types';
 
 const htmlBlock = (node: HTMLBlock) => {
   const html = node.data.hProperties.html;
-  return `<HTMLBlock>${JSON.stringify({ html }, null, 2)}</HTMLBlock>`;
+  const attributes = Object.keys(node.data?.hProperties).map(key => `${key}="${node.data?.hProperties[key]}"`).join(' ')
+  return `<HTMLBlock${attributes && ' ' + attributes}>{\`${ html }\`}</HTMLBlock>`;
 }
 
 export default htmlBlock;
