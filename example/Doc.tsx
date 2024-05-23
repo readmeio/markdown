@@ -70,6 +70,8 @@ const Doc = () => {
     render();
   }, [doc, lazyImages, safeMode]);
 
+  console.log(Content, Toc);
+
   return (
     <div className="rdmd-demo--display">
       <section id="hub-content">

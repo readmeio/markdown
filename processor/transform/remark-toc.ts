@@ -17,8 +17,7 @@ const remarkToc = (): Transformer<Root, Root> => {
     });
 
     const { map } = toc({ type: 'root', children: proxy });
-
-    file.data.toc = new VFile(map);
+    file.data.toc = map;
   };
 };
 

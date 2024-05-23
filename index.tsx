@@ -94,7 +94,12 @@ export const compile = (text: string, opts = {}) => {
   };
 
   const vfile = exec(text);
-  vfile.data.toc = exec(vfile.data.toc.toString());
+  if (vfile.data.toc) {
+    const toc = mdx(vfile.data.toc);
+    vfile.data.toc = toc ? exec(toc) : null;
+  } else {
+    delete vfile.data.toc;
+  }
 
   vfile.value = String(vfile).replace(
     /await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/,
@@ -120,7 +125,7 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
     });
 
   const file = await exec(vfile);
-  const toc = 'toc' in vfile.data ? await exec(vfile.data.toc) : null;
+  const toc = 'toc' in vfile.data ? await exec(vfile.data.toc) : { default: null };
 
   const Content = file.default;
   const body = () => (
