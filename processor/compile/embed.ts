@@ -6,6 +6,7 @@ const embed = (node: Embed) => {
 
   if (complexEmbed) {
     const attributes = Object.keys(node.data?.hProperties).map(key => `${key}="${node.data?.hProperties[key]}"`).join(' ')
+    // TODO: make this a util
     return `<Embed ${attributes} />`;
   }
 
