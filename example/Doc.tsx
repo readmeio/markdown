@@ -70,8 +70,6 @@ const Doc = () => {
     render();
   }, [doc, lazyImages, safeMode]);
 
-  console.log(Content, Toc);
-
   return (
     <div className="rdmd-demo--display">
       <section id="hub-content">
@@ -80,13 +78,13 @@ const Doc = () => {
           <RenderError error={error}>
             <div className="markdown-body">{Content && <Content />}</div>
           </RenderError>
+          {Toc && (
+            <div className="content-toc">
+              <Toc />
+            </div>
+          )}
         </div>
       </section>
-      {Toc && (
-        <section className="content-toc">
-          <Toc />
-        </section>
-      )}
     </div>
   );
 };

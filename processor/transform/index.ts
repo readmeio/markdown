@@ -3,8 +3,8 @@ import codeTabsTransfromer from './code-tabs';
 import embedTransformer from './embeds';
 import gemojiTransformer from './gemoji+';
 import readmeComponentsTransformer from './readme-components';
-import remarkToc from './remark-toc';
+import rehypeToc from './rehype-toc';
 
-export { readmeComponentsTransformer, remarkToc };
+export { readmeComponentsTransformer, rehypeToc };
 
 export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer];

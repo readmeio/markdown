@@ -5,7 +5,7 @@ import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkRehype from 'remark-rehype';
 import remarkGfm from 'remark-gfm';
-import remarkSlug from 'remark-slug';
+import rehypeSlug from 'rehype-slug';
 import { VFile } from 'vfile';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
@@ -16,7 +16,7 @@ import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
 
-import transformers, { readmeComponentsTransformer, remarkToc } from './processor/transform';
+import transformers, { readmeComponentsTransformer, rehypeToc } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 import Contexts from './contexts';
@@ -73,7 +73,8 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
   return () => components;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, remarkSlug, remarkToc, ...transformers];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
+const rehypePlugins = [rehypeSlug, rehypeToc];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
@@ -86,6 +87,7 @@ export const compile = (text: string, opts = {}) => {
         outputFormat: 'function-body',
         providerImportSource: '#',
         remarkPlugins,
+        rehypePlugins,
         ...opts,
       });
     } catch (error) {
@@ -94,6 +96,7 @@ export const compile = (text: string, opts = {}) => {
   };
 
   const vfile = exec(text);
+  console.log(vfile.data.toc);
   if (vfile.data.toc) {
     const toc = mdx(vfile.data.toc);
     vfile.data.toc = toc ? exec(toc) : null;
