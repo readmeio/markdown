@@ -7,6 +7,8 @@ import remarkRehype from 'remark-rehype';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import { VFile } from 'vfile';
+import rehypeRemark from 'rehype-remark';
+import remarkStringify from 'remark-stringify';
 
 import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
@@ -21,6 +23,8 @@ import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 import Contexts from './contexts';
 import { GlossaryTerm } from './contexts/GlossaryTerms';
+import { EXIT, visit } from 'unist-util-visit';
+import { unified } from 'unified';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -96,9 +100,9 @@ export const compile = (text: string, opts = {}) => {
   };
 
   const vfile = exec(text);
-  console.log(vfile.data.toc);
   if (vfile.data.toc) {
-    const toc = mdx(vfile.data.toc);
+    const toc = mdx(vfile.data.toc, { hast: true });
+    console.log(JSON.stringify({ toc }, null, 2));
     vfile.data.toc = toc ? exec(toc) : null;
   } else {
     delete vfile.data.toc;
@@ -143,11 +147,19 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
   };
 };
 
-const astProcessor = (opts: MdastOpts = { components: {} }) => remark().use(remarkMdx).use(remarkPlugins);
+export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
+  console.log(JSON.stringify({ tree, hast }, null, 2));
+  const processor = unified()
+    .use(hast ? rehypeRemark : undefined)
+    .use(remarkMdx)
+    .use(remarkGfm)
+    .use(remarkStringify)
+    .use(compilers);
 
-export const mdx = (tree: any, opts = {}) => {
-  return remark().use(remarkMdx).use(remarkGfm).use(compilers).stringify(tree, opts);
+  return processor.stringify(processor.runSync(tree));
 };
+
+const astProcessor = (opts: MdastOpts = { components: {} }) => remark().use(remarkMdx).use(remarkPlugins);
 
 export const html = (text: string, opts = {}) => {
   unimplemented('html export');

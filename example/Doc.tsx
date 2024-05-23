@@ -63,6 +63,7 @@ const Doc = () => {
         setError(() => null);
         setContent(() => content);
       } catch (e) {
+        console.error(e);
         setError(() => e.message);
       }
     };

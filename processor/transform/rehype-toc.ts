@@ -40,7 +40,7 @@ const rehypeToc = (): Transformer<Root, Root> => {
         stack.pop();
       }
 
-      stack[stack.length - 1].children.push(h('li', null, heading.children));
+      stack[stack.length - 1].children.push(h('li', null, h('p', null, heading.children)));
     });
 
     file.data.toc = root;
