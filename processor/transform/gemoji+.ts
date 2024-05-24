@@ -8,9 +8,9 @@ const regex = /:(?<name>\+1|[-\w]+):/g;
 
 const gemojiReplacer = (_, name: string) => {
   switch (Owlmoji.kind(name)) {
-    case 'gemoji': {
+    case NodeTypes.gemoji: {
       const node: Gemoji = {
-        type: NodeTypes.emoji,
+        type: NodeTypes.gemoji,
         value: Owlmoji.nameToEmoji[name],
         name,
       };

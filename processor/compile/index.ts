@@ -14,7 +14,7 @@ function compilers() {
 
   const handlers = {
     [NodeTypes.callout]: callout,
-    [NodeTypes.emoji]: gemoji,
+    [NodeTypes.gemoji]: gemoji,
     [NodeTypes.codeTabs]: codeTabs,
     [NodeTypes.embed]: embed,
     [NodeTypes.htmlBlock]: htmlBlock,
