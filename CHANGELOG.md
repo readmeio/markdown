@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.39
+
+### 🛠 Fixes & Updates
+
+* fix types ([47fc684](https://github.com/readmeio/markdown/commit/47fc684000e0ce1e86b42359f5e47dee2229529a))
+* matching node names with main app ([#886](https://github.com/readmeio/markdown/issues/886)) ([1290014](https://github.com/readmeio/markdown/commit/1290014bb3caa595fcbb6a3540117b39e11bed35))
+* update variable types ([#885](https://github.com/readmeio/markdown/issues/885)) ([1ccf82d](https://github.com/readmeio/markdown/commit/1ccf82d9fe1e8b36c5dbc90b67846565629eed9b))
+
 ## Version 6.75.0-beta.38
 
 ### ✨ New & Improved
