@@ -2,7 +2,7 @@ import React from 'react';
 import { VFile } from 'vfile';
 import * as runtime from 'react/jsx-runtime';
 
-import { run as mdxRun } from '@mdx-js/mdx';
+import { RunOptions, run as mdxRun } from '@mdx-js/mdx';
 import Variable from '@readme/variable';
 
 import * as Components from '../components';
@@ -10,9 +10,8 @@ import Contexts from '../contexts';
 import { VFileWithToc } from '../types';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
 
-
 interface Variables {
-  user: { keys: string[] };
+  user: Record<string, string>;
   defaults: { name: string; default: string }[];
 }
 
@@ -24,8 +23,6 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   variables?: Variables;
 };
 
-
-
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
 const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
@@ -36,6 +33,7 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     code: Components.Code,
     'code-tabs': Components.CodeTabs,
     'html-block': Components.HTMLBlock,
+    embed: Components.Embed,
     img: Components.Image,
     table: Components.Table,
     'table-of-contents': Components.TableOfContents,
@@ -78,4 +76,4 @@ const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => 
   };
 };
 
-export default run
+export default run;

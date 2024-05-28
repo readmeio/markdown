@@ -8,10 +8,13 @@ import { getHref } from './components/Anchor';
 import { options } from './options';
 
 import { readmeComponentsTransformer } from './processor/transform';
-import { compile, run, mdx, MdastOpts, astProcessor, remarkPlugins } from './lib'
+import { compile, run, mdx, astProcessor, remarkPlugins } from './lib';
 
 const unimplemented = debug('mdx:unimplemented');
 
+type MdastOpts = {
+  components?: Record<string, string>;
+};
 
 const utils = {
   get options() {

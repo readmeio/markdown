@@ -15,7 +15,7 @@ const compose = (
   }, children);
 };
 
-const Contexts = ({ children, terms = [], variables = { user: { keys: [] }, defaults: [] }, baseUrl = '/' }: Props) => {
+const Contexts = ({ children, terms = [], variables = { user: {}, defaults: [] }, baseUrl = '/' }: Props) => {
   return compose(children, [GlossaryContext, terms], [VariablesContext, variables], [BaseUrlContext, baseUrl]);
 };
 
