@@ -52,7 +52,7 @@ describe('rehype-toc transformer', () => {
     expect(vfile.value).toMatch(/use strict/);
   });
 
-  it.only('parses a toc from components', () => {
+  it('parses a toc from components', () => {
     const md = `
 # Title
 

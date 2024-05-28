@@ -119,7 +119,6 @@ export const compile = (text: string, opts: CompileOpts = {}) => {
     'arguments[0].imports.React',
   );
 
-  console.log(vfile);
   return vfile;
 };
 
