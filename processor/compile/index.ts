@@ -4,6 +4,7 @@ import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
 import image from './image';
+import compatibility from './compatibility';
 import { NodeTypes } from '../../enums';
 
 function compilers() {
@@ -18,6 +19,10 @@ function compilers() {
     [NodeTypes.embed]: embed,
     [NodeTypes.htmlBlock]: htmlBlock,
     [NodeTypes.image]: image,
+    [NodeTypes.variable]: compatibility,
+    [NodeTypes.glossary]: compatibility,
+    [NodeTypes.reusableContent]: compatibility,
+    html: compatibility,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });

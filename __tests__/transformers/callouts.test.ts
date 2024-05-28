@@ -1,4 +1,4 @@
-import { mdast, hast } from '../../index';
+import { mdast } from '../../index';
 
 describe('callouts transformer', () => {
   it('can parse callouts', () => {

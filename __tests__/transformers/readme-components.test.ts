@@ -18,7 +18,10 @@ describe('Readme Components Transformer', () => {
   const docs = {
     ['rdme-callout']: {
       md: `> 📘 It works!`,
-      mdx: `<Callout icon="📘" heading="It works!" />`,
+      mdx: `
+<Callout icon="📘">
+  It works!
+</Callout>`,
     },
     code: {
       md: `

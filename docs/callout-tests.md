@@ -15,8 +15,10 @@ hidden: true
 > - was only rendering
 > - one child
 
-<Callout heading="Now with MDX" theme="error" icon="🔥">
-  ### Even supports markdown
+<Callout theme="error" icon="🔥">
+Now with MDX
+
+### Even supports markdown
 
 Much _wow_
 </Callout>

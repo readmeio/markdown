@@ -25,7 +25,7 @@ const unimplemented = debug('mdx:unimplemented');
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
 interface Variables {
-  user: { keys: string[] };
+  user: Record<string, string>;
   defaults: { name: string; default: string }[];
 }
 

@@ -16,15 +16,18 @@ const calloutTransformer = () => {
 
       if (icon && match) {
         const heading = startText.slice(match.length);
-
         node.children[0].children[0].value = heading;
-        node.type = NodeTypes.callout;
-        node.data = {
-          hName: 'Callout',
-          hProperties: {
-            icon,
+
+        Object.assign(node, {
+          type: NodeTypes.callout,
+          data: {
+            hName: 'Callout',
+            hProperties: {
+              icon,
+              empty: !heading.length,
+            },
           },
-        };
+        });
       }
     });
   };

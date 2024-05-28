@@ -4,7 +4,7 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteEl
   attributes?: {};
   icon: string;
   theme?: string;
-  heading?: React.ReactElement;
+  empty?: boolean;
 }
 
 const themes: Record<string, string> = {
@@ -23,20 +23,17 @@ const themes: Record<string, string> = {
 };
 
 const Callout = (props: Props) => {
-  const { attributes, children, icon } = props;
-
+  const { attributes, children, icon, empty } = props;
   let theme = props.theme || themes[icon] || 'default';
-  const [heading, ...body] = Array.isArray(children) ? children : [children];
-  const empty = !heading.props.children;
 
   return (
     // @ts-ignore
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
       <h3 className={`callout-heading${empty ? ' empty' : ''}`}>
         <span className="callout-icon">{icon}</span>
-        {!empty && heading}
+        {empty || children[0]}
       </h3>
-      {body}
+      {empty ? children : React.Children.toArray(children).slice(1)}
     </blockquote>
   );
 };
