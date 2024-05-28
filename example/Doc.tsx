@@ -13,9 +13,11 @@ const mdxComponents = {
 `,
 };
 
+const compiledComponents = {};
 const components = {};
 Object.keys(mdxComponents).forEach(async comp => {
-  components[comp] = (await mdx.run(mdx.compile(comp))).default;
+  compiledComponents[comp] = mdx.compile(comp);
+  components[comp] = (await mdx.run(compiledComponents[comp])).default;
 });
 
 const terms = [

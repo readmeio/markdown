@@ -10,7 +10,7 @@ import { VFile } from 'vfile';
 import rehypeRemark from 'rehype-remark';
 import remarkStringify from 'remark-stringify';
 
-import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
+import { createProcessor, compileSync, run as mdxRun, RunOptions, CompileOptions } from '@mdx-js/mdx';
 import * as runtime from 'react/jsx-runtime';
 
 import Variable from '@readme/variable';
@@ -23,8 +23,8 @@ import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 import Contexts from './contexts';
 import { GlossaryTerm } from './contexts/GlossaryTerms';
-import { EXIT, visit } from 'unist-util-visit';
 import { unified } from 'unified';
+import { VFileWithToc } from './types';
 
 const unimplemented = debug('mdx:unimplemented');
 
@@ -34,6 +34,12 @@ interface Variables {
   user: { keys: string[] };
   defaults: { name: string; default: string }[];
 }
+
+export type CompileOpts = CompileOptions & {
+  components?: Record<string, VFileWithToc>;
+  lazyImages?: boolean;
+  safeMode?: boolean;
+};
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: ComponentOpts;
@@ -45,10 +51,6 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
 
 type MdastOpts = {
   components?: Record<string, string>;
-};
-
-type VFileWithToc = VFile & {
-  data: VFile['data'] & { toc?: VFile };
 };
 
 export { Components };
@@ -72,26 +74,28 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     'html-block': Components.HTMLBlock,
     img: Components.Image,
     table: Components.Table,
+    'table-of-contents': Components.TableOfContents,
   };
 
   return () => components;
 };
 
 const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
-const rehypePlugins = [rehypeSlug, rehypeToc];
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
 };
 
-export const compile = (text: string, opts = {}) => {
+export const compile = (text: string, opts: CompileOpts = {}) => {
+  const { components } = opts;
+
   const exec = (string: string): VFileWithToc => {
     try {
       return compileSync(string, {
         outputFormat: 'function-body',
         providerImportSource: '#',
         remarkPlugins,
-        rehypePlugins,
+        rehypePlugins: [rehypeSlug, [rehypeToc, { components }]],
         ...opts,
       });
     } catch (error) {
@@ -100,9 +104,12 @@ export const compile = (text: string, opts = {}) => {
   };
 
   const vfile = exec(text);
-  if (vfile.data.toc) {
-    const toc = mdx(vfile.data.toc, { hast: true });
-    vfile.data.toc = toc ? exec(toc) : null;
+  if (vfile.data.toc.ast) {
+    const toc = mdx(vfile.data.toc.ast, { hast: true });
+
+    if (toc) {
+      vfile.data.toc.vfile = exec(toc);
+    }
   } else {
     delete vfile.data.toc;
   }
@@ -131,18 +138,20 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
     });
 
   const file = await exec(vfile);
-  const toc = 'toc' in vfile.data ? await exec(vfile.data.toc) : { default: null };
-
   const Content = file.default;
-  const body = () => (
-    <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
-      <Content />
-    </Contexts>
-  );
+  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc) : { default: null };
 
   return {
-    default: body,
-    toc: toc.default,
+    default: () => (
+      <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
+        <Content />
+      </Contexts>
+    ),
+    toc: () => (
+      <Components.TableOfContents>
+        <Toc />
+      </Components.TableOfContents>
+    ),
   };
 };
 
