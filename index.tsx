@@ -60,6 +60,7 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     code: Components.Code,
     'code-tabs': Components.CodeTabs,
     'html-block': Components.HTMLBlock,
+    embed: Components.Embed,
     img: Components.Image,
     table: Components.Table,
   };
