@@ -2,22 +2,19 @@ import { Transformer } from 'unified';
 import { Root, Element } from 'hast';
 
 import { h } from 'hastscript';
-import { CompiledComponents, VFileWithToc } from '../../types';
-import { MdxJsxFlowElement } from 'mdast-util-mdx';
-
-type Heading = Element & {
-  tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-};
+import { CompiledComponents, HastHeading, VFileWithToc } from '../../types';
 
 const MAX_DEPTH = 2;
-const getDepth = (el: Heading) => parseInt(el.tagName.match(/^h(\d)/)[1]);
+const getDepth = (el: HastHeading) => parseInt(el.tagName.match(/^h(\d)/)[1]);
 
 interface Options {
   components?: CompiledComponents;
 }
 
-const rehypeToc = ({ components }: Options): Transformer<Root, Root> => {
+const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
   return (tree: Root, file: VFileWithToc): void => {
+    file.data.toc = {};
+
     const headings = tree.children
       .filter(
         child =>
@@ -26,11 +23,11 @@ const rehypeToc = ({ components }: Options): Transformer<Root, Root> => {
       )
       .flatMap(node =>
         node.type === 'mdxJsxFlowElement' ? components[node.name].data.toc.headings : node,
-      ) as Heading[];
+      ) as HastHeading[];
+
+    file.data.toc.headings = headings;
 
     if (!headings.length) return;
-
-    file.data.toc = { headings };
 
     const min = Math.min(...headings.map(getDepth));
     const ast = h('ul');

@@ -77,16 +77,19 @@ declare module 'mdast' {
   }
 }
 
+type HastHeading = Element & {
+  tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  depth: number;
+};
+
 type VFileWithToc = VFile & {
   data: VFile['data'] & {
     toc?: {
-      ast?: Root;
+      ast?: Root | Element;
       vfile?: VFile;
-      heainds?: Heading[];
+      headings?: HastHeading[];
     };
   };
 };
 
-interface CompiledComponents {
-  components: Record<string, VFileWithToc>;
-}
+interface CompiledComponents extends Record<string, VFileWithToc> {}

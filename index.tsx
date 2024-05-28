@@ -119,6 +119,7 @@ export const compile = (text: string, opts: CompileOpts = {}) => {
     'arguments[0].imports.React',
   );
 
+  console.log(vfile);
   return vfile;
 };
 
@@ -139,7 +140,7 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
 
   const file = await exec(vfile);
   const Content = file.default;
-  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc) : { default: null };
+  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc.vfile) : { default: null };
 
   return {
     default: () => (
@@ -147,11 +148,12 @@ export const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = 
         <Content />
       </Contexts>
     ),
-    toc: () => (
-      <Components.TableOfContents>
-        <Toc />
-      </Components.TableOfContents>
-    ),
+    toc: () =>
+      Toc && (
+        <Components.TableOfContents>
+          <Toc />
+        </Components.TableOfContents>
+      ),
   };
 };
 
