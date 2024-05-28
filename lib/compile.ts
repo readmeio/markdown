@@ -8,14 +8,11 @@ import { VFileWithToc } from '../types';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import mdx from './mdx';
 
-
 export type CompileOpts = CompileOptions & {
   components?: Record<string, VFileWithToc>;
   lazyImages?: boolean;
   safeMode?: boolean;
 };
-
-
 
 const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
 
@@ -55,4 +52,4 @@ const compile = (text: string, opts: CompileOpts = {}) => {
   return vfile;
 };
 
-export default compile
+export default compile;
