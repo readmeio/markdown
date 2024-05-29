@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.41
+
+### 🛠 Fixes & Updates
+
+* images ([#888](https://github.com/readmeio/markdown/issues/888)) ([4ecbdc7](https://github.com/readmeio/markdown/commit/4ecbdc79bc7c2d749f594947ab377c40cf013df2))
+
 ## Version 6.75.0-beta.40
 
 ### 🛠 Fixes & Updates
