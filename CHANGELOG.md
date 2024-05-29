@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.43
+
+### ✨ New & Improved
+
+* load styles! ([bdb4441](https://github.com/readmeio/markdown/commit/bdb44414612858bcb26bef6f120001356bd36f6c))
+
 ## Version 6.75.0-beta.42
 
 ### 🛠 Fixes & Updates
