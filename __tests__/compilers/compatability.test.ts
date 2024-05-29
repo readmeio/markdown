@@ -29,6 +29,18 @@ describe('compatability with RDMD', () => {
     expect(mdx(ast).trim()).toBe('<Glossary>parliament</Glossary>');
   });
 
+  it('compiles mdx glossary nodes', () => {
+    const ast = {
+      type: 'readme-glossary-item',
+      data: {
+        hName: 'Glossary',
+      },
+      children: [{ type: 'text', value: 'parliament' }],
+    };
+
+    expect(mdx(ast).trim()).toBe('<Glossary>parliament</Glossary>');
+  });
+
   it('compiles reusable-content nodes', () => {
     const ast = {
       type: 'reusable-content',
