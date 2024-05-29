@@ -4,8 +4,6 @@ const image = (node: Image) => {
   const { align, className, width } = node.data?.hProperties || {};
   const complexImage: boolean = Boolean(width) || Boolean(className) || Boolean(align);
 
-  console.log(JSON.stringify({ node }, null, 2));
-
   if (complexImage) {
     const attributes = Object.keys(node.data?.hProperties)
       .map(key => `${key}="${node.data?.hProperties[key]}"`)
@@ -17,4 +15,3 @@ const image = (node: Image) => {
 };
 
 export default image;
-
