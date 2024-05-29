@@ -20,6 +20,8 @@ import MdxSyntaxError from './errors/mdx-syntax-error';
 import { GlossaryTerm } from './contexts/GlossaryTerms';
 import Contexts from './contexts';
 
+import './styles/main.scss';
+
 const unimplemented = debug('mdx:unimplemented');
 
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
