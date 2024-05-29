@@ -33,7 +33,7 @@ const Callout = (props: Props) => {
         <span className="callout-icon">{icon}</span>
         {empty || children[0]}
       </h3>
-      {empty ? children : React.Children.toArray(children).slice(1)}
+      {React.Children.toArray(children).slice(1)}
     </blockquote>
   );
 };
