@@ -5,7 +5,6 @@ import { Transform } from 'mdast-util-from-markdown';
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { Callout, CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
-import { mdast } from '../../index';
 
 const types = {
   Callout: NodeTypes['callout'],
@@ -15,6 +14,7 @@ const types = {
   Table: 'table',
   tr: 'tableRow',
   td: 'tableCell',
+  Glossary: NodeTypes['glossary'],
 };
 
 const attributes = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>

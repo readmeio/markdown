@@ -9,7 +9,7 @@ describe('Readme Components Transformer', () => {
     { md: '<Table />', type: 'table' },
   ];
 
-  it.each(nodes)('transforms $md into a(n) $type node', ({ md, type }) => {
+  it.only.each(nodes)('transforms $md into a(n) $type node', ({ md, type }) => {
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe(type);
@@ -99,5 +99,23 @@ Second
 
     expect(tree.children[0].type).toBe('mdxJsxFlowElement');
     expect(tree.children[0].name).toBe('Callout');
+  });
+
+  it('converts Glossary components to markdown nodes', () => {
+    const mdx = `
+<Glossary>Demo</Glossary>
+`;
+
+    const tree = mdast(mdx);
+    expect(tree.children[0].children[1].type).toBe('readme-glossary-item');
+  });
+
+  it('converts Variable components to markdown nodes', () => {
+    const mdx = `
+<Variable name="tester" />
+`;
+
+    const tree = mdast(mdx);
+    expect(tree.children[0].children[1].type).toBe('readme-variable');
   });
 });
