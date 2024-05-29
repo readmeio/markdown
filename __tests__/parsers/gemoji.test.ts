@@ -8,7 +8,7 @@ describe('gemoji parser', () => {
     expect(tree.children[0].children[1]).toMatchInlineSnapshot(`
       {
         "name": "joy",
-        "type": "emoji",
+        "type": "gemoji",
         "value": "😂",
       }
     `);
