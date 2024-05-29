@@ -10,11 +10,12 @@ const types = {
   Callout: NodeTypes['callout'],
   Code: 'code',
   CodeTabs: NodeTypes['codeTabs'],
+  Glossary: NodeTypes['glossary'],
   Image: 'image',
   Table: 'table',
-  tr: 'tableRow',
+  Variable: NodeTypes['variable'],
   td: 'tableCell',
-  Glossary: NodeTypes['glossary'],
+  tr: 'tableRow',
 };
 
 const attributes = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>

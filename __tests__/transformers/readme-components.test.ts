@@ -9,7 +9,7 @@ describe('Readme Components Transformer', () => {
     { md: '<Table />', type: 'table' },
   ];
 
-  it.only.each(nodes)('transforms $md into a(n) $type node', ({ md, type }) => {
+  it.each(nodes)('transforms $md into a(n) $type node', ({ md, type }) => {
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe(type);
@@ -107,7 +107,7 @@ Second
 `;
 
     const tree = mdast(mdx);
-    expect(tree.children[0].children[1].type).toBe('readme-glossary-item');
+    expect(tree.children[0].children[0].type).toBe('readme-glossary-item');
   });
 
   it('converts Variable components to markdown nodes', () => {
@@ -116,6 +116,6 @@ Second
 `;
 
     const tree = mdast(mdx);
-    expect(tree.children[0].children[1].type).toBe('readme-variable');
+    expect(tree.children[0].type).toBe('readme-variable');
   });
 });
