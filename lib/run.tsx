@@ -9,6 +9,7 @@ import * as Components from '../components';
 import Contexts from '../contexts';
 import { VFileWithToc } from '../types';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
+import { Depth } from '../components/Heading';
 
 interface Variables {
   user: Record<string, string>;
@@ -26,6 +27,11 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
 type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
 
 const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
+  const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
+    map[`h${index + 1}`] = Components.Heading((index + 1) as Depth);
+    return map;
+  }, {});
+
   const components = {
     ...more,
     ...Components,
@@ -37,7 +43,11 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     img: Components.Image,
     table: Components.Table,
     'table-of-contents': Components.TableOfContents,
+    // @ts-expect-error
+    ...headings,
   };
+
+  console.log(headings);
 
   return () => components;
 };
