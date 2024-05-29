@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.42
+
+### 🛠 Fixes & Updates
+
+* glossary ([#889](https://github.com/readmeio/markdown/issues/889)) ([d20f8e7](https://github.com/readmeio/markdown/commit/d20f8e76e2811762b8b153fca9b47d6a44ddd173))
+
 ## Version 6.75.0-beta.41
 
 ### 🛠 Fixes & Updates
