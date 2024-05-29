@@ -5,16 +5,17 @@ import { Transform } from 'mdast-util-from-markdown';
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { Callout, CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
-import { mdast } from '../../index';
 
 const types = {
   Callout: NodeTypes['callout'],
   Code: 'code',
   CodeTabs: NodeTypes['codeTabs'],
+  Glossary: NodeTypes['glossary'],
   Image: 'image',
   Table: 'table',
-  tr: 'tableRow',
+  Variable: NodeTypes['variable'],
   td: 'tableCell',
+  tr: 'tableRow',
 };
 
 const attributes = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>
@@ -53,14 +54,14 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'Image') {
       const { position } = node;
-      const { alt = '', src, title = null } = attributes<Pick<Image, 'alt' | 'title'> & { src: string }>(node);
+      const { alt = '', url, title = null } = attributes<Pick<Image, 'alt' | 'title' | 'url'>>(node);
 
       const mdNode: Image = {
         alt,
         position,
         title,
         type: 'image',
-        url: src,
+        url,
       };
 
       parent.children[index] = mdNode;
