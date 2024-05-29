@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.44
+
+### ✨ New & Improved
+
+* fix glossary item ([#890](https://github.com/readmeio/markdown/issues/890)) ([4ec815f](https://github.com/readmeio/markdown/commit/4ec815fb48a160b9902caada92528b9807cb2ea2))
+
 ## Version 6.75.0-beta.43
 
 ### ✨ New & Improved
