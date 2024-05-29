@@ -17,14 +17,14 @@ const Glossary = ({ children, term: termProp, terms }: Props) => {
   return (
     <Tooltip
       content={
-        <div className="Glossary-tooltip-content">
-          <strong className="Glossary-term">{foundTerm.term}</strong> - {foundTerm.definition}
+        <div className="GlossaryItem-tooltip-content">
+          <strong className="GlossaryItem-term">{foundTerm.term}</strong> - {foundTerm.definition}
         </div>
       }
       offset={[-5, 5]}
       placement="bottom-start"
     >
-      <span className="Glossary-trigger">{term}</span>
+      <span className="GlossaryItem-trigger">{term}</span>
     </Tooltip>
   );
 };
