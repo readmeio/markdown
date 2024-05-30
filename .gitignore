@@ -1,6 +1,7 @@
 coverage
 node_modules
 
+.env
 .idea/
 .vscode/
 *.code-*

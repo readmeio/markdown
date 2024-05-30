@@ -1,3 +1,5 @@
+include .env
+
 .DEFAULT_GOAL := help
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
@@ -16,8 +18,8 @@ example/public/img/emojis: node_modules/@readme/emojis
 
 mdx:
 	npm run build && \
-	cp -R dist/* ~/readmeio/readme/node_modules/@readme/mdx/dist && \
-	cd ~/readmeio/readme && \
+	cp -R dist/* ${README_PATH}/node_modules/@readme/mdx/dist && \
+	cd ${README_PATH} && \
 	npm run build --workspace=@readme/react && \
 	npm run build --workspace=@readme/bundles && \
 	npm run ui:build && \
