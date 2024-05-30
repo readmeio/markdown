@@ -8,7 +8,7 @@ test('should output a glossary item if the term exists', () => {
   const definition = 'This is a definition';
   const { container } = render(<Glossary terms={[{ term, definition }]}>acme</Glossary>);
 
-  const trigger = container.querySelector('.Glossary-trigger');
+  const trigger = container.querySelector('.GlossaryItem-trigger');
   expect(trigger).toHaveTextContent(term);
   if (trigger) {
     fireEvent.mouseEnter(trigger);
@@ -22,7 +22,7 @@ test('should be case insensitive', () => {
   const definition = 'This is a definition';
   const { container } = render(<Glossary terms={[{ term, definition }]}>acme</Glossary>);
 
-  const trigger = container.querySelector('.Glossary-trigger');
+  const trigger = container.querySelector('.GlossaryItem-trigger');
   expect(trigger).toHaveTextContent('acme');
   if (trigger) {
     fireEvent.mouseEnter(trigger);
@@ -35,6 +35,6 @@ test('should output the term if the definition does not exist', () => {
   const term = 'something';
   const { container } = render(<Glossary terms={[]}>{term}</Glossary>);
 
-  expect(container.querySelector('.Glossary-trigger')).not.toBeInTheDocument();
+  expect(container.querySelector('.GlossaryItem-trigger')).not.toBeInTheDocument();
   expect(container.querySelector('span')).toHaveTextContent(term);
 });
