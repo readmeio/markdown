@@ -47,17 +47,17 @@ jobs:
 
       # Merge @latest release back to @next.
       #
-      - name: Sync to next
-        if: "github.ref == 'refs/heads/main'"
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: next
-        continue-on-error: true
+      #- name: Sync to next
+      #if: "github.ref == 'refs/heads/main'"
+      #uses: ad-m/github-push-action@master
+      #with:
+      #github_token: ${{ secrets.GITHUB_TOKEN }}
+      #branch: ${{ github.ref }}
+      #continue-on-error: true
 
       # Sync docs to rdmd.readme.io
       #
-      - name: Sync docs to rdmd.readme.io
-        uses: readmeio/rdme@v8
-        with:
-          rdme: docs ./docs --key=${{ secrets.RDME_KEY }} --version=2
+      #- name: Sync docs to rdmd.readme.io
+      #uses: readmeio/rdme@v8
+      #with:
+      #rdme: docs ./docs --key=${{ secrets.RDME_KEY }} --version=2
