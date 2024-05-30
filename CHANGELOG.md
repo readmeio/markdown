@@ -1,6 +1,48 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.46
+
+### 🛠 Fixes & Updates
+
+* add externals for node build ([#895](https://github.com/readmeio/markdown/issues/895)) ([3d6eb5d](https://github.com/readmeio/markdown/commit/3d6eb5d8471c0c75e810970a1358ab3964f8ce21))
+
+## Version 6.75.0-beta.45
+
+### 🛠 Fixes & Updates
+
+* callout styling ([#891](https://github.com/readmeio/markdown/issues/891)) ([463b870](https://github.com/readmeio/markdown/commit/463b87037cc1b3164d94d97f70680ef3d1cd7826))
+
+## Version 6.75.0-beta.44
+
+### ✨ New & Improved
+
+* fix glossary item ([#890](https://github.com/readmeio/markdown/issues/890)) ([4ec815f](https://github.com/readmeio/markdown/commit/4ec815fb48a160b9902caada92528b9807cb2ea2))
+
+## Version 6.75.0-beta.43
+
+### ✨ New & Improved
+
+* load styles! ([bdb4441](https://github.com/readmeio/markdown/commit/bdb44414612858bcb26bef6f120001356bd36f6c))
+
+## Version 6.75.0-beta.42
+
+### 🛠 Fixes & Updates
+
+* glossary ([#889](https://github.com/readmeio/markdown/issues/889)) ([d20f8e7](https://github.com/readmeio/markdown/commit/d20f8e76e2811762b8b153fca9b47d6a44ddd173))
+
+## Version 6.75.0-beta.41
+
+### 🛠 Fixes & Updates
+
+* images ([#888](https://github.com/readmeio/markdown/issues/888)) ([4ecbdc7](https://github.com/readmeio/markdown/commit/4ecbdc79bc7c2d749f594947ab377c40cf013df2))
+
+## Version 6.75.0-beta.40
+
+### 🛠 Fixes & Updates
+
+* callout breaks ([#887](https://github.com/readmeio/markdown/issues/887)) ([0949888](https://github.com/readmeio/markdown/commit/0949888ab04fc2e083dc787e2226a600c8965929))
+
 ## Version 6.75.0-beta.39
 
 ### 🛠 Fixes & Updates

@@ -49,7 +49,7 @@ Second
     },
     image: {
       md: `![](http://placekitten.com/600/200)`,
-      mdx: `<Image src="http://placekitten.com/600/200" />`,
+      mdx: `<Image url="http://placekitten.com/600/200" />`,
     },
     table: {
       md: `
@@ -99,5 +99,23 @@ Second
 
     expect(tree.children[0].type).toBe('mdxJsxFlowElement');
     expect(tree.children[0].name).toBe('Callout');
+  });
+
+  it('converts Glossary components to markdown nodes', () => {
+    const mdx = `
+<Glossary>Demo</Glossary>
+`;
+
+    const tree = mdast(mdx);
+    expect(tree.children[0].children[0].type).toBe('readme-glossary-item');
+  });
+
+  it('converts Variable components to markdown nodes', () => {
+    const mdx = `
+<Variable name="tester" />
+`;
+
+    const tree = mdast(mdx);
+    expect(tree.children[0].type).toBe('readme-variable');
   });
 });

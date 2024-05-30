@@ -34,4 +34,15 @@ describe('callouts compiler', () => {
 
     expect(mdx(mdast(markdown))).toBe(markdown);
   });
+
+  it('compiles callouts with paragraphs', () => {
+    const markdown = `> 🚧 It **works**!
+>
+> And...
+>
+> it correctly compiles paragraphs. :grimace:
+`;
+
+    expect(mdx(mdast(markdown))).toBe(markdown);
+  });
 });

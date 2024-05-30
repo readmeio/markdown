@@ -10,6 +10,8 @@ import { options } from './options';
 import { readmeComponentsTransformer } from './processor/transform';
 import { compile, run, mdx, astProcessor, remarkPlugins } from './lib';
 
+import './styles/main.scss';
+
 const unimplemented = debug('mdx:unimplemented');
 
 type MdastOpts = {

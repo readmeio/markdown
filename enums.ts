@@ -1,7 +1,7 @@
 export enum NodeTypes {
   callout = 'rdme-callout',
   codeTabs = 'code-tabs',
-  emoji = 'emoji',
+  emoji = 'gemoji',
   i = 'i',
   image = 'image',
   htmlBlock = 'html-block',
