@@ -40,7 +40,7 @@ const Embed = ({ lazy = true, url, provider, title, html, iframe, image, favicon
       ) : (
         <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">
           {!image || <img alt={title} className="embed-img" loading={lazy ? 'lazy' : undefined} src={image} />}
-          {title ? (
+          {title && title !== '@embed' ? (
             <div className="embed-body">
               {!favicon || <Favicon alt={provider} src={favicon} />}
               {provider && (

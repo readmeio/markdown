@@ -30,6 +30,7 @@ interface Embed extends Parent {
       image?: string;
       favicon?: string;
       iframe?: boolean;
+      typeOfEmbed?: string;
     };
   };
 }
@@ -40,6 +41,26 @@ interface HTMLBlock extends Node {
     hName: 'html-block';
     hProperties: {
       html: string;
+    };
+  };
+}
+
+interface Image extends Node {
+  type: NodeTypes.image;
+  url: string;
+  alt: string;
+  title: string;
+  data: Data & {
+    hName: 'image';
+    hProperties: {
+      align?: string;
+      alt?: string;
+      caption?: string;
+      border?: string;
+      src: string;
+      title?: string;
+      width?: string;
+      lazy?: boolean;
     };
   };
 }

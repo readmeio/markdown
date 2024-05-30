@@ -52,19 +52,19 @@ const coerceJsxToMd =
       };
 
       parent.children[index] = mdNode;
-    } else if (node.name === 'Image') {
-      const { position } = node;
-      const { alt = '', url, title = null } = attributes<Pick<Image, 'alt' | 'title' | 'url'>>(node);
+    // } else if (node.name === 'Image') {
+    //   const { position } = node;
+    //   const { alt = '', url, title = null } = attributes<Pick<Image, 'alt' | 'title' | 'url'>>(node);
 
-      const mdNode: Image = {
-        alt,
-        position,
-        title,
-        type: 'image',
-        url,
-      };
+    //   const mdNode: Image = {
+    //     alt,
+    //     position,
+    //     title,
+    //     type: 'image',
+    //     url,
+    //   };
 
-      parent.children[index] = mdNode;
+    //   parent.children[index] = mdNode;
     } else if (node.name === 'Table') {
       const { children, position } = node;
       const { align = [...new Array(node.children.length)].map(() => null) } = attributes<Pick<Table, 'align'>>(node);
