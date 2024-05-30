@@ -11,7 +11,7 @@ const image = (node: Image) => {
     return `<Image ${attributes} />`;
   }
 
-  return `![${node.alt ?? ''}](${src ? src : node.url}${node.title ? ` "${node.title}")` : ')'})`;
+  return `![${node.alt ?? ''}](${src ? src : node.url}${node.title ? ` "${node.title}")` : ')'}`;
 }
 
 export default image;
