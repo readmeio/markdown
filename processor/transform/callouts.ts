@@ -16,6 +16,8 @@ const calloutTransformer = () => {
 
       if (icon && match) {
         const heading = startText.slice(match.length);
+        const empty = !heading.length && node.children[0].children.length === 1;
+
         node.children[0].children[0].value = heading;
 
         Object.assign(node, {
@@ -24,7 +26,7 @@ const calloutTransformer = () => {
             hName: 'Callout',
             hProperties: {
               icon,
-              empty: !heading.length,
+              empty,
             },
           },
         });

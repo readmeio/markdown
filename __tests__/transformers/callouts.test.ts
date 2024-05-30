@@ -24,4 +24,16 @@ describe('callouts transformer', () => {
 
     expect(tree.children[0].children[0].children[1].type).toBe('strong');
   });
+
+  it('can parse callouts with markdown in the heading immediately following the emoji', () => {
+    const md = `
+> 🚧 **It works!**
+>
+> And, it no longer deletes your content!
+`;
+    const tree = mdast(md);
+
+    expect(tree.children[0].data.hProperties.empty).toBe(false);
+    expect(tree.children[0].children[0].children[1].type).toBe('strong');
+  });
 });
