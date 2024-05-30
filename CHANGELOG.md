@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.46
+
+### 🛠 Fixes & Updates
+
+* add externals for node build ([#895](https://github.com/readmeio/markdown/issues/895)) ([3d6eb5d](https://github.com/readmeio/markdown/commit/3d6eb5d8471c0c75e810970a1358ab3964f8ce21))
+
 ## Version 6.75.0-beta.45
 
 ### 🛠 Fixes & Updates
