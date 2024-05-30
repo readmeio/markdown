@@ -28,6 +28,8 @@ const calloutTransformer = () => {
             },
           },
         });
+
+        console.log(JSON.stringify({ node }, null, 2));
       }
     });
   };
