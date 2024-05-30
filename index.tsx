@@ -14,7 +14,7 @@ import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
 
-import transformers, { readmeComponentsTransformer } from './processor/transform';
+import transformers, { readmeComponentsTransformer, readmeToMdx } from './processor/transform';
 import compilers from './processor/compile';
 import MdxSyntaxError from './errors/mdx-syntax-error';
 import { GlossaryTerm } from './contexts/GlossaryTerms';
@@ -118,7 +118,9 @@ export const reactTOC = (text: string, opts = {}) => {
 };
 
 export const mdx = (tree: any, opts = {}) => {
-  return remark().use(remarkMdx).use(remarkGfm).use(compilers).stringify(tree, opts);
+  const processor = remark().use(remarkMdx).use(remarkGfm).use(readmeToMdx).use(compilers);
+
+  return processor.stringify(processor.runSync(tree), opts);
 };
 
 export const html = (text: string, opts = {}) => {
