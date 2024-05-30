@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.84.0
+
+### ✨ New & Improved
+
+* trigger release ([3dfbd42](https://github.com/readmeio/markdown/commit/3dfbd429503412edb9b7d7b6405a60b730e3b6b0))
+
 ## Version 6.83.0
 
 ### ✨ New & Improved
