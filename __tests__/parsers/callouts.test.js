@@ -71,13 +71,16 @@ describe('Parse RDMD Callouts', () => {
     expect(tree.children[0].children[0].children[1].type).toBe('rdme-callout');
   });
 
-  it.only('does require a line break between the title and the body', () => {
+  it('does require a line break between the title and the body', () => {
     const text = `
 > 💁 Undocumented Behavior
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     const tree = mdast(text);
-    expect(tree.children[0].children[0].children[0].value).toBe(`Undocumented Behavior`);
+    expect(tree.children[0].children[0].children[0].value).toBe(
+      `Undocumented Behavior
+Lorem ipsum dolor  sit amet consectetur adipisicing elit.`,
+    );
   });
 });
 
