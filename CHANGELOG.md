@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.45
+
+### 🛠 Fixes & Updates
+
+* callout styling ([#891](https://github.com/readmeio/markdown/issues/891)) ([463b870](https://github.com/readmeio/markdown/commit/463b87037cc1b3164d94d97f70680ef3d1cd7826))
+
 ## Version 6.75.0-beta.44
 
 ### ✨ New & Improved
