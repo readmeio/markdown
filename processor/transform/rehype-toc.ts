@@ -48,7 +48,9 @@ const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
         stack.pop();
       }
 
-      stack[stack.length - 1].children.push(h('li', null, h('p', null, heading.children)));
+      stack[stack.length - 1].children.push(
+        h('li', null, h('p', null, h('a', { href: `#${heading.properties.id}` }, heading.children))),
+      );
     });
 
     file.data.toc.ast = ast;
