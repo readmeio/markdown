@@ -3,7 +3,7 @@ import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
-import transformers from '../processor/transform';
+import transformers, { readmeComponentsTransformer } from './processor/transform';
 
 export type MdastOpts = {
   components?: Record<string, string>;
@@ -11,6 +11,6 @@ export type MdastOpts = {
 
 export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
 
-const astProcessor = (opts: MdastOpts = { components: {} }) => remark().use(remarkMdx).use(remarkPlugins);
+const astProcessor = (opts: MdastOpts = { components: {} }) => remark().use(remarkMdx).use(remarkPlugins).use(readmeComponentsTransformer({ components: opts.components }));
 
 export default astProcessor;

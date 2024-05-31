@@ -55,12 +55,23 @@ interface FaEmoji extends Literal {
   type: NodeTypes.i;
 }
 
+interface TutorialTile extends Node {
+  backgroundColor: string;
+  emoji: string;
+  id: string;
+  link: string;
+  slug: string;
+  title: string;
+  type: NodeTypes.tutorialTile;
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embed]: Embed;
     [NodeTypes.htmlBlock]: HTMLBlock;
+    [NodeTypes.tutorialTile]: TutorialTile;
   }
 
   interface PhrasingContentMap {
@@ -74,6 +85,7 @@ declare module 'mdast' {
     [NodeTypes.embed]: Embed;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.tutorialTile]: TutorialTile;
   }
 }
 
