@@ -16,6 +16,7 @@ const types = {
   Variable: NodeTypes['variable'],
   td: 'tableCell',
   tr: 'tableRow',
+  TutorialTile: NodeTypes.tutorialTile,
 };
 
 const attributes = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>
