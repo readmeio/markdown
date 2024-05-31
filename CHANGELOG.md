@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.47
+
+### ✨ New & Improved
+
+* translate recipes between mdx and md ([#892](https://github.com/readmeio/markdown/issues/892)) ([025c8cd](https://github.com/readmeio/markdown/commit/025c8cd54c346cb86d8b3dff4fc66882f7956ba5))
+
 ## Version 6.75.0-beta.46
 
 ### 🛠 Fixes & Updates
