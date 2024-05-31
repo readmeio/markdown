@@ -47,8 +47,6 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     ...headings,
   };
 
-  console.log(headings);
-
   return () => components;
 };
 
