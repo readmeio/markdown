@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.48
+
+### ✨ New & Improved
+
+* mdx TOC ([#883](https://github.com/readmeio/markdown/issues/883)) ([ef8f9a1](https://github.com/readmeio/markdown/commit/ef8f9a1a812f257146da11c64385edbd9dfb8c3a))
+
 ## Version 6.75.0-beta.47
 
 ### ✨ New & Improved
