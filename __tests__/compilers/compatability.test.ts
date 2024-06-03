@@ -1,4 +1,5 @@
 import { mdx } from '../../index';
+import * as rdmd from '@readme/markdown';
 
 describe('compatability with RDMD', () => {
   it('compiles variable nodes', () => {
@@ -51,11 +52,18 @@ describe('compatability with RDMD', () => {
   });
 
   it('compiles html comments to JSX comments', () => {
-    const ast = {
-      type: 'html',
-      value: '<!-- commentable -->',
-    };
+    const md = `
+This is some in progress <!-- commented out stuff -->
+`;
 
-    expect(mdx(ast).trim()).toBe('{/* commentable */}');
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
+  });
+
+  it('compiles html comments to JSX comments on more complex lines', () => {
+    const md = `
+  8. Add the test account's credentials under a heading of your choice in your \`.edgerc\`. (For the moment, please ping Sheila for this step.) <!-- move this lower -->
+`;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
   });
 });
