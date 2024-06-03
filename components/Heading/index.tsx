@@ -2,7 +2,12 @@ import React from 'react';
 
 export type Depth = 1 | 2 | 3 | 4 | 5 | 6;
 
-const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: React.PropsWithChildren<HTMLHeadingElement>) => {
+interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLHeadingElement>> {
+  tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  depth: Depth;
+}
+
+const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: Props) => {
   if (!children) return '';
 
   return (
@@ -13,7 +18,7 @@ const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: React.P
       </div>
       <a
         key={`heading-anchor-icon-${id}`}
-        aria-label={`Skip link to ${children[1]}`}
+        aria-label={`Skip link to ${children}`}
         className="heading-anchor-icon fa fa-anchor"
         href={`#${id}`}
       />
@@ -21,6 +26,6 @@ const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: React.P
   );
 };
 
-const CreateHeading = (depth: Depth) => props => <Heading {...props} depth={depth} Tag={`h${depth}`} />;
+const CreateHeading = (depth: Depth) => (props: Props) => <Heading {...props} depth={depth} tag={`h${depth}`} />;
 
 export default CreateHeading;
