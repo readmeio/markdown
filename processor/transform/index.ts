@@ -3,8 +3,9 @@ import codeTabsTransfromer from './code-tabs';
 import embedTransformer from './embeds';
 import gemojiTransformer from './gemoji+';
 import readmeComponentsTransformer from './readme-components';
+import rehypeToc from './rehype-toc';
 import readmeToMdx from './readme-to-mdx';
 
-export { readmeComponentsTransformer, readmeToMdx };
+export { readmeComponentsTransformer, rehypeToc, readmeToMdx };
 
 export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer];

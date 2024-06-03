@@ -1,5 +1,7 @@
 import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
+import { VFile } from 'vfile';
 import { NodeTypes } from './enums';
+import { Element, Root } from 'hast';
 
 type Callout = Omit<Blockquote, 'type'> & {
   type: NodeTypes.callout;
@@ -86,3 +88,20 @@ declare module 'mdast' {
     [NodeTypes.tutorialTile]: TutorialTile;
   }
 }
+
+type HastHeading = Element & {
+  tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  depth: number;
+};
+
+type VFileWithToc = VFile & {
+  data: VFile['data'] & {
+    toc?: {
+      ast?: Root | Element;
+      vfile?: VFile;
+      headings?: HastHeading[];
+    };
+  };
+};
+
+interface CompiledComponents extends Record<string, VFileWithToc> {}

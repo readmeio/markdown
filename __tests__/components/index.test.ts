@@ -1,45 +1,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import React from 'react';
-import { vi } from 'vitest';
 
-import { compile, run, utils } from '../../index';
-
-describe.skip('Data Replacements', () => {
-  it('Variables', () => {
-    const { container } = render(
-      React.createElement(
-        utils.VariablesContext.Provider,
-        {
-          value: {
-            defaults: [{ test: 'Default Value' }],
-            user: { test: 'User Override' },
-          },
-        },
-        compile('<<test>>'),
-      ),
-    );
-    expect(container).toContainHTML('<p><span>User Override</span></p>');
-  });
-
-  it('Glossary Term', () => {
-    const { container } = render(
-      React.createElement(
-        utils.GlossaryContext.Provider,
-        {
-          value: [
-            {
-              term: 'term',
-              definition: 'a word or phrase used to describe a thing or to express a concept.',
-              _id: '1',
-            },
-          ],
-        },
-        compile('<<glossary:term>>'),
-      ),
-    );
-    expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
-  });
-});
+import { execute } from '../helpers';
 
 describe('Components', () => {
   it('Callout', async () => {
@@ -56,16 +18,16 @@ describe('Components', () => {
 `,
     ];
 
-    const code0 = compile(callout[0]);
-    let component = await run(code0);
+    let md = callout[0];
+    let component = await execute(md);
     let { container } = render(React.createElement(component));
 
     expect(container.innerHTML).toMatchSnapshot();
 
     cleanup();
 
-    const code1 = compile(callout[1]);
-    component = await run(code1);
+    md = callout[1];
+    component = await execute(md);
     ({ container } = render(React.createElement(component)));
 
     expect(container.innerHTML).toMatchInlineSnapshot(
@@ -73,18 +35,6 @@ describe('Components', () => {
     );
 
     cleanup();
-  });
-
-  it.skip('Multi Code Block', () => {
-    const tabs = '```\nhello\n```\n```php\nworld\n```\n\n';
-    const rdmd = compile(tabs);
-    const { container } = render(rdmd);
-
-    expect(container.querySelectorAll('pre')[1]).not.toHaveClass();
-
-    fireEvent.click(container.querySelectorAll('.CodeTabs-toolbar button')[1]);
-
-    expect(container.querySelectorAll('pre')[1]).toHaveClass('CodeTabs_active');
   });
 
   it('Embed', () => {
@@ -115,7 +65,7 @@ describe('Components', () => {
     };
 
     Object.values(fixtures).map(async fx => {
-      const component = await run(compile(fx));
+      const component = await execute(fx);
       const { container } = render(React.createElement(component));
       return expect(container.innerHTML).toMatchSnapshot();
     });
@@ -125,8 +75,7 @@ describe('Components', () => {
     const text =
       '![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")';
 
-    const code = compile(text);
-    const component = await run(code);
+    const component = await execute(text);
     const { container } = render(React.createElement(component));
 
     expect(container.innerHTML).toMatchSnapshot();
@@ -148,67 +97,5 @@ describe('Components', () => {
 
     fireEvent.keyDown(img, { key: '.', metaKey: true });
     expect(box).not.toHaveClass('open');
-  });
-
-  it.skip('Heading', () => {
-    let { container } = render(compile('### Heading Level 3\n\n### Heading Level 3'));
-    expect(container.querySelectorAll('.heading')).toHaveLength(2);
-
-    cleanup();
-
-    ({ container } = render(compile('Pretest.\n\n###\n\nPosttest.')));
-    expect(container.querySelector('.heading')).toHaveTextContent('');
-  });
-
-  it.skip('Heading no children', () => {
-    const { container } = render(compile('### Heading Level 3'));
-    expect(container.querySelectorAll('.heading')).toHaveLength(1);
-  });
-});
-
-describe.skip('Compatibility Mode', () => {
-  global.eval = vi.fn();
-  const tabs = `[block:api-header]
-{
-  "title": "I am a magical, mystical heading."
-}
-[/block]
-<div id="custom-target">Loading...</div>
-[block:html]
-${JSON.stringify({
-  html: '<script>\nconsole.log("World");\n</script>\n\n<b>Hello!</b>\n\n<script>\nconsole.log("World");\n</script>',
-})}
-[/block]
-
-[block:parameters]
-${JSON.stringify({
-  data: {
-    '0-0': "```js Tab Zed\nconsole.log('tab zed');\n```\n```js Tab One\nconsole.log('tab one')\n```",
-    '0-1':
-      '> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maxime repellat placeat expedita voluptatum fugiat rerum, accusamus eius dolorum sequi eveniet esse, adipisci soluta quia mollitia? Dolorem minus, dolores, rerum, pariatur sit quia eum esse voluptatibus ea veritatis non.',
-    '0-2': '',
-    'h-0': 'Hello',
-    'h-1': 'Bonjour',
-    'h-2': 'Willkommen',
-  },
-  cols: 2,
-  rows: 1,
-})}
-[/block]`;
-
-  let rdmd;
-  let container;
-  beforeEach(() => {
-    rdmd = compile(tabs, { compatibilityMode: true });
-    // eslint-disable-next-line testing-library/no-render-in-setup
-    ({ container } = render(rdmd));
-  });
-
-  it('Should use h1 tags for magic heading blocks.', () => expect(container.querySelectorAll('h1')).toHaveLength(1));
-
-  it('Should allow block-level RDMD compoonents in tables.', () => {
-    const table = container.querySelector('table');
-    expect(table.querySelectorAll('.CodeTabs')).toHaveLength(1);
-    expect(table.querySelectorAll('blockquote')).toHaveLength(1);
   });
 });

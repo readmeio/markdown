@@ -1,51 +1,24 @@
 import debug from 'debug';
-import React from 'react';
-import { remark } from 'remark';
-import remarkMdx from 'remark-mdx';
-import remarkFrontmatter from 'remark-frontmatter';
 import remarkRehype from 'remark-rehype';
-import remarkGfm from 'remark-gfm';
 
-import { createProcessor, compileSync, run as mdxRun, RunOptions } from '@mdx-js/mdx';
-import * as runtime from 'react/jsx-runtime';
+import { createProcessor } from '@mdx-js/mdx';
 
-import Variable from '@readme/variable';
 import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
 
-import transformers, { readmeComponentsTransformer, readmeToMdx } from './processor/transform';
-import compilers from './processor/compile';
-import MdxSyntaxError from './errors/mdx-syntax-error';
-import { GlossaryTerm } from './contexts/GlossaryTerms';
-import Contexts from './contexts';
+import { readmeComponentsTransformer } from './processor/transform';
+import { compile, run, mdx, astProcessor, remarkPlugins } from './lib';
 
 import './styles/main.scss';
 
 const unimplemented = debug('mdx:unimplemented');
 
-type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
-
-interface Variables {
-  user: Record<string, string>;
-  defaults: { name: string; default: string }[];
-}
-
-export type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: ComponentOpts;
-  imports?: Record<string, unknown>;
-  baseUrl?: string;
-  terms?: GlossaryTerm[];
-  variables?: Variables;
-};
-
 type MdastOpts = {
   components?: Record<string, string>;
 };
 
-export { Components };
-
-export const utils = {
+const utils = {
   get options() {
     return { ...options };
   },
@@ -54,88 +27,18 @@ export const utils = {
   calloutIcons: {},
 };
 
-const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
-  const components = {
-    ...more,
-    ...Components,
-    Variable,
-    code: Components.Code,
-    'code-tabs': Components.CodeTabs,
-    'html-block': Components.HTMLBlock,
-    embed: Components.Embed,
-    img: Components.Image,
-    table: Components.Table,
-  };
-
-  return () => components;
-};
-
-const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
+export { compile, run, mdx, Components, utils };
 
 export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
-};
-
-export const compile = (text: string, opts = {}) => {
-  try {
-    return String(
-      compileSync(text, {
-        outputFormat: 'function-body',
-        providerImportSource: '#',
-        remarkPlugins,
-        ...opts,
-      }),
-    ).replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React');
-  } catch (error) {
-    console.error(error);
-    throw error.line ? new MdxSyntaxError(error, text) : error;
-  }
-};
-
-export const run = async (code: string, _opts: RunOpts = {}) => {
-  const { Fragment } = runtime as any;
-  const { components, terms, variables, baseUrl, ...opts } = _opts;
-
-  const file = await mdxRun(code, {
-    ...runtime,
-    Fragment,
-    baseUrl: import.meta.url,
-    imports: { React },
-    useMDXComponents: makeUseMDXComponents(components),
-    ...opts,
-  });
-  const Content = file?.default || (() => null);
-
-  return () => (
-    <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
-      <Content />
-    </Contexts>
-  );
-};
-
-export const reactTOC = (text: string, opts = {}) => {
-  unimplemented('reactTOC');
-};
-
-export const mdx = (tree: any, opts = {}) => {
-  const processor = remark().use(remarkMdx).use(remarkGfm).use(readmeToMdx).use(compilers);
-
-  return processor.stringify(processor.runSync(tree), opts);
 };
 
 export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
 
-const astProcessor = (opts: MdastOpts = { components: {} }) =>
-  remark()
-    .use(remarkMdx)
-    .use(remarkFrontmatter)
-    .use(remarkPlugins)
-    .use(readmeComponentsTransformer({ components: opts.components }));
-
 export const mdast: any = (text: string, opts: MdastOpts = {}) => {
-  const processor = astProcessor(opts);
+  const processor = astProcessor(opts).use(readmeComponentsTransformer({ components: opts.components }));
 
   const tree = processor.parse(text);
   return processor.runSync(tree);

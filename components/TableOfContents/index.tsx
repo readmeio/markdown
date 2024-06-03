@@ -1,7 +1,6 @@
-import { element } from 'prop-types';
 import React from 'react';
 
-function TableOfContents({ children }) {
+function TableOfContents({ children }: React.PropsWithChildren) {
   return (
     <nav>
       <ul className="toc-list">
@@ -17,9 +16,5 @@ function TableOfContents({ children }) {
     </nav>
   );
 }
-
-TableOfContents.propTypes = {
-  children: element,
-};
 
 export default TableOfContents;
