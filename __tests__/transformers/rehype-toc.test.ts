@@ -17,15 +17,15 @@ describe('rehype-toc transformer', () => {
     const { ast } = module.data.toc;
 
     const expected = h('ul', undefined, [
-      h('li', undefined, h('p', undefined, h('a', { href: '#title' }, 'Title'))),
+      h('li', undefined, h('a', { href: '#title' }, 'Title')),
       h(
         'li',
         undefined,
         h(
           'ul',
           undefined,
-          h('li', undefined, h('p', undefined, h('a', { href: '#subheading' }, 'Subheading'))),
-          h('li', undefined, h('p', undefined, h('a', { href: '#second-subheading' }, 'Second Subheading'))),
+          h('li', undefined, h('a', { href: '#subheading' }, 'Subheading')),
+          h('li', undefined, h('a', { href: '#second-subheading' }, 'Second Subheading')),
         ),
       ),
     ]);
@@ -68,15 +68,15 @@ describe('rehype-toc transformer', () => {
     const { ast } = module.data.toc;
 
     const expected = h('ul', undefined, [
-      h('li', undefined, h('p', undefined, h('a', { href: '#title' }, 'Title'))),
+      h('li', undefined, h('a', { href: '#title' }, 'Title')),
       h(
         'li',
         undefined,
         h(
           'ul',
           undefined,
-          h('li', undefined, h('p', undefined, h('a', { href: '#common-heading' }, 'Common Heading'))),
-          h('li', undefined, h('p', undefined, h('a', { href: '#subheading' }, 'Subheading'))),
+          h('li', undefined, h('a', { href: '#common-heading' }, 'Common Heading')),
+          h('li', undefined, h('a', { href: '#subheading' }, 'Subheading')),
         ),
       ),
     ]);
