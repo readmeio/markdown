@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node, Text } from 'mdast';
 import { NodeTypes } from './enums';
 
 type Callout = Omit<Blockquote, 'type'> & {
@@ -20,7 +20,7 @@ interface CodeTabs extends Parent {
   };
 }
 
-interface Embed extends Parent {
+interface Embed extends Node {
   type: NodeTypes.embed;
   data: Data & {
     hName: 'embed';
@@ -45,11 +45,12 @@ interface HTMLBlock extends Node {
   };
 }
 
-interface Image extends Node {
+interface RMDXImage extends Node {
   type: NodeTypes.image;
   url: string;
   alt: string;
   title: string;
+  children: Text[];
   data: Data & {
     hName: 'image';
     hProperties: {

@@ -18,6 +18,7 @@ const embedTransformer = () => {
           },
           hName: 'embed',
         },
+        children: node.children,
         position: node.position,
       } as Embed;
 

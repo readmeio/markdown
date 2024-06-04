@@ -1,9 +1,8 @@
+import { formatHProps } from "../utils";
 import type { Embed } from "types";
 
 const embed = (node: Embed) => {
-  // TODO: make this a util
-  const attributes = Object.keys(node.data?.hProperties).map(key => `${key}='${node.data?.hProperties[key]}'`).join(' ')
-  
+  const attributes = formatHProps<Embed['data']['hProperties']>(node)
   return `<Embed ${attributes} />`;
 }
 

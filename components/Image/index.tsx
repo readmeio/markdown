@@ -84,26 +84,28 @@ const Image = (Props: ImageProps) => {
   }
 
   return (
-    <span
-      aria-label={alt}
-      className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-      onClick={toggle}
-      onKeyDown={handleKeyDown}
-      role={'button'}
-      tabIndex={0}
-    >
-      <span className="lightbox-inner">
-        <img
-          src={src}
-          width={width}
-          height={height}
-          title={title}
-          className={`img img-align-${align} ${border ? 'border' : ''}`}
-          alt={alt}
-          loading={lazy ? 'lazy' : 'eager'}
-        />
+    <p>
+      <span
+        aria-label={alt}
+        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+        onClick={toggle}
+        onKeyDown={handleKeyDown}
+        role={'button'}
+        tabIndex={0}
+      >
+        <span className="lightbox-inner">
+          <img
+            src={src}
+            width={width}
+            height={height}
+            title={title}
+            className={`img img-align-${align} ${border ? 'border' : ''}`}
+            alt={alt}
+            loading={lazy ? 'lazy' : 'eager'}
+          />
+        </span>
       </span>
-    </span>
+    </p>
   );
 };
 

@@ -35,7 +35,7 @@ const Embed = ({ lazy = true, url, provider, title, html, iframe, image, favicon
 
   return (
     <div className={classes.join(' ')}>
-      {html ? (
+      {html || iframe ? (
         <div className="embed-media" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
         <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">

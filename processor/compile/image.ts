@@ -1,17 +1,19 @@
-import type { Image } from 'mdast';
+import type { RMDXImage } from 'types';
+import { formatHProps, getHPropKeys, getHProps } from '../utils';
 
-const image = (node: Image) => {
-  const { align, border, width, src } = node.data?.hProperties || {};
-  const complexImage: boolean = Boolean(width) || Boolean(border) || Boolean(align);
+const image = (node: RMDXImage) => {
+  const attributes = formatHProps<RMDXImage['data']['hProperties']>(node);
+  const hProps = getHProps<RMDXImage['data']['hProperties']>(node);
+  const hPropKeys = getHPropKeys<string[]>(node);
   
-  if (complexImage) {
-    const attributes = Object.keys(node.data?.hProperties)
-      .map(key => `${key}="${node.data?.hProperties[key]}"`)
-      .join(' ');
-    return `<Image ${attributes} />`;
-  }
+  const RMDXImage = `<Image ${attributes} />`;
+  const MDImage = `![${node.alt ?? ''}](${hProps.src ? hProps.src : node.url}${node.title ? ` "${node.title}")` : ')'}`;
 
-  return `![${node.alt ?? ''}](${src ? src : node.url}${node.title ? ` "${node.title}")` : ')'}`;
+  if (!!attributes) {
+    if (hPropKeys.includes('src') && hPropKeys.includes('width' || 'border' || 'align'))
+      return RMDXImage;
+  }
+  return MDImage;
 }
 
 export default image;

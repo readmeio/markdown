@@ -4,7 +4,7 @@ import { NodeTypes } from '../../enums';
 
 const imageTransformer = () => {
   return (tree: any) => {
-    visit(tree, 'image', (node, _, parent) => {
+    visit(tree, 'image', (node, i, parent) => {
       // check if inline or already transformed
       if (parent.type !== 'paragraph' || parent.children.length > 1 || node.data?.hName === 'image') return;
       const newNode = {
@@ -24,7 +24,7 @@ const imageTransformer = () => {
         },
         position: node.position,
       };
-      parent = newNode;
+      parent.children[i] = newNode;
     });
   };
 };
