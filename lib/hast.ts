@@ -1,11 +1,22 @@
 import astProcessor from './ast-processor';
 import remarkRehype from 'remark-rehype';
+import { injectComponents } from '../processor/transform';
+import { MdastComponents } from '../types';
+import mdast from './mdast';
 
-const hast = (text: string, opts = {}) => {
-  const processor = astProcessor(opts).use(remarkRehype);
+interface Options {
+  components?: Record<string, string>;
+}
 
-  const tree = processor.parse(text);
-  return processor.runSync(tree);
+const hast = (text: string, opts: Options = {}) => {
+  const components: MdastComponents = Object.entries(opts.components || {}).reduce((memo, [name, doc]) => {
+    memo[name] = mdast(doc);
+    return memo;
+  }, {});
+
+  const processor = astProcessor(opts).use(injectComponents({ components })).use(remarkRehype);
+
+  return processor.runSync(processor.parse(text));
 };
 
 export default hast;
