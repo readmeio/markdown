@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.50
+
+### ✨ New & Improved
+
+* trigger build ([e85772c](https://github.com/readmeio/markdown/commit/e85772c32393903cce88bcde5bee5755d46ad6ad))
+
 ## Version 6.75.0-beta.49
 
 ### 🛠 Fixes & Updates
