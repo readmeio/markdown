@@ -55,19 +55,19 @@ const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => 
   const { components, terms, variables, baseUrl, ...opts } = _opts;
   const vfile = new VFile(stringOrFile) as VFileWithToc;
 
-  const exec = (file: VFile | string) =>
+  const exec = (file: VFile | string, toc = false) =>
     mdxRun(file, {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
       imports: { React },
-      useMDXComponents: makeUseMDXComponents(components),
+      useMDXComponents: makeUseMDXComponents({ ...components, ...(toc && { p: Fragment }) }),
       ...opts,
     });
 
   const file = await exec(vfile);
   const Content = file.default;
-  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc.vfile) : { default: null };
+  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc.vfile, true) : { default: null };
 
   return {
     default: () => (
