@@ -1,5 +1,5 @@
 import { mdx } from '../../index';
-import * as rdmd from '@readme/markdown';
+import * as rdmd from '@readme/markdown-legacy';
 
 describe('compatability with RDMD', () => {
   it('compiles variable nodes', () => {
