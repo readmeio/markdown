@@ -1,7 +1,7 @@
-import { compile, run } from '../../index';
 import React from 'react';
 
 import { render, screen } from '@testing-library/react';
+import { execute } from '../helpers';
 
 describe('Custom Components', () => {
   const Example = () => <div>It works!</div>;
@@ -16,7 +16,7 @@ describe('Custom Components', () => {
     const doc = `
 <Example />
     `;
-    const Page = await run(compile(doc), { components: { Example } });
+    const Page = await execute(doc, undefined, { components: { Example } });
     render(<Page />);
 
     expect(screen.getByText('It works!')).toBeVisible();
@@ -27,7 +27,7 @@ describe('Custom Components', () => {
 <Composite />
     `;
 
-    const Page = await run(compile(doc), { components: { Example, Composite } });
+    const Page = await execute(doc, undefined, { components: { Example, Composite } });
     render(<Page />);
 
     expect(screen.getByText('It works!')).toBeVisible();

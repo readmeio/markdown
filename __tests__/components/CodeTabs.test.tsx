@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import { compile, run } from '../../index';
+import { execute } from '../helpers';
 
 describe('CodeTabs', () => {
   it.skip('render _all_ its children', async () => {
@@ -12,7 +12,7 @@ assert('theme', 'dark');
 assert('theme', 'light');
 \`\`\`
     `;
-    const Component = await run(compile(md));
+    const Component = await execute(md);
     const { container } = render(<Component />);
 
     expect(container).toHaveTextContent(`assert('theme', 'dark')`);

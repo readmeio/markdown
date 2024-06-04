@@ -2,7 +2,7 @@ import React from 'react';
 import GlossaryContext from './GlossaryTerms';
 import BaseUrlContext from './BaseUrl';
 import { VariablesContext } from '@readme/variable';
-import { RunOpts } from '../index';
+import { RunOpts } from '../lib/run';
 
 type Props = React.PropsWithChildren & Pick<RunOpts, 'baseUrl' | 'terms' | 'variables'>;
 

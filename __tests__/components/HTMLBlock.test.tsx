@@ -4,7 +4,7 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { vi } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
-import { compile, run } from '../../index';
+import { execute } from '../helpers';
 
 describe('HTML Block', () => {
   beforeEach(() => {
@@ -55,8 +55,7 @@ describe('HTML Block', () => {
 
   it('renders the html in a `<pre>` tag if safeMode={true}', async () => {
     const md = '<HTMLBlock safeMode={true}>{`<button onload="alert(\'gotcha!\')"/>`}</HTMLBlock>';
-    const code = compile(md);
-    const Component = await run(code);
+    const Component = await execute(md);
     expect(renderToStaticMarkup(<Component />)).toMatchInlineSnapshot(
       '"<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>"',
     );

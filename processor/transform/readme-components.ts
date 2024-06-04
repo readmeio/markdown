@@ -19,6 +19,7 @@ const types = {
   Variable: NodeTypes['variable'],
   td: 'tableCell',
   tr: 'tableRow',
+  TutorialTile: NodeTypes.tutorialTile,
 };
 
 interface Options {

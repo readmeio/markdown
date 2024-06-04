@@ -117,6 +117,29 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
   output: {
     filename: '[name].node.js',
   },
+  externals: {
+    react: {
+      amd: 'react',
+      commonjs: 'react',
+      commonjs2: 'react',
+      root: 'React',
+      umd: 'react',
+    },
+    'react-dom': {
+      amd: 'react-dom',
+      commonjs2: 'react-dom',
+      commonjs: 'react-dom',
+      root: 'ReactDOM',
+      umd: 'react-dom',
+    },
+    'react-dom/server': {
+      amd: 'react-dom/server',
+      commonjs2: 'react-dom/server',
+      commonjs: 'react-dom/server',
+      root: 'ReactDOM/server',
+      umd: 'react-dom/server',
+    },
+  },
 });
 
 module.exports = [browserConfig, serverConfig];

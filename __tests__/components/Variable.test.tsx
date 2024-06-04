@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-
-import { run, compile } from '../../index';
+import { execute } from '../helpers';
 
 describe('Variable', () => {
   it('render a variable', async () => {
     const md = `<Variable variable="name" />`;
-    const Content = await run(compile(md));
+    const Content = await execute(md);
+
     render(<Content />);
 
     expect(screen.getByText('NAME')).toBeVisible();

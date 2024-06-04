@@ -1,6 +1,36 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.49
+
+### 🛠 Fixes & Updates
+
+* migration issues ([#896](https://github.com/readmeio/markdown/issues/896)) ([9752849](https://github.com/readmeio/markdown/commit/97528497c0a1694110d3fd303328480a3fc81a63))
+
+## Version 6.75.0-beta.48
+
+### ✨ New & Improved
+
+* mdx TOC ([#883](https://github.com/readmeio/markdown/issues/883)) ([ef8f9a1](https://github.com/readmeio/markdown/commit/ef8f9a1a812f257146da11c64385edbd9dfb8c3a))
+
+## Version 6.75.0-beta.47
+
+### ✨ New & Improved
+
+* translate recipes between mdx and md ([#892](https://github.com/readmeio/markdown/issues/892)) ([025c8cd](https://github.com/readmeio/markdown/commit/025c8cd54c346cb86d8b3dff4fc66882f7956ba5))
+
+## Version 6.75.0-beta.46
+
+### 🛠 Fixes & Updates
+
+* add externals for node build ([#895](https://github.com/readmeio/markdown/issues/895)) ([3d6eb5d](https://github.com/readmeio/markdown/commit/3d6eb5d8471c0c75e810970a1358ab3964f8ce21))
+
+## Version 6.75.0-beta.45
+
+### 🛠 Fixes & Updates
+
+* callout styling ([#891](https://github.com/readmeio/markdown/issues/891)) ([463b870](https://github.com/readmeio/markdown/commit/463b87037cc1b3164d94d97f70680ef3d1cd7826))
+
 ## Version 6.75.0-beta.44
 
 ### ✨ New & Improved

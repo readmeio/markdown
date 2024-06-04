@@ -7,6 +7,7 @@ describe('Readme Components Transformer', () => {
     { md: '<CodeTabs />', type: 'code-tabs' },
     { md: '<Image />', type: 'image' },
     { md: '<Table />', type: 'table' },
+    { md: '<TutorialTile />', type: 'tutorial-tile' },
   ];
 
   it.each(nodes)('transforms $md into a(n) $type node', ({ md, type }) => {

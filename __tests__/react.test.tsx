@@ -1,7 +1,7 @@
 import React from 'react';
-import { compile, run } from '../index';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { execute } from './helpers';
 
 describe('import React', () => {
   it('allows importing react', async () => {
@@ -24,7 +24,7 @@ export default function Counter() {
 <Counter />
     `;
 
-    const Content = await run(compile(mdx));
+    const Content = await execute(mdx);
     render(<Content />);
 
     expect(screen.getByText('You clicked 0 times!')).toBeVisible();
