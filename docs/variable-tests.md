@@ -4,16 +4,14 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
-<Variable variable="defvar" /> and `<Variable variable="defvar" />` and:
+This is the variable `defvar`: {variables.defvar}
+
+Ok, but this one is defined: {variables.email}
+
+It does not render in code blocks:
 
 ```
-<Variable variable="defvar" />
-```
-
-and
-
-```js
-const xyz = "<Variable variable="defvar" />";
+{variables.defvar}
 ```
 
 ## Glossary Items

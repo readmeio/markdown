@@ -44,10 +44,11 @@ const compile = (text: string, opts: CompileOpts = {}) => {
     delete vfile.data.toc;
   }
 
-  vfile.value = String(vfile).replace(
-    /await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/,
-    'arguments[0].imports.React',
-  );
+  vfile.value = String(vfile)
+    .replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React')
+    .replace(/"use strict";/, `"use strict";\nconst { variables } = arguments[0]`);
+
+  console.log(vfile.value);
 
   return vfile;
 };

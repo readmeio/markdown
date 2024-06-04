@@ -7,14 +7,10 @@ import Variable from '@readme/variable';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
-import { VFileWithToc } from '../types';
+import { VFileWithToc, Variables } from '../types';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
 import { Depth } from '../components/Heading';
-
-interface Variables {
-  user: Record<string, string>;
-  defaults: { name: string; default: string }[];
-}
+import VariableProxy from './variable-proxy';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: ComponentOpts;
@@ -62,6 +58,8 @@ const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => 
       baseUrl: import.meta.url,
       imports: { React },
       useMDXComponents: makeUseMDXComponents({ ...components, ...(toc && { p: Fragment }) }),
+      // @ts-expect-error
+      variables: VariableProxy(variables),
       ...opts,
     });
 

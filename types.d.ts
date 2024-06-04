@@ -104,4 +104,9 @@ type VFileWithToc = VFile & {
   };
 };
 
+interface Variables {
+  user: Record<string, string>;
+  defaults: { name: string; default: string }[];
+}
+
 interface CompiledComponents extends Record<string, VFileWithToc> {}

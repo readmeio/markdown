@@ -35,6 +35,19 @@ const terms = [
   },
 ];
 
+const variables = {
+  user: {
+    email: 'admin@example.com',
+    name: 'Non Ofyore Beesnis',
+  },
+  defaults: [
+    {
+      name: 'defvar',
+      default: '(default value for defvar)',
+    },
+  ],
+};
+
 const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
@@ -60,7 +73,7 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, opts);
-        const content = await mdx.run(code, { components, terms });
+        const content = await mdx.run(code, { components, terms, variables });
 
         setError(() => null);
         setContent(() => content);
