@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.49
+
+### 🛠 Fixes & Updates
+
+* migration issues ([#896](https://github.com/readmeio/markdown/issues/896)) ([9752849](https://github.com/readmeio/markdown/commit/97528497c0a1694110d3fd303328480a3fc81a63))
+
 ## Version 6.75.0-beta.48
 
 ### ✨ New & Improved
