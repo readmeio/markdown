@@ -59,11 +59,49 @@ This is some in progress <!-- commented out stuff -->
     expect(mdx(rdmd.mdast(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
   });
 
-  it('compiles html comments to JSX comments on more complex lines', () => {
+  it('compiles multi-line html comments to JSX comments', () => {
     const md = `
-  8. Add the test account's credentials under a heading of your choice in your \`.edgerc\`. (For the moment, please ping Sheila for this step.) <!-- move this lower -->
+## Wip
+
+<!--
+
+### Some stuff I was working on
+
+-->
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
+    expect(mdx(rdmd.mdast(md)).trim()).toMatchInlineSnapshot(`
+      "## Wip
+
+      {/*
+
+      ### Some stuff I was working on
+
+      */}"
+    `);
+  });
+
+  it('closes un-closed self closing tags', () => {
+    const md = `
+This is a break: <br>
+`;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is a break: <br />');
+  });
+
+  it('closes un-closed self closing tags with a space', () => {
+    const md = `
+This is a break: <br >
+`;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is a break: <br />');
+  });
+
+  it('closes complex un-closed self closing tags', () => {
+    const md = `
+This is an image: <img src="http://example.com/#\\>" >
+`;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is an image: <img src="http://example.com/#\\>" />');
   });
 });
