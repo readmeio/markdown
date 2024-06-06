@@ -91,6 +91,7 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.image]: RMDXImage;
     [NodeTypes.embed]: Embed;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.tutorialTile]: TutorialTile;

@@ -14,7 +14,7 @@ const types = {
   CodeTabs: NodeTypes['codeTabs'],
   Embed: NodeTypes['embed'],
   Glossary: NodeTypes['glossary'],
-  Image: 'image',
+  Image: NodeTypes.image,
   Table: 'table',
   Variable: NodeTypes['variable'],
   td: 'tableCell',

@@ -4,11 +4,12 @@ import { NodeTypes } from '../../enums';
 
 const imageTransformer = () => {
   return (tree: any) => {
-    visit(tree, 'image', (node, i, parent) => {
+    visit(tree, 'image', (node, _, parent) => {
       // check if inline or already transformed
       if (parent.type !== 'paragraph' || parent.children.length > 1 || node.data?.hName === 'image') return;
       const newNode = {
         type: NodeTypes.image,
+        url: node.url,
         data: {
           hProperties: { 
             title: node.title,
@@ -24,7 +25,7 @@ const imageTransformer = () => {
         },
         position: node.position,
       };
-      parent.children[i] = newNode;
+      parent = newNode;
     });
   };
 };

@@ -5,7 +5,7 @@ import { Embed } from '../../types';
 
 const embedTransformer = () => {
   return (tree: any) => {
-    visit(tree, 'link', (node, i, parent) => {
+    visit(tree, 'link', (node, _, parent) => {
 
       if (node.title !== '@embed') return;
       
