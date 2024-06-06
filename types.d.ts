@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node, Root } from 'mdast';
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
 import { MDXContent, MDXModule } from 'mdx/types';
@@ -118,3 +118,5 @@ interface RMDXModule extends MDXModule {
 }
 
 interface CustomComponents extends Record<string, RMDXModule> {}
+
+interface MdastComponents extends Record<string, Root> {}
