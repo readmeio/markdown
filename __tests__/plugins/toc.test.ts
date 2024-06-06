@@ -1,7 +1,7 @@
 import { compile } from '../../index';
 import { h } from 'hastscript';
 
-describe('rehype-toc transformer', () => {
+describe('toc transformer', () => {
   it('parses out a toc with max depth of 2', () => {
     const md = `
 # Title

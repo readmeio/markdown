@@ -1,6 +1,7 @@
 import React from 'react';
 
 function TableOfContents({ children }: React.PropsWithChildren) {
+  console.log('wat');
   return (
     <nav>
       <ul className="toc-list">
