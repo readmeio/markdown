@@ -77,6 +77,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     ),
     toc,
     Toc: () =>
+      tocMdx &&
       Toc && (
         <Components.TableOfContents>
           <Toc />

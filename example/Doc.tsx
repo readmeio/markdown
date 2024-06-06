@@ -13,8 +13,9 @@ const components = {
 `,
 };
 
-Object.entries(components).forEach(([tag, body]) => {
-  components[tag] = mdx.compile(body);
+const executedComponents = {};
+Object.entries(components).forEach(async ([tag, body]) => {
+  executedComponents[tag] = await mdx.run(mdx.compile(body));
 });
 
 const variables = {
@@ -64,7 +65,7 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, { ...opts, components });
-        const content = await mdx.run(code, { components, terms, variables });
+        const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
         setContent(() => content);
