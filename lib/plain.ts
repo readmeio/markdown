@@ -1,11 +1,13 @@
+import { Node } from 'hast-util-to-text';
+
 /* @note: copied from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
-function toString(node) {
-  // eslint-disable-next-line no-use-before-define
-  return 'children' in node ? all(node) || one(node) : one(node);
-}
 
-function one(node) {
+const plain = (node: Node, opts = {}) => {
+  return 'children' in node ? all(node) || one(node) : one(node);
+};
+
+const one = (node: Node) => {
   if (node.tagName === 'img') {
     return node.properties?.title || '';
   }
@@ -20,9 +22,9 @@ function one(node) {
 
   // eslint-disable-next-line no-use-before-define
   return 'children' in node ? all(node) : ' ';
-}
+};
 
-function all(node) {
+const all = (node: Node) => {
   let index = -1;
   const result = [];
 
@@ -31,15 +33,7 @@ function all(node) {
     result[index] = one(node.children[index]);
   }
 
-  return result.join(' ').trim().replace(/ +/, ' ');
-}
-
-const Compiler = node => {
-  return toString(node);
+  return result.join(' ').replaceAll(/\s+/g, ' ').trim();
 };
 
-const toPlainText = function () {
-  Object.assign(this, { Compiler });
-};
-
-module.exports = toPlainText;
+export default plain;

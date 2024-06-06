@@ -105,3 +105,5 @@ type VFileWithToc = VFile & {
 };
 
 interface CompiledComponents extends Record<string, VFileWithToc> {}
+
+interface MdastComponents extends Record<string, Root> {}
