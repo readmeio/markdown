@@ -33,10 +33,6 @@ export const reactProcessor = (opts = {}) => {
   return createProcessor({ remarkPlugins, ...opts });
 };
 
-export const html = (text: string, opts = {}) => {
-  unimplemented('html export');
-};
-
 export const mdast: any = (text: string, opts: MdastOpts = {}) => {
   const processor = astProcessor(opts).use(readmeComponentsTransformer({ components: opts.components }));
 
@@ -49,10 +45,6 @@ export const hast = (text: string, opts = {}) => {
 
   const tree = processor.parse(text);
   return processor.runSync(tree);
-};
-
-export const esast = (text: string, opts = {}) => {
-  unimplemented('esast export');
 };
 
 export const plain = (text: string, opts = {}) => {

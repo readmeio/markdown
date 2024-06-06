@@ -10,42 +10,60 @@ npm install --save @readme/markdown
 
 ## Usage
 
-By default, the updated markdown package exports a function which takes a string of [ReadMe-flavored markdown](https://docs.readme.com/rdmd/docs/syntax-extensions) and returns a tree of React components:
-
 ```jsx
 import React from 'react';
-import rdmd from '@readme/markdown';
+import rmdx from '@readme/markdown';
 
-export default ({ body }) => <div className="markdown-body">{rdmd(body)}</div>;
+export default ({ body }) => <div className="markdown-body">{run(compile(body))}</div>;
 ```
 
-### Export Methods
+### API
 
-In addition to the default React processor, the package exports some other methods for transforming ReadMe-flavored markdown:
+#### `compile`
 
-|    Export | Description                                    | Arguments         |
-| --------: | :--------------------------------------------- | :---------------- |
-| _`react`_ | _(default)_ returns a VDOM tree object         | `text`, `options` |
-|    _`md`_ | transform mdast in to ReadMe-flavored markdown | `tree`, `options` |
-|  _`html`_ | transform markdown in to HTML                  | `text`, `options` |
-| _`mdast`_ | transform markdown to an mdast object          | `text`, `options` |
-|  _`hast`_ | transform markdown to HAST object              | `text`, `options` |
-| _`plain`_ | transform markdown to plain text               | `text`, `options` |
-| _`utils`_ | contexts, defaults, helpers, etc.              | N/A               |
+Compiles mdx to js.
+
+A wrapper around [`mdx.compile`](https://mdxjs.com/packages/mdx/#compilefile-options)
+
+#### `run`
+
+Run compiled code.
+
+> [!Caution] This `eval`'s JavaScript.
+
+A wrapper around [`mdx.run`](https://mdxjs.com/packages/mdx/#runcode-options)
+
+#### `mdx`
+
+Compiles an ast to mdx.
+
+#### `mdast`
+
+Parses mdx to an mdast.
+
+#### `hast`
+
+Parses mdx to an hast.
+
+#### `plain`
+
+> [!INFO] unimplemented
+
+#### `utils`
+
+Additional defaults, helpers, components, etc.
 
 ### Settings & Options
 
 Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
 
-- **`compatibilityMode`** — Enable [compatibility features](https://github.com/readmeio/api-explorer/issues/668) from our old markdown engine.
 - **`copyButtons`** — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
-- **`correctnewlines`** — Render new line delimeters as `<br>` tags.
 - **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
 - **`safeMode`** — Render html blocks as `<pre>` elements. We normally allow all manner of html attributes that could potentially execute JavaScript.
 
 ## Flavored Syntax
 
-Our old editor rendered "Magic Block" components from a custom, JSON-based syntax. To provide seamless backwards-compatibility, our new processor ships with built in support for parsing this old format, and transpiles it straight in to our new, flavored Markdown.
+~~Our old editor rendered "Magic Block" components from a custom, JSON-based syntax. To provide seamless backwards-compatibility, our new processor ships with built in support for parsing this old format, and transpiles it straight in to our new, flavored Markdown.~~
 
 We've also sprinkled a bit of our own syntactic sugar on top to let you supercharge your docs. [**Learn more about ReadMe's flavored syntax!**](https://docs.readme.com/rdmd/docs/syntax-extensions)
 
