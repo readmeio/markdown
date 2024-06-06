@@ -29,7 +29,8 @@ A wrapper around [`mdx.compile`](https://mdxjs.com/packages/mdx/#compilefile-opt
 
 Run compiled code.
 
-> [!CAUTION] This `eval`'s JavaScript.
+> [!CAUTION]
+> This `eval`'s JavaScript.
 
 A wrapper around [`mdx.run`](https://mdxjs.com/packages/mdx/#runcode-options)
 
@@ -47,7 +48,8 @@ Parses mdx to an hast.
 
 #### `plain`
 
-> [!NOTE] unimplemented
+> [!NOTE]
+> unimplemented
 
 #### `utils`
 
