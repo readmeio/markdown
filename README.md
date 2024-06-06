@@ -47,7 +47,7 @@ Parses mdx to an hast.
 
 #### `plain`
 
-> [!INFO] unimplemented
+> [!Note] unimplemented
 
 #### `utils`
 
