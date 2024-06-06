@@ -77,9 +77,9 @@ Extends [`CompileOptions`](https://mdxjs.com/packages/mdx/#compileoptions)
 
 ###### Additional Properties
 
-- `lazyImage` (`boolean`, optional)
-- `safeMode` (`boolean`, optional)
-- `components` (`Record<string, string>`, optional)
+- `lazyImages` (`boolean`, optional) -- Load images lazily.
+- `safeMode` (`boolean`, optional) -- Extract script tags from `HTMLBlock`s
+- `components` (`Record<string, string>`, optional) -- An object of tag names to mdx.
 - `copyButtons` (`Boolean`, optional) — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
 
 ### `RunOpts`
@@ -88,9 +88,8 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 ###### Additional Properties
 
-- `components` (`Record<string, MDXModule>`, optional)
-- `imports` (`Record<string, unknown>`, optional)
-- `baseUrl` (`string`, optional)
+- `components` (`Record<string, MDXModule>`, optional) -- An object of tag names to executed components.
+- `imports` (`Record<string, unknown>`, optional) -- An object of modules to import.
 - `terms` (`GlossaryTerm[]`, optional)
 - `variables` (`Variables`, optional)
 
