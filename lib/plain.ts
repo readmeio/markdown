@@ -1,14 +1,14 @@
-import { Node } from 'hast-util-to-text';
+import { Nodes, Parents } from 'hast';
 
 /* @note: copied from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 
-const plain = (node: Node, opts = {}) => {
+const plain = (node: Nodes, opts = {}) => {
   return 'children' in node ? all(node) || one(node) : one(node);
 };
 
-const one = (node: Node) => {
-  if (node.tagName === 'img') {
+const one = (node: Nodes) => {
+  if ('tagName' in node && node.tagName === 'img') {
     return node.properties?.title || '';
   }
 
@@ -24,7 +24,7 @@ const one = (node: Node) => {
   return 'children' in node ? all(node) : ' ';
 };
 
-const all = (node: Node) => {
+const all = (node: Parents) => {
   let index = -1;
   const result = [];
 
