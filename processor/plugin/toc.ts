@@ -3,12 +3,12 @@ import { Root } from 'hast';
 import { valueToEstree } from 'estree-util-value-to-estree';
 import { h } from 'hastscript';
 
-import { HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
+import { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
 import { visit } from 'unist-util-visit';
 import { mdx } from '../../lib';
 
 interface Options {
-  components?: Record<string, string>;
+  components?: Record<string, any>;
 }
 
 export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
@@ -19,9 +19,7 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
         (child.type === 'mdxJsxFlowElement' && child.name in components),
     ) as IndexableElements[];
 
-    if (!headings.length) return;
-
-    // @todo: No idea why this is erroring!!
+    // @todo: Very confused by this error
     // @ts-expect-error
     tree.children.unshift({
       type: 'mdxjsEsm',
@@ -84,7 +82,7 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
   return ast;
 };
 
-export const tocToMdx = (toc: IndexableElements[], components) => {
+export const tocToMdx = (toc: IndexableElements[], components: CustomComponents) => {
   const tree: Root = { type: 'root', children: toc };
 
   visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {

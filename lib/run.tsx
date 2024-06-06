@@ -75,6 +75,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
         <Content />
       </Contexts>
     ),
+    toc,
     Toc: () =>
       Toc && (
         <Components.TableOfContents>
