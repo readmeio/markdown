@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import * as mdx from '../index';
 import docs from './docs';
 import RenderError from './RenderError';
-import { MDXContent, MDXModule } from 'mdx/types';
+import { MDXContent } from 'mdx/types';
 
-const mdxComponents = {
+const components = {
   Demo: `
 ## This is a Demo Component!
 
@@ -13,12 +13,17 @@ const mdxComponents = {
 `,
 };
 
-const compiledComponents = {};
-const components = {};
-Object.keys(mdxComponents).forEach(async comp => {
-  compiledComponents[comp] = mdx.compile(comp);
-  components[comp] = (await mdx.run(compiledComponents[comp])).default;
+const executedComponents = {};
+Object.entries(components).forEach(async ([tag, body]) => {
+  executedComponents[tag] = await mdx.run(mdx.compile(body));
 });
+
+const variables = {
+  user: {
+    email: 'test@example.com',
+  },
+  defaults: [],
+};
 
 const terms = [
   {
@@ -45,9 +50,9 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, toc: Toc }, setContent] = useState<{ default: MDXContent; toc?: MDXContent }>({
+  const [{ default: Content, Toc }, setContent] = useState<{ default: MDXContent; Toc?: MDXContent }>({
     default: null,
-    toc: null,
+    Toc: null,
   });
   const [error, setError] = useState<string>(null);
 
@@ -59,8 +64,8 @@ const Doc = () => {
       };
 
       try {
-        const code = mdx.compile(doc, opts);
-        const content = await mdx.run(code, { components, terms });
+        const code = mdx.compile(doc, { ...opts, components });
+        const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
         setContent(() => content);
@@ -91,5 +96,7 @@ const Doc = () => {
     </div>
   );
 };
+/*
+ */
 
 export default Doc;
