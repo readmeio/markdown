@@ -21,18 +21,34 @@ export default ({ body }) => <div className="markdown-body">{run(compile(body))}
 
 #### `compile`
 
-Compiles mdx to js.
+Compiles mdx to js. A wrapper around [`mdx.compile`](https://mdxjs.com/packages/mdx/#compilefile-options)
 
-A wrapper around [`mdx.compile`](https://mdxjs.com/packages/mdx/#compilefile-options)
+You usually only need this when calling `run` as well. It's been left as a seperate step as a potential caching opportunity.
+
+###### Parameters
+
+- `string` (`string`) -- An mdx document
+- `opts` ([`CompileOpts`](#compileopts), optional) -- configuration
+
+###### Returns
+
+compiled code (`string`)
 
 #### `run`
 
-Run compiled code.
+Run compiled code. A wrapper around [`mdx.run`](https://mdxjs.com/packages/mdx/#runcode-options)
 
 > [!CAUTION]
 > This `eval`'s JavaScript.
 
-A wrapper around [`mdx.run`](https://mdxjs.com/packages/mdx/#runcode-options)
+###### Parameters
+
+- `string` (`string`) -- A compiled mdx document
+- `opts` (`RunOpts`, optional) -- configuration
+
+###### Returns
+
+A module ([`RMDXModule`](#rmdxmodule)) of renderable components
 
 #### `mdx`
 
@@ -55,13 +71,36 @@ Parses mdx to an hast.
 
 Additional defaults, helpers, components, etc.
 
-### Settings & Options
+### `CompileOpts`
 
-Each processor method takes an options object which you can use to adjust the output HTML or React tree. These options include:
+Extends [`CompileOptions`](https://mdxjs.com/packages/mdx/#compileoptions)
 
-- **`copyButtons`** — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
-- **`markdownOptions`** — Remark [parser options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#processorusestringify-options).
-- **`safeMode`** — Render html blocks as `<pre>` elements. We normally allow all manner of html attributes that could potentially execute JavaScript.
+###### Additional Properties
+
+- `lazyImage` (`boolean`, optional)
+- `safeMode` (`boolean`, optional)
+- `components` (`Record<string, string>`, optional)
+- `copyButtons` (`Boolean`, optional) — Automatically insert a button to copy a block of text to the clipboard. Currently used on `<code>` elements.
+
+### `RunOpts`
+
+Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
+
+###### Additional Properties
+
+- `components` (`Record<string, MDXModule>`, optional)
+- `imports` (`Record<string, unknown>`, optional)
+- `baseUrl` (`string`, optional)
+- `terms` (`GlossaryTerm[]`, optional)
+- `variables` (`Variables`, optional)
+
+### `RMDXModule`
+
+###### Properties
+
+- `default` (`() => MDXContent`) -- The mdx douments default export
+- `toc` (`HastHeading[]`) -- A list of headings in the document
+- `Toc` (`() => MDCContent`) -- A table of contents component
 
 ## Flavored Syntax
 
