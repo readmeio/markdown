@@ -8,32 +8,22 @@ import * as Components from '../components';
 import Contexts from '../contexts';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
 import { Depth } from '../components/Heading';
-import { visit } from 'unist-util-visit';
-import { tocToHast } from '../processor/plugin/toc';
+import { tocToMdx } from '../processor/plugin/toc';
 import compile from './compile';
-import mdx from './mdx';
-import { MDXModule } from 'mdx/types';
-import { Root } from 'hast';
-import { HastHeading, IndexableElements } from 'types';
+import { CustomComponents, RMDXModule } from '../types';
 
 interface Variables {
   user: Record<string, string>;
   defaults: { name: string; default: string }[];
 }
 
-type CompiledComponents = Record<string, string>;
-
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: CompiledComponents;
+  components?: CustomComponents;
   imports?: Record<string, unknown>;
   baseUrl?: string;
   terms?: GlossaryTerm[];
   variables?: Variables;
 };
-
-interface RMDXModule extends MDXModule {
-  toc: IndexableElements[];
-}
 
 const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxComponents => {
   const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
@@ -61,42 +51,23 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
+  const defaults = Object.fromEntries(Object.entries(components).map(([tag, module]) => [tag, module.default]));
 
-  const exec = (text: string, __opts: RunOpts = {}) => {
-    const { useMDXComponents } = __opts;
-
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(defaults) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
       imports: { React },
-      ...__opts,
-      useMDXComponents: useMDXComponents ?? makeUseMDXComponents(),
+      useMDXComponents,
       ...opts,
     }) as Promise<RMDXModule>;
   };
 
-  const promises = Object.entries(components).map(async ([tag, body]) => [tag, await exec(body)] as const);
+  const { toc, default: Content } = await exec(string);
 
-  const CustomComponents: Record<string, RMDXModule> = {};
-  (await Promise.all(promises)).forEach(([tag, node]) => {
-    CustomComponents[tag] = node;
-  });
-
-  const { toc, default: Content } = await exec(string, {
-    useMDXComponents: makeUseMDXComponents(
-      Object.fromEntries(Object.entries(CustomComponents).map(([tag, module]) => [tag, module.default])),
-    ),
-  });
-
-  const tree: Root = { type: 'root', children: toc };
-  visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {
-    parent.children.splice(index, 1, ...CustomComponents[node.name].toc);
-  });
-
-  const tocHast = tocToHast(tree.children as HastHeading[]);
-  const tocMdx = mdx(tocHast, { hast: true });
-  const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: makeUseMDXComponents({ p: Fragment }) });
+  const tocMdx = tocToMdx(toc, components);
+  const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
 
   return {
     default: () => (

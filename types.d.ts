@@ -1,6 +1,8 @@
 import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
+import { MDXModule } from 'mdx/types';
+import { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 type Callout = Omit<Blockquote, 'type'> & {
   type: NodeTypes.callout;
@@ -109,3 +111,9 @@ interface TocEntry extends Element {
 }
 
 type IndexableElements = HastHeading | MdxJsxFlowElement;
+
+interface RMDXModule extends MDXModule {
+  toc: IndexableElements[];
+}
+
+interface CustomComponents extends Record<string, RMDXModule> {}

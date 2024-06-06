@@ -4,6 +4,8 @@ import { valueToEstree } from 'estree-util-value-to-estree';
 import { h } from 'hastscript';
 
 import { HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
+import { visit } from 'unist-util-visit';
+import { mdx } from '../../lib';
 
 interface Options {
   components?: Record<string, string>;
@@ -54,7 +56,7 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
 const MAX_DEPTH = 2;
 const getDepth = (el: HastHeading) => parseInt(el.tagName.match(/^h(\d)/)[1]);
 
-export const tocToHast = (headings: HastHeading[]): TocList => {
+const tocToHast = (headings: HastHeading[] = []): TocList => {
   const min = Math.min(...headings.map(getDepth));
   const ast = h('ul') as TocList;
   const stack: TocList[] = [ast];
@@ -80,4 +82,15 @@ export const tocToHast = (headings: HastHeading[]): TocList => {
   });
 
   return ast;
+};
+
+export const tocToMdx = (toc: IndexableElements[], components) => {
+  const tree: Root = { type: 'root', children: toc };
+
+  visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {
+    parent.children.splice(index, 1, ...components[node.name].toc);
+  });
+
+  const tocHast = tocToHast(tree.children as HastHeading[]);
+  return mdx(tocHast, { hast: true });
 };
