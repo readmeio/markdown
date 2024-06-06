@@ -49,7 +49,7 @@ const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
       }
 
       stack[stack.length - 1].children.push(
-        h('li', null, h('p', null, h('a', { href: `#${heading.properties.id}` }, heading.children))),
+        h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)),
       );
     });
 
