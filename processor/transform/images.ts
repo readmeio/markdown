@@ -1,31 +1,30 @@
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../enums';
-
 const imageTransformer = () => {
   return (tree: any) => {
-    visit(tree, 'image', (node, _, parent) => {
+    visit(tree, 'paragraph', (node, i, parent) => {
       // check if inline or already transformed
-      if (parent.type !== 'paragraph' || parent.children.length > 1 || node.data?.hName === 'image') return;
+      if (parent.type !== 'root' || node.children?.length > 1 || node.children[0].type !== 'image') return;
+      const [{ alt, url, title, type }] = node.children;
+
       const newNode = {
-        type: NodeTypes.image,
-        url: node.url,
+        type: type,
+        alt: alt,
+        children: [],
+        title: title,
+        url: url,
         data: {
-          hProperties: { 
-            title: node.title,
-            src: node.url,
-            alt: node.alt,
-            align: node.align,
-            border: node.border,
-            width: node.width,
-            caption: node.caption,
-            lazy: node.lazy, 
-          },
           hName: 'image',
+          hProperties: { 
+            ...(alt && { alt }),
+            src: url,
+            ...(title && { title }),
+          },
         },
         position: node.position,
       };
-      parent = newNode;
+
+      parent.children.splice(i, 1, newNode);
     });
   };
 };

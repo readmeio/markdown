@@ -4,7 +4,7 @@ import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 export const formatHProps = <T>(node: Node) => {
   const hProps = getHProps(node);
   const hPropKeys = getHPropKeys(node) as string[];
-  return hPropKeys.map(key => `${key}='${hProps[key]}'`).join(' ') as T;
+  return hPropKeys.map(key => `${key}="${hProps[key]}"`).join(' ') as T;
 }
 
 export const getHProps = <T>(node: Node) => {

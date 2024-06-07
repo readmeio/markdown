@@ -24,6 +24,9 @@ interface CodeTabs extends Parent {
 
 interface Embed extends Node {
   type: NodeTypes.embed;
+  title?: string;
+  label?: string;
+  url?: string;
   data: Data & {
     hName: 'embed';
     hProperties: {

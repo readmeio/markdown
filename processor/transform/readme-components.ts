@@ -1,5 +1,5 @@
 import { NodeTypes } from '../../enums';
-import { Code, Parents, RootContent, Table } from 'mdast';
+import { BlockContent, Code, Parents, Table } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
@@ -14,7 +14,7 @@ const types = {
   CodeTabs: NodeTypes['codeTabs'],
   Embed: NodeTypes['embed'],
   Glossary: NodeTypes['glossary'],
-  Image: NodeTypes.image,
+  Image: NodeTypes['image'],
   Table: 'table',
   Variable: NodeTypes['variable'],
   td: 'tableCell',
@@ -109,9 +109,9 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
     } else if (node.name in types) {
-      const hProperties = getAttrs<RootContent['data']['hProperties']>(node);
+      const hProperties = getAttrs<BlockContent['data']['hProperties']>(node);
 
-      const mdNode: RootContent = {
+      const mdNode: BlockContent = {
         children: node.children,
         type: types[node.name],
         ...(['tr', 'td'].includes(node.name)
@@ -119,7 +119,7 @@ const coerceJsxToMd =
           : {
               data: {
                 hName: node.name,
-                hProperties,
+                ...(hProperties ?? hProperties),
               },
             }),
         position: node.position,

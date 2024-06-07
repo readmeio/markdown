@@ -9,9 +9,10 @@ const image = (node: RMDXImage) => {
   const RMDXImage = `<Image ${attributes} />`;
   const MDImage = `![${node.alt ?? ''}](${hProps.src ? hProps.src : node.url}${node.title ? ` "${node.title}")` : ')'}`;
 
-  if (!!attributes) {
-    if (hPropKeys.includes('src') && hPropKeys.includes('width' || 'border' || 'align'))
+  if (Boolean(attributes)) {
+    if (hPropKeys.includes('src') && (hPropKeys.includes('width') || hPropKeys.includes('border') || hPropKeys.includes('align'))) {
       return RMDXImage;
+    }
   }
   return MDImage;
 }

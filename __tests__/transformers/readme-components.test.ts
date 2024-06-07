@@ -48,10 +48,10 @@ Second
 </CodeTabs>
     `,
     },
-    // image: {
-    //   md: `![](http://placekitten.com/600/200)`,
-    //   mdx: `<Image src="http://placekitten.com/600/200" />`,
-    // },
+    image: {
+      md: `![](http://placekitten.com/600/200)`,
+      mdx: `<Image src="http://placekitten.com/600/200" />`,
+    },
     table: {
       md: `
 | h1  | h2  |
@@ -75,14 +75,6 @@ Second
   it.each(Object.entries(docs))('matches the equivalent markdown for %s', (type, { md, mdx }) => {
     let mdTree = mdast(md);
     const mdxTree = mdast(mdx);
-
-    if (type === 'image') {
-      // @todo something about these dang paragraphs!
-      mdTree = {
-        type: 'root',
-        children: mdTree.children[0].children,
-      };
-    }
 
     expect(mdxTree).toStrictEqualExceptPosition(mdTree);
   });

@@ -5,24 +5,25 @@ import { Embed } from '../../types';
 
 const embedTransformer = () => {
   return (tree: any) => {
-    visit(tree, 'link', (node, _, parent) => {
+    visit(tree, 'paragraph', (node, i, parent) => {
+      const [{ url, title, children }] = node.children;
+      if (title !== '@embed') return;
 
-      if (node.title !== '@embed') return;
-      
       const newNode = {
         type: NodeTypes.embed,
+        title,
+        label: children[0]?.value ?? '',
         data: {
           hProperties: {  
-            url: node.url, 
-            title: node.title,
+            url: url, 
+            title: children[0]?.value ?? '',
           },
           hName: 'embed',
         },
-        children: node.children,
         position: node.position,
       } as Embed;
 
-      parent = newNode;
+      parent.children.splice(i, 1, newNode);
     });
   };
 };
