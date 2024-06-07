@@ -2,10 +2,10 @@ import calloutTransformer from './callouts';
 import codeTabsTransfromer from './code-tabs';
 import embedTransformer from './embeds';
 import gemojiTransformer from './gemoji+';
+import injectComponents from './inject-components';
 import readmeComponentsTransformer from './readme-components';
-import rehypeToc from './rehype-toc';
 import readmeToMdx from './readme-to-mdx';
 
-export { readmeComponentsTransformer, rehypeToc, readmeToMdx };
+export { readmeComponentsTransformer, readmeToMdx, injectComponents };
 
 export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer];

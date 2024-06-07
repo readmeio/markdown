@@ -32,7 +32,7 @@ describe('visual regression tests', () => {
       async doc => {
         const uri = `http://localhost:9966/#/${doc}?ci=true`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
-        await sleep(500);
+        await sleep(5000);
 
         const image = await page.screenshot({ fullPage: true });
 

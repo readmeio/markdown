@@ -1,7 +1,8 @@
-import { Code, Data, Literal, Parent, Blockquote, Node } from 'mdast';
-import { VFile } from 'vfile';
+import { Code, Data, Literal, Parent, Blockquote, Node, Root } from 'mdast';
 import { NodeTypes } from './enums';
-import { Element, Root } from 'hast';
+import { Element } from 'hast';
+import { MDXContent, MDXModule } from 'mdx/types';
+import { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 
 type Callout = Omit<Blockquote, 'type'> & {
   type: NodeTypes.callout;
@@ -89,24 +90,38 @@ declare module 'mdast' {
   }
 }
 
-type HastHeading = Element & {
+interface HastHeading extends Element {
   tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   depth: number;
-};
+}
 
-type VFileWithToc = VFile & {
-  data: VFile['data'] & {
-    toc?: {
-      ast?: Root | Element;
-      vfile?: VFile;
-      headings?: HastHeading[];
-    };
-  };
-};
+interface TocList extends Element {
+  tagName: 'ul';
+  children: TocListItem[];
+}
 
 interface Variables {
   user: Record<string, string>;
   defaults: { name: string; default: string }[];
 }
 
-interface CompiledComponents extends Record<string, VFileWithToc> {}
+interface TocListItem extends Element {
+  tagName: 'li';
+  children: (TocList | TocEntry)[];
+}
+
+interface TocEntry extends Element {
+  tagName: 'a';
+  children: (Element | Literal)[];
+}
+
+type IndexableElements = HastHeading | MdxJsxFlowElementHast;
+
+interface RMDXModule extends MDXModule {
+  toc: IndexableElements[];
+  Toc: MDXContent;
+}
+
+interface CustomComponents extends Record<string, RMDXModule> {}
+
+interface MdastComponents extends Record<string, Root> {}

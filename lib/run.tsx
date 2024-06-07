@@ -1,35 +1,38 @@
 import React from 'react';
-import { VFile } from 'vfile';
 import * as runtime from 'react/jsx-runtime';
 
-import { RunOptions, run as mdxRun } from '@mdx-js/mdx';
+import { RunOptions, UseMdxComponents, run as mdxRun } from '@mdx-js/mdx';
 import Variable from '@readme/variable';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
-import { VFileWithToc, Variables } from '../types';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
 import { Depth } from '../components/Heading';
 import VariableProxy from './variable-proxy';
+import { tocToMdx } from '../processor/plugin/toc';
+import compile from './compile';
+import { CustomComponents, RMDXModule } from '../types';
+
+interface Variables {
+  user: Record<string, string>;
+  defaults: { name: string; default: string }[];
+}
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  components?: ComponentOpts;
+  components?: CustomComponents;
   imports?: Record<string, unknown>;
   baseUrl?: string;
   terms?: GlossaryTerm[];
   variables?: Variables;
 };
 
-type ComponentOpts = Record<string, (props: any) => React.ReactNode>;
-
-const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts) => {
+const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxComponents => {
   const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
     map[`h${index + 1}`] = Components.Heading((index + 1) as Depth);
     return map;
   }, {});
 
   const components = {
-    ...more,
     ...Components,
     Variable,
     code: Components.Code,
@@ -38,34 +41,36 @@ const makeUseMDXComponents = (more: RunOpts['components']): (() => ComponentOpts
     embed: Components.Embed,
     img: Components.Image,
     table: Components.Table,
-    'table-of-contents': Components.TableOfContents,
     // @ts-expect-error
     ...headings,
+    ...more,
   };
 
   return () => components;
 };
 
-const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => {
+const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
-  const { components, terms, variables, baseUrl, ...opts } = _opts;
-  const vfile = new VFile(stringOrFile) as VFileWithToc;
+  const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
+  const defaults = Object.fromEntries(Object.entries(components).map(([tag, module]) => [tag, module.default]));
 
-  const exec = (file: VFile | string, toc = false) =>
-    mdxRun(file, {
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(defaults) }: RunOpts = {}) => {
+    return mdxRun(text, {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
       imports: { React },
-      useMDXComponents: makeUseMDXComponents({ ...components, ...(toc && { p: Fragment }) }),
+      useMDXComponents,
       // @ts-expect-error
       variables: VariableProxy(variables),
       ...opts,
-    });
+    }) as Promise<RMDXModule>;
+  };
 
-  const file = await exec(vfile);
-  const Content = file.default;
-  const { default: Toc } = 'toc' in vfile.data ? await exec(vfile.data.toc.vfile, true) : { default: null };
+  const { toc, default: Content } = await exec(string);
+
+  const tocMdx = tocToMdx(toc, components);
+  const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
 
   return {
     default: () => (
@@ -73,7 +78,9 @@ const run = async (stringOrFile: string | VFileWithToc, _opts: RunOpts = {}) => 
         <Content />
       </Contexts>
     ),
-    toc: () =>
+    toc,
+    Toc: () =>
+      tocMdx &&
       Toc && (
         <Components.TableOfContents>
           <Toc />
