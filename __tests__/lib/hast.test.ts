@@ -1,4 +1,4 @@
-import { hast } from '../../lib';
+import { hast, hastFromHtml } from '../../lib';
 import { h } from 'hastscript';
 
 describe('hast transformer', () => {
@@ -20,5 +20,19 @@ describe('hast transformer', () => {
     );
 
     expect(hast(md, { components })).toStrictEqualExceptPosition(expected);
+  });
+});
+
+describe('hastFromHtml', () => {
+  it('parses html', () => {
+    const html = '<div><span>Nice</span></div>';
+    const tree = hastFromHtml(html);
+
+    // @ts-ignore
+    expect(tree.children[0].tagName).toBe('html');
+    // @ts-ignore
+    expect(tree.children[0].children[1].children[0].tagName).toBe('div');
+    // @ts-ignore
+    expect(tree.children[0].children[1].children[0].children[0].tagName).toBe('span');
   });
 });
