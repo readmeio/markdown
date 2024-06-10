@@ -2,21 +2,6 @@ import { mdx } from '../../index';
 import * as rdmd from '@readme/markdown-legacy';
 
 describe('compatability with RDMD', () => {
-  it('compiles variable nodes', () => {
-    const ast = {
-      type: 'readme-variable',
-      text: 'parliament',
-      data: {
-        hName: 'readme-variable',
-        hProperties: {
-          variable: 'parliament',
-        },
-      },
-    };
-
-    expect(mdx(ast).trim()).toBe('<Variable name="parliament" />');
-  });
-
   it('compiles glossary nodes', () => {
     const ast = {
       type: 'readme-glossary-item',

@@ -8,7 +8,6 @@ import * as Components from '../components';
 import Contexts from '../contexts';
 import { GlossaryTerm } from '../contexts/GlossaryTerms';
 import { Depth } from '../components/Heading';
-import VariableProxy from './variable-proxy';
 import { tocToMdx } from '../processor/plugin/toc';
 import compile from './compile';
 import { CustomComponents, RMDXModule } from '../types';
@@ -61,8 +60,6 @@ const run = async (string: string, _opts: RunOpts = {}) => {
       baseUrl: import.meta.url,
       imports: { React },
       useMDXComponents,
-      // @ts-expect-error
-      variables: VariableProxy(variables),
       ...opts,
     }) as Promise<RMDXModule>;
   };

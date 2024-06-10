@@ -25,9 +25,10 @@ const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
       ...opts,
     });
 
-    return String(vfile)
-      .replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React')
-      .replace(/"use strict";/, `"use strict";\nconst { variables } = arguments[0]`);
+    return String(vfile).replace(
+      /await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/,
+      'arguments[0].imports.React',
+    );
   } catch (error) {
     throw error.line ? new MdxSyntaxError(error, text) : error;
   }

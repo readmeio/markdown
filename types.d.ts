@@ -66,6 +66,15 @@ interface TutorialTile extends Node {
   type: NodeTypes.tutorialTile;
 }
 
+interface Variable extends Node {
+  data: Data & {
+    hName: 'Variable';
+    hProperties: {
+      name: string;
+    };
+  };
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
