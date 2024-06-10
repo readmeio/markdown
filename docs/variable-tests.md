@@ -4,14 +4,14 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
-This is the variable `defvar`: {variables.defvar}
+This is the variable `defvar`: {user.defvar}
 
-Ok, but this one is defined: {variables.email}
+Ok, but this one is defined: {user.email}
 
 It does not render in code blocks:
 
 ```
-{variables.defvar}
+{user.defvar}
 ```
 
 ## Glossary Items
