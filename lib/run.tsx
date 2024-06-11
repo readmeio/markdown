@@ -51,7 +51,9 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
-  const defaults = Object.fromEntries(Object.entries(components).map(([tag, module]) => [tag, module.default]));
+  const defaults = Object.fromEntries(
+    Object.entries(components).map(([tag, module]) => [tag, 'default' in module ? module.default : module]),
+  );
 
   const exec = (text: string, { useMDXComponents = makeUseMDXComponents(defaults) }: RunOpts = {}) => {
     return mdxRun(text, {
