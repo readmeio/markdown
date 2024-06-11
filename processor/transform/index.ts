@@ -5,8 +5,8 @@ import gemojiTransformer from './gemoji+';
 import injectComponents from './inject-components';
 import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';
-import variables from './variables';
+import variablesTransformer from './variables';
 
-export { readmeComponentsTransformer, readmeToMdx, injectComponents, variables };
+export { readmeComponentsTransformer, readmeToMdx, injectComponents, variablesTransformer };
 
-export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer, variables];
+export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer, variablesTransformer];

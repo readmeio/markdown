@@ -8,10 +8,16 @@ This is the variable `defvar`: {user.defvar}
 
 Ok, but this one is defined: {user.email}
 
-It does not render in code blocks:
+It **does** render in code blocks:
 
 ```
 {user.defvar}
+```
+
+And if you don't want that, you can escape it:
+
+```
+\{user.defvar}
 ```
 
 ## Glossary Items

@@ -1,4 +1,3 @@
-import { NodeTypes } from '../../enums';
 import { Transform } from 'mdast-util-from-markdown';
 import { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 

@@ -11,6 +11,15 @@ const components = {
 
 > 📘 It can render JSX components!
 `,
+  Test: `
+export const Test = ({ color = 'thistle' } = {}) => {
+  return <div style={{ backgroundColor: color }}>
+    Hello, World!
+  </div>;
+};
+
+export default Test;
+  `,
 };
 
 const executedComponents = {};
