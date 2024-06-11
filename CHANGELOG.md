@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.52
+
+### 🛠 Fixes & Updates
+
+* allow non-modules ([70b2a90](https://github.com/readmeio/markdown/commit/70b2a90580f64b1561d8f608ce83272561d3f26f))
+
 ## Version 6.75.0-beta.51
 
 ### ✨ New & Improved
