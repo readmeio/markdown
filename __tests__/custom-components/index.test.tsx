@@ -4,13 +4,15 @@ import { render, screen } from '@testing-library/react';
 import { execute } from '../helpers';
 
 describe('Custom Components', () => {
-  const Example = () => <div>It works!</div>;
-  const Composite = () => (
-    <>
-      <div>Does it work?</div>
-      <Example />
-    </>
-  );
+  const Example = { default: () => <div>It works!</div> };
+  const Composite = {
+    default: () => (
+      <>
+        <div>Does it work?</div>
+        <Example.default />
+      </>
+    ),
+  };
 
   it('renders custom components', async () => {
     const doc = `

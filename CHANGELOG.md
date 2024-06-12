@@ -1,6 +1,24 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.52
+
+### 🛠 Fixes & Updates
+
+* allow non-modules ([70b2a90](https://github.com/readmeio/markdown/commit/70b2a90580f64b1561d8f608ce83272561d3f26f))
+
+## Version 6.75.0-beta.51
+
+### ✨ New & Improved
+
+* plain ([#898](https://github.com/readmeio/markdown/issues/898)) ([0b60259](https://github.com/readmeio/markdown/commit/0b60259b002a61964c0f0a85589d625946f508e9))
+
+
+### 🛠 Fixes & Updates
+
+* toc ([#900](https://github.com/readmeio/markdown/issues/900)) ([b3e8f7d](https://github.com/readmeio/markdown/commit/b3e8f7d0713361b87ad30077a79c0d08c5abb937))
+* types ([86a199b](https://github.com/readmeio/markdown/commit/86a199bacc639772a6bbb7994c6132f8d58db3c5))
+
 ## Version 6.75.0-beta.50
 
 ### ✨ New & Improved
