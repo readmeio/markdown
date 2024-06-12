@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.54
+
+### ✨ New & Improved
+
+* add html to hast ([#901](https://github.com/readmeio/markdown/issues/901)) ([6de3d89](https://github.com/readmeio/markdown/commit/6de3d895bac72c2452b552ae8aedca75649aea23))
+
+
+### 🛠 Fixes & Updates
+
+* cleanup ([e34ebf5](https://github.com/readmeio/markdown/commit/e34ebf579c8a09eea04abe1815775c1c27d8100c))
+
 ## Version 6.75.0-beta.53
 
 ### 🛠 Fixes & Updates
