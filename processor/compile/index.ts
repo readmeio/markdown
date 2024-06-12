@@ -15,14 +15,14 @@ function compilers() {
 
   const handlers = {
     [NodeTypes.callout]: callout,
-    [NodeTypes.emoji]: gemoji,
     [NodeTypes.codeTabs]: codeTabs,
-    [NodeTypes.embed]: embed,
-    [NodeTypes.htmlBlock]: htmlBlock,
-    [NodeTypes.image]: image,
-    [NodeTypes.variable]: variable,
+    [NodeTypes.embedBlock]: embed,
+    [NodeTypes.emoji]: gemoji,
     [NodeTypes.glossary]: compatibility,
+    [NodeTypes.htmlBlock]: htmlBlock,
+    [NodeTypes.imageBlock]: image,
     [NodeTypes.reusableContent]: compatibility,
+    [NodeTypes.variable]: variable,
     html: compatibility,
   };
 

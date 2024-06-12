@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.53
+
+### 🛠 Fixes & Updates
+
+* embeds and images save better ([#893](https://github.com/readmeio/markdown/issues/893)) ([67e0fec](https://github.com/readmeio/markdown/commit/67e0fec706d0538b9652552800aabe6f5ec0d97e))
+
+## Version 6.75.0-beta.52
+
+### 🛠 Fixes & Updates
+
+* allow non-modules ([70b2a90](https://github.com/readmeio/markdown/commit/70b2a90580f64b1561d8f608ce83272561d3f26f))
+
 ## Version 6.75.0-beta.51
 
 ### ✨ New & Improved

@@ -1,6 +1,7 @@
 import calloutTransformer from './callouts';
 import codeTabsTransfromer from './code-tabs';
 import embedTransformer from './embeds';
+import imageTransformer from './images';
 import gemojiTransformer from './gemoji+';
 import injectComponents from './inject-components';
 import readmeComponentsTransformer from './readme-components';
@@ -9,4 +10,11 @@ import variablesTransformer from './variables';
 
 export { readmeComponentsTransformer, readmeToMdx, injectComponents, variablesTransformer };
 
-export default [calloutTransformer, codeTabsTransfromer, embedTransformer, gemojiTransformer, variablesTransformer];
+export default [
+  calloutTransformer,
+  codeTabsTransfromer,
+  embedTransformer,
+  imageTransformer,
+  gemojiTransformer,
+  variablesTransformer,
+];

@@ -1,21 +1,31 @@
 import { visit } from 'unist-util-visit';
+import { Paragraph, Parents, Node } from 'mdast';
 
 import { NodeTypes } from '../../enums';
+import { EmbedBlock } from '../../types';
 
 const embedTransformer = () => {
-  return (tree: any) => {
-    visit(tree, 'link', (node, _, parent) => {
-      if (parent.type !== 'paragraph' || parent.children.length > 1 || node.title !== '@embed') return;
+  return (tree: Node) => {
+    visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
+      const [{ url, title, children = [] }] = node.children as any;
+
+      if (title !== '@embed') return;
       const newNode = {
-        type: NodeTypes.embed,
+        type: NodeTypes.embedBlock,
+        label: children[0]?.value,
+        title,
+        url,
         data: {
-          hProperties: { title: node.children[0]?.value ?? node.url, url: node.url, provider: node.url },
-          hName: 'Embed',
+          hProperties: {  
+            url, 
+            title: children[0]?.value ?? title,
+          },
+          hName: 'embed',
         },
         position: node.position,
-        children: [],
-      };
-      parent = newNode;
+      } as EmbedBlock;
+
+      parent.children.splice(i, 1, newNode);
     });
   };
 };

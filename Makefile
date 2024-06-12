@@ -1,3 +1,5 @@
+-include .env
+
 .DEFAULT_GOAL := help
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
@@ -13,6 +15,17 @@ example/public/img/emojis: node_modules/@readme/emojis
 	rm -rf example/public/img/emojis
 	mkdir -p example/public/img/emojis
 	cp node_modules/@readme/emojis/src/img/*.png example/public/img/emojis/
+
+mdx:
+	npm run build && \
+	cp -R dist/* ${README_PATH}/node_modules/@readme/mdx/dist && \
+	cd ${README_PATH} && \
+	npm run build --workspace=@readme/react && \
+	npm run build --workspace=@readme/bundles && \
+	npm run ui:build && \
+	echo "${NODE_ENV}" > public/data/build-env && \
+	npx ts-node ./bin/print-webpack-config.ts > ./build-time-webpack-config.json && \
+	npm run ui
 
 ifeq ($(USE_LEGACY), true)
 dockerfile = -f Dockerfile.legacy

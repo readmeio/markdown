@@ -1,4 +1,5 @@
 import { Code, Data, Literal, Parent, Blockquote, Node, Root } from 'mdast';
+
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
 import { MDXContent, MDXModule } from 'mdx/types';
@@ -23,12 +24,18 @@ interface CodeTabs extends Parent {
   };
 }
 
-interface Embed extends Parent {
-  type: NodeTypes.embed;
+interface EmbedBlock extends Node {
+  type: NodeTypes.embedBlock;
+  title?: string;
+  label?: string;
+  url?: string;
   data: Data & {
     hName: 'embed';
     hProperties: {
       title: string;
+      html?: string;
+      providerName?: string;
+      providerUrl?: string;
       url: string;
       image?: string;
       favicon?: string;
@@ -43,6 +50,26 @@ interface HTMLBlock extends Node {
     hName: 'html-block';
     hProperties: {
       html: string;
+    };
+  };
+}
+
+interface ImageBlock extends Node {
+  type: NodeTypes.imageBlock;
+  url: string;
+  alt: string;
+  title: string;
+  data: Data & {
+    hName: 'img';
+    hProperties: {
+      align?: string;
+      alt?: string;
+      caption?: string;
+      border?: string;
+      src: string;
+      title?: string;
+      width?: string;
+      lazy?: boolean;
     };
   };
 }
@@ -79,7 +106,8 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.embed]: Embed;
+    [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
@@ -92,9 +120,10 @@ declare module 'mdast' {
   interface RootContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.embed]: Embed;
+    [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
 }

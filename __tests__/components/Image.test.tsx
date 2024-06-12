@@ -30,17 +30,17 @@ describe('Image', () => {
       />
     );
 
-    expect(screen.getByRole('figure')).toMatchInlineSnapshot(`
-      <figure>
+    expect(screen.getByRole('button')).toMatchInlineSnapshot(`
+      <span
+        aria-label=""
+        class="img lightbox closed"
+        role="button"
+        tabindex="0"
+      >
         <span
-          aria-label=""
-          class="img lightbox closed"
-          role="button"
-          tabindex="0"
+          class="lightbox-inner"
         >
-          <span
-            class="lightbox-inner"
-          >
+          <figure>
             <img
               alt=""
               class="img img-align-center "
@@ -50,12 +50,12 @@ describe('Image', () => {
               title=""
               width="auto"
             />
-          </span>
+            <figcaption>
+              A pizza bro
+            </figcaption>
+          </figure>
         </span>
-        <figcaption>
-          A pizza bro
-        </figcaption>
-      </figure>
+      </span>
     `);
   });
 });

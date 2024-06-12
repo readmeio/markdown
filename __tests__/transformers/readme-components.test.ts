@@ -5,7 +5,7 @@ describe('Readme Components Transformer', () => {
     { md: '<Callout />', type: 'rdme-callout' },
     { md: '<Code />', type: 'code' },
     { md: '<CodeTabs />', type: 'code-tabs' },
-    { md: '<Image />', type: 'image' },
+    { md: '<Image />', type: 'image-block' },
     { md: '<Table />', type: 'table' },
     { md: '<TutorialTile />', type: 'tutorial-tile' },
   ];
@@ -50,7 +50,7 @@ Second
     },
     image: {
       md: `![](http://placekitten.com/600/200)`,
-      mdx: `<Image url="http://placekitten.com/600/200" />`,
+      mdx: `<Image src="http://placekitten.com/600/200" />`,
     },
     table: {
       md: `
@@ -75,14 +75,6 @@ Second
   it.each(Object.entries(docs))('matches the equivalent markdown for %s', (type, { md, mdx }) => {
     let mdTree = mdast(md);
     const mdxTree = mdast(mdx);
-
-    if (type === 'image') {
-      // @todo something about these dang paragraphs!
-      mdTree = {
-        type: 'root',
-        children: mdTree.children[0].children,
-      };
-    }
 
     expect(mdxTree).toStrictEqualExceptPosition(mdTree);
   });
