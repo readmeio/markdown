@@ -52,7 +52,6 @@ const coerceJsxToMd =
 
       const { alt = '', url, title = null } = getAttrs<Pick<ImageBlock, 'alt' | 'title' | 'url'>>(node);
       const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
-      
       const mdNode: ImageBlock = {
         alt,
         position,
@@ -119,7 +118,7 @@ const coerceJsxToMd =
           : {
               data: {
                 hName: node.name,
-                ...(hProperties ?? hProperties),
+                ...(Object.keys(hProperties).length && { hProperties }),
               },
             }),
         position: node.position,

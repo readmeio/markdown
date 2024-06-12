@@ -19,10 +19,6 @@ const utils = {
   calloutIcons: {},
 };
 
-export const reactProcessor = (opts = {}) => {
-  return createProcessor({ remarkPlugins, ...opts });
-};
-
 export const html = (text: string, opts = {}) => {
   unimplemented('html export');
 };
