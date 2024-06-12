@@ -1,17 +1,20 @@
-import type { Image } from 'mdast';
+import type { ImageBlock } from 'types';
+import { formatHProps, getHPropKeys, getHProps } from '../utils';
 
-const image = (node: Image) => {
-  const { align, className, width } = node.data?.hProperties || {};
-  const complexImage: boolean = Boolean(width) || Boolean(className) || Boolean(align);
+const image = (node: ImageBlock) => {
+  const attributes = formatHProps<ImageBlock['data']['hProperties']>(node);
+  const hProps = getHProps<ImageBlock['data']['hProperties']>(node);
+  const hPropKeys = getHPropKeys<string[]>(node);
+  
+  const ImageBlock = `<Image ${attributes} />`;
+  const MDImage = `![${node.alt ?? ''}](${hProps.src ? hProps.src : node.url}${node.title ? ` "${node.title}")` : ')'}`;
 
-  if (complexImage) {
-    const attributes = Object.keys(node.data?.hProperties)
-      .map(key => `${key}="${node.data?.hProperties[key]}"`)
-      .join(' ');
-    return `<Image ${attributes} />`;
+  if (Boolean(attributes)) {
+    if (hPropKeys.includes('src') && (hPropKeys.includes('width') || hPropKeys.includes('border') || hPropKeys.includes('align'))) {
+      return ImageBlock;
+    }
   }
-
-  return `![${node.alt}](${node.url}${node.title ? ` "${node.title}")` : ')'}`;
-};
+  return MDImage;
+}
 
 export default image;

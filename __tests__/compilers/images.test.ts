@@ -6,4 +6,10 @@ describe('image compiler', () => {
 
     expect(mdx(mdast(txt))).toMatch(txt);
   });
+
+  it('correctly serializes an Image component back to MDX', () => {
+    const doc = '<Image src="/path/to/image.png" width="200px" alt="alt text" />';
+
+    expect(mdx(mdast(doc))).toMatch(doc);
+  });
 });

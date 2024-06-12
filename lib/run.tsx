@@ -35,8 +35,6 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     ...Components,
     Variable,
     code: Components.Code,
-    'code-tabs': Components.CodeTabs,
-    'html-block': Components.HTMLBlock,
     embed: Components.Embed,
     img: Components.Image,
     table: Components.Table,

@@ -57,16 +57,16 @@ const Image = (Props: ImageProps) => {
 
   if (caption) {
     return (
-      <figure>
-        <span
-          aria-label={alt}
-          className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-          onClick={toggle}
-          onKeyDown={handleKeyDown}
-          role={'button'}
-          tabIndex={0}
-        >
-          <span className="lightbox-inner">
+      <span
+        aria-label={alt}
+        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+        onClick={toggle}
+        onKeyDown={handleKeyDown}
+        role={'button'}
+        tabIndex={0}
+      >
+        <span className="lightbox-inner">
+          <figure>
             <img
               src={src}
               width={width}
@@ -76,34 +76,36 @@ const Image = (Props: ImageProps) => {
               alt={alt}
               loading={lazy ? 'lazy' : 'eager'}
             />
-          </span>
+            <figcaption>{caption}</figcaption>
+          </figure>
         </span>
-        <figcaption>{caption}</figcaption>
-      </figure>
+      </span>
     );
   }
 
   return (
-    <span
-      aria-label={alt}
-      className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-      onClick={toggle}
-      onKeyDown={handleKeyDown}
-      role={'button'}
-      tabIndex={0}
-    >
-      <span className="lightbox-inner">
-        <img
-          src={src}
-          width={width}
-          height={height}
-          title={title}
-          className={`img img-align-${align} ${border ? 'border' : ''}`}
-          alt={alt}
-          loading={lazy ? 'lazy' : 'eager'}
-        />
+    <p>
+      <span
+        aria-label={alt}
+        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+        onClick={toggle}
+        onKeyDown={handleKeyDown}
+        role={'button'}
+        tabIndex={0}
+      >
+        <span className="lightbox-inner">
+          <img
+            src={src}
+            width={width}
+            height={height}
+            title={title}
+            className={`img img-align-${align} ${border ? 'border' : ''}`}
+            alt={alt}
+            loading={lazy ? 'lazy' : 'eager'}
+          />
+        </span>
       </span>
-    </span>
+    </p>
   );
 };
 

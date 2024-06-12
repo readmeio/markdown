@@ -1,16 +1,15 @@
-import type { Embed } from "types";
+import { formatHProps, getHProps } from "../utils";
+import type { EmbedBlock } from "types";
 
-const embed = (node: Embed) => {
-  const { image, favicon, iframe, title, url } = node.data?.hProperties || {};
-  const complexEmbed: boolean = Boolean(image) || Boolean(favicon) || iframe;
+const embed = (node: EmbedBlock) => {
+  const attributes = formatHProps<EmbedBlock['data']['hProperties']>(node)
+  const props = getHProps<EmbedBlock['data']['hProperties']>(node);
 
-  if (complexEmbed) {
-    const attributes = Object.keys(node.data?.hProperties).map(key => `${key}="${node.data?.hProperties[key]}"`).join(' ')
-    // TODO: make this a util
-    return `<Embed ${attributes} />`;
-  }
+  if (node.title !== '@embed') {
+    return `<Embed ${attributes} />`
+  };
 
-  return `[${title}](${url} "@embed")'`;
+  return `[${node.label || ''}](${props.url} "${node.title}")`
 }
 
 export default embed;
