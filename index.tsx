@@ -6,8 +6,6 @@ import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
 
-import { compile, hast, run, mdast, mdx, plain, remarkPlugins } from './lib';
-
 import './styles/main.scss';
 
 const unimplemented = debug('mdx:unimplemented');
@@ -33,4 +31,5 @@ export const esast = (text: string, opts = {}) => {
   unimplemented('esast export');
 };
 
-export { compile, hast, run, mdast, mdx, plain, Components, utils };
+export { compile, hast, hastFromHtml, run, mdast, mdx, plain, remarkPlugins } from './lib';
+export { Components, utils };
