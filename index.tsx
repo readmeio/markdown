@@ -1,7 +1,5 @@
 import debug from 'debug';
 
-import { createProcessor } from '@mdx-js/mdx';
-
 import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
@@ -17,10 +15,6 @@ const utils = {
 
   getHref,
   calloutIcons: {},
-};
-
-export const reactProcessor = (opts = {}) => {
-  return createProcessor({ remarkPlugins, ...opts });
 };
 
 export const html = (text: string, opts = {}) => {
