@@ -5,7 +5,7 @@ describe('Readme Components Transformer', () => {
     { md: '<Callout />', type: 'rdme-callout' },
     { md: '<Code />', type: 'code' },
     { md: '<CodeTabs />', type: 'code-tabs' },
-    { md: '<Image />', type: 'image' },
+    { md: '<Image />', type: 'image-block' },
     { md: '<Table />', type: 'table' },
     { md: '<TutorialTile />', type: 'tutorial-tile' },
   ];

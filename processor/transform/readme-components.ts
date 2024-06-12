@@ -3,7 +3,7 @@ import { BlockContent, Code, Parents, Table } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Callout, Embed, RMDXImage } from 'types';
+import { Callout, EmbedBlock, ImageBlock } from 'types';
 import { visit } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement } from '../utils';
@@ -12,9 +12,9 @@ const types = {
   Callout: NodeTypes['callout'],
   Code: 'code',
   CodeTabs: NodeTypes['codeTabs'],
-  Embed: NodeTypes['embed'],
+  EmbedBlock: NodeTypes['embed-block'],
   Glossary: NodeTypes['glossary'],
-  Image: NodeTypes['image'],
+  ImageBlock: NodeTypes['image-block'],
   Table: 'table',
   Variable: NodeTypes['variable'],
   td: 'tableCell',
@@ -50,18 +50,17 @@ const coerceJsxToMd =
     } else if (node.name === 'Image') {
       const { position } = node;
 
-      const { alt = '', url, title = null } = getAttrs<Pick<RMDXImage, 'alt' | 'title' | 'url'>>(node);
-      const attrs = getAttrs<RMDXImage['data']['hProperties']>(node);
+      const { alt = '', url, title = null } = getAttrs<Pick<ImageBlock, 'alt' | 'title' | 'url'>>(node);
+      const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
       
-      const mdNode: RMDXImage = {
+      const mdNode: ImageBlock = {
         alt,
         position,
-        children: node.children as any,
         title,
-        type: NodeTypes.image,
+        type: NodeTypes.imageBlock,
         url: url || attrs.src,
         data: {
-          hName: 'image',
+          hName: 'img',
           hProperties: attrs,
         },
       };
@@ -96,10 +95,11 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
     } else if (node.name === 'Embed') {
-      const hProperties = getAttrs<Embed['data']['hProperties']>(node);
+      const hProperties = getAttrs<EmbedBlock['data']['hProperties']>(node);
 
-      const mdNode: Embed = {
-        type: NodeTypes.embed,
+      const mdNode: EmbedBlock = {
+        type: NodeTypes.embedBlock,
+        title: hProperties.title,
         data: {
           hName: 'embed',
           hProperties,

@@ -13,40 +13,58 @@ interface EmbedProps {
   lazy?: boolean;
   url: string;
   title: string;
-  provider?: string;
+  providerName?: string;
+  providerUrl?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
   favicon?: string;
+  typeOfEmbed?: string;
 }
 
-const Embed = ({ lazy = true, url, provider, title, html, iframe, image, favicon, ...attrs }: EmbedProps) => {
+const Embed = ({
+  lazy = true,
+  url,
+  html,
+  providerName,
+  providerUrl,
+  title,
+  iframe,
+  image,
+  favicon,
+  ...attrs
+}: EmbedProps) => {
+  if (typeof iframe !== 'boolean') iframe = iframe === 'true';
+  if (html === 'false') html = undefined;
+
   if (iframe) {
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
   }
 
-  if (!provider)
-    provider = new URL(url).hostname
+  if (!providerUrl && url)
+    providerUrl = new URL(url).hostname
       .split(/(?:www)?\./)
       .filter(i => i)
       .join('.');
+
+  if (!providerName) providerName = providerUrl;
 
   const classes = ['embed', image ? 'embed_hasImg' : ''];
 
   return (
     <div className={classes.join(' ')}>
-      {html || iframe ? (
+      {html ? (
         <div className="embed-media" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
         <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">
           {!image || <img alt={title} className="embed-img" loading={lazy ? 'lazy' : undefined} src={image} />}
           {title && title !== '@embed' ? (
             <div className="embed-body">
-              {!favicon || <Favicon alt={provider} src={favicon} />}
-              {provider && (
+              {!favicon || <Favicon alt={providerName} src={favicon} />}
+              {providerUrl && (
                 <small className="embed-provider">
-                  {provider.search(/^@{1}/) < 0 ? (
-                    provider
+                  {providerUrl.search(/^@{1}/) < 0 ? (
+                    providerName
                   ) : (
                     <code style={{ fontFamily: 'var(--md-code-font, monospace)' }}>{url}</code>
                   )}

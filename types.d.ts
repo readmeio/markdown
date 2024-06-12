@@ -22,8 +22,8 @@ interface CodeTabs extends Parent {
   };
 }
 
-interface Embed extends Node {
-  type: NodeTypes.embed;
+interface EmbedBlock extends Node {
+  type: NodeTypes.embedBlock;
   title?: string;
   label?: string;
   url?: string;
@@ -31,11 +31,13 @@ interface Embed extends Node {
     hName: 'embed';
     hProperties: {
       title: string;
+      html?: string;
+      providerName?: string;
+      providerUrl?: string;
       url: string;
       image?: string;
       favicon?: string;
       iframe?: boolean;
-      typeOfEmbed?: string;
     };
   };
 }
@@ -50,14 +52,13 @@ interface HTMLBlock extends Node {
   };
 }
 
-interface RMDXImage extends Node {
-  type: NodeTypes.image;
+interface ImageBlock extends Node {
+  type: NodeTypes.imageBlock;
   url: string;
   alt: string;
   title: string;
-  children: Text[];
   data: Data & {
-    hName: 'image';
+    hName: 'img';
     hProperties: {
       align?: string;
       alt?: string;
@@ -94,8 +95,8 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.image]: RMDXImage;
-    [NodeTypes.embed]: Embed;
+    [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
@@ -108,9 +109,10 @@ declare module 'mdast' {
   interface RootContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.embed]: Embed;
+    [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
 }
