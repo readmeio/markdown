@@ -10,7 +10,6 @@ const embedTransformer = () => {
       const [{ url, title, children = [] }] = node.children as any;
 
       if (title !== '@embed') return;
-      console.log('embedTransformer -> node', node)
       const newNode = {
         type: NodeTypes.embedBlock,
         label: children[0]?.value,
