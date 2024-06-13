@@ -104,4 +104,20 @@ This is an image: <img src="http://example.com/#\\>" >
 
     expect(mdx(rdmd.mdast(md)).trim()).toBe('This is an image: <img src="http://example.com/#\\>" />');
   });
+
+  it('compiles escapes', () => {
+    const md = `
+\\- not a list item
+    `;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('\\- not a list item');
+  });
+
+  it('compiles escapes of backslashes', () => {
+    const md = `
+\\\\**still emphatic**
+    `;
+
+    expect(mdx(rdmd.mdast(md)).trim()).toBe('\\\\**still emphatic**');
+  });
 });

@@ -22,6 +22,7 @@ function compilers() {
     [NodeTypes.variable]: compatibility,
     [NodeTypes.glossary]: compatibility,
     [NodeTypes.reusableContent]: compatibility,
+    escape: compatibility,
     html: compatibility,
   };
 
