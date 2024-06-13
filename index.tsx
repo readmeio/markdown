@@ -1,7 +1,5 @@
 import debug from 'debug';
 
-import { createProcessor } from '@mdx-js/mdx';
-
 import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';

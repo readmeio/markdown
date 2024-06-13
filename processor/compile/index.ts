@@ -23,6 +23,7 @@ function compilers() {
     [NodeTypes.imageBlock]: image,
     [NodeTypes.reusableContent]: compatibility,
     [NodeTypes.variable]: variable,
+    escape: compatibility,
     html: compatibility,
   };
 
