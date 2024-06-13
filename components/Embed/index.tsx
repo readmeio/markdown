@@ -54,7 +54,7 @@ const Embed = ({
   return (
     <div className={classes.join(' ')}>
       {html ? (
-        <div className="embed-media" dangerouslySetInnerHTML={{ __html: html }} />
+        <div className="embed-media" dangerouslySetInnerHTML={{ __html: decodeURIComponent(html) }} />
       ) : (
         <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">
           {!image || <img alt={title} className="embed-img" loading={lazy ? 'lazy' : undefined} src={image} />}
