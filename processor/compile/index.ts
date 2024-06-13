@@ -5,6 +5,7 @@ import gemoji from './gemoji';
 import htmlBlock from './html-block';
 import image from './image';
 import compatibility from './compatibility';
+import variable from './variable';
 import { NodeTypes } from '../../enums';
 
 function compilers() {
@@ -14,14 +15,14 @@ function compilers() {
 
   const handlers = {
     [NodeTypes.callout]: callout,
-    [NodeTypes.emoji]: gemoji,
     [NodeTypes.codeTabs]: codeTabs,
     [NodeTypes.embedBlock]: embed,
+    [NodeTypes.emoji]: gemoji,
+    [NodeTypes.glossary]: compatibility,
     [NodeTypes.htmlBlock]: htmlBlock,
     [NodeTypes.imageBlock]: image,
-    [NodeTypes.variable]: compatibility,
-    [NodeTypes.glossary]: compatibility,
     [NodeTypes.reusableContent]: compatibility,
+    [NodeTypes.variable]: variable,
     escape: compatibility,
     html: compatibility,
   };

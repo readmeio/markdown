@@ -55,7 +55,7 @@ const Code = (props: CodeProps) => {
   };
 
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
-  const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts) : code;
+  const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
 
   return (
     <>

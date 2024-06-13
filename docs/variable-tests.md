@@ -4,16 +4,20 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
-<Variable variable="defvar" /> and `<Variable variable="defvar" />` and:
+This is the variable `defvar`: {user.defvar}
+
+Ok, but this one is defined: {user.email}
+
+It **does** render in code blocks:
 
 ```
-<Variable variable="defvar" />
+{user.defvar}
 ```
 
-and
+And if you don't want that, you can escape it:
 
-```js
-const xyz = "<Variable variable="defvar" />";
+```
+\{user.defvar}
 ```
 
 ## Glossary Items

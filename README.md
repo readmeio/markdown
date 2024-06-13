@@ -91,7 +91,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 - `components` (`Record<string, MDXModule>`, optional) -- An object of tag names to executed components.
 - `imports` (`Record<string, unknown>`, optional) -- An object of modules to import.
 - `terms` (`GlossaryTerm[]`, optional)
-- `variables` (`Variables`, optional)
+- `variables` (`Variables`, optional) -- An object containing [user variables}(https://github.com/readmeio/variable).
 
 ### `RMDXModule`
 

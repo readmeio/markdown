@@ -21,6 +21,7 @@ const config = merge(common, {
     port: 9966,
     hot: true,
   },
+  devtool: 'eval',
   module: {
     rules: [
       {

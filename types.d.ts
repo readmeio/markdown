@@ -93,6 +93,15 @@ interface TutorialTile extends Node {
   type: NodeTypes.tutorialTile;
 }
 
+interface Variable extends Node {
+  data: Data & {
+    hName: 'Variable';
+    hProperties: {
+      name: string;
+    };
+  };
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
@@ -127,6 +136,11 @@ interface HastHeading extends Element {
 interface TocList extends Element {
   tagName: 'ul';
   children: TocListItem[];
+}
+
+interface Variables {
+  user: Record<string, string>;
+  defaults: { name: string; default: string }[];
 }
 
 interface TocListItem extends Element {

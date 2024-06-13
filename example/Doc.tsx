@@ -11,19 +11,21 @@ const components = {
 
 > 📘 It can render JSX components!
 `,
+  Test: `
+export const Test = ({ color = 'thistle' } = {}) => {
+  return <div style={{ backgroundColor: color }}>
+    Hello, World!
+  </div>;
+};
+
+export default Test;
+  `,
 };
 
 const executedComponents = {};
 Object.entries(components).forEach(async ([tag, body]) => {
   executedComponents[tag] = await mdx.run(mdx.compile(body));
 });
-
-const variables = {
-  user: {
-    email: 'test@example.com',
-  },
-  defaults: [],
-};
 
 const terms = [
   {
@@ -39,6 +41,19 @@ const terms = [
     definition: 'having an internal cause or origin',
   },
 ];
+
+const variables = {
+  user: {
+    email: 'kelly@readme.io',
+    name: 'kelly joseph price',
+  },
+  defaults: [
+    {
+      name: 'defvar',
+      default: '(default value for defvar)',
+    },
+  ],
+};
 
 const Doc = () => {
   const { fixture } = useParams();

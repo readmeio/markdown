@@ -5,7 +5,6 @@ import { toXml } from 'xast-util-to-xml';
 import { NodeTypes } from '../../enums';
 
 type CompatNodes =
-  | { type: NodeTypes.variable; text: string }
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
   | { type: NodeTypes.glossary; data: { hName: 'Glossary' }; children: [{ type: 'text'; value: string }] }
   | { type: NodeTypes.reusableContent; tag: string }
@@ -30,8 +29,6 @@ const html = (node: Html) => {
 
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
-    case NodeTypes.variable:
-      return `<Variable name="${node.text}" />`;
     case NodeTypes.glossary:
       // @ts-expect-error
       const term = node.data?.hProperties?.term || node.children[0].value;
