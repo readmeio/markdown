@@ -9,6 +9,7 @@ type CompatNodes =
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
   | { type: NodeTypes.glossary; data: { hName: 'Glossary' }; children: [{ type: 'text'; value: string }] }
   | { type: NodeTypes.reusableContent; tag: string }
+  | { type: 'escape'; value: string }
   | Html;
 
 /*
@@ -39,6 +40,8 @@ const compatibility = (node: CompatNodes) => {
       return `<${node.tag} />`;
     case 'html':
       return html(node);
+    case 'escape':
+      return `\\${node.value}`;
     default:
       throw new Error('Unhandled node type!');
   }
