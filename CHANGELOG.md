@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.55
+
+### ✨ New & Improved
+
+* escapes ([#903](https://github.com/readmeio/markdown/issues/903)) ([94c37bc](https://github.com/readmeio/markdown/commit/94c37bc2dcd8bdfc63e7ecdd3ee761a93ee54924))
+
 ## Version 6.75.0-beta.54
 
 ### ✨ New & Improved
