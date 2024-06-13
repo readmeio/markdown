@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.56
+
+### 🛠 Fixes & Updates
+
+* embed rendering on the hub ([#904](https://github.com/readmeio/markdown/issues/904)) ([828f0a5](https://github.com/readmeio/markdown/commit/828f0a5debfa5d2352153413eaee933ec340f358))
+
 ## Version 6.75.0-beta.55
 
 ### ✨ New & Improved
