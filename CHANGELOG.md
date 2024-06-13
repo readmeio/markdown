@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.57
+
+### ✨ New & Improved
+
+* jsx variables ([#899](https://github.com/readmeio/markdown/issues/899)) ([3ed86e3](https://github.com/readmeio/markdown/commit/3ed86e3e50f681e5dcde9a7315556f2a233cc011))
+
 ## Version 6.75.0-beta.56
 
 ### 🛠 Fixes & Updates
