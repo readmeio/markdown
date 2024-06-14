@@ -35,9 +35,13 @@ const Embed = ({
   ...attrs
 }: EmbedProps) => {
   if (typeof iframe !== 'boolean') iframe = iframe === 'true';
-  if (html === 'false') html = undefined;
-  if (html !== decodeURIComponent(html || '')) {
-    html = decodeURIComponent(html);
+
+  if (html) {
+    try {
+      if (html !== decodeURIComponent(html)) html = decodeURIComponent(html);
+    } catch (e) {
+      if (html === 'false') html = undefined;
+    }
   }
 
   if (iframe) {
