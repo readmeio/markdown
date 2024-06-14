@@ -38,7 +38,11 @@ const Embed = ({
 
   if (html) {
     try {
-      if (html !== decodeURIComponent(html)) html = decodeURIComponent(html);
+      if (html !== decodeURIComponent(html)) {
+        html = decodeURIComponent(html);
+      } else {
+        if (html === 'false') html = undefined;
+      }
     } catch (e) {
       if (html === 'false') html = undefined;
     }
