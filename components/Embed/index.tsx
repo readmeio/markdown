@@ -44,7 +44,8 @@ const Embed = ({
         html = undefined;
       }
     } catch (e) {
-      if (html === 'false') html = undefined;
+      // html wasn't HTML apparently
+      html = undefined;
     }
   }
 
