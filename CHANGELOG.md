@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.58
+
+### 🛠 Fixes & Updates
+
+* decode HTML outside of component render ([#905](https://github.com/readmeio/markdown/issues/905)) ([9fdf13f](https://github.com/readmeio/markdown/commit/9fdf13fbc1a8bc1ec0fb207e0ed5da2c9cbd6163))
+
 ## Version 6.75.0-beta.57
 
 ### ✨ New & Improved
