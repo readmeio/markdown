@@ -36,7 +36,9 @@ const Embed = ({
 }: EmbedProps) => {
   if (typeof iframe !== 'boolean') iframe = iframe === 'true';
   if (html === 'false') html = undefined;
-  if (html) html = decodeURIComponent(html);
+  if (html !== decodeURIComponent(html || '')) {
+    html = decodeURIComponent(html);
+  }
 
   if (iframe) {
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
