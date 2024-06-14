@@ -35,7 +35,19 @@ const Embed = ({
   ...attrs
 }: EmbedProps) => {
   if (typeof iframe !== 'boolean') iframe = iframe === 'true';
-  if (html === 'false') html = undefined;
+
+  if (html) {
+    try {
+      if (html !== decodeURIComponent(html)) {
+        html = decodeURIComponent(html);
+      } else if (html === 'false') {
+        html = undefined;
+      }
+    } catch (e) {
+      // html wasn't HTML apparently
+      html = undefined;
+    }
+  }
 
   if (iframe) {
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
@@ -54,7 +66,7 @@ const Embed = ({
   return (
     <div className={classes.join(' ')}>
       {html ? (
-        <div className="embed-media" dangerouslySetInnerHTML={{ __html: decodeURIComponent(html) }} />
+        <div className="embed-media" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
         <a className="embed-link" href={url} rel="noopener noreferrer" target="_blank">
           {!image || <img alt={title} className="embed-img" loading={lazy ? 'lazy' : undefined} src={image} />}
