@@ -40,8 +40,8 @@ const Embed = ({
     try {
       if (html !== decodeURIComponent(html)) {
         html = decodeURIComponent(html);
-      } else {
-        if (html === 'false') html = undefined;
+      } else if (html === 'false') {
+        html = undefined;
       }
     } catch (e) {
       if (html === 'false') html = undefined;
