@@ -1,5 +1,5 @@
 import { Node } from 'mdast';
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
 
 export const formatHProps = <T>(node: Node) => {
   const hProps = getHProps(node);
@@ -25,6 +25,17 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>
 
     return memo;
   }, {} as T);
+
+export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>
+    jsx.children.reduce((memo, child: MdxFlowExpression, i) => {
+     memo[i] = {
+      // TODO: infer type
+      type: 'text',
+      value: child.value,
+      position: child.position,
+     };
+      return memo;
+    }, [] as T);
 
 export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextElement => {
   return ['mdxJsxFlowElement', 'mdxJsxTextElement'].includes(node.type);

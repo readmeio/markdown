@@ -13,8 +13,10 @@ const extractScripts = (html: string = ''): [string, () => void] => {
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
-const HTMLBlock = ({ children = '', runScripts = false, safeMode = false }) => {
+const HTMLBlock = ({ children = '', runScripts, safeMode = false }) => {
   let html = children;
+  runScripts = runScripts === 'true' ? true : false;
+
   if (typeof html !== 'string') html = renderToStaticMarkup(html);
   const [cleanedHtml, exec] = extractScripts(html);
 
