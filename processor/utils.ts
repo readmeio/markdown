@@ -40,3 +40,21 @@ export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement) =>
 export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextElement => {
   return ['mdxJsxFlowElement', 'mdxJsxTextElement'].includes(node.type);
 }
+
+export const formatHTML = (html: string): string => {
+  if (html.startsWith('`') && html.endsWith('`')) {
+    html = html.slice(1, -1);
+  }
+  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+  const tab = cleaned.match(/^\s*/)[0].length;
+  const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
+  const unindented = cleaned.replace(tabRegex, '');
+  return unindented;
+}
+
+export const reformatHTML = (html: string, indent = 2) => {
+  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+  const tab = ' '.repeat(indent);
+  const indented = cleaned.split('\n').map((line: string) => `${tab}${line}`).join('\n');
+  return indented;
+}

@@ -39,7 +39,6 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     img: Components.Image,
     table: Components.Table,
     'code-tabs': Components.CodeTabs,
-    'html-block': Components.HTMLBlock,
     'embed-block': Components.Embed,
     'image-block': Components.Image,
     'table-of-contents': Components.TableOfContents,
