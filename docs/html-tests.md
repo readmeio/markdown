@@ -33,16 +33,14 @@ title: 'HTML Blocks'
 
 ## HTML in template literal
 
-<HTMLBlock>
-  {`
+<HTMLBlock>{`
     <script>console.log(true, 3);</script>
     <h3>Header 3</h3>
     <p>Paragraph with <em>italics</em> and <strong>bold stuff</strong>.</p>
     <div style="padding-left: 20px; color: blue">
       Behold, I am blue and indented!
     </div>
-  `}
-</HTMLBlock>
+`}</HTMLBlock>
 
 
 ## JSX in safe mode
@@ -59,13 +57,11 @@ title: 'HTML Blocks'
 
 ## HTML in safe mode
 
-<HTMLBlock safeMode={true}>
-{`
+<HTMLBlock safeMode={true}>{`
   <script>console.log(true, 5);</script>
   <h3>Header 5</h3>
   <p>Paragraph with <em>italics</em> and <strong>bold stuff</strong>.</p>
   <div style="padding-left: 20px; color: blue">
     Behold, I am blue and indented!
   </div>
-`}
-</HTMLBlock>
+`}</HTMLBlock>
