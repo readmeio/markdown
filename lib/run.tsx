@@ -40,6 +40,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     table: Components.Table,
     'code-tabs': Components.CodeTabs,
     'embed-block': Components.Embed,
+    'html-block': Components.HTMLBlock,
     'image-block': Components.Image,
     'table-of-contents': Components.TableOfContents,
     // @ts-expect-error

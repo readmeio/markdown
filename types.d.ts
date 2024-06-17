@@ -48,7 +48,7 @@ interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
   children: Text[];
   data: Data & {
-    hName: 'HTMLBlock';
+    hName: 'html-block';
     hProperties: {
       runScripts?: boolean | string;
       html: string;

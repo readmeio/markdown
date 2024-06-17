@@ -76,7 +76,7 @@ const coerceJsxToMd =
         children: [{ type: 'text', value: html }],
         type: NodeTypes.htmlBlock,
         data: {
-          hName: 'HTMLBlock',
+          hName: 'html-block',
           hProperties: {
             ...(runScripts && { runScripts }),
             html,
