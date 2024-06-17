@@ -5,7 +5,7 @@ const htmlBlock = (node: HTMLBlock) => {
   const { runScripts, html } = getHProps<HTMLBlock['data']['hProperties']>(node);
 
   return `<HTMLBlock${runScripts != null ? ` runScripts="${runScripts}"` : ''}>{\`
-  ${ reformatHTML(html) }
+${ reformatHTML(html) }
 \`}</HTMLBlock>`;
 }
 
