@@ -6,12 +6,13 @@ import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-u
  * This currently sets all the values to a string since we process/compile the MDX on the fly
  * through the editor, and it'll throw errors over malformed JSX. TODO: fix this.
  *
+ * @template T
  * @param {Node} node
  * @returns {string} formatted hProperties as JSX attributes
  */
-export const formatHProps = (node: Node): string => {
-  const hProps = getHProps(node);
-  const hPropKeys = getHPropKeys(node) as string[];
+export const formatHProps = <T>(node: Node): string => {
+  const hProps = getHProps<T>(node);
+  const hPropKeys = getHPropKeys<T>(node) as string[];
   return hPropKeys.map(key => `${key}="${hProps[key]}"`).join(' ');
 }
 
@@ -35,8 +36,8 @@ export const getHProps = <T>(node: Node): T => {
  * @returns {Array} array of hProperty keys
  */
 export const getHPropKeys = <T>(node: Node): any => { 
-  const hProps = getHProps(node);
-  return Object.keys(hProps) || [] as T;
+  const hProps = getHProps<T>(node);
+  return Object.keys(hProps) || [];
 }
 
 /**
