@@ -1,0 +1,8 @@
+.CardsGrid {
+  display: grid;
+  gap: 20px;
+  .Card {
+    padding: 10px;
+    border: 1px solid #CCC;
+  }
+}
