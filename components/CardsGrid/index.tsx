@@ -8,7 +8,7 @@ const CardsGrid = ({ columns = 2, children }) => {
   columns = columns >= 2 ? columns : 2;
   return (
     <div className="CardsGrid" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
-      {(Array.isArray(children) ? children : [children]).map(e => (
+      {React.Children.map(children, e => (
         <Card>{e}</Card>
       ))}
     </div>
