@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.59
+
+### ✨ New & Improved
+
+* new <Cards> component ([#908](https://github.com/readmeio/markdown/issues/908)) ([4df0213](https://github.com/readmeio/markdown/commit/4df0213bbdce2345ce9914b5e80e90f8b048d501))
+
 ## Version 6.75.0-beta.58
 
 ### 🛠 Fixes & Updates
