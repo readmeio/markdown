@@ -1,5 +1,6 @@
 export { default as Anchor } from './Anchor';
 export { default as Callout } from './Callout';
+export { default as Cards } from './CardsGrid';
 export { default as Code } from './Code';
 export { default as CodeTabs } from './CodeTabs';
 export { default as Embed } from './Embed';
