@@ -98,17 +98,17 @@ export const formatHTML = (html: string): string => {
   if (html.startsWith('`') && html.endsWith('`')) {
     html = html.slice(1, -1);
   }
-  // Removes the leading/trailing newlinesl
+  // Removes the leading/trailing newlines
   const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
-  // Get the number of spaces in the first line to determine the tab size
-  const tab = cleaned.match(/^\s*/)[0].length;
+  // // Get the number of spaces in the first line to determine the tab size
+  // const tab = cleaned.match(/^\s*/)[0].length;
 
-  // Remove the first indentation level from each line 
-  const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
-  const unindented = cleaned.replace(tabRegex, '');
+  // // Remove the first indentation level from each line 
+  // const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
+  // const unindented = cleaned.replace(tabRegex, '');
   
-  return unindented;
+  return cleaned;
 }
 
 /**
@@ -123,11 +123,11 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
   // Remove leading/trailing newlines
   const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
-  // Create a tab/indent with the specified number of spaces
-  const tab = ' '.repeat(indent);
+  // // Create a tab/indent with the specified number of spaces
+  // const tab = ' '.repeat(indent);
 
-  // Indent each line of the HTML (converts to an array, indents each line, then joins back)
-  const indented = cleaned.split('\n').map((line: string) => `${tab}${line}`).join('\n');
+  // // Indent each line of the HTML (converts to an array, indents each line, then joins back)
+  // const indented = cleaned.split('\n').map((line: string) => `${tab}${line}`).join('\n');
 
-  return indented;
+  return cleaned;
 }
