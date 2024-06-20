@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.60
+
+### 🛠 Fixes & Updates
+
+* updates to html block ([#906](https://github.com/readmeio/markdown/issues/906)) ([ddc97db](https://github.com/readmeio/markdown/commit/ddc97dbc9cafad133b4ac1e6f06eef067a1ca6d0))
+
 ## Version 6.75.0-beta.59
 
 ### ✨ New & Improved
