@@ -1,21 +1,28 @@
-@mixin gfmCodeBaseStyles($background: #F6F8FA, $background-dark: #242E34, $text: inherit) {
+@mixin gfmCodeBaseStyles($background: #f6f8fa, $background-dark: #242e34, $text: inherit) {
+  --font-size: 95%;
 
   code,
   kbd,
   pre {
-    font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+    font-family:
+      SFMono-Regular,
+      Consolas,
+      Liberation Mono,
+      Menlo,
+      Courier,
+      monospace;
     font-family: var(--md-code-font, SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace);
-    font-size: 1em
+    font-size: 1em;
   }
 
   code,
   pre {
-    font-size: 12px
+    font-size: 12px;
   }
 
   pre {
     margin-bottom: 0;
-    margin-top: 0
+    margin-top: 0;
   }
 
   code {
@@ -23,27 +30,27 @@
     background-color: var(--md-code-background, $background);
     border-radius: 3px;
     color: var(--md-code-text);
-    font-size: 85%;
+    font-size: var(--font-size);
     margin: 0;
-    padding: .2em .4em;
+    padding: 0.2em 0.4em;
 
-    >div[class*="cm-"] {
+    > div[class*='cm-'] {
       display: inherit;
     }
   }
 
   pre {
-    word-wrap: normal
+    word-wrap: normal;
   }
 
-  pre>code {
+  pre > code {
     background: 0 0;
     border: 0;
     font-size: 100%;
     margin: 0;
     padding: 0;
     white-space: pre;
-    word-break: normal
+    word-break: normal;
   }
 
   pre {
@@ -54,10 +61,10 @@
     border-radius: 3px;
     border-radius: var(--markdown-radius, 3px);
     border-radius: var(--md-code-radius, var(--markdown-radius, 3px));
-    font-size: 85%;
+    font-size: var(--font-size);
     line-height: 1.45;
     overflow: auto;
-    padding: 1em
+    padding: 1em;
   }
 
   pre code.theme-dark {
@@ -74,7 +81,7 @@
     max-width: auto;
     overflow: visible;
     padding: 0;
-    word-wrap: normal
+    word-wrap: normal;
   }
 
   kbd {
@@ -89,18 +96,18 @@
     font-size: 11px;
     line-height: 10px;
     padding: 3px 5px;
-    vertical-align: middle
+    vertical-align: middle;
   }
 }
 
 @mixin copyCodeButton {
   button.rdmd-code-copy {
-    DISPLAY: none !important; // hide by default
+    display: none !important; // hide by default
 
     & {
       -webkit-appearance: unset;
-      margin: .5em .6em 0 0;
-      padding: .25em .7em;
+      margin: 0.5em 0.6em 0 0;
+      padding: 0.25em 0.7em;
       cursor: copy;
       font: inherit;
       color: inherit;
@@ -111,67 +118,68 @@
       background: inherit;
       background: var(--md-code-background, inherit);
       box-shadow:
-        inset 0 0 0 1px rgba(#aaa, .66),
-        -1px 2px 6px -3px rgba(black, .1);
-      transition: .15s ease-out;
+        inset 0 0 0 1px rgba(#aaa, 0.66),
+        -1px 2px 6px -3px rgba(black, 0.1);
+      transition: 0.15s ease-out;
     }
 
     &:not(:hover) {
-
       &:before,
       &:after {
-        opacity: .66;
+        opacity: 0.66;
       }
     }
 
     &:hover {
       &:not(:active) {
         box-shadow:
-          inset 0 0 0 1px rgba(#8B8B8B, .75),
-          -1px 2px 6px -3px rgba(black, .2);
+          inset 0 0 0 1px rgba(#8b8b8b, 0.75),
+          -1px 2px 6px -3px rgba(black, 0.2);
       }
     }
 
     &:active {
       box-shadow:
-        inset 0 0 0 1px rgba(#8B8B8B, .5),
-        inset 1px 4px 6px -2px rgba(0, 0, 0, .175);
+        inset 0 0 0 1px rgba(#8b8b8b, 0.5),
+        inset 1px 4px 6px -2px rgba(0, 0, 0, 0.175);
 
       &:before,
       &:after {
-        opacity: .75;
+        opacity: 0.75;
       }
     }
 
     &:before,
     &:after {
       display: inline-block;
-      font: normal normal normal 1em/1 "Font Awesome 5 Free", "FontAwesome";
+      font:
+        normal normal normal 1em/1 'Font Awesome 5 Free',
+        'FontAwesome';
       text-rendering: auto;
       -webkit-font-smoothing: antialiased;
 
       line-height: 2;
       font-family: 'ReadMe-Icons';
       font-variant-ligatures: discretionary-ligatures;
-      font-feature-settings: "liga";
+      font-feature-settings: 'liga';
     }
 
     &:before {
-      content: "\e6c9";
+      content: '\e6c9';
       font-weight: 800;
-      transition: .3s .15s ease;
+      transition: 0.3s 0.15s ease;
     }
 
     &:after {
       // @todo why are these !important @rafe, you dumbell?
-      content: "\e942" !important;
+      content: '\e942' !important;
       font-weight: 900 !important;
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(.33);
+      transform: translate(-50%, -50%) scale(0.33);
       opacity: 0 !important;
-      transition: .3s 0s ease;
+      transition: 0.3s 0s ease;
     }
 
     &_copied {
@@ -185,13 +193,13 @@
       }
 
       &:before {
-        transition: .3s 0s ease;
-        transform: scale(.33);
+        transition: 0.3s 0s ease;
+        transform: scale(0.33);
         opacity: 0 !important;
       }
 
       &:after {
-        transition: .3s .15s ease;
+        transition: 0.3s 0.15s ease;
         transform: translate(-50%, -50%) scale(1);
         opacity: 1 !important;
       }
@@ -201,11 +209,11 @@
   pre {
     position: relative;
 
-    >code {
+    > code {
       background: inherit;
     }
 
-    >code.theme-dark {
+    > code.theme-dark {
       color: white;
     }
 
@@ -221,7 +229,7 @@
       overflow: hidden;
       padding: 0;
 
-      >code {
+      > code {
         display: block !important;
         overflow: auto;
         padding: 1em;
@@ -232,7 +240,7 @@
     // manage copied state style
     & {
       &:hover button.rdmd-code-copy:not(:hover) {
-        transition-delay: .4s;
+        transition-delay: 0.4s;
       }
 
       &:not(:hover) button.rdmd-code-copy:not(.rdmd-code-copy_copied) {
@@ -243,7 +251,7 @@
 }
 
 .markdown-body {
-  // --md-code-background: #F6F8FA;  
+  // --md-code-background: #F6F8FA;
   @include gfmCodeBaseStyles;
   @include copyCodeButton;
 }
