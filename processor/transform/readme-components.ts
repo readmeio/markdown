@@ -3,10 +3,10 @@ import { BlockContent, Code, Parents, Table } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Callout, EmbedBlock, ImageBlock } from 'types';
+import { Callout, EmbedBlock, HTMLBlock, ImageBlock } from 'types';
 import { visit } from 'unist-util-visit';
 
-import { getAttrs, isMDXElement } from '../utils';
+import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 
 const types = {
   Callout: NodeTypes['callout'],
@@ -15,6 +15,7 @@ const types = {
   EmbedBlock: NodeTypes['embed-block'],
   Glossary: NodeTypes['glossary'],
   ImageBlock: NodeTypes['image-block'],
+  HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
   Variable: NodeTypes['variable'],
   td: 'tableCell',
@@ -49,7 +50,6 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'Image') {
       const { position } = node;
-
       const { alt = '', url, title = null } = getAttrs<Pick<ImageBlock, 'alt' | 'title' | 'url'>>(node);
       const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
       const mdNode: ImageBlock = {
@@ -61,6 +61,26 @@ const coerceJsxToMd =
         data: {
           hName: 'img',
           hProperties: attrs,
+        },
+      };
+
+      parent.children[index] = mdNode;
+    } else if (node.name === 'HTMLBlock') {
+      const { position } = node;
+      const children = getChildren<HTMLBlock['children']>(node);
+      const { runScripts } = getAttrs<Pick<HTMLBlock['data']['hProperties'], 'runScripts'>>(node);
+      const html = formatHTML(children.map(({ value }) => value).join(''));
+      
+      const mdNode: HTMLBlock = {
+        position,
+        children: [{ type: 'text', value: html }],
+        type: NodeTypes.htmlBlock,
+        data: {
+          hName: 'html-block',
+          hProperties: {
+            ...(runScripts && { runScripts }),
+            html,
+          },
         },
       };
 

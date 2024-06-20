@@ -1,9 +1,12 @@
 import { HTMLBlock } from '../../types';
+import { reformatHTML, getHProps } from '../utils'
 
 const htmlBlock = (node: HTMLBlock) => {
-  const html = node.data.hProperties.html;
-  const attributes = Object.keys(node.data?.hProperties).map(key => `${key}="${node.data?.hProperties[key]}"`).join(' ')
-  return `<HTMLBlock${attributes && ' ' + attributes}>{\`${ html }\`}</HTMLBlock>`;
+  const { runScripts, html } = getHProps<HTMLBlock['data']['hProperties']>(node);
+
+  return `<HTMLBlock${runScripts != null ? ` runScripts="${runScripts}"` : ''}>{\`
+${ reformatHTML(html) }
+\`}</HTMLBlock>`;
 }
 
 export default htmlBlock;

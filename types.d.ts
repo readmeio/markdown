@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent, Blockquote, Node, Root } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text } from 'mdast';
 
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
@@ -46,9 +46,11 @@ interface EmbedBlock extends Node {
 
 interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
+  children: Text[];
   data: Data & {
     hName: 'html-block';
     hProperties: {
+      runScripts?: boolean | string;
       html: string;
     };
   };
