@@ -1,11 +1,11 @@
-import { BlockContent, Code, Node, Root } from 'mdast';
+import { BlockContent, Code, Node } from 'mdast';
 import { CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 
 const isCode = (node: Node): node is Code => node?.type === 'code';
 
-const codeTabsTransformer = () => (tree: Root) => {
+const codeTabsTransformer = () => (tree: Node) => {
   visit(tree, 'code', (node: Code) => {
     const { lang, meta, value } = node;
 

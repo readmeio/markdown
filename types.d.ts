@@ -129,9 +129,11 @@ declare module 'mdast' {
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
+    [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
+    [NodeTypes.variable]: Variable;
   }
 }
 
