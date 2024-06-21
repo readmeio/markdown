@@ -9,7 +9,6 @@ import { visit } from 'unist-util-visit';
 const variables =
   ({ asMdx } = { asMdx: true }): Transform =>
   tree => {
-    console.log(JSON.stringify({ asMdx }, null, 2));
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
 
