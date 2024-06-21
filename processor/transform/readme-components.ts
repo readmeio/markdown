@@ -17,7 +17,6 @@ const types = {
   ImageBlock: NodeTypes['image-block'],
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
-  Variable: NodeTypes['variable'],
   td: 'tableCell',
   tr: 'tableRow',
   TutorialTile: NodeTypes.tutorialTile,
@@ -70,7 +69,7 @@ const coerceJsxToMd =
       const children = getChildren<HTMLBlock['children']>(node);
       const { runScripts } = getAttrs<Pick<HTMLBlock['data']['hProperties'], 'runScripts'>>(node);
       const html = formatHTML(children.map(({ value }) => value).join(''));
-      
+
       const mdNode: HTMLBlock = {
         position,
         children: [{ type: 'text', value: html }],

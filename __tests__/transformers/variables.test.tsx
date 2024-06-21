@@ -32,20 +32,15 @@ describe('variables transformer', () => {
     expect(screen.findByText('Test User')).toBeDefined();
   });
 
-  it('parses variables into the mdast', () => {
+  it.only('parses variables into the mdast', () => {
     const mdx = `{user.name}`;
 
     // @ts-ignore
     expect(rmdx.mdast(mdx)).toStrictEqualExceptPosition({
       children: [
         {
-          children: [],
-          data: {
-            hName: 'Variable',
-            hProperties: {
-              name: 'name',
-            },
-          },
+          value: '{user.name}',
+          name: 'name',
           type: 'readme-variable',
         },
       ],

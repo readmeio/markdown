@@ -95,13 +95,8 @@ interface TutorialTile extends Node {
   type: NodeTypes.tutorialTile;
 }
 
-interface Variable extends Node {
-  data: Data & {
-    hName: 'Variable';
-    hProperties: {
-      name: string;
-    };
-  };
+interface Variable extends Literal {
+  name: string;
 }
 
 declare module 'mdast' {
@@ -117,6 +112,7 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.variable]: Variable;
   }
 
   interface RootContentMap {
