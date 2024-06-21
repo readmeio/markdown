@@ -1,9 +1,11 @@
-import { BlockContent, Code } from 'mdast';
+import { BlockContent, Code, Node, Root } from 'mdast';
 import { CodeTabs } from 'types';
 import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 
-const codeTabsTransformer = () => tree => {
+const isCode = (node: Node): node is Code => node?.type === 'code';
+
+const codeTabsTransformer = () => (tree: Root) => {
   visit(tree, 'code', (node: Code) => {
     const { lang, meta, value } = node;
 
@@ -21,7 +23,7 @@ const codeTabsTransformer = () => tree => {
 
     while (walker <= length) {
       const sibling = parent.children[walker];
-      if (sibling?.type !== 'code') break;
+      if (!isCode(sibling)) break;
 
       const olderSibling = parent.children[walker - 1];
       if (olderSibling.position.end.offset + sibling.position.start.column !== sibling.position.start.offset) break;

@@ -9,7 +9,7 @@ export type MdastOpts = {
   components?: Record<string, string>;
 };
 
-export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, variablesTransformer];
+export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, [variablesTransformer, { asMdx: false }]];
 
 const astProcessor = (opts: MdastOpts = { components: {} }) =>
   remark()

@@ -17,6 +17,7 @@ const types = {
   ImageBlock: NodeTypes['image-block'],
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
+  Variable: NodeTypes['variable'],
   td: 'tableCell',
   tr: 'tableRow',
   TutorialTile: NodeTypes.tutorialTile,

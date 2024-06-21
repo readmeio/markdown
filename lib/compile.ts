@@ -3,7 +3,7 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 
-import transformers from '../processor/transform';
+import transformers, { variablesTransformer } from '../processor/transform';
 import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 
@@ -13,7 +13,7 @@ export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, variablesTransformer];
 
 const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
   try {

@@ -99,6 +99,15 @@ interface Variable extends Literal {
   name: string;
 }
 
+interface MdxVariable extends Node {
+  data: Data & {
+    hName: 'Variable';
+    hProperties: {
+      name: string;
+    };
+  };
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;

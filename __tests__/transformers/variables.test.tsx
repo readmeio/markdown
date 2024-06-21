@@ -32,7 +32,7 @@ describe('variables transformer', () => {
     expect(screen.findByText('Test User')).toBeDefined();
   });
 
-  it.only('parses variables into the mdast', () => {
+  it('parses variables into the mdast', () => {
     const mdx = `{user.name}`;
 
     // @ts-ignore
