@@ -95,17 +95,14 @@ interface TutorialTile extends Node {
   type: NodeTypes.tutorialTile;
 }
 
-interface Variable extends Literal {
-  name: string;
-}
-
-interface MdxVariable extends Node {
+interface Variable extends Node {
   data: Data & {
     hName: 'Variable';
     hProperties: {
       name: string;
     };
   };
+  value: string;
 }
 
 declare module 'mdast' {

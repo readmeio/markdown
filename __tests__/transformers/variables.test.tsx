@@ -40,7 +40,12 @@ describe('variables transformer', () => {
       children: [
         {
           value: '{user.name}',
-          name: 'name',
+          data: {
+            hName: 'Variable',
+            hProperties: {
+              name: 'name',
+            },
+          },
           type: 'readme-variable',
         },
       ],

@@ -27,11 +27,18 @@ const variables =
               },
             ],
             children: [],
+            position: node.position,
           } as MdxJsxTextElement)
         : ({
             type: NodeTypes.variable,
-            name: match.groups.value,
+            data: {
+              hName: 'Variable',
+              hProperties: {
+                name: match.groups.value,
+              },
+            },
             value: `{${node.value}}`,
+            position: node.position,
           } as Variable);
 
       parent.children.splice(index, 1, variable);
