@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.61
+
+### ✨ New & Improved
+
+* increase code font size ([#912](https://github.com/readmeio/markdown/issues/912)) ([586515f](https://github.com/readmeio/markdown/commit/586515f8880f587f4854af8a1397193efa05e913)), closes [#915](https://github.com/readmeio/markdown/issues/915)
+
 ## Version 6.75.0-beta.60
 
 ### 🛠 Fixes & Updates
