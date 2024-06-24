@@ -55,7 +55,7 @@ export { Components };
  * Setup Options
  * !Normalize Magic Block Raw Text!
  */
-export function setup(blocks, opts = {}) {
+export function setup(blocks, { stripTags, ...opts } = {}) {
   // merge default and user options
   opts = parseOptions(opts);
 
@@ -63,6 +63,12 @@ export function setup(blocks, opts = {}) {
     opts.sanitize = createSchema(opts);
 
     Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(opts.sanitize));
+
+    if (Array.isArray(stripTags))
+      stripTags.forEach(tag => {
+        opts.sanitize.strip.push(tag);
+        opts.sanitize.tagNames.splice(opts.sanitize.tagNames.indexOf(tag), 1);
+      });
   }
 
   // normalize magic block linebreaks
