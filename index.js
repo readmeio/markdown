@@ -60,9 +60,17 @@ export function setup(blocks, opts = {}) {
   opts = parseOptions(opts);
 
   if (!opts.sanitize) {
-    opts.sanitize = createSchema(opts);
+    const schema = createSchema(opts);
 
-    Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(opts.sanitize));
+    Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(schema));
+
+    if (Array.isArray(opts.strip))
+      opts.strip.forEach(tag => {
+        schema.strip.push(tag);
+        schema.tagNames.splice(schema.tagNames.indexOf(tag), 1);
+      });
+
+    opts.sanitize = schema;
   }
 
   // normalize magic block linebreaks
