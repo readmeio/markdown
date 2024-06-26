@@ -290,7 +290,15 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  return processor(opts).use(toPlainText).stringify(node);
+  const vars = opts.variables;
+  const context = {
+    variables: {
+      ...Object.fromEntries(vars.defaults.map(({ name: key, default: val }) => [key, val])),
+      ...vars.user,
+    },
+  };
+
+  return processor(opts).data('context', context).use(toPlainText).stringify(node);
 }
 
 /**
