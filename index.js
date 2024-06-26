@@ -290,7 +290,7 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  const { defaults: defaultVars = [], user: userVars = {} } = opts.variables;
+  const { defaults: defaultVars = [], user: userVars = {} } = opts.variables || {};
   const variables = {
     ...Object.fromEntries(defaultVars.map(({ name: key, default: val }) => [key, val])),
     ...userVars,
