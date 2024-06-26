@@ -21,6 +21,7 @@ const variables = (): Transform => tree => {
         },
       ],
       children: [],
+      position: node.position,
     } as MdxJsxTextElement;
 
     parent.children.splice(index, 1, variable);
