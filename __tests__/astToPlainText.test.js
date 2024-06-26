@@ -29,7 +29,7 @@ describe('astToPlainText()', () => {
 > Some body
     `;
 
-    expect(astToPlainText(hast(txt))).toBe('Title Some body');
+    expect(astToPlainText(hast(txt))).toBe('📘 Title: Some body');
   });
 
   it('converts markdown tables', () => {
