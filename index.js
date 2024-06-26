@@ -290,11 +290,11 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  const vars = opts.variables;
+  const { defaults: defaultVars = [], user: userVars = {} } = opts.variables;
   const context = {
     variables: {
-      ...Object.fromEntries(vars.defaults.map(({ name: key, default: val }) => [key, val])),
-      ...vars.user,
+      ...Object.fromEntries(defaultVars.map(({ name: key, default: val }) => [key, val])),
+      ...userVars,
     },
   };
 
