@@ -53,8 +53,10 @@ function all(node, context) {
 const toPlainText = function () {
   Object.assign(this, {
     Compiler: node => {
-      const method = 'children' in node ? all || one : one;
-      return method(node, this.data('context')).trim().replace(/\s+/g, ' ');
+      const hasKid = 'children' in node && node.children.length;
+      const method = hasKid ? all : one;
+      const output = method(node, this.data('context'));
+      return output.trim().replace(/\s+/g, ' ');
     },
   });
 };
