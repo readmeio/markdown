@@ -7,6 +7,7 @@ import { Callout, EmbedBlock, HTMLBlock, ImageBlock } from 'types';
 import { visit } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
+import { mdast } from '../../lib';
 
 const types = {
   Callout: NodeTypes['callout'],
@@ -14,7 +15,7 @@ const types = {
   CodeTabs: NodeTypes['codeTabs'],
   EmbedBlock: NodeTypes['embed-block'],
   Glossary: NodeTypes['glossary'],
-  ImageBlock: NodeTypes['image-block'],
+  ImageBlock: NodeTypes.imageBlock,
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
   Variable: NodeTypes['variable'],
@@ -52,9 +53,11 @@ const coerceJsxToMd =
       const { position } = node;
       const { alt = '', url, title = null } = getAttrs<Pick<ImageBlock, 'alt' | 'title' | 'url'>>(node);
       const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
+
       const mdNode: ImageBlock = {
         alt,
         position,
+        children: attrs.caption ? mdast(attrs.caption).children : node.children as any,
         title,
         type: NodeTypes.imageBlock,
         url: url || attrs.src,

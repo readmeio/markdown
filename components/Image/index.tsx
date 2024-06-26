@@ -11,10 +11,10 @@ interface ImageProps {
   title?: string;
   width?: string;
   lazy?: boolean;
+  children: [React.ReactElement];
 }
 
 const Image = (Props: ImageProps) => {
-  const [lightbox, setLightbox] = React.useState(false);
   const {
     align = '',
     alt = '',
@@ -26,7 +26,9 @@ const Image = (Props: ImageProps) => {
     title = '',
     width = 'auto',
     lazy = false,
+    children,
   } = Props;
+  const [lightbox, setLightbox] = React.useState(false);
 
   if (className === 'emoji') {
     return <img src={src} width={width} height={height} title={title} alt={alt} loading={lazy ? 'lazy' : 'eager'} />;
@@ -76,7 +78,7 @@ const Image = (Props: ImageProps) => {
               alt={alt}
               loading={lazy ? 'lazy' : 'eager'}
             />
-            <figcaption>{caption}</figcaption>
+            <figcaption>{children}</figcaption>
           </figure>
         </span>
       </span>

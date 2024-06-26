@@ -3,6 +3,7 @@ import { visit } from 'unist-util-visit';
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { Transform } from 'mdast-util-from-markdown';
 import { Parents } from 'mdast';
+import { isMDXElement } from '../utils';
 
 interface Options {
   components?: MdastComponents;
@@ -18,8 +19,7 @@ const inject =
   };
 
 const injectComponents = (opts: Options) => (): Transform => tree => {
-  visit(tree, 'mdxJsxFlowElement', inject(opts));
-  visit(tree, 'mdxJsxTextElement', inject(opts));
+  visit(tree, isMDXElement, inject(opts));
 
   return tree;
 };
