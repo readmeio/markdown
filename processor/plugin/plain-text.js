@@ -5,8 +5,11 @@
 function one(node, context) {
   if (node.tagName === 'rdme-callout') {
     const { icon, title } = node.properties;
-    const body = all(node, context);
-    return `${icon} ${title}: ${body}`;
+
+    let body = node?.children?.[title ? 1 : 0];
+    body = body ? all(body, context) : '';
+
+    return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
   }
 
   if (node.tagName === 'readme-glossary-item') {
