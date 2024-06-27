@@ -290,7 +290,13 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  return processor(opts).use(toPlainText).stringify(node);
+  const { defaults: defaultVars = [], user: userVars = {} } = opts.variables || {};
+  const variables = {
+    ...Object.fromEntries(defaultVars.map(({ name: key, default: val }) => [key, val])),
+    ...userVars,
+  };
+
+  return processor(opts).data('context', { variables }).use(toPlainText).stringify(node);
 }
 
 /**
