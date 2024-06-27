@@ -1,14 +1,18 @@
-import { Html } from 'mdast';
+import { Html, Image, Node } from 'mdast';
 import { fromHtml } from 'hast-util-from-html';
+import { toMarkdown } from 'mdast-util-to-markdown';
 import { toXast } from 'hast-util-to-xast';
 import { toXml } from 'xast-util-to-xml';
 import { NodeTypes } from '../../enums';
+import { formatHProps, formatProps } from '../utils';
 
 type CompatNodes =
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
   | { type: NodeTypes.glossary; data: { hName: 'Glossary' }; children: [{ type: 'text'; value: string }] }
   | { type: NodeTypes.reusableContent; tag: string }
+  | { type: 'embed'; data: { hProperties: { [key: string]: string } } }
   | { type: 'escape'; value: string }
+  | { type: 'figure'; children: [Image, { type: 'figcaption'; children: [{ type: 'text'; value: string }] }] }
   | Html;
 
 /*
@@ -27,6 +31,28 @@ const html = (node: Html) => {
   return xml.replace(/<html.*<body>(.*)<\/body><\/html>/ms, '$1');
 };
 
+const figureToImageBlock = (node: any) => {
+  const { align, width, src, alt, title, ...image } = node.children.find((child: Node) => child.type === 'image');
+  const { className } = image.data.hProperties;
+  const figcaption = node.children.find((child: Node) => child.type === 'figcaption');
+
+  const caption = figcaption ? toMarkdown({
+    type: 'paragraph',
+    children: figcaption.children, 
+  }).trim() : null;
+
+  const attributes = {
+    ...(align && { align }),
+    ...(alt && { alt }),
+    ...(className && { border: className === 'border' }),
+    ...(caption && { caption }),
+    ...(title && { title }),
+    ...(width && { width }),
+    src,
+  };
+  return `<Image ${formatProps(attributes)} />`;
+}
+
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
     case NodeTypes.glossary:
@@ -39,6 +65,11 @@ const compatibility = (node: CompatNodes) => {
       return html(node);
     case 'escape':
       return `\\${node.value}`;
+    case 'figure':
+      return figureToImageBlock(node);
+    case 'embed':
+      const attributes = formatHProps(node);
+      return `<Embed ${attributes} />`;
     default:
       throw new Error('Unhandled node type!');
   }

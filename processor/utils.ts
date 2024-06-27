@@ -12,8 +12,18 @@ import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-u
  */
 export const formatHProps = <T>(node: Node): string => {
   const hProps = getHProps<T>(node);
-  const hPropKeys = getHPropKeys<T>(node) as string[];
-  return hPropKeys.map(key => `${key}="${hProps[key]}"`).join(' ');
+  return formatProps(hProps);
+}
+
+/**
+ * Formats an object of props as a string.
+ *
+ * @param {Object} props
+ * @returns {string}
+ */
+export const formatProps = (props: Object): string => {
+  const keys = Object.keys(props);
+  return keys.map(key => `${key}="${props[key]}"`).join(' ');
 }
 
 /**
