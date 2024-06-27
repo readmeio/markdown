@@ -24,6 +24,7 @@ const imageTransformer = () => (tree: Node)  => {
       alt,
       title,
       url,
+      children: [],
       data: {
         hName: 'img',
         hProperties: { 
