@@ -5,6 +5,8 @@
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
 /* stylelint-disable order/properties-alphabetical-order */
 @mixin gfm-code-base-styles($background: #f6f8fa, $background-dark: #242e34, $text: inherit) {
+  --font-size: 90%;
+
   code,
   kbd,
   pre {
@@ -29,7 +31,7 @@
     background-color: var(--md-code-background, $background);
     border-radius: 3px;
     color: var(--md-code-text);
-    font-size: 85%;
+    font-size: var(--font-size);
     margin: 0;
     padding: 0.2em 0.4em;
 
@@ -56,7 +58,7 @@
     border-radius: 3px;
     border-radius: var(--markdown-radius, 3px);
     border-radius: var(--md-code-radius, var(--markdown-radius, 3px));
-    font-size: 85%;
+    font-size: var(--font-size);
     line-height: 1.45;
     overflow: auto;
     padding: 1em;

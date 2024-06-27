@@ -55,7 +55,7 @@ export { Components };
  * Setup Options
  * !Normalize Magic Block Raw Text!
  */
-export function setup(blocks, opts = {}) {
+export function setup(blocks, { stripTags, ...opts } = {}) {
   // merge default and user options
   opts = parseOptions(opts);
 
@@ -63,6 +63,12 @@ export function setup(blocks, opts = {}) {
     opts.sanitize = createSchema(opts);
 
     Object.values(Components).forEach(Component => Component.sanitize && Component.sanitize(opts.sanitize));
+
+    if (Array.isArray(stripTags))
+      stripTags.forEach(tag => {
+        opts.sanitize.strip.push(tag);
+        opts.sanitize.tagNames.splice(opts.sanitize.tagNames.indexOf(tag), 1);
+      });
   }
 
   // normalize magic block linebreaks
@@ -284,7 +290,13 @@ export function astToPlainText(node, opts = {}) {
   if (!node) return '';
   [, opts] = setup('', opts);
 
-  return processor(opts).use(toPlainText).stringify(node);
+  const { defaults: defaultVars = [], user: userVars = {} } = opts.variables || {};
+  const variables = {
+    ...Object.fromEntries(defaultVars.map(({ name: key, default: val }) => [key, val])),
+    ...userVars,
+  };
+
+  return processor(opts).data('context', { variables }).use(toPlainText).stringify(node);
 }
 
 /**
