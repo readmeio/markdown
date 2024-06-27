@@ -30,9 +30,7 @@ describe('compatability with RDMD', () => {
   it('compiles mdx image nodes', () => {
     const ast = {
       type: 'figure',
-      data: {
-        hName: 'figure',
-      },
+      data: { hName: 'figure' },
       children: [
         {
           align: 'center',
@@ -52,26 +50,12 @@ describe('compatability with RDMD', () => {
         },
         {
           type: 'figcaption',
-          data: {
-            hName: 'figcaption',
-          },
+          data: { hName: 'figcaption' },
           children: [
-            {
-              type: 'paragraph',
+            { type: 'paragraph',
               children: [
-                {
-                  type: 'text',
-                  value: 'hello ',
-                },
-                {
-                  type: 'strong',
-                  children: [
-                    {
-                      type: 'text',
-                      value: 'cat',
-                    },
-                  ],
-                },
+                { type: 'text', value: 'hello ' },
+                { type: 'strong', children: [{ type: 'text', value: 'cat' }] },
               ],
             },
           ],
