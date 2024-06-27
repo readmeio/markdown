@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.62
+
+### ✨ New & Improved
+
+* mdx position ([#917](https://github.com/readmeio/markdown/issues/917)) ([0e080fa](https://github.com/readmeio/markdown/commit/0e080fabe93f7e2bd38aa2fa4718c6702e7ee2cf))
+
 ## Version 6.75.0-beta.61
 
 ### ✨ New & Improved
