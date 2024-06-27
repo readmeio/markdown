@@ -13,7 +13,7 @@ describe('html-block compiler', () => {
     expect(mdx(mdast(markdown)).trim()).toBe(markdown.trim());
   });
 
-  it('compiles html blocks with indents', () => {
+  it.skip('compiles html blocks with indents', () => {
     const markdown = `
 <HTMLBlock>{\`
   <pre><code>

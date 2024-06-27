@@ -39,7 +39,7 @@ describe('variables transformer', () => {
     expect(rmdx.mdast(mdx)).toStrictEqualExceptPosition({
       children: [
         {
-          children: [],
+          value: '{user.name}',
           data: {
             hName: 'Variable',
             hProperties: {

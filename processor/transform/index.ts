@@ -10,11 +10,4 @@ import variablesTransformer from './variables';
 
 export { readmeComponentsTransformer, readmeToMdx, injectComponents, variablesTransformer };
 
-export default [
-  calloutTransformer,
-  codeTabsTransfromer,
-  embedTransformer,
-  imageTransformer,
-  gemojiTransformer,
-  variablesTransformer,
-];
+export default [calloutTransformer, codeTabsTransfromer, embedTransformer, imageTransformer, gemojiTransformer];

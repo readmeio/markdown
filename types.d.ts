@@ -102,6 +102,7 @@ interface Variable extends Node {
       name: string;
     };
   };
+  value: string;
 }
 
 declare module 'mdast' {
@@ -117,6 +118,7 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.variable]: Variable;
   }
 
   interface RootContentMap {
@@ -124,9 +126,11 @@ declare module 'mdast' {
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
+    [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.tutorialTile]: TutorialTile;
+    [NodeTypes.variable]: Variable;
   }
 }
 

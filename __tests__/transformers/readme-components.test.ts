@@ -103,10 +103,8 @@ Second
     expect(tree.children[0].children[0].type).toBe('readme-glossary-item');
   });
 
-  it('converts Variable components to markdown nodes', () => {
-    const mdx = `
-<Variable name="tester" />
-`;
+  it('converts variable phrasing expressions to markdown nodes', () => {
+    const mdx = `{user.name}`;
 
     const tree = mdast(mdx);
     expect(tree.children[0].type).toBe('readme-variable');
