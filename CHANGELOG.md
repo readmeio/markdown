@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.64
+
+### 🛠 Fixes & Updates
+
+* add image component caption as children ([#918](https://github.com/readmeio/markdown/issues/918)) ([59e1bd3](https://github.com/readmeio/markdown/commit/59e1bd3206a6daaac50cfc2f39cb10fb21048698))
+
 ## Version 6.75.0-beta.63
 
 ### ✨ New & Improved
