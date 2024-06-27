@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.65
+
+### ✨ New & Improved
+
+* compatibility for rdmd image/embed components ([#919](https://github.com/readmeio/markdown/issues/919)) ([e631c8f](https://github.com/readmeio/markdown/commit/e631c8f0ebce74f2f49e0bc9657170ceddae3a86))
+
 ## Version 6.75.0-beta.64
 
 ### 🛠 Fixes & Updates
