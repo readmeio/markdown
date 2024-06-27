@@ -56,7 +56,7 @@ interface HTMLBlock extends Node {
   };
 }
 
-interface ImageBlock extends Node {
+interface ImageBlock extends Parent {
   type: NodeTypes.imageBlock;
   url: string;
   alt: string;
