@@ -4,7 +4,7 @@ import { mdast } from '../../index';
 describe('embeds transformer', () => {
   it('converts a link with a title of "@embed" to an embed-block', () => {
     const md = `
-[alt](https://example.com/image.jpg "@embed")
+[alt](https://example.com/cool.pdf "@embed")
 `;
     const tree = mdast(md);
 
