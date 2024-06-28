@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.86.1
+
+### 🛠 Fixes & Updates
+
+* **🔥:** handle `[null]` variable defaults ([376094a](https://github.com/readmeio/markdown/commit/376094a61ff583f5625485d30e3ac5a14fbf2dfc))
+
 ## Version 6.86.0
 
 ### ✨ New & Improved
