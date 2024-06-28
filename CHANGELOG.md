@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.85.0
+
+### ✨ New & Improved
+
+* new `stripTags` option ([#914](https://github.com/readmeio/markdown/issues/914)) ([c8a1fdf](https://github.com/readmeio/markdown/commit/c8a1fdf88bc5abfe1997f16b0862fd98689e0ed4))
+
 ## Version 6.84.0
 
 ### ✨ New & Improved
