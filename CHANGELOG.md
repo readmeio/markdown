@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 6.86.0
+
+### ✨ New & Improved
+
+* bump code font size ([#915](https://github.com/readmeio/markdown/issues/915)) ([abe17eb](https://github.com/readmeio/markdown/commit/abe17eb84549385125ccf23dcd33482a9717976a)), closes [#912](https://github.com/readmeio/markdown/issues/912)
+* **astToPlainText:** improved ReadMe block serialization ([#916](https://github.com/readmeio/markdown/issues/916)) ([e2a85a0](https://github.com/readmeio/markdown/commit/e2a85a0761380d892ba826b029427f1ce3192170))
+
 ## Version 6.85.0
 
 ### ✨ New & Improved
