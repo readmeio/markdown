@@ -292,7 +292,7 @@ export function astToPlainText(node, opts = {}) {
 
   const { defaults: defaultVars = [], user: userVars = {} } = opts.variables || {};
   const variables = {
-    ...Object.fromEntries(defaultVars.map(({ name: key, default: val }) => [key, val])),
+    ...Object.fromEntries(defaultVars.filter(Boolean).map(({ name: key, default: val }) => [key, val])),
     ...userVars,
   };
 
