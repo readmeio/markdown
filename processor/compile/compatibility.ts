@@ -32,16 +32,14 @@ const html = (node: Html) => {
 };
 
 const figureToImageBlock = (node: any) => {
-  const { align, width, src, url, alt, title, ...image } = node.children.find((child: Node) => child.type === 'image');
+  const { align, width, src, alt, title, ...image } = node.children.find((child: Node) => child.type === 'image');
   const { className } = image.data.hProperties;
   const figcaption = node.children.find((child: Node) => child.type === 'figcaption');
 
-  const caption = figcaption
-    ? toMarkdown({
-        type: 'paragraph',
-        children: figcaption.children,
-      }).trim()
-    : null;
+  const caption = figcaption ? toMarkdown({
+    type: 'paragraph',
+    children: figcaption.children, 
+  }).trim() : null;
 
   const attributes = {
     ...(align && { align }),
@@ -50,19 +48,10 @@ const figureToImageBlock = (node: any) => {
     ...(caption && { caption }),
     ...(title && { title }),
     ...(width && { width }),
-    src: src || url,
+    src,
   };
   return `<Image ${formatProps(attributes)} />`;
-};
-
-const embedToEmbedBlock = (node: any) => {
-  const { html, ...embed } = node.data.hProperties;
-  const attributes = {
-    ...embed,
-    ...(html && { html: encodeURIComponent(html) }),
-  };
-  return `<Embed ${formatProps(attributes)} />`;
-};
+}
 
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
@@ -79,7 +68,8 @@ const compatibility = (node: CompatNodes) => {
     case 'figure':
       return figureToImageBlock(node);
     case 'embed':
-      return embedToEmbedBlock(node);
+      const attributes = formatHProps(node);
+      return `<Embed ${attributes} />`;
     default:
       throw new Error('Unhandled node type!');
   }
