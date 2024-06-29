@@ -1,8 +1,13 @@
-/* @see: https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
+/*
+ @see: https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
+
+const STRIP_TAGS = ['script', 'style'];
 
 /* eslint-disable no-use-before-define */
 function one(node, context) {
+  if (STRIP_TAGS.includes(node.tagName)) return '';
+
   if (node.tagName === 'rdme-callout') {
     const { icon, title } = node.properties;
 
@@ -56,6 +61,7 @@ const toPlainText = function () {
       const hasKid = 'children' in node && node.children.length;
       const method = hasKid ? all : one;
       const output = method(node, this.data('context'));
+
       return output.trim().replace(/\s+/g, ' ');
     },
   });
