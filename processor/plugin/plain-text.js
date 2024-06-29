@@ -2,11 +2,17 @@
  @see: https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 
+const { hast } = require('../..');
+
 const STRIP_TAGS = ['script', 'style'];
 
 /* eslint-disable no-use-before-define */
 function one(node, context) {
   if (STRIP_TAGS.includes(node.tagName)) return '';
+
+  if (node.tagName === 'html-block') {
+    return all(hast(node.properties.html), context);
+  }
 
   if (node.tagName === 'rdme-callout') {
     const { icon, title } = node.properties;
