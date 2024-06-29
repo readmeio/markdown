@@ -94,7 +94,7 @@ describe('compatability with RDMD', () => {
       type: 'embed',
     };
 
-    expect(mdx(ast).trim()).toBe('<Embed html="false" url="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" title="iframe" href="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" typeOfEmbed="iframe" height="300px" width="100%" iframe="true" />');
+    expect(mdx(ast).trim()).toBe('<Embed url="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" title="iframe" href="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" typeOfEmbed="iframe" height="300px" width="100%" iframe="true" />');
   });
 
   it('compiles reusable-content nodes', () => {
