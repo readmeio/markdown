@@ -16,7 +16,7 @@ interface ImageProps {
 
 const Image = (Props: ImageProps) => {
   const {
-    align = '',
+    align = 'center',
     alt = '',
     border = false,
     caption,
@@ -25,7 +25,7 @@ const Image = (Props: ImageProps) => {
     src,
     title = '',
     width = 'auto',
-    lazy = false,
+    lazy = true,
     children,
   } = Props;
 
@@ -60,55 +60,53 @@ const Image = (Props: ImageProps) => {
 
   if (caption) {
     return (
-      <span
-        aria-label={alt}
-        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">
-          <figure>
+      <figure>
+        <span
+          aria-label={alt}
+          className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+          onClick={toggle}
+          onKeyDown={handleKeyDown}
+          role={'button'}
+          tabIndex={0}
+        >
+          <span className="lightbox-inner">
             <img
               src={src}
               width={width}
               height={height}
               title={title}
-              className={`img img-align-center ${border ? 'border' : ''}`}
+              className={`img img-align-center${border ? ' border' : ''}`}
               alt={alt}
               loading={lazy ? 'lazy' : 'eager'}
             />
             <figcaption>{children || caption}</figcaption>
-          </figure>
+          </span>
         </span>
-      </span>
+      </figure>
     );
   }
 
   return (
-    <p>
-      <span
-        aria-label={alt}
-        className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">
-          <img
-            src={src}
-            width={width}
-            height={height}
-            title={title}
-            className={`img img-align-${align} ${border ? 'border' : ''}`}
-            alt={alt}
-            loading={lazy ? 'lazy' : 'eager'}
-          />
-        </span>
+    <span
+      aria-label={alt}
+      className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+      onClick={toggle}
+      onKeyDown={handleKeyDown}
+      role={'button'}
+      tabIndex={0}
+    >
+      <span className="lightbox-inner">
+        <img
+          src={src}
+          width={width}
+          height={height}
+          title={title}
+          className={`img img-align-${align}${border ? ' border' : ''}`}
+          alt={alt}
+          loading={lazy ? 'lazy' : 'eager'}
+        />
       </span>
-    </p>
+    </span>
   );
 };
 
