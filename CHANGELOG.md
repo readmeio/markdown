@@ -3,6 +3,17 @@ Changelog
 
 ## Version 6.75.0-beta.66
 
+### ✨ New & Improved
+
+* add another html block test ([#928](https://github.com/readmeio/markdown/issues/928)) ([752be9e](https://github.com/readmeio/markdown/commit/752be9e0230c89824844ebad7f8267d2ae626117))
+
+
+### 🛠 Fixes & Updates
+
+* html block test ([#927](https://github.com/readmeio/markdown/issues/927)) ([7830a3d](https://github.com/readmeio/markdown/commit/7830a3d6e6601174a0bff585825a228032fe2673))
+
+## Version 6.75.0-beta.66
+
 ### 🛠 Fixes & Updates
 
 * html block test ([#927](https://github.com/readmeio/markdown/issues/927)) ([7830a3d](https://github.com/readmeio/markdown/commit/7830a3d6e6601174a0bff585825a228032fe2673))
