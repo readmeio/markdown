@@ -72,6 +72,7 @@ interface ImageBlock extends Parent {
       title?: string;
       width?: string;
       lazy?: boolean;
+      className?: string;
     };
   };
 }
