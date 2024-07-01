@@ -13,10 +13,10 @@ describe('html-block compiler', () => {
     expect(mdx(mdast(markdown)).trim()).toBe(markdown.trim());
   });
 
-  it.skip('compiles html blocks with indents', () => {
+  it('compiles html blocks preserving newlines', () => {
     const markdown = `
 <HTMLBlock>{\`
-  <pre><code>
+<pre><code>
 const foo = () => {
   const bar = {
     baz: 'blammo'
@@ -24,7 +24,7 @@ const foo = () => {
 
   return bar
 }
-  </code></pre>
+</code></pre>
 \`}</HTMLBlock>
 `;
 
