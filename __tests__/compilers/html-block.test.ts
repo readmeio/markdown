@@ -30,4 +30,13 @@ const foo = () => {
 
     expect(mdx(mdast(markdown)).trim()).toBe(markdown.trim());
   });
+
+  it('adds newlines for readability', () => {
+    const markdown = `<HTMLBlock>{\`<p><strong">Hello</strong>, World!</p>\`}</HTMLBlock>`;
+    const expected = `<HTMLBlock>{\`
+<p><strong">Hello</strong>, World!</p>
+\`}</HTMLBlock>`;
+
+    expect(mdx(mdast(markdown)).trim()).toBe(expected.trim());
+  });
 });
