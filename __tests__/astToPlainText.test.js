@@ -116,4 +116,33 @@ ${JSON.stringify(
 
     expect(astToPlainText(img)).toBe('Test Image Title');
   });
+
+  it('converts magic HTML blocks', () => {
+    const tree = hast(`[block:html]
+      {"html":"<p>Lorem <b>ipsum</b> dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>"}
+    [/block]`);
+    const text = astToPlainText(tree);
+    expect(text.startsWith('Lorem ipsum dolor sit amet')).toBe(true);
+  });
+
+  it('converts glossary terms', () => {
+    const tree = hast('try the <<glossary:demo>>');
+    const text = astToPlainText(tree);
+    expect(text).toBe('try the demo');
+  });
+
+  it('converts ReadMe variables', () => {
+    const vars = { user: { name: 'John Doe' }, defaults: [null] };
+    const tree = hast('<<name>>');
+    const text = astToPlainText(tree, { variables: vars });
+    expect(text).toBe(vars.user.name);
+  });
+
+  it('strips style tags', () => {
+    const tree = hast('<style>*{color:red!important}</style>\n\nLorem ipsum dolor sit amet.');
+    const text = astToPlainText(tree);
+
+    expect(text).not.toContain('*{color:red!important}');
+    expect(text).toBe('Lorem ipsum dolor sit amet.');
+  });
 });
