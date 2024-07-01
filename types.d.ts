@@ -76,6 +76,7 @@ interface ImageBlock extends Parent {
   };
 }
 
+
 interface Gemoji extends Literal {
   type: NodeTypes.emoji;
   name: string;
