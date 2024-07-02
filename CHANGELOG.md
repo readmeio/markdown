@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.87.0
+
+### ✨ New & Improved
+
+* force release ([39f5e34](https://github.com/readmeio/markdown/commit/39f5e34ebee879394b011cffb024150db7f95762))
+
+
+### 🛠 Fixes & Updates
+
+* **astToPlainText:** processor improvements ([#925](https://github.com/readmeio/markdown/issues/925)) ([0353cf5](https://github.com/readmeio/markdown/commit/0353cf533923535451d9e18971c7ab1f487c5781)), closes [/github.com/readmeio/markdown/pull/925/files#diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R14](https://github.com/readmeio//github.com/readmeio/markdown/pull/925/files/issues/diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R14) [/github.com/readmeio/markdown/pull/925/files#diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R7-R11](https://github.com/readmeio//github.com/readmeio/markdown/pull/925/files/issues/diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R7-R11) [#914](https://github.com/readmeio/markdown/issues/914) [#914](https://github.com/readmeio/markdown/issues/914)
+
 ## Version 6.86.1
 
 ### 🛠 Fixes & Updates
