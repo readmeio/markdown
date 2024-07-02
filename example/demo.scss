@@ -1,5 +1,29 @@
 @import '../styles/main.scss';
 
+:root {
+  color-scheme: light dark;
+  --font-sans: -apple-system, 'system-ui', 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --color-page: white;
+  --color-text: black;
+  --color-edge: #eee;
+  --color-dull: #555;
+  @media (prefers-color-scheme: dark) {
+    --color-page: #121212;
+    --color-text: white;
+    --color-edge: #333;
+    --color-dull: #888;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 #rdmd-demo {
   --rdmd-demo-container: 1400px;
   --rdmd-demo-content-width: 600px;
@@ -35,7 +59,7 @@
     align-items: center;
     width: var(--rdmd-demo-container);
     padding: 0 2em;
-    color: white;
+    color: var(--color-page);
     display: flex;
     align-items: center;
     h1 {
@@ -53,12 +77,12 @@
       margin-left: auto;
       padding: 0.4em;
       line-height: 1;
-      color: white;
+      color: var(--color-page);
       text-decoration: none;
       border-radius: 0.3em;
       &:hover {
         color: var(--rdmd-demo-blue);
-        background: white;
+        background: var(--color-page);
       }
     }
   }
@@ -90,27 +114,27 @@
   .rdmd-demo--fieldset {
     padding: 1em 0;
     border: none;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-edge);
     display: flex;
     justify-content: flex-end;
 
     &:first-child {
       position: sticky;
       top: -3em;
-      background: white;
-      box-shadow: 0 -0.5em white;
+      background: var(--color-page);
+      box-shadow: 0 -0.5em var(--color-page);
       z-index: 9999999;
     }
 
     legend {
       text-transform: uppercase;
-      color: #bbb;
+      color: var(--color-dull);
     }
 
     select {
-      border-color: #ccc;
+      border-color: var(--color-edge);
       border-radius: 3px;
-      color: #555;
+      color: var(--color-text);
       font: inherit;
       min-width: 50%;
       padding: 0.2em;
@@ -127,13 +151,13 @@
 
   [name='demo-editor'] {
     display: block;
-    color: #555;
+    color: var(--color-dull);
     font-family: var(--rdmd-demo-mono);
     min-height: 32em;
     height: calc(100vh - 20em);
     width: 100%;
     overflow: auto;
-    border: 1px solid #eee;
+    border: 1px solid var(--color-edge);
     border-radius: 2px;
     padding: 1em;
   }
@@ -168,11 +192,14 @@
     > [name='demo-editor'] {
       flex: 1;
     }
+    label {
+      color: var(--color-dull);
+    }
   }
 
   .rdmd-demo--markdown-header {
-    border-bottom: 1px solid #eee;
-    color: #384248;
+    border-bottom: 1px solid var(--color-edge);
+    color: var(--color-text);
     font-size: 30px;
     font-weight: 600;
     line-height: 30px;

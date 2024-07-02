@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import markdown, { reactProcessor, reactTOC, utils } from '../index';
+import * as rdmd from '../index';
 
 import Fixtures from './Fixtures';
 import Header from './Header';
@@ -10,6 +11,19 @@ import Router from './Router';
 require('./demo.scss');
 
 const { GlossaryContext } = utils;
+
+const vars = {
+  user: {
+    email: 'jdoe@email.com',
+    name: 'John Doe',
+    email_verified: true,
+    teammateUserId: '51dd1814u695c468602da001',
+    fromReadmeKey: 'p38xt',
+    iat: 9171959215,
+    exp: 9171959215,
+  },
+  defaults: [null],
+};
 
 const terms = [
   {
@@ -26,9 +40,19 @@ const terms = [
   },
 ];
 
+if (typeof window !== 'undefined') {
+  window.rdmd = rdmd;
+  window.vars = vars;
+  window.terms = terms;
+  window.docBody = '';
+}
+
 const Maybe = ({ when, children }) => when && children;
 
 function DemoContent({ ci, children, fixture, name, onChange, opts }) {
+  useEffect(() => {
+    window.docBody = fixture;
+  }, [fixture]);
   return (
     <React.Fragment>
       <Maybe when={!ci}>
