@@ -4,7 +4,7 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import { toXast } from 'hast-util-to-xast';
 import { toXml } from 'xast-util-to-xml';
 import { NodeTypes } from '../../enums';
-import { formatHProps, formatProps } from '../utils';
+import { formatProps } from '../utils';
 
 type CompatNodes =
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
@@ -13,6 +13,7 @@ type CompatNodes =
   | { type: 'embed'; data: { hProperties: { [key: string]: string } } }
   | { type: 'escape'; value: string }
   | { type: 'figure'; children: [Image, { type: 'figcaption'; children: [{ type: 'text'; value: string }] }] }
+  | { type: 'i'; data: { hProperties: { className: string[]}} }
   | Html;
 
 /*
@@ -80,6 +81,8 @@ const compatibility = (node: CompatNodes) => {
       return figureToImageBlock(node);
     case 'embed':
       return embedToEmbedBlock(node);
+    case 'i':
+      return `:${node.data.hProperties.className[1]}:`;
     default:
       throw new Error('Unhandled node type!');
   }

@@ -27,6 +27,7 @@ function compilers() {
     escape: compatibility,
     figure: compatibility,
     html: compatibility,
+    i: compatibility,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
