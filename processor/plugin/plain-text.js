@@ -11,6 +11,7 @@ function one(node, context) {
   if (STRIP_TAGS.includes(node.tagName)) return '';
 
   if (node.tagName === 'html-block') {
+    if (!node.properties.html) return '';
     return all(hast(node.properties.html), context);
   }
 
@@ -54,7 +55,7 @@ function all(node, context) {
   const result = [];
 
   // eslint-disable-next-line no-plusplus
-  while (++index < node.children.length) {
+  while (++index < node?.children.length) {
     result[index] = one(node.children[index], context);
   }
 
