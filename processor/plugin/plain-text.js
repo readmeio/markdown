@@ -17,8 +17,8 @@ function one(node, context) {
   if (node.tagName === 'rdme-callout') {
     const { icon, title } = node.properties;
 
-    let body = node?.children?.[title ? 1 : 0];
-    body = body ? all(body, context) : '';
+    const children = node?.children?.slice(title ? 1 : 0);
+    const body = children ? all({ children }, context) : '';
 
     return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
   }
