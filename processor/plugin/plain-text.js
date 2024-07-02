@@ -1,13 +1,24 @@
-/* @see: https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
+/*
+ @see: https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
+
+const { hast } = require('../..');
+
+const STRIP_TAGS = ['script', 'style'];
 
 /* eslint-disable no-use-before-define */
 function one(node, context) {
+  if (STRIP_TAGS.includes(node.tagName)) return '';
+
+  if (node.tagName === 'html-block') {
+    return all(hast(node.properties.html), context);
+  }
+
   if (node.tagName === 'rdme-callout') {
     const { icon, title } = node.properties;
 
-    let body = node?.children?.[title ? 1 : 0];
-    body = body ? all(body, context) : '';
+    const children = node?.children?.slice(title ? 1 : 0);
+    const body = children ? all({ children }, context) : '';
 
     return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
   }
@@ -56,6 +67,7 @@ const toPlainText = function () {
       const hasKid = 'children' in node && node.children.length;
       const method = hasKid ? all : one;
       const output = method(node, this.data('context'));
+
       return output.trim().replace(/\s+/g, ' ');
     },
   });
