@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.87.1
+
+### 🛠 Fixes & Updates
+
+* **astToPlainText:** ignore null nodes ([#931](https://github.com/readmeio/markdown/issues/931)) ([6bd7dd0](https://github.com/readmeio/markdown/commit/6bd7dd089d408e8a708e4cc7c347599ed2bb0e3e))
+
 ## Version 6.87.0
 
 ### ✨ New & Improved
