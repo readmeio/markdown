@@ -52,9 +52,11 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
 };
 
 const MAX_DEPTH = 2;
-const getDepth = (el: HastHeading) => parseInt(el.tagName.match(/^h(\d)/)[1]);
+const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)[1]);
 
 const tocToHast = (headings: HastHeading[] = []): TocList => {
+  console.log({ headings });
+
   const min = Math.min(...headings.map(getDepth));
   const ast = h('ul') as TocList;
   const stack: TocList[] = [ast];
@@ -86,7 +88,8 @@ export const tocToMdx = (toc: IndexableElements[], components: CustomComponents)
   const tree: Root = { type: 'root', children: toc };
 
   visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {
-    parent.children.splice(index, 1, ...components[node.name].toc);
+    const toc = components[node.name].toc || [];
+    parent.children.splice(index, 1, ...toc);
   });
 
   const tocHast = tocToHast(tree.children as HastHeading[]);
