@@ -55,8 +55,6 @@ const MAX_DEPTH = 2;
 const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)[1]);
 
 const tocToHast = (headings: HastHeading[] = []): TocList => {
-  console.log({ headings });
-
   const min = Math.min(...headings.map(getDepth));
   const ast = h('ul') as TocList;
   const stack: TocList[] = [ast];
@@ -76,9 +74,10 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
       stack.pop();
     }
 
-    stack[stack.length - 1].children.push(
-      h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)) as TocListItem,
-    );
+    if (heading.properties)
+      stack[stack.length - 1].children.push(
+        h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)) as TocListItem,
+      );
   });
 
   return ast;
