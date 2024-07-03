@@ -1,11 +1,11 @@
 import { compileSync, CompileOptions } from '@mdx-js/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
-import rehypeSlug from 'rehype-slug';
 
 import transformers, { variablesTransformer } from '../processor/transform';
 import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
+import { rehypePlugins } from './ast-processor';
 
 export type CompileOpts = CompileOptions & {
   lazyImages?: boolean;
@@ -21,7 +21,7 @@ const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
-      rehypePlugins: [rehypeSlug, [rehypeToc, { components }]],
+      rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
       ...opts,
     });
 

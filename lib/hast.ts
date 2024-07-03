@@ -1,4 +1,4 @@
-import astProcessor from './ast-processor';
+import astProcessor, { rehypePlugins } from './ast-processor';
 import remarkRehype from 'remark-rehype';
 import { injectComponents } from '../processor/transform';
 import { MdastComponents } from '../types';
@@ -16,7 +16,7 @@ const hast = (text: string, opts: Options = {}) => {
     return memo;
   }, {});
 
-  const processor = astProcessor(opts).use(injectComponents({ components })).use(remarkRehype);
+  const processor = astProcessor(opts).use(injectComponents({ components })).use(remarkRehype).use(rehypePlugins);
 
   return processor.runSync(processor.parse(text));
 };

@@ -14,9 +14,9 @@ describe('hast transformer', () => {
 
     const expected = h(
       undefined,
-      h('h2', undefined, 'Test'),
+      h('h2', { id: 'test' }, 'Test'),
       '\n',
-      h('h2', undefined, "It's coming from within the component!"),
+      h('h2', { id: 'its-coming-from-within-the-component' }, "It's coming from within the component!"),
     );
 
     expect(hast(md, { components })).toStrictEqualExceptPosition(expected);
