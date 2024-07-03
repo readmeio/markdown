@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.69
+
+### ✨ New & Improved
+
+* force release ([d3e4da3](https://github.com/readmeio/markdown/commit/d3e4da356053453445343534a170f795cf153b05))
+
+
+### 🛠 Fixes & Updates
+
+* **beta:** nix errant log ([#934](https://github.com/readmeio/markdown/issues/934)) ([04b55eb](https://github.com/readmeio/markdown/commit/04b55eb1c6ef0f66e9de312be5d3a55b88755e88)), closes [#933](https://github.com/readmeio/markdown/issues/933) [/github.com/readmeio/markdown/pull/933#discussion_r1664579308](https://github.com/readmeio//github.com/readmeio/markdown/pull/933/issues/discussion_r1664579308)
+
 ## Version 6.75.0-beta.68
 
 ### 🛠 Fixes & Updates
