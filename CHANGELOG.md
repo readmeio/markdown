@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.68
+
+### 🛠 Fixes & Updates
+
+* **beta:** toc generation when using MDX components ([#933](https://github.com/readmeio/markdown/issues/933)) ([c1408e3](https://github.com/readmeio/markdown/commit/c1408e3fa3c47d155101de9c4ec9f82819f25ca7))
+
 ## Version 6.75.0-beta.67
 
 ### ✨ New & Improved
