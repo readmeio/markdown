@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.67
+
+### ✨ New & Improved
+
+* hast heading ids ([#932](https://github.com/readmeio/markdown/issues/932)) ([0075460](https://github.com/readmeio/markdown/commit/0075460eea3695861ab452f4551c5e9b188d0bfe))
+
+
+### 🛠 Fixes & Updates
+
+* **gha:** update github actions versions ([#930](https://github.com/readmeio/markdown/issues/930)) ([e728a90](https://github.com/readmeio/markdown/commit/e728a9019b423d7e9845e1dbfbf1cd0d6d95b648))
+
 ## Version 6.75.0-beta.66
 
 ### ✨ New & Improved
