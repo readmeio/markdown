@@ -74,9 +74,10 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
       stack.pop();
     }
 
-    stack[stack.length - 1].children.push(
-      h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)) as TocListItem,
-    );
+    if (heading.properties)
+      stack[stack.length - 1].children.push(
+        h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)) as TocListItem,
+      );
   });
 
   return ast;
