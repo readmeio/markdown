@@ -28,6 +28,7 @@ function compilers() {
     figure: compatibility,
     html: compatibility,
     i: compatibility,
+    yaml: compatibility,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });

@@ -13,7 +13,8 @@ type CompatNodes =
   | { type: 'embed'; data: { hProperties: { [key: string]: string } } }
   | { type: 'escape'; value: string }
   | { type: 'figure'; children: [Image, { type: 'figcaption'; children: [{ type: 'text'; value: string }] }] }
-  | { type: 'i'; data: { hProperties: { className: string[]}} }
+  | { type: 'i'; data: { hProperties: { className: string[] } } }
+  | { type: 'yaml'; value: string }
   | Html;
 
 /*
@@ -83,6 +84,8 @@ const compatibility = (node: CompatNodes) => {
       return embedToEmbedBlock(node);
     case 'i':
       return `:${node.data.hProperties.className[1]}:`;
+    case 'yaml':
+      return `---\n${node.value}\n---`;
     default:
       throw new Error('Unhandled node type!');
   }
