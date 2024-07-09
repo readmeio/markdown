@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.70
+
+### 🛠 Fixes & Updates
+
+* compatibility for unknown nodes ([#929](https://github.com/readmeio/markdown/issues/929)) ([5d21b54](https://github.com/readmeio/markdown/commit/5d21b540cafd67e49e3ae465cfbd91ddb651169c))
+
 ## Version 6.75.0-beta.69
 
 ### ✨ New & Improved

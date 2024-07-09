@@ -5,13 +5,14 @@ import rehypeRemark from 'rehype-remark';
 import remarkStringify from 'remark-stringify';
 
 import compilers from '../processor/compile';
-import { readmeToMdx, tablesToJsx } from '../processor/transform';
+import { divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
 export const mdx = (tree: any, { hast = false } = {}) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
     .use(remarkGfm)
+    .use(divTransformer)
     .use(readmeToMdx)
     .use(tablesToJsx)
     .use(remarkStringify)
