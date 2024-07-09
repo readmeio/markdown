@@ -16,7 +16,7 @@
     "outDir": "dist",
     "sourceMap": true,
     "target": "ES2017",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
   "include": ["./index.ts", "./options.js", "./components", "./contexts", "./example", "./lib", "./processor"],
   "exclude": ["node_modules", "dist"]

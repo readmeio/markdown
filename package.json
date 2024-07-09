@@ -91,6 +91,7 @@
     "@types/jest": "^29.5.12",
     "@types/mdast": "^4.0.3",
     "@types/mdx": "^2.0.12",
+    "@types/node": "^20.14.10",
     "@types/unist": "^3.0.2",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^1.6.0",

@@ -1,20 +1,11 @@
-const childProcess = require('child_process');
+const React = require('react');
+const ReactDOM = require('react-dom/server');
+const fs = require('node:fs');
 const { Blob } = require('node:buffer');
 
-const rdmd = require('..');
+const rmdx = require('..');
 
-const mdBuffer = childProcess.execSync('cat ./docs/*', { encoding: 'utf8' });
-
-const createDoc = bytes => {
-  let doc = '';
-
-  while (new Blob([doc]).size < bytes) {
-    const start = Math.ceil(Math.random() * mdBuffer.length);
-    doc += mdBuffer.slice(start, start + bytes);
-  }
-
-  return doc;
-};
+const filenames = process.argv.splice(2);
 
 // https://stackoverflow.com/a/14919494
 function humanFileSize(bytes, si = false, dp = 1) {
@@ -40,17 +31,33 @@ function humanFileSize(bytes, si = false, dp = 1) {
   return `${bytes.toFixed(dp)} ${units[u]}`;
 }
 
-const max = 8;
-
-console.log('n : string size : duration');
-
-new Array(max).fill(0).forEach((_, i) => {
-  const bytes = 10 ** i;
-  const doc = createDoc(bytes);
+const promises = filenames.map(file => {
+  const doc = fs.readFileSync(file, { encoding: 'utf8' }).toString();
   const then = Date.now();
 
-  rdmd.mdast(doc);
-  const duration = Date.now() - then;
+  const code = rmdx.compile(doc);
 
-  console.log(`${i} : ${humanFileSize(new Blob([doc]).size)} : ${duration / 1000} s`);
+  const compileTime = Date.now() - then;
+  const runStart = Date.now();
+
+  return rmdx.run(code).then(({ default: Component }) => {
+    const runTime = Date.now() - runStart;
+
+    ReactDOM.renderToString(React.createElement(Component));
+    const total = Date.now() - then;
+
+    return {
+      timing: {
+        compileTime,
+        runTime,
+        total,
+      },
+      file,
+      size: new Blob([doc]).size,
+    };
+  });
+});
+
+Promise.all(promises).then(runs => {
+  console.log(JSON.stringify(runs, null, 2));
 });

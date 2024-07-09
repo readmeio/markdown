@@ -6,6 +6,7 @@ import transformers, { variablesTransformer } from '../processor/transform';
 import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypePlugins } from './ast-processor';
+import { profileTransformer } from './utils';
 
 export type CompileOpts = CompileOptions & {
   lazyImages?: boolean;
@@ -13,7 +14,7 @@ export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, variablesTransformer];
+const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, variablesTransformer].map(profileTransformer);
 
 const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
   try {
@@ -21,7 +22,7 @@ const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
-      rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
+      rehypePlugins: [...rehypePlugins.map(profileTransformer), [profileTransformer(rehypeToc), { components }]],
       ...opts,
     });
 
