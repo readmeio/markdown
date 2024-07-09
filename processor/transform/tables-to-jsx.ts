@@ -8,24 +8,24 @@ import { mdxJsxFromMarkdown } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 
 const visitor = (table: Table, index: number, parent: Parents) => {
-  let hasNewlines = false;
+  let hasFlowContent = false;
 
   const tableCellVisitor = (cell: TableCell) => {
     if (!phrasing(cell.children[0])) {
-      hasNewlines = true;
+      hasFlowContent = true;
       return EXIT;
     }
 
     visit(cell, 'text', (text: Text) => {
       if (text.value.match(/\n/)) {
-        hasNewlines = true;
+        hasFlowContent = true;
         return EXIT;
       }
     });
   };
 
   visit(table, 'tableCell', tableCellVisitor);
-  if (!hasNewlines) return;
+  if (!hasFlowContent) return;
 
   const head = {
     type: 'mdxJsxFlowElement',
