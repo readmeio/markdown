@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.71
+
+### ✨ New & Improved
+
+* table blocks ([#937](https://github.com/readmeio/markdown/issues/937)) ([10852a0](https://github.com/readmeio/markdown/commit/10852a04529e28cb60b83eb03b185dc6228b1206))
+
 ## Version 6.75.0-beta.70
 
 ### 🛠 Fixes & Updates
