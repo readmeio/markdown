@@ -40,6 +40,7 @@
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
+    "mdast-util-phrasing": "^4.1.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "prop-types": "^15.8.1",

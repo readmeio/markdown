@@ -1,5 +1,5 @@
 import { mdast, mdx } from '../../index';
-import { visit } from 'unist-util-visit';
+import { visit, EXIT } from 'unist-util-visit';
 
 describe('table compiler', () => {
   it('writes to markdown syntax', () => {
@@ -17,7 +17,7 @@ describe('table compiler', () => {
     );
   });
 
-  it.skip('saves to MDX if there are breaks', () => {
+  it('saves to MDX if there are newlines', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
@@ -27,13 +27,94 @@ describe('table compiler', () => {
     const tree = mdast(markdown);
 
     visit(tree, 'tableCell', cell => {
-      cell.children.push({ type: 'break' }, { type: 'text', value: 'inserted' });
+      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n\n🦉` }];
     });
 
     expect(mdx(tree)).toMatchInlineSnapshot(`
-      "|  th 1 inserted  |  th 2 inserted  |
-      | :-------------: | :-------------: |
-      | cell 1 inserted | cell 2 inserted |
+      "<Table>
+        <thead>
+          <tr>
+            <th style={{ align: "center" }}>
+              th 1
+
+              🦉
+            </th>
+
+            <th style={{ align: "center" }}>
+              th 2
+
+              🦉
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <th style={{ align: "center" }}>
+              cell 1
+
+              🦉
+            </th>
+
+            <th style={{ align: "center" }}>
+              cell 2
+
+              🦉
+            </th>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('saves to MDX with lists', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`;
+    const list = `
+- 1
+- 2
+- 3
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = mdast(list).children;
+      return EXIT;
+    });
+
+    expect(mdx(tree)).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th style={{ align: "center" }}>
+              * 1
+              * 2
+              * 3
+            </th>
+
+            <th style={{ align: "center" }}>
+              th 2
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <th style={{ align: "center" }}>
+              cell 1
+            </th>
+
+            <th style={{ align: "center" }}>
+              cell 2
+            </th>
+          </tr>
+        </tbody>
+      </Table>
       "
     `);
   });
