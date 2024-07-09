@@ -1,22 +1,30 @@
-import { Parents, Table, Text } from 'mdast';
+import { Parents, Table, TableCell, Text } from 'mdast';
 import { visit, EXIT } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { mdxJsx } from 'micromark-extension-mdx-jsx';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { mdxJsxFromMarkdown } from 'mdast-util-mdx-jsx';
+import { phrasing } from 'mdast-util-phrasing';
 
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasNewlines = false;
 
-  const tableCellVisitor = (text: Text) => {
-    if (text.value.match(/\n/)) {
+  const tableCellVisitor = (cell: TableCell) => {
+    if (!phrasing(cell.children[0])) {
       hasNewlines = true;
       return EXIT;
     }
+
+    visit(cell, 'text', (text: Text) => {
+      if (text.value.match(/\n/)) {
+        hasNewlines = true;
+        return EXIT;
+      }
+    });
   };
 
-  visit(table, 'text', tableCellVisitor);
+  visit(table, 'tableCell', tableCellVisitor);
   if (!hasNewlines) return;
 
   const head = {

@@ -1,5 +1,5 @@
 import { mdast, mdx } from '../../index';
-import { visit } from 'unist-util-visit';
+import { visit, EXIT } from 'unist-util-visit';
 
 describe('table compiler', () => {
   it('writes to markdown syntax', () => {
@@ -60,6 +60,57 @@ describe('table compiler', () => {
               cell 2
 
               🦉
+            </th>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('saves to MDX with lists', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`;
+    const list = `
+- 1
+- 2
+- 3
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = mdast(list).children;
+      return EXIT;
+    });
+
+    expect(mdx(tree)).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th style={{ align: "center" }}>
+              * 1
+              * 2
+              * 3
+            </th>
+
+            <th style={{ align: "center" }}>
+              th 2
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <th style={{ align: "center" }}>
+              cell 1
+            </th>
+
+            <th style={{ align: "center" }}>
+              cell 2
             </th>
           </tr>
         </tbody>
