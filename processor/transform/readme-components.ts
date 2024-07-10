@@ -139,21 +139,21 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
       return SKIP;
-      //} else if (node.name === 'Callout') {
-      //const { icon, empty = false } = getAttrs<Callout['data']['hProperties']>(node);
+    } else if (node.name === 'Callout') {
+      const { icon, empty = false } = getAttrs<Callout['data']['hProperties']>(node);
 
-      //// @ts-ignore
-      //const mdNode: Callout = {
-      //children: node.children as any,
-      //type: NodeTypes.callout,
-      //data: {
-      //hName: node.name,
-      //hProperties: { icon, empty },
-      //},
-      //position: node.position,
-      //};
+      // @ts-ignore
+      const mdNode: Callout = {
+        children: node.children as any,
+        type: NodeTypes.callout,
+        data: {
+          hName: node.name,
+          hProperties: { icon, empty },
+        },
+        position: node.position,
+      };
 
-      //parent.children[index] = mdNode;
+      parent.children[index] = mdNode;
     } else if (node.name === 'Embed') {
       const hProperties = getAttrs<EmbedBlock['data']['hProperties']>(node);
 
