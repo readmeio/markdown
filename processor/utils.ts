@@ -13,7 +13,7 @@ import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-u
 export const formatHProps = <T>(node: Node): string => {
   const hProps = getHProps<T>(node);
   return formatProps(hProps);
-}
+};
 
 /**
  * Formats an object of props as a string.
@@ -24,7 +24,7 @@ export const formatHProps = <T>(node: Node): string => {
 export const formatProps = (props: Object): string => {
   const keys = Object.keys(props);
   return keys.map(key => `${key}="${props[key]}"`).join(' ');
-}
+};
 
 /**
  * Returns the hProperties of a node.
@@ -36,7 +36,7 @@ export const formatProps = (props: Object): string => {
 export const getHProps = <T>(node: Node): T => {
   const hProps = node.data?.hProperties || {};
   return hProps as T;
-}
+};
 
 /**
  * Returns array of hProperty keys.
@@ -45,10 +45,10 @@ export const getHProps = <T>(node: Node): T => {
  * @param {Node} node
  * @returns {Array} array of hProperty keys
  */
-export const getHPropKeys = <T>(node: Node): any => { 
+export const getHPropKeys = <T>(node: Node): any => {
   const hProps = getHProps<T>(node);
   return Object.keys(hProps) || [];
-}
+};
 
 /**
  * Gets the attributes of an MDX element and returns them as an object of hProperties.
@@ -60,7 +60,7 @@ export const getHPropKeys = <T>(node: Node): any => {
 export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
-      memo[attr.name] = attr.value;
+      memo[attr.name] = typeof attr.value !== 'string' ? JSON.parse(attr.value.value) : attr.value;
     }
 
     return memo;
@@ -75,14 +75,14 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
  * @returns {Array} array of child text nodes
  */
 export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
-    jsx.children.reduce((memo, child: MdxFlowExpression, i) => {
-     memo[i] = {
+  jsx.children.reduce((memo, child: MdxFlowExpression, i) => {
+    memo[i] = {
       type: 'text',
       value: child.value,
       position: child.position,
-     };
-      return memo;
-    }, [] as T);
+    };
+    return memo;
+  }, [] as T);
 
 /**
  * Tests if a node is an MDX element.
@@ -93,7 +93,7 @@ export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any 
  */
 export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextElement => {
   return ['mdxJsxFlowElement', 'mdxJsxTextElement'].includes(node.type);
-}
+};
 
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
@@ -103,7 +103,7 @@ export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxText
  * @returns {string} formatted HTML
  */
 export const formatHTML = (html: string): string => {
-  // Remove leading/trailing backticks if present, since they're used to keep the HTML 
+  // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
     html = html.slice(1, -1);
@@ -114,12 +114,12 @@ export const formatHTML = (html: string): string => {
   // // Get the number of spaces in the first line to determine the tab size
   // const tab = cleaned.match(/^\s*/)[0].length;
 
-  // // Remove the first indentation level from each line 
+  // // Remove the first indentation level from each line
   // const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
   // const unindented = cleaned.replace(tabRegex, '');
-  
+
   return cleaned;
-}
+};
 
 /**
  * Reformat HTML for the markdown/mdx by adding an indentation to each line. This assures that the
@@ -140,4 +140,4 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
   // const indented = cleaned.split('\n').map((line: string) => `${tab}${line}`).join('\n');
 
   return cleaned;
-}
+};

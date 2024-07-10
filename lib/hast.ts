@@ -16,7 +16,11 @@ const hast = (text: string, opts: Options = {}) => {
     return memo;
   }, {});
 
-  const processor = astProcessor(opts).use(injectComponents({ components })).use(remarkRehype).use(rehypePlugins);
+  const processor = astProcessor(opts)
+    .use(injectComponents({ components }))
+    .use(remarkRehype)
+    .use(() => tree => console.log(JSON.stringify(tree, null, 2)))
+    .use(rehypePlugins);
 
   return processor.runSync(processor.parse(text));
 };

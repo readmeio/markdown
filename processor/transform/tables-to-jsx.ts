@@ -34,18 +34,10 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       {
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: table.children[0].children.map((cell, idx) => {
-          const proxy = fromMarkdown(`<div style={{ align: "${table.align[idx]}" }}></div>`, {
-            extensions: [mdxJsx()],
-            mdastExtensions: [mdxJsxFromMarkdown()],
-          });
-          // @ts-ignore
-          const { attributes } = proxy.children[0];
-
+        children: table.children[0].children.map(cell => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'th',
-            attributes,
             children: cell.children,
           };
         }),
@@ -60,28 +52,28 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       return {
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: row.children.map((cell, idx) => {
-          const proxy = fromMarkdown(`<div style={{ align: "${table.align[idx]}" }}></div>`, {
-            extensions: [mdxJsx()],
-            mdastExtensions: [mdxJsxFromMarkdown()],
-          });
-          // @ts-ignore
-          const { attributes } = proxy.children[0];
-
+        children: row.children.map(cell => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'th',
-            attributes,
             children: cell.children,
           };
         }),
       };
     }),
   };
+  const proxy = fromMarkdown(`<div align={${JSON.stringify(table.align)}}></div>`, {
+    extensions: [mdxJsx()],
+    mdastExtensions: [mdxJsxFromMarkdown()],
+  });
+
+  // @ts-ignore
+  const { attributes } = proxy.children[0];
 
   const jsx = {
     type: 'mdxJsxFlowElement',
     name: 'Table',
+    attributes,
     children: [head, body],
   };
 

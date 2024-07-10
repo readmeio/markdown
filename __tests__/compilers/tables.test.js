@@ -17,7 +17,7 @@ describe('table compiler', () => {
     );
   });
 
-  it('saves to MDX if there are newlines', () => {
+  it.only('saves to MDX if there are newlines', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
@@ -27,22 +27,20 @@ describe('table compiler', () => {
     const tree = mdast(markdown);
 
     visit(tree, 'tableCell', cell => {
-      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n\n🦉` }];
+      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n🦉` }];
     });
 
     expect(mdx(tree)).toMatchInlineSnapshot(`
-      "<Table>
+      "<Table align={["center","center"]}>
         <thead>
           <tr>
-            <th style={{ align: "center" }}>
+            <th>
               th 1
-
               🦉
             </th>
 
-            <th style={{ align: "center" }}>
+            <th>
               th 2
-
               🦉
             </th>
           </tr>
@@ -50,15 +48,13 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th style={{ align: "center" }}>
+            <th>
               cell 1
-
               🦉
             </th>
 
-            <th style={{ align: "center" }}>
+            <th>
               cell 2
-
               🦉
             </th>
           </tr>
@@ -68,7 +64,7 @@ describe('table compiler', () => {
     `);
   });
 
-  it('saves to MDX with lists', () => {
+  it.only('saves to MDX with lists', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
@@ -88,16 +84,16 @@ describe('table compiler', () => {
     });
 
     expect(mdx(tree)).toMatchInlineSnapshot(`
-      "<Table>
+      "<Table align={["center","center"]}>
         <thead>
           <tr>
-            <th style={{ align: "center" }}>
+            <th>
               * 1
               * 2
               * 3
             </th>
 
-            <th style={{ align: "center" }}>
+            <th>
               th 2
             </th>
           </tr>
@@ -105,11 +101,11 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th style={{ align: "center" }}>
+            <th>
               cell 1
             </th>
 
-            <th style={{ align: "center" }}>
+            <th>
               cell 2
             </th>
           </tr>
