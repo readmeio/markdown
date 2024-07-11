@@ -1,4 +1,4 @@
-import astProcessor, { rehypePlugins } from './ast-processor';
+import astProcessor, { rehypePlugins, MdastOpts } from './ast-processor';
 import remarkRehype from 'remark-rehype';
 import { injectComponents } from '../processor/transform';
 import { MdastComponents } from '../types';
@@ -6,11 +6,7 @@ import mdast from './mdast';
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 
-interface Options {
-  components?: Record<string, string>;
-}
-
-const hast = (text: string, opts: Options = {}) => {
+const hast = (text: string, opts: MdastOpts = {}) => {
   const components: MdastComponents = Object.entries(opts.components || {}).reduce((memo, [name, doc]) => {
     memo[name] = mdast(doc);
     return memo;
