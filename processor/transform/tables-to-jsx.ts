@@ -7,6 +7,17 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { mdxJsxFromMarkdown } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 
+const alignToStyle = (align: 'left' | 'center' | 'right') => {
+  return {
+    type: 'mdxJsxAttribute',
+    name: 'style',
+    value: {
+      type: 'mdxJsxAttributeValueExpression',
+      value: `{ textAlign: \"${align}\" }`,
+    },
+  };
+};
+
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
 
@@ -27,6 +38,8 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   visit(table, 'tableCell', tableCellVisitor);
   if (!hasFlowContent) return;
 
+  const styles = table.align.map(alignToStyle);
+
   const head = {
     type: 'mdxJsxFlowElement',
     name: 'thead',
@@ -34,11 +47,12 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       {
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: table.children[0].children.map(cell => {
+        children: table.children[0].children.map((cell, index) => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'th',
             children: cell.children,
+            attributes: [styles[index]],
           };
         }),
       },
@@ -52,23 +66,27 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       return {
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: row.children.map(cell => {
+        children: row.children.map((cell, index) => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'th',
             children: cell.children,
+            attributes: [styles[index]],
           };
         }),
       };
     }),
   };
-  const proxy = fromMarkdown(`<div align={${JSON.stringify(table.align)}}></div>`, {
-    extensions: [mdxJsx()],
-    mdastExtensions: [mdxJsxFromMarkdown()],
-  });
-
-  // @ts-ignore
-  const { attributes } = proxy.children[0];
+  const attributes = [
+    {
+      type: 'mdxJsxAttribute',
+      name: 'align',
+      value: {
+        type: 'mdxJsxAttributeValueExpression',
+        value: JSON.stringify(table.align),
+      },
+    },
+  ];
 
   const jsx = {
     type: 'mdxJsxFlowElement',

@@ -34,12 +34,12 @@ describe('table compiler', () => {
       "<Table align={["center","center"]}>
         <thead>
           <tr>
-            <th>
+            <th style={{ textAlign: "center" }}>
               th 1
               🦉
             </th>
 
-            <th>
+            <th style={{ textAlign: "center" }}>
               th 2
               🦉
             </th>
@@ -48,12 +48,12 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th>
+            <th style={{ textAlign: "center" }}>
               cell 1
               🦉
             </th>
 
-            <th>
+            <th style={{ textAlign: "center" }}>
               cell 2
               🦉
             </th>
@@ -87,13 +87,13 @@ describe('table compiler', () => {
       "<Table align={["center","center"]}>
         <thead>
           <tr>
-            <th>
+            <th style={{ textAlign: "center" }}>
               * 1
               * 2
               * 3
             </th>
 
-            <th>
+            <th style={{ textAlign: "center" }}>
               th 2
             </th>
           </tr>
@@ -101,11 +101,11 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th>
+            <th style={{ textAlign: "center" }}>
               cell 1
             </th>
 
-            <th>
+            <th style={{ textAlign: "center" }}>
               cell 2
             </th>
           </tr>

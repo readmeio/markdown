@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface Props extends JSX.IntrinsicAttributes {
+  align: ('left' | 'center' | 'right')[];
   children: [React.ReactElement<HTMLTableCaptionElement | HTMLTableSectionElement | HTMLTableRowElement>];
 }
 
