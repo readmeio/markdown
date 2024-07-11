@@ -17,7 +17,7 @@ describe('table compiler', () => {
     );
   });
 
-  it.only('saves to MDX if there are newlines', () => {
+  it('saves to MDX if there are newlines', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
@@ -64,7 +64,7 @@ describe('table compiler', () => {
     `);
   });
 
-  it.only('saves to MDX with lists', () => {
+  it('saves to MDX with lists', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
