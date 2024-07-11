@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.72
+
+### ✨ New & Improved
+
+* remark plugins ([#939](https://github.com/readmeio/markdown/issues/939)) ([2747c48](https://github.com/readmeio/markdown/commit/2747c482ca4185da205d24996bb236dd57bfb969))
+
 ## Version 6.75.0-beta.71
 
 ### ✨ New & Improved
