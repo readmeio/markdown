@@ -6,7 +6,7 @@ describe('Readme Components Transformer', () => {
     { md: '<Code />', type: 'code' },
     { md: '<CodeTabs />', type: 'code-tabs' },
     { md: '<Image />', type: 'image-block' },
-    { md: '<Table />', type: 'table' },
+    { md: '<Table />', type: 'tableau' },
     { md: '<TutorialTile />', type: 'tutorial-tile' },
   ];
 
@@ -51,25 +51,6 @@ Second
     image: {
       md: `![](http://placekitten.com/600/200)`,
       mdx: `<Image src="http://placekitten.com/600/200" />`,
-    },
-    table: {
-      md: `
-| h1  | h2  |
-| --- | --- |
-| a1  | a2  |
-      `,
-      // @todo there's text nodes that get inserted between the td's. Pretty sure
-      // they'd get filtered out by rehype, but lets keep the tests easy.
-      mdx: `
-<Table>
-  <tr>
-    <td>h1</td><td>h2</td>
-  </tr>
-  <tr>
-    <td>a1</td><td>a2</td>
-  </tr>
-</Table>
-      `,
     },
   };
   it.each(Object.entries(docs))('matches the equivalent markdown for %s', (type, { md, mdx }) => {

@@ -8,6 +8,7 @@ export enum NodeTypes {
   i = 'i',
   imageBlock = 'image-block',
   reusableContent = 'reusable-content',
+  tableau = 'tableau',
   tutorialTile = 'tutorial-tile',
   variable = 'readme-variable',
 }

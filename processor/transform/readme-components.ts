@@ -1,10 +1,10 @@
 import { NodeTypes } from '../../enums';
-import { BlockContent, Code, Parents, Table } from 'mdast';
+import { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Callout, EmbedBlock, HTMLBlock, ImageBlock } from 'types';
-import { visit } from 'unist-util-visit';
+import { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
+import { visit, SKIP } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 import { mdast } from '../../lib';
@@ -19,17 +19,34 @@ const types = {
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
   Variable: NodeTypes['variable'],
-  td: 'tableCell',
-  tr: 'tableRow',
   TutorialTile: NodeTypes.tutorialTile,
+};
+
+enum TableNames {
+  tr = 'tr',
+  th = 'th',
+  td = 'td',
+}
+
+const tableTypes = {
+  [TableNames.tr]: 'tableRow',
+  [TableNames.th]: 'tableCell',
+  [TableNames.td]: 'tableCell',
 };
 
 interface Options {
   components: Record<string, string>;
+  html?: boolean;
 }
 
+interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
+  name: 'th' | 'td';
+}
+
+const isTableCell = (node: Node): node is MdxJsxTableCell => isMDXElement(node) && ['th', 'td'].includes(node.name);
+
 const coerceJsxToMd =
-  ({ components = {} } = {}) =>
+  ({ components = {}, html = false } = {}) =>
   (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents) => {
     if (node.name in components) return;
 
@@ -57,7 +74,7 @@ const coerceJsxToMd =
       const mdNode: ImageBlock = {
         alt,
         position,
-        children: attrs.caption ? mdast(attrs.caption).children : node.children as any,
+        children: attrs.caption ? mdast(attrs.caption).children : (node.children as any),
         title,
         type: NodeTypes.imageBlock,
         url: url || attrs.src,
@@ -89,18 +106,39 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
     } else if (node.name === 'Table') {
-      const { children, position } = node;
+      const { position } = node;
       const { align = [...new Array(node.children.length)].map(() => null) } = getAttrs<Pick<Table, 'align'>>(node);
+      let children: TableRow[] = [];
 
-      const mdNode: Table = {
+      visit(node, { name: 'tr' }, row => {
+        let rowChildren: TableCell[] = [];
+
+        visit(row, isTableCell, ({ name, children, position }) => {
+          rowChildren.push({
+            type: tableTypes[name],
+            children,
+            position,
+          } as TableCell);
+        });
+
+        children.push({
+          type: tableTypes[row.name],
+          children: rowChildren,
+          position: row.position,
+        });
+      });
+
+      const mdNode: Tableau = {
         align,
-        type: 'table',
+        type: NodeTypes.tableau,
         position,
-        // @ts-ignore
         children,
       };
 
+      visit(mdNode, isMDXElement, coerceJsxToMd({ components, html }));
+
       parent.children[index] = mdNode;
+      return SKIP;
     } else if (node.name === 'Callout') {
       const { icon, empty = false } = getAttrs<Callout['data']['hProperties']>(node);
 
@@ -136,14 +174,10 @@ const coerceJsxToMd =
       const mdNode: BlockContent = {
         children: node.children,
         type: types[node.name],
-        ...(['tr', 'td'].includes(node.name)
-          ? {}
-          : {
-              data: {
-                hName: node.name,
-                ...(Object.keys(hProperties).length && { hProperties }),
-              },
-            }),
+        data: {
+          hName: node.name,
+          ...(Object.keys(hProperties).length && { hProperties }),
+        },
         position: node.position,
       };
 

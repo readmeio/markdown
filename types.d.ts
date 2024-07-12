@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text, Table } from 'mdast';
 
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
@@ -86,6 +86,10 @@ interface FaEmoji extends Literal {
   type: NodeTypes.i;
 }
 
+interface Tableau extends Omit<Table, 'type'> {
+  type: NodeTypes.tableau;
+}
+
 interface TutorialTile extends Node {
   backgroundColor: string;
   emoji: string;
@@ -110,9 +114,10 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.htmlBlock]: HTMLBlock;
+    [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
 
@@ -130,6 +135,7 @@ declare module 'mdast' {
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: TutorialTile;
     [NodeTypes.variable]: Variable;
   }
