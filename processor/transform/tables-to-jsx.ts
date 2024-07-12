@@ -69,7 +69,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
         children: row.children.map((cell, index) => {
           return {
             type: 'mdxJsxFlowElement',
-            name: 'th',
+            name: 'td',
             children: cell.children,
             attributes: [styles[index]],
           };
