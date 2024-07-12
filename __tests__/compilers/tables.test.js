@@ -64,6 +64,53 @@ describe('table compiler', () => {
     `);
   });
 
+  it.only('saves to MDX if there are newlines and null alignment', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| ------ | ------ |
+| cell 1 | cell 2 |
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n🦉` }];
+    });
+
+    expect(mdx(tree)).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              th 1
+              🦉
+            </th>
+
+            <th>
+              th 2
+              🦉
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              cell 1
+              🦉
+            </td>
+
+            <td>
+              cell 2
+              🦉
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
   it('saves to MDX with lists', () => {
     const markdown = `
 |  th 1  |  th 2  |
