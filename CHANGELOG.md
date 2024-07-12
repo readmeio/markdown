@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.74
+
+### 🛠 Fixes & Updates
+
+* use td ([47650a4](https://github.com/readmeio/markdown/commit/47650a4329f8454d1a2709942313bf887dc4f2d3))
+
 ## Version 6.75.0-beta.73
 
 ### 🛠 Fixes & Updates
