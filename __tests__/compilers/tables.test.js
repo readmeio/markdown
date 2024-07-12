@@ -48,15 +48,15 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th style={{ textAlign: "center" }}>
+            <td style={{ textAlign: "center" }}>
               cell 1
               🦉
-            </th>
+            </td>
 
-            <th style={{ textAlign: "center" }}>
+            <td style={{ textAlign: "center" }}>
               cell 2
               🦉
-            </th>
+            </td>
           </tr>
         </tbody>
       </Table>
@@ -64,7 +64,7 @@ describe('table compiler', () => {
     `);
   });
 
-  it.only('saves to MDX if there are newlines and null alignment', () => {
+  it('saves to MDX if there are newlines and null alignment', () => {
     const markdown = `
 |  th 1  |  th 2  |
 | ------ | ------ |
@@ -148,13 +148,13 @@ describe('table compiler', () => {
 
         <tbody>
           <tr>
-            <th style={{ textAlign: "center" }}>
+            <td style={{ textAlign: "center" }}>
               cell 1
-            </th>
+            </td>
 
-            <th style={{ textAlign: "center" }}>
+            <td style={{ textAlign: "center" }}>
               cell 2
-            </th>
+            </td>
           </tr>
         </tbody>
       </Table>
