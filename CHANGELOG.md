@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.75
+
+### 🛠 Fixes & Updates
+
+* skip null align ([#940](https://github.com/readmeio/markdown/issues/940)) ([7880a89](https://github.com/readmeio/markdown/commit/7880a896b09bc1157bb86b61d5e0fc3d8e8461f4))
+
 ## Version 6.75.0-beta.74
 
 ### 🛠 Fixes & Updates
