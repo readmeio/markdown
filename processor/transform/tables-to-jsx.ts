@@ -2,12 +2,11 @@ import { Parents, Table, TableCell, Text } from 'mdast';
 import { visit, EXIT } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
 
-import { mdxJsx } from 'micromark-extension-mdx-jsx';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { mdxJsxFromMarkdown } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 
-const alignToStyle = (align: 'left' | 'center' | 'right') => {
+const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
+  if (!align) return align;
+
   return {
     type: 'mdxJsxAttribute',
     name: 'style',
@@ -52,7 +51,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
             type: 'mdxJsxFlowElement',
             name: 'th',
             children: cell.children,
-            attributes: [styles[index]],
+            ...(styles[index] && { attributes: [styles[index]] }),
           };
         }),
       },
@@ -71,7 +70,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
             type: 'mdxJsxFlowElement',
             name: 'td',
             children: cell.children,
-            attributes: [styles[index]],
+            ...(styles[index] && { attributes: [styles[index]] }),
           };
         }),
       };
@@ -91,7 +90,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   const jsx = {
     type: 'mdxJsxFlowElement',
     name: 'Table',
-    attributes,
+    ...(table.align.find(a => a) && { attributes }),
     children: [head, body],
   };
 
