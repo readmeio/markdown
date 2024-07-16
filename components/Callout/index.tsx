@@ -29,10 +29,10 @@ const Callout = (props: Props) => {
   return (
     // @ts-ignore
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      <h3 className={`callout-heading${empty ? ' empty' : ''}`}>
+      <h2 className={`callout-heading${empty ? ' empty' : ''}`}>
         <span className="callout-icon">{icon}</span>
         {empty || React.Children.toArray(children)[0]}
-      </h3>
+      </h2>
       {React.Children.toArray(children).slice(1)}
     </blockquote>
   );
