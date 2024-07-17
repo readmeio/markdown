@@ -116,7 +116,6 @@ describe('table compiler', () => {
             <td style={{ textAlign: "center" }}>
               cell 1
               🦉
-<<<<<<< HEAD
             </td>
 
             <td style={{ textAlign: "center" }}>
@@ -155,7 +154,7 @@ describe('table compiler', () => {
             <th>
               th 2
               🦉
-            </td>
+            </th>
           </tr>
         </thead>
 
