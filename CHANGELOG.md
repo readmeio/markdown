@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.76
+
+### 🛠 Fixes & Updates
+
+* saving tables ([#942](https://github.com/readmeio/markdown/issues/942)) ([50c392e](https://github.com/readmeio/markdown/commit/50c392ea214eb123f53e756f00ab8a074bd7ff12))
+
 ## Version 6.75.0-beta.75
 
 ### 🛠 Fixes & Updates
