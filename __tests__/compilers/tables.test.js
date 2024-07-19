@@ -17,6 +17,71 @@ describe('table compiler', () => {
     );
   });
 
+  it('compiles to jsx syntax', () => {
+    const markdown = `
+<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+        🦉
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+        🦉
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+        🦉
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+        🦉
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+    expect(mdx(mdast(markdown))).toBe(`<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+        🦉
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+        🦉
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+        🦉
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+        🦉
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`);
+  });
+
   it('saves to MDX if there are newlines', () => {
     const markdown = `
 |  th 1  |  th 2  |
@@ -160,5 +225,43 @@ describe('table compiler', () => {
       </Table>
       "
     `);
+  });
+
+  it('compiles back to markdown syntax if there are no newlines/blocks', () => {
+    const markdown = `
+<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+    expect(mdx(mdast(markdown)).trim()).toBe(
+      `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`.trim(),
+    );
   });
 });

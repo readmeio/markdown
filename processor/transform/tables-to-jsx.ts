@@ -1,4 +1,4 @@
-import { Parents, Table, TableCell, Text } from 'mdast';
+import { Node, Paragraph, Parents, Table, TableCell, Text } from 'mdast';
 import { visit, EXIT } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
 
@@ -21,7 +21,12 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
 
   const tableCellVisitor = (cell: TableCell) => {
-    if (!phrasing(cell.children[0])) {
+    const content =
+      cell.children.length === 1 && cell.children[0].type === 'paragraph'
+        ? (cell.children[0] as unknown as Paragraph).children[0]
+        : cell.children[0];
+
+    if (!phrasing(content)) {
       hasFlowContent = true;
       return EXIT;
     }
@@ -35,7 +40,10 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   };
 
   visit(table, 'tableCell', tableCellVisitor);
-  if (!hasFlowContent) return;
+  if (!hasFlowContent) {
+    table.type = 'table';
+    return;
+  }
 
   const styles = table.align.map(alignToStyle);
 
@@ -98,8 +106,10 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   parent.children[index] = jsx;
 };
 
+const isTable = (node: Node) => ['table', 'tableau'].includes(node.type);
+
 const tablesToJsx = (): Transform => tree => {
-  visit(tree, 'table', visitor);
+  visit(tree, isTable, visitor);
 
   return tree;
 };
