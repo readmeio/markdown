@@ -264,4 +264,64 @@ describe('table compiler', () => {
 `.trim(),
     );
   });
+
+  it('compiles to jsx if there is a single list item', () => {
+    const doc = `
+<Table>
+  <thead>
+    <tr>
+      <th>
+        * list
+      </th>
+
+      <th>
+        th 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        cell 1
+      </td>
+
+      <td>
+        cell 2
+      </td>
+    </tr>
+  </tbody>
+</Table>
+    `;
+
+    const tree = mdast(doc);
+
+    expect(mdx(tree).trim()).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              * list
+            </th>
+
+            <th>
+              th 2
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              cell 1
+            </td>
+
+            <td>
+              cell 2
+            </td>
+          </tr>
+        </tbody>
+      </Table>"
+    `);
+  });
 });
