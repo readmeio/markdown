@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.77
+
+### 🛠 Fixes & Updates
+
+* lists in table headers ([#943](https://github.com/readmeio/markdown/issues/943)) ([6a2e80f](https://github.com/readmeio/markdown/commit/6a2e80f82ed68b7203c412442b4b83165295d362))
+
 ## Version 6.75.0-beta.76
 
 ### 🛠 Fixes & Updates
