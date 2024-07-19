@@ -17,6 +17,8 @@ const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
   };
 };
 
+const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
+
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
 
@@ -39,7 +41,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
     });
   };
 
-  visit(table, 'tableCell', tableCellVisitor);
+  visit(table, isTableCell, tableCellVisitor);
   if (!hasFlowContent) {
     table.type = 'table';
     return;

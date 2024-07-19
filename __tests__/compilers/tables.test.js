@@ -267,14 +267,34 @@ describe('table compiler', () => {
 
   it('compiles to jsx if there is a single list item', () => {
     const doc = `
-|        | B1 |
-| ------ | -- |
-| A2     | B2 |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        * list
+      </th>
+
+      <th>
+        th 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        cell 1
+      </td>
+
+      <td>
+        cell 2
+      </td>
+    </tr>
+  </tbody>
+</Table>
     `;
 
     const tree = mdast(doc);
-    const subtree = mdast(`* list`);
-    tree.children[0].children[0].children[0].children = subtree.children;
 
     expect(mdx(tree).trim()).toMatchInlineSnapshot(`
       "<Table>
@@ -285,7 +305,7 @@ describe('table compiler', () => {
             </th>
 
             <th>
-              B1
+              th 2
             </th>
           </tr>
         </thead>
@@ -293,11 +313,11 @@ describe('table compiler', () => {
         <tbody>
           <tr>
             <td>
-              A2
+              cell 1
             </td>
 
             <td>
-              B2
+              cell 2
             </td>
           </tr>
         </tbody>
