@@ -1,0 +1,36 @@
+.Accordion {
+  border: 1px solid rgba(black, 0.1);
+  border-radius: 5px;
+
+  .title {
+    align-items: center;
+    background: white;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    position: relative;
+    text-align: left;
+    width: 100%;
+  }
+
+  .icon {
+    &_active {
+      transform: rotate(90deg);
+      transition: transform 0.3s;
+    }
+  }
+
+  .content {
+    display: none;
+    padding: 10px;
+    transition: max-height 1s ease-in-out;
+
+    &_active {
+      display: block;
+      transition: max-height 1s ease-in-out;
+    }
+  }
+}
