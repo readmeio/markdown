@@ -9,6 +9,7 @@
     border-radius: 5px;
     cursor: pointer;
     display: flex;
+    font-size: 14px;
     justify-content: space-between;
     padding: 10px;
     position: relative;
@@ -30,11 +31,9 @@
   .content {
     display: none;
     padding: 10px;
-    transition: max-height 1s ease-in-out;
 
     &_active {
       display: block;
-      transition: max-height 1s ease-in-out;
     }
   }
 }
