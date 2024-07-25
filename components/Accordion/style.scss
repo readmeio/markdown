@@ -17,7 +17,11 @@
   }
 
   .icon {
+    font-size: 12px;
+    transition: transform 0.3s;
+
     &_active {
+      font-size: 12px;
       transform: rotate(90deg);
       transition: transform 0.3s;
     }
