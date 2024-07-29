@@ -1,5 +1,6 @@
 .Accordion {
-  border: 1px solid rgba(black, 0.1);
+  background: rgba(var(--color-bg-page-rgb, white), 1);
+  border: 1px solid var(--color-border-default, rgba(black, 0.1));
   border-radius: 5px;
 
   .title {
@@ -7,6 +8,7 @@
     background: white;
     border: 0;
     border-radius: 5px;
+    color: var(--color-text-default, #384248);
     cursor: pointer;
     display: flex;
     font-size: 14px;
@@ -18,6 +20,7 @@
   }
 
   .icon {
+    color: var(--color-text-default, #384248);
     font-size: 12px;
     transition: transform 0.3s;
 
@@ -29,6 +32,7 @@
   }
 
   .content {
+    color: var(--color-text-default, #384248);
     display: none;
     padding: 10px;
 
