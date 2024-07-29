@@ -1,3 +1,4 @@
+export { default as Accordion } from './Accordion';
 export { default as Anchor } from './Anchor';
 export { default as Callout } from './Callout';
 export { default as Cards } from './CardsGrid';
