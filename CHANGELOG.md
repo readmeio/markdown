@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.78
+
+### ✨ New & Improved
+
+* accordion ([#945](https://github.com/readmeio/markdown/issues/945)) ([cefe6d9](https://github.com/readmeio/markdown/commit/cefe6d987298e04b15066a77a0004a5c6a83f81f))
+
 ## Version 6.75.0-beta.77
 
 ### 🛠 Fixes & Updates
