@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Components > Callout 1`] = `"<blockquote class="callout callout_error" theme="❗️"><h3 class="callout-heading"><span class="callout-icon">❗️</span><p>Error Callout</p></h3><p>Lorem ipsum dolor.</p></blockquote>"`;
+exports[`Components > Callout 1`] = `"<blockquote class="callout callout_error" theme="❗️"><h2 class="callout-heading"><span class="callout-icon">❗️</span><p>Error Callout</p></h2><p>Lorem ipsum dolor.</p></blockquote>"`;
 
 exports[`Components > Embed 1`] = `"<div class="embed embed_hasImg"><div class="embed-media"><iframe class="embedly-embed" src="//cdn.embedly.com/widgets/media.html?src=https://www.google.com/maps/embed/v1/place?center=37.829698%2C-122.258166&amp;key=AIzaSyD9HrlRuI1Ani0-MTZ7pvzxwxi4pgW0BCY&amp;zoom=16&amp;q=4126+Opal+St,+Oakland,+CA+94609&amp;display_name=Google+Maps&amp;url=https://www.google.com/maps/place/4126+Opal+St,+Oakland,+CA+94609/@37.829698,-122.258166,16z/data=!4m5!3m4!1s0x80857dfb145a04ff:0x96b17d967421636f!8m2!3d37.8296978!4d-122.2581661?hl=en&amp;image=http://maps-api-ssl.google.com/maps/api/staticmap?center=37.829698,-122.258166&amp;zoom=15&amp;size=250x250&amp;sensor=false&amp;key=02466f963b9b4bb8845a05b53d3235d7&amp;type=text/html&amp;schema=google" width="600" height="450" scrolling="no" title="Google Maps embed" frameborder="0" allow="autoplay; fullscreen" allowfullscreen="true"></iframe></div></div>"`;
 
