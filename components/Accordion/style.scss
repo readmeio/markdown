@@ -1,0 +1,43 @@
+.Accordion {
+  background: rgba(var(--color-bg-page-rgb, white), 1);
+  border: 1px solid var(--color-border-default, rgba(black, 0.1));
+  border-radius: 5px;
+
+  .title {
+    align-items: center;
+    background: white;
+    border: 0;
+    border-radius: 5px;
+    color: var(--color-text-default, #384248);
+    cursor: pointer;
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+    padding: 10px;
+    position: relative;
+    text-align: left;
+    width: 100%;
+  }
+
+  .icon {
+    color: var(--color-text-default, #384248);
+    font-size: 12px;
+    transition: transform 0.3s;
+
+    &_active {
+      font-size: 12px;
+      transform: rotate(90deg);
+      transition: transform 0.3s;
+    }
+  }
+
+  .content {
+    color: var(--color-text-default, #384248);
+    display: none;
+    padding: 10px;
+
+    &_active {
+      display: block;
+    }
+  }
+}

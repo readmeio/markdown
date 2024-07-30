@@ -1,6 +1,24 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.78
+
+### ✨ New & Improved
+
+* accordion ([#945](https://github.com/readmeio/markdown/issues/945)) ([cefe6d9](https://github.com/readmeio/markdown/commit/cefe6d987298e04b15066a77a0004a5c6a83f81f))
+
+## Version 6.75.0-beta.77
+
+### 🛠 Fixes & Updates
+
+* lists in table headers ([#943](https://github.com/readmeio/markdown/issues/943)) ([6a2e80f](https://github.com/readmeio/markdown/commit/6a2e80f82ed68b7203c412442b4b83165295d362))
+
+## Version 6.75.0-beta.76
+
+### 🛠 Fixes & Updates
+
+* saving tables ([#942](https://github.com/readmeio/markdown/issues/942)) ([50c392e](https://github.com/readmeio/markdown/commit/50c392ea214eb123f53e756f00ab8a074bd7ff12))
+
 ## Version 6.75.0-beta.75
 
 ### 🛠 Fixes & Updates
