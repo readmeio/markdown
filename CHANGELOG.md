@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.75.0-beta.79
+
+### 🛠 Fixes & Updates
+
+* **beta:** reset callout headings to H2s ([#941](https://github.com/readmeio/markdown/issues/941)) ([08220ba](https://github.com/readmeio/markdown/commit/08220ba7c6cbb3ff9e6697bb95418091fa05c880)), closes [/github.com/readmeio/markdown/blob/ad07529eef2513e83072dc31f0469a5f36603957/components/Callout/index.jsx#L11](https://github.com/readmeio//github.com/readmeio/markdown/blob/ad07529eef2513e83072dc31f0469a5f36603957/components/Callout/index.jsx/issues/L11)
+
 ## Version 6.75.0-beta.78
 
 ### ✨ New & Improved
