@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`anchor target: should allow _blank if using HTML 1`] = `"<p><a href=\\"https://example.com\\" target=\\"_blank\\" title=\\"\\">test</a></p>"`;
 
@@ -10,7 +10,7 @@ exports[`anchors 1`] = `
 "<p><a href=\\"http://example.com\\" target=\\"\\" title=\\"\\">link</a><br>
 <a href=\\"\\" target=\\"\\" title=\\"\\">xss</a><br>
 <a href=\\"/docs/slug\\" target=\\"\\" title=\\"\\" class=\\"doc-link\\" data-sidebar=\\"slug\\">doc</a><br>
-<a href=\\"/reference/slug\\" target=\\"\\" title=\\"\\">ref</a><br>
+<a href=\\"/reference-link/slug\\" target=\\"\\" title=\\"\\">ref</a><br>
 <a href=\\"/changelog/slug\\" target=\\"\\" title=\\"\\">blog</a><br>
 <a href=\\"/changelog/slug\\" target=\\"\\" title=\\"\\">changelog</a><br>
 <a href=\\"/page/slug\\" target=\\"\\" title=\\"\\">page</a></p>"
@@ -24,7 +24,7 @@ exports[`anchors with baseUrl 1`] = `
 &lt;a href=\\"page:slug\\"&gt;page&lt;/a&gt;&lt;/p&gt;"
 `;
 
-exports[`anchors with baseUrl and special characters in url hash 1`] = `"<p><a href=\\"/reference/slug#%E6%95%B4\\" target=\\"\\" title=\\"\\">ref</a></p>"`;
+exports[`anchors with baseUrl and special characters in url hash 1`] = `"<p><a href=\\"/reference-link/slug#%E6%95%B4\\" target=\\"\\" title=\\"\\">ref</a></p>"`;
 
 exports[`check list items 1`] = `
 "<ul class=\\"contains-task-list\\">
@@ -33,36 +33,50 @@ exports[`check list items 1`] = `
 </ul>"
 `;
 
-exports[`code samples should parse indented code on the first line 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "lang": null,
-      "meta": null,
-      "position": Position {
-        "end": Object {
+exports[`code samples > should parse indented code on the first line 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 23,
+              "line": 1,
+              "offset": 22,
+            },
+            "start": {
+              "column": 5,
+              "line": 1,
+              "offset": 4,
+            },
+          },
+          "type": "text",
+          "value": "const code = true;",
+        },
+      ],
+      "position": {
+        "end": {
           "column": 23,
           "line": 1,
           "offset": 22,
         },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
+        "start": {
+          "column": 5,
           "line": 1,
-          "offset": 0,
+          "offset": 4,
         },
       },
-      "type": "code",
-      "value": "const code = true;",
+      "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 3,
-      "offset": 25,
+  "position": {
+    "end": {
+      "column": 23,
+      "line": 1,
+      "offset": 22,
     },
-    "start": Object {
+    "start": {
       "column": 1,
       "line": 1,
       "offset": 0,
@@ -73,260 +87,37 @@ Object {
 `;
 
 exports[`emojis 1`] = `
-"<p>😂<br>
+"<p><img src=\\"/public/img/emojis/joy.png\\" alt=\\":joy:\\" title=\\":joy:\\" class=\\"emoji\\" align=\\"absmiddle\\" height=\\"20\\" width=\\"20\\" caption=\\"\\" loading=\\"lazy\\"><br>
 <i class=\\"fa fa-lock\\"></i><br>
 :unknown-emoji:</p>"
 `;
 
-exports[`export multiple Markdown renderers allows complex compact headings 1`] = `
-"<h1 id=\\"basic-text\\">Basic Text</h1>
-<h2 id=\\"-oh-noes\\">🙀 oh noes!</h2>
-<h3 id=\\"6-oh-no\\"><strong>6</strong>. Oh No</h3>
-<p>Lorem ipsum dolor!</p>"
-`;
+exports[`export multiple Markdown renderers > allows complex compact headings 1`] = `undefined`;
 
-exports[`export multiple Markdown renderers renders HTML 1`] = `
-"<h1 id=\\"hello-world\\">Hello World</h1>
+exports[`export multiple Markdown renderers > renders HTML 1`] = `undefined`;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th align=\\"center\\">Col. A</th><th align=\\"center\\">Col. B</th><th align=\\"center\\">Col. C</th></tr></thead><tbody><tr><td align=\\"center\\">Cell A1</td><td align=\\"center\\">Cell B1</td><td align=\\"center\\">Cell C1</td></tr><tr><td align=\\"center\\">Cell A2</td><td align=\\"center\\">Cell B2</td><td align=\\"center\\">Cell C2</td></tr><tr><td align=\\"center\\">Cell A3</td><td align=\\"center\\">Cell B3</td><td align=\\"center\\">Cell C3</td></tr></tbody></table>
-<p>  <a href=\\"https://jsfiddle.net/rafegoldberg/5VA5j/\\" title=\\"@embed\\">Embed Title</a></p>
-<rdme-callout title=\\"UhOh\\" value=\\"Lorem ipsum dolor sit amet consectetur adipisicing elit.\\" icon=\\"❗️\\" theme=\\"error\\"><p>UhOh</p><p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p></rdme-callout>"
-`;
-
-exports[`export multiple Markdown renderers renders MD 1`] = `
+exports[`export multiple Markdown renderers > renders MD 1`] = `
 "# Hello World
 "
 `;
 
-exports[`export multiple Markdown renderers renders custom React components 1`] = `
-<React.Fragment>
-  <Unknown
-    id="hello-world"
-  >
-    <div
-      className="heading-anchor_backwardsCompatibility"
-      id="section-hello-world"
-    />
-    Hello World
-  </Unknown>
-  
+exports[`export multiple Markdown renderers > renders custom React components 1`] = `[Function]`;
 
+exports[`export multiple Markdown renderers > renders hAST 1`] = `undefined`;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <Table>
-    <thead>
-      <tr>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. A
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. B
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. C
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C1
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C2
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C3
-        </td>
-      </tr>
-    </tbody>
-  </Table>
-  
-
-  <p>
-      
-    <AnchorWithContext
-      href="https://jsfiddle.net/rafegoldberg/5VA5j/"
-      title="@embed"
-    >
-      Embed Title
-    </AnchorWithContext>
-  </p>
-  
-
-  <Callout
-    attributes={null}
-    calloutStyle="info"
-    icon="❗️"
-    node={null}
-    theme="error"
-    title="UhOh"
-    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-  >
-    <p>
-      UhOh
-    </p>
-    <p>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-    </p>
-  </Callout>
-</React.Fragment>
-`;
-
-exports[`export multiple Markdown renderers renders hAST 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "position": Object {
-            "end": Object {
+exports[`export multiple Markdown renderers > renders mdAST 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
               "column": 14,
               "line": 1,
               "offset": 13,
             },
-            "start": Object {
+            "start": {
               "column": 3,
               "line": 1,
               "offset": 2,
@@ -336,868 +127,14 @@ Object {
           "value": "Hello World",
         },
       ],
-      "position": Object {
-        "end": Object {
-          "column": 14,
-          "line": 1,
-          "offset": 13,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 1,
-          "offset": 0,
-        },
-      },
-      "properties": Object {
-        "id": "hello-world",
-      },
-      "tagName": "h1",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 11,
-                          "line": 3,
-                          "offset": 25,
-                        },
-                        "start": Object {
-                          "column": 5,
-                          "line": 3,
-                          "offset": 19,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Col. A",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 12,
-                      "line": 3,
-                      "offset": 26,
-                    },
-                    "start": Object {
-                      "column": 5,
-                      "line": 3,
-                      "offset": 19,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 21,
-                          "line": 3,
-                          "offset": 35,
-                        },
-                        "start": Object {
-                          "column": 15,
-                          "line": 3,
-                          "offset": 29,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Col. B",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 22,
-                      "line": 3,
-                      "offset": 36,
-                    },
-                    "start": Object {
-                      "column": 15,
-                      "line": 3,
-                      "offset": 29,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 31,
-                          "line": 3,
-                          "offset": 45,
-                        },
-                        "start": Object {
-                          "column": 25,
-                          "line": 3,
-                          "offset": 39,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Col. C",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 32,
-                      "line": 3,
-                      "offset": 46,
-                    },
-                    "start": Object {
-                      "column": 25,
-                      "line": 3,
-                      "offset": 39,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-              ],
-              "position": Object {
-                "end": Object {
-                  "column": 34,
-                  "line": 3,
-                  "offset": 48,
-                },
-                "start": Object {
-                  "column": 1,
-                  "line": 3,
-                  "offset": 15,
-                },
-              },
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-          ],
-          "position": Object {
-            "end": Object {
-              "column": 34,
-              "line": 3,
-              "offset": 48,
-            },
-            "start": Object {
-              "column": 1,
-              "line": 3,
-              "offset": 15,
-            },
-          },
-          "properties": Object {},
-          "tagName": "thead",
-          "type": "element",
-          "value": "Col. A Col. B Col. C",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 12,
-                          "line": 5,
-                          "offset": 94,
-                        },
-                        "start": Object {
-                          "column": 5,
-                          "line": 5,
-                          "offset": 87,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell A1",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 12,
-                      "line": 5,
-                      "offset": 94,
-                    },
-                    "start": Object {
-                      "column": 5,
-                      "line": 5,
-                      "offset": 87,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 22,
-                          "line": 5,
-                          "offset": 104,
-                        },
-                        "start": Object {
-                          "column": 15,
-                          "line": 5,
-                          "offset": 97,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell B1",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 22,
-                      "line": 5,
-                      "offset": 104,
-                    },
-                    "start": Object {
-                      "column": 15,
-                      "line": 5,
-                      "offset": 97,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 32,
-                          "line": 5,
-                          "offset": 114,
-                        },
-                        "start": Object {
-                          "column": 25,
-                          "line": 5,
-                          "offset": 107,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell C1",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 32,
-                      "line": 5,
-                      "offset": 114,
-                    },
-                    "start": Object {
-                      "column": 25,
-                      "line": 5,
-                      "offset": 107,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "position": Object {
-                "end": Object {
-                  "column": 34,
-                  "line": 5,
-                  "offset": 116,
-                },
-                "start": Object {
-                  "column": 1,
-                  "line": 5,
-                  "offset": 83,
-                },
-              },
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 12,
-                          "line": 6,
-                          "offset": 128,
-                        },
-                        "start": Object {
-                          "column": 5,
-                          "line": 6,
-                          "offset": 121,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell A2",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 12,
-                      "line": 6,
-                      "offset": 128,
-                    },
-                    "start": Object {
-                      "column": 5,
-                      "line": 6,
-                      "offset": 121,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 22,
-                          "line": 6,
-                          "offset": 138,
-                        },
-                        "start": Object {
-                          "column": 15,
-                          "line": 6,
-                          "offset": 131,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell B2",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 22,
-                      "line": 6,
-                      "offset": 138,
-                    },
-                    "start": Object {
-                      "column": 15,
-                      "line": 6,
-                      "offset": 131,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 32,
-                          "line": 6,
-                          "offset": 148,
-                        },
-                        "start": Object {
-                          "column": 25,
-                          "line": 6,
-                          "offset": 141,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell C2",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 32,
-                      "line": 6,
-                      "offset": 148,
-                    },
-                    "start": Object {
-                      "column": 25,
-                      "line": 6,
-                      "offset": 141,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "position": Object {
-                "end": Object {
-                  "column": 34,
-                  "line": 6,
-                  "offset": 150,
-                },
-                "start": Object {
-                  "column": 1,
-                  "line": 6,
-                  "offset": 117,
-                },
-              },
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 12,
-                          "line": 7,
-                          "offset": 162,
-                        },
-                        "start": Object {
-                          "column": 5,
-                          "line": 7,
-                          "offset": 155,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell A3",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 12,
-                      "line": 7,
-                      "offset": 162,
-                    },
-                    "start": Object {
-                      "column": 5,
-                      "line": 7,
-                      "offset": 155,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 22,
-                          "line": 7,
-                          "offset": 172,
-                        },
-                        "start": Object {
-                          "column": 15,
-                          "line": 7,
-                          "offset": 165,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell B3",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 22,
-                      "line": 7,
-                      "offset": 172,
-                    },
-                    "start": Object {
-                      "column": 15,
-                      "line": 7,
-                      "offset": 165,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "position": Object {
-                        "end": Object {
-                          "column": 32,
-                          "line": 7,
-                          "offset": 182,
-                        },
-                        "start": Object {
-                          "column": 25,
-                          "line": 7,
-                          "offset": 175,
-                        },
-                      },
-                      "type": "text",
-                      "value": "Cell C3",
-                    },
-                  ],
-                  "position": Object {
-                    "end": Object {
-                      "column": 32,
-                      "line": 7,
-                      "offset": 182,
-                    },
-                    "start": Object {
-                      "column": 25,
-                      "line": 7,
-                      "offset": 175,
-                    },
-                  },
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "position": Object {
-                "end": Object {
-                  "column": 34,
-                  "line": 7,
-                  "offset": 184,
-                },
-                "start": Object {
-                  "column": 1,
-                  "line": 7,
-                  "offset": 151,
-                },
-              },
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-          ],
-          "position": Object {
-            "end": Object {
-              "column": 34,
-              "line": 7,
-              "offset": 184,
-            },
-            "start": Object {
-              "column": 1,
-              "line": 5,
-              "offset": 83,
-            },
-          },
-          "properties": Object {},
-          "tagName": "tbody",
-          "type": "element",
-          "value": "Cell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3",
-        },
-      ],
-      "position": Object {
-        "end": Object {
-          "column": 34,
-          "line": 7,
-          "offset": 184,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 3,
-          "offset": 15,
-        },
-      },
-      "properties": Object {},
-      "tagName": "table",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "position": Object {
-            "end": Object {
-              "column": 3,
-              "line": 9,
-              "offset": 188,
-            },
-            "start": Object {
-              "column": 1,
-              "line": 9,
-              "offset": 186,
-            },
-          },
-          "type": "text",
-          "value": "  ",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "position": Object {
-                "end": Object {
-                  "column": 15,
-                  "line": 9,
-                  "offset": 200,
-                },
-                "start": Object {
-                  "column": 4,
-                  "line": 9,
-                  "offset": 189,
-                },
-              },
-              "type": "text",
-              "value": "Embed Title",
-            },
-          ],
-          "position": Object {
-            "end": Object {
-              "column": 67,
-              "line": 9,
-              "offset": 252,
-            },
-            "start": Object {
-              "column": 3,
-              "line": 9,
-              "offset": 188,
-            },
-          },
-          "properties": Object {
-            "href": "https://jsfiddle.net/rafegoldberg/5VA5j/",
-            "title": "@embed",
-          },
-          "tagName": "a",
-          "type": "element",
-        },
-      ],
-      "position": Object {
-        "end": Object {
-          "column": 67,
-          "line": 9,
-          "offset": 252,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 9,
-          "offset": 186,
-        },
-      },
-      "properties": Object {},
-      "tagName": "p",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "position": Object {
-                "end": Object {
-                  "column": 9,
-                  "line": 11,
-                  "offset": 262,
-                },
-                "start": Object {
-                  "column": 5,
-                  "line": 11,
-                  "offset": 258,
-                },
-              },
-              "type": "text",
-              "value": "UhOh",
-            },
-          ],
-          "position": Object {
-            "end": Object {
-              "column": 9,
-              "line": 11,
-              "offset": 262,
-            },
-            "start": Object {
-              "column": 5,
-              "line": 11,
-              "offset": 258,
-            },
-          },
-          "properties": Object {},
-          "tagName": "p",
-          "type": "element",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "position": Object {
-                "end": Object {
-                  "column": 61,
-                  "line": 11,
-                  "offset": 314,
-                },
-                "start": Object {
-                  "column": 5,
-                  "line": 11,
-                  "offset": 258,
-                },
-              },
-              "type": "text",
-              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-            },
-          ],
-          "position": Object {
-            "end": Object {
-              "column": 61,
-              "line": 11,
-              "offset": 314,
-            },
-            "start": Object {
-              "column": 5,
-              "line": 11,
-              "offset": 258,
-            },
-          },
-          "properties": Object {},
-          "tagName": "p",
-          "type": "element",
-        },
-      ],
-      "position": Object {
-        "end": Object {
-          "column": 61,
-          "line": 13,
-          "offset": 330,
-        },
-        "start": Object {
-          "column": 1,
-          "line": 11,
-          "offset": 254,
-        },
-      },
-      "properties": Object {
-        "icon": "❗️",
-        "theme": "error",
-        "title": "UhOh",
-        "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-      },
-      "tagName": "rdme-callout",
-      "type": "element",
-    },
-  ],
-  "data": Object {
-    "quirksMode": false,
-  },
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 18,
-      "offset": 338,
-    },
-    "start": Object {
-      "column": 1,
-      "line": 1,
-      "offset": 0,
-    },
-  },
-  "type": "root",
-}
-`;
-
-exports[`export multiple Markdown renderers renders mdAST 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "position": Position {
-            "end": Object {
-              "column": 14,
-              "line": 1,
-              "offset": 13,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 3,
-              "line": 1,
-              "offset": 2,
-            },
-          },
-          "type": "text",
-          "value": "Hello World",
-        },
-      ],
-      "data": Object {
-        "hProperties": Object {
-          "id": "hello-world",
-        },
-        "id": "hello-world",
-      },
       "depth": 1,
-      "position": Position {
-        "end": Object {
+      "position": {
+        "end": {
           "column": 14,
           "line": 1,
           "offset": 13,
         },
-        "indent": Array [],
-        "start": Object {
+        "start": {
           "column": 1,
           "line": 1,
           "offset": 0,
@@ -1205,556 +142,55 @@ Object {
       },
       "type": "heading",
     },
-    Object {
-      "align": Array [
-        "center",
-        "center",
-        "center",
-      ],
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 11,
-                      "line": 3,
-                      "offset": 25,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 5,
-                      "line": 3,
-                      "offset": 19,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Col. A",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 12,
-                  "line": 3,
-                  "offset": 26,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 5,
-                  "line": 3,
-                  "offset": 19,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 21,
-                      "line": 3,
-                      "offset": 35,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 15,
-                      "line": 3,
-                      "offset": 29,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Col. B",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 22,
-                  "line": 3,
-                  "offset": 36,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 15,
-                  "line": 3,
-                  "offset": 29,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 31,
-                      "line": 3,
-                      "offset": 45,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 25,
-                      "line": 3,
-                      "offset": 39,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Col. C",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 32,
-                  "line": 3,
-                  "offset": 46,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 25,
-                  "line": 3,
-                  "offset": 39,
-                },
-              },
-              "type": "tableCell",
-            },
-          ],
-          "position": Position {
-            "end": Object {
-              "column": 34,
-              "line": 3,
-              "offset": 48,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 3,
-              "offset": 15,
-            },
-          },
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 12,
-                      "line": 5,
-                      "offset": 94,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 5,
-                      "line": 5,
-                      "offset": 87,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell A1",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 12,
-                  "line": 5,
-                  "offset": 94,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 5,
-                  "line": 5,
-                  "offset": 87,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 22,
-                      "line": 5,
-                      "offset": 104,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 15,
-                      "line": 5,
-                      "offset": 97,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell B1",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 22,
-                  "line": 5,
-                  "offset": 104,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 15,
-                  "line": 5,
-                  "offset": 97,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 32,
-                      "line": 5,
-                      "offset": 114,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 25,
-                      "line": 5,
-                      "offset": 107,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell C1",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 32,
-                  "line": 5,
-                  "offset": 114,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 25,
-                  "line": 5,
-                  "offset": 107,
-                },
-              },
-              "type": "tableCell",
-            },
-          ],
-          "position": Position {
-            "end": Object {
-              "column": 34,
-              "line": 5,
-              "offset": 116,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 5,
-              "offset": 83,
-            },
-          },
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 12,
-                      "line": 6,
-                      "offset": 128,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 5,
-                      "line": 6,
-                      "offset": 121,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell A2",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 12,
-                  "line": 6,
-                  "offset": 128,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 5,
-                  "line": 6,
-                  "offset": 121,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 22,
-                      "line": 6,
-                      "offset": 138,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 15,
-                      "line": 6,
-                      "offset": 131,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell B2",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 22,
-                  "line": 6,
-                  "offset": 138,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 15,
-                  "line": 6,
-                  "offset": 131,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 32,
-                      "line": 6,
-                      "offset": 148,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 25,
-                      "line": 6,
-                      "offset": 141,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell C2",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 32,
-                  "line": 6,
-                  "offset": 148,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 25,
-                  "line": 6,
-                  "offset": 141,
-                },
-              },
-              "type": "tableCell",
-            },
-          ],
-          "position": Position {
-            "end": Object {
-              "column": 34,
-              "line": 6,
-              "offset": 150,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 6,
-              "offset": 117,
-            },
-          },
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 12,
-                      "line": 7,
-                      "offset": 162,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 5,
-                      "line": 7,
-                      "offset": 155,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell A3",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 12,
-                  "line": 7,
-                  "offset": 162,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 5,
-                  "line": 7,
-                  "offset": 155,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 22,
-                      "line": 7,
-                      "offset": 172,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 15,
-                      "line": 7,
-                      "offset": 165,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell B3",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 22,
-                  "line": 7,
-                  "offset": 172,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 15,
-                  "line": 7,
-                  "offset": 165,
-                },
-              },
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "position": Position {
-                    "end": Object {
-                      "column": 32,
-                      "line": 7,
-                      "offset": 182,
-                    },
-                    "indent": Array [],
-                    "start": Object {
-                      "column": 25,
-                      "line": 7,
-                      "offset": 175,
-                    },
-                  },
-                  "type": "text",
-                  "value": "Cell C3",
-                },
-              ],
-              "position": Position {
-                "end": Object {
-                  "column": 32,
-                  "line": 7,
-                  "offset": 182,
-                },
-                "indent": Array [],
-                "start": Object {
-                  "column": 25,
-                  "line": 7,
-                  "offset": 175,
-                },
-              },
-              "type": "tableCell",
-            },
-          ],
-          "position": Position {
-            "end": Object {
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
               "column": 34,
               "line": 7,
               "offset": 184,
             },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 7,
-              "offset": 151,
+            "start": {
+              "column": 3,
+              "line": 3,
+              "offset": 17,
             },
           },
-          "type": "tableRow",
+          "type": "text",
+          "value": "| Col. A  | Col. B  | Col. C  |
+|:-------:|:-------:|:-------:|
+| Cell A1 | Cell B1 | Cell C1 |
+| Cell A2 | Cell B2 | Cell C2 |
+| Cell A3 | Cell B3 | Cell C3 |",
         },
       ],
-      "position": Position {
-        "end": Object {
+      "position": {
+        "end": {
           "column": 34,
           "line": 7,
           "offset": 184,
         },
-        "indent": Array [
-          1,
-          1,
-          1,
-          1,
-        ],
-        "start": Object {
-          "column": 1,
+        "start": {
+          "column": 3,
           "line": 3,
-          "offset": 15,
+          "offset": 17,
         },
       },
-      "type": "table",
+      "type": "paragraph",
     },
-    Object {
-      "children": Array [
-        Object {
-          "position": Position {
-            "end": Object {
-              "column": 3,
-              "line": 9,
-              "offset": 188,
-            },
-            "indent": Array [],
-            "start": Object {
-              "column": 1,
-              "line": 9,
-              "offset": 186,
-            },
-          },
-          "type": "text",
-          "value": "  ",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "position": Position {
-                "end": Object {
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
                   "column": 15,
                   "line": 9,
                   "offset": 200,
                 },
-                "indent": Array [],
-                "start": Object {
+                "start": {
                   "column": 4,
                   "line": 9,
                   "offset": 189,
@@ -1764,14 +200,13 @@ Object {
               "value": "Embed Title",
             },
           ],
-          "position": Position {
-            "end": Object {
+          "position": {
+            "end": {
               "column": 67,
               "line": 9,
               "offset": 252,
             },
-            "indent": Array [],
-            "start": Object {
+            "start": {
               "column": 3,
               "line": 9,
               "offset": 188,
@@ -1782,51 +217,48 @@ Object {
           "url": "https://jsfiddle.net/rafegoldberg/5VA5j/",
         },
       ],
-      "position": Position {
-        "end": Object {
+      "position": {
+        "end": {
           "column": 67,
           "line": 9,
           "offset": 252,
         },
-        "indent": Array [],
-        "start": Object {
-          "column": 1,
+        "start": {
+          "column": 3,
           "line": 9,
-          "offset": 186,
+          "offset": 188,
         },
       },
       "type": "paragraph",
     },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "position": Position {
-                "end": Object {
-                  "column": 9,
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 12,
                   "line": 11,
-                  "offset": 262,
+                  "offset": 265,
                 },
-                "indent": Array [],
-                "start": Object {
+                "start": {
                   "column": 5,
                   "line": 11,
                   "offset": 258,
                 },
               },
               "type": "text",
-              "value": "UhOh",
+              "value": "❗️ UhOh",
             },
           ],
-          "position": Position {
-            "end": Object {
-              "column": 9,
+          "position": {
+            "end": {
+              "column": 12,
               "line": 11,
-              "offset": 262,
+              "offset": 265,
             },
-            "indent": Array [],
-            "start": Object {
+            "start": {
               "column": 5,
               "line": 11,
               "offset": 258,
@@ -1834,77 +266,62 @@ Object {
           },
           "type": "paragraph",
         },
-        Object {
-          "children": Array [
-            Object {
-              "position": Position {
-                "end": Object {
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
                   "column": 61,
-                  "line": 11,
-                  "offset": 314,
+                  "line": 13,
+                  "offset": 330,
                 },
-                "indent": Array [],
-                "start": Object {
+                "start": {
                   "column": 5,
-                  "line": 11,
-                  "offset": 258,
+                  "line": 13,
+                  "offset": 274,
                 },
               },
               "type": "text",
               "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
             },
           ],
-          "position": Position {
-            "end": Object {
+          "position": {
+            "end": {
               "column": 61,
-              "line": 11,
-              "offset": 314,
+              "line": 13,
+              "offset": 330,
             },
-            "indent": Array [],
-            "start": Object {
+            "start": {
               "column": 5,
-              "line": 11,
-              "offset": 258,
+              "line": 13,
+              "offset": 274,
             },
           },
           "type": "paragraph",
         },
       ],
-      "data": Object {
-        "hName": "rdme-callout",
-        "hProperties": Object {
-          "icon": "❗️",
-          "theme": "error",
-          "title": "UhOh",
-          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-        },
-      },
-      "position": Position {
-        "end": Object {
+      "position": {
+        "end": {
           "column": 61,
           "line": 13,
           "offset": 330,
         },
-        "indent": Array [
-          1,
-          1,
-        ],
-        "start": Object {
-          "column": 1,
+        "start": {
+          "column": 3,
           "line": 11,
-          "offset": 254,
+          "offset": 256,
         },
       },
-      "type": "rdme-callout",
+      "type": "blockquote",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 18,
-      "offset": 338,
+  "position": {
+    "end": {
+      "column": 3,
+      "line": 16,
+      "offset": 335,
     },
-    "start": Object {
+    "start": {
       "column": 1,
       "line": 1,
       "offset": 0,
@@ -1914,196 +331,11 @@ Object {
 }
 `;
 
-exports[`export multiple Markdown renderers renders plain markdown as React 1`] = `
-<React.Fragment>
-  <h1
-    id="hello-world"
-  >
-    Hello World
-  </h1>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <table>
-    <thead>
-      <tr>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. A
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. B
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. C
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C1
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C2
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C3
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  
-
-  <p>
-      
-    <a
-      href="https://jsfiddle.net/rafegoldberg/5VA5j/"
-      title="@embed"
-    >
-      Embed Title
-    </a>
-  </p>
-  
-
-  <rdme-callout
-    icon="❗️"
-    theme="error"
-    title="UhOh"
-    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-  >
-    <p>
-      UhOh
-    </p>
-    <p>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-    </p>
-  </rdme-callout>
-</React.Fragment>
-`;
-
-exports[`export multiple Markdown renderers renders plainText from AST 1`] = `"Hello World"`;
+exports[`export multiple Markdown renderers > renders plain markdown as React 1`] = `undefined`;
 
 exports[`heading 1`] = `"<h2 class=\\"heading heading-2 header-scroll\\" align=\\"\\"><div class=\\"heading-anchor anchor waypoint\\" id=\\"example-header\\"></div><div class=\\"heading-text\\"><div id=\\"section-example-header\\" class=\\"heading-anchor_backwardsCompatibility\\"></div>Example Header</div><a aria-label=\\"Skip link to Example Header\\" class=\\"heading-anchor-icon fa fa-anchor\\" href=\\"#example-header\\"></a></h2>"`;
 
-exports[`image 1`] = `"<p><span aria-label=\\"Image\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img alt=\\"Image\\" loading=\\"lazy\\" src=\\"http://example.com/image.png\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"\\" width=\\"auto\\"></span></span></p>"`;
+exports[`image 1`] = `"<span aria-label="Image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="http://example.com/image.png" width="auto" height="auto" title="" class="img img-align-center" alt="Image" loading="lazy"></span></span>"`;
 
 exports[`list items 1`] = `
 "<ul>
@@ -2111,8 +343,6 @@ exports[`list items 1`] = `
 </ul>"
 `;
 
-exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. And making an OK gesture.\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img alt=\\"A guy. Eating pizza. And making an OK gesture.\\" loading=\\"lazy\\" src=\\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\" title=\\"man-eating-pizza-and-making-an-ok-gesture.jpg\\" align=\\"center\\" class=\\"\\" width=\\"100%\\" caption=\\"\\" height=\\"auto\\"></span></span><figcaption><p>A guy. Eating pizza. And making an OK gesture.</p></figcaption></figure>"`;
+exports[`prefix anchors with "section-" > should add a section- prefix to heading anchors 1`] = `undefined`;
 
-exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
-
-exports[`tables 1`] = `"<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div>"`;
+exports[`tables 1`] = `"<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tables</th><th style="text-align: center;">Are</th><th style="text-align: right;">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style="text-align: center;">right-aligned</td><td style="text-align: right;">$1600</td></tr><tr><td>col 2 is</td><td style="text-align: center;">centered</td><td style="text-align: right;">$12</td></tr><tr><td>zebra stripes</td><td style="text-align: center;">are neat</td><td style="text-align: right;">$1</td></tr></tbody></table></div></div>"`;

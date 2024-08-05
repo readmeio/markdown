@@ -1,0 +1,109 @@
+{
+  "type": "root",
+  "children": [
+    {
+      "align": ["center", "center"],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Heading One"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Heading Two"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "checked": null,
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "list item"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "spread": false,
+                      "type": "listItem"
+                    },
+                    {
+                      "checked": null,
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "list item"
+                            }
+                          ],
+                          "type": "paragraph"
+                        }
+                      ],
+                      "spread": false,
+                      "type": "listItem"
+                    }
+                  ],
+                  "ordered": false,
+                  "spread": false,
+                  "start": null,
+                  "type": "list"
+                }
+              ],
+              "type": "tableCell"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "name": "shrug",
+                      "type": "gemoji",
+                      "value": "🤷"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "tableCell"
+            }
+          ],
+          "type": "tableRow"
+        }
+      ],
+      "type": "tableau"
+    }
+  ]
+}
