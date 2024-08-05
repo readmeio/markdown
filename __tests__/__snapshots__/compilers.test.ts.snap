@@ -1,0 +1,6 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ReadMe Flavored Blocks > Embed 1`] = `
+"[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@embed")
+"
+`;

@@ -9,7 +9,7 @@ const common = require('./webpack.common');
 
 const config = merge(common, {
   entry: {
-    demo: process.env.USE_LEGACY ? './example/index.legacy.jsx' : './example/index.jsx',
+    demo: './example/index.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'example/'),
@@ -21,13 +21,26 @@ const config = merge(common, {
     port: 9966,
     hot: true,
   },
+  devtool: 'eval',
+  module: {
+    rules: [
+      {
+        test: /\.(txt|mdx?)$/i,
+        type: 'asset/source',
+      },
+    ],
+  },
   plugins: [
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
   ],
   resolve: {
-    fallback: { path: require.resolve('path-browserify') },
+    fallback: {
+      fs: require.resolve('browserify-fs'),
+      path: require.resolve('path-browserify'),
+      stream: require.resolve('stream-browserify'),
+    },
   },
 });
 
