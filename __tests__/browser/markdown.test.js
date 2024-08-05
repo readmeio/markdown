@@ -11,28 +11,30 @@ describe('visual regression tests', () => {
     });
 
     const docs = [
-      // 'callouts',
+      'callouts',
       'calloutTests',
       'codeBlocks',
-      // 'embeds',
-      //'features',
-      // 'headings',
+      'embeds',
+      // 'features',
+      'headings',
       'images',
-      'htmlTests',
-      // 'lists',
-      'mdxComponents',
+      'lists',
       'tables',
+      'tablesTests',
       'codeBlockTests',
-      // 'tableOfContentsTests',
+      'tableOfContentsTests',
       'varsTest',
     ];
 
     it.each(docs)(
       'renders "%s" without surprises',
       async doc => {
-        const uri = `http://localhost:9966/#/${doc}?ci=true`;
+        const uri = `http://localhost:9966/?ci=true#${doc}`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
-        await sleep(5000);
+        await page.evaluate(() => {
+          window.scrollTo(0, window.document.body.scrollHeight);
+        });
+        await sleep(500);
 
         const image = await page.screenshot({ fullPage: true });
 
@@ -41,8 +43,8 @@ describe('visual regression tests', () => {
       10000,
     );
 
-    it.skip('renders html blocks, style tags, and style attributes with safeMode off', async () => {
-      const uri = 'http://localhost:9966/#/sanitizingTests?ci=true';
+    it('renders html blocks, style tags, and style attributes with safeMode off', async () => {
+      const uri = 'http://localhost:9966/?ci=true#sanitizingTests';
       await page.goto(uri, { waitUntil: 'networkidle0' });
       await sleep(500);
 
@@ -51,8 +53,8 @@ describe('visual regression tests', () => {
       expect(image).toMatchImageSnapshot();
     }, 10000);
 
-    it.skip('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
-      const uri = 'http://localhost:9966/#/sanitizingTests?ci=true&safe-mode=true';
+    it('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
+      const uri = 'http://localhost:9966/?ci=true&safe-mode=true#sanitizingTests';
       await page.goto(uri, { waitUntil: 'networkidle0' });
       await sleep(500);
 

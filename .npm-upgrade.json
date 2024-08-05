@@ -1,20 +1,88 @@
 {
   "ignore": {
-    "@hot-loader/react-dom": {
-      "versions": "17.0.2",
-      "reason": "staying on react 16"
+    "hast-util-to-string": {
+      "versions": "*2.0.0",
+      "reason": ""
     },
-    "codemirror": {
-      "versions": "",
-      "reason": "staying on 5"
+    "mdast-util-toc": {
+      "versions": "*6.1.0",
+      "reason": ""
+    },
+    "rehype-raw": {
+      "versions": "*6.1.1",
+      "reason": ""
+    },
+    "rehype-react": {
+      "versions": "*7.1.1",
+      "reason": ""
+    },
+    "rehype-sanitize": {
+      "versions": "*5.0.1",
+      "reason": ""
+    },
+    "rehype-stringify": {
+      "versions": "*9.0.3",
+      "reason": ""
+    },
+    "remark-breaks": {
+      "versions": "*3.0.2",
+      "reason": ""
+    },
+    "remark-disable-tokenizers": {
+      "versions": "*1.1.0",
+      "reason": ""
+    },
+    "remark-frontmatter": {
+      "versions": "*4.0.1",
+      "reason": ""
+    },
+    "remark-parse": {
+      "versions": "*10.0.1",
+      "reason": ""
+    },
+    "remark-rehype": {
+      "versions": "*10.1.0",
+      "reason": ""
+    },
+    "remark-slug": {
+      "versions": "*7.0.1",
+      "reason": ""
+    },
+    "remark-stringify": {
+      "versions": "*10.0.2",
+      "reason": ""
+    },
+    "unified": {
+      "versions": "*10.1.2",
+      "reason": ""
+    },
+    "unist-util-select": {
+      "versions": "*4.0.1",
+      "reason": ""
+    },
+    "@hot-loader/react-dom": {
+      "versions": "*17.0.2",
+      "reason": ""
+    },
+    "@testing-library/react": {
+      "versions": "^13",
+      "reason": "Waiting on react"
     },
     "react": {
-      "versions": "18.2.0",
-      "reason": "staying on 16"
+      "versions": "^18",
+      "reason": "Haven't tested yet"
     },
     "react-dom": {
-      "versions": "18.2.0",
-      "reason": "staying on 16"
+      "versions": "^18",
+      "reason": "Waiting on react"
+    },
+    "jest": {
+      "versions": "^29",
+      "reason": "jest-image-snapshot's locked to 28"
+    },
+    "codemirror": {
+      "versions": "^6",
+      "reason": "big rewrite, IIRC"
     }
   }
 }

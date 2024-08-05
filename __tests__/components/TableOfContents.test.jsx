@@ -1,10 +1,10 @@
-import { render } from '@testing-library/react';
-import React from 'react';
+const { render } = require('@testing-library/react');
+const React = require('react');
 
-import TableOfContents from '../../components/TableOfContents';
-import { utils, reactProcessor, reactTOC } from '../../index';
+const TableOfContents = require('../../components/TableOfContents');
+const markdown = require('../../index');
 
-const { GlossaryContext, VariablesContext } = utils;
+const { GlossaryContext, VariablesContext } = markdown.utils;
 const variables = {
   defaults: [{ test: 'Default Value' }],
   user: { test: 'User Override' },
@@ -16,7 +16,7 @@ const glossaryTerms = [
   },
 ];
 
-describe.skip('Table of Contents', () => {
+describe('Table of Contents', () => {
   it('should have a header', () => {
     const { container } = render(
       <TableOfContents>
@@ -29,8 +29,8 @@ describe.skip('Table of Contents', () => {
 
   it('generates TOC from headings', () => {
     const txt = '# Heading Zed\n\n# Heading One';
-    const ast = reactProcessor().parse(txt);
-    const toc = reactTOC(ast);
+    const ast = markdown.reactProcessor().parse(txt);
+    const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
@@ -38,8 +38,8 @@ describe.skip('Table of Contents', () => {
 
   it('includes two heading levels', () => {
     const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
-    const ast = reactProcessor().parse(txt);
-    const toc = reactTOC(ast);
+    const ast = markdown.reactProcessor().parse(txt);
+    const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
@@ -48,8 +48,8 @@ describe.skip('Table of Contents', () => {
 
   it('normalizes root depth level', () => {
     const txt = '##### Heading Zed\n\n###### Subheading Zed';
-    const ast = reactProcessor().parse(txt);
-    const toc = reactTOC(ast);
+    const ast = markdown.reactProcessor().parse(txt);
+    const toc = markdown.reactTOC(ast);
     const { container } = render(toc);
 
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
@@ -57,8 +57,8 @@ describe.skip('Table of Contents', () => {
 
   it('includes variables', () => {
     const txt = '# Heading <<test>>';
-    const ast = reactProcessor().parse(txt);
-    const toc = reactTOC(ast);
+    const ast = markdown.reactProcessor().parse(txt);
+    const toc = markdown.reactTOC(ast);
     const { container } = render(<VariablesContext.Provider value={variables}>{toc}</VariablesContext.Provider>);
 
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
@@ -66,8 +66,8 @@ describe.skip('Table of Contents', () => {
 
   it('includes glossary items', () => {
     const txt = '# Heading <<glossary:demo>>';
-    const ast = reactProcessor().parse(txt);
-    const toc = reactTOC(ast);
+    const ast = markdown.reactProcessor().parse(txt);
+    const toc = markdown.reactTOC(ast);
     const { container } = render(<GlossaryContext.Provider value={glossaryTerms}>{toc}</GlossaryContext.Provider>);
 
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(

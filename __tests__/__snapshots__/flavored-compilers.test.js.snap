@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReadMe Flavored Blocks Embed 1`] = `
+"[block:embed]
+{
+  \\"title\\": \\"Embedded meta links.\\",
+  \\"url\\": \\"https://nyti.me/s/gzoa2xb2v3\\",
+  \\"provider\\": \\"nyt\\"
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Callouts 1`] = `
+"> 👍 Success
+> 
+> Vitae reprehenderit at aliquid error voluptates eum dignissimos.
+
+\`\`\`
+And this is a paragraph!
+\`\`\`
+"
+`;
+
+exports[`ReadMe Magic Blocks Code Tabs 1`] = `
+"\`\`\`javascript multiple.js
+console.log('a multi-file code block');
+\`\`\`
+\`\`\`javascript
+console.log('an unnamed sample snippet');
+\`\`\`
+"
+`;
+
+exports[`ReadMe Magic Blocks Embed 1`] = `
+"[block:embed]
+{
+  \\"html\\": false,
+  \\"url\\": \\"https://youtu.be/J3-uKv1DShQ\\",
+  \\"title\\": null,
+  \\"favicon\\": \\"https://youtu.be/favicon.ico\\",
+  \\"provider\\": \\"youtu.be\\",
+  \\"href\\": \\"https://youtu.be/J3-uKv1DShQ\\"
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Figure 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"Ok, __pizza__ man.\\"
+      ],
+      \\"sizing\\": \\"80\\",
+      \\"caption\\": \\"Ok, **pizza** man.\\"
+    }
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Figure with alt text 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"A man eating pizza and making an OK gesture\\"
+      ],
+      \\"sizing\\": \\"80\\",
+      \\"caption\\": \\"Ok, **pizza** man.\\"
+    }
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Image 1`] = `
+"![](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg \\"rdme-blue.svg\\")
+"
+`;
+
+exports[`ReadMe Magic Blocks Image with sizing and alignment 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"\\"
+      ],
+      \\"align\\": \\"right\\",
+      \\"sizing\\": \\"80px\\"
+    }
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Image with sizing and border 1`] = `
+"[block:image]
+{
+  \\"images\\": [
+    {
+      \\"image\\": [
+        \\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\",
+        \\"rdme-blue.svg\\",
+        \\"\\"
+      ],
+      \\"sizing\\": \\"80px\\",
+      \\"border\\": true
+    }
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks Tables 1`] = `
+"|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+"
+`;
+
+exports[`ReadMe Magic Blocks Tables with breaks 1`] = `
+"[block:parameters]
+{
+  \\"data\\": {
+    \\"h-0\\": \\"th 1\\",
+    \\"h-1\\": \\"th 2\\",
+    \\"0-0\\": \\"cell 1  \\\\nafter the break\\",
+    \\"0-1\\": \\"cell 2\\"
+  },
+  \\"cols\\": 2,
+  \\"rows\\": 1,
+  \\"align\\": [
+    \\"center\\",
+    \\"center\\"
+  ]
+}
+[/block]
+"
+`;
+
+exports[`ReadMe Magic Blocks custom blocks 1`] = `
+"[block:tutorial-tile]
+{
+  \\"backgroundColor\\": \\"#ffffff\\",
+  \\"title\\": \\"Tutorial Title\\",
+  \\"emoji\\": \\"🦉\\",
+  \\"link\\": \\"http://test.com\\"
+}
+[/block]
+"
+`;

@@ -1,15 +1,14 @@
-@mixin markdown-table(
-  $row: #fff,
-  $head: #f6f8fa,
-  $stripe: #fbfcfd,
-  $edges: #dfe2e5,
-) {
+/* stylelint-disable selector-max-compound-selectors */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-property-value-disallowed-list */
+/* stylelint-disable scss/selector-no-redundant-nesting-selector */
+@mixin markdown-table($row: #fff, $head: #f6f8fa, $stripe: #fbfcfd, $edges: #dfe2e5) {
   table {
-    display: table;
     border-collapse: collapse;
     border-spacing: 0;
-    width: 100%;
     color: var(--table-text);
+    display: table;
+    width: 100%;
 
     thead {
       color: var(--table-head-text, inherit);
@@ -21,6 +20,7 @@
 
     tr {
       background-color: var(--table-row, #{$row});
+
       & + tr {
         border-top: 1px solid var(--table-edges, #{$edges});
       }
@@ -29,6 +29,7 @@
     th,
     thead td {
       font-weight: 600;
+
       &:empty {
         padding: 0;
       }
@@ -36,13 +37,20 @@
 
     td,
     th {
-      padding: 0;
-      color: inherit;
-      vertical-align: middle;
       border: 1px solid var(--table-edges, #{$edges});
+      color: inherit;
       padding: 6px 13px;
-      > :first-child, > :only-child { margin-top:    0 !important }
-      > :last-child, > :only-child  { margin-bottom: 0 !important }
+      vertical-align: middle;
+
+      > :first-child,
+      > :only-child {
+        margin-top: 0 !important;
+      }
+
+      > :last-child,
+      > :only-child {
+        margin-bottom: 0 !important;
+      }
     }
 
     &:not(.plain) tr:nth-child(2n) {
@@ -57,10 +65,8 @@
   .rdmd-table {
     $border-wrap-width: 1px;
 
-    & {
-      display: block;
-      position: relative;
-    }
+    display: block;
+    position: relative;
 
     &-inner {
       box-sizing: content-box;

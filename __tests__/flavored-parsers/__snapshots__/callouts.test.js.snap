@@ -1,0 +1,2018 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Parse RDMD Callouts allows nested callouts 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "checked": null,
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "position": Position {
+                    "end": Object {
+                      "column": 12,
+                      "line": 2,
+                      "offset": 12,
+                    },
+                    "indent": Array [],
+                    "start": Object {
+                      "column": 3,
+                      "line": 2,
+                      "offset": 3,
+                    },
+                  },
+                  "type": "text",
+                  "value": "list item",
+                },
+              ],
+              "position": Position {
+                "end": Object {
+                  "column": 12,
+                  "line": 2,
+                  "offset": 12,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "paragraph",
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "children": Array [
+                    Object {
+                      "position": Position {
+                        "end": Object {
+                          "column": 17,
+                          "line": 3,
+                          "offset": 29,
+                        },
+                        "indent": Array [],
+                        "start": Object {
+                          "column": 5,
+                          "line": 3,
+                          "offset": 17,
+                        },
+                      },
+                      "type": "text",
+                      "value": "Info Callout",
+                    },
+                  ],
+                  "position": Position {
+                    "end": Object {
+                      "column": 17,
+                      "line": 3,
+                      "offset": 29,
+                    },
+                    "indent": Array [],
+                    "start": Object {
+                      "column": 5,
+                      "line": 3,
+                      "offset": 17,
+                    },
+                  },
+                  "type": "paragraph",
+                },
+                Object {
+                  "children": Array [
+                    Object {
+                      "position": Position {
+                        "end": Object {
+                          "column": 62,
+                          "line": 3,
+                          "offset": 74,
+                        },
+                        "indent": Array [],
+                        "start": Object {
+                          "column": 5,
+                          "line": 3,
+                          "offset": 17,
+                        },
+                      },
+                      "type": "text",
+                      "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+                    },
+                  ],
+                  "position": Position {
+                    "end": Object {
+                      "column": 62,
+                      "line": 3,
+                      "offset": 74,
+                    },
+                    "indent": Array [],
+                    "start": Object {
+                      "column": 5,
+                      "line": 3,
+                      "offset": 17,
+                    },
+                  },
+                  "type": "paragraph",
+                },
+              ],
+              "data": Object {
+                "hName": "rdme-callout",
+                "hProperties": Object {
+                  "icon": "ℹ️",
+                  "theme": "info",
+                  "title": "Info Callout",
+                  "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+                },
+              },
+              "position": Position {
+                "end": Object {
+                  "column": 62,
+                  "line": 5,
+                  "offset": 98,
+                },
+                "indent": Array [
+                  3,
+                  3,
+                ],
+                "start": Object {
+                  "column": 3,
+                  "line": 3,
+                  "offset": 15,
+                },
+              },
+              "type": "rdme-callout",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 62,
+              "line": 5,
+              "offset": 98,
+            },
+            "indent": Array [
+              1,
+              1,
+              1,
+            ],
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "spread": false,
+          "type": "listItem",
+        },
+      ],
+      "ordered": false,
+      "position": Position {
+        "end": Object {
+          "column": 62,
+          "line": 5,
+          "offset": 98,
+        },
+        "indent": Array [
+          1,
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "spread": false,
+      "start": null,
+      "type": "list",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 7,
+      "offset": 101,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts does not require a line break between the title and the body 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 24,
+                  "line": 2,
+                  "offset": 24,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Undocumented Behavior",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 24,
+              "line": 2,
+              "offset": 24,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 60,
+                  "line": 2,
+                  "offset": 60,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 60,
+              "line": 2,
+              "offset": 60,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "💁",
+          "theme": "default",
+          "title": "Undocumented Behavior",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 60,
+          "line": 3,
+          "offset": 87,
+        },
+        "indent": Array [
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 5,
+      "offset": 90,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts edge cases does not allow trailing spaces after the icon with no title 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 83,
+                  "line": 2,
+                  "offset": 83,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Compact headings must be followed by two line breaks before the following block.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 83,
+              "line": 2,
+              "offset": 83,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🛑",
+          "theme": "error",
+          "title": "",
+          "value": "Compact headings must be followed by two line breaks before the following block.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 83,
+          "line": 3,
+          "offset": 89,
+        },
+        "indent": Array [
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 5,
+      "offset": 92,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts edge cases renders html inside a callout 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 15,
+                  "line": 2,
+                  "offset": 15,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Info Callout",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 15,
+              "line": 2,
+              "offset": 15,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 9,
+                  "line": 2,
+                  "offset": 9,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "html",
+              "value": "<span>",
+            },
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 19,
+                  "line": 2,
+                  "offset": 19,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 9,
+                  "line": 2,
+                  "offset": 9,
+                },
+              },
+              "type": "text",
+              "value": "With html!",
+            },
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 26,
+                  "line": 2,
+                  "offset": 26,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 19,
+                  "line": 2,
+                  "offset": 19,
+                },
+              },
+              "type": "html",
+              "value": "</span>",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 26,
+              "line": 2,
+              "offset": 26,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ️",
+          "theme": "info",
+          "title": "Info Callout",
+          "value": "<span>With html!</span>",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 26,
+          "line": 4,
+          "offset": 46,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 7,
+      "offset": 50,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts parses a callout with no title 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 60,
+                  "line": 2,
+                  "offset": 60,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 60,
+              "line": 2,
+              "offset": 60,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ️",
+          "theme": "info",
+          "title": "",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 60,
+          "line": 4,
+          "offset": 67,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 70,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts renders an info callout 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 15,
+                  "line": 2,
+                  "offset": 15,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Info Callout",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 15,
+              "line": 2,
+              "offset": 15,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 60,
+                  "line": 2,
+                  "offset": 60,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 60,
+              "line": 2,
+              "offset": 60,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ️",
+          "theme": "info",
+          "title": "Info Callout",
+          "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 60,
+          "line": 4,
+          "offset": 80,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 83,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts requires a space between the icon and title 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 17,
+                  "line": 2,
+                  "offset": 17,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "ℹ️Info Callout",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 17,
+              "line": 2,
+              "offset": 17,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 60,
+                  "line": 4,
+                  "offset": 79,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 4,
+                  "offset": 22,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 60,
+              "line": 4,
+              "offset": 79,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 4,
+              "offset": 22,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "position": Position {
+        "end": Object {
+          "column": 60,
+          "line": 4,
+          "offset": 79,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "blockquote",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 82,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Parse RDMD Callouts supports a default theme 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 12,
+                  "line": 2,
+                  "offset": 12,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Themeless",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 12,
+              "line": 2,
+              "offset": 12,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🥇",
+          "theme": "default",
+          "title": "Themeless",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 76,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 79,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ‼️ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "‼️",
+          "theme": "error",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ⁉️ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "⁉️",
+          "theme": "error",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ℹ️ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "ℹ️",
+          "theme": "info",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ⚠ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "⚠",
+          "theme": "warn",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 65,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 68,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ⚠️ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "⚠️",
+          "theme": "warn",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ✅ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "✅",
+          "theme": "okay",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 65,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 68,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ❗ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "❗",
+          "theme": "error",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 65,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 68,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for ❗️ 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "❗️",
+          "theme": "error",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for 👍 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "👍",
+          "theme": "okay",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for 📘 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "📘",
+          "theme": "info",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for 🚧 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🚧",
+          "theme": "warn",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`emoji modifier support render a callout for 🛑 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "position": Position {
+                "end": Object {
+                  "column": 59,
+                  "line": 2,
+                  "offset": 59,
+                },
+                "indent": Array [],
+                "start": Object {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": Position {
+            "end": Object {
+              "column": 59,
+              "line": 2,
+              "offset": 59,
+            },
+            "indent": Array [],
+            "start": Object {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": Object {
+        "hName": "rdme-callout",
+        "hProperties": Object {
+          "icon": "🛑",
+          "theme": "error",
+          "title": "",
+          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 59,
+          "line": 4,
+          "offset": 66,
+        },
+        "indent": Array [
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 6,
+      "offset": 69,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

@@ -1,21 +1,24 @@
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable declaration-property-value-disallowed-list */
 @import '~codemirror/lib/codemirror.css';
 @import '~codemirror/theme/neo.css';
 
-@mixin CodeTabs {
-  $bgc-pre: #F6F8FA;
-  $bgc-pre-dark: #242E34;
+@mixin code-tabs {
+  $bgc-pre: #f6f8fa;
+  $bgc-pre-dark: #242e34;
   $bgc-bar: darken(desaturate($bgc-pre, 17.46), 4.31);
   $bgc-bar-dark: lighten(desaturate($bgc-pre-dark, 17.46), 4.31);
   $radius: var(--md-code-radius, var(--markdown-radius, 3px));
 
+  border-radius: $radius !important;
   color: #333;
   color: var(--md-code-text, #333);
-  border-radius: $radius !important;
   overflow: hidden;
 
   &.theme-dark {
     color: white;
     color: var(--md-code-text, white);
+
     .CodeTabs-toolbar {
       background: $bgc-bar-dark;
       background: var(--md-code-tabs, $bgc-bar-dark);
@@ -28,27 +31,28 @@
     display: flex;
     flex-flow: row nowrap;
     overflow: hidden;
-    overflow-x: auto;
-    -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: none;
+    overflow-x: auto;
+
     &::-webkit-scrollbar {
       display: none;
     }
+
     button {
-      white-space: nowrap;
-      transition: .123s ease;
-      -webkit-appearance: none;
       appearance: none;
-      display: inline-block;
-      line-height: 2;
-      padding: .5em 1em;
-      border: none;
       background: transparent;
-      outline: none;
+      border: none;
       color: inherit;
-      font: inherit;
-      font-size: .75em;
       cursor: pointer;
+      display: inline-block;
+      font: inherit;
+      font-size: 0.75em;
+      line-height: 2;
+      outline: none;
+      padding: 0.5em 1em;
+      transition: 0.123s ease;
+      white-space: nowrap;
     }
   }
 
@@ -69,16 +73,20 @@
     color: var(--md-code-text, white);
   }
 
-  &-toolbar button:not(.CodeTabs_active):hover {
-    background: rgba(0, 0, 0, .075);
+  &-toolbar button:not(.CodeTabs_active):hover,
+  &-toolbar button:not(.CodeTabs_active):active,
+  &-toolbar button:not(.CodeTabs_active):focus {
+    background: rgba(0, 0, 0, 0.075);
   }
 
   pre {
-    border-radius: 0 0 $radius $radius !important;
-    background: $bgc-pre;
     background: var(--md-code-background, $bgc-pre);
+    border-radius: 0 0 $radius $radius !important;
     margin-bottom: 0;
-    &:not(.CodeTabs_active) { display: none }
+
+    &:not(.CodeTabs_active) {
+      display: none;
+    }
   }
 
   &.theme-dark pre {
@@ -92,5 +100,5 @@
 }
 
 .CodeTabs {
-  @include CodeTabs;
+  @include code-tabs;
 }

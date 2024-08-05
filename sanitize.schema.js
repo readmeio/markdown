@@ -1,4 +1,4 @@
-import { defaultSchema } from 'hast-util-sanitize/lib/schema';
+const { defaultSchema } = require('hast-util-sanitize/lib/schema');
 
 const createSchema = ({ safeMode } = {}) => {
   const schema = JSON.parse(JSON.stringify(defaultSchema));
@@ -37,7 +37,10 @@ const createSchema = ({ safeMode } = {}) => {
   schema.tagNames.push('input'); // allow GitHub-style todo lists
   schema.ancestors.input = ['li'];
 
+  schema.tagNames.push('colgroup'); // wat
+  schema.tagNames.push('col');
+
   return schema;
 };
 
-export default createSchema;
+module.exports = createSchema;

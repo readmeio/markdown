@@ -1,20 +1,36 @@
-module.exports = {
-  displayName: 'browser',
-  globalSetup: 'jest-environment-puppeteer/setup',
-  globalTeardown: 'jest-environment-puppeteer/teardown',
-  moduleNameMapper: {
-    '.+\\.scss$': 'identity-obj-proxy',
-  },
-  modulePathIgnorePatterns: ['<rootDir>/__tests__/helpers'],
-  setupFilesAfterEnv: ['<rootDir>/__tests__/browser/setup.js'],
-  testEnvironment: 'jest-environment-puppeteer',
-  testMatch: ['**/__tests__/browser/**/*.test.[jt]s?(x)'],
-  transformIgnorePatterns: [
-    // Since `@readme/variable` doesn't ship any transpiled code, we need to transform it as we're running tests.
-    '<rootDir>/node_modules/@readme/variable/^.+\\.jsx?$',
-    // wat
-    '<rootDir>/node_modules/@babel',
-    '<rootDir>/node_modules/@jest',
-    '<rootDir>/node_modules/jest',
+const common = require('./jest.common');
+
+const unit = {
+  ...common,
+  collectCoverageFrom: ['**/*.{js,jsx}'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/coverage/',
+    '<rootDir>/dist/',
+    '<rootDir>/lib',
+    '<rootDir>/node_modules/',
+    '<rootDir>/jest.config.js',
+    '<rootDir>/webpack.*.js',
+    '<rootDir>/.*rc.js',
+    '<rootDir>/*/index.js', // ignore helper index files
+    '<rootDir>/example',
   ],
+  coverageReporters: ['json', 'text', 'lcov', 'clover'], // per https://github.com/facebook/jest/issues/9396#issuecomment-573328488
+  coverageThreshold: {
+    global: {
+      branches: 88,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+  },
+  displayName: 'unit',
+  prettierPath: require.resolve('prettier-2'),
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testEnvironment: 'jsdom',
+  testPathIgnorePatterns: ['/browser/'],
+  testEnvironmentOptions: {
+    url: 'http://localhost',
+  },
 };
+
+module.exports = { projects: [unit] };

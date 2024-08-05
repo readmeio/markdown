@@ -1,5 +1,3 @@
-import React from 'react';
+const React = require('react');
 
-const BaseUrlContext = React.createContext('/');
-
-export default BaseUrlContext;
+module.exports = React.createContext('/');

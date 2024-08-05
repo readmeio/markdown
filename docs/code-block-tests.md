@@ -1,97 +1,94 @@
 ---
-title: 'Code Block Tests'
+title: "Code Block Tests"
 category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
-
-# Basics
+Basics
+===
 
 ### Simple
-
 ```php
 <b><?= "Hello world!" ?></b>;
 ```
 ```js
-console.log('Hello world!');
+console.log("Hello world!");
 ```
 
 ### Tab Meta
-
-```Zed
+``` Zed
 Tab Number Zero
 ```
-```One
+``` One
 Tab Number One
 ```
 
 ### Lang Meta
-
 ```js English
-console.log('Hello world!');
+console.log("Hello world!");
 ```
 ```js French
-console.log('Bonjour le monde!');
+console.log("Bonjour le monde!");
 ```
 ```js German
-console.log('Hallo welt!');
+console.log("Hallo welt!");
 ```
 
-# Breakage
+Breakage
+===
 
 ### Block Separator 👍
 
 ##### Section One
-
-```Plain
+``` Plain
 console.log("zed");
 ```
-
 ##### Section Two
-
 ```js Highlighted
-console.log('one');
+console.log("one");
 ```
-
 `Hello` the `world`?
 
 ### Inline Separator 👍
 
 **Section One**
-
-```Plain
+``` Plain
 console.log("zed");
 ```
-
 **Section Two**
-
 ```js Highlighted
-console.log('one');
+console.log("one");
 ```
 
 ### Plain-Text Separator
 
 Section One
-
-```Plain
+``` Plain
 console.log("zed");
 ```
-
 Section **Two**
-
 ```js Highlighted
-console.log('one');
+console.log("one");
 ```
 
-# Block Wraps
+Block Wraps
+===
 
 ### List-Internal
-
-- ```Name
+* ``` Name
   {{company_name}}
   ```
-  ```Email
+  ``` Email
   {{company_email}}
   ```
-  ```URL
+  ``` URL
   {{company_url}}
   ```
+
+### Callout-Internal
+[block:callout]
+{
+  "type": "info",
+  "title": "Code in Callout",
+  "body": "```js English\nconsole.log(\"Hello world!\");\n```\n```js French\nconsole.log(\"Bonjour le monde!\");\n```\n```js German\nconsole.log(\"Hallo welt!\");\n```"
+}
+[/block]

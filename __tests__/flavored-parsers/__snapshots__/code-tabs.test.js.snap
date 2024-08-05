@@ -1,0 +1,205 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Code Tabs allows code tabs within html blocks 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "type": "text",
+          "value": "
+",
+        },
+      ],
+      "position": Object {
+        "end": Object {
+          "column": 1,
+          "line": 4,
+          "offset": 6,
+        },
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "properties": Object {},
+      "tagName": "p",
+      "type": "element",
+    },
+    Object {
+      "children": Array [
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "First code block
+",
+                },
+              ],
+              "properties": Object {
+                "meta": "",
+              },
+              "tagName": "code",
+              "type": "element",
+            },
+          ],
+          "properties": Object {},
+          "tagName": "pre",
+          "type": "element",
+        },
+        Object {
+          "children": Array [
+            Object {
+              "children": Array [
+                Object {
+                  "type": "text",
+                  "value": "Second code block
+",
+                },
+              ],
+              "properties": Object {
+                "meta": "",
+              },
+              "tagName": "code",
+              "type": "element",
+            },
+          ],
+          "properties": Object {},
+          "tagName": "pre",
+          "type": "element",
+        },
+      ],
+      "position": Object {
+        "end": Object {
+          "column": 4,
+          "line": 9,
+          "offset": 56,
+        },
+        "start": Object {
+          "column": 1,
+          "line": 4,
+          "offset": 6,
+        },
+      },
+      "properties": Object {
+        "className": Array [
+          "code-tabs",
+        ],
+      },
+      "tagName": "div",
+      "type": "element",
+    },
+    Object {
+      "type": "text",
+      "value": "
+",
+    },
+    Object {
+      "children": Array [],
+      "properties": Object {},
+      "tagName": "p",
+      "type": "element",
+    },
+  ],
+  "data": Object {
+    "quirksMode": false,
+  },
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 14,
+      "offset": 66,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Code Tabs can parse code tabs 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": undefined,
+              "meta": "",
+            },
+          },
+          "lang": undefined,
+          "meta": "",
+          "type": "code",
+          "value": "First code block",
+        },
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": undefined,
+              "meta": "",
+            },
+          },
+          "lang": undefined,
+          "meta": "",
+          "type": "code",
+          "value": "Second code block",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
+      },
+      "position": Position {
+        "end": Object {
+          "column": 4,
+          "line": 7,
+          "offset": 51,
+        },
+        "indent": Array [
+          1,
+          1,
+          1,
+          1,
+          1,
+        ],
+        "start": Object {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 10,
+      "offset": 55,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

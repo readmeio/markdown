@@ -1,11 +1,11 @@
-import { string, node } from 'prop-types';
-import React from 'react';
+const PropTypes = require('prop-types');
+const React = require('react');
 
-import BaseUrlContext from '../contexts/BaseUrl';
+const BaseUrlContext = require('../contexts/BaseUrl');
 
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
-export function getHref(href, baseUrl) {
+function getHref(href, baseUrl) {
   const [path, hash] = href.split('#');
   const hashStr = hash ? `#${hash}` : '';
 
@@ -18,7 +18,7 @@ export function getHref(href, baseUrl) {
 
   const ref = path.match(/^ref:([-_a-zA-Z0-9#]*)$/);
   if (ref) {
-    return `${base}/reference-link/${ref[1]}${hashStr}`;
+    return `${base}/reference/${ref[1]}${hashStr}`;
   }
 
   // we need to perform two matches for changelogs in case
@@ -49,9 +49,7 @@ function docLink(href) {
 }
 
 function Anchor(props) {
-  const { children, href, target, title, ...attrs } = props;
-  const baseUrl = useContext(BaseUrlContext);
-
+  const { baseUrl, children, href, target, title, ...attrs } = props;
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <a {...attrs} href={getHref(href, baseUrl)} target={target} title={title} {...docLink(href)}>
@@ -61,12 +59,12 @@ function Anchor(props) {
 }
 
 Anchor.propTypes = {
-  baseUrl: string,
-  children: node.isRequired,
-  download: string,
-  href: string,
-  target: string,
-  title: string,
+  baseUrl: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  download: PropTypes.string,
+  href: PropTypes.string,
+  target: PropTypes.string,
+  title: PropTypes.string,
 };
 
 Anchor.defaultProps = {
@@ -76,4 +74,17 @@ Anchor.defaultProps = {
   title: '',
 };
 
-export default Anchor;
+const AnchorWithContext = props => (
+  <BaseUrlContext.Consumer>{baseUrl => <Anchor baseUrl={baseUrl} {...props} />}</BaseUrlContext.Consumer>
+);
+
+AnchorWithContext.sanitize = sanitizeSchema => {
+  // This is for our custom link formats
+  sanitizeSchema.protocols.href.push('doc', 'target', 'ref', 'blog', 'changelog', 'page');
+
+  return sanitizeSchema;
+};
+
+module.exports = AnchorWithContext;
+
+AnchorWithContext.getHref = getHref;

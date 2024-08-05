@@ -1,0 +1,129 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a lang set 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": null,
+            },
+          },
+          "lang": "javascript",
+          "meta": null,
+          "position": Position {
+            "end": Object {
+              "column": 4,
+              "line": 4,
+              "offset": 44,
+            },
+            "indent": Array [
+              1,
+              1,
+            ],
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "type": "code",
+          "value": "const languageSet = true;",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 7,
+      "offset": 48,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Single Code Tab Transformer wraps single code blocks with tabs if they have a title set 1`] = `
+Object {
+  "children": Array [
+    Object {
+      "children": Array [
+        Object {
+          "className": "tab-panel",
+          "data": Object {
+            "hName": "code",
+            "hProperties": Object {
+              "lang": "javascript",
+              "meta": "Testing",
+            },
+          },
+          "lang": "javascript",
+          "meta": "Testing",
+          "position": Position {
+            "end": Object {
+              "column": 4,
+              "line": 4,
+              "offset": 52,
+            },
+            "indent": Array [
+              1,
+              1,
+            ],
+            "start": Object {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "type": "code",
+          "value": "const languageSet = true;",
+        },
+      ],
+      "className": "tabs",
+      "data": Object {
+        "hName": "div",
+        "hProperties": Object {
+          "className": Array [
+            "code-tabs",
+          ],
+        },
+      },
+      "type": "code-tabs",
+    },
+  ],
+  "position": Object {
+    "end": Object {
+      "column": 2,
+      "line": 7,
+      "offset": 56,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

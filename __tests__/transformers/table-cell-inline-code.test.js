@@ -1,7 +1,7 @@
-import { hast, mdx, mdast } from '../../index';
+import { hast, md, mdast } from '../../index';
 
 describe('tableCellInlineCode', () => {
-  it.skip('unescapes escaped pipe chars inside inline code within table headers', () => {
+  it('unescapes escaped pipe chars inside inline code within table headers', () => {
     const doc = `
 | \`one \\| two \\| three \\| four\` | two |
 | :- | :- |
@@ -11,7 +11,7 @@ describe('tableCellInlineCode', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it.skip('unescapes escaped pipe chars inside inline code within table cells', () => {
+  it('unescapes escaped pipe chars inside inline code within table cells', () => {
     const doc = `
 |    |    |
 | :- | :- |
@@ -22,7 +22,7 @@ describe('tableCellInlineCode', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it.skip('preserves escaped pipe chars inside text table cells', () => {
+  it('preserves escaped pipe chars inside text table cells', () => {
     const doc = `
 | these \\| stay \\| escaped \\| inside \\| a single cell | |
 | :- | :- |
@@ -32,7 +32,7 @@ describe('tableCellInlineCode', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it.skip('splits table cells when inline code contains "unescaped" pipe chars', () => {
+  it('splits table cells when inline code contains "unescaped" pipe chars', () => {
     const doc = `
 | \`this | splits | up | to | more | cells\` | two |
 | :- | :- |
@@ -42,16 +42,16 @@ describe('tableCellInlineCode', () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it.skip('preserves the escaped pipe character when re-serializing from mdast', () => {
+  it('preserves the escaped pipe character when re-serializing from mdast', () => {
     const doc = `
 | \`one \\| two \\| three \\| four\` | two |
 | :- | :- |
 `;
 
     const tree = mdast(doc);
-    expect(mdx(tree)).toMatchInlineSnapshot(`
-      "| \`one \\| two \\| three \\| four\` | two |
-      | :- | :- |
+    expect(md(tree)).toMatchInlineSnapshot(`
+      "| \`one \\\\| two \\\\| three \\\\| four\` | two |
+      | :---------------------------- | :-- |
       "
     `);
   });
