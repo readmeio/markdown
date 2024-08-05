@@ -11,19 +11,18 @@ describe('visual regression tests', () => {
     });
 
     const docs = [
-      // 'callouts',
+      'callouts',
       'calloutTests',
       'codeBlocks',
-      // 'embeds',
-      //'features',
-      // 'headings',
+      'embeds',
+      'features',
+      'headings',
       'images',
-      'htmlTests',
-      // 'lists',
+      'lists',
       'mdxComponents',
       'tables',
       'codeBlockTests',
-      // 'tableOfContentsTests',
+      'tableOfContentsTests',
       'varsTest',
     ];
 
@@ -40,25 +39,5 @@ describe('visual regression tests', () => {
       },
       10000,
     );
-
-    it.skip('renders html blocks, style tags, and style attributes with safeMode off', async () => {
-      const uri = 'http://localhost:9966/#/sanitizingTests?ci=true';
-      await page.goto(uri, { waitUntil: 'networkidle0' });
-      await sleep(500);
-
-      const image = await page.screenshot({ fullPage: true });
-
-      expect(image).toMatchImageSnapshot();
-    }, 10000);
-
-    it.skip('does not render html blocks, style tags, and style attributes with safeMode on', async () => {
-      const uri = 'http://localhost:9966/#/sanitizingTests?ci=true&safe-mode=true';
-      await page.goto(uri, { waitUntil: 'networkidle0' });
-      await sleep(500);
-
-      const image = await page.screenshot({ fullPage: true });
-
-      expect(image).toMatchImageSnapshot();
-    }, 10000);
   });
 });
