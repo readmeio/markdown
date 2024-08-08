@@ -16,7 +16,7 @@ const Tabs = ({ children }) => {
   return (
     <div className="TabGroup">
       <header>
-        <nav>
+        <nav className="nav">
           {children.map((tab, index: number) => 
             <button className={`tab${activeTab === index ? '_active' : ''}`} key={tab.props.title} onClick={() => setActiveTab(index)}>
               {tab.props.title}
