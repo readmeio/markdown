@@ -12,17 +12,6 @@ ifeq ($(USE_LEGACY), true)
 dockerfile = -f Dockerfile.legacy
 endif
 
-mdx:
-	npm run build && \
-	cp -R dist/* ${README_PATH}/node_modules/@readme/mdx/dist && \
-	cd ${README_PATH} && \
-	npm run build --workspace=@readme/react && \
-	npm run build --workspace=@readme/bundles && \
-	npm run ui:build && \
-	echo "${NODE_ENV}" > public/data/build-env && \
-	npx ts-node ./bin/print-webpack-config.ts > ./build-time-webpack-config.json && \
-	npm run ui
-
 ifeq ($(USE_LEGACY), true)
 dockerfile = -f Dockerfile.legacy
 endif
