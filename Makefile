@@ -1,3 +1,5 @@
+-include .env
+
 .DEFAULT_GOAL := help
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
@@ -5,6 +7,10 @@
 DOCKER_WORKSPACE := "/markdown"
 MOUNTS = --volume ${PWD}:${DOCKER_WORKSPACE} \
 	--volume ${DOCKER_WORKSPACE}/node_modules
+
+ifeq ($(USE_LEGACY), true)
+dockerfile = -f Dockerfile.legacy
+endif
 
 ifeq ($(USE_LEGACY), true)
 dockerfile = -f Dockerfile.legacy

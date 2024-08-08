@@ -12,17 +12,11 @@ const options = {
     spacedTable: true,
     paddedTable: true,
   },
-  normalize: true,
   lazyImages: true,
-  reusableContent: {
-    tags: {},
-    disabled: false,
-    serialize: true,
-    wrap: true,
-  },
+  normalize: true,
   safeMode: false,
   settings: {
-    position: true,
+    position: false,
   },
   theme: 'light',
 };
@@ -81,17 +75,8 @@ const disableTokenizers = {
   },
 };
 
-const parseOptions = ({ markdownOptions = {}, reusableContent = {}, settings = {}, ...userOpts } = {}) => {
-  let opts = {
-    ...options,
-    markdownOptions: { ...options.markdownOptions, ...markdownOptions },
-    reusableContent: {
-      ...options.reusableContent,
-      ...reusableContent,
-    },
-    settings: { ...options.settings, ...settings },
-    ...userOpts,
-  };
+const parseOptions = (userOpts = {}) => {
+  let opts = { ...options, ...userOpts };
 
   if (opts.disableTokenizers in disableTokenizers) {
     opts = { ...opts, ...disableTokenizers[opts.disableTokenizers] };

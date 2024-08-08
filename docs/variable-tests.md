@@ -4,23 +4,22 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
-<<defvar>> and `<<defvar>>` and:
+This is the variable `defvar`: {user.defvar}
+
+Ok, but this one is defined: {user.email}
+
+It **does** render in code blocks:
 
 ```
-<<defvar>>
+{user.defvar}
 ```
 
-and
-
-```js
-const xyz = '<<defvar>>';
-```
+And if you don't want that, you can escape it:
 
 ```
-should \<< be escaped >>
-
-should <<
-not be a var >>
-
-also not a <<variable\r>>
+\{user.defvar}
 ```
+
+## Glossary Items
+
+<Glossary>demo</Glossary>
