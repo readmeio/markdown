@@ -14,3 +14,17 @@ hidden: true
 >
 > - was only rendering
 > - one child
+
+<Callout theme="error" icon="🔥">
+Now with MDX
+
+### Even supports markdown
+
+Much _wow_
+</Callout>
+
+> ❗
+>
+> Does it still look good?!
+
+> ❔ Does _this_ look good?!

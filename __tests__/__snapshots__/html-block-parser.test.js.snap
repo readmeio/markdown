@@ -1,37 +1,68 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Parse html block parses an html block 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "block": true,
-      "position": Position {
-        "end": Object {
-          "column": 5,
-          "line": 3,
-          "offset": 32,
+exports[`Parse html block > parses an html block 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "attributes": [],
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 21,
+                  "line": 2,
+                  "offset": 21,
+                },
+                "start": {
+                  "column": 6,
+                  "line": 2,
+                  "offset": 6,
+                },
+              },
+              "type": "text",
+              "value": "Some block html",
+            },
+          ],
+          "name": "div",
+          "position": {
+            "end": {
+              "column": 27,
+              "line": 2,
+              "offset": 27,
+            },
+            "start": {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "type": "mdxJsxTextElement",
         },
-        "indent": Array [
-          1,
-        ],
-        "start": Object {
+      ],
+      "position": {
+        "end": {
+          "column": 27,
+          "line": 2,
+          "offset": 27,
+        },
+        "start": {
           "column": 1,
           "line": 2,
           "offset": 1,
         },
       },
-      "type": "html",
-      "value": "<div>Some block html</div>
-    ",
+      "type": "paragraph",
     },
   ],
-  "position": Object {
-    "end": Object {
-      "column": 2,
-      "line": 5,
-      "offset": 35,
+  "position": {
+    "end": {
+      "column": 5,
+      "line": 3,
+      "offset": 32,
     },
-    "start": Object {
+    "start": {
       "column": 1,
       "line": 1,
       "offset": 0,

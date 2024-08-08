@@ -1,0 +1,108 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Compact headings > can parse compact headings 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 17,
+              "line": 1,
+              "offset": 16,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "text",
+          "value": "#Compact Heading",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 17,
+          "line": 1,
+          "offset": 16,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 17,
+      "line": 1,
+      "offset": 16,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`Compact headings > can parse headings that are not compact 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 22,
+              "line": 1,
+              "offset": 21,
+            },
+            "start": {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
+          "type": "text",
+          "value": "Non-compact Heading",
+        },
+      ],
+      "depth": 1,
+      "position": {
+        "end": {
+          "column": 22,
+          "line": 1,
+          "offset": 21,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "heading",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 22,
+      "line": 1,
+      "offset": 21,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

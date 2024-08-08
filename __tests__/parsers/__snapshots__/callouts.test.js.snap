@@ -1,0 +1,111 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Parse RDMD Callouts > renders an info callout 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 18,
+                  "line": 2,
+                  "offset": 18,
+                },
+                "start": {
+                  "column": 3,
+                  "line": 2,
+                  "offset": 3,
+                },
+              },
+              "type": "text",
+              "value": "Info Callout",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 18,
+              "line": 2,
+              "offset": 18,
+            },
+            "start": {
+              "column": 3,
+              "line": 2,
+              "offset": 3,
+            },
+          },
+          "type": "paragraph",
+        },
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 60,
+                  "line": 4,
+                  "offset": 80,
+                },
+                "start": {
+                  "column": 3,
+                  "line": 4,
+                  "offset": 23,
+                },
+              },
+              "type": "text",
+              "value": "Lorem ipsum dolor  sit amet consectetur adipisicing elit.",
+            },
+          ],
+          "position": {
+            "end": {
+              "column": 60,
+              "line": 4,
+              "offset": 80,
+            },
+            "start": {
+              "column": 3,
+              "line": 4,
+              "offset": 23,
+            },
+          },
+          "type": "paragraph",
+        },
+      ],
+      "data": {
+        "hName": "Callout",
+        "hProperties": {
+          "empty": false,
+          "icon": "ℹ️",
+        },
+      },
+      "position": {
+        "end": {
+          "column": 60,
+          "line": 4,
+          "offset": 80,
+        },
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "rdme-callout",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 60,
+      "line": 4,
+      "offset": 80,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
