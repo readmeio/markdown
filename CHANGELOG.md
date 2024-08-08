@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 6.88.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: This is a near complete rewrite of the library, and converts it to supporting MDX instead of markdown.
+
+### ✨ New & Improved
+
+* merge beta ([#947](https://github.com/readmeio/markdown/issues/947)) ([b9502ad](https://github.com/readmeio/markdown/commit/b9502adb306f099cd91e005df17c0be252019814))
+
 ## Version 6.75.0-beta.77
 
 ### 🛠 Fixes & Updates
