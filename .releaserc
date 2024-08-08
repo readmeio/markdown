@@ -14,10 +14,6 @@
             "release": "minor"
           },
           {
-            "type": "feat",
-            "release": "minor"
-          },
-          {
             "type": "enhance",
             "release": "minor"
           },
