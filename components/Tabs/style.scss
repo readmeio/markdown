@@ -1,10 +1,10 @@
 .TabGroup {
-  .nav {
+  &-nav {
     border-bottom: solid var(--color-border-default, #{rgba(black, 0.1)});
     margin-bottom: 15px;
   }
   
-  .tab {
+  &-tab {
     background: none;
     border: 0;
     color: var(--color-text-minimum, #637288);
