@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 7.0.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: MDX!
+
+### ✨ New & Improved
+
+* trigger release ([9183dd0](https://github.com/readmeio/markdown/commit/9183dd079bbfcce8d02c06f18290217c34546e2f))
+
 ## Version 6.89.0
 
 ### ⚠ BREAKING CHANGES
