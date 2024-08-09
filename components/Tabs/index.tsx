@@ -17,7 +17,7 @@ const Tabs = ({ children }) => {
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {children.map((tab, index: number) => 
+          {children?.map((tab, index: number) => 
             <button className={`TabGroup-tab${activeTab === index ? '_active' : ''}`} key={tab.props.title} onClick={() => setActiveTab(index)}>
               {tab.props.title}
             </button>
@@ -25,7 +25,7 @@ const Tabs = ({ children }) => {
         </nav>
       </header>
       <section>
-        {children[activeTab]}
+        {children && children[activeTab]}
       </section>
     </div>
   );
