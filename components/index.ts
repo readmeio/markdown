@@ -9,4 +9,5 @@ export { default as HTMLBlock } from './HTMLBlock';
 export { default as Heading } from './Heading';
 export { default as Image } from './Image';
 export { default as Table } from './Table';
+export { default as Tabs, Tab } from './Tabs';
 export { default as TableOfContents } from './TableOfContents';
