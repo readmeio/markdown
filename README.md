@@ -64,11 +64,17 @@ Parses mdx to an hast.
 
 #### `plain`
 
-Parses mdx to a plain string. It **does** not execute the doc.
+Parses mdx to a plain string.
+
+> [!WARNING]
+> This **does** not `eval` the doc.
 
 #### `tags`
 
-Returns a list of tag names from the doc. It **does** not execute the doc.
+Returns a list of tag names from the doc.
+
+> [!WARNING]
+> This **does** not `eval` the doc.
 
 #### `utils`
 
