@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 7.1.0
+
+### ✨ New & Improved
+
+* tabs component ([#948](https://github.com/readmeio/markdown/issues/948)) ([6e110d2](https://github.com/readmeio/markdown/commit/6e110d21429b87fecc1be1245921e0f76669735a))
+* tags ([#949](https://github.com/readmeio/markdown/issues/949)) ([3429b11](https://github.com/readmeio/markdown/commit/3429b114addf8750f5e9b8b1e50cf4facddeb2a9))
+
 ## Version 7.0.0
 
 ### ⚠ BREAKING CHANGES
