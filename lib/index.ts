@@ -5,6 +5,7 @@ import mdast from './mdast';
 import mdx from './mdx';
 import plain from './plain';
 import run from './run';
+import tags from './tags';
 
 export type { MdastOpts };
-export { astProcessor, compile, hast, mdast, mdx, plain, run, remarkPlugins };
+export { astProcessor, compile, hast, mdast, mdx, plain, run, remarkPlugins, tags };
