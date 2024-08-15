@@ -1,5 +1,10 @@
 @import '../styles/main.scss';
 
+:root {
+  font-family: -apple-system, 'system-ui', 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
 #webpack-dev-server-client-overlay {
   display: none;
 }
