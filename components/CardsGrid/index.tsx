@@ -2,12 +2,12 @@ import React from 'react';
 
 import './style.scss';
 
-export const Card = ({ children, href, icon, title }) => {
+export const Card = ({ children, icon, iconColor, title }) => {
   return (
     <div className="Card">
-      <i className={`fa ${icon}`}></i>
-      <h3>{title}</h3>
-      {children}
+      {icon && <i className={`Card-icon fa ${icon}`} style={{ color: `${iconColor}` }}></i>}
+      {title && <h3 className='Card-title'>{title}</h3>}
+      <div className="Card-content">{children}</div>
     </div>
   )
 }

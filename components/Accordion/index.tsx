@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import './style.scss';
 
-const Accordion = ({ children, title }) => {
+const Accordion = ({ children, icon, title }) => {
   const [isActive, setIsActive] = useState(false);
 
   const handleToggle = () => {
@@ -11,11 +11,11 @@ const Accordion = ({ children, title }) => {
 
   return (
     <div className="Accordion">
-      <button className="title" onClick={handleToggle}>
-        <i className={`icon${isActive ? '_active' : ''} fa fa-chevron-right`}></i>
-        {title}
+      <button className="Accordion-title" onClick={handleToggle}>
+        <i className={`Accordion-arrow${isActive ? '_active' : ''} fa fa-chevron-right`}></i>
+        <div><i className={`Accordion-icon fa ${icon}`}></i>{title}</div>
       </button>
-      <div className={`content content${isActive ? '_active' : ''}`}>{children}</div>
+      <div className={`Accordion-content${isActive ? '_active' : ''}`}>{children}</div>
     </div>
   );
 };

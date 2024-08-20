@@ -3,7 +3,7 @@
   border: 1px solid var(--color-border-default, rgba(black, 0.1));
   border-radius: 5px;
 
-  .title {
+  &-title {
     align-items: center;
     background: white;
     border: 0;
@@ -11,7 +11,7 @@
     color: var(--color-text-default, #384248);
     cursor: pointer;
     display: flex;
-    font-size: 15px;
+    font-size: 16px;
     padding: 15px 20px;
     position: relative;
     text-align: left;
@@ -22,7 +22,7 @@
     }
   }
 
-  .icon {
+  &-arrow {
     color: var(--color-text-default, #384248);
     font-size: 12px;
     margin-right: 10px;
@@ -36,13 +36,18 @@
     }
   }
 
-  .content {
-    color: var(--color-text-default, #384248);
+  &-icon {
+    color: var(--color-text-muted, #4f5a66);
+    margin-right: 5px;
+  }
+
+  &-content {
     display: none;
-    padding: 15px 20px;
 
     &_active {
+      color: var(--color-text-muted, #4f5a66);
       display: block;
+      padding: 15px 20px 0 20px;
     }
   }
 }
