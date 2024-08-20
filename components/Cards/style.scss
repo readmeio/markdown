@@ -17,15 +17,31 @@
     }
 
     &-icon {
+      color: var(--project-color-primary, inherit);
       font-size: 20px;
     }
 
     &-title {
       color: var(--color-text-default, #384248);
+      
+      &:first-child {
+        margin-top: 0;
+      }
     }
 
     &-content {
       color: var(--color-text-muted, #4f5a66);
     }
   }
+
+  a.Card:not([href=""]) {
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      background: var(--color-bg-hover, #{rgba(black, 0.05)});
+    }
+  }
+
+
 }

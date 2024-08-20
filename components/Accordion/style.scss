@@ -12,7 +12,7 @@
     cursor: pointer;
     display: flex;
     font-size: 16px;
-    padding: 15px 20px;
+    padding: 15px;
     position: relative;
     text-align: left;
     width: 100%;
@@ -20,19 +20,10 @@
     &:hover {
       background: var(--color-bg-hover, #{rgba(black, 0.05)});
     }
-  }
 
-  &-arrow {
-    color: var(--color-text-default, #384248);
-    font-size: 12px;
-    margin-right: 10px;
-    transition: transform 0.2s;
-
-    &_active {
-      font-size: 12px;
-      margin-right: 10px;
-      transform: rotate(90deg);
-      transition: transform 0.2s;
+    .Accordion[open] & {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
   }
 
@@ -42,12 +33,7 @@
   }
 
   &-content {
-    display: none;
-
-    &_active {
-      color: var(--color-text-muted, #4f5a66);
-      display: block;
-      padding: 15px 20px 0 20px;
-    }
+    color: var(--color-text-muted, #4f5a66);
+    padding: 10px 15px 0 15px;
   }
 }
