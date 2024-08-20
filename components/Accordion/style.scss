@@ -28,7 +28,8 @@
   }
 
   &-icon {
-    color: var(--color-text-muted, #4f5a66);
+    color: var(--project-color-primary, inherit);
+    margin-left: 5px;
     margin-right: 5px;
   }
 
