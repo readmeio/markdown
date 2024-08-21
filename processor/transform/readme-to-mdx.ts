@@ -5,7 +5,6 @@ import { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 
 import { visit } from 'unist-util-visit';
 import { toAttributes } from '../utils';
-import { ImageBlock } from 'types';
 
 const imageAttrs = ['align', 'alt', 'caption', 'border', 'src', 'title', 'width', 'lazy', 'className'];
 
@@ -70,7 +69,7 @@ const readmeToMdx = (): Transform => tree => {
         url: image.url,
         title: image.title,
         alt: image.alt,
-      });
+      } as Image);
     }
   });
 
