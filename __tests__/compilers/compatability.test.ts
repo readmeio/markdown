@@ -1,4 +1,5 @@
 import { mdx } from '../../index';
+import fs from 'node:fs';
 import * as rdmd from '@readme/markdown-legacy';
 
 describe('compatability with RDMD', () => {
@@ -29,33 +30,39 @@ describe('compatability with RDMD', () => {
 
   it('compiles mdx image nodes', () => {
     const ast = {
-      type: 'figure',
-      data: { hName: 'figure' },
+      type: 'root',
       children: [
         {
-          align: 'center',
-          width: '300px',
-          src: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
-          url: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
-          alt: '',
-          title: '',
-          type: 'image',
-          data: {
-            hProperties: {
-              align: 'center',
-              className: 'border',
-              width: '300px',
-            },
-          },
-        },
-        {
-          type: 'figcaption',
-          data: { hName: 'figcaption' },
+          type: 'figure',
+          data: { hName: 'figure' },
           children: [
-            { type: 'paragraph',
+            {
+              align: 'center',
+              width: '300px',
+              src: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
+              url: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
+              alt: '',
+              title: '',
+              type: 'image',
+              data: {
+                hProperties: {
+                  align: 'center',
+                  className: 'border',
+                  width: '300px',
+                },
+              },
+            },
+            {
+              type: 'figcaption',
+              data: { hName: 'figcaption' },
               children: [
-                { type: 'text', value: 'hello ' },
-                { type: 'strong', children: [{ type: 'text', value: 'cat' }] },
+                {
+                  type: 'paragraph',
+                  children: [
+                    { type: 'text', value: 'hello ' },
+                    { type: 'strong', children: [{ type: 'text', value: 'cat' }] },
+                  ],
+                },
               ],
             },
           ],
@@ -63,9 +70,11 @@ describe('compatability with RDMD', () => {
       ],
     };
 
-    expect(mdx(ast).trim()).toBe(
-      '<Image align="center" border="true" caption="hello **cat**" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" />',
-    );
+    expect(mdx(ast).trim()).toMatchInlineSnapshot(`
+      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" alt="" title="">
+        hello **cat**
+      </Image>"
+    `);
   });
 
   it('compiles mdx embed nodes', () => {
@@ -94,7 +103,9 @@ describe('compatability with RDMD', () => {
       type: 'embed',
     };
 
-    expect(mdx(ast).trim()).toBe('<Embed url="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" title="iframe" href="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" typeOfEmbed="iframe" height="300px" width="100%" iframe="true" />');
+    expect(mdx(ast).trim()).toBe(
+      '<Embed url="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" title="iframe" href="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" typeOfEmbed="iframe" height="300px" width="100%" iframe="true" />',
+    );
   });
 
   it('compiles reusable-content nodes', () => {
@@ -174,5 +185,12 @@ This is an image: <img src="http://example.com/#\\>" >
     `;
 
     expect(mdx(rdmd.mdast(md)).trim()).toBe('\\\\**still emphatic**');
+  });
+
+  it('compiles magic block images into blocks', () => {
+    const imageMd = fs.readFileSync('__tests__/fixtures/image-block-no-attrs.md', { encoding: 'utf8' });
+    const imageMdx = fs.readFileSync('__tests__/fixtures/image-block-no-attrs.mdx', { encoding: 'utf8' });
+
+    expect(mdx(rdmd.mdast(imageMd))).toBe(imageMdx);
   });
 });

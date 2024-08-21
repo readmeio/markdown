@@ -1,5 +1,6 @@
 import { Node } from 'mdast';
 import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
+import { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -140,4 +141,19 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
   // const indented = cleaned.split('\n').map((line: string) => `${tab}${line}`).join('\n');
 
   return cleaned;
+};
+
+export const toAttributes = (object: Record<string, any>, keys: string[] = []): MdxJsxAttribute[] => {
+  let attributes: MdxJsxAttribute[] = [];
+  Object.entries(object).forEach(([name, value]) => {
+    if (keys.length > 0 && !keys.includes(name)) return;
+
+    attributes.push({
+      type: 'mdxJsxAttribute',
+      name,
+      value: value as string,
+    });
+  });
+
+  return attributes;
 };
