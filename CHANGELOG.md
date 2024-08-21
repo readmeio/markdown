@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.2.0
+
+### ✨ New & Improved
+
+* update built-in components ([#950](https://github.com/readmeio/markdown/issues/950)) ([ba7d225](https://github.com/readmeio/markdown/commit/ba7d2250f2a7d86ea6c324b1352a4bad7b6c8080))
+
 ## Version 7.1.0
 
 ### ✨ New & Improved
