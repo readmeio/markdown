@@ -1,0 +1,40 @@
+.Accordion {
+  background: rgba(var(--color-bg-page-rgb, white), 1);
+  border: 1px solid var(--color-border-default, rgba(black, 0.1));
+  border-radius: 5px;
+
+  &-title {
+    align-items: center;
+    background: white;
+    border: 0;
+    border-radius: 5px;
+    color: var(--color-text-default, #384248);
+    cursor: pointer;
+    display: flex;
+    font-size: 16px;
+    padding: 15px;
+    position: relative;
+    text-align: left;
+    width: 100%;
+
+    &:hover {
+      background: var(--color-bg-hover, #{rgba(black, 0.05)});
+    }
+
+    .Accordion[open] & {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  &-icon {
+    color: var(--project-color-primary, inherit);
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+
+  &-content {
+    color: var(--color-text-muted, #4f5a66);
+    padding: 10px 15px 0 15px;
+  }
+}
