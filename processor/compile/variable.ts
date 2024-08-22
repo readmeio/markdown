@@ -1,5 +1,10 @@
 import { Variable } from '../../types';
 
-const variable = (node: Variable) => `{user.${node.data.hProperties.name}}`;
+const variable = (node: Variable) => {
+  // @note: coming from RDMD, it's set as `variable`. But when mdx is parsed,
+  // it's set as `name`
+  const name = node.data.hProperties.variable || node.data.hProperties.name;
+  return `{user.${name}}`;
+};
 
 export default variable;

@@ -193,4 +193,10 @@ This is an image: <img src="http://example.com/#\\>" >
 
     expect(mdx(rdmd.mdast(imageMd))).toBe(imageMdx);
   });
+
+  it('compiles user variables', () => {
+    const md = `Contact me at <<email>>`;
+
+    expect(mdx(rdmd.mdast(md))).toBe(`Contact me at {user.email}\n`);
+  });
 });
