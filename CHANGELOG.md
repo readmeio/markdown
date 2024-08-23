@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.2.1
+
+### 🛠 Fixes & Updates
+
+* image block migration ([#951](https://github.com/readmeio/markdown/issues/951)) ([55dc0c9](https://github.com/readmeio/markdown/commit/55dc0c9cffe394ff5e07c28e63fb3c7f94508c9f))
+
 ## Version 7.2.0
 
 ### ✨ New & Improved
