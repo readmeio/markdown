@@ -7,15 +7,10 @@ import { ImageBlock } from '../../types';
 import { getAttrs } from '../utils';
 import { mdast } from '../../lib';
 
-const imageTransformer = () => (tree: Node)  => {
+const imageTransformer = () => (tree: Node) => {
   visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
-    // check if inline 
-    if (
-      parent.type !== 'root' ||
-      node.children?.length > 1 ||
-      node.children[0].type !== 'image'
-    )
-      return;
+    // check if inline
+    if (parent.type !== 'root' || node.children?.length > 1 || node.children[0].type !== 'image') return;
 
     const [{ alt, url, title }] = node.children as any;
 
@@ -27,7 +22,7 @@ const imageTransformer = () => (tree: Node)  => {
       children: [],
       data: {
         hName: 'img',
-        hProperties: { 
+        hProperties: {
           ...(alt && { alt }),
           src: url,
           ...(title && { title }),
@@ -40,17 +35,17 @@ const imageTransformer = () => (tree: Node)  => {
   });
 
   const isImage = (node: MdxJsxFlowElement) => node.name === 'Image';
-  
+
   visit(tree, isImage, (node: MdxJsxFlowElement) => {
     const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
 
     if (attrs.caption) {
       node.children = mdast(attrs.caption).children;
     }
-
   });
 
   return tree;
 };
 
 export default imageTransformer;
+

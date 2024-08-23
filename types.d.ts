@@ -1,4 +1,4 @@
-import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text, Table } from 'mdast';
+import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text, Table, BlockContent } from 'mdast';
 
 import { NodeTypes } from './enums';
 import { Element } from 'hast';
@@ -42,6 +42,22 @@ interface EmbedBlock extends Node {
       iframe?: boolean;
     };
   };
+}
+
+interface Figure extends Node {
+  type: NodeTypes.figure;
+  data: {
+    hName: 'figure';
+  };
+  children: [ImageBlock, FigCaption];
+}
+
+interface FigCaption extends Node {
+  type: NodeTypes.figcaption;
+  data: {
+    hName: 'figcaption';
+  };
+  children: BlockContent[];
 }
 
 interface HTMLBlock extends Node {
@@ -115,6 +131,7 @@ declare module 'mdast' {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;
+    [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.tableau]: Tableau;
@@ -132,6 +149,7 @@ declare module 'mdast' {
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
+    [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;

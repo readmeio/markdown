@@ -7,6 +7,12 @@ describe('image compiler', () => {
     expect(mdx(mdast(txt))).toMatch(txt);
   });
 
+  it('correctly serializes an inline image back to markdown', () => {
+    const txt = 'Forcing it to be inline: ![alt text](/path/to/image.png)';
+
+    expect(mdx(mdast(txt))).toMatch(txt);
+  });
+
   it('correctly serializes an Image component back to MDX', () => {
     const doc = '<Image src="/path/to/image.png" width="200px" alt="alt text" />';
 

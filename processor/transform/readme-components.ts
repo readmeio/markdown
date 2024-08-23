@@ -1,4 +1,5 @@
 import { NodeTypes } from '../../enums';
+import { Properties } from 'hast';
 import { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
@@ -169,7 +170,7 @@ const coerceJsxToMd =
 
       parent.children[index] = mdNode;
     } else if (node.name in types) {
-      const hProperties = getAttrs<BlockContent['data']['hProperties']>(node);
+      const hProperties = getAttrs<Properties>(node);
 
       const mdNode: BlockContent = {
         children: node.children,

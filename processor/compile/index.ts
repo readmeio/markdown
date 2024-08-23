@@ -3,7 +3,6 @@ import codeTabs from './code-tabs';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
-import image from './image';
 import compatibility from './compatibility';
 import variable from './variable';
 import { NodeTypes } from '../../enums';
@@ -20,7 +19,6 @@ function compilers() {
     [NodeTypes.emoji]: gemoji,
     [NodeTypes.glossary]: compatibility,
     [NodeTypes.htmlBlock]: htmlBlock,
-    [NodeTypes.imageBlock]: image,
     [NodeTypes.reusableContent]: compatibility,
     [NodeTypes.variable]: variable,
     embed: compatibility,
