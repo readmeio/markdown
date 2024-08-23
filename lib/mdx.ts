@@ -15,8 +15,8 @@ export const mdx = (tree: any, { hast = false } = {}) => {
     .use(divTransformer)
     .use(readmeToMdx)
     .use(tablesToJsx)
-    .use(remarkStringify)
-    .use(compilers);
+    .use(compilers)
+    .use(remarkStringify);
 
   return processor.stringify(processor.runSync(tree));
 };

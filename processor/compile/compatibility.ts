@@ -54,6 +54,7 @@ const figureToImageBlock = (node: any) => {
     ...(width && { width }),
     src: src || url,
   };
+
   return `<Image ${formatProps(attributes)} />`;
 };
 
