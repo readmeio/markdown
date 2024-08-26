@@ -1,4 +1,6 @@
-import { mdast } from '../../index';
+import { mdast as mdastLegacy } from '@readme/markdown-legacy';
+
+import { mdast, mdx } from '../../index';
 
 describe('images transformer', () => {
   it('converts single children images of paragraphs to an image-block', () => {
@@ -19,5 +21,31 @@ describe('images transformer', () => {
 
     expect(tree.children[0].children[0].children[0].type).toBe('strong');
     expect(tree.children[0].children[0].children[2].type).toBe('emphasis');
+  });
+
+  it('can parse and transform magic image block AST to MDX', () => {
+    const rdmd = `
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://files.readme.io/4a1c7a0-Iphone.jpeg",
+        null,
+        ""
+      ],
+      "align": "center",
+      "sizing": "250px"
+    }
+  ]
+}
+[/block]
+`;
+
+    const rmdx = mdx(mdastLegacy(rdmd));
+
+    expect(rmdx).toMatch(
+      '<Image align="center" className="" width="250px" src="https://files.readme.io/4a1c7a0-Iphone.jpeg" />',
+    );
   });
 });

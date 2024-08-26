@@ -81,7 +81,7 @@
     "@commitlint/config-angular": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "@readme/eslint-config": "^14.0.0",
-    "@readme/markdown-legacy": "npm:@readme/markdown@^6.84.0",
+    "@readme/markdown-legacy": "npm:@readme/markdown@^6.87.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^6.4.2",
