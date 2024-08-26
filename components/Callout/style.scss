@@ -65,6 +65,10 @@
 
   .callout-heading {
     color: var(--title, --text);
+    font-family: var(--markdown-title-font); // match h3
+    font-size: 1.25em; // match h3
+    font-weight: var(--markdown-title-weight, 600); // match h3
+    line-height: 1.25; // match h3
     margin-bottom: calc(#{$l-offset} * 0.5);
 
     &:only-child {
