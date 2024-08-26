@@ -40,6 +40,8 @@ const readmeToMdx = (): Transform => tree => {
 
   visit(tree, 'image', (image, index, parent) => {
     if (!('data' in image)) return;
+
+    if ('url' in image) image.data.hProperties.src = image.url;
     const attributes = toAttributes(image.data.hProperties, imageAttrs);
 
     if (hasExtra(attributes)) {
