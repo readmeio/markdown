@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 7.3.0
+
+### ✨ New & Improved
+
+* add downstream styles ([#953](https://github.com/readmeio/markdown/issues/953)) ([0b1b52d](https://github.com/readmeio/markdown/commit/0b1b52ded7aa6e59c945d47a5a579c8fe1ccf79b))
+
+
+### 🛠 Fixes & Updates
+
+* **img:** set src properly for magic image blocks ([#952](https://github.com/readmeio/markdown/issues/952)) ([8f71fce](https://github.com/readmeio/markdown/commit/8f71fce164fc66308d0d5fc4f8b87deb1eae7f0b)), closes [/github.com/readmeio/markdown/pull/952/files#diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50](https://github.com/readmeio//github.com/readmeio/markdown/pull/952/files/issues/diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50)
+
 ## Version 7.2.1
 
 ### 🛠 Fixes & Updates
