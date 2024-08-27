@@ -5,6 +5,7 @@ import { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 
 import { visit } from 'unist-util-visit';
 import { toAttributes } from '../utils';
+import { type HTMLBlock } from 'types';
 
 const imageAttrs = ['align', 'alt', 'caption', 'border', 'src', 'title', 'width', 'lazy', 'className'];
 
@@ -73,6 +74,23 @@ const readmeToMdx = (): Transform => tree => {
         alt: image.alt,
       } as Image);
     }
+  });
+
+  visit(tree, 'html', (node, index, parent) => {
+    const html = node.value;
+    const isScriptOrStyleTag = [!!html.match(/^<(?:style|script).*?>/), !!html.match(/<\/(?:style|script)>$/)];
+    if (!isScriptOrStyleTag.includes(true)) return;
+    parent.children.splice(index, 1, {
+      type: 'html-block',
+      children: [{ type: 'text', value: html }],
+      data: {
+        hName: 'html-block',
+        hProperties: {
+          html,
+          // runScripts: options.compatibilityMode, // not sure how to access the global options anymore!
+        },
+      },
+    } as HTMLBlock);
   });
 
   return tree;

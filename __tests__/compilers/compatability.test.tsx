@@ -1,5 +1,9 @@
-import { mdx } from '../../index';
+import React from 'react';
 import fs from 'node:fs';
+import { vi } from 'vitest';
+import { render, screen, prettyDOM, configure } from '@testing-library/react';
+
+import { mdx, compile, run } from '../../index';
 import * as rdmd from '@readme/markdown-legacy';
 
 describe('compatability with RDMD', () => {
@@ -198,5 +202,71 @@ This is an image: <img src="http://example.com/#\\>" >
     const md = `Contact me at <<email>>`;
 
     expect(mdx(rdmd.mdast(md))).toBe(`Contact me at {user.email}\n`);
+  });
+
+  describe('<HTMLBlock> wrapping', () => {
+    configure({ defaultIgnore: undefined });
+    const inspect = (node?: HTMLElement, min = false) => {
+      const filterNode = (node: Node) => true;
+      console.log(prettyDOM(node, undefined, { filterNode, min }));
+    };
+    const rawStyle = `<style data-testid="style-tag">
+    p {
+      color: red;
+    }
+    </style>
+    `;
+    const rawScript = `<script data-testid="script-tag">
+    console.log('hello raw')
+    </script>
+    `;
+    const magicScript = `[block:html]
+    {
+      "html": "<script data-testid='script-block'>console.log('hello magic')</script>"
+    }
+    [/block]
+    `;
+
+    it('should wrap <style> tags in an <HTMLBlock>', async () => {
+      const legacyAST = rdmd.mdast(rawStyle);
+      const converted = mdx(legacyAST);
+      const compiled = compile(converted);
+      const Component = (await run(compiled)).default;
+      render(
+        <div className="markdown-body">
+          <Component />
+        </div>,
+      );
+      expect(screen.getByTestId('style-tag').tagName).toMatch('STYLE');
+    });
+
+    it('should not render raw <script> tags', async () => {
+      const legacyAST = rdmd.mdast(rawScript);
+      const converted = mdx(legacyAST);
+      const compiled = compile(converted);
+      const Component = (await run(compiled)).default;
+      render(
+        <div className="markdown-body">
+          <Component />
+        </div>,
+      );
+      expect(screen.queryByTestId('script-tag')).toBe(null);
+    });
+
+    it('should execute <script> tags in compatibility mode', async () => {
+      const spy = vi.spyOn(console, 'log');
+      const legacyAST = rdmd.mdast(magicScript);
+      const converted = mdx(legacyAST);
+      const compiled = compile(converted);
+      const Component = await run(compiled, {
+        // compatibilityMode: true // not sure how/where to pass these global options anymore!
+      });
+      render(
+        <div className="markdown-body">
+          <Component.default />
+        </div>,
+      );
+      expect(spy).toHaveBeenCalledWith('hello magic');
+    });
   });
 });
