@@ -5,7 +5,7 @@
 
   &-title {
     align-items: center;
-    background: white;
+    background: rgba(var(--color-bg-page-rgb, white), 1);
     border: 0;
     border-radius: 5px;
     color: var(--color-text-default, #384248);
