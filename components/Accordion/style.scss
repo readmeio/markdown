@@ -12,13 +12,14 @@
     cursor: pointer;
     display: flex;
     font-size: 16px;
+    font-weight: 500;
     padding: 10px;
     position: relative;
     text-align: left;
     width: 100%;
 
     &:hover {
-      background: var(--color-bg-hover, #{rgba(black, 0.05)});
+      background: var(--color-bg-hover, rgba(black, 0.05));
     }
 
     .Accordion[open] & {
