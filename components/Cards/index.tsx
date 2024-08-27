@@ -7,7 +7,7 @@ export const Card = ({ children, href, icon, iconColor, target, title }) => {
   return (
     <Tag className="Card" href={href} target={target}>
       {icon && <i className={`Card-icon fa ${icon}`} style={{ color: `${iconColor}` }}></i>}
-      {title && <h3 className='Card-title'>{title}</h3>}
+      {title && <p className='Card-title'>{title}</p>}
       <div className="Card-content">{children}</div>
     </Tag>
   )
