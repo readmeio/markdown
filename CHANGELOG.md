@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 7.4.0
+
+### ✨ New & Improved
+
+* trigger release ([034928b](https://github.com/readmeio/markdown/commit/034928b6aae112e01d99f93a9fd5bd1d75e1dfb7))
+
+
+### 🛠 Fixes & Updates
+
+* tabs component color ([#958](https://github.com/readmeio/markdown/issues/958)) ([61cac1c](https://github.com/readmeio/markdown/commit/61cac1c9c2ef10676ec65dcfa20ce7f97ea89d35))
+* update component styling ([#955](https://github.com/readmeio/markdown/issues/955)) ([bd18389](https://github.com/readmeio/markdown/commit/bd18389053ccc90342e98198c057c9396d5ab501))
+
 ## Version 7.3.0
 
 ### ✨ New & Improved
