@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.4.1
+
+### 🛠 Fixes & Updates
+
+* image styles ([#959](https://github.com/readmeio/markdown/issues/959)) ([f89c813](https://github.com/readmeio/markdown/commit/f89c813560ebf80cf712316cb89fa38d5984efa7))
+
 ## Version 7.4.0
 
 ### ✨ New & Improved
