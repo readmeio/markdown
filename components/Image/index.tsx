@@ -16,7 +16,7 @@ interface ImageProps {
 
 const Image = (Props: ImageProps) => {
   const {
-    align = 'center',
+    align = '',
     alt = '',
     border = false,
     caption,
@@ -75,7 +75,7 @@ const Image = (Props: ImageProps) => {
               width={width}
               height={height}
               title={title}
-              className={`img img-align-center${border ? ' border' : ''}`}
+              className={`img img-align-center ${border ? 'border' : ''}`}
               alt={alt}
               loading={lazy ? 'lazy' : 'eager'}
             />
@@ -101,7 +101,7 @@ const Image = (Props: ImageProps) => {
           width={width}
           height={height}
           title={title}
-          className={`img img-align-${align}${border ? ' border' : ''}`}
+          className={`img img-align-${align} ${border ? 'border' : ''}`}
           alt={alt}
           loading={lazy ? 'lazy' : 'eager'}
         />
