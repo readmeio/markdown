@@ -101,7 +101,7 @@ const Image = (Props: ImageProps) => {
           width={width}
           height={height}
           title={title}
-          className={`img img-align-${align} ${border ? 'border' : ''}`}
+          className={`img ${align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
           alt={alt}
           loading={lazy ? 'lazy' : 'eager'}
         />
