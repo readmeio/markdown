@@ -199,4 +199,12 @@ This is an image: <img src="http://example.com/#\\>" >
 
     expect(mdx(rdmd.mdast(md))).toBe(`Contact me at {user.email}\n`);
   });
+
+  it.only('compiles user variables', () => {
+    const md = `export const year = 2024;
+
+# Welcome to {year}
+`;
+    expect(mdx(rdmd.mdast(md))).toBe(`Contact me at {user.email}\n`);
+  });
 });
