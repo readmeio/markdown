@@ -10,7 +10,7 @@ describe('Image', () => {
     expect(screen.getByRole('img')).toMatchInlineSnapshot(`
       <img
         alt=""
-        class="img img-align-center"
+        class="img img-align-center "
         height="auto"
         loading="lazy"
         src="https://files.readme.io/b8674d6-pizzabro.jpg"
@@ -42,7 +42,7 @@ describe('Image', () => {
         >
           <img
             alt=""
-            class="img img-align-center"
+            class="img img-align-center "
             height="auto"
             loading="lazy"
             src="https://files.readme.io/b8674d6-pizzabro.jpg"
