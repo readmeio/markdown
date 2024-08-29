@@ -1,6 +1,11 @@
-import { Node } from 'mdast';
-import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
-import { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
+import type { Node } from 'mdast';
+import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
+import type {
+  MdxJsxAttribute,
+  MdxJsxAttributeValueExpression,
+  MdxJsxAttributeValueExpressionData,
+} from 'mdast-util-mdx-jsx';
+import mdast from '../lib/mdast';
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -145,13 +150,39 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
 
 export const toAttributes = (object: Record<string, any>, keys: string[] = []): MdxJsxAttribute[] => {
   let attributes: MdxJsxAttribute[] = [];
-  Object.entries(object).forEach(([name, value]) => {
-    if (keys.length > 0 && !keys.includes(name)) return;
+  Object.entries(object).forEach(([name, v]) => {
+    if ((keys.length > 0 && !keys.includes(name)) || typeof v === 'undefined') return;
+
+    let value: MdxJsxAttributeValueExpression | string;
+
+    if (typeof v === 'string') {
+      value = v;
+    } else {
+      /* values can be null, undefined, string, or a expression, eg:
+       *
+       * ```
+       * <Image src="..." border={false} size={width - 20} />
+       * ```
+       *
+       * Parsing the expression seems to only be done by the library
+       * `mdast-util-mdx-jsx`, and so the most straight forward way to parse
+       * the expression and get the appropriate AST is with our `mdast`
+       * function.
+       */
+      const proxy = mdast(`{${v}}`);
+      const data = proxy.children[0].data as MdxJsxAttributeValueExpressionData;
+
+      value = {
+        type: 'mdxJsxAttributeValueExpression',
+        value: v.toString(),
+        data,
+      };
+    }
 
     attributes.push({
       type: 'mdxJsxAttribute',
       name,
-      value: value as string,
+      value,
     });
   });
 

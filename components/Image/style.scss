@@ -37,10 +37,8 @@
     &[alt~='align-left'] {
       @extend %img-align-left;
     }
-
-    &[width='80%'],
+    &[align='middle'], // hack to fix Firefox; see: https://stackoverflow.com/a/45901819/1341949
     &[align='center'],
-    &[align='middle'],
     &[alt~='align-center'] {
       @extend %img-align-center;
     }
