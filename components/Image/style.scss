@@ -1,12 +1,17 @@
+/* stylelint-disable selector-max-compound-selectors */
+/* stylelint-disable no-descending-specificity */
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
 %img-align {
   &-right {
     float: right;
     margin-left: 0.75rem;
   }
+
   &-left {
     float: left;
     margin-right: 0.75rem;
   }
+
   &-center {
     display: block;
   }
@@ -14,22 +19,20 @@
 
 .markdown-body {
   img {
-    & {
-      box-sizing: content-box;
-      display: inline-block;
-      vertical-align: middle;
-      max-width: 100%;
-      margin-left: auto;
-      margin-right: auto;
-      border-style: none;
-
-      outline: none !important;
-    }
+    border-style: none;
+    box-sizing: content-box;
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    outline: none !important;
+    vertical-align: middle;
 
     &[align='right'],
     &[alt~='align-right'] {
       @extend %img-align-right;
     }
+
     &[align='left'],
     &[alt~='align-left'] {
       @extend %img-align-left;
@@ -41,9 +44,9 @@
     }
 
     &[width='smart'] {
-      width: auto;
-      max-width: 100%;
       max-height: 450px;
+      max-width: 100%;
+      width: auto;
     }
 
     &.border {
@@ -52,13 +55,12 @@
   }
 
   figure {
-    & {
-      margin: 15px auto;
-    }
+    margin: 15px auto;
+
     figcaption {
-      margin-top: 8px;
       font-size: 0.93em;
       font-style: italic;
+      margin-top: 8px;
       text-align: center;
     }
   }
@@ -69,82 +71,80 @@
   }
 
   figure .img {
-    display: inline-block;
-    &,
-    > img:only-of-type {
-      display: block;
-    }
+    display: block;
   }
 
   .lightbox.open {
-    & {
-      position: fixed;
-      z-index: 9999999;
-      top: 0;
-      left: 0;
-
-      display: flex;
-      flex-flow: nowrap column;
-      justify-content: flex-start;
-      align-items: center;
-
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      overflow-y: scroll;
-      background: rgba(white, 0.966);
-      user-select: none;
-
-      margin-top: 0;
-      margin-bottom: 0;
-    }
+    align-items: center;
+    background: rgba(white, 0.966);
+    display: flex;
+    flex-flow: nowrap column;
+    height: 100vh;
+    justify-content: flex-start;
+    left: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    overflow: hidden;
+    overflow-y: scroll;
+    position: fixed;
+    top: 0;
+    user-select: none;
+    width: 100vw;
+    z-index: 9999999;
 
     // Close Button
-    //
-    &:after {
-      position: fixed;
-      top: 1em;
-      right: 1em;
+    &::after {
       content: '\f00d';
+      cursor: pointer;
       display: inline-block;
       font: normal normal normal 2em/1 FontAwesome;
       font-size: inherit;
-      text-rendering: auto;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      transform: translate(0, 0);
-      display: inline-block;
-      cursor: pointer;
-
       opacity: 1;
+      position: fixed;
+      right: 1em;
+      text-rendering: auto;
+      top: 1em;
+      transform: translate(0, 0);
       transform: scale(1.5);
       transition: 0.3s 0.3s ease-in;
     }
-    &:not(.open):after {
-      transform: scale(0);
+
+    &:not(.open)::after {
       opacity: 0;
+      transform: scale(0);
     }
 
     .lightbox-inner {
-      position: relative;
+      align-items: center;
+      box-sizing: content-box;
       display: inline-flex;
       justify-content: center;
-      align-items: center;
-      min-height: calc(100vh + 8px);
       margin: auto;
+      min-height: calc(100vh + 8px);
       padding: 0;
-      box-sizing: content-box;
+      position: relative;
     }
 
     img {
-      width: auto !important;
       height: auto !important;
-      min-width: unset !important;
-      max-width: 97.5vw !important;
       max-height: 97.5vh !important;
+      max-width: 97.5vw !important;
+      min-width: unset !important;
+      width: auto !important;
+
       &.border,
       &:not([src$='.png']):not([src$='.svg']):not([src$='.jp2']):not([src$='.tiff']) {
         box-shadow: 0 0.5em 3em -1em rgba(0, 0, 0, 0.2);
+      }
+
+      &[src$='svg'] {
+        display: block !important;
+        height: 66vw !important;
+        max-width: 100% !important;
+        min-width: 200px !important;
+        width: 42vw !important;
       }
     }
   }
