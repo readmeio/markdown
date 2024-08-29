@@ -85,10 +85,7 @@ const readmeToMdx = (): Transform => tree => {
       children: [{ type: 'text', value: html }],
       data: {
         hName: 'html-block',
-        hProperties: {
-          html,
-          // runScripts: options.compatibilityMode, // not sure how to access the global options anymore!
-        },
+        hProperties: { html },
       },
     } as HTMLBlock);
   });
