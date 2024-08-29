@@ -79,7 +79,7 @@ Extends [`CompileOptions`](https://mdxjs.com/packages/mdx/#compileoptions)
 - `lazyImages` (`boolean`, optional) -- load images lazily
 - `safeMode` (`boolean`, optional) -- extract script tags from `HTMLBlock`s
 - `components` (`Record<string, string>`, optional) -- an object of tag names to mdx.
-- `copyButtons` (`Boolean`, optional) — add a Copy button to code blocks
+- `copyButtons` (`Boolean`, optional) — add a copy button to code blocks
 
 ### `RunOpts`
 
@@ -87,8 +87,8 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 ###### Additional Properties
 
-- `components` (`Record<string, MDXModule>`, optional) -- an object of tag names to executed components
-- `imports` (`Record<string, unknown>`, optional) -- an object of modules to import
+- `components` (`Record<string, MDXModule>`, optional) -- a set of custom MDX components
+- `imports` (`Record<string, unknown>`, optional) -- an set of modules to import globally
 - `terms` (`GlossaryTerm[]`, optional)
 - `variables` (`Variables`, optional) -- an object containing [user variables](https://github.com/readmeio/variable)
 
