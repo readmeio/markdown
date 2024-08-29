@@ -1,6 +1,6 @@
-import { Node } from 'mdast';
-import { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
-import {
+import type { Node } from 'mdast';
+import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
+import type {
   MdxJsxAttribute,
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
@@ -158,6 +158,17 @@ export const toAttributes = (object: Record<string, any>, keys: string[] = []): 
     if (typeof v === 'string') {
       value = v;
     } else {
+      /* values can be null, undefined, string, or a expression, eg:
+       *
+       * ```
+       * <Image src="..." border={false} size={width - 20} />
+       * ```
+       *
+       * Parsing the expression seems to only be done by the library
+       * `mdast-util-mdx-jsx`, and so the most straight forward way to parse
+       * the expression and get the appropriate AST is with our `mdast`
+       * function.
+       */
       const proxy = mdast(`{${v}}`);
       const data = proxy.children[0].data as MdxJsxAttributeValueExpressionData;
 
