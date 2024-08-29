@@ -1,6 +1,22 @@
 Changelog
 ===
 
+## Version 7.4.2
+
+### ✨ New & Improved
+
+* **Image:** fix alignment oddities ([#956](https://github.com/readmeio/markdown/issues/956)) ([7382d43](https://github.com/readmeio/markdown/commit/7382d43266a0f983b5351a9372f09ee97ebe73ab)), closes [/github.com/readmeio/markdown/pull/956/files#diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19) [/github.com/readmeio/markdown/pull/956/files#diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92)
+
+
+### 🛠 Fixes & Updates
+
+* image compiling ([#960](https://github.com/readmeio/markdown/issues/960)) ([6e3a7ac](https://github.com/readmeio/markdown/commit/6e3a7acc78fcd2016203c9ffd3cf04f8d22713cf))
+
+
+### 📘 Tests & Docs
+
+* update readme for MDX ([#957](https://github.com/readmeio/markdown/issues/957)) ([0b5f89b](https://github.com/readmeio/markdown/commit/0b5f89b86d4866fbe04b7c5f569becb443e0855d))
+
 ## Version 7.4.1
 
 ### 🛠 Fixes & Updates
