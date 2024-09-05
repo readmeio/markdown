@@ -33,6 +33,11 @@
     }
   }
 
+  &-icon {
+    color: var(--project-color-primary, inherit);
+    margin-right: 10px;
+  }
+
   .TabContent {
     color: var(--color-text-muted, #4f5a66);
   }
