@@ -25,7 +25,7 @@ describe('image compiler', () => {
     expect(mdx(mdast(doc))).toMatch(doc);
   });
 
-  it.only('correctly serializes an Image component with an undefined expression attributes back to MDX', () => {
+  it('correctly serializes an Image component with an undefined expression attributes back to MDX', () => {
     const doc = '<Image border={undefined} />';
 
     expect(mdx(mdast(doc))).toMatch('![]()');
