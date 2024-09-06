@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 7.4.3
+
+### 🛠 Fixes & Updates
+
+* undefined check ([#962](https://github.com/readmeio/markdown/issues/962)) ([cc4a53f](https://github.com/readmeio/markdown/commit/cc4a53ff2153ddffdd84aa4bbd1a9dda3ac75157))
+* update tabs & accordions ui ([#961](https://github.com/readmeio/markdown/issues/961)) ([88636cd](https://github.com/readmeio/markdown/commit/88636cdd17d676408721cf7d1781f65b25aff248))
+
 ## Version 7.4.2
 
 ### ✨ New & Improved
