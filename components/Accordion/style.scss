@@ -26,11 +26,31 @@
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
     }
+
+    &::marker {
+      content: "";
+    }
+
+    &::-webkit-details-marker {
+      display: none;
+    } 
+  }
+
+  &-toggleIcon,
+  &-toggleIcon_opened {
+    color: var(--color-text-default, #384248);
+    font-size: 14px;
+    margin-left: 5px;
+    margin-right: 10px;
+    transition: transform 0.1s;
+
+    &_opened {
+      transform: rotate(90deg);
+    }
   }
 
   &-icon {
     color: var(--project-color-primary, inherit);
-    margin-left: 10px;
     margin-right: 10px;
   }
 
