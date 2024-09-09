@@ -1,6 +1,51 @@
 Changelog
 ===
 
+## Version 7.4.2
+
+### ✨ New & Improved
+
+* **Image:** fix alignment oddities ([#956](https://github.com/readmeio/markdown/issues/956)) ([7382d43](https://github.com/readmeio/markdown/commit/7382d43266a0f983b5351a9372f09ee97ebe73ab)), closes [/github.com/readmeio/markdown/pull/956/files#diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19) [/github.com/readmeio/markdown/pull/956/files#diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92)
+
+
+### 🛠 Fixes & Updates
+
+* image compiling ([#960](https://github.com/readmeio/markdown/issues/960)) ([6e3a7ac](https://github.com/readmeio/markdown/commit/6e3a7acc78fcd2016203c9ffd3cf04f8d22713cf))
+
+
+### 📘 Tests & Docs
+
+* update readme for MDX ([#957](https://github.com/readmeio/markdown/issues/957)) ([0b5f89b](https://github.com/readmeio/markdown/commit/0b5f89b86d4866fbe04b7c5f569becb443e0855d))
+
+## Version 7.4.1
+
+### 🛠 Fixes & Updates
+
+* image styles ([#959](https://github.com/readmeio/markdown/issues/959)) ([f89c813](https://github.com/readmeio/markdown/commit/f89c813560ebf80cf712316cb89fa38d5984efa7))
+
+## Version 7.4.0
+
+### ✨ New & Improved
+
+* trigger release ([034928b](https://github.com/readmeio/markdown/commit/034928b6aae112e01d99f93a9fd5bd1d75e1dfb7))
+
+
+### 🛠 Fixes & Updates
+
+* tabs component color ([#958](https://github.com/readmeio/markdown/issues/958)) ([61cac1c](https://github.com/readmeio/markdown/commit/61cac1c9c2ef10676ec65dcfa20ce7f97ea89d35))
+* update component styling ([#955](https://github.com/readmeio/markdown/issues/955)) ([bd18389](https://github.com/readmeio/markdown/commit/bd18389053ccc90342e98198c057c9396d5ab501))
+
+## Version 7.3.0
+
+### ✨ New & Improved
+
+* add downstream styles ([#953](https://github.com/readmeio/markdown/issues/953)) ([0b1b52d](https://github.com/readmeio/markdown/commit/0b1b52ded7aa6e59c945d47a5a579c8fe1ccf79b))
+
+
+### 🛠 Fixes & Updates
+
+* **img:** set src properly for magic image blocks ([#952](https://github.com/readmeio/markdown/issues/952)) ([8f71fce](https://github.com/readmeio/markdown/commit/8f71fce164fc66308d0d5fc4f8b87deb1eae7f0b)), closes [/github.com/readmeio/markdown/pull/952/files#diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50](https://github.com/readmeio//github.com/readmeio/markdown/pull/952/files/issues/diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50)
+
 ## Version 7.2.1
 
 ### 🛠 Fixes & Updates
