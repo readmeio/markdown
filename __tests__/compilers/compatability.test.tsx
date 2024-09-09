@@ -205,11 +205,8 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   describe('<HTMLBlock> wrapping', () => {
-    configure({ defaultIgnore: undefined });
-    const inspect = (node?: HTMLElement, min = false) => {
-      const filterNode = (node: Node) => true;
-      console.log(prettyDOM(node, undefined, { filterNode, min }));
-    };
+  // configure({ defaultIgnore: undefined });
+
     const rawStyle = `<style data-testid="style-tag">
     p {
       color: red;
@@ -253,7 +250,7 @@ This is an image: <img src="http://example.com/#\\>" >
       expect(screen.queryByTestId('script-tag')).toBe(null);
     });
 
-    it('should not execute <script> tags ever', async () => {
+    it('should never execute <script> tags', async () => {
       /**
        * @note compatability mode has been deprecated for RMDX
        */
