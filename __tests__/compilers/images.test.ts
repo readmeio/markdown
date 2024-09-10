@@ -19,7 +19,7 @@ describe('image compiler', () => {
     expect(mdx(mdast(doc))).toMatch(doc);
   });
 
-  it.only('ignores empty (undefined, null, or "") attributes', () => {
+  it('ignores empty (undefined, null, or "") attributes', () => {
     const doc = '<Image src="/path/to/image.png" border={true} alt="" title={null} align={undefined} />';
 
     expect(mdx(mdast(doc))).toMatch('<Image border={true} src="/path/to/image.png" />');
