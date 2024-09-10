@@ -16,6 +16,7 @@ export const silenceConsole =
   };
 
 export const execute = async (doc: string, compileOpts = {}, runOpts = {}) => {
-  const module = await run(compile(doc, compileOpts), runOpts);
+  const code = compile(doc, compileOpts);
+  const module = await run(code, runOpts);
   return module.default;
 };

@@ -69,16 +69,28 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'Image') {
       const { position } = node;
-      const { alt = '', url, title = null } = getAttrs<Pick<ImageBlock, 'alt' | 'title' | 'url'>>(node);
-      const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
+      const {
+        alt = '',
+        align,
+        caption,
+        title = null,
+        width,
+        src,
+      } = getAttrs<Pick<ImageBlock, 'alt' | 'align' | 'title' | 'width' | 'src' | 'caption'>>(node);
+
+      const attrs = {
+        ...(align && { align }),
+        ...(src && { src }),
+        ...(width && { width }),
+        alt,
+        children: caption ? mdast(caption).children : (node.children as any),
+        title,
+      };
 
       const mdNode: ImageBlock = {
-        alt,
+        ...attrs,
         position,
-        children: attrs.caption ? mdast(attrs.caption).children : (node.children as any),
-        title,
         type: NodeTypes.imageBlock,
-        url: url || attrs.src,
         data: {
           hName: 'img',
           hProperties: attrs,

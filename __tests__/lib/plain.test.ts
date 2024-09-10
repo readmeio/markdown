@@ -45,7 +45,7 @@ Is it _me_ you're looking for?
     expect(plain(hast(txt))).toBe('Header 1 Header 2 Cell 1 Cell 2');
   });
 
-  it('compiles images to their title', () => {
+  it.only('compiles images to their title', () => {
     const txt = `
 ![image **label**](http://placekitten.com/600/600 "entitled kittens")
     `;

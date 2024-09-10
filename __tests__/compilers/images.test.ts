@@ -22,7 +22,7 @@ describe('image compiler', () => {
   it('correctly serializes an Image component with expression attributes back to MDX', () => {
     const doc = '<Image src="/path/to/image.png" border={false} />';
 
-    expect(mdx(mdast(doc))).toMatch(doc);
+    expect(mdx(mdast(doc))).toMatch('![](/path/to/image.png)');
   });
 
   it('correctly serializes an Image component with an undefined expression attributes back to MDX', () => {

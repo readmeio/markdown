@@ -69,7 +69,7 @@ const readmeToMdx = (): Transform => tree => {
       parent.children.splice(index, 1, {
         type: 'image',
         children: [],
-        url: image.url,
+        url: image.src,
         title: image.title,
         alt: image.alt,
       } as Image);

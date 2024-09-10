@@ -205,7 +205,7 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   describe('<HTMLBlock> wrapping', () => {
-  // configure({ defaultIgnore: undefined });
+    // configure({ defaultIgnore: undefined });
 
     const rawStyle = `<style data-testid="style-tag">
     p {
@@ -266,5 +266,31 @@ This is an image: <img src="http://example.com/#\\>" >
       );
       expect(spy).toHaveBeenCalledTimes(0);
     });
+  });
+
+  it('can parse and transform magic image block AST to MDX', () => {
+    const md = `
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://files.readme.io/4a1c7a0-Iphone.jpeg",
+        null,
+        ""
+      ],
+      "align": "center",
+      "sizing": "250px"
+    }
+  ]
+}
+[/block]
+`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+
+    expect(rmdx).toMatch(
+      '<Image align="center" className="" width="250px" src="https://files.readme.io/4a1c7a0-Iphone.jpeg" />',
+    );
   });
 });

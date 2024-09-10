@@ -14,22 +14,26 @@ const imageTransformer = () => (tree: Node) => {
 
     const [{ alt, url, title }] = node.children as any;
 
-    const newNode = {
-      type: NodeTypes.imageBlock,
+    const attrs = {
       alt,
       title,
-      url,
       children: [],
+      src: url,
+    };
+
+    const newNode: ImageBlock = {
+      type: NodeTypes.imageBlock,
+      ...attrs,
+      /*
+       * @note: Using data.hName here means that we don't have to transform
+       * this to an MdxJsxFlowElement, and rehype will transform it correctly
+       */
       data: {
         hName: 'img',
-        hProperties: {
-          ...(alt && { alt }),
-          src: url,
-          ...(title && { title }),
-        },
+        hProperties: attrs,
       },
       position: node.position,
-    } as ImageBlock;
+    };
 
     parent.children.splice(i, 1, newNode);
   });
@@ -37,7 +41,7 @@ const imageTransformer = () => (tree: Node) => {
   const isImage = (node: MdxJsxFlowElement) => node.name === 'Image';
 
   visit(tree, isImage, (node: MdxJsxFlowElement) => {
-    const attrs = getAttrs<ImageBlock['data']['hProperties']>(node);
+    const attrs = getAttrs<ImageBlock>(node);
 
     if (attrs.caption) {
       node.children = mdast(attrs.caption).children;
@@ -48,4 +52,3 @@ const imageTransformer = () => (tree: Node) => {
 };
 
 export default imageTransformer;
-

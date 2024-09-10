@@ -155,13 +155,13 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
 export const toAttributes = (object: Record<string, any>, keys: string[] = []): MdxJsxAttribute[] => {
   let attributes: MdxJsxAttribute[] = [];
   Object.entries(object).forEach(([name, v]) => {
-    if ((keys.length > 0 && !keys.includes(name)) || typeof v === 'undefined') return;
+    if (keys.length > 0 && !keys.includes(name)) return;
 
     let value: MdxJsxAttributeValueExpression | string;
 
     if (typeof v === 'string') {
       value = v;
-    } else if (typeof v === 'undefined') {
+    } else if (typeof v === 'undefined' || null === v) {
       return;
     } else {
       /* values can be null, undefined, string, or a expression, eg:

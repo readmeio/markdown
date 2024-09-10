@@ -39,6 +39,7 @@ test('image', async () => {
   const md = '![Image](http://example.com/image.png)';
   const component = await execute(md);
   const { container } = render(React.createElement(component));
+
   expect(container.innerHTML).toMatchSnapshot();
 });
 
