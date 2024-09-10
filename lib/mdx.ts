@@ -7,7 +7,7 @@ import remarkStringify from 'remark-stringify';
 import compilers from '../processor/compile';
 import { divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
-export const mdx = (tree: any, { hast = false } = {}) => {
+export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
@@ -16,7 +16,7 @@ export const mdx = (tree: any, { hast = false } = {}) => {
     .use(readmeToMdx)
     .use(tablesToJsx)
     .use(compilers)
-    .use(remarkStringify);
+    .use(remarkStringify, opts);
 
   return processor.stringify(processor.runSync(tree));
 };
