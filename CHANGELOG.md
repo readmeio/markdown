@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 7.5.0
+
+### ✨ New & Improved
+
+* pass through stringify options ([#963](https://github.com/readmeio/markdown/issues/963)) ([fb4fb7d](https://github.com/readmeio/markdown/commit/fb4fb7db1998463c9cf43764d533c14383e63a9f))
+
+
+### 🛠 Fixes & Updates
+
+* **rdmd to rmdx:** wrap scripts + styles in an <HTMLBlock> ([#954](https://github.com/readmeio/markdown/issues/954)) ([2c878b6](https://github.com/readmeio/markdown/commit/2c878b60ceb7b7b536330a900b7abe0b5df81e94))
+
 ## Version 7.4.3
 
 ### 🛠 Fixes & Updates
