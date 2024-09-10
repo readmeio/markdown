@@ -50,6 +50,14 @@ A module ([`RMDXModule`](#rmdxmodule)) of renderable components
 
 Compiles an ast to mdx.
 
+###### Parameters
+
+Extends [`remark-stringify` options](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#options).
+
+###### Returns
+
+An mdx string.
+
 #### `mdast`
 
 Parses mdx to an mdast.
