@@ -42,8 +42,10 @@ const readmeToMdx = (): Transform => tree => {
   visit(tree, 'image', (image, index, parent) => {
     if (!('data' in image)) return;
 
-    if ('url' in image) image.data.hProperties.src = image.url;
-    const attributes = toAttributes(image.data.hProperties, imageAttrs);
+    const attributes = toAttributes(
+      { ...image.data.hProperties, ...('url' in image && { src: image.url }) },
+      imageAttrs,
+    );
 
     if (hasExtra(attributes)) {
       parent.children.splice(index, 1, {
