@@ -66,8 +66,10 @@ export const getHPropKeys = <T>(node: Node): any => {
 export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
-      if (typeof attr.value === 'string' || attr.value === null) {
+      if (typeof attr.value === 'string') {
         memo[attr.name] = attr.value;
+      } else if (attr.value === null) {
+        memo[attr.name] = true;
       } else if (attr.value.value !== 'undefined') {
         memo[attr.name] = JSON.parse(attr.value.value);
       }
