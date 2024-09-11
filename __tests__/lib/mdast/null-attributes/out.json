@@ -1,0 +1,23 @@
+{
+  "type": "root",
+  "children": [
+    {
+      "type": "image-block",
+      "src": "...",
+      "border": true,
+      "alt": "",
+      "children": [],
+      "title": null,
+      "data": {
+        "hName": "img",
+        "hProperties": {
+          "alt": "",
+          "border": true,
+          "children": [],
+          "src": "...",
+          "title": null
+        }
+      }
+    }
+  ]
+}

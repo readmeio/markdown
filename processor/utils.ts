@@ -68,6 +68,8 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
     if ('name' in attr) {
       if (typeof attr.value === 'string') {
         memo[attr.name] = attr.value;
+      } else if (attr.value === null) {
+        memo[attr.name] = true;
       } else if (attr.value.value !== 'undefined') {
         memo[attr.name] = JSON.parse(attr.value.value);
       }
@@ -155,14 +157,14 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
 export const toAttributes = (object: Record<string, any>, keys: string[] = []): MdxJsxAttribute[] => {
   let attributes: MdxJsxAttribute[] = [];
   Object.entries(object).forEach(([name, v]) => {
-    if ((keys.length > 0 && !keys.includes(name)) || typeof v === 'undefined') return;
+    if (keys.length > 0 && !keys.includes(name)) return;
 
     let value: MdxJsxAttributeValueExpression | string;
 
-    if (typeof v === 'string') {
-      value = v;
-    } else if (typeof v === 'undefined') {
+    if (typeof v === 'undefined' || v === null || v === '') {
       return;
+    } else if (typeof v === 'string') {
+      value = v;
     } else {
       /* values can be null, undefined, string, or a expression, eg:
        *
