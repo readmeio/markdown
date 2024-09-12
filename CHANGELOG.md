@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.5.2
+
+### 🛠 Fixes & Updates
+
+* compiling emoji ([#967](https://github.com/readmeio/markdown/issues/967)) ([a1e2d82](https://github.com/readmeio/markdown/commit/a1e2d82b113325b1a136177453b40389f603f94b))
+
 ## Version 7.5.1
 
 ### 🛠 Fixes & Updates
