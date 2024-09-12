@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.5.1
+
+### 🛠 Fixes & Updates
+
+* image migration issues ([#965](https://github.com/readmeio/markdown/issues/965)) ([a30bc64](https://github.com/readmeio/markdown/commit/a30bc649e37dc70cb2497d50de6e1c529fbbbfc1))
+
 ## Version 7.5.0
 
 ### ✨ New & Improved
