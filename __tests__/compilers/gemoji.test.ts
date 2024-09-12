@@ -6,4 +6,16 @@ describe('gemoji compiler', () => {
 
     expect(mdx(mdast(markdown)).trimEnd()).toEqual(markdown);
   });
+
+  it('should compile owlmoji back to a shortcode', () => {
+    const markdown = `:owlbert:`;
+
+    expect(mdx(mdast(markdown)).trimEnd()).toEqual(markdown);
+  });
+
+  it('should compile font-awsome emojis back to a shortcode', () => {
+    const markdown = `:fa-readme:`;
+
+    expect(mdx(mdast(markdown)).trimEnd()).toEqual(markdown);
+  });
 });
