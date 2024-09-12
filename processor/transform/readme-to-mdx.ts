@@ -45,7 +45,13 @@ const readmeToMdx = (): Transform => tree => {
     if ('url' in image) image.data.hProperties.src = image.url;
     const attributes = toAttributes(image.data.hProperties, imageAttrs);
 
-    if (hasExtra(attributes)) {
+    if (image.data.hProperties.className === 'emoji') {
+      parent.children.splice(index, 1, {
+        type: NodeTypes.emoji,
+        name: image.title.replace(/^:(.*):$/, '$1'),
+        value: image.title,
+      });
+    } else if (hasExtra(attributes)) {
       parent.children.splice(index, 1, {
         type: 'mdxJsxFlowElement',
         name: 'Image',
