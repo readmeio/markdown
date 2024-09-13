@@ -78,6 +78,7 @@ interface ImageBlockAttrs {
   border?: string;
   caption?: string;
   className?: string;
+  height?: string;
   lazy?: boolean;
   src: string;
   title: string;
