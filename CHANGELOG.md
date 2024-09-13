@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.5.3
+
+### 🛠 Fixes & Updates
+
+* image blocks ([#968](https://github.com/readmeio/markdown/issues/968)) ([3cc4b4a](https://github.com/readmeio/markdown/commit/3cc4b4afc2227fa8b24fffe6a8ba6f819ca98e34))
+
 ## Version 7.5.2
 
 ### 🛠 Fixes & Updates
