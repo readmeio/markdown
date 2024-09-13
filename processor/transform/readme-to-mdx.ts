@@ -7,7 +7,7 @@ import { visit } from 'unist-util-visit';
 import { toAttributes } from '../utils';
 import { type HTMLBlock } from 'types';
 
-const imageAttrs = ['align', 'alt', 'caption', 'border', 'src', 'title', 'width', 'lazy', 'className'];
+const imageAttrs = ['align', 'alt', 'caption', 'border', 'height', 'src', 'title', 'width', 'lazy', 'className'];
 
 const readmeToMdx = (): Transform => tree => {
   // Unwrap pinned nodes, replace rdme-pin with its child node
