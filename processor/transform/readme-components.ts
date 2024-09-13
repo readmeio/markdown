@@ -74,16 +74,20 @@ const coerceJsxToMd =
         align,
         border,
         caption,
+        height,
         title = null,
         width,
         src,
-      } = getAttrs<Pick<ImageBlock, 'alt' | 'align' | 'border' | 'title' | 'width' | 'src' | 'caption'>>(node);
+      } = getAttrs<Pick<ImageBlock, 'alt' | 'align' | 'border' | 'height' | 'title' | 'width' | 'src' | 'caption'>>(
+        node,
+      );
 
       const attrs = {
         ...(align && { align }),
         ...(border && { border }),
         ...(src && { src }),
         ...(width && { width }),
+        ...(height && { height }),
         alt,
         children: caption ? mdast(caption).children : (node.children as any),
         title,

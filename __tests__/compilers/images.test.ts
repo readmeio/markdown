@@ -14,7 +14,7 @@ describe('image compiler', () => {
   });
 
   it('correctly serializes an Image component back to MDX', () => {
-    const doc = '<Image src="/path/to/image.png" width="200px" alt="alt text" />';
+    const doc = '<Image src="/path/to/image.png" width="200px" height="150px" alt="alt text" />';
 
     expect(mdx(mdast(doc))).toMatch(doc);
   });
