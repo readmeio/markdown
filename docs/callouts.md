@@ -84,6 +84,7 @@ Callouts come in [various themes](#section--examples-). These can be customized 
   --border: #8b939c;
 }
 ```
+
 ```scss Theme Selectors
 .markdown-body .callout.callout_default {
 } /* gray */
@@ -108,11 +109,13 @@ Each callout will also have a `theme` attribute that's set to it's emoji prefix.
   --text: #f5fffa;
 }
 ```
+
 ```markdown Markdown Syntax
 > 🎅 Old Saint Nick
 >
 > 'Twas the night before Christmas, when all through the house not a creature was stirring, not even a mouse. The stockings were hung by the chimney with care, in hopes that St. Nicholas soon would be there. The children were nestled all snug in their beds, while visions of sugar plums danced in their heads.
 ```
+
 ```html Generated HTML
 <!-- condensed for clarity! -->
 <blockquote class="callout callout_default" theme="🎅">
@@ -140,10 +143,11 @@ With a touch of Custom CSS, we should be able to get a callout using the 📷 em
 ```css Custom CSS
 .callout[theme='📷'] {
   --emoji: unset;
-  --icon: '\f083'; /* copied from FontAwesome */
+  --icon: '\f030'; /* https://fontawesome.com/icons/camera?f=classic&s=solid */
   --icon-color: #c50a50;
 }
 ```
+
 ```Markdown Syntax
 > 📷 Cool pix!
 >
@@ -187,7 +191,7 @@ The custom icon font defaults to `FontAwesome`, but you can use any font family 
 
 ```css
 .callout[theme='📷'] {
-  --icon-font-family: FontAwesome; /* copied from https://fontawesome.com/v4.7.0/icon/camera-retro */
+  --icon-font: 'Font Awesome 6 Pro';
 }
 ```
 

@@ -17,9 +17,9 @@ const Tabs = ({ children }) => {
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {children?.map((tab, index: number) => 
+          {children?.map((tab, index: number) =>
             <button className={`TabGroup-tab${activeTab === index ? '_active' : ''}`} key={tab.props.title} onClick={() => setActiveTab(index)}>
-              {tab.props.icon && <i className={`TabGroup-icon fa ${tab.props.icon}`} style={{ color: `${tab.props.iconColor}` }}></i>}
+              {tab.props.icon && <i className={`TabGroup-icon fa-duotone fa-solid ${tab.props.icon}`} style={{ color: `${tab.props.iconColor}` }}></i>}
               {tab.props.title}
             </button>
           )}
