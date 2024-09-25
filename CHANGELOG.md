@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.6.0
+
+### ✨ New & Improved
+
+* fontawesome 6 ([#969](https://github.com/readmeio/markdown/issues/969)) ([6360191](https://github.com/readmeio/markdown/commit/6360191a870feaf7c564c8c70d01f312fa7b9dfe))
+
 ## Version 7.5.4
 
 ### 🛠 Fixes & Updates
