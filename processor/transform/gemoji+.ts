@@ -24,7 +24,7 @@ const gemojiReplacer = (_, name: string) => {
         data: {
           hName: 'i',
           hProperties: {
-            className: ['fa', name],
+            className: ['fa-regular', name],
           },
         },
       };
