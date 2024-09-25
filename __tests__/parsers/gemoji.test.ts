@@ -45,7 +45,7 @@ describe('gemoji parser', () => {
           "hName": "i",
           "hProperties": {
             "className": [
-              "fa",
+              "fa-regular",
               "fa-lock",
             ],
           },
