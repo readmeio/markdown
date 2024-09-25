@@ -49,7 +49,7 @@ interface Figure extends Node {
   data: {
     hName: 'figure';
   };
-  children: [ImageBlock, FigCaption];
+  children: [ImageBlock & { url: string }, FigCaption];
 }
 
 interface FigCaption extends Node {
