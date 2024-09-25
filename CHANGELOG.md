@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.5.4
+
+### 🛠 Fixes & Updates
+
+* migrating captions ([#971](https://github.com/readmeio/markdown/issues/971)) ([afa40af](https://github.com/readmeio/markdown/commit/afa40af686be5196783f663e33443d0773101b9b))
+
 ## Version 7.5.3
 
 ### 🛠 Fixes & Updates
