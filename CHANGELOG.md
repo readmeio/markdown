@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.6.1
+
+### 🛠 Fixes & Updates
+
+* migrate emphasis ([#974](https://github.com/readmeio/markdown/issues/974)) ([45279f3](https://github.com/readmeio/markdown/commit/45279f36b5f9944541a4fdb2dd5f24a29e23b843))
+
 ## Version 7.6.0
 
 ### ✨ New & Improved
