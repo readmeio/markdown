@@ -320,4 +320,14 @@ This is an image: <img src="http://example.com/#\\>" >
     `,
     );
   });
+
+  it.only('trims whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
+    const md = `** bold ** and * italic * and *** bold italic ***`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "**bold** and *italic* and ***bold italic***
+      "
+    `);
+  });
 });
