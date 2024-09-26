@@ -322,7 +322,7 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   it('trims whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
-    const md = `** bold ** and * italic * and *** bold italic ***`;
+    const md = `** bold ** and _ italic _ and ***   bold italic ***`;
 
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(`
