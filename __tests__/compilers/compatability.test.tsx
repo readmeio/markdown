@@ -331,7 +331,7 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
-  it.only('compiles parameter magic blocks with breaks to jsx', () => {
+  it('compiles parameter magic blocks with breaks to jsx', () => {
     const md = `
 [block:parameters]
 ${JSON.stringify(
