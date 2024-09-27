@@ -75,7 +75,7 @@ describe('compatability with RDMD', () => {
     };
 
     expect(mdx(ast).trim()).toMatchInlineSnapshot(`
-      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif">
+      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" border={true}>
         hello **cat**
       </Image>"
     `);
@@ -304,7 +304,8 @@ This is an image: <img src="http://example.com/#\\>" >
         "Data Plane Setup"
       ],
       "align": "center",
-      "caption": "Data Plane Setup"
+      "caption": "Data Plane Setup",
+      "border": true
     }
   ]
 }
@@ -313,7 +314,7 @@ This is an image: <img src="http://example.com/#\\>" >
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(
       `
-      "<Image alt="Data Plane Setup" src="https://files.readme.io/fd21f977cfbb9f55b3a13ab0b827525e94ee1576f21bbe82945cdc22cc966d82-Screenshot_2024-09-12_at_3.47.05_PM.png">
+      "<Image alt="Data Plane Setup" border={true} src="https://files.readme.io/fd21f977cfbb9f55b3a13ab0b827525e94ee1576f21bbe82945cdc22cc966d82-Screenshot_2024-09-12_at_3.47.05_PM.png">
         Data Plane Setup
       </Image>
       "
@@ -327,6 +328,84 @@ This is an image: <img src="http://example.com/#\\>" >
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "**bold** and *italic* and ***bold italic***
+      "
+    `);
+  });
+
+  it('compiles parameter magic blocks with breaks to jsx', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Term',
+      'h-1': 'Definition',
+      '0-0': 'Events',
+      '0-1': 'Pseudo-list:  \n● One  \n● Two',
+    },
+    cols: 2,
+    rows: 1,
+    align: ['left', 'left'],
+  },
+  null,
+  2,
+)}
+[/block]
+`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              Term
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              Definition
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              Events
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              Pseudo-list:
+
+
+
+
+              ● One
+
+
+
+
+              ● Two
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('compiles callouts without a title', () => {
+    const md = `
+> 🥈
+>
+> Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "> 🥈
+      >
+      > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
       "
     `);
   });

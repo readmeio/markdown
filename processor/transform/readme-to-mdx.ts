@@ -31,7 +31,10 @@ const readmeToMdx = (): Transform => tree => {
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
       name: 'Image',
-      attributes: toAttributes({ ...image, src: image.src || image.url }, imageAttrs),
+      attributes: toAttributes(
+        { ...image, border: image.data.hProperties.className === 'border', src: image.src || image.url },
+        imageAttrs,
+      ),
       children: caption.children,
     });
   });

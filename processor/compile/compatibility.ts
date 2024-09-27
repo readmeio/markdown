@@ -34,7 +34,9 @@ const html = (node: Html) => {
 };
 
 const figureToImageBlock = (node: any) => {
-  const { align, width, src, url, alt, title, ...image } = node.children.find((child: Node) => child.type === 'image');
+  const { align, border, width, src, url, alt, title, ...image } = node.children.find(
+    (child: Node) => child.type === 'image',
+  );
   const { className } = image.data.hProperties;
   const figcaption = node.children.find((child: Node) => child.type === 'figcaption');
 
@@ -49,6 +51,7 @@ const figureToImageBlock = (node: any) => {
     ...(align && { align }),
     ...(alt && { alt }),
     ...(className && { border: className === 'border' }),
+    ...(border && { border }),
     ...(caption && { caption }),
     ...(title && { title }),
     ...(width && { width }),
