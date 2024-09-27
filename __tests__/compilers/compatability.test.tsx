@@ -75,7 +75,7 @@ describe('compatability with RDMD', () => {
     };
 
     expect(mdx(ast).trim()).toMatchInlineSnapshot(`
-      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif">
+      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" border={true}>
         hello **cat**
       </Image>"
     `);
@@ -292,7 +292,7 @@ This is an image: <img src="http://example.com/#\\>" >
     expect(rmdx).toMatch('<Image align="center" width="250px" src="https://files.readme.io/4a1c7a0-Iphone.jpeg" />');
   });
 
-  it.only('can parse and transform magic image block AST to MDX with caption', () => {
+  it('can parse and transform magic image block AST to MDX with caption', () => {
     const md = `
 [block:image]
 {
