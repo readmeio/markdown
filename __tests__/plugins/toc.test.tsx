@@ -46,4 +46,16 @@ describe('toc transformer', () => {
     expect(screen.findByText('Common Heading')).toBeDefined();
     expect(screen.findByText('Subheading')).toBeDefined();
   });
+
+  it.only('parses out a toc and only uses plain text', async () => {
+    const md = `
+# [Title](http://example.com)
+`;
+    const { Toc } = await run(compile(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Title')).toBeDefined();
+    expect(screen.queryByText('[', { exact: false })).toBeNull();
+  });
 });

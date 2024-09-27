@@ -5,7 +5,7 @@ import { h } from 'hastscript';
 
 import { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
 import { visit } from 'unist-util-visit';
-import { mdx } from '../../lib';
+import { mdx, plain } from '../../lib';
 
 interface Options {
   components?: Record<string, any>;
@@ -74,10 +74,13 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
       stack.pop();
     }
 
-    if (heading.properties)
+    if (heading.properties) {
+      const content = plain({ type: 'root', children: heading.children });
+
       stack[stack.length - 1].children.push(
-        h('li', null, h('a', { href: `#${heading.properties.id}` }, heading.children)) as TocListItem,
+        h('li', null, h('a', { href: `#${heading.properties.id}` }, content)) as TocListItem,
       );
+    }
   });
 
   return ast;
