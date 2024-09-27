@@ -75,7 +75,7 @@ describe('compatability with RDMD', () => {
     };
 
     expect(mdx(ast).trim()).toMatchInlineSnapshot(`
-      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif">
+      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" border={true}>
         hello **cat**
       </Image>"
     `);
@@ -304,7 +304,8 @@ This is an image: <img src="http://example.com/#\\>" >
         "Data Plane Setup"
       ],
       "align": "center",
-      "caption": "Data Plane Setup"
+      "caption": "Data Plane Setup",
+      "border": true
     }
   ]
 }
@@ -313,7 +314,7 @@ This is an image: <img src="http://example.com/#\\>" >
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(
       `
-      "<Image alt="Data Plane Setup" src="https://files.readme.io/fd21f977cfbb9f55b3a13ab0b827525e94ee1576f21bbe82945cdc22cc966d82-Screenshot_2024-09-12_at_3.47.05_PM.png">
+      "<Image alt="Data Plane Setup" border={true} src="https://files.readme.io/fd21f977cfbb9f55b3a13ab0b827525e94ee1576f21bbe82945cdc22cc966d82-Screenshot_2024-09-12_at_3.47.05_PM.png">
         Data Plane Setup
       </Image>
       "
