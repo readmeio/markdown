@@ -392,4 +392,20 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles callouts without a title', () => {
+    const md = `
+> 🥈
+>
+> Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "> 🥈
+      >
+      > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
+      "
+    `);
+  });
 });
