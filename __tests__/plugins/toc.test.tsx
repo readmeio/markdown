@@ -47,7 +47,7 @@ describe('toc transformer', () => {
     expect(screen.findByText('Subheading')).toBeDefined();
   });
 
-  it.only('parses out a toc and only uses plain text', async () => {
+  it('parses out a toc and only uses plain text', async () => {
     const md = `
 # [Title](http://example.com)
 `;
