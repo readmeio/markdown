@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 7.6.2
+
+### 🛠 Fixes & Updates
+
+* migrating callouts ([#978](https://github.com/readmeio/markdown/issues/978)) ([df0cb27](https://github.com/readmeio/markdown/commit/df0cb271b01d2602a0beaf5138d522a9db7b7133))
+* migrating image borders ([#977](https://github.com/readmeio/markdown/issues/977)) ([c5ff7cd](https://github.com/readmeio/markdown/commit/c5ff7cdcd819aa09983d39b781193ff793afbf50))
+* migrating magic block tables with breaks ([#976](https://github.com/readmeio/markdown/issues/976)) ([b5092f2](https://github.com/readmeio/markdown/commit/b5092f23b7a0c921210412fe6bba2b4cbb5ea5b8))
+
 ## Version 7.6.1
 
 ### 🛠 Fixes & Updates
