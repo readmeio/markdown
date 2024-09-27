@@ -28,6 +28,7 @@ describe('images transformer', () => {
 <Image
   align="left"
   alt="Some helpful text"
+  border
   src="https://example.com/image.jpg"
   title="Testing"
   width="100px"
@@ -37,6 +38,7 @@ describe('images transformer', () => {
 
     expect(tree.children[0].align).toBe('left');
     expect(tree.children[0].alt).toBe('Some helpful text');
+    expect(tree.children[0].border).toBe(true);
     expect(tree.children[0].title).toBe('Testing');
     expect(tree.children[0].width).toBe('100px');
   });
