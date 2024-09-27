@@ -330,4 +330,66 @@ This is an image: <img src="http://example.com/#\\>" >
       "
     `);
   });
+
+  it('compiles parameter magic blocks with breaks to jsx', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Term',
+      'h-1': 'Definition',
+      '0-0': 'Events',
+      '0-1': 'Pseudo-list:  \n● One  \n● Two',
+    },
+    cols: 2,
+    rows: 1,
+    align: ['left', 'left'],
+  },
+  null,
+  2,
+)}
+[/block]
+`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              Term
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              Definition
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              Events
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              Pseudo-list:
+
+
+
+
+              ● One
+
+
+
+
+              ● Two
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
 });

@@ -28,6 +28,12 @@ const visitor = (table: Table, index: number, parent: Parents) => {
         ? (cell.children[0] as unknown as Paragraph).children[0]
         : cell.children[0];
 
+    // @note: Compatibility with RDMD. Ideally, I'd put this in a separate
+    // transformer, but then there'd be some duplication.
+    visit(cell, 'break', (_, index, parent) => {
+      parent.children.splice(index, 1, { type: 'text', value: '\n' });
+    });
+
     if (!phrasing(content)) {
       hasFlowContent = true;
       return EXIT;
