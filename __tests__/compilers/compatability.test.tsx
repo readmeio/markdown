@@ -410,7 +410,7 @@ ${JSON.stringify(
     `);
   });
 
-  it.only('compiles tables with inline code with newlines', () => {
+  it('compiles tables with inline code with newlines', () => {
     const md = `
 [block:parameters]
 ${JSON.stringify(
