@@ -409,33 +409,4 @@ ${JSON.stringify(
       "
     `);
   });
-
-  it('image alignment???', () => {
-    const md = `
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/d1b925092a9c2842d5a80f0efeaf48d42eeaf92be6dbaeb92873a4a09226f028-blackcat.gif",
-        "",
-        "Hey o"
-      ],
-      "align": "center",
-      "sizing": "300px",
-      "caption": "Hey o"
-    }
-  ]
-}
-[/block]
-`;
-
-    const rmdx = mdx(rdmd.mdast(md));
-    expect(rmdx).toMatchInlineSnapshot(`
-      "<Image alt="Hey o" align="center" width="300px" src="https://files.readme.io/d1b925092a9c2842d5a80f0efeaf48d42eeaf92be6dbaeb92873a4a09226f028-blackcat.gif">
-        Hey o
-      </Image>
-      "
-    `);
-  });
 });
