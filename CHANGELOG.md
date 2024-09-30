@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.6.4
+
+### 🛠 Fixes & Updates
+
+* yet another image code path ([#981](https://github.com/readmeio/markdown/issues/981)) ([887419c](https://github.com/readmeio/markdown/commit/887419c7404f41f2f887cf34b5e0a59ef27393be))
+
 ## Version 7.6.3
 
 ### 🛠 Fixes & Updates
