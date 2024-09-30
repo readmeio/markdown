@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 7.6.3
+
+### 🛠 Fixes & Updates
+
+* dont render markdown in toc ([#980](https://github.com/readmeio/markdown/issues/980)) ([c929bd0](https://github.com/readmeio/markdown/commit/c929bd07ec804357ea9c307231f63d0a69f2ee68))
+* tables with inline code with newlines ([#979](https://github.com/readmeio/markdown/issues/979)) ([1de4f28](https://github.com/readmeio/markdown/commit/1de4f281594d41f76003429c52fef034df5de2d2))
+
 ## Version 7.6.2
 
 ### 🛠 Fixes & Updates
