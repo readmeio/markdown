@@ -14,5 +14,3 @@ hidden: false
 
 
 <Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" caption="lol he's eating pizza!" height="100px" align="center" border="true" />
-
-<Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg"  width="100px"  border="true" />
