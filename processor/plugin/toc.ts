@@ -75,7 +75,7 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
     }
 
     if (heading.properties) {
-      const content = plain({ type: 'root', children: heading.children });
+      const content = plain({ type: 'root', children: heading.children }) as string;
 
       stack[stack.length - 1].children.push(
         h('li', null, h('a', { href: `#${heading.properties.id}` }, content)) as TocListItem,
