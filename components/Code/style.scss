@@ -109,7 +109,6 @@
       margin: 0.5em 0.6em 0 0;
       padding: 0.25em 0.7em;
       cursor: copy;
-      font: inherit;
       color: inherit;
       color: var(--md-code-text, inherit);
       border: none;
@@ -152,28 +151,16 @@
     &:before,
     &:after {
       display: inline-block;
-      font:
-        normal normal normal 1em/1 'Font Awesome 5 Free',
-        'FontAwesome';
-      text-rendering: auto;
-      -webkit-font-smoothing: antialiased;
-
-      line-height: 2;
-      font-family: 'ReadMe-Icons';
-      font-variant-ligatures: discretionary-ligatures;
-      font-feature-settings: 'liga';
+      font-family: 'Font Awesome 6 Pro';
     }
 
     &:before {
-      content: '\e6c9';
-      font-weight: 800;
+      content: '\f24d';
       transition: 0.3s 0.15s ease;
     }
 
     &:after {
-      // @todo why are these !important @rafe, you dumbell?
-      content: '\e942' !important;
-      font-weight: 900 !important;
+      content: '\f00c';
       position: absolute;
       top: 50%;
       left: 50%;
