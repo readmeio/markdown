@@ -1,6 +1,6 @@
 import { NodeTypes } from '../../enums';
 import { Properties } from 'hast';
-import { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
+import { BlockContent, Code, Image, Node, Parents, Table, TableCell, TableRow } from 'mdast';
 import { Transform } from 'mdast-util-from-markdown';
 
 import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
@@ -9,6 +9,7 @@ import { visit, SKIP } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 import { mdast } from '../../lib';
+import { phrasing } from 'mdast-util-phrasing';
 
 const types = {
   Callout: NodeTypes['callout'],
@@ -81,6 +82,19 @@ const coerceJsxToMd =
       } = getAttrs<Pick<ImageBlock, 'alt' | 'align' | 'border' | 'height' | 'title' | 'width' | 'src' | 'caption'>>(
         node,
       );
+
+      if (phrasing(parent) || !parent.children.every(child => child.type === 'image' || !phrasing(child))) {
+        const inlineImage: Image = {
+          type: 'image',
+          url: src,
+          title: title,
+          alt: alt,
+        };
+
+        parent.children.splice(index, 1, inlineImage);
+
+        return;
+      }
 
       const attrs = {
         ...(align && { align }),
