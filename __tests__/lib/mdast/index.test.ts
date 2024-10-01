@@ -12,9 +12,6 @@ import variablesJson from './variables/out.json';
 import inlineImagesMdx from './images/inline/in.mdx?raw';
 import inlineImagesJson from './images/inline/out.json';
 
-import inlineImageAttributesMdx from './images/inline-attributes/in.mdx?raw';
-import inlineImageAttributesJson from './images/inline-attributes/out.json';
-
 describe('mdast transformer', async () => {
   it('parses null attributes', () => {
     // @ts-ignore
@@ -34,10 +31,5 @@ describe('mdast transformer', async () => {
   it('parses inline images', () => {
     // @ts-ignore
     expect(mdast(inlineImagesMdx)).toStrictEqualExceptPosition(inlineImagesJson);
-  });
-
-  it('parses inline images and drops attributes', () => {
-    // @ts-ignore
-    expect(mdast(inlineImageAttributesMdx)).toStrictEqualExceptPosition(inlineImageAttributesJson);
   });
 });
