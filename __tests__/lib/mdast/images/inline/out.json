@@ -1,0 +1,24 @@
+{
+  "type": "root",
+  "children": [
+    {
+      "type": "paragraph",
+      "children": [
+        {
+          "type": "text",
+          "value": "This should work "
+        },
+        {
+          "alt": "",
+          "url": "https://media.giphy.com/media/3o7TKz9bX9v6hZ8NSA/giphy.gif",
+          "title": null,
+          "type": "image"
+        },
+        {
+          "type": "text",
+          "value": "."
+        }
+      ]
+    }
+  ]
+}

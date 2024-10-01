@@ -1,11 +1,12 @@
 import { visit } from 'unist-util-visit';
-import { Node, Paragraph, Parents } from 'mdast';
+import { Image, Node, Paragraph, Parent, Parents } from 'mdast';
 import { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 import { NodeTypes } from '../../enums';
 import { ImageBlock } from '../../types';
 import { getAttrs } from '../utils';
 import { mdast } from '../../lib';
+import { phrasing } from 'mdast-util-phrasing';
 
 const imageTransformer = () => (tree: Node) => {
   visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
@@ -40,8 +41,21 @@ const imageTransformer = () => (tree: Node) => {
 
   const isImage = (node: MdxJsxFlowElement) => node.name === 'Image';
 
-  visit(tree, isImage, (node: MdxJsxFlowElement) => {
+  visit(tree, isImage, (node: MdxJsxFlowElement, index: number, parent: Parent) => {
     const attrs = getAttrs<ImageBlock>(node);
+
+    if (phrasing(parent) || !parent.children.every(child => child.type === 'image' || !phrasing(child))) {
+      const inlineImage: Image = {
+        type: 'image',
+        url: attrs.src,
+        title: attrs.title || null,
+        alt: attrs.alt || '',
+      };
+
+      parent.children.splice(index, 1, inlineImage);
+
+      return;
+    }
 
     if (attrs.caption) {
       node.children = mdast(attrs.caption).children;
