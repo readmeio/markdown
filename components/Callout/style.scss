@@ -102,7 +102,7 @@
 }
 @mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
-  --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro');
+  --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
   &-icon {
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
