@@ -332,6 +332,37 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
+
+  it('correctly parses and transforms image magic block with legacy data', () => {
+    const md = `
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://files.readme.io/9ac3bf4-SAP_Folders_Note.png",
+        "SAP Folders Note.png",
+        806,
+        190,
+        "#e8e9ea"
+      ]
+    }
+  ]
+}
+[/block]
+## Tile View
+    `;
+
+    const tree = rdmd.mdast(md);
+    const rmdx = mdx(tree);
+    expect(rmdx).toMatchInlineSnapshot(`
+      "![806](https://files.readme.io/9ac3bf4-SAP_Folders_Note.png "SAP Folders Note.png")
+
+      ## Tile View
+      "
+    `);
+  });
+
   it('compiles parameter magic blocks with breaks to jsx', () => {
     const md = `
 [block:parameters]
