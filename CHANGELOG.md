@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 7.6.5
+
+### 🛠 Fixes & Updates
+
+* copy button icons ([#982](https://github.com/readmeio/markdown/issues/982)) ([bbe2060](https://github.com/readmeio/markdown/commit/bbe20604c8d7478c81f4f78cebf9e6cc0fb107e1))
+* fallback for 5 ([#984](https://github.com/readmeio/markdown/issues/984)) ([c1ad0ac](https://github.com/readmeio/markdown/commit/c1ad0acfad933fdd099e1c4c73f1c5a759e88223)), closes [#c50a50](https://github.com/readmeio/markdown/issues/c50a50)
+* inline mdx images ([#983](https://github.com/readmeio/markdown/issues/983)) ([3faa95d](https://github.com/readmeio/markdown/commit/3faa95d2da4f63fa129a604ad93547ce973792ae))
+* legacy image migration ([#975](https://github.com/readmeio/markdown/issues/975)) ([c900d5f](https://github.com/readmeio/markdown/commit/c900d5f7bf5997cf939ad2e707480b922928ec2f))
+
 ## Version 7.6.4
 
 ### 🛠 Fixes & Updates
