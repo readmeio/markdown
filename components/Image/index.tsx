@@ -58,7 +58,7 @@ const Image = (Props: ImageProps) => {
     setLightbox(!lightbox);
   };
 
-  if (caption) {
+  if (children || caption) {
     return (
       <figure>
         <span
