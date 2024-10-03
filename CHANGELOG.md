@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 7.6.6
+
+### 🛠 Fixes & Updates
+
+* accordion toggle icon ([#985](https://github.com/readmeio/markdown/issues/985)) ([90bf6e6](https://github.com/readmeio/markdown/commit/90bf6e6fa5e28814452fca39e0c8233726ed4a94)), closes [/github.com/readmeio/markdown/pull/969/files#diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841](https://github.com/readmeio//github.com/readmeio/markdown/pull/969/files/issues/diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841)
+* image captions  ([#986](https://github.com/readmeio/markdown/issues/986)) ([0db3627](https://github.com/readmeio/markdown/commit/0db362799f26b1797848da3ecdcd8534e844012f))
+
 ## Version 7.6.5
 
 ### 🛠 Fixes & Updates
