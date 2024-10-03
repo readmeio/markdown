@@ -17,6 +17,8 @@ import headings from '../docs/headings.md';
 // @ts-ignore
 import images from '../docs/images.md';
 // @ts-ignore
+import imageTests from '../docs/image-tests.mdx';
+// @ts-ignore
 import lists from '../docs/lists.md';
 // @ts-ignore
 import mdxComponents from '../docs/mdx-components.mdx';
@@ -42,6 +44,7 @@ const fixtures = Object.entries({
   gettingStarted,
   headings,
   images,
+  imageTests,
   lists,
   mdxComponents,
   sanitizingTests,
