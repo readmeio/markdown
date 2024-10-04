@@ -332,7 +332,6 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
-
   it('correctly parses and transforms image magic block with legacy data', () => {
     const md = `
 [block:image]

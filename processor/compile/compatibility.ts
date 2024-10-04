@@ -5,6 +5,8 @@ import { toXast } from 'hast-util-to-xast';
 import { toXml } from 'xast-util-to-xml';
 import { NodeTypes } from '../../enums';
 import { formatProps } from '../utils';
+import { Root } from 'hast';
+import htmlTags from '../../lib/html-tags';
 
 type CompatNodes =
   | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
@@ -17,6 +19,17 @@ type CompatNodes =
   | { type: 'yaml'; value: string }
   | Html;
 
+const isCustomElement = (root: Root) => {
+  try {
+    // @ts-ignore
+    const [tag, ...rest] = root.children[0].children[1].children;
+
+    return rest.length === 0 && !htmlTags.includes(tag.tagName);
+  } catch {
+    return false;
+  }
+};
+
 /*
  * Converts a (remark < v9) html node to a JSX string.
  *
@@ -27,6 +40,11 @@ type CompatNodes =
 const html = (node: Html) => {
   const string = node.value.replaceAll(/<!--(.*)-->/gms, '{/*$1*/}');
   const hast = fromHtml(string);
+
+  if (isCustomElement(hast)) {
+    return '\\' + node.value;
+  }
+
   const xast = toXast(hast);
   const xml = toXml(xast, { closeEmptyElements: true });
 
