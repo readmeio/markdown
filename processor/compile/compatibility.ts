@@ -24,7 +24,7 @@ const isCustomElement = (root: Root) => {
     // @ts-ignore
     const [tag, ...rest] = root.children[0].children[1].children;
 
-    return rest.length === 0 && !htmlTags.includes(tag.tagName);
+    return rest.length === 0 && tag.type === 'element' && !htmlTags.includes(tag.tagName);
   } catch {
     return false;
   }

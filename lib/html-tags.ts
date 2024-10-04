@@ -1,3 +1,5 @@
+// @note: taken from here: https://stackoverflow.com/a/52928643
+
 const htmlTags = [
   'a',
   'abbr',
