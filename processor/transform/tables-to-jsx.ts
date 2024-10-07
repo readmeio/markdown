@@ -20,6 +20,7 @@ const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
 const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
 
 const isLiteral = (node: Node): node is Literal => 'value' in node;
+const isText = (node: Node): node is Text => node.type === 'text';
 
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
@@ -33,8 +34,17 @@ const visitor = (table: Table, index: number, parent: Parents) => {
     // @note: Compatibility with RDMD. Ideally, I'd put this in a separate
     // transformer, but then there'd be some duplication.
     visit(cell, 'break', (_, index, parent) => {
-      parent.children.splice(index, 1, { type: 'text', value: '\n' });
+      if (index > 0 && isText(parent.children[index - 1])) {
+        parent.children[index - 1].value += '\n';
+        parent.children.splice(index, 1);
+
+        return index;
+      } else {
+        parent.children.splice(index, 1, { type: 'text', value: '' });
+      }
     });
+
+    console.log(JSON.stringify({ cell }, null, 2));
 
     if (!phrasing(content)) {
       hasFlowContent = true;
@@ -43,8 +53,11 @@ const visitor = (table: Table, index: number, parent: Parents) => {
 
     visit(cell, isLiteral, (node: Literal) => {
       if (node.value.match(/\n/)) {
+        if (node.type === 'inlineCode') {
+          node.type = 'code';
+        }
+
         hasFlowContent = true;
-        return EXIT;
       }
     });
   };
@@ -87,7 +100,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'td',
-            children: cell.children,
+            children: [{ type: 'paragraph', children: cell.children }],
             ...(styles[index] && { attributes: [styles[index]] }),
           };
         }),
