@@ -39,8 +39,6 @@ const trimEmphasis = (node: Emphasis | Strong, index: number, parent: Parent) =>
     addSpaceBefore(index, parent);
     addSpaceAfter(index, parent);
   }
-
-  return node;
 };
 
 const compatibilityTransfomer = (): Transform => tree => {
