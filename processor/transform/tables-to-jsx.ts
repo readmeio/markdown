@@ -1,6 +1,7 @@
 import { Literal, Node, Paragraph, Parents, Table, TableCell, Text } from 'mdast';
 import { visit, EXIT } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
+import * as rdmd from '@readme/markdown-legacy';
 
 import { phrasing } from 'mdast-util-phrasing';
 
@@ -20,7 +21,6 @@ const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
 const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
 
 const isLiteral = (node: Node): node is Literal => 'value' in node;
-const isText = (node: Node): node is Text => node.type === 'text';
 
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
@@ -44,6 +44,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
 
     visit(cell, isLiteral, (node: Literal) => {
       if (node.value.match(/\n/)) {
+        // @note: Compatibility with RDMD. Migrates inline code to code.
         if (node.type === 'inlineCode') {
           node.type = 'code';
         }
