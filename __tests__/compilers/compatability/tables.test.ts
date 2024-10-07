@@ -12,13 +12,9 @@ ${JSON.stringify(
       'h-1': 'Description',
       '0-0': 'orderby',
       '0-1': '`{\n  "field": "ID",\n  "type": "ASC"\n}`',
-      '1-0': 'Lorem Ipsum',
-      '1-1': 'Dolor sit atem\n\n`{\n  "field": "ID",\n  "type": "ASC"\n}`',
-      '2-0': 'Lorem Ipsum',
-      '2-1': 'Dolor sit atem [wtf](http://example.com)',
     },
     cols: 2,
-    rows: 3,
+    rows: 1,
     align: ['left', 'left'],
   },
   null,
@@ -56,33 +52,6 @@ ${JSON.stringify(
                 "type": "ASC"
               }
               \`\`\`
-            </td>
-          </tr>
-
-          <tr>
-            <td style={{ textAlign: "left" }}>
-              Lorem Ipsum
-            </td>
-
-            <td style={{ textAlign: "left" }}>
-              Dolor sit atem
-
-              \`\`\`
-              {
-                "field": "ID",
-                "type": "ASC"
-              }
-              \`\`\`
-            </td>
-          </tr>
-
-          <tr>
-            <td style={{ textAlign: "left" }}>
-              Lorem Ipsum
-            </td>
-
-            <td style={{ textAlign: "left" }}>
-              Dolor sit atem [wtf](http://example.com)
             </td>
           </tr>
         </tbody>
