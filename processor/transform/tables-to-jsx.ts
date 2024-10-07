@@ -34,17 +34,8 @@ const visitor = (table: Table, index: number, parent: Parents) => {
     // @note: Compatibility with RDMD. Ideally, I'd put this in a separate
     // transformer, but then there'd be some duplication.
     visit(cell, 'break', (_, index, parent) => {
-      if (index > 0 && isText(parent.children[index - 1])) {
-        parent.children[index - 1].value += '\n';
-        parent.children.splice(index, 1);
-
-        return index;
-      } else {
-        parent.children.splice(index, 1, { type: 'text', value: '' });
-      }
+      parent.children.splice(index, 1, { type: 'text', value: '\n' });
     });
-
-    console.log(JSON.stringify({ cell }, null, 2));
 
     if (!phrasing(content)) {
       hasFlowContent = true;

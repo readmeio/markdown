@@ -414,15 +414,7 @@ ${JSON.stringify(
 
             <td style={{ textAlign: "left" }}>
               Pseudo-list:
-
-
-
-
               ● One
-
-
-
-
               ● Two
             </td>
           </tr>
@@ -491,10 +483,12 @@ ${JSON.stringify(
             </td>
 
             <td style={{ textAlign: "left" }}>
-              \`{
+              \`\`\`
+              {
                "field": "ID",
                "type": "ASC"
-               }\`
+               }
+              \`\`\`
             </td>
           </tr>
         </tbody>
