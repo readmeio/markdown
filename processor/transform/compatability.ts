@@ -1,18 +1,9 @@
 import { Emphasis, Image, Strong, Node, Parent } from 'mdast';
-import { EXIT, SKIP, visit } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
 import { phrasing } from 'mdast-util-phrasing';
+import { visit } from 'unist-util-visit';
 
 const strongTest = (node: Node): node is Strong | Emphasis => ['emphasis', 'strong'].includes(node.type);
-
-const trimEmphasis = (node: Emphasis | Strong) => {
-  visit(node, 'text', child => {
-    child.value = child.value.trim();
-    return EXIT;
-  });
-
-  return node;
-};
 
 const addSpaceBefore = (index: number, parent: Parent) => {
   if (!(index > 0 && parent.children[index - 1])) return;
@@ -32,14 +23,28 @@ const addSpaceAfter = (index: number, parent: Parent) => {
   parent.children.splice(index + 1, 0, { type: 'text', value: ' ' });
 };
 
-const compatibilityTransfomer = (): Transform => tree => {
-  visit(tree, strongTest, (node, index, parent: Parent) => {
-    trimEmphasis(node);
+const trimEmphasis = (node: Emphasis | Strong, index: number, parent: Parent) => {
+  let trimmed = false;
+
+  visit(node, 'text', child => {
+    const newValue = child.value.trim();
+
+    if (newValue !== child.value) {
+      trimmed = true;
+      child.value = newValue;
+    }
+  });
+
+  if (trimmed) {
     addSpaceBefore(index, parent);
     addSpaceAfter(index, parent);
+  }
 
-    return SKIP;
-  });
+  return node;
+};
+
+const compatibilityTransfomer = (): Transform => tree => {
+  visit(tree, strongTest, trimEmphasis);
 
   visit(tree, 'image', (node: Image, index: number, parent: Parent) => {
     if (phrasing(parent) || !parent.children.every(child => child.type === 'image' || !phrasing(child))) return;

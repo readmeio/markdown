@@ -330,12 +330,12 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
-  it('adds whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
-    const md = `**bold **and also_ italic_ and***bold italic***aaaaaah`;
+  it('moves whitespace surrounding phrasing content (emphasis, strong, etc) to the appropriate place', () => {
+    const md = `**bold **and also_ italic_ and*** bold italic***aaaaaah`;
 
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(`
-      "**bold** and also *italic* and ***bold italic*** aaaaaah
+      "**bold** and also *italic* and ***bold italic***aaaaaah
       "
     `);
   });
