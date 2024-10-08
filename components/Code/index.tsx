@@ -16,20 +16,20 @@ if (typeof window !== 'undefined') {
 
 function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
   const copyClass = `${rootClass}_copied`;
-  const button = createRef<HTMLButtonElement>();
+  const buttonRef = createRef<HTMLButtonElement>();
 
   const copier = () => {
     const code = codeRef.current.textContent;
 
     if (copy(code)) {
-      const el = button.current;
+      const el = buttonRef.current;
       el.classList.add(copyClass);
 
       setTimeout(() => el.classList.remove(copyClass), 1500);
     }
   };
 
-  return <button ref={button} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
+  return <button ref={buttonRef} aria-label="Copy Code" className={`${rootClass} ${className}`} onClick={copier} />;
 }
 
 interface CodeProps {
