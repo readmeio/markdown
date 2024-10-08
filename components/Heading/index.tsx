@@ -19,7 +19,7 @@ const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: Props) 
       <a
         key={`heading-anchor-icon-${id}`}
         aria-label={`Skip link to ${children}`}
-        className="heading-anchor-icon fa fa-anchor"
+        className="heading-anchor-icon fa fa-regular fa-anchor"
         href={`#${id}`}
       />
     </Tag>

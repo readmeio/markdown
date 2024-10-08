@@ -20,6 +20,7 @@ describe('visual regression tests', () => {
       //'features',
       'headings',
       'images',
+      'imageTests',
       'lists',
       'mdxComponents',
       'tables',

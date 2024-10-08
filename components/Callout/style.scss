@@ -91,7 +91,7 @@
       right: 100%;
       width: 2.4em;
       text-align: center;
-      font: normal normal normal 1em/1 FontAwesome;
+      font: normal normal normal 1em/1 var(--icon-font);
     }
   }
   .callout-icon {
@@ -102,7 +102,7 @@
 }
 @mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
-  --icon-font: FontAwesome;
+  --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
   &-icon {
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;

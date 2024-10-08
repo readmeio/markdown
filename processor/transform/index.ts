@@ -9,8 +9,10 @@ import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';
 import variablesTransformer from './variables';
 import tablesToJsx from './tables-to-jsx';
+import compatabilityTransfomer from './compatability';
 
 export {
+  compatabilityTransfomer,
   divTransformer,
   readmeComponentsTransformer,
   readmeToMdx,

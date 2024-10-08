@@ -7,7 +7,7 @@ import { visit } from 'unist-util-visit';
 import { toAttributes } from '../utils';
 import { type HTMLBlock } from 'types';
 
-const imageAttrs = ['align', 'alt', 'caption', 'border', 'src', 'title', 'width', 'lazy', 'className'];
+const imageAttrs = ['align', 'alt', 'caption', 'border', 'height', 'src', 'title', 'width', 'lazy', 'className'];
 
 const readmeToMdx = (): Transform => tree => {
   // Unwrap pinned nodes, replace rdme-pin with its child node
@@ -28,10 +28,16 @@ const readmeToMdx = (): Transform => tree => {
   visit(tree, 'figure', (figure, index, parent) => {
     const [image, caption] = figure.children;
 
+    const { align, width } = image.data.hProperties;
+    const border = image.data.hProperties.className === 'border';
+
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
       name: 'Image',
-      attributes: toAttributes(image, imageAttrs),
+      attributes: toAttributes(
+        { ...image, align, width, ...(border && { border }), src: image.src || image.url },
+        imageAttrs,
+      ),
       children: caption.children,
     });
   });
@@ -45,7 +51,13 @@ const readmeToMdx = (): Transform => tree => {
     if ('url' in image) image.data.hProperties.src = image.url;
     const attributes = toAttributes(image.data.hProperties, imageAttrs);
 
-    if (hasExtra(attributes)) {
+    if (image.data.hProperties.className === 'emoji') {
+      parent.children.splice(index, 1, {
+        type: NodeTypes.emoji,
+        name: image.title.replace(/^:(.*):$/, '$1'),
+        value: image.title,
+      });
+    } else if (hasExtra(attributes)) {
       parent.children.splice(index, 1, {
         type: 'mdxJsxFlowElement',
         name: 'Image',
@@ -69,9 +81,9 @@ const readmeToMdx = (): Transform => tree => {
       parent.children.splice(index, 1, {
         type: 'image',
         children: [],
-        url: image.url,
-        title: image.title,
-        alt: image.alt,
+        ...(image.src && { url: image.src }),
+        ...(image.title && { title: image.title }),
+        ...(image.alt && { alt: image.alt }),
       } as Image);
     }
   });

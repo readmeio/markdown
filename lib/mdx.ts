@@ -5,7 +5,7 @@ import rehypeRemark from 'rehype-remark';
 import remarkStringify from 'remark-stringify';
 
 import compilers from '../processor/compile';
-import { divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
+import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
 export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
   const processor = unified()
@@ -15,6 +15,7 @@ export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
     .use(divTransformer)
     .use(readmeToMdx)
     .use(tablesToJsx)
+    .use(compatabilityTransfomer)
     .use(compilers)
     .use(remarkStringify, opts);
 

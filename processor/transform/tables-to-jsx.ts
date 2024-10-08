@@ -1,4 +1,4 @@
-import { Node, Paragraph, Parents, Table, TableCell, Text } from 'mdast';
+import { Literal, Node, Paragraph, Parents, Table, TableCell, Text } from 'mdast';
 import { visit, EXIT } from 'unist-util-visit';
 import { Transform } from 'mdast-util-from-markdown';
 
@@ -19,6 +19,8 @@ const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
 
 const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
 
+const isLiteral = (node: Node): node is Literal => 'value' in node;
+
 const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
 
@@ -28,13 +30,19 @@ const visitor = (table: Table, index: number, parent: Parents) => {
         ? (cell.children[0] as unknown as Paragraph).children[0]
         : cell.children[0];
 
+    // @note: Compatibility with RDMD. Ideally, I'd put this in a separate
+    // transformer, but then there'd be some duplication.
+    visit(cell, 'break', (_, index, parent) => {
+      parent.children.splice(index, 1, { type: 'text', value: '\n' });
+    });
+
     if (!phrasing(content)) {
       hasFlowContent = true;
       return EXIT;
     }
 
-    visit(cell, 'text', (text: Text) => {
-      if (text.value.match(/\n/)) {
+    visit(cell, isLiteral, (node: Literal) => {
+      if (node.value.match(/\n/)) {
         hasFlowContent = true;
         return EXIT;
       }

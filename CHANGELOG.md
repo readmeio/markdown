@@ -1,6 +1,79 @@
 Changelog
 ===
 
+## Version 7.6.6
+
+### 🛠 Fixes & Updates
+
+* accordion toggle icon ([#985](https://github.com/readmeio/markdown/issues/985)) ([90bf6e6](https://github.com/readmeio/markdown/commit/90bf6e6fa5e28814452fca39e0c8233726ed4a94)), closes [/github.com/readmeio/markdown/pull/969/files#diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841](https://github.com/readmeio//github.com/readmeio/markdown/pull/969/files/issues/diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841)
+* image captions  ([#986](https://github.com/readmeio/markdown/issues/986)) ([0db3627](https://github.com/readmeio/markdown/commit/0db362799f26b1797848da3ecdcd8534e844012f))
+
+## Version 7.6.5
+
+### 🛠 Fixes & Updates
+
+* copy button icons ([#982](https://github.com/readmeio/markdown/issues/982)) ([bbe2060](https://github.com/readmeio/markdown/commit/bbe20604c8d7478c81f4f78cebf9e6cc0fb107e1))
+* fallback for 5 ([#984](https://github.com/readmeio/markdown/issues/984)) ([c1ad0ac](https://github.com/readmeio/markdown/commit/c1ad0acfad933fdd099e1c4c73f1c5a759e88223)), closes [#c50a50](https://github.com/readmeio/markdown/issues/c50a50)
+* inline mdx images ([#983](https://github.com/readmeio/markdown/issues/983)) ([3faa95d](https://github.com/readmeio/markdown/commit/3faa95d2da4f63fa129a604ad93547ce973792ae))
+* legacy image migration ([#975](https://github.com/readmeio/markdown/issues/975)) ([c900d5f](https://github.com/readmeio/markdown/commit/c900d5f7bf5997cf939ad2e707480b922928ec2f))
+
+## Version 7.6.4
+
+### 🛠 Fixes & Updates
+
+* yet another image code path ([#981](https://github.com/readmeio/markdown/issues/981)) ([887419c](https://github.com/readmeio/markdown/commit/887419c7404f41f2f887cf34b5e0a59ef27393be))
+
+## Version 7.6.3
+
+### 🛠 Fixes & Updates
+
+* dont render markdown in toc ([#980](https://github.com/readmeio/markdown/issues/980)) ([c929bd0](https://github.com/readmeio/markdown/commit/c929bd07ec804357ea9c307231f63d0a69f2ee68))
+* tables with inline code with newlines ([#979](https://github.com/readmeio/markdown/issues/979)) ([1de4f28](https://github.com/readmeio/markdown/commit/1de4f281594d41f76003429c52fef034df5de2d2))
+
+## Version 7.6.2
+
+### 🛠 Fixes & Updates
+
+* migrating callouts ([#978](https://github.com/readmeio/markdown/issues/978)) ([df0cb27](https://github.com/readmeio/markdown/commit/df0cb271b01d2602a0beaf5138d522a9db7b7133))
+* migrating image borders ([#977](https://github.com/readmeio/markdown/issues/977)) ([c5ff7cd](https://github.com/readmeio/markdown/commit/c5ff7cdcd819aa09983d39b781193ff793afbf50))
+* migrating magic block tables with breaks ([#976](https://github.com/readmeio/markdown/issues/976)) ([b5092f2](https://github.com/readmeio/markdown/commit/b5092f23b7a0c921210412fe6bba2b4cbb5ea5b8))
+
+## Version 7.6.1
+
+### 🛠 Fixes & Updates
+
+* migrate emphasis ([#974](https://github.com/readmeio/markdown/issues/974)) ([45279f3](https://github.com/readmeio/markdown/commit/45279f36b5f9944541a4fdb2dd5f24a29e23b843))
+
+## Version 7.6.0
+
+### ✨ New & Improved
+
+* fontawesome 6 ([#969](https://github.com/readmeio/markdown/issues/969)) ([6360191](https://github.com/readmeio/markdown/commit/6360191a870feaf7c564c8c70d01f312fa7b9dfe))
+
+## Version 7.5.4
+
+### 🛠 Fixes & Updates
+
+* migrating captions ([#971](https://github.com/readmeio/markdown/issues/971)) ([afa40af](https://github.com/readmeio/markdown/commit/afa40af686be5196783f663e33443d0773101b9b))
+
+## Version 7.5.3
+
+### 🛠 Fixes & Updates
+
+* image blocks ([#968](https://github.com/readmeio/markdown/issues/968)) ([3cc4b4a](https://github.com/readmeio/markdown/commit/3cc4b4afc2227fa8b24fffe6a8ba6f819ca98e34))
+
+## Version 7.5.2
+
+### 🛠 Fixes & Updates
+
+* compiling emoji ([#967](https://github.com/readmeio/markdown/issues/967)) ([a1e2d82](https://github.com/readmeio/markdown/commit/a1e2d82b113325b1a136177453b40389f603f94b))
+
+## Version 7.5.1
+
+### 🛠 Fixes & Updates
+
+* image migration issues ([#965](https://github.com/readmeio/markdown/issues/965)) ([a30bc64](https://github.com/readmeio/markdown/commit/a30bc649e37dc70cb2497d50de6e1c529fbbbfc1))
+
 ## Version 7.5.0
 
 ### ✨ New & Improved

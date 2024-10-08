@@ -10,7 +10,7 @@ describe('images transformer', () => {
     const tree = mdast(md);
 
     expect(tree.children[0].type).toBe('image-block');
-    expect(tree.children[0].data.hProperties.src).toBe('https://example.com/image.jpg');
+    expect(tree.children[0].src).toBe('https://example.com/image.jpg');
   });
 
   it('can parse the caption markdown to children', () => {
@@ -23,29 +23,23 @@ describe('images transformer', () => {
     expect(tree.children[0].children[0].children[2].type).toBe('emphasis');
   });
 
-  it('can parse and transform magic image block AST to MDX', () => {
-    const rdmd = `
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/4a1c7a0-Iphone.jpeg",
-        null,
-        ""
-      ],
-      "align": "center",
-      "sizing": "250px"
-    }
-  ]
-}
-[/block]
+  it('can parse attributes', () => {
+    const md = `
+<Image
+  align="left"
+  alt="Some helpful text"
+  border
+  src="https://example.com/image.jpg"
+  title="Testing"
+  width="100px"
+/>
 `;
+    const tree = mdast(md);
 
-    const rmdx = mdx(mdastLegacy(rdmd));
-
-    expect(rmdx).toMatch(
-      '<Image align="center" className="" width="250px" src="https://files.readme.io/4a1c7a0-Iphone.jpeg" />',
-    );
+    expect(tree.children[0].align).toBe('left');
+    expect(tree.children[0].alt).toBe('Some helpful text');
+    expect(tree.children[0].border).toBe(true);
+    expect(tree.children[0].title).toBe('Testing');
+    expect(tree.children[0].width).toBe('100px');
   });
 });

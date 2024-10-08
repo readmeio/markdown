@@ -49,7 +49,7 @@ interface Figure extends Node {
   data: {
     hName: 'figure';
   };
-  children: [ImageBlock, FigCaption];
+  children: [ImageBlock & { url: string }, FigCaption];
 }
 
 interface FigCaption extends Node {
@@ -72,24 +72,24 @@ interface HTMLBlock extends Node {
   };
 }
 
-interface ImageBlock extends Parent {
-  type: NodeTypes.imageBlock;
-  url: string;
+interface ImageBlockAttrs {
+  align?: string;
   alt: string;
+  border?: string;
+  caption?: string;
+  className?: string;
+  height?: string;
+  lazy?: boolean;
+  src: string;
   title: string;
+  width?: string;
+}
+
+interface ImageBlock extends ImageBlockAttrs, Parent {
+  type: NodeTypes.imageBlock;
   data: Data & {
     hName: 'img';
-    hProperties: {
-      align?: string;
-      alt?: string;
-      caption?: string;
-      border?: string;
-      src: string;
-      title?: string;
-      width?: string;
-      lazy?: boolean;
-      className?: string;
-    };
+    hProperties: ImageBlockAttrs;
   };
 }
 
