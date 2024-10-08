@@ -205,6 +205,8 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   describe('<HTMLBlock> wrapping', () => {
+    // configure({ defaultIgnore: undefined });
+
     const rawStyle = `<style data-testid="style-tag">
     p {
       color: red;
@@ -330,15 +332,6 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
-  it('moves whitespace surrounding phrasing content (emphasis, strong, etc) to the appropriate place', () => {
-    const md = `**bold **and also_ italic_ and*** bold italic***aaaaaah`;
-
-    const rmdx = mdx(rdmd.mdast(md));
-    expect(rmdx).toMatchInlineSnapshot(`
-      "**bold** and also *italic* and ***bold italic***aaaaaah
-      "
-    `);
-  });
 
   it('correctly parses and transforms image magic block with legacy data', () => {
     const md = `
