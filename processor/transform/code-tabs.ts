@@ -5,12 +5,13 @@ import { NodeTypes } from '../../enums';
 
 const isCode = (node: Node): node is Code => node?.type === 'code';
 
-const codeTabsTransformer = () => (tree: Node) => {
+const codeTabsTransformer =
+  ({ copyButtons }: { copyButtons?: boolean }) =>
+  (tree: Node) => {
   visit(tree, 'code', (node: Code) => {
     const { lang, meta, value } = node;
-
     node.data = {
-      hProperties: { lang, meta, value },
+        hProperties: { lang, meta, value, copyButtons },
     };
   });
 

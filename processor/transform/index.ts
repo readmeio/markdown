@@ -3,6 +3,7 @@ import codeTabsTransfromer from './code-tabs';
 import embedTransformer from './embeds';
 import imageTransformer from './images';
 import gemojiTransformer from './gemoji+';
+
 import divTransformer from './div';
 import injectComponents from './inject-components';
 import readmeComponentsTransformer from './readme-components';
@@ -21,4 +22,12 @@ export {
   tablesToJsx,
 };
 
-export default [calloutTransformer, codeTabsTransfromer, embedTransformer, imageTransformer, gemojiTransformer];
+export const defaultTransforms = {
+  calloutTransformer,
+  codeTabsTransfromer,
+  embedTransformer,
+  imageTransformer,
+  gemojiTransformer,
+};
+
+export default Object.values(defaultTransforms);
