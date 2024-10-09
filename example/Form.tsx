@@ -74,6 +74,15 @@ const Form = () => {
         <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
           <legend>Options</legend>
           <div>
+            <label htmlFor="copy-buttons">Copy Buttons</label>
+            <input
+              checked={searchParams.has('copyButtons')}
+              id="copy-buttons"
+              onChange={onCheck('copyButtons')}
+              type="checkbox"
+            />
+          </div>
+          <div>
             <label htmlFor="safe-mode">Safe Mode</label>
             <input
               checked={searchParams.has('safeMode')}

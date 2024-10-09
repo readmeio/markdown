@@ -61,6 +61,7 @@ const Doc = () => {
   const ci = searchParams.has('ci');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
+  const copyButtons = searchParams.has('copyButtons');
 
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
@@ -76,6 +77,7 @@ const Doc = () => {
       const opts = {
         lazyImages,
         safeMode,
+        copyButtons,
       };
 
       try {
@@ -91,7 +93,7 @@ const Doc = () => {
     };
 
     render();
-  }, [doc, lazyImages, safeMode]);
+  }, [doc, lazyImages, safeMode, copyButtons]);
 
   return (
     <div className="rdmd-demo--display">
@@ -111,7 +113,5 @@ const Doc = () => {
     </div>
   );
 };
-/*
- */
 
 export default Doc;
