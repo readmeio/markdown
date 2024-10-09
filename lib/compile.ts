@@ -14,7 +14,7 @@ export type CompileOpts = CompileOptions & {
   copyButtons?: boolean;
 };
 
-const { codeTabsTransfromer, ...transforms } = defaultTransforms;
+const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
 const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts = {}) => {
   try {
@@ -25,7 +25,7 @@ const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts
         remarkFrontmatter,
         remarkGfm,
         ...Object.values(transforms),
-        [codeTabsTransfromer, { copyButtons }],
+        [codeTabsTransformer, { copyButtons }],
         variablesTransformer,
       ],
       rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],

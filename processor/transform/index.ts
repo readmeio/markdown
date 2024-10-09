@@ -1,5 +1,5 @@
 import calloutTransformer from './callouts';
-import codeTabsTransfromer from './code-tabs';
+import codeTabsTransformer from './code-tabs';
 import embedTransformer from './embeds';
 import imageTransformer from './images';
 import gemojiTransformer from './gemoji+';
@@ -24,7 +24,7 @@ export {
 
 export const defaultTransforms = {
   calloutTransformer,
-  codeTabsTransfromer,
+  codeTabsTransformer,
   embedTransformer,
   imageTransformer,
   gemojiTransformer,
