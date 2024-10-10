@@ -85,7 +85,7 @@ const compatibility = (node: CompatNodes) => {
       //
       // @ts-expect-error
       return node.block ||
-        node.value.match(/<!--.*-->/) ||
+        node.value.match(/<!--.*-->/s) ||
         node.value.match(/<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/)
         ? html(node)
         : node.value;
