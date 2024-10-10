@@ -332,7 +332,6 @@ This is an image: <img src="http://example.com/#\\>" >
     `);
   });
 
-
   it('correctly parses and transforms image magic block with legacy data', () => {
     const md = `
 [block:image]
@@ -492,6 +491,16 @@ ${JSON.stringify(
           </tr>
         </tbody>
       </Table>
+      "
+    `);
+  });
+
+  it('compiles inline html', () => {
+    const md = `Inline html: <small>_string_</small>`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "Inline html: <small>*string*</small>
       "
     `);
   });

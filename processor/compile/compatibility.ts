@@ -79,7 +79,16 @@ const compatibility = (node: CompatNodes) => {
     case NodeTypes.reusableContent:
       return `<${node.tag} />`;
     case 'html':
-      return html(node);
+      // @note: We can't do anything about inline spans. remark only parses the
+      // tags as html, so we can't tell where the html starts or stops. But, we
+      // can still fix void nodes and comments.
+      //
+      // @ts-expect-error
+      return node.block ||
+        node.value.match(/<!--.*-->/) ||
+        node.value.match(/<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/)
+        ? html(node)
+        : node.value;
     case 'escape':
       return `\\${node.value}`;
     case 'figure':
