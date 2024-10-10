@@ -504,4 +504,14 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles tag-like syntax', () => {
+    const md = `Inline: <what even is this>`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "Inline: <what even is this>
+      "
+    `);
+  });
 });
