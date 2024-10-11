@@ -28,15 +28,19 @@
     outline: none !important;
     vertical-align: middle;
 
+    &.img-align-right,
     &[align='right'],
     &[alt~='align-right'] {
       @extend %img-align-right;
     }
 
+    &.img-align-left,
     &[align='left'],
     &[alt~='align-left'] {
       @extend %img-align-left;
+
     }
+    &.img-align-center,
     &[align='middle'], // hack to fix Firefox; see: https://stackoverflow.com/a/45901819/1341949
     &[align='center'],
     &[alt~='align-center'] {
@@ -65,8 +69,10 @@
     }
   }
 
+  > .img,
   > img,
   figure > img {
+    display: block;
     @extend %img-align-center;
   }
 
