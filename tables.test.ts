@@ -1,6 +1,6 @@
 import * as rmdx from '@readme/mdx';
 
-import { rdmdCompatParser as mdast } from '@readme/backend/models/project/lib/migrateMdx/rdmdCompatParser';
+import { compatParser as mdast } from '@readme/backend/models/project/lib/migrateMdx/compatParser';
 
 describe('mdx migration of tables', () => {
   it('compiles tables with newlines and inline code', () => {
