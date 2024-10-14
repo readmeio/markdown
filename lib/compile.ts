@@ -2,7 +2,7 @@ import { compileSync, CompileOptions } from '@mdx-js/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
-import transformers, { variablesTransformer } from '../processor/transform';
+import { defaultTransforms, variablesTransformer } from '../processor/transform';
 import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypePlugins } from './ast-processor';
@@ -11,16 +11,23 @@ export type CompileOpts = CompileOptions & {
   lazyImages?: boolean;
   safeMode?: boolean;
   components?: Record<string, string>;
+  copyButtons?: boolean;
 };
 
-const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers, variablesTransformer];
+const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = (text: string, { components, ...opts }: CompileOpts = {}) => {
+const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts = {}) => {
   try {
     const vfile = compileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
-      remarkPlugins,
+      remarkPlugins: [
+        remarkFrontmatter,
+        remarkGfm,
+        ...Object.values(transforms),
+        [codeTabsTransformer, { copyButtons }],
+        variablesTransformer,
+      ],
       rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
       ...opts,
     });

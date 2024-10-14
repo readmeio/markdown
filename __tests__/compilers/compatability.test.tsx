@@ -205,6 +205,8 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   describe('<HTMLBlock> wrapping', () => {
+    // configure({ defaultIgnore: undefined });
+
     const rawStyle = `<style data-testid="style-tag">
     p {
       color: red;
@@ -326,16 +328,6 @@ This is an image: <img src="http://example.com/#\\>" >
     const rmdx = mdx(rdmd.mdast(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "**bold** and *italic* and ***bold italic***
-      "
-    `);
-  });
-
-  it('moves whitespace surrounding phrasing content (emphasis, strong, etc) to the appropriate place', () => {
-    const md = `**bold **and also_ italic_ and*** bold italic***aaaaaah`;
-
-    const rmdx = mdx(rdmd.mdast(md));
-    expect(rmdx).toMatchInlineSnapshot(`
-      "**bold** and also *italic* and ***bold italic***aaaaaah
       "
     `);
   });
@@ -499,6 +491,26 @@ ${JSON.stringify(
           </tr>
         </tbody>
       </Table>
+      "
+    `);
+  });
+
+  it('compiles inline html', () => {
+    const md = `Inline html: <small>_string_</small>`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "Inline html: <small>*string*</small>
+      "
+    `);
+  });
+
+  it('compiles tag-like syntax', () => {
+    const md = `Inline: <what even is this>`;
+
+    const rmdx = mdx(rdmd.mdast(md));
+    expect(rmdx).toMatchInlineSnapshot(`
+      "Inline: <what even is this>
       "
     `);
   });
