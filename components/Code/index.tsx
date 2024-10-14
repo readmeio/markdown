@@ -57,6 +57,17 @@ const Code = (props: CodeProps) => {
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
   const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
 
+  console.log('language', language)
+  console.log('value', value)
+
+  if (language == 'mermaid') {
+    return (
+      <pre className="mermaid">
+        {value}
+      </pre>
+    )
+  }
+
   return (
     <>
       {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}

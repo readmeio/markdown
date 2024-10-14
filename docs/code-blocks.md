@@ -6,11 +6,21 @@ hidden: false
 
 ## Examples
 
+### Mermaid
+
+```mermaid
+    graph LR
+      A --- B
+      B-->C[fa:fa-ban forbidden]
+      B-->D(fa:fa-spinner);
+```
+
 ### Tabbed Code Blocks
 
 ```javascript I'm A tab
 console.log('Code Tab A');
 ```
+
 ```javascript I'm tab B
 console.log('Code Tab B');
 ```
@@ -87,6 +97,7 @@ We support syntax highlighting on a number of languages:
 | Liquid        | `liquid`                                                                             |
 | Lua           | `lua`                                                                                |
 | Markdown      | `markdown`                                                                           |
+| Mermaid       | `mermaid`                                                                            |
 | Objective-C   | `objc`, `objectivec`,                                                                |
 | Objective-C++ | `objc++`, `objcpp`, `objectivecpp`, `objectivecplusplus`,                            |
 | OCaml         | `ocaml`, `ml`                                                                        |
