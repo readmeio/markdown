@@ -6,6 +6,7 @@ import * as rdmd from '@readme/markdown';
 import visit, { SKIP } from 'unist-util-visit';
 
 import emphasisTransfomer from './emphasis';
+import { linkReferenceTransformer } from './linkReference';
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
 
@@ -99,7 +100,7 @@ const compatability =
   };
 
 export const compatParser = (doc: string): Root => {
-  const proc = rdmd.processor().use(compatability).use(emphasisTransfomer);
+  const proc = rdmd.processor().use(compatability).use(emphasisTransfomer).use(linkReferenceTransformer);
   const tree = proc.parse(doc);
   proc.runSync(tree, doc);
 
