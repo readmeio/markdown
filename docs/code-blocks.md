@@ -6,15 +6,6 @@ hidden: false
 
 ## Examples
 
-### Mermaid
-
-```mermaid
-    graph LR
-      A --- B
-      B-->C[fa:fa-ban forbidden]
-      B-->D(fa:fa-spinner);
-```
-
 ### Tabbed Code Blocks
 
 ```javascript I'm A tab
