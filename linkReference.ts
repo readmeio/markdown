@@ -2,7 +2,7 @@ import type { Definition, LinkReference, Root, Text } from 'mdast';
 
 import visit from 'unist-util-visit';
 
-export const linkReferenceTransformer =
+const linkReferenceTransformer =
   () =>
   (tree: Root): Root => {
     // @ts-expect-error
@@ -28,3 +28,5 @@ export const linkReferenceTransformer =
 
     return tree;
   };
+
+export default linkReferenceTransformer;
