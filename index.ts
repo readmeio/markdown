@@ -8,6 +8,7 @@ import visit, { SKIP } from 'unist-util-visit';
 import emphasisTransfomer from './emphasis';
 import imageTransformer from './images';
 import linkReferenceTransformer from './linkReference';
+import tableTransfomer from './table';
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
 
@@ -106,7 +107,8 @@ export const compatParser = (doc: string): Root => {
     .use(compatability)
     .use(emphasisTransfomer)
     .use(linkReferenceTransformer)
-    .use(imageTransformer);
+    .use(imageTransformer)
+    .use(tableTransfomer);
   const tree = proc.parse(doc);
   proc.runSync(tree, doc);
 
