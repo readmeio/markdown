@@ -1,5 +1,6 @@
 import copy from 'copy-to-clipboard';
 import React, { createRef } from 'react';
+import mermaid from 'mermaid';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -57,8 +58,10 @@ const Code = (props: CodeProps) => {
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
   const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
 
-  console.log('language', language)
-  console.log('value', value)
+  // set Mermaid theme
+  mermaid.initialize({
+    theme: theme === 'dark' ? 'dark' : 'default',
+  });
 
   if (language == 'mermaid') {
     return (
@@ -66,21 +69,21 @@ const Code = (props: CodeProps) => {
         {value}
       </pre>
     )
+  } else {
+    return (
+      <>
+        {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
+        <code
+          ref={codeRef}
+          className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
+          data-lang={language}
+          suppressHydrationWarning={true}
+        >
+          {highlightedCode}
+        </code>
+      </>
+    );
   }
-
-  return (
-    <>
-      {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
-      <code
-        ref={codeRef}
-        className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
-        data-lang={language}
-        suppressHydrationWarning={true}
-      >
-        {highlightedCode}
-      </code>
-    </>
-  );
 };
 
 export default Code;
