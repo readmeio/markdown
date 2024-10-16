@@ -187,7 +187,7 @@ summary {
 <details>
   <summary><em>Setting the Custom Icon Font</em></summary><br />
 
-The custom icon font defaults to `FontAwesome`, but you can use any font family available on the page by setting the `--icon-font` variable!
+The custom icon font defaults to `Font Awesome 6 Pro`.
 
 ```css
 .callout[theme='📷'] {
