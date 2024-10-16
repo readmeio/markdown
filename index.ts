@@ -102,6 +102,7 @@ const compatability =
   };
 
 export const compatParser = (doc: string): Root => {
+  const [normalizedDoc] = rdmd.setup(doc);
   const proc = rdmd
     .processor()
     .use(compatability)
@@ -109,8 +110,9 @@ export const compatParser = (doc: string): Root => {
     .use(linkReferenceTransformer)
     .use(imageTransformer)
     .use(tableTransfomer);
-  const tree = proc.parse(doc);
-  proc.runSync(tree, doc);
+
+  const tree = proc.parse(normalizedDoc);
+  proc.runSync(tree, normalizedDoc);
 
   return tree;
 };
