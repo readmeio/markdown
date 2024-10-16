@@ -97,16 +97,13 @@
       content: '\f00d';
       cursor: pointer;
       display: inline-block;
-      font: normal normal normal 2em/1 FontAwesome;
+      font-family: var(--fa-style-family, 'Font Awesome 6 Pro');
       font-size: inherit;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       opacity: 1;
       position: fixed;
       right: 1em;
       text-rendering: auto;
       top: 1em;
-      transform: translate(0, 0);
       transform: scale(1.5);
       transition: 0.3s 0.3s ease-in;
     }
