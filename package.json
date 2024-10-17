@@ -113,7 +113,7 @@
     "puppeteer": "^19.8.3",
     "react-router-dom": "^6.22.3",
     "remark-slug": "^7.0.1",
-    "sass": "^1.77.3",
+    "sass": "^1.80.1",
     "sass-loader": "^13.2.2",
     "semantic-release": "^22.0.12",
     "stream-browserify": "^3.0.0",
