@@ -66,7 +66,7 @@ const Code = (props: CodeProps) => {
   if (language == 'mermaid') {
     return (
       <pre className="mermaid">
-        {value}
+        {code}
       </pre>
     )
   } else {
