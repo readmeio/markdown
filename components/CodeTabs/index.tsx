@@ -16,6 +16,14 @@ const CodeTabs = props => {
     target.classList.add('CodeTabs_active');
   }
 
+  console.log(children)
+
+  if (children?.props?.children.props.lang === 'mermaid') {
+    return (
+      <div>{children}</div>
+    )
+  }
+
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
