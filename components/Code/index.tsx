@@ -1,5 +1,6 @@
 import copy from 'copy-to-clipboard';
 import React, { createRef } from 'react';
+import mermaid from 'mermaid';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:

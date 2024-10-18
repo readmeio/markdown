@@ -23,6 +23,10 @@ import lists from '../docs/lists.md';
 // @ts-ignore
 import mdxComponents from '../docs/mdx-components.mdx';
 // @ts-ignore
+import builtInComponents from '../docs/built-in-components.mdx';
+// @ts-ignore
+import mermaid from '../docs/mermaid.md';
+// @ts-ignore
 import sanitizingTests from '../docs/sanitizing-tests.md';
 // @ts-ignore
 import tableOfContentsTests from '../docs/table-of-contents-tests.md';
@@ -47,6 +51,8 @@ const fixtures = Object.entries({
   imageTests,
   lists,
   mdxComponents,
+  builtInComponents,
+  mermaid,
   sanitizingTests,
   tableOfContentsTests,
   tables,
