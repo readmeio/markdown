@@ -84,6 +84,10 @@
     word-wrap: normal;
   }
 
+  pre.mermaid {
+    background: var(--color-bg-page, white);
+  }
+
   kbd {
     background-color: $background;
     background-color: var(--d-code-background, $background);

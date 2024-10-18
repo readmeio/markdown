@@ -58,32 +58,19 @@ const Code = (props: CodeProps) => {
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
   const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
 
-  // set Mermaid theme
-  mermaid.initialize({
-    theme: theme === 'dark' ? 'dark' : 'default',
-  });
-
-  if (language == 'mermaid') {
-    return (
-      <pre className="mermaid">
-        {code}
-      </pre>
-    )
-  } else {
-    return (
-      <>
-        {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
-        <code
-          ref={codeRef}
-          className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
-          data-lang={language}
-          suppressHydrationWarning={true}
-        >
-          {highlightedCode}
-        </code>
-      </>
-    );
-  }
+  return (
+    <>
+      {copyButtons && <CopyCode className="fa" codeRef={codeRef} />}
+      <code
+        ref={codeRef}
+        className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
+        data-lang={language}
+        suppressHydrationWarning={true}
+      >
+        {highlightedCode}
+      </code>
+    </>
+  );
 };
 
 export default Code;

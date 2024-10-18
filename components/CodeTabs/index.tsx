@@ -1,8 +1,14 @@
 import { uppercase } from '@readme/syntax-highlighter';
 import React from 'react';
+import mermaid from 'mermaid';
 
 const CodeTabs = props => {
   const { children, theme } = props;
+
+    // set Mermaid theme
+    mermaid.initialize({
+      theme: theme === 'dark' ? 'dark' : 'default',
+    });
 
   function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
@@ -16,11 +22,12 @@ const CodeTabs = props => {
     target.classList.add('CodeTabs_active');
   }
 
-  console.log(children)
+  // render single Mermaid diagram
+  if (!Array.isArray(children) && children.props.children.props.lang === 'mermaid') {
+    const value = children.props.children.props.value;
 
-  if (children?.props?.children.props.lang === 'mermaid') {
     return (
-      <div>{children}</div>
+      <pre className="mermaid">{value}</pre>
     )
   }
 
