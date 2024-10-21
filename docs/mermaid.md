@@ -76,7 +76,7 @@ hidden: false
         "Rats" : 15
 ```
 
-```mermaid
+```mermaid diagram
     journey
         title My working day
         section Go to work

@@ -1,6 +1,5 @@
 import copy from 'copy-to-clipboard';
 import React, { createRef } from 'react';
-import mermaid from 'mermaid';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -57,6 +56,10 @@ const Code = (props: CodeProps) => {
 
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
   const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
+
+  if (language === 'mermaid') {
+    return code;
+  }
 
   return (
     <>

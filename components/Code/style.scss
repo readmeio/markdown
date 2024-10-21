@@ -85,7 +85,9 @@
   }
 
   pre.mermaid {
-    background: var(--color-bg-page, white);
+    &_single {
+      background: var(--color-bg-page, white);
+    }
   }
 
   kbd {
