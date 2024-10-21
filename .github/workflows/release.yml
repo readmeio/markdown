@@ -8,7 +8,7 @@ on:
 jobs:
   Release:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       # Setup the git repo & Node environemnt.
       #
