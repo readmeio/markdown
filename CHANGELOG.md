@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 7.6.7
+
+### ✨ New & Improved
+
+* **Image:** match new alignment selectors ([#992](https://github.com/readmeio/markdown/issues/992)) ([73bca2b](https://github.com/readmeio/markdown/commit/73bca2b5c834c68de5138707c0151632790416ab))
+
+
+### 🛠 Fixes & Updates
+
+* better tag handling ([#991](https://github.com/readmeio/markdown/issues/991)) ([e6aa82d](https://github.com/readmeio/markdown/commit/e6aa82d256d0662571da0103633b94920d15e5fc))
+* respect the top-level `copyButtons` option ([#990](https://github.com/readmeio/markdown/issues/990)) ([1242413](https://github.com/readmeio/markdown/commit/12424139bd02ee13b213e49f165961239798a519)), closes [#964](https://github.com/readmeio/markdown/issues/964) [/github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts#L28](https://github.com/readmeio//github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts/issues/L28) [/github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts#L28](https://github.com/readmeio//github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts/issues/L28) [/github.com/readmeio/markdown/blob/b9502adb306f099cd91e005df17c0be252019814/options.js#L1-L22](https://github.com/readmeio//github.com/readmeio/markdown/blob/b9502adb306f099cd91e005df17c0be252019814/options.js/issues/L1-L22)
+
+
+### 📘 Tests & Docs
+
+* readme updates ([#993](https://github.com/readmeio/markdown/issues/993)) ([3a4e30d](https://github.com/readmeio/markdown/commit/3a4e30d3349ff130e8b212293e6ffb44b3586278))
+
 ## Version 7.6.6
 
 ### 🛠 Fixes & Updates
