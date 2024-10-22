@@ -26,11 +26,8 @@ type CompatNodes =
  */
 const html = (node: Html) => {
   const string = node.value.replaceAll(/<!--(.*)-->/gms, '{/*$1*/}');
-  const hast = fromHtml(string);
-  const xast = toXast(hast);
-  const xml = toXml(xast, { closeEmptyElements: true });
 
-  return xml.replace(/<html.*<body>(.*)<\/body><\/html>/ms, '$1');
+  return string;
 };
 
 const figureToImageBlock = (node: any) => {
@@ -79,16 +76,7 @@ const compatibility = (node: CompatNodes) => {
     case NodeTypes.reusableContent:
       return `<${node.tag} />`;
     case 'html':
-      // @note: We can't do anything about inline spans. remark only parses the
-      // tags as html, so we can't tell where the html starts or stops. But, we
-      // can still fix void nodes and comments.
-      //
-      // @ts-expect-error
-      return node.block ||
-        node.value.match(/<!--.*-->/s) ||
-        node.value.match(/<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/)
-        ? html(node)
-        : node.value;
+      return html(node);
     case 'escape':
       return `\\${node.value}`;
     case 'figure':
