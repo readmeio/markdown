@@ -19,7 +19,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2
+  2,
 )}
 [/block]
     `;
@@ -79,7 +79,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2
+  2,
 )}
 [/block]
 `;
@@ -148,7 +148,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2
+  2,
 )}
 [/block]
 `;
@@ -234,7 +234,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2
+  2,
 )}
 [/block]
     `;
@@ -297,7 +297,7 @@ ${JSON.stringify(
     align: [null, null],
   },
   null,
-  2
+  2,
 )}
 [/block]
 `;
