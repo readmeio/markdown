@@ -19,7 +19,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2,
+  2
 )}
 [/block]
     `;
@@ -79,7 +79,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2,
+  2
 )}
 [/block]
 `;
@@ -148,7 +148,7 @@ ${JSON.stringify(
     align: ['left', 'left'],
   },
   null,
-  2,
+  2
 )}
 [/block]
 `;
@@ -203,6 +203,127 @@ ${JSON.stringify(
             </td>
 
             <td style={{ textAlign: "left" }}>
+              Oh no
+
+              * no no no
+              * no no no
+              * Im so sorry
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('does not muck with regular emphasis in tables', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': '**Shortcut Name**',
+      'h-1': '**WindowsOS**',
+      '0-0': '**Select None**',
+      '0-1': '`ESC`',
+      '1-0': '**Select All**',
+      '1-1': '`CTRL` + `A`',
+    },
+    cols: 2,
+    rows: 2,
+    align: ['left', 'left'],
+  },
+  null,
+  2
+)}
+[/block]
+    `;
+
+    const ast = mdast(md);
+    const mdx = rmdx.mdx(ast);
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              **Shortcut Name**
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              **WindowsOS**
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              **Select None**
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              \`ESC\`
+            </td>
+          </tr>
+
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              **Select All**
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              \`CTRL\` + \`A\`
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('compiles tables with null alignment values', () => {
+    const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Field',
+      'h-1': 'Description',
+      '0-0': 'reproduction',
+      '0-1': 'Oh no\n\n_no no no\n_no no no\n*Im so sorry',
+    },
+    cols: 2,
+    rows: 1,
+    align: [null, null],
+  },
+  null,
+  2
+)}
+[/block]
+`;
+    const mdx = rmdx.mdx(mdast(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              Field
+            </th>
+
+            <th>
+              Description
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              reproduction
+            </td>
+
+            <td>
               Oh no
 
               * no no no
