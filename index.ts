@@ -32,7 +32,7 @@ const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}
 //
 // The following regex attempts to detect this pattern, and we'll convert it to
 // something more standard.
-const psuedoListRegex = /^(?<ws>[ \t]*)\\?[*_]\s*(?<item>.*)$/gm;
+const psuedoListRegex = /^(?!([*_]+).*\1$)(?<ws>[ \t]*)\\?([*_])\s*(?<item>.*)$/gm;
 
 const migrateTableCells = (vfile: VFile) => (table: Table) => {
   let json;
@@ -66,7 +66,7 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
       let children = cell.children;
 
       if (json && json.data[magicIndex(i, j)]) {
-        const string = json.data[magicIndex(i, j)].replace(psuedoListRegex, '$1- $2');
+        const string = json.data[magicIndex(i, j)].replace(psuedoListRegex, '$<ws>- $<item>');
 
         children = rdmd.mdast(string).children;
       }
