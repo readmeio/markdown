@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 7.7.0
+
+### ✨ New & Improved
+
+* mermaid diagrams ([#994](https://github.com/readmeio/markdown/issues/994)) ([af6e306](https://github.com/readmeio/markdown/commit/af6e306595463f87dce8e9b415b5bb6478466c6e))
+
+
+### 🛠 Fixes & Updates
+
+* missing close icon ([#995](https://github.com/readmeio/markdown/issues/995)) ([7012fe3](https://github.com/readmeio/markdown/commit/7012fe3c0a0265639042c165b61f3a83a994ea64))
+* replace node-sass ([#997](https://github.com/readmeio/markdown/issues/997)) ([3637314](https://github.com/readmeio/markdown/commit/36373146a1a134cedae0ccd6ff4e552a41c18c76))
+* rollback html fixes ([#996](https://github.com/readmeio/markdown/issues/996)) ([8c96e92](https://github.com/readmeio/markdown/commit/8c96e923d9f0423504551bb0e9748c045dff66ca))
+
 ## Version 7.6.7
 
 ### ✨ New & Improved
