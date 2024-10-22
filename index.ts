@@ -100,8 +100,14 @@ const compatability =
     return tree;
   };
 
+const migrationNormalize = doc => {
+  return doc.replaceAll(/^(<!--.*?)\\-->$/gms, '$1-->');
+};
+
 export const compatParser = (doc: string): Root => {
-  const [normalizedDoc] = rdmd.setup(doc);
+  const [_normalizedDoc] = rdmd.setup(doc);
+  const normalizedDoc = migrationNormalize(_normalizedDoc);
+
   const proc = rdmd
     .processor()
     .use(compatability)
