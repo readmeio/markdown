@@ -87,6 +87,7 @@ We support syntax highlighting on a number of languages:
 | Liquid        | `liquid`                                                                             |
 | Lua           | `lua`                                                                                |
 | Markdown      | `markdown`                                                                           |
+| Mermaid       | `mermaid`                                                                            |
 | Objective-C   | `objc`, `objectivec`,                                                                |
 | Objective-C++ | `objc++`, `objcpp`, `objectivecpp`, `objectivecplusplus`,                            |
 | OCaml         | `ocaml`, `ml`                                                                        |
