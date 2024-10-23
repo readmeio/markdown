@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.7.1
+
+### 🛠 Fixes & Updates
+
+* make mermaid optional ([#999](https://github.com/readmeio/markdown/issues/999)) ([7d5ee07](https://github.com/readmeio/markdown/commit/7d5ee07bdeea85accccf57eb1013881c28e5e6a5))
+
 ## Version 7.7.0
 
 ### ✨ New & Improved
