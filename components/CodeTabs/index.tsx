@@ -1,16 +1,25 @@
+import type { Mermaid } from 'mermaid';
+
 import { uppercase } from '@readme/syntax-highlighter';
 import React, { useEffect } from 'react';
-import mermaid from 'mermaid';
+
+let mermaid: Mermaid;
+
+if (typeof window !== 'undefined') {
+  import('mermaid').then(module => {
+    mermaid = module.default;
+  });
+}
 
 const CodeTabs = props => {
   const { children, theme } = props;
 
   // set Mermaid theme
   useEffect(() => {
-    mermaid.initialize({
+    mermaid?.initialize({
       theme: theme === 'dark' ? 'dark' : 'default',
     });
-  }, [theme])
+  }, [theme]);
 
   function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
@@ -22,21 +31,12 @@ const CodeTabs = props => {
     codeblocks[index].classList.add('CodeTabs_active');
 
     target.classList.add('CodeTabs_active');
-
-    if (target.value === 'mermaid') {
-      const $openMermaid = [].slice.call($wrap.querySelectorAll('.mermaid'));
-      $openMermaid.forEach((el: Element) => el.classList.remove('mermaid'));
-      codeblocks[index].classList.add('mermaid');
-      mermaid.contentLoaded();
-    }
   }
 
   // render single Mermaid diagram
   if (!Array.isArray(children) && children.props?.children.props.lang === 'mermaid') {
     const value = children.props.children.props.value;
-    return (
-      <pre className="mermaid mermaid_single">{value}</pre>
-    )
+    return <pre className="mermaid mermaid_single">{value}</pre>;
   }
 
   return (

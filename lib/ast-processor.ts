@@ -3,7 +3,11 @@ import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
-import transformers, { readmeComponentsTransformer, variablesTransformer } from '../processor/transform';
+import transformers, {
+  mermaidTransformer,
+  readmeComponentsTransformer,
+  variablesTransformer,
+} from '../processor/transform';
 import rehypeSlug from 'rehype-slug';
 import { PluggableList } from 'unified';
 
@@ -13,7 +17,7 @@ export type MdastOpts = {
 };
 
 export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
-export const rehypePlugins = [rehypeSlug];
+export const rehypePlugins = [rehypeSlug, mermaidTransformer];
 
 const astProcessor = (opts: MdastOpts = { components: {} }) =>
   remark()
