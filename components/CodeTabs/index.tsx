@@ -1,16 +1,23 @@
 import { uppercase } from '@readme/syntax-highlighter';
 import React, { useEffect } from 'react';
-import mermaid from 'mermaid';
+
+let mermaid;
+
+if (typeof window !== 'undefined') {
+  import('mermaid').then(module => {
+    mermaid = module.default;
+  });
+}
 
 const CodeTabs = props => {
   const { children, theme } = props;
 
   // set Mermaid theme
   useEffect(() => {
-    mermaid.initialize({
+    mermaid?.initialize({
       theme: theme === 'dark' ? 'dark' : 'default',
     });
-  }, [theme])
+  }, [theme]);
 
   function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
@@ -34,9 +41,7 @@ const CodeTabs = props => {
   // render single Mermaid diagram
   if (!Array.isArray(children) && children.props?.children.props.lang === 'mermaid') {
     const value = children.props.children.props.value;
-    return (
-      <pre className="mermaid mermaid_single">{value}</pre>
-    )
+    return <pre className="mermaid mermaid_single">{value}</pre>;
   }
 
   return (
