@@ -41,7 +41,6 @@
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
     "mdast-util-phrasing": "^4.1.0",
-    "mermaid": "^11.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "prop-types": "^15.8.1",
@@ -109,6 +108,7 @@
     "jest-environment-puppeteer": "^8.0.6",
     "jest-image-snapshot": "^6.4.0",
     "jest-puppeteer": "^8.0.6",
+    "mermaid": "^11.3.0",
     "mini-css-extract-plugin": "^2.7.5",
     "prettier": "^3.2.5",
     "puppeteer": "^19.8.3",
@@ -144,5 +144,8 @@
         "maxSize": "750KB"
       }
     ]
+  },
+  "optionalDependencies": {
+    "mermaid": "^11.3.0"
   }
 }
