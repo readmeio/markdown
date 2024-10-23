@@ -11,6 +11,7 @@ import readmeToMdx from './readme-to-mdx';
 import variablesTransformer from './variables';
 import tablesToJsx from './tables-to-jsx';
 import compatabilityTransfomer from './compatability';
+import mermaidTransformer from './mermaid';
 
 export {
   compatabilityTransfomer,
@@ -20,6 +21,7 @@ export {
   injectComponents,
   variablesTransformer,
   tablesToJsx,
+  mermaidTransformer,
 };
 
 export const defaultTransforms = {

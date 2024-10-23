@@ -1,7 +1,9 @@
+import type { Mermaid } from 'mermaid';
+
 import { uppercase } from '@readme/syntax-highlighter';
 import React, { useEffect } from 'react';
 
-let mermaid;
+let mermaid: Mermaid;
 
 if (typeof window !== 'undefined') {
   import('mermaid').then(module => {
@@ -29,13 +31,6 @@ const CodeTabs = props => {
     codeblocks[index].classList.add('CodeTabs_active');
 
     target.classList.add('CodeTabs_active');
-
-    if (target.value === 'mermaid') {
-      const $openMermaid = [].slice.call($wrap.querySelectorAll('.mermaid'));
-      $openMermaid.forEach((el: Element) => el.classList.remove('mermaid'));
-      codeblocks[index].classList.add('mermaid');
-      mermaid.contentLoaded();
-    }
   }
 
   // render single Mermaid diagram

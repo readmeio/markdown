@@ -80,6 +80,8 @@ const Doc = () => {
         copyButtons,
       };
 
+      console.log(JSON.stringify(mdx.hast(doc), null, 2));
+
       try {
         const code = mdx.compile(doc, { ...opts, components });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
