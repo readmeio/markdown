@@ -18,7 +18,7 @@ endif
 
 build:
 	@echo USE_LEGACY=$(USE_LEGACY)
-	docker build --platform linux/amd64 -t markdown $(dockerfile) --build-arg REACT_VERSION=${REACT_VERSION} .
+	docker build  -t markdown $(dockerfile) --build-arg REACT_VERSION=${REACT_VERSION} .
 
 # This lets us call `make run test.browser`. Make expects cmdline args
 # to be targets. So this creates noop targets out of args. Copied from
