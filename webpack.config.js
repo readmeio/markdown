@@ -84,6 +84,7 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
   externals: {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
+    mermaid: 'mermaid',
     react: {
       amd: 'react',
       commonjs: 'react',
