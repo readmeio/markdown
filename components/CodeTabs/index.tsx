@@ -9,7 +9,7 @@ let mermaid: Mermaid;
 const CodeTabs = props => {
   const { children, theme } = props;
 
-  // set Mermaid theme
+  // render Mermaid diagram
   useEffect(() => {
     if (typeof window !== 'undefined') {
       import('mermaid').then(module => {
