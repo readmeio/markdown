@@ -5,20 +5,21 @@ import React, { useEffect } from 'react';
 
 let mermaid: Mermaid;
 
-if (typeof window !== 'undefined') {
-  import('mermaid').then(module => {
-    mermaid = module.default;
-  });
-}
 
 const CodeTabs = props => {
   const { children, theme } = props;
 
   // set Mermaid theme
   useEffect(() => {
-    mermaid?.initialize({
-      theme: theme === 'dark' ? 'dark' : 'default',
-    });
+    if (typeof window !== 'undefined') {
+      import('mermaid').then(module => {
+        mermaid = module.default;
+        mermaid.initialize({
+          theme: theme === 'dark' ? 'dark' : 'default',
+        });
+        mermaid.contentLoaded();
+      });
+    }
   }, [theme]);
 
   function handleClick({ target }, index: number) {
