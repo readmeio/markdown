@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 7.7.3
+
+### 🛠 Fixes & Updates
+
+* docker build ([#1002](https://github.com/readmeio/markdown/issues/1002)) ([02bf11a](https://github.com/readmeio/markdown/commit/02bf11a9c7a416f4a5f60d232cc8f565cb693dc0))
+* mermaid render ([#1001](https://github.com/readmeio/markdown/issues/1001)) ([872ce83](https://github.com/readmeio/markdown/commit/872ce8371759c9d2db03084800e29bd53fd3f4fe))
+
 ## Version 7.7.2
 
 ### 🛠 Fixes & Updates
