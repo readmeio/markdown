@@ -1,6 +1,4 @@
-import * as rmdx from '@readme/mdx';
-
-import { compatParser as mdast } from '@readme/backend/models/project/lib/migrateMdx/compatParser';
+import * as rmdx from '../../index';
 
 describe('migrating magic blocks', () => {
   it('compiles magic blocks without enough newlines', () => {
@@ -43,7 +41,7 @@ describe('migrating magic blocks', () => {
 }
 [/block]
 `;
-    const ast = mdast(md);
+    const ast = rmdx.mdastV6(md);
     const mdx = rmdx.mdx(ast);
     expect(mdx).toMatchInlineSnapshot(`
       "## About cBEYONData

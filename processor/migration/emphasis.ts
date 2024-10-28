@@ -1,7 +1,6 @@
-import type { $TSFixMe } from '@readme/iso';
 import type { Emphasis, Parent, Root, Strong, Text } from 'mdast';
 
-import visit from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 const strongTest = (node: any): node is Emphasis | Strong => ['emphasis', 'strong'].includes(node.type);
 
@@ -27,8 +26,6 @@ const addSpaceAfter = (index: number, parent: Parent) => {
 const trimEmphasis = (node: Emphasis | Strong, index: number, parent: Parent) => {
   let trimmed = false;
 
-  // @ts-expect-error: the current version of visit is before the package
-  // types/mdast was created
   visit(node, 'text', (child: Text) => {
     const newValue = child.value.trim();
 

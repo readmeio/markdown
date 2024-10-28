@@ -1,13 +1,8 @@
-import type { $TSFixMe } from '@readme/iso';
-import type { Code, InlineCode, Root, Table, TableCell, TableRow } from 'mdast';
+import type { Code, InlineCode, PhrasingContent, Root, Table, TableCell, TableRow } from 'mdast';
 import type { VFile } from 'vfile';
 
-import * as rdmd from '@readme/markdown';
-import visit, { SKIP } from 'unist-util-visit';
-
-import emphasisTransfomer from './emphasis';
-import imageTransformer from './images';
-import linkReferenceTransformer from './linkReference';
+import * as rdmd from '@readme/markdown-legacy';
+import { visit, SKIP } from 'unist-util-visit';
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
 
@@ -57,11 +52,7 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
     // console.error(err);
   }
 
-  // @ts-expect-error: the current version of visit is before the package
-  // types/mdast was created
   visit(table, 'tableRow', (row: TableRow, i: number) => {
-    // @ts-expect-error: the current version of visit is before the package
-    // types/mdast was created
     visit(row, 'tableCell', (cell: TableCell, j: number) => {
       let children = cell.children;
 
@@ -72,7 +63,7 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
       }
 
       // eslint-disable-next-line no-param-reassign
-      cell.children = children.length > 1 ? children : ([{ type: 'paragraph', children }] as $TSFixMe);
+      cell.children = children.length > 1 ? children : [{ type: 'paragraph', children } as PhrasingContent];
 
       return SKIP;
     });
@@ -80,8 +71,6 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
     return SKIP;
   });
 
-  // @ts-expect-error: the current version of visit is before the package
-  // types/mdast was created
   visit(table, 'inlineCode', (code: Code | InlineCode) => {
     if (code.value.includes('\n')) {
       // eslint-disable-next-line no-param-reassign
@@ -90,33 +79,12 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
   });
 };
 
-const compatability =
+const tableCellTransformer =
   () =>
   (tree: Root, vfile: VFile): Root => {
-    // @ts-expect-error: the current version of visit is before the package
-    // types/mdast was created
     visit(tree, 'table', migrateTableCells(vfile));
 
     return tree;
   };
 
-const migrationNormalize = doc => {
-  return doc.replaceAll(/^(<!--.*?)\\-->$/gms, '$1-->');
-};
-
-export const compatParser = (doc: string): Root => {
-  const [_normalizedDoc] = rdmd.setup(doc);
-  const normalizedDoc = migrationNormalize(_normalizedDoc);
-
-  const proc = rdmd
-    .processor()
-    .use(compatability)
-    .use(emphasisTransfomer)
-    .use(linkReferenceTransformer)
-    .use(imageTransformer);
-
-  const tree = proc.parse(normalizedDoc);
-  proc.runSync(tree, normalizedDoc);
-
-  return tree;
-};
+export default tableCellTransformer;

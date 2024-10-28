@@ -1,12 +1,10 @@
-import * as rmdx from '@readme/mdx';
-
-import { compatParser as mdast } from '@readme/backend/models/project/lib/migrateMdx/compatParser';
+import * as rmdx from '../../index';
 
 describe('mdx migration of link references', () => {
   it('compiles link references correctly', () => {
     const md = '[wat_wat]';
 
-    const ast = mdast(md);
+    const ast = rmdx.mdastV6(md);
     const mdx = rmdx.mdx(ast);
     expect(mdx).toMatchInlineSnapshot(`
       "\\[wat\\_wat]
@@ -21,7 +19,7 @@ describe('mdx migration of link references', () => {
 [wat_wat]: https://wat.com
 `;
 
-    const ast = mdast(md);
+    const ast = rmdx.mdastV6(md);
     const mdx = rmdx.mdx(ast);
     expect(mdx).toMatchInlineSnapshot(`
       "[wat\\_wat][wat_wat]

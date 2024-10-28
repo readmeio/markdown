@@ -1,7 +1,6 @@
-import type { $TSFixMe } from '@readme/iso';
 import type { Image } from 'mdast';
 
-import visit from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 interface ImageBlock extends Image {
   data?: {
@@ -13,9 +12,8 @@ interface ImageBlock extends Image {
 }
 
 const imageTransformer = () => (tree: $TSFixMe) => {
-  visit(tree as $TSFixMe, 'image', (image: ImageBlock) => {
+  visit(tree, 'image', (image: ImageBlock) => {
     if (image.data?.hProperties?.className === 'border') {
-      delete image.data.hProperties.className;
       image.data.hProperties.border = true;
     }
   });
