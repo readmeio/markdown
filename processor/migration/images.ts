@@ -11,7 +11,7 @@ interface ImageBlock extends Image {
   };
 }
 
-const imageTransformer = () => (tree: $TSFixMe) => {
+const imageTransformer = () => tree => {
   visit(tree, 'image', (image: ImageBlock) => {
     if (image.data?.hProperties?.className === 'border') {
       image.data.hProperties.border = true;

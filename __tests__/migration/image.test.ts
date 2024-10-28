@@ -23,7 +23,7 @@ describe('migrating images', () => {
     const ast = rmdx.mdastV6(md);
     const mdx = rmdx.mdx(ast);
     expect(mdx).toMatchInlineSnapshot(`
-      "<Image align="center" border={true} src="https://fastly.picsum.photos/id/507/200/300.jpg?hmac=v0NKvUrOWTKZuZFmMlLN_7-RdRgeF-qFLeBGXpufxgg" />
+      "<Image align="center" className="border" border={true} src="https://fastly.picsum.photos/id/507/200/300.jpg?hmac=v0NKvUrOWTKZuZFmMlLN_7-RdRgeF-qFLeBGXpufxgg" />
       "
     `);
   });
