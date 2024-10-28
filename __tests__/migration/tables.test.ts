@@ -401,4 +401,61 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles more examples of emphasis', () => {
+    const md = `
+    [block:parameters]
+{
+  "data": {
+    "h-0": "Action",
+    "h-1": "Description",
+    "0-0": "Details",
+    "0-1": "View additional details such as:  \\n_Type_  \\n_Owner_  \\n_Created On_  \\n_Last Modified_  \\n_Last Run_"
+  },
+  "cols": 2,
+  "rows": 1,
+  "align": [
+    "left",
+    "left"
+  ]
+}
+[/block]
+    `;
+
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              Action
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              Description
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              Details
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              View additional details such as:\\
+              *Type*\\
+              *Owner*\\
+              *Created On*\\
+              *Last Modified*\\
+              *Last Run*
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
 });
