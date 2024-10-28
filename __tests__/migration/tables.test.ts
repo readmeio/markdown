@@ -334,4 +334,71 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles tables with emphasis without converting them to lists', () => {
+    const md = `
+[block:parameters]
+{
+  "data": {
+    "h-0": "**Shortcut Name**",
+    "h-1": "**WindowsOS**",
+    "h-2": "_Apple - macOS_",
+    "0-0": "*Cut selection*",
+    "0-1": "__also__\\n\\n_no!_\\n\\n__no no no__",
+    "0-2": "!BAD"
+  },
+  "cols": 3,
+  "rows": 1,
+  "align": [
+    "left",
+    "left",
+    "left"
+  ]
+}
+[/block]
+    `;
+
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              **Shortcut Name**
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              **WindowsOS**
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              *Apple - macOS*
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              *Cut selection*
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              **also**
+
+              *no!*
+
+              **no no no**
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              !BAD
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
 });
