@@ -214,6 +214,36 @@ ${JSON.stringify(
     `);
   });
 
+  it('compiles tables with html', () => {
+    const md = `
+| Teléfono                                                           |
+| ------------------------------------------------------------------ |
+| <p>¿Necesitas ayuda?</p><p>‍</p><p>Llámanos al +52 33 11224455</p> |
+      `;
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              Teléfono
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              <p>¿Necesitas ayuda?</p><p>‍</p><p>Llámanos al +52 33 11224455</p>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
   it('does not muck with regular emphasis in tables', () => {
     const md = `
 [block:parameters]

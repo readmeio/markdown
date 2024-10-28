@@ -5,6 +5,7 @@ import * as rdmd from '@readme/markdown-legacy';
 import { visit, SKIP } from 'unist-util-visit';
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
+const isInlineHtml = (node: $TSFixMe) => node.type === 'html' && !node.block;
 
 // @note: This regex is detect malformed lists that were created by the
 // markdown editor. Consider the following markdown:
@@ -62,8 +63,10 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
         children = rdmd.mdast(string).children;
       }
 
-      // eslint-disable-next-line no-param-reassign
-      cell.children = children.length > 1 ? children : [{ type: 'paragraph', children } as PhrasingContent];
+      cell.children =
+        children.length > 1 && !children.some(isInlineHtml)
+          ? children
+          : ([{ type: 'paragraph', children }] as PhrasingContent[]);
 
       return SKIP;
     });
