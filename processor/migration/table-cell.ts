@@ -5,7 +5,7 @@ import * as rdmd from '@readme/markdown-legacy';
 import { visit, SKIP } from 'unist-util-visit';
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
-const isInlineHtml = (node: $TSFixMe) => node.type === 'html' && !node.block;
+const isInlineHtml = node => node.type === 'html' && !node.block;
 
 // @note: This regex is detect malformed lists that were created by the
 // markdown editor. Consider the following markdown:
