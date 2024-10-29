@@ -23,11 +23,11 @@ describe('migrating emphasis', () => {
 
   it('migrates a complex case', () => {
     const md =
-      '*the recommended initial action is to**initiate a[reversal operation (rollback)](https://docs.jupico.com/reference/ccrollback)**. *';
+      '*the recommended initial action is to**initiate a [reversal operation (rollback)](https://docs.jupico.com/reference/ccrollback) test**. *';
 
     const mdx = rmdx.mdx(rmdx.mdastV6(md));
     expect(mdx).toMatchInlineSnapshot(`
-      "*the recommended initial action is to**initiate a[reversal operation (rollback)](https://docs.jupico.com/reference/ccrollback)**.*
+      "*the recommended initial action is to**initiate a [reversal operation (rollback)](https://docs.jupico.com/reference/ccrollback) test**.*
       "
     `);
   });

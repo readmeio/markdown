@@ -1,6 +1,6 @@
 import type { Emphasis, Parent, Root, Strong, Text } from 'mdast';
 
-import { visit } from 'unist-util-visit';
+import { visit, EXIT } from 'unist-util-visit';
 
 const strongTest = (node: any): node is Emphasis | Strong => ['emphasis', 'strong'].includes(node.type);
 
@@ -27,13 +27,31 @@ const trimEmphasis = (node: Emphasis | Strong, index: number, parent: Parent) =>
   let trimmed = false;
 
   visit(node, 'text', (child: Text) => {
-    const newValue = child.value.trim();
+    const newValue = child.value.trimStart();
 
     if (newValue !== child.value) {
       trimmed = true;
       child.value = newValue;
     }
+
+    return EXIT;
   });
+
+  visit(
+    node,
+    'text',
+    (child: Text) => {
+      const newValue = child.value.trimEnd();
+
+      if (newValue !== child.value) {
+        trimmed = true;
+        child.value = newValue;
+      }
+
+      return EXIT;
+    },
+    true,
+  );
 
   if (trimmed) {
     addSpaceBefore(index, parent);
@@ -42,9 +60,7 @@ const trimEmphasis = (node: Emphasis | Strong, index: number, parent: Parent) =>
 };
 
 const emphasisTransfomer = () => (tree: Root) => {
-  // @ts-expect-error: the current version of visit is before the package
-  // types/mdast was created
-  visit(tree, strongTest, trimEmphasis as $TSFixMe);
+  visit(tree, strongTest, trimEmphasis);
 
   return tree;
 };
