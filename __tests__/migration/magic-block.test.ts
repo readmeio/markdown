@@ -45,15 +45,15 @@ describe('migrating magic blocks', () => {
     expect(mdx).toMatchInlineSnapshot(`
       "## About cBEYONData
 
-      [ Overview of cBEYONData ](/docs/about-cbeyondata)&#x20;
+      [ Overview of cBEYONData ](/docs/about-cbeyondata) 
 
       ## About CFO Control Control Tower
 
-      [Overview of CFO Control Tower](https://docs.cfocontroltower.com/docs/about-cfo-control-tower)&#x20;
+      [Overview of CFO Control Tower](https://docs.cfocontroltower.com/docs/about-cfo-control-tower) 
 
       > ❗️ CONFIDENTIAL
       >
-      > *This documentation is confidential and proprietary information of cBEYONData LLC.*&#x20;
+      > *This documentation is confidential and proprietary information of cBEYONData LLC.* 
       "
     `);
   });
