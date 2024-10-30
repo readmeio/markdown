@@ -1,12 +1,12 @@
-import astProcessor, { MdastOpts, remarkPlugins } from './ast-processor';
-import compile from './compile';
-import hast from './hast';
-import mdast from './mdast';
-import mdastV6 from './mdastV6';
-import mdx from './mdx';
-import plain from './plain';
-import run from './run';
-import tags from './tags';
+export type { MdastOpts } from './ast-processor';
 
-export type { MdastOpts };
-export { astProcessor, compile, hast, mdast, mdastV6, mdx, plain, run, remarkPlugins, tags };
+export { default as astProcessor, remarkPlugins } from './ast-processor';
+export { default as compile } from './compile';
+export { default as hast } from './hast';
+export { default as mdast } from './mdast';
+export { default as mdastV6 } from './mdastV6';
+export { default as mdx } from './mdx';
+export { default as plain } from './plain';
+export { default as run } from './run';
+export { default as tags } from './tags';
+export { default as migrate } from './migrate';
