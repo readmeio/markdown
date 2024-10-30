@@ -1,6 +1,4 @@
-import { mdast as mdastLegacy } from '@readme/markdown-legacy';
-
-import { mdast, mdx } from '../../index';
+import { mdast } from '../../index';
 
 describe('images transformer', () => {
   it('converts single children images of paragraphs to an image-block', () => {

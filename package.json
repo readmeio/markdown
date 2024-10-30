@@ -60,6 +60,7 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
+    "@readme/markdown-legacy": "npm:@readme/markdown@^6.87.1",
     "@readme/variable": "^16.1.0",
     "@tippyjs/react": "^4.1.0",
     "react": "16.x || 17.x || 18.x",
@@ -81,7 +82,6 @@
     "@commitlint/config-angular": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
     "@readme/eslint-config": "^14.0.0",
-    "@readme/markdown-legacy": "npm:@readme/markdown@^6.87.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@testing-library/jest-dom": "^6.4.2",

@@ -1,10 +1,9 @@
 import React from 'react';
 import fs from 'node:fs';
 import { vi } from 'vitest';
-import { render, screen, prettyDOM, configure } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
-import { mdx, compile, run } from '../../index';
-import * as rdmd from '@readme/markdown-legacy';
+import { mdastV6, mdx, compile, run } from '../../index';
 
 describe('compatability with RDMD', () => {
   it('compiles glossary nodes', () => {
@@ -126,7 +125,7 @@ describe('compatability with RDMD', () => {
 This is some in progress <!-- commented out stuff -->
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
+    expect(mdx(mdastV6(md)).trim()).toBe('This is some in progress {/* commented out stuff */}');
   });
 
   it('compiles multi-line html comments to JSX comments', () => {
@@ -140,7 +139,7 @@ This is some in progress <!-- commented out stuff -->
 -->
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toMatchInlineSnapshot(`
+    expect(mdx(mdastV6(md)).trim()).toMatchInlineSnapshot(`
       "## Wip
 
       {/*
@@ -156,7 +155,7 @@ This is some in progress <!-- commented out stuff -->
 This is a break: <br>
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is a break: <br />');
+    expect(mdx(mdastV6(md)).trim()).toBe('This is a break: <br />');
   });
 
   it.skip('closes un-closed self closing tags with a space', () => {
@@ -164,7 +163,7 @@ This is a break: <br>
 This is a break: <br >
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is a break: <br />');
+    expect(mdx(mdastV6(md)).trim()).toBe('This is a break: <br />');
   });
 
   it.skip('closes complex un-closed self closing tags', () => {
@@ -172,7 +171,7 @@ This is a break: <br >
 This is an image: <img src="http://example.com/#\\>" >
 `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('This is an image: <img src="http://example.com/#\\>" />');
+    expect(mdx(mdastV6(md)).trim()).toBe('This is an image: <img src="http://example.com/#\\>" />');
   });
 
   it('compiles escapes', () => {
@@ -180,7 +179,7 @@ This is an image: <img src="http://example.com/#\\>" >
 \\- not a list item
     `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('\\- not a list item');
+    expect(mdx(mdastV6(md)).trim()).toBe('\\- not a list item');
   });
 
   it('compiles escapes of backslashes', () => {
@@ -188,20 +187,20 @@ This is an image: <img src="http://example.com/#\\>" >
 \\\\**still emphatic**
     `;
 
-    expect(mdx(rdmd.mdast(md)).trim()).toBe('\\\\**still emphatic**');
+    expect(mdx(mdastV6(md)).trim()).toBe('\\\\**still emphatic**');
   });
 
   it('compiles magic block images into blocks', () => {
     const imageMd = fs.readFileSync('__tests__/fixtures/image-block-no-attrs.md', { encoding: 'utf8' });
     const imageMdx = fs.readFileSync('__tests__/fixtures/image-block-no-attrs.mdx', { encoding: 'utf8' });
 
-    expect(mdx(rdmd.mdast(imageMd))).toBe(imageMdx);
+    expect(mdx(mdastV6(imageMd))).toBe(imageMdx);
   });
 
   it('compiles user variables', () => {
     const md = `Contact me at <<email>>`;
 
-    expect(mdx(rdmd.mdast(md))).toBe(`Contact me at {user.email}\n`);
+    expect(mdx(mdastV6(md))).toBe(`Contact me at {user.email}\n`);
   });
 
   describe('<HTMLBlock> wrapping', () => {
@@ -225,7 +224,7 @@ This is an image: <img src="http://example.com/#\\>" >
     `;
 
     it('should wrap raw <style> tags in an <HTMLBlock>', async () => {
-      const legacyAST = rdmd.mdast(rawStyle);
+      const legacyAST = mdastV6(rawStyle);
       const converted = mdx(legacyAST);
       const compiled = compile(converted);
       const Component = (await run(compiled)).default;
@@ -238,7 +237,7 @@ This is an image: <img src="http://example.com/#\\>" >
     });
 
     it('should wrap raw <script> tags in an <HTMLBlock>', async () => {
-      const legacyAST = rdmd.mdast(rawScript);
+      const legacyAST = mdastV6(rawScript);
       const converted = mdx(legacyAST);
       const compiled = compile(converted);
       const Component = (await run(compiled)).default;
@@ -255,7 +254,7 @@ This is an image: <img src="http://example.com/#\\>" >
        * @note compatability mode has been deprecated for RMDX
        */
       const spy = vi.spyOn(console, 'log');
-      const legacyAST = rdmd.mdast(magicScript);
+      const legacyAST = mdastV6(magicScript);
       const converted = mdx(legacyAST);
       const compiled = compile(converted);
       const Component = await run(compiled);
@@ -287,7 +286,7 @@ This is an image: <img src="http://example.com/#\\>" >
 [/block]
 `;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
 
     expect(rmdx).toMatch('<Image align="center" width="250px" src="https://files.readme.io/4a1c7a0-Iphone.jpeg" />');
   });
@@ -311,7 +310,7 @@ This is an image: <img src="http://example.com/#\\>" >
 }
 [/block]`;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(
       `
       "<Image alt="Data Plane Setup" align="center" border={true} src="https://files.readme.io/fd21f977cfbb9f55b3a13ab0b827525e94ee1576f21bbe82945cdc22cc966d82-Screenshot_2024-09-12_at_3.47.05_PM.png">
@@ -325,7 +324,7 @@ This is an image: <img src="http://example.com/#\\>" >
   it('trims whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
     const md = `** bold ** and _ italic _ and ***   bold italic ***`;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "**bold** and *italic* and ***bold italic***
       "
@@ -352,7 +351,7 @@ This is an image: <img src="http://example.com/#\\>" >
 ## Tile View
     `;
 
-    const tree = rdmd.mdast(md);
+    const tree = mdastV6(md);
     const rmdx = mdx(tree);
     expect(rmdx).toMatchInlineSnapshot(`
       "![806](https://files.readme.io/9ac3bf4-SAP_Folders_Note.png "SAP Folders Note.png")
@@ -383,7 +382,7 @@ ${JSON.stringify(
 [/block]
 `;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -405,16 +404,8 @@ ${JSON.stringify(
             </td>
 
             <td style={{ textAlign: "left" }}>
-              Pseudo-list:
-
-
-
-
-              ● One
-
-
-
-
+              Pseudo-list:\\
+              ● One\\
               ● Two
             </td>
           </tr>
@@ -431,7 +422,7 @@ ${JSON.stringify(
 > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
 `;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "> 🥈
       >
@@ -461,7 +452,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -483,10 +474,12 @@ ${JSON.stringify(
             </td>
 
             <td style={{ textAlign: "left" }}>
-              \`{
+              \`\`\`
+              {
                "field": "ID",
                "type": "ASC"
-               }\`
+               }
+              \`\`\`
             </td>
           </tr>
         </tbody>
@@ -498,7 +491,7 @@ ${JSON.stringify(
   it('compiles inline html', () => {
     const md = `Inline html: <small>_string_</small>`;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "Inline html: <small>*string*</small>
       "
@@ -508,7 +501,7 @@ ${JSON.stringify(
   it('compiles tag-like syntax', () => {
     const md = `Inline: <what even is this>`;
 
-    const rmdx = mdx(rdmd.mdast(md));
+    const rmdx = mdx(mdastV6(md));
     expect(rmdx).toMatchInlineSnapshot(`
       "Inline: <what even is this>
       "

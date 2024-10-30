@@ -82,6 +82,7 @@ const getConfig = ({ target }) => ({
 
 const browserConfig = merge(getConfig({ target: 'web' }), {
   externals: {
+    '@readme/markdown-legacy': '@readme/markdown-legacy',
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
     mermaid: 'mermaid',
@@ -119,6 +120,7 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
     filename: '[name].node.js',
   },
   externals: {
+    '@readme/markdown-legacy': '@readme/markdown-legacy',
     react: {
       amd: 'react',
       commonjs: 'react',
