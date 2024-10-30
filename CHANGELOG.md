@@ -1,6 +1,969 @@
 Changelog
 ===
 
+## Version 7.7.3
+
+### 🛠 Fixes & Updates
+
+* docker build ([#1002](https://github.com/readmeio/markdown/issues/1002)) ([02bf11a](https://github.com/readmeio/markdown/commit/02bf11a9c7a416f4a5f60d232cc8f565cb693dc0))
+* mermaid render ([#1001](https://github.com/readmeio/markdown/issues/1001)) ([872ce83](https://github.com/readmeio/markdown/commit/872ce8371759c9d2db03084800e29bd53fd3f4fe))
+
+## Version 7.7.2
+
+### 🛠 Fixes & Updates
+
+* externalize mermaid ([#1000](https://github.com/readmeio/markdown/issues/1000)) ([de82144](https://github.com/readmeio/markdown/commit/de8214415f56f3e2eaa6f1ea8a538fa1ad0eb13a))
+
+## Version 7.7.1
+
+### 🛠 Fixes & Updates
+
+* make mermaid optional ([#999](https://github.com/readmeio/markdown/issues/999)) ([7d5ee07](https://github.com/readmeio/markdown/commit/7d5ee07bdeea85accccf57eb1013881c28e5e6a5))
+
+## Version 7.7.0
+
+### ✨ New & Improved
+
+* mermaid diagrams ([#994](https://github.com/readmeio/markdown/issues/994)) ([af6e306](https://github.com/readmeio/markdown/commit/af6e306595463f87dce8e9b415b5bb6478466c6e))
+
+
+### 🛠 Fixes & Updates
+
+* missing close icon ([#995](https://github.com/readmeio/markdown/issues/995)) ([7012fe3](https://github.com/readmeio/markdown/commit/7012fe3c0a0265639042c165b61f3a83a994ea64))
+* replace node-sass ([#997](https://github.com/readmeio/markdown/issues/997)) ([3637314](https://github.com/readmeio/markdown/commit/36373146a1a134cedae0ccd6ff4e552a41c18c76))
+* rollback html fixes ([#996](https://github.com/readmeio/markdown/issues/996)) ([8c96e92](https://github.com/readmeio/markdown/commit/8c96e923d9f0423504551bb0e9748c045dff66ca))
+
+## Version 7.6.7
+
+### ✨ New & Improved
+
+* **Image:** match new alignment selectors ([#992](https://github.com/readmeio/markdown/issues/992)) ([73bca2b](https://github.com/readmeio/markdown/commit/73bca2b5c834c68de5138707c0151632790416ab))
+
+
+### 🛠 Fixes & Updates
+
+* better tag handling ([#991](https://github.com/readmeio/markdown/issues/991)) ([e6aa82d](https://github.com/readmeio/markdown/commit/e6aa82d256d0662571da0103633b94920d15e5fc))
+* respect the top-level `copyButtons` option ([#990](https://github.com/readmeio/markdown/issues/990)) ([1242413](https://github.com/readmeio/markdown/commit/12424139bd02ee13b213e49f165961239798a519)), closes [#964](https://github.com/readmeio/markdown/issues/964) [/github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts#L28](https://github.com/readmeio//github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts/issues/L28) [/github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts#L28](https://github.com/readmeio//github.com/readmeio/markdown/blob/96f9644f04e6d8e3ffff6f9c014432f901c0b804/lib/compile.ts/issues/L28) [/github.com/readmeio/markdown/blob/b9502adb306f099cd91e005df17c0be252019814/options.js#L1-L22](https://github.com/readmeio//github.com/readmeio/markdown/blob/b9502adb306f099cd91e005df17c0be252019814/options.js/issues/L1-L22)
+
+
+### 📘 Tests & Docs
+
+* readme updates ([#993](https://github.com/readmeio/markdown/issues/993)) ([3a4e30d](https://github.com/readmeio/markdown/commit/3a4e30d3349ff130e8b212293e6ffb44b3586278))
+
+## Version 7.6.6
+
+### 🛠 Fixes & Updates
+
+* accordion toggle icon ([#985](https://github.com/readmeio/markdown/issues/985)) ([90bf6e6](https://github.com/readmeio/markdown/commit/90bf6e6fa5e28814452fca39e0c8233726ed4a94)), closes [/github.com/readmeio/markdown/pull/969/files#diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841](https://github.com/readmeio//github.com/readmeio/markdown/pull/969/files/issues/diff-909b2e4084c67e1c9a9d120d5421457bc8d4bd0d822396205a76e4eff3439841)
+* image captions  ([#986](https://github.com/readmeio/markdown/issues/986)) ([0db3627](https://github.com/readmeio/markdown/commit/0db362799f26b1797848da3ecdcd8534e844012f))
+
+## Version 7.6.5
+
+### 🛠 Fixes & Updates
+
+* copy button icons ([#982](https://github.com/readmeio/markdown/issues/982)) ([bbe2060](https://github.com/readmeio/markdown/commit/bbe20604c8d7478c81f4f78cebf9e6cc0fb107e1))
+* fallback for 5 ([#984](https://github.com/readmeio/markdown/issues/984)) ([c1ad0ac](https://github.com/readmeio/markdown/commit/c1ad0acfad933fdd099e1c4c73f1c5a759e88223)), closes [#c50a50](https://github.com/readmeio/markdown/issues/c50a50)
+* inline mdx images ([#983](https://github.com/readmeio/markdown/issues/983)) ([3faa95d](https://github.com/readmeio/markdown/commit/3faa95d2da4f63fa129a604ad93547ce973792ae))
+* legacy image migration ([#975](https://github.com/readmeio/markdown/issues/975)) ([c900d5f](https://github.com/readmeio/markdown/commit/c900d5f7bf5997cf939ad2e707480b922928ec2f))
+
+## Version 7.6.4
+
+### 🛠 Fixes & Updates
+
+* yet another image code path ([#981](https://github.com/readmeio/markdown/issues/981)) ([887419c](https://github.com/readmeio/markdown/commit/887419c7404f41f2f887cf34b5e0a59ef27393be))
+
+## Version 7.6.3
+
+### 🛠 Fixes & Updates
+
+* dont render markdown in toc ([#980](https://github.com/readmeio/markdown/issues/980)) ([c929bd0](https://github.com/readmeio/markdown/commit/c929bd07ec804357ea9c307231f63d0a69f2ee68))
+* tables with inline code with newlines ([#979](https://github.com/readmeio/markdown/issues/979)) ([1de4f28](https://github.com/readmeio/markdown/commit/1de4f281594d41f76003429c52fef034df5de2d2))
+
+## Version 7.6.2
+
+### 🛠 Fixes & Updates
+
+* migrating callouts ([#978](https://github.com/readmeio/markdown/issues/978)) ([df0cb27](https://github.com/readmeio/markdown/commit/df0cb271b01d2602a0beaf5138d522a9db7b7133))
+* migrating image borders ([#977](https://github.com/readmeio/markdown/issues/977)) ([c5ff7cd](https://github.com/readmeio/markdown/commit/c5ff7cdcd819aa09983d39b781193ff793afbf50))
+* migrating magic block tables with breaks ([#976](https://github.com/readmeio/markdown/issues/976)) ([b5092f2](https://github.com/readmeio/markdown/commit/b5092f23b7a0c921210412fe6bba2b4cbb5ea5b8))
+
+## Version 7.6.1
+
+### 🛠 Fixes & Updates
+
+* migrate emphasis ([#974](https://github.com/readmeio/markdown/issues/974)) ([45279f3](https://github.com/readmeio/markdown/commit/45279f36b5f9944541a4fdb2dd5f24a29e23b843))
+
+## Version 7.6.0
+
+### ✨ New & Improved
+
+* fontawesome 6 ([#969](https://github.com/readmeio/markdown/issues/969)) ([6360191](https://github.com/readmeio/markdown/commit/6360191a870feaf7c564c8c70d01f312fa7b9dfe))
+
+## Version 7.5.4
+
+### 🛠 Fixes & Updates
+
+* migrating captions ([#971](https://github.com/readmeio/markdown/issues/971)) ([afa40af](https://github.com/readmeio/markdown/commit/afa40af686be5196783f663e33443d0773101b9b))
+
+## Version 7.5.3
+
+### 🛠 Fixes & Updates
+
+* image blocks ([#968](https://github.com/readmeio/markdown/issues/968)) ([3cc4b4a](https://github.com/readmeio/markdown/commit/3cc4b4afc2227fa8b24fffe6a8ba6f819ca98e34))
+
+## Version 7.5.2
+
+### 🛠 Fixes & Updates
+
+* compiling emoji ([#967](https://github.com/readmeio/markdown/issues/967)) ([a1e2d82](https://github.com/readmeio/markdown/commit/a1e2d82b113325b1a136177453b40389f603f94b))
+
+## Version 7.5.1
+
+### 🛠 Fixes & Updates
+
+* image migration issues ([#965](https://github.com/readmeio/markdown/issues/965)) ([a30bc64](https://github.com/readmeio/markdown/commit/a30bc649e37dc70cb2497d50de6e1c529fbbbfc1))
+
+## Version 7.5.0
+
+### ✨ New & Improved
+
+* pass through stringify options ([#963](https://github.com/readmeio/markdown/issues/963)) ([fb4fb7d](https://github.com/readmeio/markdown/commit/fb4fb7db1998463c9cf43764d533c14383e63a9f))
+
+
+### 🛠 Fixes & Updates
+
+* **rdmd to rmdx:** wrap scripts + styles in an <HTMLBlock> ([#954](https://github.com/readmeio/markdown/issues/954)) ([2c878b6](https://github.com/readmeio/markdown/commit/2c878b60ceb7b7b536330a900b7abe0b5df81e94))
+
+## Version 7.4.3
+
+### 🛠 Fixes & Updates
+
+* undefined check ([#962](https://github.com/readmeio/markdown/issues/962)) ([cc4a53f](https://github.com/readmeio/markdown/commit/cc4a53ff2153ddffdd84aa4bbd1a9dda3ac75157))
+* update tabs & accordions ui ([#961](https://github.com/readmeio/markdown/issues/961)) ([88636cd](https://github.com/readmeio/markdown/commit/88636cdd17d676408721cf7d1781f65b25aff248))
+
+## Version 7.4.2
+
+### ✨ New & Improved
+
+* **Image:** fix alignment oddities ([#956](https://github.com/readmeio/markdown/issues/956)) ([7382d43](https://github.com/readmeio/markdown/commit/7382d43266a0f983b5351a9372f09ee97ebe73ab)), closes [/github.com/readmeio/markdown/pull/956/files#diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-1b96290f278c30bd682c1247de2db226763c471520a387108344a9d53d13de23R19) [/github.com/readmeio/markdown/pull/956/files#diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92](https://github.com/readmeio//github.com/readmeio/markdown/pull/956/files/issues/diff-19c7d495b0c7303322a8a6dcaf6813764594f9e77b9aabc2e5da9a1e274a6d92)
+
+
+### 🛠 Fixes & Updates
+
+* image compiling ([#960](https://github.com/readmeio/markdown/issues/960)) ([6e3a7ac](https://github.com/readmeio/markdown/commit/6e3a7acc78fcd2016203c9ffd3cf04f8d22713cf))
+
+
+### 📘 Tests & Docs
+
+* update readme for MDX ([#957](https://github.com/readmeio/markdown/issues/957)) ([0b5f89b](https://github.com/readmeio/markdown/commit/0b5f89b86d4866fbe04b7c5f569becb443e0855d))
+
+## Version 7.4.1
+
+### 🛠 Fixes & Updates
+
+* image styles ([#959](https://github.com/readmeio/markdown/issues/959)) ([f89c813](https://github.com/readmeio/markdown/commit/f89c813560ebf80cf712316cb89fa38d5984efa7))
+
+## Version 7.4.0
+
+### ✨ New & Improved
+
+* trigger release ([034928b](https://github.com/readmeio/markdown/commit/034928b6aae112e01d99f93a9fd5bd1d75e1dfb7))
+
+
+### 🛠 Fixes & Updates
+
+* tabs component color ([#958](https://github.com/readmeio/markdown/issues/958)) ([61cac1c](https://github.com/readmeio/markdown/commit/61cac1c9c2ef10676ec65dcfa20ce7f97ea89d35))
+* update component styling ([#955](https://github.com/readmeio/markdown/issues/955)) ([bd18389](https://github.com/readmeio/markdown/commit/bd18389053ccc90342e98198c057c9396d5ab501))
+
+## Version 7.3.0
+
+### ✨ New & Improved
+
+* add downstream styles ([#953](https://github.com/readmeio/markdown/issues/953)) ([0b1b52d](https://github.com/readmeio/markdown/commit/0b1b52ded7aa6e59c945d47a5a579c8fe1ccf79b))
+
+
+### 🛠 Fixes & Updates
+
+* **img:** set src properly for magic image blocks ([#952](https://github.com/readmeio/markdown/issues/952)) ([8f71fce](https://github.com/readmeio/markdown/commit/8f71fce164fc66308d0d5fc4f8b87deb1eae7f0b)), closes [/github.com/readmeio/markdown/pull/952/files#diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50](https://github.com/readmeio//github.com/readmeio/markdown/pull/952/files/issues/diff-9b10647639421f1135101ae63ca87780ab63af9e81c8da0b00ea6d0ddd08b8b6R26-R50)
+
+## Version 7.2.1
+
+### 🛠 Fixes & Updates
+
+* image block migration ([#951](https://github.com/readmeio/markdown/issues/951)) ([55dc0c9](https://github.com/readmeio/markdown/commit/55dc0c9cffe394ff5e07c28e63fb3c7f94508c9f))
+
+## Version 7.2.0
+
+### ✨ New & Improved
+
+* update built-in components ([#950](https://github.com/readmeio/markdown/issues/950)) ([ba7d225](https://github.com/readmeio/markdown/commit/ba7d2250f2a7d86ea6c324b1352a4bad7b6c8080))
+
+## Version 7.1.0
+
+### ✨ New & Improved
+
+* tabs component ([#948](https://github.com/readmeio/markdown/issues/948)) ([6e110d2](https://github.com/readmeio/markdown/commit/6e110d21429b87fecc1be1245921e0f76669735a))
+* tags ([#949](https://github.com/readmeio/markdown/issues/949)) ([3429b11](https://github.com/readmeio/markdown/commit/3429b114addf8750f5e9b8b1e50cf4facddeb2a9))
+
+## Version 7.0.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: MDX!
+
+### ✨ New & Improved
+
+* trigger release ([9183dd0](https://github.com/readmeio/markdown/commit/9183dd079bbfcce8d02c06f18290217c34546e2f))
+
+## Version 6.89.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: MDX!
+
+### ✨ New & Improved
+
+* trigger release ([a54c07e](https://github.com/readmeio/markdown/commit/a54c07ecc7dafbcc2aaf7b1f91397c25bc24a66b))
+
+## Version 6.88.0
+
+### ⚠ BREAKING CHANGES
+
+* CHANGE: This is a near complete rewrite of the library, and converts it to supporting MDX instead of markdown.
+
+### ✨ New & Improved
+
+* merge beta ([#947](https://github.com/readmeio/markdown/issues/947)) ([b9502ad](https://github.com/readmeio/markdown/commit/b9502adb306f099cd91e005df17c0be252019814))
+
+## Version 6.75.0-beta.77
+
+### 🛠 Fixes & Updates
+
+* lists in table headers ([#943](https://github.com/readmeio/markdown/issues/943)) ([6a2e80f](https://github.com/readmeio/markdown/commit/6a2e80f82ed68b7203c412442b4b83165295d362))
+
+## Version 6.75.0-beta.76
+
+### 🛠 Fixes & Updates
+
+* saving tables ([#942](https://github.com/readmeio/markdown/issues/942)) ([50c392e](https://github.com/readmeio/markdown/commit/50c392ea214eb123f53e756f00ab8a074bd7ff12))
+
+## Version 6.75.0-beta.75
+
+### 🛠 Fixes & Updates
+
+* skip null align ([#940](https://github.com/readmeio/markdown/issues/940)) ([7880a89](https://github.com/readmeio/markdown/commit/7880a896b09bc1157bb86b61d5e0fc3d8e8461f4))
+
+## Version 6.75.0-beta.74
+
+### 🛠 Fixes & Updates
+
+* use td ([47650a4](https://github.com/readmeio/markdown/commit/47650a4329f8454d1a2709942313bf887dc4f2d3))
+
+## Version 6.75.0-beta.73
+
+### 🛠 Fixes & Updates
+
+* tables ([#938](https://github.com/readmeio/markdown/issues/938)) ([1cbb175](https://github.com/readmeio/markdown/commit/1cbb175c39dee1248baca69ca8f3791e4f490825))
+
+## Version 6.75.0-beta.72
+
+### ✨ New & Improved
+
+* remark plugins ([#939](https://github.com/readmeio/markdown/issues/939)) ([2747c48](https://github.com/readmeio/markdown/commit/2747c482ca4185da205d24996bb236dd57bfb969))
+
+## Version 6.75.0-beta.71
+
+### ✨ New & Improved
+
+* table blocks ([#937](https://github.com/readmeio/markdown/issues/937)) ([10852a0](https://github.com/readmeio/markdown/commit/10852a04529e28cb60b83eb03b185dc6228b1206))
+
+## Version 6.75.0-beta.70
+
+### 🛠 Fixes & Updates
+
+* compatibility for unknown nodes ([#929](https://github.com/readmeio/markdown/issues/929)) ([5d21b54](https://github.com/readmeio/markdown/commit/5d21b540cafd67e49e3ae465cfbd91ddb651169c))
+
+## Version 6.75.0-beta.69
+
+### ✨ New & Improved
+
+* force release ([d3e4da3](https://github.com/readmeio/markdown/commit/d3e4da356053453445343534a170f795cf153b05))
+
+
+### 🛠 Fixes & Updates
+
+* **beta:** nix errant log ([#934](https://github.com/readmeio/markdown/issues/934)) ([04b55eb](https://github.com/readmeio/markdown/commit/04b55eb1c6ef0f66e9de312be5d3a55b88755e88)), closes [#933](https://github.com/readmeio/markdown/issues/933) [/github.com/readmeio/markdown/pull/933#discussion_r1664579308](https://github.com/readmeio//github.com/readmeio/markdown/pull/933/issues/discussion_r1664579308)
+
+## Version 6.75.0-beta.68
+
+### 🛠 Fixes & Updates
+
+* **beta:** toc generation when using MDX components ([#933](https://github.com/readmeio/markdown/issues/933)) ([c1408e3](https://github.com/readmeio/markdown/commit/c1408e3fa3c47d155101de9c4ec9f82819f25ca7))
+
+## Version 6.75.0-beta.67
+
+### ✨ New & Improved
+
+* hast heading ids ([#932](https://github.com/readmeio/markdown/issues/932)) ([0075460](https://github.com/readmeio/markdown/commit/0075460eea3695861ab452f4551c5e9b188d0bfe))
+
+
+### 🛠 Fixes & Updates
+
+* **gha:** update github actions versions ([#930](https://github.com/readmeio/markdown/issues/930)) ([e728a90](https://github.com/readmeio/markdown/commit/e728a9019b423d7e9845e1dbfbf1cd0d6d95b648))
+
+## Version 6.75.0-beta.66
+
+### ✨ New & Improved
+
+* add another html block test ([#928](https://github.com/readmeio/markdown/issues/928)) ([752be9e](https://github.com/readmeio/markdown/commit/752be9e0230c89824844ebad7f8267d2ae626117))
+
+
+### 🛠 Fixes & Updates
+
+* html block test ([#927](https://github.com/readmeio/markdown/issues/927)) ([7830a3d](https://github.com/readmeio/markdown/commit/7830a3d6e6601174a0bff585825a228032fe2673))
+
+## Version 6.75.0-beta.66
+
+### 🛠 Fixes & Updates
+
+* html block test ([#927](https://github.com/readmeio/markdown/issues/927)) ([7830a3d](https://github.com/readmeio/markdown/commit/7830a3d6e6601174a0bff585825a228032fe2673))
+
+## Version 6.75.0-beta.65
+
+### ✨ New & Improved
+
+* compatibility for rdmd image/embed components ([#919](https://github.com/readmeio/markdown/issues/919)) ([e631c8f](https://github.com/readmeio/markdown/commit/e631c8f0ebce74f2f49e0bc9657170ceddae3a86))
+
+## Version 6.75.0-beta.64
+
+### 🛠 Fixes & Updates
+
+* add image component caption as children ([#918](https://github.com/readmeio/markdown/issues/918)) ([59e1bd3](https://github.com/readmeio/markdown/commit/59e1bd3206a6daaac50cfc2f39cb10fb21048698))
+
+## Version 6.75.0-beta.63
+
+### ✨ New & Improved
+
+* readme-variable ([#913](https://github.com/readmeio/markdown/issues/913)) ([e3c4a5e](https://github.com/readmeio/markdown/commit/e3c4a5e45fa8dd3c106d55c6b6b1e6938073715c))
+
+## Version 6.75.0-beta.62
+
+### ✨ New & Improved
+
+* mdx position ([#917](https://github.com/readmeio/markdown/issues/917)) ([0e080fa](https://github.com/readmeio/markdown/commit/0e080fabe93f7e2bd38aa2fa4718c6702e7ee2cf))
+
+## Version 6.75.0-beta.61
+
+### ✨ New & Improved
+
+* increase code font size ([#912](https://github.com/readmeio/markdown/issues/912)) ([586515f](https://github.com/readmeio/markdown/commit/586515f8880f587f4854af8a1397193efa05e913)), closes [#915](https://github.com/readmeio/markdown/issues/915)
+
+## Version 6.75.0-beta.60
+
+### 🛠 Fixes & Updates
+
+* updates to html block ([#906](https://github.com/readmeio/markdown/issues/906)) ([ddc97db](https://github.com/readmeio/markdown/commit/ddc97dbc9cafad133b4ac1e6f06eef067a1ca6d0))
+
+## Version 6.75.0-beta.59
+
+### ✨ New & Improved
+
+* new <Cards> component ([#908](https://github.com/readmeio/markdown/issues/908)) ([4df0213](https://github.com/readmeio/markdown/commit/4df0213bbdce2345ce9914b5e80e90f8b048d501))
+
+## Version 6.75.0-beta.58
+
+### 🛠 Fixes & Updates
+
+* decode HTML outside of component render ([#905](https://github.com/readmeio/markdown/issues/905)) ([9fdf13f](https://github.com/readmeio/markdown/commit/9fdf13fbc1a8bc1ec0fb207e0ed5da2c9cbd6163))
+
+## Version 6.75.0-beta.57
+
+### ✨ New & Improved
+
+* jsx variables ([#899](https://github.com/readmeio/markdown/issues/899)) ([3ed86e3](https://github.com/readmeio/markdown/commit/3ed86e3e50f681e5dcde9a7315556f2a233cc011))
+
+## Version 6.75.0-beta.56
+
+### 🛠 Fixes & Updates
+
+* embed rendering on the hub ([#904](https://github.com/readmeio/markdown/issues/904)) ([828f0a5](https://github.com/readmeio/markdown/commit/828f0a5debfa5d2352153413eaee933ec340f358))
+
+## Version 6.75.0-beta.55
+
+### ✨ New & Improved
+
+* escapes ([#903](https://github.com/readmeio/markdown/issues/903)) ([94c37bc](https://github.com/readmeio/markdown/commit/94c37bc2dcd8bdfc63e7ecdd3ee761a93ee54924))
+
+## Version 6.75.0-beta.54
+
+### ✨ New & Improved
+
+* add html to hast ([#901](https://github.com/readmeio/markdown/issues/901)) ([6de3d89](https://github.com/readmeio/markdown/commit/6de3d895bac72c2452b552ae8aedca75649aea23))
+
+
+### 🛠 Fixes & Updates
+
+* cleanup ([e34ebf5](https://github.com/readmeio/markdown/commit/e34ebf579c8a09eea04abe1815775c1c27d8100c))
+
+## Version 6.75.0-beta.53
+
+### 🛠 Fixes & Updates
+
+* embeds and images save better ([#893](https://github.com/readmeio/markdown/issues/893)) ([67e0fec](https://github.com/readmeio/markdown/commit/67e0fec706d0538b9652552800aabe6f5ec0d97e))
+
+## Version 6.75.0-beta.52
+
+### 🛠 Fixes & Updates
+
+* allow non-modules ([70b2a90](https://github.com/readmeio/markdown/commit/70b2a90580f64b1561d8f608ce83272561d3f26f))
+
+## Version 6.75.0-beta.51
+
+### ✨ New & Improved
+
+* plain ([#898](https://github.com/readmeio/markdown/issues/898)) ([0b60259](https://github.com/readmeio/markdown/commit/0b60259b002a61964c0f0a85589d625946f508e9))
+
+
+### 🛠 Fixes & Updates
+
+* toc ([#900](https://github.com/readmeio/markdown/issues/900)) ([b3e8f7d](https://github.com/readmeio/markdown/commit/b3e8f7d0713361b87ad30077a79c0d08c5abb937))
+* types ([86a199b](https://github.com/readmeio/markdown/commit/86a199bacc639772a6bbb7994c6132f8d58db3c5))
+
+## Version 6.75.0-beta.50
+
+### ✨ New & Improved
+
+* trigger build ([e85772c](https://github.com/readmeio/markdown/commit/e85772c32393903cce88bcde5bee5755d46ad6ad))
+
+## Version 6.75.0-beta.49
+
+### 🛠 Fixes & Updates
+
+* migration issues ([#896](https://github.com/readmeio/markdown/issues/896)) ([9752849](https://github.com/readmeio/markdown/commit/97528497c0a1694110d3fd303328480a3fc81a63))
+
+## Version 6.75.0-beta.48
+
+### ✨ New & Improved
+
+* mdx TOC ([#883](https://github.com/readmeio/markdown/issues/883)) ([ef8f9a1](https://github.com/readmeio/markdown/commit/ef8f9a1a812f257146da11c64385edbd9dfb8c3a))
+
+## Version 6.75.0-beta.47
+
+### ✨ New & Improved
+
+* translate recipes between mdx and md ([#892](https://github.com/readmeio/markdown/issues/892)) ([025c8cd](https://github.com/readmeio/markdown/commit/025c8cd54c346cb86d8b3dff4fc66882f7956ba5))
+
+## Version 6.75.0-beta.46
+
+### 🛠 Fixes & Updates
+
+* add externals for node build ([#895](https://github.com/readmeio/markdown/issues/895)) ([3d6eb5d](https://github.com/readmeio/markdown/commit/3d6eb5d8471c0c75e810970a1358ab3964f8ce21))
+
+## Version 6.75.0-beta.45
+
+### 🛠 Fixes & Updates
+
+* callout styling ([#891](https://github.com/readmeio/markdown/issues/891)) ([463b870](https://github.com/readmeio/markdown/commit/463b87037cc1b3164d94d97f70680ef3d1cd7826))
+
+## Version 6.75.0-beta.44
+
+### ✨ New & Improved
+
+* fix glossary item ([#890](https://github.com/readmeio/markdown/issues/890)) ([4ec815f](https://github.com/readmeio/markdown/commit/4ec815fb48a160b9902caada92528b9807cb2ea2))
+
+## Version 6.75.0-beta.43
+
+### ✨ New & Improved
+
+* load styles! ([bdb4441](https://github.com/readmeio/markdown/commit/bdb44414612858bcb26bef6f120001356bd36f6c))
+
+## Version 6.75.0-beta.42
+
+### 🛠 Fixes & Updates
+
+* glossary ([#889](https://github.com/readmeio/markdown/issues/889)) ([d20f8e7](https://github.com/readmeio/markdown/commit/d20f8e76e2811762b8b153fca9b47d6a44ddd173))
+
+## Version 6.75.0-beta.41
+
+### 🛠 Fixes & Updates
+
+* images ([#888](https://github.com/readmeio/markdown/issues/888)) ([4ecbdc7](https://github.com/readmeio/markdown/commit/4ecbdc79bc7c2d749f594947ab377c40cf013df2))
+
+## Version 6.75.0-beta.40
+
+### 🛠 Fixes & Updates
+
+* callout breaks ([#887](https://github.com/readmeio/markdown/issues/887)) ([0949888](https://github.com/readmeio/markdown/commit/0949888ab04fc2e083dc787e2226a600c8965929))
+
+## Version 6.75.0-beta.39
+
+### 🛠 Fixes & Updates
+
+* fix types ([47fc684](https://github.com/readmeio/markdown/commit/47fc684000e0ce1e86b42359f5e47dee2229529a))
+* matching node names with main app ([#886](https://github.com/readmeio/markdown/issues/886)) ([1290014](https://github.com/readmeio/markdown/commit/1290014bb3caa595fcbb6a3540117b39e11bed35))
+* update variable types ([#885](https://github.com/readmeio/markdown/issues/885)) ([1ccf82d](https://github.com/readmeio/markdown/commit/1ccf82d9fe1e8b36c5dbc90b67846565629eed9b))
+
+## Version 6.75.0-beta.38
+
+### ✨ New & Improved
+
+* compatibility ([#881](https://github.com/readmeio/markdown/issues/881)) ([6432be8](https://github.com/readmeio/markdown/commit/6432be8bb67dd8423ec223eb6355c8b2fa0c217a))
+
+## Version 6.75.0-beta.37
+
+### 🛠 Fixes & Updates
+
+* compilers ([#882](https://github.com/readmeio/markdown/issues/882)) ([6caaafd](https://github.com/readmeio/markdown/commit/6caaafd19de9c13ea4f48df23f74d889725b77ba))
+
+## Version 6.75.0-beta.36
+
+### ✨ New & Improved
+
+* glossary niceness and more ([#879](https://github.com/readmeio/markdown/issues/879)) ([43b5256](https://github.com/readmeio/markdown/commit/43b525686b64f216dae32dbf0b64b03620f39ef3))
+
+## Version 6.75.0-beta.35
+
+### 🛠 Fixes & Updates
+
+* callouts ([#880](https://github.com/readmeio/markdown/issues/880)) ([cf7e284](https://github.com/readmeio/markdown/commit/cf7e2845dd666a78d347c9f3ada2dea8f64c13bd))
+
+## Version 6.75.0-beta.34
+
+### ✨ New & Improved
+
+* embeds! ([#878](https://github.com/readmeio/markdown/issues/878)) ([9dee309](https://github.com/readmeio/markdown/commit/9dee30984b10411016e625eba1f4bfe8b26e4233))
+
+## Version 6.75.0-beta.33
+
+### 🛠 Fixes & Updates
+
+* dynamic import ([06a22ba](https://github.com/readmeio/markdown/commit/06a22bac10e95788f6703c174a1ab22b84697f9e))
+
+## Version 6.75.0-beta.32
+
+### ✨ New & Improved
+
+* fix dynamic require ([2482231](https://github.com/readmeio/markdown/commit/24822311b1f6126a28e6b29d8f4f48d39ba0f78d))
+* jsx-coercion ([#876](https://github.com/readmeio/markdown/issues/876)) ([b742c6c](https://github.com/readmeio/markdown/commit/b742c6c734cfef3bdf0a6657221a727a475e9eef))
+
+
+### 🛠 Fixes & Updates
+
+* types ([#877](https://github.com/readmeio/markdown/issues/877)) ([c0a4d66](https://github.com/readmeio/markdown/commit/c0a4d66723618a9bea8798e65006130015696bdf))
+
+## Version 6.75.0-beta.31
+
+### ✨ New & Improved
+
+* html blocks! ([#875](https://github.com/readmeio/markdown/issues/875)) ([1761667](https://github.com/readmeio/markdown/commit/17616676527c2b431b56fa9e607d27dbd9e3ebd4))
+
+## Version 6.75.0-beta.30
+
+### ✨ New & Improved
+
+* tables ([#874](https://github.com/readmeio/markdown/issues/874)) ([ec439ef](https://github.com/readmeio/markdown/commit/ec439ef36e869195c398ebce2c2b86d80be3d6c1))
+
+## Version 6.75.0-beta.29
+
+### ✨ New & Improved
+
+* image components! ([#857](https://github.com/readmeio/markdown/issues/857)) ([0e015ce](https://github.com/readmeio/markdown/commit/0e015ce7b461c6c544ef34a76e997ea65af7eee8))
+
+## Version 6.75.0-beta.28
+
+### ✨ New & Improved
+
+* **mdx:** gemoji ([#867](https://github.com/readmeio/markdown/issues/867)) ([21ff6f3](https://github.com/readmeio/markdown/commit/21ff6f3a16d9c6602daa6c8ed5af975e60756a12))
+* mdx code tabs ([#871](https://github.com/readmeio/markdown/issues/871)) ([7cc4d30](https://github.com/readmeio/markdown/commit/7cc4d309811265aba9ac031c000b3e527a4526df))
+
+
+### 🛠 Fixes & Updates
+
+* update node-versions ([7d367a7](https://github.com/readmeio/markdown/commit/7d367a7532252c898089203e4e4839318fb19df8))
+
+## Version 6.75.0-beta.27
+
+### ✨ New & Improved
+
+* variables and glossary ([#865](https://github.com/readmeio/markdown/issues/865)) ([aeebd7c](https://github.com/readmeio/markdown/commit/aeebd7ccc51356bdcaf286c8becfa979ae7ce22b))
+
+## Version 6.75.0-beta.26
+
+### ✨ New & Improved
+
+* bump release ([f5dd329](https://github.com/readmeio/markdown/commit/f5dd329e159f105b2e5c3c78d5f68e667b58c266))
+* bump release ([#863](https://github.com/readmeio/markdown/issues/863)) ([a8bc8d8](https://github.com/readmeio/markdown/commit/a8bc8d83bdfa6b60bd51c2955a41f2ddcaee137a))
+
+
+### 🛠 Fixes & Updates
+
+* update ci ([#860](https://github.com/readmeio/markdown/issues/860)) ([6f54f75](https://github.com/readmeio/markdown/commit/6f54f754dbe7ee906092de402a801ed6055e703b))
+
+## Version 6.75.0-beta.25
+
+### ✨ New & Improved
+
+* pass in react ([#859](https://github.com/readmeio/markdown/issues/859)) ([34d9bb6](https://github.com/readmeio/markdown/commit/34d9bb6ae876c1c87784579a3691a115b3512b92))
+
+## Version 6.75.0-beta.24
+
+### ✨ New & Improved
+
+* async run ([#858](https://github.com/readmeio/markdown/issues/858)) ([61a3e19](https://github.com/readmeio/markdown/commit/61a3e196d449e2df8393b1c7db56cf7901d54490))
+
+## Version 6.75.0-beta.23
+
+### ✨ New & Improved
+
+* force release ([073ac1d](https://github.com/readmeio/markdown/commit/073ac1db504046b36d1d3f8618c5dc12700cd19b))
+
+## Version 6.75.0-beta.22
+
+### ✨ New & Improved
+
+* update shighlighter ([3bbed6a](https://github.com/readmeio/markdown/commit/3bbed6a9268d0296486b4db7f3fcd6239d74b581))
+
+## Version 6.75.0-beta.21
+
+### ✨ New & Improved
+
+* fix package name ([82ffcfe](https://github.com/readmeio/markdown/commit/82ffcfe5c49e6a8215c8c9958b5faacc5b7e26b6))
+
+## Version 6.75.0-beta.20
+
+### ✨ New & Improved
+
+* package-lock ([6747a1f](https://github.com/readmeio/markdown/commit/6747a1fa94e26702377067cb058f75a0dadfc720))
+
+## Version 6.75.0-beta.19
+
+### ✨ New & Improved
+
+* revert updates ([98eafe7](https://github.com/readmeio/markdown/commit/98eafe745e4ecc3b8de53a730e0eb6d7f654419b))
+
+## Version 6.75.0-beta.18
+
+### ✨ New & Improved
+
+* build ([c3f2f5c](https://github.com/readmeio/markdown/commit/c3f2f5ce318bf8fb1f84c91a4154ae0ad839ff47))
+
+## Version 6.75.0-beta.17
+
+### ✨ New & Improved
+
+* add usemdxcomponents option ([#848](https://github.com/readmeio/markdown/issues/848)) ([48351a2](https://github.com/readmeio/markdown/commit/48351a2961fd57f18a869bd714ab42ea2817a2f9))
+
+## Version 6.75.0-beta.16
+
+### ✨ New & Improved
+
+* throw ([#844](https://github.com/readmeio/markdown/issues/844)) ([ecdba1b](https://github.com/readmeio/markdown/commit/ecdba1b4c6f7ef8396818c29f329c63aae570147))
+
+## Version 6.75.0-beta.15
+
+### ✨ New & Improved
+
+* rename react ot compile ([#843](https://github.com/readmeio/markdown/issues/843)) ([52111ce](https://github.com/readmeio/markdown/commit/52111cef8482c18e1ec3be333f71d90f46284b4d))
+
+## Version 6.75.0-beta.14
+
+### 🛠 Fixes & Updates
+
+* callout headings ([#842](https://github.com/readmeio/markdown/issues/842)) ([da78ea2](https://github.com/readmeio/markdown/commit/da78ea2f7d868b71a277ed9f7e902324c0c4a6ad))
+
+## Version 6.75.0-beta.13
+
+### ✨ New & Improved
+
+* callouts ([#841](https://github.com/readmeio/markdown/issues/841)) ([02803ea](https://github.com/readmeio/markdown/commit/02803eac0bce745637659fbe18034655dd4dcad9))
+
+## Version 6.75.0-beta.12
+
+### ✨ New & Improved
+
+* cleanup ([42ae43f](https://github.com/readmeio/markdown/commit/42ae43fa6bfb60987bf3d6dfac9f0d78cc9f1a16))
+
+## Version 6.75.0-beta.11
+
+### ✨ New & Improved
+
+* actually use options ([3858c6e](https://github.com/readmeio/markdown/commit/3858c6e7682cd26804500104dc7c5daacc57fe5b))
+
+## Version 6.75.0-beta.10
+
+### ✨ New & Improved
+
+* oops ([277b626](https://github.com/readmeio/markdown/commit/277b62664ae086cacfccfabb5d8aadc717172add))
+
+## Version 6.75.0-beta.9
+
+### ✨ New & Improved
+
+* mdx callouts ([664dfc0](https://github.com/readmeio/markdown/commit/664dfc07b6b4a58a1b1ad67ec6efb434a2ceadab))
+
+## Version 6.75.0-beta.8
+
+### ✨ New & Improved
+
+* fix name, oops ([32f090a](https://github.com/readmeio/markdown/commit/32f090a660cb8493776526b1af52c038a748c3ca))
+
+## Version 6.75.0-beta.7
+
+### ✨ New & Improved
+
+* try umd ([ae038b1](https://github.com/readmeio/markdown/commit/ae038b1544a630b3c9b5218056a5195ec229de30))
+
+## Version 6.75.0-beta.6
+
+### ✨ New & Improved
+
+* import ([ed72644](https://github.com/readmeio/markdown/commit/ed72644b87c02e308e73de0069d647842910e852))
+
+## Version 6.75.0-beta.5
+
+### ✨ New & Improved
+
+* dont optimize? ([69c3a2e](https://github.com/readmeio/markdown/commit/69c3a2eb4a125ebd8352ff41b788be403ca95d9b))
+
+## Version 6.75.0-beta.4
+
+### ✨ New & Improved
+
+* add default?! ([160d78b](https://github.com/readmeio/markdown/commit/160d78b74e41a3c342fe20357d53798329e3d34e))
+
+## Version 6.75.0-beta.3
+
+### ✨ New & Improved
+
+* build ([7bede2e](https://github.com/readmeio/markdown/commit/7bede2e8cebb80a77d5160c67d89fc6947a47ae8))
+
+## Version 6.75.0-beta.2
+
+### ✨ New & Improved
+
+* build ([46aac0a](https://github.com/readmeio/markdown/commit/46aac0afd92b4d0318565b57ed845d1f8abe89a6))
+
+## Version 6.75.0-beta.1
+
+### 📘 Tests & Docs
+
+* tweaks ([6a4d831](https://github.com/readmeio/markdown/commit/6a4d831ee8b155c764a3c3e8dba0c0e282e6dba1))
+
+
+### ✨ New & Improved
+
+* compile + run ([aa95a65](https://github.com/readmeio/markdown/commit/aa95a65fae77fd9ffa7ec8a23b053aba4026c356))
+* initial commit ([201162a](https://github.com/readmeio/markdown/commit/201162a1590f1cb83b41fbef0541436d69720852))
+* mdx v1 ([a5faf6d](https://github.com/readmeio/markdown/commit/a5faf6d8202743340b320526db48bac936ae0331))
+* mdx v1 ([3250aff](https://github.com/readmeio/markdown/commit/3250aff9669481feb3cf7c839ec96ba98e3a2cda))
+
+
+### 🛠 Fixes & Updates
+
+* ?? ([2e86b60](https://github.com/readmeio/markdown/commit/2e86b6087677f23901b220bb2de5c44440cd594e))
+* cleanup ([5bef7c4](https://github.com/readmeio/markdown/commit/5bef7c485142913c4fd161ebe4a6569c72348893))
+* cleanup ([ca4a841](https://github.com/readmeio/markdown/commit/ca4a841fbfcde172f85d4737f3dea572807dc505))
+* dont raise ([c4e8a51](https://github.com/readmeio/markdown/commit/c4e8a516494e3b01a43cb33e3148845e3ae5f8b5))
+* errors ([b6ed87e](https://github.com/readmeio/markdown/commit/b6ed87e0f80b32d5385d8c4ad23dea1fd4e3087b))
+* fix some build stuff ([7147bad](https://github.com/readmeio/markdown/commit/7147bad85f1f1db1b0317bfdae79affa6e07962e))
+* more deps + config ([b6cd0f1](https://github.com/readmeio/markdown/commit/b6cd0f1d349ae4faa83e7c473a68ea7407177c09))
+* more errors ([2518d47](https://github.com/readmeio/markdown/commit/2518d47570c354fb2177ba43c724417a921897c0))
+* reactProcessor ([a74109c](https://github.com/readmeio/markdown/commit/a74109cfda878ddb7997c80e2bc7c08002cee7c1))
+* render callouts ([aaf5a75](https://github.com/readmeio/markdown/commit/aaf5a75277e17da130e5041b89c665b036b1dff2))
+* render callouts + error boundary ([2dedb0a](https://github.com/readmeio/markdown/commit/2dedb0ab27b356902c2733066e5bab5c54b53fa0))
+* types error ([518f698](https://github.com/readmeio/markdown/commit/518f698f937f89b6eea26daaf672badb8a77fb05))
+* update demo styling ([bc7198e](https://github.com/readmeio/markdown/commit/bc7198e6c5c8573cec092554e5afe90d501ed8e0))
+* update error boundary ([589f23d](https://github.com/readmeio/markdown/commit/589f23d5aba70458d96d26ab2a0ae77397a7aa62))
+* update remark-parse version ([cd94111](https://github.com/readmeio/markdown/commit/cd94111ef9541dee8ba41eb8f31aef8351a1ace1))
+
+## Version 6.87.1
+
+### 🛠 Fixes & Updates
+
+* **astToPlainText:** ignore null nodes ([#931](https://github.com/readmeio/markdown/issues/931)) ([6bd7dd0](https://github.com/readmeio/markdown/commit/6bd7dd089d408e8a708e4cc7c347599ed2bb0e3e))
+
+## Version 6.87.0
+
+### ✨ New & Improved
+
+* force release ([39f5e34](https://github.com/readmeio/markdown/commit/39f5e34ebee879394b011cffb024150db7f95762))
+
+
+### 🛠 Fixes & Updates
+
+* **astToPlainText:** processor improvements ([#925](https://github.com/readmeio/markdown/issues/925)) ([0353cf5](https://github.com/readmeio/markdown/commit/0353cf533923535451d9e18971c7ab1f487c5781)), closes [/github.com/readmeio/markdown/pull/925/files#diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R14](https://github.com/readmeio//github.com/readmeio/markdown/pull/925/files/issues/diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R14) [/github.com/readmeio/markdown/pull/925/files#diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R7-R11](https://github.com/readmeio//github.com/readmeio/markdown/pull/925/files/issues/diff-7af6da0312613e76e9bbc069cbd431d6904f10ebd51a2a70ffc0cc126e249c83R7-R11) [#914](https://github.com/readmeio/markdown/issues/914) [#914](https://github.com/readmeio/markdown/issues/914)
+
+## Version 6.86.1
+
+### 🛠 Fixes & Updates
+
+* **🔥:** handle `[null]` variable defaults ([376094a](https://github.com/readmeio/markdown/commit/376094a61ff583f5625485d30e3ac5a14fbf2dfc))
+
+## Version 6.86.0
+
+### ✨ New & Improved
+
+* bump code font size ([#915](https://github.com/readmeio/markdown/issues/915)) ([abe17eb](https://github.com/readmeio/markdown/commit/abe17eb84549385125ccf23dcd33482a9717976a)), closes [#912](https://github.com/readmeio/markdown/issues/912)
+* **astToPlainText:** improved ReadMe block serialization ([#916](https://github.com/readmeio/markdown/issues/916)) ([e2a85a0](https://github.com/readmeio/markdown/commit/e2a85a0761380d892ba826b029427f1ce3192170))
+
+## Version 6.85.0
+
+### ✨ New & Improved
+
+* new `stripTags` option ([#914](https://github.com/readmeio/markdown/issues/914)) ([c8a1fdf](https://github.com/readmeio/markdown/commit/c8a1fdf88bc5abfe1997f16b0862fd98689e0ed4))
+
+## Version 6.84.0
+
+### ✨ New & Improved
+
+* trigger release ([3dfbd42](https://github.com/readmeio/markdown/commit/3dfbd429503412edb9b7d7b6405a60b730e3b6b0))
+
+## Version 6.83.0
+
+### ✨ New & Improved
+
+* support legacy gemoji ([#873](https://github.com/readmeio/markdown/issues/873)) ([c34b8fe](https://github.com/readmeio/markdown/commit/c34b8fe20581b96956aa3e17624e407e41a6e5e3))
+
+## Version 6.82.1
+
+### 🛠 Fixes & Updates
+
+* saving multiple blocks in tables ([#872](https://github.com/readmeio/markdown/issues/872)) ([1e02182](https://github.com/readmeio/markdown/commit/1e02182ef5a3bc5b853d7017271134f371491166))
+* update node-versions ([1242dc7](https://github.com/readmeio/markdown/commit/1242dc7f9ebfabe51387497e1ec2377d0f9726a4))
+
+## Version 6.82.0
+
+### ✨ New & Improved
+
+* full emoji list ([#870](https://github.com/readmeio/markdown/issues/870)) ([2edc9db](https://github.com/readmeio/markdown/commit/2edc9db79a6b70db91f405d23b784490f555c83d))
+
+## Version 6.81.0
+
+### ✨ New & Improved
+
+* export owlmoji ([#869](https://github.com/readmeio/markdown/issues/869)) ([58da953](https://github.com/readmeio/markdown/commit/58da95338044c872a1ba2cfe9270af156ffcdbd2))
+
+## Version 6.80.0
+
+### ✨ New & Improved
+
+* use unicode emoji! ([#868](https://github.com/readmeio/markdown/issues/868)) ([b3fa92d](https://github.com/readmeio/markdown/commit/b3fa92d2c757880d940af50cda9de59b2ad6b17c))
+
+## Version 6.79.0
+
+### ✨ New & Improved
+
+* update emojis ([#866](https://github.com/readmeio/markdown/issues/866)) ([d60e65f](https://github.com/readmeio/markdown/commit/d60e65f7bd0acc1ece4774320a4e115a60c0a344))
+
+## Version 6.78.0
+
+### ✨ New & Improved
+
+* loosen react deps ([#852](https://github.com/readmeio/markdown/issues/852)) ([eba64ad](https://github.com/readmeio/markdown/commit/eba64ade9cac3119d20f857e3ef24e66e3276459))
+
+## Version 6.77.3
+
+### 🛠 Fixes & Updates
+
+* wrap: false ([#855](https://github.com/readmeio/markdown/issues/855)) ([9372f59](https://github.com/readmeio/markdown/commit/9372f594727c16c079058f1c36c4b9344390ffb6))
+
+## Version 6.77.2
+
+### 🛠 Fixes & Updates
+
+* add css attribute selector for firefox ([#845](https://github.com/readmeio/markdown/issues/845)) ([f289c1b](https://github.com/readmeio/markdown/commit/f289c1b3f90d75cb637e13361627b23144232cb2))
+* dont require newline ([#854](https://github.com/readmeio/markdown/issues/854)) ([3b48c90](https://github.com/readmeio/markdown/commit/3b48c909b1a06fcf3224e99f8a2d63e4a0114725))
+
+## Version 6.77.1
+
+### 🛠 Fixes & Updates
+
+* match tippy version to react-stylguidist ([#840](https://github.com/readmeio/markdown/issues/840)) ([9c0bea9](https://github.com/readmeio/markdown/commit/9c0bea9d78c141fa33aa9820a4dbed1c53f75a4f))
+
+## Version 6.77.0
+
+### ✨ New & Improved
+
+* reusable content parser ([#838](https://github.com/readmeio/markdown/issues/838)) ([c9a1c1b](https://github.com/readmeio/markdown/commit/c9a1c1bc7b98e826b7532f53cea2b446354b0939))
+
+## Version 6.76.0
+
+### ✨ New & Improved
+
+* build ([b5a74a6](https://github.com/readmeio/markdown/commit/b5a74a6db00414fb37cc29660c78c118f13aa370))
+
+## Version 6.75.1
+
+### 🛠 Fixes & Updates
+
+* include shrinkwrap in npm output ([#837](https://github.com/readmeio/markdown/issues/837)) ([d7b2634](https://github.com/readmeio/markdown/commit/d7b2634270d94dc7a9df5d04733c5c72fcdd01d9))
+
+## Version 6.75.0
+
+### ✨ New & Improved
+
+* release ([77bd495](https://github.com/readmeio/markdown/commit/77bd4959c786f1e949a9640ef294868fe2e23dd5))
+
+## Version 6.74.4
+
+### 🛠 Fixes & Updates
+
+* **deps:** more security updates ([#835](https://github.com/readmeio/markdown/issues/835)) ([74bfdc0](https://github.com/readmeio/markdown/commit/74bfdc0dd131c8587e1eaeb9cc1186b8f520cac6))
+
+## Version 6.74.3
+
+### 🛠 Fixes & Updates
+
+* add conditional to reusable content transformer ([#833](https://github.com/readmeio/markdown/issues/833)) ([fee6a85](https://github.com/readmeio/markdown/commit/fee6a855d0a58857621def8f2319c47f9d137267))
+* **deps:** updates ([#834](https://github.com/readmeio/markdown/issues/834)) ([591c0e9](https://github.com/readmeio/markdown/commit/591c0e90e76e56966951155d7864c3e7db2e3a4b))
+
+## Version 6.74.2
+
+### 🛠 Fixes & Updates
+
+* positional data in hast ([#831](https://github.com/readmeio/markdown/issues/831)) ([98789f1](https://github.com/readmeio/markdown/commit/98789f1d44ae2174a3837b9d6fa4672d489cb10d))
+
+## Version 6.74.1
+
+### 🛠 Fixes & Updates
+
+* table flattening ([#830](https://github.com/readmeio/markdown/issues/830)) ([54e75f4](https://github.com/readmeio/markdown/commit/54e75f43db8c0424039ba8d3ff439dc069e012cb))
+
+## Version 6.74.0
+
+### ✨ New & Improved
+
+* callout titles h2 ([#829](https://github.com/readmeio/markdown/issues/829)) ([be8b901](https://github.com/readmeio/markdown/commit/be8b9011ff88ab032ba819788c6a8b7058ab87f4)), closes [#828](https://github.com/readmeio/markdown/issues/828)
+
+## Version 6.73.1
+
+### 🛠 Fixes & Updates
+
+* use semantic h3 ([#828](https://github.com/readmeio/markdown/issues/828)) ([372ca7b](https://github.com/readmeio/markdown/commit/372ca7b0e4fc6da85ed2582e68d7a9bccfc08aa6))
+
+## Version 6.73.0
+
+### ✨ New & Improved
+
+* write out reusable content as tags ([#827](https://github.com/readmeio/markdown/issues/827)) ([5b3e0e2](https://github.com/readmeio/markdown/commit/5b3e0e2e50d15a141d0ff842fd52451f2ab79689))
+
+## Version 6.72.0
+
+### ✨ New & Improved
+
+* allow disabling reusable content ([#826](https://github.com/readmeio/markdown/issues/826)) ([3c94936](https://github.com/readmeio/markdown/commit/3c9493649167a4244a2c4c6b30bf6b7862e7cd6d))
+
+## Version 6.71.2
+
+### 🛠 Fixes & Updates
+
+* remove reference-link ([#819](https://github.com/readmeio/markdown/issues/819)) ([36487d5](https://github.com/readmeio/markdown/commit/36487d534eb5642e8c1875a882ac721b77718e17))
+
+
+### ✨ New & Improved
+
+* li clear float ([#825](https://github.com/readmeio/markdown/issues/825)) ([b5cc2e3](https://github.com/readmeio/markdown/commit/b5cc2e3a923adb79b3a20b4555b5145a4a7c671a))
+
 ## Version 6.71.1
 
 ### 🛠 Fixes & Updates

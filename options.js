@@ -12,9 +12,8 @@ const options = {
     spacedTable: true,
     paddedTable: true,
   },
-  normalize: true,
   lazyImages: true,
-  reusableContent: {},
+  normalize: true,
   safeMode: false,
   settings: {
     position: false,

@@ -13,17 +13,17 @@ jobs:
       # Setup the git repo & Node environemnt.
       #
       - name: Checkout branch (${{ github.ref }})
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false # install breaks with persistant creds!
 
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 20
 
       - name: Update npm
-        run: npm i -g npm@7
+        run: npm i -g npm@10
 
       - name: Install dependencies
         run: |
@@ -55,7 +55,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: next
+          branch: ${{ github.ref }}
         continue-on-error: true
 
       # Sync docs to rdmd.readme.io

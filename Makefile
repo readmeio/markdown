@@ -1,3 +1,5 @@
+-include .env
+
 .DEFAULT_GOAL := help
 .PHONY: help
 .EXPORT_ALL_VARIABLES:
@@ -6,16 +8,17 @@ DOCKER_WORKSPACE := "/markdown"
 MOUNTS = --volume ${PWD}:${DOCKER_WORKSPACE} \
 	--volume ${DOCKER_WORKSPACE}/node_modules
 
-emojis: example/public/img/emojis ## Install our emojis.
+ifeq ($(USE_LEGACY), true)
+dockerfile = -f Dockerfile.legacy
+endif
 
-example/public/img/emojis: node_modules/@readme/emojis
-	rm -rf example/img/emojis
-	rm -rf example/public/img/emojis
-	mkdir -p example/public/img/emojis
-	cp node_modules/@readme/emojis/src/img/*.png example/public/img/emojis/
+ifeq ($(USE_LEGACY), true)
+dockerfile = -f Dockerfile.legacy
+endif
 
 build:
-	docker build --platform linux/amd64 -t markdown .
+	@echo USE_LEGACY=$(USE_LEGACY)
+	docker build -t markdown $(dockerfile) --build-arg REACT_VERSION=${REACT_VERSION} .
 
 # This lets us call `make run test.browser`. Make expects cmdline args
 # to be targets. So this creates noop targets out of args. Copied from

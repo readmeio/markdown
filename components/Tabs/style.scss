@@ -1,0 +1,44 @@
+.TabGroup {
+  &-nav {
+    border-bottom: solid var(--color-border-default, #{rgba(black, 0.1)});
+    margin-bottom: 15px;
+  }
+  
+  &-tab {
+    background: none;
+    border: 0;
+    color: var(--color-text-minimum, #637288);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    margin-right: 15px;
+    padding: 0;
+    padding-bottom: 10px;
+
+    &_active {
+      background: none;
+      border: 0;
+      border-bottom: solid var(--project-color-primary, var(--color-text-default, #384248));
+      color: var(--project-color-primary, var(--color-text-default, #384248));
+      font-size: 15px;
+      font-weight: 600;
+      margin-right: 15px;
+      margin-bottom: -2px;
+      padding: 0;
+      padding-bottom: 10px;
+    }
+
+    &:hover {
+      color: var(--color-text-muted, #4f5a66);
+    }
+  }
+
+  &-icon {
+    color: var(--project-color-primary, inherit);
+    margin-right: 10px;
+  }
+
+  .TabContent {
+    color: var(--color-text-muted, #4f5a66);
+  }
+}

@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`anchor target: should allow _blank if using HTML 1`] = `"<p><a href=\\"https://example.com\\" target=\\"_blank\\" title=\\"\\">test</a></p>"`;
 
@@ -33,996 +33,309 @@ exports[`check list items 1`] = `
 </ul>"
 `;
 
-exports[`code samples should parse indented code on the first line 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "lang": null,
-      "meta": null,
-      "type": "code",
-      "value": "const code = true;",
-    },
-  ],
-  "type": "root",
-}
-`;
-
-exports[`emojis 1`] = `
-"<p><img alt=\\":joy:\\" loading=\\"lazy\\" src=\\"/public/img/emojis/joy.png\\" title=\\":joy:\\" class=\\"emoji\\" align=\\"absmiddle\\" height=\\"20\\" width=\\"20\\" caption=\\"\\"><br>
-<i class=\\"fa fa-lock\\"></i><br>
-:unknown-emoji:</p>"
-`;
-
-exports[`export multiple Markdown renderers allows complex compact headings 1`] = `
-"<h1 id=\\"basic-text\\">Basic Text</h1>
-<h2 id=\\"-oh-noes\\">🙀 oh noes!</h2>
-<h3 id=\\"6-oh-no\\"><strong>6</strong>. Oh No</h3>
-<p>Lorem ipsum dolor!</p>"
-`;
-
-exports[`export multiple Markdown renderers renders HTML 1`] = `
-"<h1 id=\\"hello-world\\">Hello World</h1>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th align=\\"center\\">Col. A</th><th align=\\"center\\">Col. B</th><th align=\\"center\\">Col. C</th></tr></thead><tbody><tr><td align=\\"center\\">Cell A1</td><td align=\\"center\\">Cell B1</td><td align=\\"center\\">Cell C1</td></tr><tr><td align=\\"center\\">Cell A2</td><td align=\\"center\\">Cell B2</td><td align=\\"center\\">Cell C2</td></tr><tr><td align=\\"center\\">Cell A3</td><td align=\\"center\\">Cell B3</td><td align=\\"center\\">Cell C3</td></tr></tbody></table>
-<p>  <a href=\\"https://jsfiddle.net/rafegoldberg/5VA5j/\\" title=\\"@embed\\">Embed Title</a></p>
-<rdme-callout title=\\"UhOh\\" value=\\"Lorem ipsum dolor sit amet consectetur adipisicing elit.\\" icon=\\"❗️\\" theme=\\"error\\"><p>UhOh</p><p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p></rdme-callout>"
-`;
-
-exports[`export multiple Markdown renderers renders MD 1`] = `
-"# Hello World
-"
-`;
-
-exports[`export multiple Markdown renderers renders custom React components 1`] = `
-<React.Fragment>
-  <Unknown
-    id="hello-world"
-  >
-    <div
-      className="heading-anchor_backwardsCompatibility"
-      id="section-hello-world"
-    />
-    Hello World
-  </Unknown>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <Table>
-    <thead>
-      <tr>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. A
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. B
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. C
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C1
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C2
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C3
-        </td>
-      </tr>
-    </tbody>
-  </Table>
-  
-
-  <p>
-      
-    <AnchorWithContext
-      href="https://jsfiddle.net/rafegoldberg/5VA5j/"
-      title="@embed"
-    >
-      Embed Title
-    </AnchorWithContext>
-  </p>
-  
-
-  <Callout
-    attributes={null}
-    calloutStyle="info"
-    icon="❗️"
-    node={null}
-    theme="error"
-    title="UhOh"
-    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-  >
-    <p>
-      UhOh
-    </p>
-    <p>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-    </p>
-  </Callout>
-</React.Fragment>
-`;
-
-exports[`export multiple Markdown renderers renders hAST 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "Hello World",
-        },
-      ],
-      "properties": Object {
-        "id": "hello-world",
-      },
-      "tagName": "h1",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Col. A",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Col. B",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Col. C",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "th",
-                  "type": "element",
-                },
-              ],
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
+exports[`code samples > should parse indented code on the first line 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 23,
+              "line": 1,
+              "offset": 22,
             },
-          ],
-          "properties": Object {},
-          "tagName": "thead",
-          "type": "element",
-          "value": "Col. A Col. B Col. C",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell A1",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell B1",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell C1",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
+            "start": {
+              "column": 5,
+              "line": 1,
+              "offset": 4,
             },
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell A2",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell B2",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell C2",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell A3",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell B3",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-                Object {
-                  "children": Array [
-                    Object {
-                      "type": "text",
-                      "value": "Cell C3",
-                    },
-                  ],
-                  "properties": Object {
-                    "align": "center",
-                  },
-                  "tagName": "td",
-                  "type": "element",
-                },
-              ],
-              "properties": Object {},
-              "tagName": "tr",
-              "type": "element",
-            },
-          ],
-          "properties": Object {},
-          "tagName": "tbody",
-          "type": "element",
-          "value": "Cell A1 Cell B1 Cell C1 Cell A2 Cell B2 Cell C2 Cell A3 Cell B3 Cell C3",
-        },
-      ],
-      "properties": Object {},
-      "tagName": "table",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "type": "text",
-          "value": "  ",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "type": "text",
-              "value": "Embed Title",
-            },
-          ],
-          "properties": Object {
-            "href": "https://jsfiddle.net/rafegoldberg/5VA5j/",
-            "title": "@embed",
           },
-          "tagName": "a",
-          "type": "element",
+          "type": "text",
+          "value": "const code = true;",
         },
       ],
-      "properties": Object {},
-      "tagName": "p",
-      "type": "element",
-    },
-    Object {
-      "type": "text",
-      "value": "
-",
-    },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "type": "text",
-              "value": "UhOh",
-            },
-          ],
-          "properties": Object {},
-          "tagName": "p",
-          "type": "element",
+      "position": {
+        "end": {
+          "column": 23,
+          "line": 1,
+          "offset": 22,
         },
-        Object {
-          "children": Array [
-            Object {
-              "type": "text",
-              "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
-            },
-          ],
-          "properties": Object {},
-          "tagName": "p",
-          "type": "element",
+        "start": {
+          "column": 5,
+          "line": 1,
+          "offset": 4,
         },
-      ],
-      "properties": Object {
-        "icon": "❗️",
-        "theme": "error",
-        "title": "UhOh",
-        "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
       },
-      "tagName": "rdme-callout",
-      "type": "element",
+      "type": "paragraph",
     },
   ],
-  "data": Object {
-    "quirksMode": false,
+  "position": {
+    "end": {
+      "column": 23,
+      "line": 1,
+      "offset": 22,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
   },
   "type": "root",
 }
 `;
 
-exports[`export multiple Markdown renderers renders mdAST 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "children": Array [
-        Object {
+exports[`emojis 1`] = `
+"<p><img src=\\"/public/img/emojis/joy.png\\" alt=\\":joy:\\" title=\\":joy:\\" class=\\"emoji\\" align=\\"absmiddle\\" height=\\"20\\" width=\\"20\\" caption=\\"\\" loading=\\"lazy\\"><br>
+<i class=\\"fa fa-lock\\"></i><br>
+:unknown-emoji:</p>"
+`;
+
+exports[`export multiple Markdown renderers > allows complex compact headings 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders HTML 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders MD 1`] = `
+"# Hello World
+"
+`;
+
+exports[`export multiple Markdown renderers > renders custom React components 1`] = `[Function]`;
+
+exports[`export multiple Markdown renderers > renders hAST 1`] = `undefined`;
+
+exports[`export multiple Markdown renderers > renders mdAST 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 14,
+              "line": 1,
+              "offset": 13,
+            },
+            "start": {
+              "column": 3,
+              "line": 1,
+              "offset": 2,
+            },
+          },
           "type": "text",
           "value": "Hello World",
         },
       ],
-      "data": Object {
-        "hProperties": Object {
-          "id": "hello-world",
-        },
-        "id": "hello-world",
-      },
       "depth": 1,
+      "position": {
+        "end": {
+          "column": 14,
+          "line": 1,
+          "offset": 13,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
       "type": "heading",
     },
-    Object {
-      "align": Array [
-        "center",
-        "center",
-        "center",
-      ],
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Col. A",
-                },
-              ],
-              "type": "tableCell",
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 34,
+              "line": 7,
+              "offset": 184,
             },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Col. B",
-                },
-              ],
-              "type": "tableCell",
+            "start": {
+              "column": 3,
+              "line": 3,
+              "offset": 17,
             },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Col. C",
-                },
-              ],
-              "type": "tableCell",
-            },
-          ],
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell A1",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell B1",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell C1",
-                },
-              ],
-              "type": "tableCell",
-            },
-          ],
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell A2",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell B2",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell C2",
-                },
-              ],
-              "type": "tableCell",
-            },
-          ],
-          "type": "tableRow",
-        },
-        Object {
-          "children": Array [
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell A3",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell B3",
-                },
-              ],
-              "type": "tableCell",
-            },
-            Object {
-              "children": Array [
-                Object {
-                  "type": "text",
-                  "value": "Cell C3",
-                },
-              ],
-              "type": "tableCell",
-            },
-          ],
-          "type": "tableRow",
-        },
-      ],
-      "type": "table",
-    },
-    Object {
-      "children": Array [
-        Object {
+          },
           "type": "text",
-          "value": "  ",
+          "value": "| Col. A  | Col. B  | Col. C  |
+|:-------:|:-------:|:-------:|
+| Cell A1 | Cell B1 | Cell C1 |
+| Cell A2 | Cell B2 | Cell C2 |
+| Cell A3 | Cell B3 | Cell C3 |",
         },
-        Object {
-          "children": Array [
-            Object {
+      ],
+      "position": {
+        "end": {
+          "column": 34,
+          "line": 7,
+          "offset": 184,
+        },
+        "start": {
+          "column": 3,
+          "line": 3,
+          "offset": 17,
+        },
+      },
+      "type": "paragraph",
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 15,
+                  "line": 9,
+                  "offset": 200,
+                },
+                "start": {
+                  "column": 4,
+                  "line": 9,
+                  "offset": 189,
+                },
+              },
               "type": "text",
               "value": "Embed Title",
             },
           ],
+          "position": {
+            "end": {
+              "column": 67,
+              "line": 9,
+              "offset": 252,
+            },
+            "start": {
+              "column": 3,
+              "line": 9,
+              "offset": 188,
+            },
+          },
           "title": "@embed",
           "type": "link",
           "url": "https://jsfiddle.net/rafegoldberg/5VA5j/",
         },
       ],
+      "position": {
+        "end": {
+          "column": 67,
+          "line": 9,
+          "offset": 252,
+        },
+        "start": {
+          "column": 3,
+          "line": 9,
+          "offset": 188,
+        },
+      },
       "type": "paragraph",
     },
-    Object {
-      "children": Array [
-        Object {
-          "children": Array [
-            Object {
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 12,
+                  "line": 11,
+                  "offset": 265,
+                },
+                "start": {
+                  "column": 5,
+                  "line": 11,
+                  "offset": 258,
+                },
+              },
               "type": "text",
-              "value": "UhOh",
+              "value": "❗️ UhOh",
             },
           ],
+          "position": {
+            "end": {
+              "column": 12,
+              "line": 11,
+              "offset": 265,
+            },
+            "start": {
+              "column": 5,
+              "line": 11,
+              "offset": 258,
+            },
+          },
           "type": "paragraph",
         },
-        Object {
-          "children": Array [
-            Object {
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 61,
+                  "line": 13,
+                  "offset": 330,
+                },
+                "start": {
+                  "column": 5,
+                  "line": 13,
+                  "offset": 274,
+                },
+              },
               "type": "text",
               "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
             },
           ],
+          "position": {
+            "end": {
+              "column": 61,
+              "line": 13,
+              "offset": 330,
+            },
+            "start": {
+              "column": 5,
+              "line": 13,
+              "offset": 274,
+            },
+          },
           "type": "paragraph",
         },
       ],
-      "data": Object {
-        "hName": "rdme-callout",
-        "hProperties": Object {
-          "icon": "❗️",
-          "theme": "error",
-          "title": "UhOh",
-          "value": "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
+      "position": {
+        "end": {
+          "column": 61,
+          "line": 13,
+          "offset": 330,
+        },
+        "start": {
+          "column": 3,
+          "line": 11,
+          "offset": 256,
         },
       },
-      "type": "rdme-callout",
+      "type": "blockquote",
     },
   ],
+  "position": {
+    "end": {
+      "column": 3,
+      "line": 16,
+      "offset": 335,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
 
-exports[`export multiple Markdown renderers renders plain markdown as React 1`] = `
-<React.Fragment>
-  <h1
-    id="hello-world"
-  >
-    Hello World
-  </h1>
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <table>
-    <thead>
-      <tr>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. A
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. B
-        </th>
-        <th
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Col. C
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B1
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C1
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B2
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C2
-        </td>
-      </tr>
-      <tr>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell A3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell B3
-        </td>
-        <td
-          style={
-            Object {
-              "textAlign": "center",
-            }
-          }
-        >
-          Cell C3
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  
-
-  <p>
-      
-    <a
-      href="https://jsfiddle.net/rafegoldberg/5VA5j/"
-      title="@embed"
-    >
-      Embed Title
-    </a>
-  </p>
-  
-
-  <rdme-callout
-    icon="❗️"
-    theme="error"
-    title="UhOh"
-    value="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-  >
-    <p>
-      UhOh
-    </p>
-    <p>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-    </p>
-  </rdme-callout>
-</React.Fragment>
-`;
-
-exports[`export multiple Markdown renderers renders plainText from AST 1`] = `"Hello World"`;
+exports[`export multiple Markdown renderers > renders plain markdown as React 1`] = `undefined`;
 
 exports[`heading 1`] = `"<h2 class=\\"heading heading-2 header-scroll\\" align=\\"\\"><div class=\\"heading-anchor anchor waypoint\\" id=\\"example-header\\"></div><div class=\\"heading-text\\"><div id=\\"section-example-header\\" class=\\"heading-anchor_backwardsCompatibility\\"></div>Example Header</div><a aria-label=\\"Skip link to Example Header\\" class=\\"heading-anchor-icon fa fa-anchor\\" href=\\"#example-header\\"></a></h2>"`;
 
-exports[`image 1`] = `"<p><span aria-label=\\"Image\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img alt=\\"Image\\" loading=\\"lazy\\" src=\\"http://example.com/image.png\\" align=\\"\\" caption=\\"\\" height=\\"auto\\" title=\\"\\" width=\\"auto\\"></span></span></p>"`;
+exports[`image 1`] = `"<span aria-label="Image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="http://example.com/image.png" width="auto" height="auto" title="" class="img  " alt="Image" loading="lazy"></span></span>"`;
 
 exports[`list items 1`] = `
 "<ul>
@@ -1030,8 +343,6 @@ exports[`list items 1`] = `
 </ul>"
 `;
 
-exports[`magic image 1`] = `"<figure><span aria-label=\\"A guy. Eating pizza. And making an OK gesture.\\" class=\\"img lightbox closed\\" role=\\"button\\" tabindex=\\"0\\"><span class=\\"lightbox-inner\\"><img alt=\\"A guy. Eating pizza. And making an OK gesture.\\" loading=\\"lazy\\" src=\\"https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg\\" title=\\"man-eating-pizza-and-making-an-ok-gesture.jpg\\" align=\\"center\\" class=\\"\\" width=\\"100%\\" caption=\\"\\" height=\\"auto\\"></span></span><figcaption><p>A guy. Eating pizza. And making an OK gesture.</p></figcaption></figure>"`;
+exports[`prefix anchors with "section-" > should add a section- prefix to heading anchors 1`] = `undefined`;
 
-exports[`prefix anchors with "section-" should add a section- prefix to heading anchors 1`] = `"<h1 id=\\"heading\\">heading</h1>"`;
-
-exports[`tables 1`] = `"<div class=\\"rdmd-table\\"><div class=\\"rdmd-table-inner\\"><table><thead><tr><th>Tables</th><th style=\\"text-align: center;\\">Are</th><th style=\\"text-align: right;\\">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style=\\"text-align: center;\\">right-aligned</td><td style=\\"text-align: right;\\">$1600</td></tr><tr><td>col 2 is</td><td style=\\"text-align: center;\\">centered</td><td style=\\"text-align: right;\\">$12</td></tr><tr><td>zebra stripes</td><td style=\\"text-align: center;\\">are neat</td><td style=\\"text-align: right;\\">$1</td></tr></tbody></table></div></div>"`;
+exports[`tables 1`] = `"<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tables</th><th style="text-align: center;">Are</th><th style="text-align: right;">Cool</th></tr></thead><tbody><tr><td>col 3 is</td><td style="text-align: center;">right-aligned</td><td style="text-align: right;">$1600</td></tr><tr><td>col 2 is</td><td style="text-align: center;">centered</td><td style="text-align: right;">$12</td></tr><tr><td>zebra stripes</td><td style="text-align: center;">are neat</td><td style="text-align: right;">$1</td></tr></tbody></table></div></div>"`;

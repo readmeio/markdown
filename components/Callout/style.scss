@@ -1,19 +1,16 @@
-/* stylelint-disable no-descending-specificity */
-/* stylelint-disable font-family-no-missing-generic-family-keyword */
-/* stylelint-disable order/properties-alphabetical-order */
-/* stylelint-disable order/order */
 @mixin callout($l-offset: 1.33rem) {
   --background: #{lighten(#dfe2e5, 8.75%)};
   --border: #{lighten(#6a737d, 12.5%)};
 
-  background: var(--background);
-  border-color: var(--border);
-  color: var(--text);
-  padding: $l-offset;
+  & {
+    background: var(--background);
+    border-color: var(--border);
+    color: var(--text);
+    padding: $l-offset;
+  }
 
   &_info {
     $color: #46b8da;
-
     --background: #e3edf2;
     --title: #{$color};
     --border: #{lighten($color, 5%)}; // should be #5bc0de
@@ -22,7 +19,6 @@
   &_warn,
   &_warning {
     $color: #eea236;
-
     --background: #fcf8f2;
     --title: #{$color};
     --border: #{lighten($color, 5%)};
@@ -32,7 +28,6 @@
   &_okay,
   &_success {
     $color: #489e49;
-
     --background: #f3f8f3;
     --title: #{$color};
     --border: #{lighten($color, 5%)}; // should be #50af51
@@ -41,7 +36,6 @@
   &_err,
   &_error {
     $color: #d43f3a;
-
     --background: #fdf7f7;
     --title: #{$color};
     --border: #{lighten($color, 5%)}; // should be #d9534f
@@ -51,7 +45,6 @@
     margin-left: $l-offset;
     position: relative;
   }
-
   ul,
   ol {
     padding-left: 1.3em;
@@ -60,11 +53,9 @@
   a {
     color: inherit;
   }
-
   hr {
     border-color: var(--border, var(--markdown-edge, #eee));
   }
-
   blockquote {
     color: var(--text);
     border-color: var(--border);
@@ -74,8 +65,8 @@
 
   .callout-heading {
     color: var(--title, --text);
-    font-size: 1.25em; // match h3
     font-family: var(--markdown-title-font); // match h3
+    font-size: 1.25em; // match h3
     font-weight: var(--markdown-title-weight, 600); // match h3
     line-height: 1.25; // match h3
     margin-bottom: calc(#{$l-offset} * 0.5);
@@ -87,42 +78,36 @@
     &.empty {
       float: left;
       margin-top: calc(#{$l-offset} * 0.5);
-
       .callout-icon {
         line-height: 0;
       }
     }
-
     > * {
       color: inherit;
       margin: 0;
     }
-
-    &::before {
+    &:before {
       position: absolute;
       right: 100%;
       width: 2.4em;
       text-align: center;
-      font: normal normal normal 1em/1 FontAwesome;
+      font: normal normal normal 1em/1 var(--icon-font);
     }
   }
-
   .callout-icon {
     float: left;
     margin-left: calc(-#{$l-offset} - 0.5em);
     margin-right: -0.25rem;
   }
 }
-@mixin callout-custom-icons($R: callout) {
+@mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
-  --icon-font: fontawesome;
-
+  --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
   &-icon {
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-
-  &-icon::before {
+  &-icon:before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
@@ -137,27 +122,22 @@
   }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
-
     &_okay {
       /* thumbs up */
       --icon: '\f164';
     }
-
     &_info {
       /* info circle */
       --icon: '\f05a';
     }
-
     &_warn {
       /* warning triangle */
       --icon: '\f071';
     }
-
     &_error {
       /* warning circle */
       --icon: '\f06a';
     }
-
     &_default {
       /* warning circle */
       --emoji: 1rem;
@@ -170,8 +150,7 @@
     // bump specificity
     @include callout;
   }
-  @include callout-custom-icons;
-
+  @include calloutCustomIcons;
   border-top-right-radius: var(--markdown-radius);
   border-bottom-right-radius: var(--markdown-radius);
 }

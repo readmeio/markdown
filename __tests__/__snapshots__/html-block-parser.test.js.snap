@@ -1,15 +1,73 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Parse html block parses an html block 1`] = `
-Object {
-  "children": Array [
-    Object {
-      "block": true,
-      "type": "html",
-      "value": "<div>Some block html</div>
-    ",
+exports[`Parse html block > parses an html block 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "attributes": [],
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 21,
+                  "line": 2,
+                  "offset": 21,
+                },
+                "start": {
+                  "column": 6,
+                  "line": 2,
+                  "offset": 6,
+                },
+              },
+              "type": "text",
+              "value": "Some block html",
+            },
+          ],
+          "name": "div",
+          "position": {
+            "end": {
+              "column": 27,
+              "line": 2,
+              "offset": 27,
+            },
+            "start": {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "type": "mdxJsxTextElement",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 27,
+          "line": 2,
+          "offset": 27,
+        },
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "paragraph",
     },
   ],
+  "position": {
+    "end": {
+      "column": 5,
+      "line": 3,
+      "offset": 32,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
   "type": "root",
 }
 `;
