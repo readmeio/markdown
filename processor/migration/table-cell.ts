@@ -27,7 +27,7 @@ const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}
 //
 // The following regex attempts to detect this pattern, and we'll convert it to
 // something more standard.
-const psuedoListRegex = /^(?!([*_]+).*\1$)(?<ws>[ \t]*)\\?([*_])\s*(?<item>.*)$/gm;
+const psuedoListRegex = /^(?![ \t]*([*_]+).*\1[ \t]*$)(?<ws>[ \t]*)\\?([*_])\s*(?<item>.*)$/gm;
 
 const migrateTableCells = (vfile: VFile) => (table: Table) => {
   let json;

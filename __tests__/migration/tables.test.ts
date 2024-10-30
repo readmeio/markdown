@@ -334,4 +334,128 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles tables with emphasis without converting them to lists', () => {
+    const md = `
+[block:parameters]
+{
+  "data": {
+    "h-0": "**Shortcut Name**",
+    "h-1": "**WindowsOS**",
+    "h-2": "_Apple - macOS_",
+    "0-0": "*Cut selection*",
+    "0-1": "__also__\\n\\n_no!_\\n\\n__no no no__",
+    "0-2": "!BAD"
+  },
+  "cols": 3,
+  "rows": 1,
+  "align": [
+    "left",
+    "left",
+    "left"
+  ]
+}
+[/block]
+    `;
+
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              **Shortcut Name**
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              **WindowsOS**
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              *Apple - macOS*
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              *Cut selection*
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              **also**
+
+              *no!*
+
+              **no no no**
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              !BAD
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it('compiles more examples of emphasis', () => {
+    const md = `
+    [block:parameters]
+{
+  "data": {
+    "h-0": "Action",
+    "h-1": "Description",
+    "0-0": "Details",
+    "0-1": "View additional details such as:  \\n_Type_  \\n_Owner_  \\n_Created On_  \\n_Last Modified_  \\n_Last Run_"
+  },
+  "cols": 2,
+  "rows": 1,
+  "align": [
+    "left",
+    "left"
+  ]
+}
+[/block]
+    `;
+
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table align={["left","left"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>
+              Action
+            </th>
+
+            <th style={{ textAlign: "left" }}>
+              Description
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "left" }}>
+              Details
+            </td>
+
+            <td style={{ textAlign: "left" }}>
+              View additional details such as:\\
+              *Type*\\
+              *Owner*\\
+              *Created On*\\
+              *Last Modified*\\
+              *Last Run*
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
 });
