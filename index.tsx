@@ -13,5 +13,5 @@ const utils = {
   calloutIcons: {},
 };
 
-export { compile, hast, run, mdast, mdx, plain, remarkPlugins, tags } from './lib';
+export { compile, hast, run, mdast, mdastV6, mdx, plain, remarkPlugins, tags } from './lib';
 export { Components, utils };
