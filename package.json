@@ -147,5 +147,8 @@
   },
   "optionalDependencies": {
     "mermaid": "^11.3.0"
+  },
+  "overrides": {
+    "conventional-changelog-conventionalcommits": ">= 8.0.0"
   }
 }
