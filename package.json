@@ -99,7 +99,7 @@
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
     "codemirror": "^5.54.0",
-    "css-loader": "^6.7.3",
+    "css-loader": "^7.1.2",
     "eslint": "^8.37.0",
     "hast-util-to-text": "^4.0.2",
     "identity-obj-proxy": "^3.0.0",
