@@ -34,7 +34,7 @@
     "estree-util-value-to-estree": "^3.1.1",
     "gemoji": "^8.1.0",
     "hast-util-from-html": "^2.0.1",
-    "hast-util-sanitize": "^4.0.0",
+    "hast-util-sanitize": "^5.0.2",
     "hast-util-to-xast": "^3.0.0",
     "hastscript": "^9.0.0",
     "lodash.escape": "^4.0.1",
