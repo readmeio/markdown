@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('migrating magic blocks', () => {
   it('compiles magic blocks without enough newlines', () => {
@@ -41,8 +41,7 @@ describe('migrating magic blocks', () => {
 }
 [/block]
 `;
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "## About cBEYONData
 

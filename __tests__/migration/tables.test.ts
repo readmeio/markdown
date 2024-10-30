@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('mdx migration of tables', () => {
   it('compiles tables with newlines and inline code', () => {
@@ -22,8 +22,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -81,7 +80,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
@@ -150,7 +149,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
@@ -237,8 +236,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -299,7 +297,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table>
