@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 7.9.0
+### ✨ New & Improved
+
+* migrate export ([#1009](https://github.com/readmeio/markdown/issues/1009)) ([a0433fe](https://github.com/readmeio/markdown/commit/a0433fec29aeca738a3c661a1e178ed08f96e151))
+
+### 🛠 Fixes & Updates
+
+* migrate tables with html ([#1005](https://github.com/readmeio/markdown/issues/1005)) ([2aa7b83](https://github.com/readmeio/markdown/commit/2aa7b83e8bf38525361a4d269425154a86b5da67))
+
 ## Version 7.8.0
 ### ✨ New & Improved
 
