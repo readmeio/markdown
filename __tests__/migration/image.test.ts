@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('migrating images', () => {
   it('compiles images', () => {
@@ -20,8 +20,7 @@ describe('migrating images', () => {
 [/block]
 `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<Image align="center" className="border" border={true} src="https://fastly.picsum.photos/id/507/200/300.jpg?hmac=v0NKvUrOWTKZuZFmMlLN_7-RdRgeF-qFLeBGXpufxgg" />
       "

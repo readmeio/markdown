@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('mdx migration of tables', () => {
   it('compiles tables with newlines and inline code', () => {
@@ -22,8 +22,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -81,7 +80,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
@@ -150,7 +149,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
@@ -214,6 +213,36 @@ ${JSON.stringify(
     `);
   });
 
+  it('compiles tables with html', () => {
+    const md = `
+| Teléfono                                                           |
+| ------------------------------------------------------------------ |
+| <p>¿Necesitas ayuda?</p><p>‍</p><p>Llámanos al +52 33 11224455</p> |
+      `;
+    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              Teléfono
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              <p>¿Necesitas ayuda?</p><p>‍</p><p>Llámanos al +52 33 11224455</p>
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
   it('does not muck with regular emphasis in tables', () => {
     const md = `
 [block:parameters]
@@ -237,8 +266,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
         <thead>
@@ -299,7 +327,7 @@ ${JSON.stringify(
 )}
 [/block]
 `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table>
