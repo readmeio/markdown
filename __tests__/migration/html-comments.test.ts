@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('migrating html comments', () => {
   it('migrates escaped html comments', () => {
@@ -21,8 +21,7 @@ describe('migrating html comments', () => {
 \\-->
 `;
 
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "{/*
 

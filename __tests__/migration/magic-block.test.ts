@@ -1,4 +1,4 @@
-import * as rmdx from '../../index';
+import { migrate } from '../../index';
 
 describe('migrating magic blocks', () => {
   it('compiles magic blocks without enough newlines', () => {
@@ -41,20 +41,19 @@ describe('migrating magic blocks', () => {
 }
 [/block]
 `;
-    const ast = rmdx.mdastV6(md);
-    const mdx = rmdx.mdx(ast);
+    const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "## About cBEYONData
 
-      [ Overview of cBEYONData ](/docs/about-cbeyondata)&#x20;
+      [ Overview of cBEYONData ](/docs/about-cbeyondata) 
 
       ## About CFO Control Control Tower
 
-      [Overview of CFO Control Tower](https://docs.cfocontroltower.com/docs/about-cfo-control-tower)&#x20;
+      [Overview of CFO Control Tower](https://docs.cfocontroltower.com/docs/about-cfo-control-tower) 
 
       > ❗️ CONFIDENTIAL
       >
-      > *This documentation is confidential and proprietary information of cBEYONData LLC.*&#x20;
+      > *This documentation is confidential and proprietary information of cBEYONData LLC.* 
       "
     `);
   });
