@@ -219,7 +219,7 @@ ${JSON.stringify(
 | ------------------------------------------------------------------ |
 | <p>¿Necesitas ayuda?</p><p>‍</p><p>Llámanos al +52 33 11224455</p> |
       `;
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table>
@@ -386,7 +386,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left","left"]}>
@@ -450,7 +450,7 @@ ${JSON.stringify(
 [/block]
     `;
 
-    const mdx = rmdx.mdx(rmdx.mdastV6(md));
+    const mdx = migrate(md);
 
     expect(mdx).toMatchInlineSnapshot(`
       "<Table align={["left","left"]}>
