@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 7.10.0
+### ✨ New & Improved
+
+* columns ([#1008](https://github.com/readmeio/markdown/issues/1008)) ([1a3625a](https://github.com/readmeio/markdown/commit/1a3625a88cfa8eabfc1b05968eef1b6ff3539819))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump @mdx-js/mdx from 3.0.1 to 3.1.0 ([#1023](https://github.com/readmeio/markdown/issues/1023)) ([cf28a98](https://github.com/readmeio/markdown/commit/cf28a9855d5a7476e94b555fad215e58e5b02d29))
+* **deps:** bump @readme/emojis from 5.1.0 to 6.0.0 ([#1025](https://github.com/readmeio/markdown/issues/1025)) ([9feeb50](https://github.com/readmeio/markdown/commit/9feeb50ea0a78af8a72b5390518b6a1a627b1970)), closes [readmeio/emojis#85](https://github.com/readmeio/emojis/issues/85) [#85](https://github.com/readmeio/markdown/issues/85)
+* **deps:** bump core-js from 3.38.1 to 3.39.0 ([#1027](https://github.com/readmeio/markdown/issues/1027)) ([3963833](https://github.com/readmeio/markdown/commit/39638336718acc13d0f9520e58350d7cd7b38f51)), closes [/redirect.github.com/tc39/proposal-iterator-helpers/issues/284#event-14549961807](https://github.com/readmeio//redirect.github.com/tc39/proposal-iterator-helpers/issues/284/issues/event-14549961807)
+* **deps:** bump debug from 4.3.4 to 4.3.7 ([#1022](https://github.com/readmeio/markdown/issues/1022)) ([8830a5d](https://github.com/readmeio/markdown/commit/8830a5d64e7fd98c44084c144c348165e8c217cb)), closes [debug-js/debug#819](https://github.com/debug-js/debug/issues/819) [debug-js/debug#969](https://github.com/debug-js/debug/issues/969) [debug-js/debug#969](https://github.com/debug-js/debug/issues/969) [#926](https://github.com/readmeio/markdown/issues/926) [#819](https://github.com/readmeio/markdown/issues/819) [#926](https://github.com/readmeio/markdown/issues/926)
+* **deps:** bump emoji-regex from 10.3.0 to 10.4.0 ([#1020](https://github.com/readmeio/markdown/issues/1020)) ([8b4e8c7](https://github.com/readmeio/markdown/commit/8b4e8c71a0551240b966be3e2fb6c78edcb7c4ae)), closes [#113](https://github.com/readmeio/markdown/issues/113)
+* **deps:** bump estree-util-value-to-estree from 3.1.1 to 3.2.1 ([#1026](https://github.com/readmeio/markdown/issues/1026)) ([19f2ff4](https://github.com/readmeio/markdown/commit/19f2ff471b48b88910c018f73fd43eefaa5a059f))
+* **deps:** bump hast-util-from-html from 2.0.1 to 2.0.3 ([#1028](https://github.com/readmeio/markdown/issues/1028)) ([97a7ae7](https://github.com/readmeio/markdown/commit/97a7ae7bec0300ee44942dfb2ccf905b742454d0))
+* **deps:** bump remark-mdx from 3.0.1 to 3.1.0 ([#1021](https://github.com/readmeio/markdown/issues/1021)) ([0b3b087](https://github.com/readmeio/markdown/commit/0b3b087905a2b84f9d8a7dd39aebd58e19772c35))
+* removing our dependency on `trim` ([#1029](https://github.com/readmeio/markdown/issues/1029)) ([656187d](https://github.com/readmeio/markdown/commit/656187d0cae0e79f3ac373f20706fd9a953aa3dc))
+
 ## Version 7.9.0
 ### ✨ New & Improved
 
