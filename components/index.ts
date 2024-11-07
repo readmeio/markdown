@@ -4,6 +4,7 @@ export { default as Callout } from './Callout';
 export { default as Cards, Card } from './Cards';
 export { default as Code } from './Code';
 export { default as CodeTabs } from './CodeTabs';
+export { default as Columns, Column } from './Columns';
 export { default as Embed } from './Embed';
 export { default as Glossary } from './Glossary';
 export { default as HTMLBlock } from './HTMLBlock';
