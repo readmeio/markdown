@@ -8,10 +8,12 @@ export const Column = ({ children }) => {
   )
 }
 
-const Columns = ({ children, columns = 2, layout = 'auto'}) => {
+const Columns = ({ children, layout = 'auto'}) => {
   layout = layout === 'fixed' ? '1fr' : 'auto';
+  const columnsCount = React.Children.count(children);
+
   return (
-    <div className="Columns" style={{ gridTemplateColumns: `repeat(${columns}, ${layout})` }}>
+    <div className="Columns" style={{ gridTemplateColumns: `repeat(${columnsCount}, ${layout})` }}>
       {children}
     </div>
   );
