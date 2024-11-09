@@ -1,4 +1,10 @@
+$iphone-plus: 414px;
+
 .Columns {
   display: grid;
   gap: var(--md, 20px);
+
+  @media (max-width: $iphone-plus) {
+    grid-template-columns: 1fr !important;
+  }
 }
