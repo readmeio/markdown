@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 7.10.1
+### 🛠 Fixes & Updates
+
+* update columns ([#1030](https://github.com/readmeio/markdown/issues/1030)) ([c33dc82](https://github.com/readmeio/markdown/commit/c33dc8279d26a1902309bd947efb5d7b003a1d17))
+
 ## Version 7.10.0
 ### ✨ New & Improved
 
