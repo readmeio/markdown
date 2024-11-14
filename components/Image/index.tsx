@@ -88,7 +88,7 @@ const Image = (Props: ImageProps) => {
 
   return (
     <span
-      aria-label={alt}
+      aria-label={`${lightbox ? 'Collapse image' : 'Expand image'}`}
       className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
       onClick={toggle}
       onKeyDown={handleKeyDown}
