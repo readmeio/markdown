@@ -335,7 +335,7 @@ exports[`export multiple Markdown renderers > renders plain markdown as React 1`
 
 exports[`heading 1`] = `"<h2 class=\\"heading heading-2 header-scroll\\" align=\\"\\"><div class=\\"heading-anchor anchor waypoint\\" id=\\"example-header\\"></div><div class=\\"heading-text\\"><div id=\\"section-example-header\\" class=\\"heading-anchor_backwardsCompatibility\\"></div>Example Header</div><a aria-label=\\"Skip link to Example Header\\" class=\\"heading-anchor-icon fa fa-anchor\\" href=\\"#example-header\\"></a></h2>"`;
 
-exports[`image 1`] = `"<span aria-label="Image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="http://example.com/image.png" width="auto" height="auto" title="" class="img  " alt="Image" loading="lazy"></span></span>"`;
+exports[`image 1`] = `"<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" width="auto" height="auto" title="Pizza Face" class="img  " alt="Bro eats pizza and makes an OK gesture." loading="lazy"></span></span>"`;
 
 exports[`list items 1`] = `
 "<ul>
