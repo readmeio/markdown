@@ -1,8 +1,11 @@
 import type { Code, InlineCode, PhrasingContent, Root, Table, TableCell, TableRow } from 'mdast';
 import type { VFile } from 'vfile';
 
-import * as rdmd from '@readme/markdown-legacy';
 import { visit, SKIP } from 'unist-util-visit';
+
+interface RDMD {
+  mdast: (doc: string) => Root;
+}
 
 const magicIndex = (i: number, j: number) => `${i === 0 ? 'h' : `${i - 1}`}-${j}`;
 const isInlineHtml = node => node.type === 'html' && !node.block;
@@ -30,7 +33,7 @@ const isInlineHtml = node => node.type === 'html' && !node.block;
 // something more standard.
 const psuedoListRegex = /^(?![ \t]*([*_]+).*\1[ \t]*$)(?<ws>[ \t]*)\\?([*_])\s*(?<item>.*)$/gm;
 
-const migrateTableCells = (vfile: VFile) => (table: Table) => {
+const migrateTableCells = (vfile: VFile, rdmd: RDMD) => (table: Table) => {
   let json;
   try {
     const { position } = table;
@@ -60,7 +63,7 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
       if (json && json.data[magicIndex(i, j)]) {
         const string = json.data[magicIndex(i, j)].replace(psuedoListRegex, '$<ws>- $<item>');
 
-        children = rdmd.mdast(string).children;
+        children = rdmd.mdast(string).children as PhrasingContent[];
       }
 
       cell.children =
@@ -82,12 +85,14 @@ const migrateTableCells = (vfile: VFile) => (table: Table) => {
   });
 };
 
-const tableCellTransformer =
-  () =>
-  (tree: Root, vfile: VFile): Root => {
-    visit(tree, 'table', migrateTableCells(vfile));
+function tableCellTransformer() {
+  const rdmd = this.data('rdmd');
+
+  return (tree: Root, vfile: VFile): Root => {
+    visit(tree, 'table', migrateTableCells(vfile, rdmd));
 
     return tree;
   };
+}
 
 export default tableCellTransformer;

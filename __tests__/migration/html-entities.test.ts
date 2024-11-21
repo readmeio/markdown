@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('migrating html entities', () => {
   it('removes html entity spaces', () => {

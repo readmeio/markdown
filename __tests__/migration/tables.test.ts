@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('mdx migration of tables', () => {
   it('compiles tables with newlines and inline code', () => {
