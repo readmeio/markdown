@@ -119,9 +119,6 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
     filename: '[name].node.js',
   },
   externals: {
-    '@readme/variable': '@readme/variable',
-    '@tippyjs/react': '@tippyjs/react',
-    mermaid: 'mermaid',
     react: {
       amd: 'react',
       commonjs: 'react',
