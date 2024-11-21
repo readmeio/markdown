@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.10.2
+### 🛠 Fixes & Updates
+
+* add button labels ([#1031](https://github.com/readmeio/markdown/issues/1031)) ([6555fc0](https://github.com/readmeio/markdown/commit/6555fc0aace4040c9abf09b0a76ff8a95fbfe0e9))
+* dont bundle rdmd ([#1032](https://github.com/readmeio/markdown/issues/1032)) ([21b7594](https://github.com/readmeio/markdown/commit/21b759457ad53b56c8b601dcfa6ceb4f3144f8a9))
+
 ## Version 7.10.1
 ### 🛠 Fixes & Updates
 
