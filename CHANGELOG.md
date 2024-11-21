@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 7.10.3
+### 🛠 Fixes & Updates
+
+* dont externalize mermaid ([#1033](https://github.com/readmeio/markdown/issues/1033)) ([030c4e6](https://github.com/readmeio/markdown/commit/030c4e6b02495cab2718b7169851c84c07437314))
+
 ## Version 7.10.2
 ### 🛠 Fixes & Updates
 
