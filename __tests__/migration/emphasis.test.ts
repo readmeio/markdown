@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('migrating emphasis', () => {
   it('trims whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
