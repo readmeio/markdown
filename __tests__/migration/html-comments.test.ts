@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('migrating html comments', () => {
   it('migrates escaped html comments', () => {

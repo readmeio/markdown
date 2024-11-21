@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { mdx, migrate, compile, run } from '../../index';
+import { migrate } from '../helpers';
 
 describe('compatability with RDMD', () => {
   it('compiles glossary nodes', () => {

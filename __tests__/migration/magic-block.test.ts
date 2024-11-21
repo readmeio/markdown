@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('migrating magic blocks', () => {
   it('compiles magic blocks without enough newlines', () => {

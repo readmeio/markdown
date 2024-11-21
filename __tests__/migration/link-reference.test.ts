@@ -1,4 +1,4 @@
-import { migrate } from '../../index';
+import { migrate } from '../helpers';
 
 describe('mdx migration of link references', () => {
   it('compiles link references correctly', () => {
