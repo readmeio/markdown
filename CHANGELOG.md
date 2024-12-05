@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 7.10.4
+### 🛠 Fixes & Updates
+
+* allow spaces in variables ([#1035](https://github.com/readmeio/markdown/issues/1035)) ([5733446](https://github.com/readmeio/markdown/commit/5733446338e33e0a7ff959b395fe0efe61b1a696))
+* remove old parser ([#1034](https://github.com/readmeio/markdown/issues/1034)) ([47aca89](https://github.com/readmeio/markdown/commit/47aca8914d3c7570a1ef628cbef8e2e0710ccebe))
+
 ## Version 7.10.3
 ### 🛠 Fixes & Updates
 
