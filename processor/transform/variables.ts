@@ -12,7 +12,7 @@ const variables =
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
 
-      const match = node.value.match(/^user\.(?<value>.*)$/);
+      const match = node.value.match(/^\s*user\.(?<value>\S*)\s*$/);
       if (!match) return;
 
       let variable = asMdx

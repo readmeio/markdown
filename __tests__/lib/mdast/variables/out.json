@@ -38,7 +38,7 @@
             }
           },
           "type": "readme-variable",
-          "value": "{user.name}"
+          "value": "{ user.name }"
         }
       ],
       "position": {
