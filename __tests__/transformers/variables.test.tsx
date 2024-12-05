@@ -52,4 +52,11 @@ describe('variables transformer', () => {
       type: 'root',
     });
   });
+
+  it('does not parse regular expressions into variables', () => {
+    const mdx = `{notUser.name}`;
+
+    // @ts-ignore
+    expect(rmdx.mdast(mdx).children[0].type).toBe('mdxFlowExpression');
+  });
 });
