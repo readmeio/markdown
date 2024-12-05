@@ -12,8 +12,18 @@ const variables =
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
 
-      const match = node.value.match(/^\s*user\.(?<value>\S*)\s*$/);
-      if (!match) return;
+      // @ts-expect-error - estree is not defined on our mdx types?!
+      if (node.data.estree.type !== 'Program') return;
+      // @ts-expect-error - estree is not defined on our mdx types?!
+      const [expression] = node.data.estree.body;
+      if (
+        !expression ||
+        expression.type !== 'ExpressionStatement' ||
+        expression.expression.property?.type !== 'Literal'
+      )
+        return;
+
+      const name = expression.expression.property.value;
 
       let variable = asMdx
         ? ({
@@ -23,7 +33,7 @@ const variables =
               {
                 type: 'mdxJsxAttribute',
                 name: 'name',
-                value: match.groups.value,
+                value: name,
               },
             ],
             children: [],
@@ -34,7 +44,7 @@ const variables =
             data: {
               hName: 'Variable',
               hProperties: {
-                name: match.groups.value,
+                name,
               },
             },
             value: `{${node.value}}`,

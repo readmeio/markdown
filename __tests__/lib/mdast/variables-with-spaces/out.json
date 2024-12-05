@@ -22,7 +22,7 @@
           "data": {
             "hName": "Variable",
             "hProperties": {
-              "name": "name"
+              "name": "this is cursed"
             }
           },
           "position": {
@@ -38,7 +38,7 @@
             }
           },
           "type": "readme-variable",
-          "value": "{user.name}"
+          "value": "{ user['this is cursed'] }"
         }
       ],
       "position": {
