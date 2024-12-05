@@ -1,0 +1,72 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 8,
+              "line": 1,
+              "offset": 7
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0
+            }
+          },
+          "type": "text",
+          "value": "Hello, "
+        },
+        {
+          "data": {
+            "hName": "Variable",
+            "hProperties": {
+              "name": "this is cursed"
+            }
+          },
+          "position": {
+            "end": {
+              "column": 19,
+              "line": 1,
+              "offset": 18
+            },
+            "start": {
+              "column": 8,
+              "line": 1,
+              "offset": 7
+            }
+          },
+          "type": "readme-variable",
+          "value": "{ user['this is cursed'] }"
+        }
+      ],
+      "position": {
+        "end": {
+          "column": 19,
+          "line": 1,
+          "offset": 18
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0
+        }
+      },
+      "type": "paragraph"
+    }
+  ],
+  "position": {
+    "end": {
+      "column": 1,
+      "line": 2,
+      "offset": 19
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0
+    }
+  },
+  "type": "root"
+}
