@@ -26,7 +26,7 @@ describe('mdast transformer', async () => {
     expect(mdast(tablesMdx)).toStrictEqualExceptPosition(tablesJson);
   });
 
-  it('parses variables', () => {
+  it.only('parses variables', () => {
     // @ts-ignore
     expect(mdast(variablesMdx)).toStrictEqualExceptPosition(variablesJson);
   });

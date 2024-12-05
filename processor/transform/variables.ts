@@ -19,11 +19,14 @@ const variables =
       if (
         !expression ||
         expression.type !== 'ExpressionStatement' ||
-        expression.expression.property?.type !== 'Literal'
+        !['Literal', 'Identifier'].includes(expression.expression.property?.type)
       )
         return;
 
-      const name = expression.expression.property.value;
+      const name =
+        expression.expression.property.type === 'Identifier'
+          ? expression.expression.property.name
+          : expression.expression.property.value;
 
       let variable = asMdx
         ? ({
