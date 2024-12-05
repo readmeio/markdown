@@ -31,7 +31,7 @@ describe('mdast transformer', async () => {
     expect(mdast(variablesMdx)).toStrictEqualExceptPosition(variablesJson);
   });
 
-  it.only('parses variables with spaces', () => {
+  it('parses variables with spaces', () => {
     // @ts-ignore
     expect(mdast(variablesWithSpacesMdx)).toStrictEqualExceptPosition(variablesWithSpacesJson);
   });
