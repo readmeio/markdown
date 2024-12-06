@@ -1,6 +1,6 @@
 import astProcessor, { rehypePlugins, MdastOpts } from './ast-processor';
 import remarkRehype from 'remark-rehype';
-import { injectComponents } from '../processor/transform';
+import { injectComponents, mdxToHast } from '../processor/transform';
 import { MdastComponents } from '../types';
 import mdast from './mdast';
 
@@ -10,7 +10,11 @@ const hast = (text: string, opts: MdastOpts = {}) => {
     return memo;
   }, {});
 
-  const processor = astProcessor(opts).use(injectComponents({ components })).use(remarkRehype).use(rehypePlugins);
+  const processor = astProcessor(opts)
+    .use(injectComponents({ components }))
+    .use(mdxToHast)
+    .use(remarkRehype)
+    .use(rehypePlugins);
 
   return processor.runSync(processor.parse(text));
 };
