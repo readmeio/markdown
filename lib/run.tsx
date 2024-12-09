@@ -72,7 +72,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: () => (
-      <Contexts terms={terms} baseUrl={baseUrl}>
+      <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
         <Content />
       </Contexts>
     ),

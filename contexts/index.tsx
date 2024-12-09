@@ -1,16 +1,22 @@
 import React from 'react';
 import GlossaryContext from './GlossaryTerms';
 import BaseUrlContext from './BaseUrl';
+import { VariablesContext } from '@readme/variable';
 import { RunOpts } from '../lib/run';
 
-type Props = React.PropsWithChildren & Pick<RunOpts, 'baseUrl' | 'terms'>;
+type Props = React.PropsWithChildren & Pick<RunOpts, 'baseUrl' | 'terms' | 'variables'>;
 
-const Contexts = ({ children, terms = [], baseUrl = '/' }: Props) => {
-  return (
-    <GlossaryContext.Provider value={terms}>
-      <BaseUrlContext.Provider value={baseUrl}>{children}</BaseUrlContext.Provider>
-    </GlossaryContext.Provider>
-  );
+const compose = (
+  children: React.ReactNode,
+  ...contexts: [React.Context<typeof VariablesContext | typeof GlossaryContext>, unknown][]
+) => {
+  return contexts.reduce((content, [Context, value]) => {
+    return <Context.Provider value={value}>{content}</Context.Provider>;
+  }, children);
+};
+
+const Contexts = ({ children, terms = [], variables = { user: {}, defaults: [] }, baseUrl = '/' }: Props) => {
+  return compose(children, [GlossaryContext, terms], [VariablesContext, variables], [BaseUrlContext, baseUrl]);
 };
 
 export default Contexts;
