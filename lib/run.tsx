@@ -11,11 +11,7 @@ import { Depth } from '../components/Heading';
 import { tocToMdx } from '../processor/plugin/toc';
 import compile from './compile';
 import { CustomComponents, RMDXModule } from '../types';
-
-interface Variables {
-  user: Record<string, string>;
-  defaults: { name: string; default: string }[];
-}
+import User, { Variables } from '../utils/user';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: CustomComponents;
@@ -63,7 +59,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
-      imports: { React },
+      imports: { React, user: User(variables) },
       useMDXComponents,
       ...opts,
     }) as Promise<RMDXModule>;
@@ -76,7 +72,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: () => (
-      <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
+      <Contexts terms={terms} baseUrl={baseUrl}>
         <Content />
       </Contexts>
     ),
