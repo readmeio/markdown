@@ -31,12 +31,9 @@ const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts
       ...opts,
     });
 
-    return (
-      String(vfile).replace(
-        /await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/,
-        'arguments[0].imports.React',
-      ).replace('"use strict";', '"use strict";\nconst { user } = arguments[0].imports;'),
-    );
+    return String(vfile)
+      .replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React')
+      .replace('"use strict";', '"use strict";\nconst { user } = arguments[0].imports;');
   } catch (error) {
     throw error.line ? new MdxSyntaxError(error, text) : error;
   }
