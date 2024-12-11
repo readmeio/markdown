@@ -486,4 +486,21 @@ ${JSON.stringify(
       "
     `);
   });
+
+  it('compiles tables with leading escapes', () => {
+    const md = `
+| Col 1     | Col 2 |
+| --------- | ----- |
+| \\_foo_\\ | bar   |
+`;
+
+    const mdx = migrate(md);
+
+    expect(mdx).toMatchInlineSnapshot(`
+      "| Col 1     | Col 2 |
+      | --------- | ----- |
+      | \\_foo\\_\\  | bar   |
+      "
+    `);
+  });
 });

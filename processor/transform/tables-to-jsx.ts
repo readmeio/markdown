@@ -36,7 +36,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       parent.children.splice(index, 1, { type: 'text', value: '\n' });
     });
 
-    if (!phrasing(content)) {
+    if (!phrasing(content) && content.type !== 'escape') {
       hasFlowContent = true;
       return EXIT;
     }
