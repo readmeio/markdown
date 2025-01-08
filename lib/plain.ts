@@ -21,32 +21,39 @@ function one(node: Nodes, opts: Options) {
   if ('tagName' in node) {
     if (STRIP_TAGS.includes(node.tagName)) return '';
 
-    if (node.tagName === 'html-block') {
-      if (!node.properties.html) return '';
-      return all(hast(node.properties.html.toString()), opts);
-    }
+    switch (node.tagName) {
+      case 'html-block': {
+        if (!node.properties.html) return '';
+        return all(hast(node.properties.html.toString()), opts);
+      }
+      case 'rdme-callout': {
+        const { icon, title } = node.properties;
 
-    if (node.tagName === 'rdme-callout') {
-      const { icon, title } = node.properties;
+        const children = node?.children?.slice(title ? 1 : 0);
+        const body = children ? all({ type: 'root', children }, opts) : '';
 
-      const children = node?.children?.slice(title ? 1 : 0);
-      const body = children ? all({ type: 'root', children }, opts) : '';
+        return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
+      }
+      case 'readme-glossary-item': {
+        return node.properties.term;
+      }
+      case 'readme-variable': {
+        const key = node.properties.variable.toString();
+        const val = opts.variables[key];
+        return val || `<<${key}>>`;
+      }
+      case 'img': {
+        return node.properties?.title || '';
+      }
+      case 'Accordion':
+      case 'Card':
+      case 'Tab': {
+        const title = node.properties?.title || '';
+        const children = node?.children;
+        const body = children ? all({ type: 'root', children }, opts) : '';
 
-      return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
-    }
-
-    if (node.tagName === 'readme-glossary-item') {
-      return node.properties.term;
-    }
-
-    if (node.tagName === 'readme-variable') {
-      const key = node.properties.variable.toString();
-      const val = opts.variables[key];
-      return val || `<<${key}>>`;
-    }
-
-    if (node.tagName === 'img') {
-      return node.properties?.title || '';
+        return [title, body].filter(Boolean).join(' ');
+      }
     }
   }
 
