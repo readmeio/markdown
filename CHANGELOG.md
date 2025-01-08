@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 7.11.0
+### ✨ New & Improved
+
+* add title props to plain ([#1036](https://github.com/readmeio/markdown/issues/1036)) ([a3b7f50](https://github.com/readmeio/markdown/commit/a3b7f5035193fe271ccf8dfb546bed2189dbb3e2))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump debug from 4.3.7 to 4.4.0 ([#1038](https://github.com/readmeio/markdown/issues/1038)) ([a5a8061](https://github.com/readmeio/markdown/commit/a5a8061a8e28fc0254310f094be92fc976f171c6))
+* **deps:** bump readmeio/rdme from 8 to 9 ([#1037](https://github.com/readmeio/markdown/issues/1037)) ([3f403de](https://github.com/readmeio/markdown/commit/3f403dec26db61d250bf33404300923838edf93d)), closes [/github.com/readmeio/rdme/blob/HEAD/#migrating-to-rdme10](https://github.com/readmeio//github.com/readmeio/rdme/blob/HEAD//issues/migrating-to-rdme10) [#1099](https://github.com/readmeio/markdown/issues/1099) [#1085](https://github.com/readmeio/markdown/issues/1085) [#1106](https://github.com/readmeio/markdown/issues/1106) [#1107](https://github.com/readmeio/markdown/issues/1107) [#1068](https://github.com/readmeio/markdown/issues/1068) [#962](https://github.com/readmeio/markdown/issues/962) [#1067](https://github.com/readmeio/markdown/issues/1067) [github.com/readmeio/rdme/blob/d01d76fe3c2e4a98b4f5c415be03e589fbe3b56e/.releaserc.yml#L30](https://github.com/readmeio/github.com/readmeio/rdme/blob/d01d76fe3c2e4a98b4f5c415be03e589fbe3b56e/.releaserc.yml/issues/L30) [#1067](https://github.com/readmeio/markdown/issues/1067) [#1072](https://github.com/readmeio/markdown/issues/1072) [#1100](https://github.com/readmeio/markdown/issues/1100) [#1078](https://github.com/readmeio/markdown/issues/1078) [#1042](https://github.com/readmeio/markdown/issues/1042) [#908](https://github.com/readmeio/markdown/issues/908) [#901](https://github.com/readmeio/markdown/issues/901) [#1073](https://github.com/readmeio/markdown/issues/1073) [#1080](https://github.com/readmeio/markdown/issues/1080) [#961](https://github.com/readmeio/markdown/issues/961) [#963](https://github.com/readmeio/markdown/issues/963) [#993](https://github.com/readmeio/markdown/issues/993) [github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V20.md#2023-11-22-version-20100](https://github.com/readmeio/github.com/nodejs/node/blob/main/doc/changelogs/CHANGELOG_V20.md/issues/2023-11-22-version-20100) [#965](https://github.com/readmeio/markdown/issues/965) [#1080](https://github.com/readmeio/markdown/issues/1080) [#1106](https://github.com/readmeio/markdown/issues/1106) [#1105](https://github.com/readmeio/markdown/issues/1105) [#1098](https://github.com/readmeio/markdown/issues/1098) [#1099](https://github.com/readmeio/markdown/issues/1099) [#1100](https://github.com/readmeio/markdown/issues/1100)
+* dont treat escapes as flow ([#1040](https://github.com/readmeio/markdown/issues/1040)) ([4692ece](https://github.com/readmeio/markdown/commit/4692ece7fc259575e4243c8b88c4178b244a6e1b))
+
 ## Version 7.10.4
 ### 🛠 Fixes & Updates
 
