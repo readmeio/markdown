@@ -54,17 +54,19 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
-  const defaults = Object.entries(components).reduce((memo, [tag, mod]) => {
+  const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
     memo[tag] = mod.default;
 
-    Object.entries(mod.exports).forEach(([subTag, component]) => {
-      memo[subTag] = component;
-    });
+    if (mod.exports) {
+      Object.entries(mod.exports).forEach(([subTag, component]) => {
+        memo[subTag] = component;
+      });
+    }
 
     return memo;
   }, {});
 
-  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(defaults) }: RunOpts = {}) => {
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(executedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
       Fragment,
@@ -75,7 +77,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     }) as Promise<RMDXModule>;
   };
 
-  const { toc, default: Content, ...exports } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);
   const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
