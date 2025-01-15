@@ -55,10 +55,11 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
   const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
-    memo[tag] = mod.default;
+    const { default: Content, toc, Toc, ...rest } = mod;
+    memo[tag] = Content;
 
-    if (mod.exports) {
-      Object.entries(mod.exports).forEach(([subTag, component]) => {
+    if (rest) {
+      Object.entries(rest).forEach(([subTag, component]) => {
         memo[subTag] = component;
       });
     }
@@ -88,7 +89,6 @@ const run = async (string: string, _opts: RunOpts = {}) => {
         <Content />
       </Contexts>
     ),
-    exports,
     toc,
     Toc: () =>
       tocMdx &&
@@ -97,6 +97,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
           <Toc />
         </Components.TableOfContents>
       ),
+    ...exports,
   };
 };
 
