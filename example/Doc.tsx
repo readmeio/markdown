@@ -87,7 +87,6 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, { ...opts, components });
-        console.log(executedComponents);
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
