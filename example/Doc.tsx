@@ -20,6 +20,11 @@ export const Test = ({ color = 'thistle' } = {}) => {
 
 export default Test;
   `,
+  MultipleExports: `
+export const One = () => "One";
+
+export const Two = () => "Two";
+  `,
 };
 
 const executedComponents = {};
@@ -82,6 +87,7 @@ const Doc = () => {
 
       try {
         const code = mdx.compile(doc, { ...opts, components });
+        console.log(executedComponents);
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);

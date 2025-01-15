@@ -9,6 +9,8 @@ import codeBlocks from '../docs/code-blocks.md';
 // @ts-ignore
 import embeds from '../docs/embeds.md';
 // @ts-ignore
+import exportTests from '../docs/export-tests.mdx';
+// @ts-ignore
 import features from '../docs/features.md';
 // @ts-ignore
 import gettingStarted from '../docs/getting-started.md';
@@ -44,6 +46,7 @@ const fixtures = Object.entries({
   codeBlockTests,
   codeBlocks,
   embeds,
+  exportTests,
   features,
   gettingStarted,
   headings,
