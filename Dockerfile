@@ -13,7 +13,7 @@ RUN apk update && apk add \
   font-roboto \
   chromium
 
-RUN npm install -g npm@latest
+RUN npm install -g npm@10.5
 
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}
