@@ -1,0 +1,544 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mdast transformer > parses exports 1`] = `
+{
+  "children": [
+    {
+      "data": {
+        "estree": Node {
+          "body": [
+            Node {
+              "end": 26,
+              "loc": {
+                "end": {
+                  "column": 26,
+                  "line": 1,
+                  "offset": 26,
+                },
+                "start": {
+                  "column": 0,
+                  "line": 1,
+                  "offset": 0,
+                },
+              },
+              "range": [
+                0,
+                26,
+              ],
+              "source": Node {
+                "end": 25,
+                "loc": {
+                  "end": {
+                    "column": 25,
+                    "line": 1,
+                    "offset": 25,
+                  },
+                  "start": {
+                    "column": 18,
+                    "line": 1,
+                    "offset": 18,
+                  },
+                },
+                "range": [
+                  18,
+                  25,
+                ],
+                "raw": ""react"",
+                "start": 18,
+                "type": "Literal",
+                "value": "react",
+              },
+              "specifiers": [
+                Node {
+                  "end": 12,
+                  "loc": {
+                    "end": {
+                      "column": 12,
+                      "line": 1,
+                      "offset": 12,
+                    },
+                    "start": {
+                      "column": 7,
+                      "line": 1,
+                      "offset": 7,
+                    },
+                  },
+                  "local": Node {
+                    "end": 12,
+                    "loc": {
+                      "end": {
+                        "column": 12,
+                        "line": 1,
+                        "offset": 12,
+                      },
+                      "start": {
+                        "column": 7,
+                        "line": 1,
+                        "offset": 7,
+                      },
+                    },
+                    "name": "React",
+                    "range": [
+                      7,
+                      12,
+                    ],
+                    "start": 7,
+                    "type": "Identifier",
+                  },
+                  "range": [
+                    7,
+                    12,
+                  ],
+                  "start": 7,
+                  "type": "ImportDefaultSpecifier",
+                },
+              ],
+              "start": 0,
+              "type": "ImportDeclaration",
+            },
+          ],
+          "comments": [],
+          "end": 26,
+          "loc": {
+            "end": {
+              "column": 26,
+              "line": 1,
+              "offset": 26,
+            },
+            "start": {
+              "column": 0,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "range": [
+            0,
+            26,
+          ],
+          "sourceType": "module",
+          "start": 0,
+          "type": "Program",
+        },
+      },
+      "position": {
+        "end": {
+          "column": 27,
+          "line": 1,
+          "offset": 26,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "mdxjsEsm",
+      "value": "import React from "react";",
+    },
+    {
+      "data": {
+        "estree": Node {
+          "body": [
+            Node {
+              "declaration": Node {
+                "declarations": [
+                  Node {
+                    "end": 89,
+                    "id": Node {
+                      "end": 44,
+                      "loc": {
+                        "end": {
+                          "column": 16,
+                          "line": 3,
+                          "offset": 44,
+                        },
+                        "start": {
+                          "column": 13,
+                          "line": 3,
+                          "offset": 41,
+                        },
+                      },
+                      "name": "Foo",
+                      "range": [
+                        41,
+                        44,
+                      ],
+                      "start": 41,
+                      "type": "Identifier",
+                    },
+                    "init": Node {
+                      "async": false,
+                      "body": Node {
+                        "body": [
+                          Node {
+                            "argument": Node {
+                              "children": [
+                                Node {
+                                  "end": 80,
+                                  "loc": {
+                                    "end": {
+                                      "column": 25,
+                                      "line": 4,
+                                      "offset": 80,
+                                    },
+                                    "start": {
+                                      "column": 14,
+                                      "line": 4,
+                                      "offset": 69,
+                                    },
+                                  },
+                                  "range": [
+                                    69,
+                                    80,
+                                  ],
+                                  "raw": "Hello World",
+                                  "start": 69,
+                                  "type": "JSXText",
+                                  "value": "Hello World",
+                                },
+                              ],
+                              "closingElement": Node {
+                                "end": 86,
+                                "loc": {
+                                  "end": {
+                                    "column": 31,
+                                    "line": 4,
+                                    "offset": 86,
+                                  },
+                                  "start": {
+                                    "column": 25,
+                                    "line": 4,
+                                    "offset": 80,
+                                  },
+                                },
+                                "name": Node {
+                                  "end": 85,
+                                  "loc": {
+                                    "end": {
+                                      "column": 30,
+                                      "line": 4,
+                                      "offset": 85,
+                                    },
+                                    "start": {
+                                      "column": 27,
+                                      "line": 4,
+                                      "offset": 82,
+                                    },
+                                  },
+                                  "name": "div",
+                                  "range": [
+                                    82,
+                                    85,
+                                  ],
+                                  "start": 82,
+                                  "type": "JSXIdentifier",
+                                },
+                                "range": [
+                                  80,
+                                  86,
+                                ],
+                                "start": 80,
+                                "type": "JSXClosingElement",
+                              },
+                              "end": 86,
+                              "loc": {
+                                "end": {
+                                  "column": 31,
+                                  "line": 4,
+                                  "offset": 86,
+                                },
+                                "start": {
+                                  "column": 9,
+                                  "line": 4,
+                                  "offset": 64,
+                                },
+                              },
+                              "openingElement": Node {
+                                "attributes": [],
+                                "end": 69,
+                                "loc": {
+                                  "end": {
+                                    "column": 14,
+                                    "line": 4,
+                                    "offset": 69,
+                                  },
+                                  "start": {
+                                    "column": 9,
+                                    "line": 4,
+                                    "offset": 64,
+                                  },
+                                },
+                                "name": Node {
+                                  "end": 68,
+                                  "loc": {
+                                    "end": {
+                                      "column": 13,
+                                      "line": 4,
+                                      "offset": 68,
+                                    },
+                                    "start": {
+                                      "column": 10,
+                                      "line": 4,
+                                      "offset": 65,
+                                    },
+                                  },
+                                  "name": "div",
+                                  "range": [
+                                    65,
+                                    68,
+                                  ],
+                                  "start": 65,
+                                  "type": "JSXIdentifier",
+                                },
+                                "range": [
+                                  64,
+                                  69,
+                                ],
+                                "selfClosing": false,
+                                "start": 64,
+                                "type": "JSXOpeningElement",
+                              },
+                              "range": [
+                                64,
+                                86,
+                              ],
+                              "start": 64,
+                              "type": "JSXElement",
+                            },
+                            "end": 87,
+                            "loc": {
+                              "end": {
+                                "column": 32,
+                                "line": 4,
+                                "offset": 87,
+                              },
+                              "start": {
+                                "column": 2,
+                                "line": 4,
+                                "offset": 57,
+                              },
+                            },
+                            "range": [
+                              57,
+                              87,
+                            ],
+                            "start": 57,
+                            "type": "ReturnStatement",
+                          },
+                        ],
+                        "end": 89,
+                        "loc": {
+                          "end": {
+                            "column": 1,
+                            "line": 5,
+                            "offset": 89,
+                          },
+                          "start": {
+                            "column": 25,
+                            "line": 3,
+                            "offset": 53,
+                          },
+                        },
+                        "range": [
+                          53,
+                          89,
+                        ],
+                        "start": 53,
+                        "type": "BlockStatement",
+                      },
+                      "end": 89,
+                      "expression": false,
+                      "generator": false,
+                      "id": null,
+                      "loc": {
+                        "end": {
+                          "column": 1,
+                          "line": 5,
+                          "offset": 89,
+                        },
+                        "start": {
+                          "column": 19,
+                          "line": 3,
+                          "offset": 47,
+                        },
+                      },
+                      "params": [],
+                      "range": [
+                        47,
+                        89,
+                      ],
+                      "start": 47,
+                      "type": "ArrowFunctionExpression",
+                    },
+                    "loc": {
+                      "end": {
+                        "column": 1,
+                        "line": 5,
+                        "offset": 89,
+                      },
+                      "start": {
+                        "column": 13,
+                        "line": 3,
+                        "offset": 41,
+                      },
+                    },
+                    "range": [
+                      41,
+                      89,
+                    ],
+                    "start": 41,
+                    "type": "VariableDeclarator",
+                  },
+                ],
+                "end": 89,
+                "kind": "const",
+                "loc": {
+                  "end": {
+                    "column": 1,
+                    "line": 5,
+                    "offset": 89,
+                  },
+                  "start": {
+                    "column": 7,
+                    "line": 3,
+                    "offset": 35,
+                  },
+                },
+                "range": [
+                  35,
+                  89,
+                ],
+                "start": 35,
+                "type": "VariableDeclaration",
+              },
+              "end": 89,
+              "loc": {
+                "end": {
+                  "column": 1,
+                  "line": 5,
+                  "offset": 89,
+                },
+                "start": {
+                  "column": 0,
+                  "line": 3,
+                  "offset": 28,
+                },
+              },
+              "range": [
+                28,
+                89,
+              ],
+              "source": null,
+              "specifiers": [],
+              "start": 28,
+              "type": "ExportNamedDeclaration",
+            },
+          ],
+          "comments": [],
+          "end": 89,
+          "loc": {
+            "end": {
+              "column": 1,
+              "line": 5,
+              "offset": 89,
+            },
+            "start": {
+              "column": 0,
+              "line": 3,
+              "offset": 28,
+            },
+          },
+          "range": [
+            28,
+            89,
+          ],
+          "sourceType": "module",
+          "start": 28,
+          "type": "Program",
+        },
+      },
+      "position": {
+        "end": {
+          "column": 2,
+          "line": 5,
+          "offset": 89,
+        },
+        "start": {
+          "column": 1,
+          "line": 3,
+          "offset": 28,
+        },
+      },
+      "type": "mdxjsEsm",
+      "value": "export const Foo = () => {
+  return <div>Hello World</div>;
+}",
+    },
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 13,
+              "line": 7,
+              "offset": 103,
+            },
+            "start": {
+              "column": 4,
+              "line": 7,
+              "offset": 94,
+            },
+          },
+          "type": "text",
+          "value": "Hey there",
+        },
+      ],
+      "depth": 2,
+      "position": {
+        "end": {
+          "column": 14,
+          "line": 7,
+          "offset": 104,
+        },
+        "start": {
+          "column": 1,
+          "line": 7,
+          "offset": 91,
+        },
+      },
+      "type": "heading",
+    },
+    {
+      "attributes": [],
+      "children": [],
+      "name": "Foo",
+      "position": {
+        "end": {
+          "column": 8,
+          "line": 8,
+          "offset": 112,
+        },
+        "start": {
+          "column": 1,
+          "line": 8,
+          "offset": 105,
+        },
+      },
+      "type": "mdxJsxFlowElement",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 8,
+      "line": 8,
+      "offset": 112,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

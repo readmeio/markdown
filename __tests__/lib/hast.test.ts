@@ -1,4 +1,4 @@
-import { hast, hastFromHtml } from '../../lib';
+import { hast } from '../../lib';
 import { h } from 'hastscript';
 
 describe('hast transformer', () => {
@@ -19,6 +19,7 @@ describe('hast transformer', () => {
       h('h2', { id: 'its-coming-from-within-the-component' }, "It's coming from within the component!"),
     );
 
+    // @ts-ignore
     expect(hast(md, { components })).toStrictEqualExceptPosition(expected);
   });
 });
