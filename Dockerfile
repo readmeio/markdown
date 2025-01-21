@@ -1,5 +1,5 @@
-ARG NODE_VERSION=18
-FROM node:${NODE_VERSION}-alpine3.18
+ARG NODE_VERSION=22.13
+FROM node:${NODE_VERSION}-alpine
 
 ARG NODE_VERSION
 ENV NODE_VERSION=$NODE_VERSION
@@ -13,7 +13,7 @@ RUN apk update && apk add \
   font-roboto \
   chromium
 
-RUN npm install -g npm@latest
+RUN npm install -g npm@10.5
 
 ENV DOCKER_WORKSPACE=/markdown
 WORKDIR ${DOCKER_WORKSPACE}

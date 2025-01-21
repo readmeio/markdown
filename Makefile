@@ -8,16 +8,7 @@ DOCKER_WORKSPACE := "/markdown"
 MOUNTS = --volume ${PWD}:${DOCKER_WORKSPACE} \
 	--volume ${DOCKER_WORKSPACE}/node_modules
 
-ifeq ($(USE_LEGACY), true)
-dockerfile = -f Dockerfile.legacy
-endif
-
-ifeq ($(USE_LEGACY), true)
-dockerfile = -f Dockerfile.legacy
-endif
-
 build:
-	@echo USE_LEGACY=$(USE_LEGACY)
 	docker build -t markdown $(dockerfile) --build-arg REACT_VERSION=${REACT_VERSION} .
 
 # This lets us call `make run test.browser`. Make expects cmdline args
