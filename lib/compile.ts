@@ -14,9 +14,10 @@ export type CompileOpts = CompileOptions & {
   copyButtons?: boolean;
 };
 
-const { codeTabsTransformer, ...transforms } = defaultTransforms;
+const { codeTabsTransformer, tailwindRootTransformer, ...transforms } = defaultTransforms;
 
 const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts = {}) => {
+  console.log(Object.keys(defaultTransforms));
   try {
     const vfile = compileSync(text, {
       outputFormat: 'function-body',
@@ -26,6 +27,7 @@ const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts
         remarkGfm,
         ...Object.values(transforms),
         [codeTabsTransformer, { copyButtons }],
+        tailwindRootTransformer({ components }),
       ],
       rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
       ...opts,

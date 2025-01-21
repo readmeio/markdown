@@ -25,6 +25,13 @@ export const One = () => "One";
 
 export const Two = () => "Two";
   `,
+  TailwindRootTest: `
+export const StyledComponent = () => {
+  return <div className="bg-blue-500 text-white p-4">
+    Hello, World!
+  </div>;
+}
+  `,
 };
 
 const executedComponents = {};
@@ -86,7 +93,7 @@ const Doc = () => {
       };
 
       try {
-        const code = mdx.compile(doc, { ...opts, components });
+        const code = mdx.compile(doc, { ...opts, components: executedComponents });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
