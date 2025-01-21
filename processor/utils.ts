@@ -1,5 +1,5 @@
 import type { Node } from 'mdast';
-import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression } from 'mdast-util-mdx';
+import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
   MdxJsxAttributeValueExpression,
@@ -101,11 +101,21 @@ export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any 
  * TODO: Make this more extensible to all types of nodes. isElement(node, 'type' or ['type1', 'type2']), say
  *
  * @param {Node} node
- * @returns {(node is MdxJsxFlowElement | MdxJsxTextElement)}
+ * @returns {(node is MdxJsxFlowElement | MdxJsxTextElement | MdxjsEsm)}
  */
 export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextElement => {
   return ['mdxJsxFlowElement', 'mdxJsxTextElement'].includes(node.type);
 };
+
+/**
+ * Tests if a node is an MDX ESM element (i.e. import or export).
+ *
+ * @param {Node} node
+ * @returns {boolean}
+ */
+export const isMDXEsm = (node: Node): node is MdxjsEsm => {
+  return node.type === 'mdxjsEsm';
+}
 
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
