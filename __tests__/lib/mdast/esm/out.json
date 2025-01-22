@@ -1,0 +1,538 @@
+{
+  "type": "root",
+  "children": [
+      {
+          "type": "mdxjsEsm",
+          "value": "import React from 'react';",
+          "position": {
+              "start": {
+                  "line": 1,
+                  "column": 1,
+                  "offset": 0
+              },
+              "end": {
+                  "line": 1,
+                  "column": 27,
+                  "offset": 26
+              }
+          },
+          "data": {
+              "estree": {
+                  "type": "Program",
+                  "start": 0,
+                  "end": 26,
+                  "loc": {
+                      "start": {
+                          "line": 1,
+                          "column": 0,
+                          "offset": 0
+                      },
+                      "end": {
+                          "line": 1,
+                          "column": 26,
+                          "offset": 26
+                      }
+                  },
+                  "body": [
+                      {
+                          "type": "ImportDeclaration",
+                          "start": 0,
+                          "end": 26,
+                          "loc": {
+                              "start": {
+                                  "line": 1,
+                                  "column": 0,
+                                  "offset": 0
+                              },
+                              "end": {
+                                  "line": 1,
+                                  "column": 26,
+                                  "offset": 26
+                              }
+                          },
+                          "specifiers": [
+                              {
+                                  "type": "ImportDefaultSpecifier",
+                                  "start": 7,
+                                  "end": 12,
+                                  "loc": {
+                                      "start": {
+                                          "line": 1,
+                                          "column": 7,
+                                          "offset": 7
+                                      },
+                                      "end": {
+                                          "line": 1,
+                                          "column": 12,
+                                          "offset": 12
+                                      }
+                                  },
+                                  "local": {
+                                      "type": "Identifier",
+                                      "start": 7,
+                                      "end": 12,
+                                      "loc": {
+                                          "start": {
+                                              "line": 1,
+                                              "column": 7,
+                                              "offset": 7
+                                          },
+                                          "end": {
+                                              "line": 1,
+                                              "column": 12,
+                                              "offset": 12
+                                          }
+                                      },
+                                      "name": "React",
+                                      "range": [
+                                          7,
+                                          12
+                                      ]
+                                  },
+                                  "range": [
+                                      7,
+                                      12
+                                  ]
+                              }
+                          ],
+                          "source": {
+                              "type": "Literal",
+                              "start": 18,
+                              "end": 25,
+                              "loc": {
+                                  "start": {
+                                      "line": 1,
+                                      "column": 18,
+                                      "offset": 18
+                                  },
+                                  "end": {
+                                      "line": 1,
+                                      "column": 25,
+                                      "offset": 25
+                                  }
+                              },
+                              "value": "react",
+                              "raw": "'react'",
+                              "range": [
+                                  18,
+                                  25
+                              ]
+                          },
+                          "range": [
+                              0,
+                              26
+                          ]
+                      }
+                  ],
+                  "sourceType": "module",
+                  "comments": [],
+                  "range": [
+                      0,
+                      26
+                  ]
+              }
+          }
+      },
+      {
+          "type": "mdxjsEsm",
+          "value": "export const Foo = () => {\n  return <div>Hello World</div>;\n}",
+          "position": {
+              "start": {
+                  "line": 3,
+                  "column": 1,
+                  "offset": 28
+              },
+              "end": {
+                  "line": 5,
+                  "column": 2,
+                  "offset": 89
+              }
+          },
+          "data": {
+              "estree": {
+                  "type": "Program",
+                  "start": 28,
+                  "end": 89,
+                  "loc": {
+                      "start": {
+                          "line": 3,
+                          "column": 0,
+                          "offset": 28
+                      },
+                      "end": {
+                          "line": 5,
+                          "column": 1,
+                          "offset": 89
+                      }
+                  },
+                  "body": [
+                      {
+                          "type": "ExportNamedDeclaration",
+                          "start": 28,
+                          "end": 89,
+                          "loc": {
+                              "start": {
+                                  "line": 3,
+                                  "column": 0,
+                                  "offset": 28
+                              },
+                              "end": {
+                                  "line": 5,
+                                  "column": 1,
+                                  "offset": 89
+                              }
+                          },
+                          "declaration": {
+                              "type": "VariableDeclaration",
+                              "start": 35,
+                              "end": 89,
+                              "loc": {
+                                  "start": {
+                                      "line": 3,
+                                      "column": 7,
+                                      "offset": 35
+                                  },
+                                  "end": {
+                                      "line": 5,
+                                      "column": 1,
+                                      "offset": 89
+                                  }
+                              },
+                              "declarations": [
+                                  {
+                                      "type": "VariableDeclarator",
+                                      "start": 41,
+                                      "end": 89,
+                                      "loc": {
+                                          "start": {
+                                              "line": 3,
+                                              "column": 13,
+                                              "offset": 41
+                                          },
+                                          "end": {
+                                              "line": 5,
+                                              "column": 1,
+                                              "offset": 89
+                                          }
+                                      },
+                                      "id": {
+                                          "type": "Identifier",
+                                          "start": 41,
+                                          "end": 44,
+                                          "loc": {
+                                              "start": {
+                                                  "line": 3,
+                                                  "column": 13,
+                                                  "offset": 41
+                                              },
+                                              "end": {
+                                                  "line": 3,
+                                                  "column": 16,
+                                                  "offset": 44
+                                              }
+                                          },
+                                          "name": "Foo",
+                                          "range": [
+                                              41,
+                                              44
+                                          ]
+                                      },
+                                      "init": {
+                                          "type": "ArrowFunctionExpression",
+                                          "start": 47,
+                                          "end": 89,
+                                          "loc": {
+                                              "start": {
+                                                  "line": 3,
+                                                  "column": 19,
+                                                  "offset": 47
+                                              },
+                                              "end": {
+                                                  "line": 5,
+                                                  "column": 1,
+                                                  "offset": 89
+                                              }
+                                          },
+                                          "id": null,
+                                          "expression": false,
+                                          "generator": false,
+                                          "async": false,
+                                          "params": [],
+                                          "body": {
+                                              "type": "BlockStatement",
+                                              "start": 53,
+                                              "end": 89,
+                                              "loc": {
+                                                  "start": {
+                                                      "line": 3,
+                                                      "column": 25,
+                                                      "offset": 53
+                                                  },
+                                                  "end": {
+                                                      "line": 5,
+                                                      "column": 1,
+                                                      "offset": 89
+                                                  }
+                                              },
+                                              "body": [
+                                                  {
+                                                      "type": "ReturnStatement",
+                                                      "start": 57,
+                                                      "end": 87,
+                                                      "loc": {
+                                                          "start": {
+                                                              "line": 4,
+                                                              "column": 2,
+                                                              "offset": 57
+                                                          },
+                                                          "end": {
+                                                              "line": 4,
+                                                              "column": 32,
+                                                              "offset": 87
+                                                          }
+                                                      },
+                                                      "argument": {
+                                                          "type": "JSXElement",
+                                                          "start": 64,
+                                                          "end": 86,
+                                                          "loc": {
+                                                              "start": {
+                                                                  "line": 4,
+                                                                  "column": 9,
+                                                                  "offset": 64
+                                                              },
+                                                              "end": {
+                                                                  "line": 4,
+                                                                  "column": 31,
+                                                                  "offset": 86
+                                                              }
+                                                          },
+                                                          "openingElement": {
+                                                              "type": "JSXOpeningElement",
+                                                              "start": 64,
+                                                              "end": 69,
+                                                              "loc": {
+                                                                  "start": {
+                                                                      "line": 4,
+                                                                      "column": 9,
+                                                                      "offset": 64
+                                                                  },
+                                                                  "end": {
+                                                                      "line": 4,
+                                                                      "column": 14,
+                                                                      "offset": 69
+                                                                  }
+                                                              },
+                                                              "attributes": [],
+                                                              "name": {
+                                                                  "type": "JSXIdentifier",
+                                                                  "start": 65,
+                                                                  "end": 68,
+                                                                  "loc": {
+                                                                      "start": {
+                                                                          "line": 4,
+                                                                          "column": 10,
+                                                                          "offset": 65
+                                                                      },
+                                                                      "end": {
+                                                                          "line": 4,
+                                                                          "column": 13,
+                                                                          "offset": 68
+                                                                      }
+                                                                  },
+                                                                  "name": "div",
+                                                                  "range": [
+                                                                      65,
+                                                                      68
+                                                                  ]
+                                                              },
+                                                              "selfClosing": false,
+                                                              "range": [
+                                                                  64,
+                                                                  69
+                                                              ]
+                                                          },
+                                                          "closingElement": {
+                                                              "type": "JSXClosingElement",
+                                                              "start": 80,
+                                                              "end": 86,
+                                                              "loc": {
+                                                                  "start": {
+                                                                      "line": 4,
+                                                                      "column": 25,
+                                                                      "offset": 80
+                                                                  },
+                                                                  "end": {
+                                                                      "line": 4,
+                                                                      "column": 31,
+                                                                      "offset": 86
+                                                                  }
+                                                              },
+                                                              "name": {
+                                                                  "type": "JSXIdentifier",
+                                                                  "start": 82,
+                                                                  "end": 85,
+                                                                  "loc": {
+                                                                      "start": {
+                                                                          "line": 4,
+                                                                          "column": 27,
+                                                                          "offset": 82
+                                                                      },
+                                                                      "end": {
+                                                                          "line": 4,
+                                                                          "column": 30,
+                                                                          "offset": 85
+                                                                      }
+                                                                  },
+                                                                  "name": "div",
+                                                                  "range": [
+                                                                      82,
+                                                                      85
+                                                                  ]
+                                                              },
+                                                              "range": [
+                                                                  80,
+                                                                  86
+                                                              ]
+                                                          },
+                                                          "children": [
+                                                              {
+                                                                  "type": "JSXText",
+                                                                  "start": 69,
+                                                                  "end": 80,
+                                                                  "loc": {
+                                                                      "start": {
+                                                                          "line": 4,
+                                                                          "column": 14,
+                                                                          "offset": 69
+                                                                      },
+                                                                      "end": {
+                                                                          "line": 4,
+                                                                          "column": 25,
+                                                                          "offset": 80
+                                                                      }
+                                                                  },
+                                                                  "value": "Hello World",
+                                                                  "raw": "Hello World",
+                                                                  "range": [
+                                                                      69,
+                                                                      80
+                                                                  ]
+                                                              }
+                                                          ],
+                                                          "range": [
+                                                              64,
+                                                              86
+                                                          ]
+                                                      },
+                                                      "range": [
+                                                          57,
+                                                          87
+                                                      ]
+                                                  }
+                                              ],
+                                              "range": [
+                                                  53,
+                                                  89
+                                              ]
+                                          },
+                                          "range": [
+                                              47,
+                                              89
+                                          ]
+                                      },
+                                      "range": [
+                                          41,
+                                          89
+                                      ]
+                                  }
+                              ],
+                              "kind": "const",
+                              "range": [
+                                  35,
+                                  89
+                              ]
+                          },
+                          "specifiers": [],
+                          "source": null,
+                          "range": [
+                              28,
+                              89
+                          ]
+                      }
+                  ],
+                  "sourceType": "module",
+                  "comments": [],
+                  "range": [
+                      28,
+                      89
+                  ]
+              }
+          }
+      },
+      {
+          "type": "heading",
+          "depth": 2,
+          "children": [
+              {
+                  "type": "text",
+                  "value": "Hey there",
+                  "position": {
+                      "start": {
+                          "line": 7,
+                          "column": 4,
+                          "offset": 94
+                      },
+                      "end": {
+                          "line": 7,
+                          "column": 13,
+                          "offset": 103
+                      }
+                  }
+              }
+          ],
+          "position": {
+              "start": {
+                  "line": 7,
+                  "column": 1,
+                  "offset": 91
+              },
+              "end": {
+                  "line": 7,
+                  "column": 14,
+                  "offset": 104
+              }
+          }
+      },
+      {
+          "type": "mdxJsxFlowElement",
+          "name": "Foo",
+          "attributes": [],
+          "children": [],
+          "position": {
+              "start": {
+                  "line": 8,
+                  "column": 1,
+                  "offset": 105
+              },
+              "end": {
+                  "line": 8,
+                  "column": 8,
+                  "offset": 112
+              }
+          }
+      }
+  ],
+  "position": {
+      "start": {
+          "line": 1,
+          "column": 1,
+          "offset": 0
+      },
+      "end": {
+          "line": 8,
+          "column": 8,
+          "offset": 112
+      }
+  }
+}

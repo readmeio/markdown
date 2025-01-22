@@ -3,16 +3,17 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { execute } from '../helpers';
 
-describe('Custom Components', () => {
-  const Example = { default: () => <div>It works!</div> };
-  const Composite = {
-    default: () => (
-      <>
-        <div>Does it work?</div>
-        <Example.default />
-      </>
-    ),
-  };
+describe('Custom Components', async () => {
+  const Example = await execute(`It works!`, {}, {}, { getDefault: false });
+  const Multiple = await execute(
+    `
+export const First = () => <div>First</div>;
+export const Second = () => <div>Second</div>;
+`,
+    {},
+    {},
+    { getDefault: false },
+  );
 
   it('renders custom components', async () => {
     const doc = `
@@ -24,14 +25,16 @@ describe('Custom Components', () => {
     expect(screen.getByText('It works!')).toBeVisible();
   });
 
-  it('renders custom components recursively', async () => {
+  it('renders a custom component with multiple exports', async () => {
     const doc = `
-<Composite />
-    `;
+<First />
 
-    const Page = await execute(doc, undefined, { components: { Example, Composite } });
+<Second />
+    `;
+    const Page = await execute(doc, undefined, { components: { Multiple } });
     render(<Page />);
 
-    expect(screen.getByText('It works!')).toBeVisible();
+    expect(screen.getByText('First')).toBeVisible();
+    expect(screen.getByText('Second')).toBeVisible();
   });
 });

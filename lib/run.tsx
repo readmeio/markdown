@@ -11,11 +11,7 @@ import { Depth } from '../components/Heading';
 import { tocToMdx } from '../processor/plugin/toc';
 import compile from './compile';
 import { CustomComponents, RMDXModule } from '../types';
-
-interface Variables {
-  user: Record<string, string>;
-  defaults: { name: string; default: string }[];
-}
+import User, { Variables } from '../utils/user';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: CustomComponents;
@@ -54,29 +50,38 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
-  const defaults = Object.fromEntries(
-    Object.entries(components).map(([tag, module]) => [tag, 'default' in module ? module.default : module]),
-  );
+  const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
+    const { default: Content, toc, Toc, ...rest } = mod;
+    memo[tag] = Content;
 
-  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(defaults) }: RunOpts = {}) => {
+    if (rest) {
+      Object.entries(rest).forEach(([subTag, component]) => {
+        memo[subTag] = component;
+      });
+    }
+
+    return memo;
+  }, {});
+
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(executedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
-      imports: { React },
+      imports: { React, user: User(variables) },
       useMDXComponents,
       ...opts,
     }) as Promise<RMDXModule>;
   };
 
-  const { toc, default: Content } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);
   const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
 
   return {
     default: () => (
-      <Contexts terms={terms} variables={variables} baseUrl={baseUrl}>
+      <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
         <Content />
       </Contexts>
     ),
@@ -88,6 +93,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
           <Toc />
         </Components.TableOfContents>
       ),
+    ...exports,
   };
 };
 

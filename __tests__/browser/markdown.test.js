@@ -17,6 +17,7 @@ describe('visual regression tests', () => {
       // skipping this because they sporadically failure with network timing
       // issues
       //'embeds',
+      'exportTests',
       //'features',
       'headings',
       'images',

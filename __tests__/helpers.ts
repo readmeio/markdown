@@ -16,10 +16,11 @@ export const silenceConsole =
     }
   };
 
-export const execute = async (doc: string, compileOpts = {}, runOpts = {}) => {
+export const execute = async (doc: string, compileOpts = {}, runOpts = {}, { getDefault = true } = {}) => {
   const code = compile(doc, compileOpts);
-  const module = await run(code, runOpts);
-  return module.default;
+  const mod = await run(code, runOpts);
+
+  return getDefault ? mod.default : mod;
 };
 
 export const migrate = (doc: string) => {
