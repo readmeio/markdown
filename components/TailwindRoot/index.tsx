@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import root from 'react-shadow';
 
 const TailwindRoot = ({ children, flow }) => {
-  const Tag = flow ? 'div' : 'span';
+  const Tag = flow ? root.div : root.span;
 
-  return <Tag shadowrootmode="open">{children}</Tag>;
+  return <Tag>{children}</Tag>;
 };
 
 export default TailwindRoot;

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.0.0",
+    "@mhsdesign/jit-browser-tailwindcss": "^0.4.2",
     "@readme/emojis": "^6.0.0",
     "@readme/syntax-highlighter": "^13.1.0",
     "copy-to-clipboard": "^3.3.2",
@@ -42,6 +43,7 @@
     "mdast-util-find-and-replace": "^3.0.1",
     "mdast-util-phrasing": "^4.1.0",
     "path-browserify": "^1.0.1",
+    "postcss": "^8.5.1",
     "process": "^0.11.10",
     "prop-types": "^15.8.1",
     "rehype-remark": "^10.0.0",
@@ -62,7 +64,8 @@
     "@readme/variable": "^16.1.0",
     "@tippyjs/react": "^4.1.0",
     "react": "16.x || 17.x || 18.x",
-    "react-dom": "16.x || 17.x || 18.x"
+    "react-dom": "16.x || 17.x || 18.x",
+    "react-shadow": "^20.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
