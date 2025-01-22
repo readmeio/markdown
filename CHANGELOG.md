@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 7.12.0
+### ✨ New & Improved
+
+* add exports ([#1044](https://github.com/readmeio/markdown/issues/1044)) ([bf9ed34](https://github.com/readmeio/markdown/commit/bf9ed343bef93639e62d34cd970dae9f67a055fc))
+* global vars ([#1039](https://github.com/readmeio/markdown/issues/1039)) ([ecb7f61](https://github.com/readmeio/markdown/commit/ecb7f61dd4c04eeec9b9380329f721036cc2a436))
+
+### 🛠 Fixes & Updates
+
+* add exports util with tests ([#1045](https://github.com/readmeio/markdown/issues/1045)) ([e5180a4](https://github.com/readmeio/markdown/commit/e5180a4cd77ad4b8f92303447b23680c084dcd89))
+
 ## Version 7.11.0
 ### ✨ New & Improved
 
