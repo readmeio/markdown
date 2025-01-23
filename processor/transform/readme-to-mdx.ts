@@ -92,6 +92,7 @@ const readmeToMdx = (): Transform => tree => {
     const html = node.value;
     const isScriptOrStyleTag = [!!html.match(/^<(?:style|script)/i), !!html.match(/<\/(?:style|script)>$/i)];
     if (!isScriptOrStyleTag.includes(true)) return;
+
     parent.children.splice(index, 1, {
       type: 'html-block',
       children: [{ type: 'text', value: html }],

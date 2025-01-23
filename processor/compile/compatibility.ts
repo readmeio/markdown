@@ -1,8 +1,5 @@
 import { Html, Image, Node } from 'mdast';
-import { fromHtml } from 'hast-util-from-html';
 import { toMarkdown } from 'mdast-util-to-markdown';
-import { toXast } from 'hast-util-to-xast';
-import { toXml } from 'xast-util-to-xml';
 import { NodeTypes } from '../../enums';
 import { formatProps } from '../utils';
 
