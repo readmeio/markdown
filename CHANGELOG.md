@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 7.12.1
+### 🛠 Fixes & Updates
+
+* migrating html with backticks ([#1046](https://github.com/readmeio/markdown/issues/1046)) ([4d70c24](https://github.com/readmeio/markdown/commit/4d70c240cc5b8c86881982c16002b85fd247198e))
+
 ## Version 7.12.0
 ### ✨ New & Improved
 
