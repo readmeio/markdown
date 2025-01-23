@@ -1,17 +1,16 @@
-import { createTailwindcss } from '@mhsdesign/jit-browser-tailwindcss';
+import tailwind from '@tailwindcss/postcss';
+import postcss from 'postcss';
 
 const tailwindBundle = (html: string, config = {}, tailwindConfig = {}) => {
-  const tailwind = createTailwindcss(tailwindConfig);
-
   const includes = ['@tailwind components;', '@tailwind utilities;'];
 
   if ('includeBase' in config && config.includeBase) {
     includes.unshift('@tailwind base;');
   }
 
-  return tailwind.generateStylesFromContent(includes.join('\n'), [
-    { content: "<div class='text-3xl'></div>", extension: 'html' },
-  ]);
+  const plugins = [tailwind({ ...tailwindConfig, content: [{ raw: html, extension: 'html' }] })];
+
+  return postcss(plugins).process(includes.join('\n'), { from: undefined });
 };
 
 export default tailwindBundle;

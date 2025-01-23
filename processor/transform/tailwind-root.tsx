@@ -5,7 +5,6 @@ import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { visit, SKIP } from 'unist-util-visit';
 
 import { isMDXElement, toAttributes } from '../utils';
-import tailwindBundle from '../../utils/tailwind-bundle';
 
 interface TailwindRootOptions {
   components: Record<string, string>;
@@ -41,9 +40,6 @@ const injectTailwindRoot =
 const tailwindRoot: Plugin<[TailwindRootOptions]> =
   ({ components }) =>
   (tree, vfile) => {
-    const styles = tailwindBundle(vfile.toString());
-    styles.then((...args) => console.log(str));
-
     visit(tree, isMDXElement, injectTailwindRoot({ components, vfile }));
 
     return tree;
