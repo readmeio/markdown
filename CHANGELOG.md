@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 7.13.0
+### ✨ New & Improved
+
+* trigger build ([449acc6](https://github.com/readmeio/markdown/commit/449acc6d89413cea5210127adf8d6a944d995582))
+
+### 🛠 Fixes & Updates
+
+* add missing export ([#1047](https://github.com/readmeio/markdown/issues/1047)) ([12f87f8](https://github.com/readmeio/markdown/commit/12f87f861cc3ec9bd1513bd7c96c9dc5c0292595))
+* skip mermaid test ([#1048](https://github.com/readmeio/markdown/issues/1048)) ([07ae215](https://github.com/readmeio/markdown/commit/07ae215e927594b0cf4b9f680f601c738f56ede9))
+
 ## Version 7.12.1
 ### 🛠 Fixes & Updates
 
