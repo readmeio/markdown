@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 8.0.0
+### ⚠ BREAKING CHANGES
+
+* CHANGE: commit ecb7f61dd4c04eeec9b9380329f721036cc2a436 should
+have been considerred a breaking change. When using user variables
+(`{user.email}`), they no longer wrap the output in span tags.
+
+### ✨ New & Improved
+
+* incremen version to v8 ([6115553](https://github.com/readmeio/markdown/commit/611555304f40177da8ff311eadd41c2f64381939))
+
 ## Version 7.14.0
 ### ✨ New & Improved
 
