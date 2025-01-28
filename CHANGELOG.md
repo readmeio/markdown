@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 7.14.0
+### ✨ New & Improved
+
+* trigger build ([300e64a](https://github.com/readmeio/markdown/commit/300e64a08d91aafaff8e05cca8fce899c43c069a))
+
+### 🛠 Fixes & Updates
+
+* imports ([#1050](https://github.com/readmeio/markdown/issues/1050)) ([f4aca39](https://github.com/readmeio/markdown/commit/f4aca39491be4cd23773b69f6049e0d36357e155))
+* make cards responsive ([#1049](https://github.com/readmeio/markdown/issues/1049)) ([6a96091](https://github.com/readmeio/markdown/commit/6a9609136239e7cd7e68609a3a89e6fa78c29478))
+
 ## Version 7.13.0
 ### ✨ New & Improved
 
