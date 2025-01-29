@@ -3,7 +3,41 @@ import mdast from './mdast';
 import { isMDXEsm } from '../processor/utils';
 import { MdxjsEsm } from 'mdast-util-mdx';
 
+/* Example mdast structures to find first export name in a mdxjsEsm node:
+There are three types of export declarations that we need to consider:
+1. VARIABLE DECLARATION
+      "type": "mdxjsEsm",
+      "value": "export const Foo = () => <div>Hello world</div>\nexport const Bar = () => <div>hello darkness my old friend</div>",
+      "data": {
+        "estree": {
+          "type": "Program",
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "declaration": {
+                "type": "VariableDeclaration",
+                "declarations": [
+                  {
+                    "type": "VariableDeclarator",
+                    "id": {
+                      "type": "Identifier",
+                      "name": "Foo" // --------> This is the export name
+                    },
+                    ...
 
+2/3. FUNCTION DECLARATION & CLASS DECLARATION
+      "estree": {
+          "type": "Program",
+          "body": [
+            {
+              "type": "ExportNamedDeclaration",
+              "declaration": {
+                "type": "ClassDeclaration" | "FunctionDeclaration",
+                "id": {
+                  "type": "Identifier",
+                  "name": "Foo" // --------> This is the export name
+                },
+*/
 
 const exports = (doc: string) => {
   const set = new Set<string>();
@@ -41,39 +75,3 @@ const exports = (doc: string) => {
 };
 
 export default exports;
-
-/* Example mdast structures to find first export name in a mdxjsEsm node:
-There are three types of export declarations that we need to consider:
-1. VARIABLE DECLARATION
-      "type": "mdxjsEsm",
-      "value": "export const Foo = () => <div>Hello world</div>\nexport const Bar = () => <div>hello darkness my old friend</div>",
-      "data": {
-        "estree": {
-          "type": "Program",
-          "body": [
-            {
-              "type": "ExportNamedDeclaration",
-              "declaration": {
-                "type": "VariableDeclaration",
-                "declarations": [
-                  {
-                    "type": "VariableDeclarator",
-                    "id": {
-                      "type": "Identifier",
-                      "name": "Foo" // --------> This is the export name
-                    },
-                    ...
-
-2. FUNCTION DECLARATION & CLASS DECLARATION
-      "estree": {
-          "type": "Program",
-          "body": [
-            {
-              "type": "ExportNamedDeclaration",
-              "declaration": {
-                "type": "ClassDeclaration" | "FunctionDeclaration",
-                "id": {
-                  "type": "Identifier",
-                  "name": "Foo" // --------> This is the export name
-                },
-*/
