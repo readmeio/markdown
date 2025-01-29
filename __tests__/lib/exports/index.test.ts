@@ -14,6 +14,6 @@ describe('export tags', () => {
   });
   it('returns different types of export names', () => { 
 
-    expect(exports(weirdExportsMdx)).toStrictEqual(['Foo', 'bar', 'doSomethingFunction', 'YELLING']);
+    expect(exports(weirdExportsMdx)).toStrictEqual(['Foo', 'bar', 'doSomethingFunction', 'YELLING', 'SingleNewlinesAreAnnoying', 'x', 'MyClass']);
   });
 });
