@@ -23,6 +23,7 @@ const injectTailwindRoot =
 
     const attrs = {
       flow: node.type === 'mdxJsxFlowElement',
+      //source: vfile.slice(node.position.start.offset, node.position.end.offset),
     };
 
     const wrapper = {
@@ -31,6 +32,8 @@ const injectTailwindRoot =
       attributes: toAttributes(attrs),
       children: [node],
     };
+
+    console.log(JSON.stringify({ wrapper }, null, 2));
 
     parent.children.splice(index, 1, wrapper);
 
