@@ -7,8 +7,16 @@ import { MDXContent } from 'mdx/types';
 import components from './components';
 
 const executedComponents = {};
+let exportedComponents = { ...components };
 Object.entries(components).forEach(async ([tag, body]) => {
-  executedComponents[tag] = await mdx.run(mdx.compile(body));
+  const mod = await mdx.run(mdx.compile(body));
+
+  executedComponents[tag] = mod;
+  Object.keys(mod).forEach(subTag => {
+    if (['toc', 'Toc', 'default'].includes(subTag)) return;
+
+    exportedComponents[subTag] = body;
+  });
 });
 
 const terms = [
@@ -65,7 +73,8 @@ const Doc = () => {
       };
 
       try {
-        const code = mdx.compile(doc, { ...opts, components: executedComponents });
+        // @ts-ignore
+        const code = mdx.compile(doc, { ...opts, components: exportedComponents });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);

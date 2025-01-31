@@ -6,17 +6,18 @@ import { defaultTransforms, tailwindRootTransformer } from '../processor/transfo
 import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypePlugins } from './ast-processor';
+import { CustomComponents } from '../types';
 
 export type CompileOpts = CompileOptions & {
   lazyImages?: boolean;
   safeMode?: boolean;
-  components?: Record<string, string>;
+  components?: CustomComponents;
   copyButtons?: boolean;
 };
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts = {}) => {
+const compile = (text: string, { components = {}, copyButtons, ...opts }: CompileOpts = {}) => {
   try {
     const vfile = compileSync(text, {
       outputFormat: 'function-body',
@@ -32,9 +33,7 @@ const compile = (text: string, { components, copyButtons, ...opts }: CompileOpts
       ...opts,
     });
 
-    return String(vfile)
-      .replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React')
-      .replace('"use strict";', '"use strict";\nconst { user } = arguments[0].imports;');
+    return String(vfile).replace('"use strict";', '"use strict";\nconst { React, user } = arguments[0].imports;\n');
   } catch (error) {
     throw error.line ? new MdxSyntaxError(error, text) : error;
   }

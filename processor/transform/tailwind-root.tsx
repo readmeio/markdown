@@ -15,7 +15,7 @@ type Visitor =
   | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | typeof SKIP);
 
 const injectTailwindRoot =
-  ({ components = {}, vfile }): Visitor =>
+  ({ components = {} }): Visitor =>
   (node, index, parent) => {
     if (!('name' in node)) return;
     if (!(node.name in components)) return;
@@ -23,7 +23,8 @@ const injectTailwindRoot =
 
     const attrs = {
       flow: node.type === 'mdxJsxFlowElement',
-      //source: vfile.slice(node.position.start.offset, node.position.end.offset),
+      source: JSON.stringify(components[node.name]),
+      name: node.name,
     };
 
     const wrapper = {
@@ -33,17 +34,15 @@ const injectTailwindRoot =
       children: [node],
     };
 
-    console.log(JSON.stringify({ wrapper }, null, 2));
-
     parent.children.splice(index, 1, wrapper);
 
     return SKIP;
   };
 
 const tailwindRoot: Plugin<[TailwindRootOptions]> =
-  ({ components }) =>
+  ({ components = {} }) =>
   (tree, vfile) => {
-    visit(tree, isMDXElement, injectTailwindRoot({ components, vfile }));
+    visit(tree, isMDXElement, injectTailwindRoot({ components }));
 
     return tree;
   };

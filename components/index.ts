@@ -13,3 +13,4 @@ export { default as Image } from './Image';
 export { default as Table } from './Table';
 export { default as Tabs, Tab } from './Tabs';
 export { default as TableOfContents } from './TableOfContents';
+export { default as TailwindRoot } from './TailwindRoot';

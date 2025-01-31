@@ -1,26 +1,30 @@
-import React from 'react';
-import root from 'react-shadow';
+import React, { useState } from 'react';
+import postcss from 'postcss';
+import prefixer from 'postcss-prefix-selector';
 
 import tailwindcss from '../../vendor/tailwindcss.js';
 
-const TailwindRoot = ({ children, flow, source }) => {
-  const Tag = flow ? root.div : root.span;
+const TailwindRoot = ({ children, flow, source, name }) => {
+  const Tag = flow ? 'div' : 'span';
 
-  const [stylesheet, setStylesheet] = React.useState('');
+  const [css, setCss] = useState('');
 
   React.useEffect(() => {
-    const css = tailwindcss(source);
+    const run = async () => {
+      const css = await tailwindcss(source || '');
+      const prefixed = await postcss([prefixer({ prefix: `.${name}` })]).process(css, { from: undefined });
 
-    setStylesheet(css);
+      setCss(prefixed.css);
+    };
+
+    run();
   }, [source]);
 
-  console.log(flow, source, stylesheet);
-
   return (
-    <Tag ssr>
-      <style>{stylesheet}</style>
-      {children}
-    </Tag>
+    <>
+      <style>{css}</style>
+      <Tag className={name}>{children}</Tag>
+    </>
   );
 };
 
