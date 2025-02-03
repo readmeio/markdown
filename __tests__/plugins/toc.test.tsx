@@ -13,7 +13,7 @@ describe('toc transformer', () => {
 
 ## Second Subheading
 `;
-    const { Toc } = await run(compile(md));
+    const { Toc } = await run(await compile(md));
 
     render(<Toc />);
 
@@ -35,10 +35,10 @@ describe('toc transformer', () => {
       CommonInfo: '## Common Heading',
     };
     const executed = {
-      CommonInfo: await run(compile('## Common Heading')),
+      CommonInfo: await run(await compile('## Common Heading')),
     };
 
-    const { Toc } = await run(compile(md, { components }), { components: executed });
+    const { Toc } = await run(await compile(md, { components }), { components: executed });
 
     render(<Toc />);
 
@@ -51,7 +51,7 @@ describe('toc transformer', () => {
     const md = `
 # [Title](http://example.com)
 `;
-    const { Toc } = await run(compile(md));
+    const { Toc } = await run(await compile(md));
 
     render(<Toc />);
 

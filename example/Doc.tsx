@@ -13,7 +13,7 @@ Object.entries(components).forEach(async ([tag, body]) => {
 
   executedComponents[tag] = mod;
   Object.keys(mod).forEach(subTag => {
-    if (['toc', 'Toc', 'default'].includes(subTag)) return;
+    if (['toc', 'Toc', 'default', 'stylesheets'].includes(subTag)) return;
 
     componentsByExport[subTag] = body;
   });
@@ -74,7 +74,7 @@ const Doc = () => {
 
       try {
         // @ts-ignore
-        const code = await mdx.compile(doc, { ...opts, components: componentsByExport });
+        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);

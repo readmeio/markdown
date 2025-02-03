@@ -63,8 +63,6 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     return memo;
   }, {});
 
-  console.log(components);
-
   const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
@@ -76,7 +74,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     }) as Promise<RMDXModule>;
   };
 
-  const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, stylesheets, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);
   const { default: Toc } = await exec(await compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
@@ -84,16 +82,18 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   return {
     default: () => (
       <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
+        {!!stylesheets && stylesheets.map(stylesheet => <style>{stylesheet}</style>)}
         <Content />
       </Contexts>
     ),
     toc,
     Toc: () =>
-      tocMdx &&
-      Toc && (
+      tocMdx && Toc ? (
         <Components.TableOfContents>
           <Toc />
         </Components.TableOfContents>
+      ) : (
+        <></>
       ),
     ...exports,
   };
