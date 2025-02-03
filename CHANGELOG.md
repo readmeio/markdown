@@ -1,6 +1,42 @@
 Changelog
 ===
 
+## Version 8.0.0
+### ⚠ BREAKING CHANGES
+
+* CHANGE: commit ecb7f61dd4c04eeec9b9380329f721036cc2a436 should
+have been considerred a breaking change. When using user variables
+(`{user.email}`), they no longer wrap the output in span tags.
+
+### ✨ New & Improved
+
+* incremen version to v8 ([6115553](https://github.com/readmeio/markdown/commit/611555304f40177da8ff311eadd41c2f64381939))
+
+## Version 7.14.0
+### ✨ New & Improved
+
+* trigger build ([300e64a](https://github.com/readmeio/markdown/commit/300e64a08d91aafaff8e05cca8fce899c43c069a))
+
+### 🛠 Fixes & Updates
+
+* imports ([#1050](https://github.com/readmeio/markdown/issues/1050)) ([f4aca39](https://github.com/readmeio/markdown/commit/f4aca39491be4cd23773b69f6049e0d36357e155))
+* make cards responsive ([#1049](https://github.com/readmeio/markdown/issues/1049)) ([6a96091](https://github.com/readmeio/markdown/commit/6a9609136239e7cd7e68609a3a89e6fa78c29478))
+
+## Version 7.13.0
+### ✨ New & Improved
+
+* trigger build ([449acc6](https://github.com/readmeio/markdown/commit/449acc6d89413cea5210127adf8d6a944d995582))
+
+### 🛠 Fixes & Updates
+
+* add missing export ([#1047](https://github.com/readmeio/markdown/issues/1047)) ([12f87f8](https://github.com/readmeio/markdown/commit/12f87f861cc3ec9bd1513bd7c96c9dc5c0292595))
+* skip mermaid test ([#1048](https://github.com/readmeio/markdown/issues/1048)) ([07ae215](https://github.com/readmeio/markdown/commit/07ae215e927594b0cf4b9f680f601c738f56ede9))
+
+## Version 7.12.1
+### 🛠 Fixes & Updates
+
+* migrating html with backticks ([#1046](https://github.com/readmeio/markdown/issues/1046)) ([4d70c24](https://github.com/readmeio/markdown/commit/4d70c240cc5b8c86881982c16002b85fd247198e))
+
 ## Version 7.12.0
 ### ✨ New & Improved
 

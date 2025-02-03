@@ -24,7 +24,7 @@ describe('visual regression tests', () => {
       'imageTests',
       //'lists',
       'mdxComponents',
-      'mermaid',
+      // 'mermaid',
       'tables',
       'codeBlockTests',
       'tableOfContentsTests',

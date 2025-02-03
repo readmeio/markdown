@@ -115,7 +115,7 @@ export const isMDXElement = (node: Node): node is MdxJsxFlowElement | MdxJsxText
  */
 export const isMDXEsm = (node: Node): node is MdxjsEsm => {
   return node.type === 'mdxjsEsm';
-}
+};
 
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
@@ -153,7 +153,7 @@ export const formatHTML = (html: string): string => {
  */
 export const reformatHTML = (html: string, indent: number = 2): string => {
   // Remove leading/trailing newlines
-  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '').replaceAll(/(?<!\\(\\\\)*)`/g, '\\`');
 
   // // Create a tab/indent with the specified number of spaces
   // const tab = ' '.repeat(indent);

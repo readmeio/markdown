@@ -1,3 +1,5 @@
+$iphone-plus: 414px;
+
 .CardsGrid {
   display: grid;
   gap: 20px;
@@ -45,5 +47,7 @@
     }
   }
 
-
+  @media (max-width: $iphone-plus) {
+    grid-template-columns: 1fr !important;
+  }
 }
