@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import postcss from 'postcss';
-import prefixer from 'postcss-prefix-selector';
 
-import tailwindcss from '../../vendor/tailwindcss.js';
+import tailwindBundle from '../../utils/tailwind-bundle';
 
 const TailwindRoot = ({ children, flow, source, name }) => {
   const Tag = flow ? 'div' : 'span';
@@ -11,10 +9,9 @@ const TailwindRoot = ({ children, flow, source, name }) => {
 
   React.useEffect(() => {
     const run = async () => {
-      const css = await tailwindcss(source || '');
-      const prefixed = await postcss([prefixer({ prefix: `.${name}` })]).process(css, { from: undefined });
+      const css = await tailwindBundle(source, { prefix: `.${name}` });
 
-      setCss(prefixed.css);
+      setCss(css.css);
     };
 
     run();
