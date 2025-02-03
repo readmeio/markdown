@@ -50,8 +50,8 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, ...opts } = _opts;
-  const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
-    const { default: Content, toc, Toc, ...rest } = mod;
+  const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
+    const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
     memo[tag] = Content;
 
     if (rest) {
@@ -63,7 +63,9 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     return memo;
   }, {});
 
-  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(executedComponents) }: RunOpts = {}) => {
+  console.log(components);
+
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
       Fragment,
@@ -77,7 +79,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);
-  const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
+  const { default: Toc } = await exec(await compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
 
   return {
     default: () => (

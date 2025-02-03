@@ -1,18 +1,60 @@
-import { PhrasingContent, BlockContent } from 'mdast';
+import { PhrasingContent, BlockContent, Node, Root } from 'mdast';
 import { Plugin } from 'unified';
 
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { visit, SKIP } from 'unist-util-visit';
+import { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import { visit } from 'unist-util-visit';
+import { valueToEstree } from 'estree-util-value-to-estree';
 
 import { isMDXElement, toAttributes } from '../utils';
+import tailwindBundle from '../../utils/tailwind-bundle';
 
 interface TailwindRootOptions {
   components: Record<string, string>;
 }
 
 type Visitor =
-  | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | typeof SKIP)
-  | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | typeof SKIP);
+  | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | void)
+  | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | void);
+
+const injectTailwindStylesheets = async (tree: Node, components: TailwindRootOptions['components']): Promise<void> => {
+  const stylesheets = await Promise.all(
+    Object.entries(components).map(async ([name, body]) => {
+      return (await tailwindBundle(body, { prefix: `.${name}` })).css;
+    }),
+  );
+  if (stylesheets.length === 0) return;
+
+  const exportNode: MdxjsEsm = {
+    type: 'mdxjsEsm',
+    value: '',
+    data: {
+      estree: {
+        type: 'Program',
+        sourceType: 'module',
+        body: [
+          {
+            type: 'ExportNamedDeclaration',
+            source: null,
+            specifiers: [],
+            declaration: {
+              type: 'VariableDeclaration',
+              kind: 'const',
+              declarations: [
+                {
+                  type: 'VariableDeclarator',
+                  id: { type: 'Identifier', name: 'stylesheets' },
+                  init: valueToEstree(stylesheets),
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  };
+
+  (tree as Root).children.unshift(exportNode);
+};
 
 const injectTailwindRoot =
   ({ components = {} }): Visitor =>
@@ -23,7 +65,6 @@ const injectTailwindRoot =
 
     const attrs = {
       flow: node.type === 'mdxJsxFlowElement',
-      source: JSON.stringify(components[node.name]),
       name: node.name,
     };
 
@@ -35,14 +76,14 @@ const injectTailwindRoot =
     };
 
     parent.children.splice(index, 1, wrapper);
-
-    return SKIP;
   };
 
 const tailwindRoot: Plugin<[TailwindRootOptions]> =
   ({ components = {} }) =>
-  (tree, vfile) => {
+  async tree => {
     visit(tree, isMDXElement, injectTailwindRoot({ components }));
+
+    await injectTailwindStylesheets(tree, components);
 
     return tree;
   };

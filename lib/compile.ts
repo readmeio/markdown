@@ -1,4 +1,4 @@
-import { compileSync, CompileOptions } from '@mdx-js/mdx';
+import { compile as mdxCompile, CompileOptions } from '@mdx-js/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
@@ -17,9 +17,9 @@ export type CompileOpts = CompileOptions & {
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = (text: string, { components = {}, copyButtons, ...opts }: CompileOpts = {}) => {
+const compile = async (text: string, { components = {}, copyButtons, ...opts }: CompileOpts = {}) => {
   try {
-    const vfile = compileSync(text, {
+    const vfile = await mdxCompile(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins: [
