@@ -10,12 +10,20 @@ const extractScripts = (html: string = ''): [string, () => void] => {
     scripts.push(match[1]);
   }
   const cleaned = html.replace(MATCH_SCRIPT_TAGS, '');
+  // eslint-disable-next-line no-eval
   return [cleaned, () => scripts.map(js => window.eval(js))];
 };
 
-const HTMLBlock = ({ children = '', runScripts, safeMode = false }) => {
+interface Props {
+  children: React.ReactElement | string;
+  runScripts?: boolean | string;
+  safeMode?: boolean;
+}
+
+const HTMLBlock = ({ children = '', runScripts, safeMode = false }: Props) => {
   let html = children;
-  runScripts = typeof runScripts !== 'boolean' ? (runScripts === 'true') : runScripts;
+  // eslint-disable-next-line no-param-reassign
+  runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
 
   if (typeof html !== 'string') html = renderToStaticMarkup(html);
   const [cleanedHtml, exec] = extractScripts(html);

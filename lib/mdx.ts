@@ -1,3 +1,5 @@
+import type { Root } from 'mdast';
+
 import rehypeRemark from 'rehype-remark';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
@@ -7,7 +9,7 @@ import { unified } from 'unified';
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
-export const mdx = (tree: any, { hast = false, ...opts } = {}) => {
+export const mdx = (tree: Root, { hast = false, ...opts } = {}) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)

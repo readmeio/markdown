@@ -2,13 +2,13 @@ import type { Depth } from '../components/Heading';
 import type { GlossaryTerm } from '../contexts/GlossaryTerms';
 import type { CustomComponents, RMDXModule } from '../types';
 import type { Variables } from '../utils/user';
-import type { RunOptions, UseMdxComponents} from '@mdx-js/mdx';
+import type { RunOptions, UseMdxComponents } from '@mdx-js/mdx';
+import type { MDXComponents } from 'mdx/types';
 
 import { run as mdxRun } from '@mdx-js/mdx';
 import Variable from '@readme/variable';
 import React from 'react';
 import * as runtime from 'react/jsx-runtime';
-
 
 import * as Components from '../components';
 import Contexts from '../contexts';
@@ -29,7 +29,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
   const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
     map[`h${index + 1}`] = Components.Heading((index + 1) as Depth);
     return map;
-  }, {});
+  }, {}) as MDXComponents;
 
   const components = {
     ...Components,
@@ -43,18 +43,19 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     'html-block': Components.HTMLBlock,
     'image-block': Components.Image,
     'table-of-contents': Components.TableOfContents,
-    // @ts-expect-error
     ...headings,
     ...more,
   };
 
+  // @ts-expect-error I'm not sure how to coerce the correct type
   return () => components;
 };
 
 const run = async (string: string, _opts: RunOpts = {}) => {
-  const { Fragment } = runtime as any;
+  const { Fragment } = runtime;
   const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
   const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { default: Content, toc, Toc, ...rest } = mod;
     memo[tag] = Content;
 
@@ -78,6 +79,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     } as RunOptions) as Promise<RMDXModule>;
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);

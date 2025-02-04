@@ -1,4 +1,4 @@
-import type { Html, Image, Node, Nodes } from 'mdast';
+import type { Html, Node, Nodes } from 'mdast';
 import type { FigCaption, Figure, ImageBlock } from 'types';
 
 import { toMarkdown } from 'mdast-util-to-markdown';
@@ -6,13 +6,24 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import { NodeTypes } from '../../enums';
 import { formatProps } from '../utils';
 
+interface EditorGlossary {
+  children: [{ type: 'text'; value: string }];
+  data: { hName: 'Glossary'; hProperties: { term: string } };
+  type: NodeTypes.glossary;
+}
+
+interface CompatEmbed {
+  data: { hProperties: Record<string, string> };
+  html: string;
+  type: 'embed';
+}
+
 type CompatNodes =
+  | CompatEmbed
+  | EditorGlossary
+  | Figure
   | Html
-  | { children: [{ type: 'text'; value: string }]; data: { hName: 'Glossary' }; type: NodeTypes.glossary }
-  | { children: [Image, { children: [{ type: 'text'; value: string }]; type: 'figcaption' }]; type: 'figure' }
   | { data: { hProperties: { className: string[] } }; type: 'i' }
-  | { data: { hProperties: { term: string } }; type: NodeTypes.glossary }
-  | { data: { hProperties: Record<string, string> }; type: 'embed' }
   | { tag: string; type: NodeTypes.reusableContent }
   | { type: 'escape'; value: string }
   | { type: 'yaml'; value: string };
@@ -24,7 +35,7 @@ type CompatNodes =
  * as html, and serialize it back as xml!
  *
  */
-const html = (node: Html) => {
+const compileHtml = (node: Html) => {
   const string = node.value.replaceAll(/<!--(.*)-->/gms, '{/*$1*/}');
 
   return string;
@@ -53,7 +64,7 @@ const figureToImageBlock = (node: Figure) => {
   return `<Image ${formatProps(attributes)} />`;
 };
 
-const embedToEmbedBlock = (node: any) => {
+const embedToEmbedBlock = (node: CompatEmbed) => {
   const { html, ...embed } = node.data.hProperties;
   const attributes = {
     ...embed,
@@ -64,13 +75,14 @@ const embedToEmbedBlock = (node: any) => {
 
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
-    case NodeTypes.glossary:
+    case NodeTypes.glossary: {
       const term = node.data?.hProperties?.term || node.children[0].value;
       return `<Glossary>${term}</Glossary>`;
+    }
     case NodeTypes.reusableContent:
       return `<${node.tag} />`;
     case 'html':
-      return html(node);
+      return compileHtml(node);
     case 'escape':
       return `\\${node.value}`;
     case 'figure':

@@ -37,6 +37,7 @@ const Image = (Props: ImageProps) => {
 
   const handleKeyDown = ({ key, metaKey: cmd }: React.KeyboardEvent<HTMLImageElement>) => {
     const cmdKey = cmd ? 'cmd+' : '';
+    // eslint-disable-next-line no-param-reassign
     key = `${cmdKey}${key.toLowerCase()}`;
 
     switch (key) {
@@ -49,6 +50,7 @@ const Image = (Props: ImageProps) => {
       case 'enter':
         // OPEN
         if (!lightbox) setLightbox(true);
+        break;
       default:
     }
   };

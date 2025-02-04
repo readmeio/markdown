@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
-import { defaultTransforms, variablesTransformer } from '../processor/transform';
+import { defaultTransforms } from '../processor/transform';
 
 import { rehypePlugins } from './ast-processor';
 

@@ -18,7 +18,7 @@ class RenderError extends React.Component<PropsWithChildren<Props>, State> {
     return { hasError: true, message: `${error.message}${error.stack}` };
   }
 
-  componentDidCatch(error: any, info: { componentStack: any }) {
+  static componentDidCatch(error: Error, info: { componentStack: string }) {
     console.error(error, info.componentStack);
   }
 

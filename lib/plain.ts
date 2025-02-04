@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Nodes, Parents } from 'hast';
 
 import hast from './hast';
@@ -53,6 +54,9 @@ function one(node: Nodes, opts: Options) {
         const body = children ? all({ type: 'root', children }, opts) : '';
 
         return [title, body].filter(Boolean).join(' ');
+      }
+      default: {
+        return '';
       }
     }
   }

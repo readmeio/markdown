@@ -5,7 +5,6 @@ import React, { useContext } from 'react';
 
 import GlossaryContext from '../../contexts/GlossaryTerms';
 
-
 interface Props extends React.PropsWithChildren {
   term?: string;
   terms: GlossaryTerm[];
@@ -32,9 +31,11 @@ const Glossary = ({ children, term: termProp, terms }: Props) => {
   );
 };
 
-const GlossaryWithContext = props => {
+const GlossaryWithContext = (props: Omit<Props, 'terms'>) => {
   const terms = useContext(GlossaryContext);
   return terms ? <Glossary {...props} terms={terms} /> : <span>{props.term}</span>;
 };
 
-export { Glossary, GlossaryWithContext as default, GlossaryContext };
+export { Glossary, GlossaryContext };
+
+export default GlossaryWithContext;

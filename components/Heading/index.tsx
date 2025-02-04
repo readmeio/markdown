@@ -26,6 +26,10 @@ const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: Props) 
   );
 };
 
-const CreateHeading = (depth: Depth) => (props: Props) => <Heading {...props} depth={depth} tag={`h${depth}`} />;
+const CreateHeading = (depth: Depth) => {
+  const HeadingWithDepth = (props: Props) => <Heading {...props} depth={depth} tag={`h${depth}`} />;
+
+  return HeadingWithDepth;
+};
 
 export default CreateHeading;

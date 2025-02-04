@@ -22,5 +22,6 @@ export default class MdxSyntaxError extends SyntaxError {
     super(messages.join('\n'));
 
     this.original = error;
+    this.name = 'MdxSyntaxError';
   }
 }
