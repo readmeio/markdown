@@ -1,10 +1,10 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { render, screen } from '@testing-library/react';
 import { execute } from '../helpers';
 
 describe('Custom Components', async () => {
-  const Example = await execute(`It works!`, {}, {}, { getDefault: false });
+  const Example = await execute('It works!', {}, {}, { getDefault: false });
   const Multiple = await execute(
     `
 export const First = () => <div>First</div>;

@@ -1,7 +1,8 @@
+import { render, screen } from '@testing-library/react';
 import React from 'react';
+
 import * as rmdx from '../../index';
 import { execute } from '../helpers';
-import { render, screen } from '@testing-library/react';
 
 describe('variables transformer', () => {
   it('renders user variables', async () => {
@@ -33,7 +34,7 @@ describe('variables transformer', () => {
   });
 
   it('parses variables into the mdast', () => {
-    const mdx = `{user.name}`;
+    const mdx = '{user.name}';
 
     // @ts-ignore
     expect(rmdx.mdast(mdx)).toStrictEqualExceptPosition({
@@ -54,7 +55,7 @@ describe('variables transformer', () => {
   });
 
   it('does not parse regular expressions into variables', () => {
-    const mdx = `{notUser.name}`;
+    const mdx = '{notUser.name}';
 
     // @ts-ignore
     expect(rmdx.mdast(mdx).children[0].type).toBe('mdxFlowExpression');

@@ -1,5 +1,6 @@
-import { hast } from '../../lib';
 import { h } from 'hastscript';
+
+import { hast } from '../../lib';
 
 describe('hast transformer', () => {
   it('parses components into the tree', () => {

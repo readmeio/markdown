@@ -1,7 +1,10 @@
+import type { MdxjsEsm } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import mdast from './mdast';
+
 import { isMDXEsm } from '../processor/utils';
-import { MdxjsEsm } from 'mdast-util-mdx';
+
+import mdast from './mdast';
 
 /* Example mdast structures to find first export name in a mdxjsEsm node:
 There are three types of export declarations that we need to consider:

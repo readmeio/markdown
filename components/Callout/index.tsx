@@ -2,9 +2,9 @@ import * as React from 'react';
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
   attributes?: {};
+  empty?: boolean;
   icon: string;
   theme?: string;
-  empty?: boolean;
 }
 
 const themes: Record<string, string> = {
@@ -24,7 +24,7 @@ const themes: Record<string, string> = {
 
 const Callout = (props: Props) => {
   const { attributes, children, icon, empty } = props;
-  let theme = props.theme || themes[icon] || 'default';
+  const theme = props.theme || themes[icon] || 'default';
 
   return (
     // @ts-ignore

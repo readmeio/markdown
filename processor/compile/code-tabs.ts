@@ -1,4 +1,5 @@
-import { CodeTabs } from '../../types';
+import type { CodeTabs } from '../../types';
+
 import { NodeTypes } from '../../enums';
 
 const codeTabs = (node: CodeTabs, _, state, info) => {

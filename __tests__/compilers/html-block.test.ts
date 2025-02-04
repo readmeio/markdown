@@ -32,7 +32,7 @@ const foo = () => {
   });
 
   it('adds newlines for readability', () => {
-    const markdown = `<HTMLBlock>{\`<p><strong">Hello</strong>, World!</p>\`}</HTMLBlock>`;
+    const markdown = '<HTMLBlock>{`<p><strong">Hello</strong>, World!</p>`}</HTMLBlock>';
     const expected = `<HTMLBlock>{\`
 <p><strong">Hello</strong>, World!</p>
 \`}</HTMLBlock>`;

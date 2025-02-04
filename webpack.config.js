@@ -55,7 +55,7 @@ const getConfig = ({ target }) => ({
         use: [ExtractCSS.loader, 'css-loader', 'sass-loader'],
       },
       {
-        // eslint-disable-next-line unicorn/no-unsafe-regex
+         
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
         exclude: /(node_modules)/,
         use: {

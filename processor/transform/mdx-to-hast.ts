@@ -1,9 +1,11 @@
+import type { Parents } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Transform } from 'mdast-util-from-markdown';
-import { Parents } from 'mdast';
-import { getAttrs, isMDXElement } from '../utils';
+
 import * as Components from '../../components';
+import { getAttrs, isMDXElement } from '../utils';
 
 const setData = (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents) => {
   if (!node.name) return;

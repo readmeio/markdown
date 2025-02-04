@@ -1,8 +1,8 @@
-import { unified } from 'unified';
-import remarkMdx from 'remark-mdx';
-import remarkGfm from 'remark-gfm';
 import rehypeRemark from 'rehype-remark';
+import remarkGfm from 'remark-gfm';
+import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
+import { unified } from 'unified';
 
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';

@@ -1,4 +1,4 @@
-import { Nodes, Parents } from 'hast';
+import type { Nodes, Parents } from 'hast';
 
 import hast from './hast';
 

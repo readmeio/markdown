@@ -1,5 +1,6 @@
+import type { Callout } from '../../types';
+
 import { NodeTypes } from '../../enums';
-import { Callout } from '../../types';
 
 const callout = (node: Callout, _, state, info) => {
   const exit = state.enter(NodeTypes.callout);

@@ -1,18 +1,21 @@
-import { Html, Image, Node } from 'mdast';
+import type { Html, Image, Node, Nodes } from 'mdast';
+import type { FigCaption, Figure, ImageBlock } from 'types';
+
 import { toMarkdown } from 'mdast-util-to-markdown';
+
 import { NodeTypes } from '../../enums';
 import { formatProps } from '../utils';
 
 type CompatNodes =
-  | { type: NodeTypes.glossary; data: { hProperties: { term: string } } }
-  | { type: NodeTypes.glossary; data: { hName: 'Glossary' }; children: [{ type: 'text'; value: string }] }
-  | { type: NodeTypes.reusableContent; tag: string }
-  | { type: 'embed'; data: { hProperties: { [key: string]: string } } }
+  | Html
+  | { children: [{ type: 'text'; value: string }]; data: { hName: 'Glossary' }; type: NodeTypes.glossary }
+  | { children: [Image, { children: [{ type: 'text'; value: string }]; type: 'figcaption' }]; type: 'figure' }
+  | { data: { hProperties: { className: string[] } }; type: 'i' }
+  | { data: { hProperties: { term: string } }; type: NodeTypes.glossary }
+  | { data: { hProperties: Record<string, string> }; type: 'embed' }
+  | { tag: string; type: NodeTypes.reusableContent }
   | { type: 'escape'; value: string }
-  | { type: 'figure'; children: [Image, { type: 'figcaption'; children: [{ type: 'text'; value: string }] }] }
-  | { type: 'i'; data: { hProperties: { className: string[] } } }
-  | { type: 'yaml'; value: string }
-  | Html;
+  | { type: 'yaml'; value: string };
 
 /*
  * Converts a (remark < v9) html node to a JSX string.
@@ -27,19 +30,14 @@ const html = (node: Html) => {
   return string;
 };
 
-const figureToImageBlock = (node: any) => {
+const figureToImageBlock = (node: Figure) => {
   const { align, border, width, src, url, alt, title, ...image } = node.children.find(
     (child: Node) => child.type === 'image',
-  );
+  ) as ImageBlock & { url: string };
   const { className } = image.data.hProperties;
-  const figcaption = node.children.find((child: Node) => child.type === 'figcaption');
+  const figcaption = node.children.find((child: Node) => child.type === 'figcaption') as FigCaption;
 
-  const caption = figcaption
-    ? toMarkdown({
-        type: 'paragraph',
-        children: figcaption.children,
-      }).trim()
-    : null;
+  const caption = figcaption ? toMarkdown(figcaption.children as unknown as Nodes).trim() : null;
 
   const attributes = {
     ...(align && { align }),
@@ -67,7 +65,6 @@ const embedToEmbedBlock = (node: any) => {
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
     case NodeTypes.glossary:
-      // @ts-expect-error
       const term = node.data?.hProperties?.term || node.children[0].value;
       return `<Glossary>${term}</Glossary>`;
     case NodeTypes.reusableContent:

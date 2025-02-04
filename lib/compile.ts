@@ -1,17 +1,20 @@
-import { compileSync, CompileOptions } from '@mdx-js/mdx';
+import type { CompileOptions } from '@mdx-js/mdx';
+
+import { compileSync } from '@mdx-js/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
-import { defaultTransforms, variablesTransformer } from '../processor/transform';
-import { rehypeToc } from '../processor/plugin/toc';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
+import { rehypeToc } from '../processor/plugin/toc';
+import { defaultTransforms, variablesTransformer } from '../processor/transform';
+
 import { rehypePlugins } from './ast-processor';
 
 export type CompileOpts = CompileOptions & {
-  lazyImages?: boolean;
-  safeMode?: boolean;
   components?: Record<string, string>;
   copyButtons?: boolean;
+  lazyImages?: boolean;
+  safeMode?: boolean;
 };
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;

@@ -3,8 +3,8 @@ import React from 'react';
 export type Depth = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLHeadingElement>> {
-  tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   depth: Depth;
+  tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 }
 
 const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: Props) => {

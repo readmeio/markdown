@@ -5,13 +5,13 @@ interface ImageProps {
   alt?: string;
   border?: boolean;
   caption?: string;
+  children?: [React.ReactElement];
   className?: string;
   height?: string;
+  lazy?: boolean;
   src: string;
   title?: string;
   width?: string;
-  lazy?: boolean;
-  children?: [React.ReactElement];
 }
 
 const Image = (Props: ImageProps) => {
@@ -32,7 +32,7 @@ const Image = (Props: ImageProps) => {
   const [lightbox, setLightbox] = React.useState(false);
 
   if (className === 'emoji') {
-    return <img src={src} width={width} height={height} title={title} alt={alt} loading={lazy ? 'lazy' : 'eager'} />;
+    return <img alt={alt} height={height} loading={lazy ? 'lazy' : 'eager'} src={src} title={title} width={width} />;
   }
 
   const handleKeyDown = ({ key, metaKey: cmd }: React.KeyboardEvent<HTMLImageElement>) => {
@@ -71,13 +71,13 @@ const Image = (Props: ImageProps) => {
         >
           <span className="lightbox-inner">
             <img
-              src={src}
-              width={width}
-              height={height}
-              title={title}
-              className={`img img-align-center ${border ? 'border' : ''}`}
               alt={alt}
+              className={`img img-align-center ${border ? 'border' : ''}`}
+              height={height}
               loading={lazy ? 'lazy' : 'eager'}
+              src={src}
+              title={title}
+              width={width}
             />
             <figcaption>{children || caption}</figcaption>
           </span>
@@ -97,13 +97,13 @@ const Image = (Props: ImageProps) => {
     >
       <span className="lightbox-inner">
         <img
-          src={src}
-          width={width}
-          height={height}
-          title={title}
-          className={`img ${align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
           alt={alt}
+          className={`img ${align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
+          height={height}
           loading={lazy ? 'lazy' : 'eager'}
+          src={src}
+          title={title}
+          width={width}
         />
       </span>
     </span>

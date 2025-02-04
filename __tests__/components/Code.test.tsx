@@ -1,10 +1,11 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import copy from 'copy-to-clipboard';
 import React from 'react';
+
 import { vi } from 'vitest';
 
 import Code from '../../components/Code';
 
-import { fireEvent, render, screen } from '@testing-library/react';
-import copy from 'copy-to-clipboard';
 
 const codeProps = {
   copyButtons: true,

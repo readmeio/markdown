@@ -1,9 +1,12 @@
+import type { MDXContent } from 'mdx/types';
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+
 import * as mdx from '../index';
+
 import docs from './docs';
 import RenderError from './RenderError';
-import { MDXContent } from 'mdx/types';
 
 const components = {
   Demo: `
@@ -71,7 +74,7 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, Toc }, setContent] = useState<{ default: MDXContent; Toc?: MDXContent }>({
+  const [{ default: Content, Toc }, setContent] = useState<{ Toc?: MDXContent, default: MDXContent; }>({
     default: null,
     Toc: null,
   });

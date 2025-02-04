@@ -15,7 +15,7 @@ const extractScripts = (html: string = ''): [string, () => void] => {
 
 const HTMLBlock = ({ children = '', runScripts, safeMode = false }) => {
   let html = children;
-  runScripts = typeof runScripts !== 'boolean' ? (runScripts === 'true' ? true : false) : runScripts;
+  runScripts = typeof runScripts !== 'boolean' ? (runScripts === 'true') : runScripts;
 
   if (typeof html !== 'string') html = renderToStaticMarkup(html);
   const [cleanedHtml, exec] = extractScripts(html);

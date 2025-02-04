@@ -1,4 +1,6 @@
-import astProcessor, { MdastOpts } from './ast-processor';
+import type { MdastOpts } from './ast-processor';
+
+import astProcessor from './ast-processor';
 
 const mdast: any = (text: string, opts: MdastOpts = {}) => {
   const processor = astProcessor(opts);

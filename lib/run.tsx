@@ -1,22 +1,26 @@
+import type { Depth } from '../components/Heading';
+import type { GlossaryTerm } from '../contexts/GlossaryTerms';
+import type { CustomComponents, RMDXModule } from '../types';
+import type { Variables } from '../utils/user';
+import type { RunOptions, UseMdxComponents} from '@mdx-js/mdx';
+
+import { run as mdxRun } from '@mdx-js/mdx';
+import Variable from '@readme/variable';
 import React from 'react';
 import * as runtime from 'react/jsx-runtime';
 
-import { RunOptions, UseMdxComponents, run as mdxRun } from '@mdx-js/mdx';
-import Variable from '@readme/variable';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
-import { GlossaryTerm } from '../contexts/GlossaryTerms';
-import { Depth } from '../components/Heading';
 import { tocToMdx } from '../processor/plugin/toc';
+import User from '../utils/user';
+
 import compile from './compile';
-import { CustomComponents, RMDXModule } from '../types';
-import User, { Variables } from '../utils/user';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
+  baseUrl?: string;
   components?: CustomComponents;
   imports?: Record<string, unknown>;
-  baseUrl?: string;
   terms?: GlossaryTerm[];
   variables?: Variables;
 };
@@ -81,7 +85,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: () => (
-      <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
+      <Contexts baseUrl={baseUrl} terms={terms} variables={variables}>
         <Content />
       </Contexts>
     ),

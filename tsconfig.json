@@ -16,7 +16,7 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "sourceMap": true,
-    "target": "ES2017"
+    "target": "ES2024"
   },
   "include": ["./index.ts", "./options.js", "./components", "./contexts", "./example", "./lib", "./processor"],
   "exclude": ["node_modules", "dist"]

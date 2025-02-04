@@ -1,14 +1,16 @@
-import { Transformer } from 'unified';
-import { Root } from 'hast';
+import type { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
+import type { Root } from 'hast';
+import type { MdxjsEsm } from 'mdast-util-mdxjs-esm';
+import type { Transformer } from 'unified';
+
 import { valueToEstree } from 'estree-util-value-to-estree';
 import { h } from 'hastscript';
-
-import { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
 import { visit } from 'unist-util-visit';
+
 import { mdx, plain } from '../../lib';
 
 interface Options {
-  components?: Record<string, any>;
+  components?: CustomComponents;
 }
 
 export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
@@ -19,8 +21,6 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
         (child.type === 'mdxJsxFlowElement' && child.name in components),
     ) as IndexableElements[];
 
-    // @todo: Very confused by this error
-    // @ts-expect-error
     tree.children.unshift({
       type: 'mdxjsEsm',
       data: {
@@ -47,12 +47,12 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
           ],
         },
       },
-    });
+    } as MdxjsEsm);
   };
 };
 
 const MAX_DEPTH = 2;
-const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)[1]);
+const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)[1], 10);
 
 const tocToHast = (headings: HastHeading[] = []): TocList => {
   const min = Math.min(...headings.map(getDepth));
@@ -90,8 +90,8 @@ export const tocToMdx = (toc: IndexableElements[], components: CustomComponents)
   const tree: Root = { type: 'root', children: toc };
 
   visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {
-    const toc = components[node.name].toc || [];
-    parent.children.splice(index, 1, ...toc);
+    const subToc = components[node.name].toc || [];
+    parent.children.splice(index, 1, ...subToc);
   });
 
   const tocHast = tocToHast(tree.children as HastHeading[]);

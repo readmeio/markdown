@@ -1,8 +1,10 @@
-import { expect } from 'vitest';
-import { map } from 'unist-util-map';
 
 import type { ExpectationResult } from '@vitest/expect';
-import { Root, Node } from 'mdast';
+import type { Root, Node } from 'mdast';
+
+import { map } from 'unist-util-map';
+
+import { expect } from 'vitest';
 
 const removePosition = ({ position, ...node }: Node) => node;
 

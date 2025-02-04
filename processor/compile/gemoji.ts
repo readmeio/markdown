@@ -1,4 +1,4 @@
-import { Gemoji } from '../../types';
+import type { Gemoji } from '../../types';
 
 const gemoji = (node: Gemoji) => `:${node.name}:`;
 
