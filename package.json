@@ -27,7 +27,6 @@
     "@mdx-js/mdx": "^3.0.0",
     "@readme/emojis": "^6.0.0",
     "@readme/syntax-highlighter": "^13.1.0",
-    "@tailwindcss/postcss": "^4.0.0",
     "copy-to-clipboard": "^3.3.2",
     "core-js": "^3.36.1",
     "debug": "^4.3.4",
@@ -66,8 +65,7 @@
     "@readme/variable": "^16.1.0",
     "@tippyjs/react": "^4.1.0",
     "react": "16.x || 17.x || 18.x",
-    "react-dom": "16.x || 17.x || 18.x",
-    "react-shadow": "^20.6.0"
+    "react-dom": "16.x || 17.x || 18.x"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
