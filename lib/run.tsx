@@ -49,7 +49,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
-  const { components = {}, terms, variables, baseUrl, imports = {} ...opts } = _opts;
+  const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
     const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
     memo[tag] = Content;
