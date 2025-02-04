@@ -194,3 +194,8 @@ interface RMDXModule extends MDXModule {
 interface CustomComponents extends Record<string, RMDXModule> {}
 
 interface MdastComponents extends Record<string, Root> {}
+
+declare module '*.md' {
+  const content: string;
+  export default content;
+}
