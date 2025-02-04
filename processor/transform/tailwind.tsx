@@ -2,7 +2,7 @@ import { PhrasingContent, BlockContent, Node, Root } from 'mdast';
 import { Plugin } from 'unified';
 
 import { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit';
 import { valueToEstree } from 'estree-util-value-to-estree';
 
 import { isMDXElement, toAttributes } from '../utils';
@@ -70,6 +70,8 @@ const injectTailwindRoot =
     };
 
     parent.children.splice(index, 1, wrapper);
+
+    return SKIP;
   };
 
 const tailwind: Plugin<[TailwindRootOptions]> =
