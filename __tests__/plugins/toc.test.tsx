@@ -1,5 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import { compile, run } from '../../index';
 
 describe('toc transformer', () => {

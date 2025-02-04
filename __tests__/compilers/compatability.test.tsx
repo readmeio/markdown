@@ -1,7 +1,10 @@
-import React from 'react';
 import fs from 'node:fs';
-import { vi } from 'vitest';
+
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+import { vi } from 'vitest';
+
 
 import { mdx, migrate, compile, run } from '../../index';
 import { migrate } from '../helpers';
@@ -199,9 +202,9 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   it('compiles user variables', () => {
-    const md = `Contact me at <<email>>`;
+    const md = 'Contact me at <<email>>';
 
-    expect(migrate(md)).toBe(`Contact me at {user.email}\n`);
+    expect(migrate(md)).toBe('Contact me at {user.email}\n');
   });
 
   describe('<HTMLBlock> wrapping', () => {
@@ -245,7 +248,7 @@ This is an image: <img src="http://example.com/#\\>" >
           <Component />
         </div>,
       );
-      expect(screen.queryByTestId('script-tag')).toBe(null);
+      expect(screen.queryByTestId('script-tag')).toBeNull();
     });
 
     it('should never execute <script> tags', async () => {
@@ -320,7 +323,7 @@ This is an image: <img src="http://example.com/#\\>" >
   });
 
   it('trims whitespace surrounding phrasing content (emphasis, strong, etc)', () => {
-    const md = `** bold ** and _ italic _ and ***   bold italic ***`;
+    const md = '** bold ** and _ italic _ and ***   bold italic ***';
 
     const rmdx = migrate(md);
     expect(rmdx).toMatchInlineSnapshot(`
@@ -486,7 +489,7 @@ ${JSON.stringify(
   });
 
   it('compiles inline html', () => {
-    const md = `Inline html: <small>_string_</small>`;
+    const md = 'Inline html: <small>_string_</small>';
 
     const rmdx = migrate(md);
     expect(rmdx).toMatchInlineSnapshot(`
@@ -496,7 +499,7 @@ ${JSON.stringify(
   });
 
   it('compiles tag-like syntax', () => {
-    const md = `Inline: <what even is this>`;
+    const md = 'Inline: <what even is this>';
 
     const rmdx = migrate(md);
     expect(rmdx).toMatchInlineSnapshot(`

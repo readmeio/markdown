@@ -1,11 +1,13 @@
-import { Image, Parent } from 'mdast';
-import { NodeTypes } from '../../enums';
-import { Transform } from 'mdast-util-from-markdown';
-import { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
+import type { Image, Parent } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 
 import { visit } from 'unist-util-visit';
-import { toAttributes } from '../utils';
+
 import { type HTMLBlock } from 'types';
+
+import { NodeTypes } from '../../enums';
+import { toAttributes } from '../utils';
 
 const imageAttrs = ['align', 'alt', 'caption', 'border', 'height', 'src', 'title', 'width', 'lazy', 'className'];
 

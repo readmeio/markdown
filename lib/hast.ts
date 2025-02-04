@@ -1,7 +1,11 @@
-import astProcessor, { rehypePlugins, MdastOpts } from './ast-processor';
+import type { MdastOpts } from './ast-processor';
+import type { MdastComponents } from '../types';
+
 import remarkRehype from 'remark-rehype';
+
 import { injectComponents, mdxToHast } from '../processor/transform';
-import { MdastComponents } from '../types';
+
+import astProcessor, { rehypePlugins } from './ast-processor';
 import mdast from './mdast';
 
 const hast = (text: string, opts: MdastOpts = {}) => {

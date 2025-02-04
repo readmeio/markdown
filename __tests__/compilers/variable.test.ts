@@ -15,7 +15,7 @@ describe('variable compiler', () => {
   });
 
   it('with spaces in a variable, it compiles back to the original', () => {
-    const mdx = `{user["oh no"]}`;
+    const mdx = '{user["oh no"]}';
     const tree = rmdx.mdast(mdx);
 
     expect(rmdx.mdx(tree).trim()).toStrictEqual(mdx.trim());

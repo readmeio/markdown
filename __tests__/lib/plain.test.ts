@@ -9,7 +9,7 @@ Is it _me_ you're looking for?
 `;
 
     const tree = hast(md);
-    expect(plain(tree)).toEqual("Hello! Is it me you're looking for?");
+    expect(plain(tree)).toBe("Hello! Is it me you're looking for?");
   });
 
   it("compiles br's to ''", () => {

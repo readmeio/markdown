@@ -1,6 +1,7 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
+
 import { vi } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
@@ -17,27 +18,27 @@ describe('HTML Block', () => {
   });
 
   it('runs user scripts in compat mode', () => {
-    render(<HTMLBlock runScripts={true}>{`<script>mockFn()</script>`}</HTMLBlock>);
+    render(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
     expect(global.mockFn).toHaveBeenCalledTimes(1);
   });
 
   it("doesn't run user scripts by default", () => {
-    render(<HTMLBlock>{`<script>mockFn()</script>`}</HTMLBlock>);
+    render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
     expect(global.mockFn).toHaveBeenCalledTimes(0);
   });
 
   it("doesn't render user scripts by default", () => {
-    render(<HTMLBlock>{`<script>mockFn()</script>`}</HTMLBlock>);
+    render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
   it("doesn't render user scripts with weird endings", () => {
-    render(<HTMLBlock>{`<script>mockFn()</script foo='bar'>`}</HTMLBlock>);
+    render(<HTMLBlock>{'<script>mockFn()</script foo=\'bar\'>'}</HTMLBlock>);
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
   it("doesn't render user scripts with a malicious string", () => {
-    render(<HTMLBlock>{`<scrip<script></script>t>mockFn()</s<script></script>cript>`}</HTMLBlock>);
+    render(<HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>);
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 

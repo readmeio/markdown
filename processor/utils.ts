@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Node } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
@@ -5,6 +6,7 @@ import type {
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
+
 import mdast from '../lib/mdast';
 
 /**
@@ -18,7 +20,7 @@ import mdast from '../lib/mdast';
  */
 export const formatHProps = <T>(node: Node): string => {
   const hProps = getHProps<T>(node);
-  return formatProps(hProps);
+  return formatProps<T>(hProps);
 };
 
 /**
@@ -27,7 +29,7 @@ export const formatHProps = <T>(node: Node): string => {
  * @param {Object} props
  * @returns {string}
  */
-export const formatProps = (props: Object): string => {
+export const formatProps = <T>(props: T): string => {
   const keys = Object.keys(props);
   return keys.map(key => `${key}="${props[key]}"`).join(' ');
 };
@@ -51,7 +53,7 @@ export const getHProps = <T>(node: Node): T => {
  * @param {Node} node
  * @returns {Array} array of hProperty keys
  */
-export const getHPropKeys = <T>(node: Node): any => {
+export const getHPropKeys = <T>(node: Node): string[] => {
   const hProps = getHProps<T>(node);
   return Object.keys(hProps) || [];
 };
@@ -63,7 +65,7 @@ export const getHPropKeys = <T>(node: Node): any => {
  * @param {(MdxJsxFlowElement | MdxJsxTextElement)} jsx
  * @returns {T} object of hProperties
  */
-export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
+export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
       if (typeof attr.value === 'string') {
@@ -86,7 +88,7 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
  * @param {(MdxJsxFlowElement | MdxJsxTextElement)} jsx
  * @returns {Array} array of child text nodes
  */
-export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): any =>
+export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.children.reduce((memo, child: MdxFlowExpression, i) => {
     memo[i] = {
       type: 'text',
@@ -128,6 +130,7 @@ export const formatHTML = (html: string): string => {
   // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
+    // eslint-disable-next-line no-param-reassign
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
@@ -151,7 +154,7 @@ export const formatHTML = (html: string): string => {
  * @param {number} [indent=2]
  * @returns {string} re-formatted HTML
  */
-export const reformatHTML = (html: string, indent: number = 2): string => {
+export const reformatHTML = (html: string): string => {
   // Remove leading/trailing newlines
   const cleaned = html.replace(/^\s*\n|\n\s*$/g, '').replaceAll(/(?<!\\(\\\\)*)`/g, '\\`');
 
@@ -164,8 +167,8 @@ export const reformatHTML = (html: string, indent: number = 2): string => {
   return cleaned;
 };
 
-export const toAttributes = (object: Record<string, any>, keys: string[] = []): MdxJsxAttribute[] => {
-  let attributes: MdxJsxAttribute[] = [];
+export const toAttributes = (object: Record<string, unknown>, keys: string[] = []): MdxJsxAttribute[] => {
+  const attributes: MdxJsxAttribute[] = [];
   Object.entries(object).forEach(([name, v]) => {
     if (keys.length > 0 && !keys.includes(name)) return;
 

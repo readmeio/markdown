@@ -1,8 +1,10 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
 interface FaviconProps {
-  src: string;
   alt?: string;
+  src: string;
 }
 
 const Favicon = ({ src, alt = 'favicon', ...attr }: FaviconProps) => (
@@ -10,16 +12,16 @@ const Favicon = ({ src, alt = 'favicon', ...attr }: FaviconProps) => (
 );
 
 interface EmbedProps {
-  lazy?: boolean;
-  url: string;
-  title: string;
-  providerName?: string;
-  providerUrl?: string;
+  favicon?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
-  favicon?: string;
+  lazy?: boolean;
+  providerName?: string;
+  providerUrl?: string;
+  title: string;
   typeOfEmbed?: string;
+  url: string;
 }
 
 const Embed = ({

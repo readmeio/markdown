@@ -1,18 +1,24 @@
+import type { ImageBlock } from '../../types';
+import type { Node, Paragraph, Parents, Image } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import { Node, Paragraph, Parents } from 'mdast';
-import { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 import { NodeTypes } from '../../enums';
-import { ImageBlock } from '../../types';
-import { getAttrs } from '../utils';
 import { mdast } from '../../lib';
+import { getAttrs } from '../utils';
+
+const isImage = (node: Node): node is Image => node.type === 'image';
 
 const imageTransformer = () => (tree: Node) => {
   visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
     // check if inline
-    if (parent.type !== 'root' || node.children?.length > 1 || node.children[0].type !== 'image') return;
+    if (parent.type !== 'root' || node.children?.length > 1) return;
 
-    const [{ alt, url, title }] = node.children as any;
+    const child = node.children[0];
+    if (!isImage(child)) return;
+
+    const { alt, url, title } = child;
 
     const attrs = {
       alt,
@@ -38,9 +44,9 @@ const imageTransformer = () => (tree: Node) => {
     parent.children.splice(i, 1, newNode);
   });
 
-  const isImage = (node: MdxJsxFlowElement) => node.name === 'Image';
+  const isImageBlock = (node: MdxJsxFlowElement) => node.name === 'Image';
 
-  visit(tree, isImage, (node: MdxJsxFlowElement) => {
+  visit(tree, isImageBlock, (node: MdxJsxFlowElement) => {
     const attrs = getAttrs<ImageBlock>(node);
 
     if (attrs.caption) {

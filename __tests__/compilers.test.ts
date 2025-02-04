@@ -8,20 +8,6 @@ describe('ReadMe Flavored Blocks', () => {
     expect(out).toMatchSnapshot();
   });
 
-  it.skip('Variables', () => {
-    expect(mdx(mdast('<<variable:user>>'))).toMatchInlineSnapshot(`
-      "<<variable:user>>
-      "
-    `);
-  });
-
-  it.skip('Glossary Items', () => {
-    expect(mdx(mdast('<<glossary:owl>>'))).toMatchInlineSnapshot(`
-      "<<glossary:owl>>
-      "
-    `);
-  });
-
   it('Emojis', () => {
     expect(mdx(mdast(':smiley:'))).toMatchInlineSnapshot(`
       ":smiley:

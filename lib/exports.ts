@@ -1,7 +1,10 @@
+import type { MdxjsEsm } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import mdast from './mdast';
+
 import { isMDXEsm } from '../processor/utils';
-import { MdxjsEsm } from 'mdast-util-mdx';
+
+import mdast from './mdast';
 
 /* Example mdast structures to find first export name in a mdxjsEsm node:
 There are three types of export declarations that we need to consider:
@@ -48,27 +51,24 @@ const exports = (doc: string) => {
     const body = node.data?.estree.body;
     if (!body) return;
 
-    for (const child of body) {
-        if (child.type === 'ExportNamedDeclaration') {
+    body.forEach(child => {
+      if (child.type === 'ExportNamedDeclaration') {
         // There are three types of ExportNamedDeclaration that we need to consider: VariableDeclaration, FunctionDeclaration, ClassDeclaration
         const declaration = child.declaration;
-        // FunctionDeclaration and ClassDeclaration have the same structure 
+
+        // FunctionDeclaration and ClassDeclaration have the same structure
         if (declaration.type !== 'VariableDeclaration') {
           // Note: declaration.id.type is always 'Identifier' for FunctionDeclarations and ClassDeclarations
           set.add(declaration.id.name);
-        }
-        else  {
-          const declarations = declaration.declarations;
-          for (const declaration of declarations) {
-            const id = declaration.id;
+        } else {
+          declaration.declarations.forEach(({ id }) => {
             if (id.type === 'Identifier') {
               set.add(id.name);
-            }  
-          }
+            }
+          });
         }
       }
-    }
-    
+    });
   });
 
   return Array.from(set);

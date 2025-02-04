@@ -1,5 +1,7 @@
-import { vi } from 'vitest';
 import * as rdmd from '@readme/markdown-legacy';
+
+import { vi } from 'vitest';
+
 import { run, compile, migrate as baseMigrate } from '../index';
 
 export const silenceConsole =

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies
  */
 const ExtractCSS = require('mini-css-extract-plugin');
+const sass = require('sass');
 const webpack = require('webpack');
 
 module.exports = {
@@ -52,7 +53,7 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
-              implementation: require('sass'),
+              implementation: sass,
             },
           },
         ],
