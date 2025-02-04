@@ -115,7 +115,6 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
 });
 
 const serverConfig = merge(getConfig({ target: 'node' }), {
-  entry: './index.node',
   output: {
     filename: '[name].node.js',
   },
