@@ -95,6 +95,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
       ) : (
         <></>
       ),
+    stylesheet,
     ...exports,
   };
 };

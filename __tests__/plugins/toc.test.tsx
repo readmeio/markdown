@@ -58,4 +58,46 @@ describe('toc transformer', () => {
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.queryByText('[', { exact: false })).toBeNull();
   });
+
+  it('does not inject a toc if one already exists', async () => {
+    const md = `
+## Test Heading
+
+export const toc = [
+  {
+    "type": "element",
+    "tagName": "h2",
+          "properties": {
+        "id": "test-heading"
+      },
+    "children": [
+      {
+        "type": "text",
+        "value": "Modified Table",
+      }
+    ],
+  }
+]
+    `;
+
+    const { toc } = await run(await compile(md));
+
+    expect(toc).toMatchInlineSnapshot(`
+      [
+        {
+          "children": [
+            {
+              "type": "text",
+              "value": "Modified Table",
+            },
+          ],
+          "properties": {
+            "id": "test-heading",
+          },
+          "tagName": "h2",
+          "type": "element",
+        },
+      ]
+    `);
+  });
 });

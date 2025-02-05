@@ -26,6 +26,8 @@ const compile = async (text: string, { components = {}, copyButtons, useTailwind
     [codeTabsTransformer, { copyButtons }],
   ];
 
+  console.log(components);
+  console.log('useTailwind', useTailwind);
   if (useTailwind) {
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
