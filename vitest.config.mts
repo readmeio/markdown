@@ -13,12 +13,10 @@ export default defineConfig({
       {
         extends: true,
         test: {
-          exclude: [
-            '__tests__/browser'
-          ],
+          exclude: ['__tests__/browser'],
           name: 'rdmd',
         },
       },
-    ]
+    ],
   },
 });

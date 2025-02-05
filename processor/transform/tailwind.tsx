@@ -1,11 +1,11 @@
-import { PhrasingContent, BlockContent, Node, Root } from 'mdast';
+import { PhrasingContent, BlockContent, Root } from 'mdast';
 import { Plugin } from 'unified';
 
 import { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { visit, SKIP } from 'unist-util-visit';
 import { valueToEstree } from 'estree-util-value-to-estree';
 
-import { isMDXElement, toAttributes } from '../utils';
+import { hasNamedExport, isMDXElement, toAttributes } from '../utils';
 import tailwindBundle from '../../utils/tailwind-bundle';
 
 interface TailwindRootOptions {
@@ -16,7 +16,9 @@ type Visitor =
   | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | void)
   | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | void);
 
-const exportTailwindStylesheet = async (tree: Node, components: TailwindRootOptions['components']): Promise<void> => {
+const exportTailwindStylesheet = async (tree: Root, components: TailwindRootOptions['components']): Promise<void> => {
+  if (hasNamedExport(tree, 'stylesheet')) return;
+
   const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: `.readme-tailwind` })).css;
 
   const exportNode: MdxjsEsm = {
@@ -76,7 +78,7 @@ const injectTailwindRoot =
 
 const tailwind: Plugin<[TailwindRootOptions]> =
   ({ components }) =>
-  async tree => {
+  async (tree: Root) => {
     visit(tree, isMDXElement, injectTailwindRoot({ components }));
 
     await exportTailwindStylesheet(tree, components);

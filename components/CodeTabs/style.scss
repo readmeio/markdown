@@ -2,8 +2,8 @@
 @import '~codemirror/theme/neo.css';
 
 @mixin CodeTabs {
-  $bgc-pre: #F6F8FA;
-  $bgc-pre-dark: #242E34;
+  $bgc-pre: #f6f8fa;
+  $bgc-pre-dark: #242e34;
   $bgc-bar: darken(desaturate($bgc-pre, 17.46), 4.31);
   $bgc-bar-dark: lighten(desaturate($bgc-pre-dark, 17.46), 4.31);
   $radius: var(--md-code-radius, var(--markdown-radius, 3px));
@@ -36,18 +36,18 @@
     }
     button {
       white-space: nowrap;
-      transition: .123s ease;
+      transition: 0.123s ease;
       -webkit-appearance: none;
       appearance: none;
       display: inline-block;
       line-height: 2;
-      padding: .5em 1em;
+      padding: 0.5em 1em;
       border: none;
       background: transparent;
       outline: none;
       color: inherit;
       font: inherit;
-      font-size: .75em;
+      font-size: 0.75em;
       cursor: pointer;
     }
   }
@@ -70,7 +70,7 @@
   }
 
   &-toolbar button:not(.CodeTabs_active):hover {
-    background: rgba(0, 0, 0, .075);
+    background: rgba(0, 0, 0, 0.075);
   }
 
   pre {
@@ -78,7 +78,9 @@
     background: $bgc-pre;
     background: var(--md-code-background, $bgc-pre);
     margin-bottom: 0;
-    &:not(.CodeTabs_active) { display: none }
+    &:not(.CodeTabs_active) {
+      display: none;
+    }
   }
 
   &.theme-dark pre {

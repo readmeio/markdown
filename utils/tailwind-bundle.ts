@@ -71,6 +71,7 @@ async function loadModule(): Promise<never> {
 }
 
 async function tailwindBundle(string: string, { prefix }: { prefix: string }) {
+  console.log('index keys', index, Object.keys(index));
   const compiler = await createCompiler();
   const newClasses = new Set<string>(string.split(/[^a-zA-Z0-9_-]+/));
   const css = compiler.build(Array.from(newClasses));

@@ -6,6 +6,7 @@ import { h } from 'hastscript';
 import { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
 import { visit } from 'unist-util-visit';
 import { mdx, plain } from '../../lib';
+import { hasNamedExport } from '../utils';
 
 interface Options {
   components?: Record<string, any>;
@@ -13,23 +14,7 @@ interface Options {
 
 export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
   return (tree: Root): void => {
-    let preExistingToc = false;
-
-    visit(tree, 'mdxjsEsm', node => {
-      if (
-        'declaration' in node.data.estree.body[0] &&
-        node.data.estree.body[0].declaration.type === 'VariableDeclaration'
-      ) {
-        const { declarations } = node.data.estree.body[0].declaration;
-        const toc = declarations.find(declaration => 'name' in declaration.id && declaration.id.name === 'toc');
-
-        if (toc) {
-          preExistingToc = true;
-        }
-      }
-    });
-
-    if (preExistingToc) return;
+    if (hasNamedExport(tree, 'toc')) return;
 
     const headings = tree.children.filter(
       child =>
