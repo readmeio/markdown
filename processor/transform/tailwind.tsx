@@ -16,7 +16,7 @@ type Visitor =
   | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | void)
   | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | void);
 
-const exportTailwindStylesheets = async (tree: Node, components: TailwindRootOptions['components']): Promise<void> => {
+const exportTailwindStylesheet = async (tree: Node, components: TailwindRootOptions['components']): Promise<void> => {
   const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: `.readme-tailwind` })).css;
 
   const exportNode: MdxjsEsm = {
@@ -37,8 +37,8 @@ const exportTailwindStylesheets = async (tree: Node, components: TailwindRootOpt
               declarations: [
                 {
                   type: 'VariableDeclarator',
-                  id: { type: 'Identifier', name: 'stylesheets' },
-                  init: valueToEstree([stylesheet]),
+                  id: { type: 'Identifier', name: 'stylesheet' },
+                  init: valueToEstree(stylesheet),
                 },
               ],
             },
@@ -79,7 +79,7 @@ const tailwind: Plugin<[TailwindRootOptions]> =
   async tree => {
     visit(tree, isMDXElement, injectTailwindRoot({ components }));
 
-    await exportTailwindStylesheets(tree, components);
+    await exportTailwindStylesheet(tree, components);
 
     return tree;
   };

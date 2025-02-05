@@ -13,7 +13,7 @@ Object.entries(components).forEach(async ([tag, body]) => {
 
   executedComponents[tag] = mod;
   Object.keys(mod).forEach(subTag => {
-    if (['toc', 'Toc', 'default', 'stylesheets'].includes(subTag)) return;
+    if (['toc', 'Toc', 'default', 'stylesheet'].includes(subTag)) return;
 
     componentsByExport[subTag] = body;
   });

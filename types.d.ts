@@ -189,7 +189,7 @@ type IndexableElements = HastHeading | MdxJsxFlowElementHast;
 interface RMDXModule extends MDXModule {
   toc: IndexableElements[];
   Toc: MDXContent | (() => null);
-  stylesheets?: string[];
+  stylesheet?: string;
 }
 
 interface CustomComponents extends Record<string, RMDXModule> {}

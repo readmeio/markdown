@@ -74,7 +74,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     } as RunOptions) as Promise<RMDXModule>;
   };
 
-  const { Toc: _Toc, toc, default: Content, stylesheets, ...exports } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
 
   const tocMdx = tocToMdx(toc, components);
   const { default: Toc } = await exec(await compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
@@ -82,7 +82,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   return {
     default: () => (
       <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
-        {!!stylesheets && stylesheets.map(stylesheet => <style>{stylesheet}</style>)}
+        <Components.Style stylesheet={stylesheet} />
         <Content />
       </Contexts>
     ),

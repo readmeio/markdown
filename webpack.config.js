@@ -141,6 +141,7 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
       umd: 'react-dom/server',
     },
   },
+  devtool: 'source-map',
 });
 
 module.exports = [browserConfig, serverConfig];
