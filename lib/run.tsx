@@ -76,8 +76,14 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
   const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
 
+  let Toc: React.FC | undefined;
   const tocMdx = tocToMdx(toc, components);
-  const { default: Toc } = await exec(await compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
+  if (tocMdx) {
+    const compiledToc = await compile(tocMdx);
+    const tocModule = await exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
+
+    Toc = tocModule.default;
+  }
 
   return {
     default: () => (
@@ -88,13 +94,11 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     ),
     toc,
     Toc: () =>
-      tocMdx && Toc ? (
+      Toc ? (
         <Components.TableOfContents>
           <Toc />
         </Components.TableOfContents>
-      ) : (
-        <></>
-      ),
+      ) : null,
     stylesheet,
     ...exports,
   };

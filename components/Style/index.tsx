@@ -6,13 +6,13 @@ interface Props {
 }
 
 const Style = ({ stylesheet }: Props) => {
-  const isServer = typeof window === 'undefined';
+  const hasDom = typeof document !== 'undefined';
 
   if (!stylesheet) {
     return null;
   }
 
-  return isServer ? createPortal(<style>{stylesheet}</style>, document.head) : <style>{stylesheet}</style>;
+  return hasDom ? createPortal(<style>{stylesheet}</style>, document.head) : <style>{stylesheet}</style>;
 };
 
 export default Style;

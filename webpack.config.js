@@ -48,6 +48,7 @@ const getConfig = ({ target }) => ({
       { test: /tailwindcss\/.*\.css$/, type: 'asset/source' },
       {
         test: /\.css$/,
+        exclude: /node_modules\/tailwindcss\/.*\.css/,
         use: [ExtractCSS.loader, 'css-loader'],
       },
       {
