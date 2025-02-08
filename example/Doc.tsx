@@ -4,32 +4,19 @@ import * as mdx from '../index';
 import docs from './docs';
 import RenderError from './RenderError';
 import { MDXContent } from 'mdx/types';
-
-const components = {
-  Demo: `
-## This is a Demo Component!
-
-> 📘 It can render JSX components!
-`,
-  Test: `
-export const Test = ({ color = 'thistle' } = {}) => {
-  return <div style={{ backgroundColor: color }}>
-    Hello, World!
-  </div>;
-};
-
-export default Test;
-  `,
-  MultipleExports: `
-export const One = () => "One";
-
-export const Two = () => "Two";
-  `,
-};
+import components from './components';
 
 const executedComponents = {};
+let componentsByExport = { ...components };
 Object.entries(components).forEach(async ([tag, body]) => {
-  executedComponents[tag] = await mdx.run(mdx.compile(body));
+  const mod = await mdx.run(await mdx.compile(body));
+
+  executedComponents[tag] = mod;
+  Object.keys(mod).forEach(subTag => {
+    if (['toc', 'Toc', 'default', 'stylesheet'].includes(subTag)) return;
+
+    componentsByExport[subTag] = body;
+  });
 });
 
 const terms = [
@@ -86,7 +73,8 @@ const Doc = () => {
       };
 
       try {
-        const code = mdx.compile(doc, { ...opts, components });
+        // @ts-ignore
+        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);

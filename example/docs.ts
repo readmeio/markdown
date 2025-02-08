@@ -35,6 +35,8 @@ import tableOfContentsTests from '../docs/table-of-contents-tests.md';
 // @ts-ignore
 import tables from '../docs/tables.md';
 // @ts-ignore
+import tailwindRootTests from '../docs/tailwind-root-tests.mdx';
+// @ts-ignore
 import varsTest from '../docs/variable-tests.md';
 
 const lowerCase = (str: string) =>
@@ -59,6 +61,7 @@ const fixtures = Object.entries({
   sanitizingTests,
   tableOfContentsTests,
   tables,
+  tailwindRootTests,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);

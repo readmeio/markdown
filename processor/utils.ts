@@ -1,4 +1,5 @@
-import type { Node } from 'mdast';
+import type { Node, Root as MdastRoot } from 'mdast';
+import type { Root as HastRoot } from 'hast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
@@ -6,6 +7,7 @@ import type {
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
 import mdast from '../lib/mdast';
+import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -205,4 +207,34 @@ export const toAttributes = (object: Record<string, any>, keys: string[] = []): 
   });
 
   return attributes;
+};
+
+/**
+ * Checks if a named export exists in the MDX tree. Accepts either an mdast or
+ * a hast tree.
+ *
+ * example:
+ * ```
+ * const mdx = `export const Foo = 'bar';`
+ *
+ * hasNamedExport(mdast(mdx), 'Foo') => true
+ * ```
+ *
+ */
+export const hasNamedExport = (tree: MdastRoot | HastRoot, name: string): boolean => {
+  let hasExport = false;
+
+  visit(tree, 'mdxjsEsm', node => {
+    if (
+      'declaration' in node.data.estree.body[0] &&
+      node.data.estree.body[0].declaration.type === 'VariableDeclaration'
+    ) {
+      const { declarations } = node.data.estree.body[0].declaration;
+      hasExport = !!declarations.find(declaration => 'name' in declaration.id && declaration.id.name === name);
+
+      return hasExport ? EXIT : CONTINUE;
+    }
+  });
+
+  return hasExport;
 };

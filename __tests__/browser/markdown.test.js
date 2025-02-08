@@ -28,6 +28,7 @@ describe('visual regression tests', () => {
       'tables',
       'codeBlockTests',
       'tableOfContentsTests',
+      'tailwindRootTests',
       'varsTest',
     ];
 

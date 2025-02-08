@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-import { mdx, migrate, compile, run } from '../../index';
+import { mdx, compile, run } from '../../index';
 import { migrate } from '../helpers';
 
 describe('compatability with RDMD', () => {
@@ -226,7 +226,7 @@ This is an image: <img src="http://example.com/#\\>" >
 
     it('should wrap raw <style> tags in an <HTMLBlock>', async () => {
       const converted = migrate(rawStyle);
-      const compiled = compile(converted);
+      const compiled = await compile(converted);
       const Component = (await run(compiled)).default;
       render(
         <div className="markdown-body">
@@ -238,7 +238,7 @@ This is an image: <img src="http://example.com/#\\>" >
 
     it('should wrap raw <script> tags in an <HTMLBlock>', async () => {
       const converted = migrate(rawScript);
-      const compiled = compile(converted);
+      const compiled = await compile(converted);
       const Component = (await run(compiled)).default;
       render(
         <div className="markdown-body">
@@ -254,7 +254,7 @@ This is an image: <img src="http://example.com/#\\>" >
        */
       const spy = vi.spyOn(console, 'log');
       const converted = migrate(magicScript);
-      const compiled = compile(converted);
+      const compiled = await compile(converted);
       const Component = await run(compiled);
       render(
         <div className="markdown-body">
