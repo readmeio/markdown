@@ -39,7 +39,10 @@ const compile = async (text: string, { components = {}, copyButtons, useTailwind
       ...opts,
     });
 
-    return String(vfile).replace('"use strict";', '"use strict";\nconst { React, user } = arguments[0].imports;\n');
+    const string = String(vfile)
+      .replace('"use strict";', '"use strict";\nconst { user } = arguments[0].imports;\n')
+      .replace(/await import\(_resolveDynamicMdxSpecifier\(('react'|"react")\)\)/, 'arguments[0].imports.React');
+    return string;
   } catch (error) {
     throw error.line ? new MdxSyntaxError(error, text) : error;
   }
