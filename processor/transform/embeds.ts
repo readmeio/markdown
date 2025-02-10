@@ -1,5 +1,5 @@
 import type { Embed, EmbedBlock } from '../../types';
-import type { Paragraph, Parents, Node } from 'mdast';
+import type { Paragraph, Parents, Node, Text } from 'mdast';
 
 import { visit } from 'unist-util-visit';
 
@@ -15,7 +15,7 @@ const embedTransformer = () => {
       if (!isEmbed(child)) return;
 
       const { url, title } = child;
-      const label = mdx(child);
+      const label = (child.children[0] as Text).value;
 
       const newNode = {
         type: NodeTypes.embedBlock,
@@ -25,7 +25,7 @@ const embedTransformer = () => {
         data: {
           hProperties: {
             url,
-            title,
+            title: label ?? title,
           },
           hName: 'embed',
         },
@@ -38,4 +38,3 @@ const embedTransformer = () => {
 };
 
 export default embedTransformer;
-

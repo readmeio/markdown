@@ -55,9 +55,8 @@ function one(node: Nodes, opts: Options) {
 
         return [title, body].filter(Boolean).join(' ');
       }
-      default: {
-        return '';
-      }
+      default:
+        break;
     }
   }
 
