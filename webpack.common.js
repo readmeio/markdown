@@ -40,9 +40,10 @@ module.exports = {
           fullySpecified: false,
         },
       },
-
+      { test: /tailwindcss\/.*\.css$/, type: 'asset/source' },
       {
         test: /\.css$/,
+        exclude: /tailwindcss\/.*\.css$/,
         use: [ExtractCSS.loader, 'css-loader'],
       },
       {
@@ -71,7 +72,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx', '.md'],
+    extensions: ['.js', '.json', '.jsx', '.ts', '.tsx', '.md', '.css'],
     fallback: { buffer: require.resolve('buffer'), util: require.resolve('util/') },
   },
 };

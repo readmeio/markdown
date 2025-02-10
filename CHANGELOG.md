@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 8.1.0
+### ✨ New & Improved
+
+* tailwind ([#1052](https://github.com/readmeio/markdown/issues/1052)) ([c197298](https://github.com/readmeio/markdown/commit/c1972982550c71b921d520b2cf5b68536efe9d56))
+
+### 🛠 Fixes & Updates
+
+* upgrading vitest to v3, laying ground work for vitest browser testing ([#1054](https://github.com/readmeio/markdown/issues/1054)) ([75659ef](https://github.com/readmeio/markdown/commit/75659ef8d49a0700db35c0e04ce3492623d039af))
+
+## Version 8.0.1
+### 🛠 Fixes & Updates
+
+* refactor exports util to support broader formatting and export types ([#1051](https://github.com/readmeio/markdown/issues/1051)) ([61e1a3b](https://github.com/readmeio/markdown/commit/61e1a3b4f3b1c90fd437137cd0235b1e74e03768))
+
 ## Version 8.0.0
 ### ⚠ BREAKING CHANGES
 

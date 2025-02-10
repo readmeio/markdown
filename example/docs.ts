@@ -17,6 +17,8 @@ import lists from '../docs/lists.md';
 import mdxComponents from '../docs/mdx-components.mdx';
 import mermaid from '../docs/mermaid.md';
 import tables from '../docs/tables.md';
+import tailwindRootTests from '../docs/tailwind-root-tests.mdx';
+import varsTest from '../docs/variable-tests.md';
 
 const lowerCase = (str: string) =>
   str.replaceAll(/([a-z])([A-Z])/g, (_: string, p1: string, p2: string) => `${p1} ${p2.toLowerCase()}`);
@@ -40,6 +42,7 @@ const fixtures = Object.entries({
   sanitizingTests,
   tableOfContentsTests,
   tables,
+  tailwindRootTests,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);

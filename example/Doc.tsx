@@ -5,34 +5,21 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import * as mdx from '../index';
 
+import components from './components';
 import docs from './docs';
 import RenderError from './RenderError';
 
-const components = {
-  Demo: `
-## This is a Demo Component!
-
-> 📘 It can render JSX components!
-`,
-  Test: `
-export const Test = ({ color = 'thistle' } = {}) => {
-  return <div style={{ backgroundColor: color }}>
-    Hello, World!
-  </div>;
-};
-
-export default Test;
-  `,
-  MultipleExports: `
-export const One = () => "One";
-
-export const Two = () => "Two";
-  `,
-};
-
 const executedComponents = {};
+const componentsByExport = { ...components };
 Object.entries(components).forEach(async ([tag, body]) => {
-  executedComponents[tag] = await mdx.run(mdx.compile(body));
+  const mod = await mdx.run(await mdx.compile(body));
+
+  executedComponents[tag] = mod;
+  Object.keys(mod).forEach(subTag => {
+    if (['toc', 'Toc', 'default', 'stylesheet'].includes(subTag)) return;
+
+    componentsByExport[subTag] = body;
+  });
 });
 
 const terms = [
@@ -74,7 +61,7 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, Toc }, setContent] = useState<{ Toc?: MDXContent, default: MDXContent; }>({
+  const [{ default: Content, Toc }, setContent] = useState<{ Toc?: MDXContent; default: MDXContent }>({
     default: null,
     Toc: null,
   });
@@ -89,7 +76,7 @@ const Doc = () => {
       };
 
       try {
-        const code = mdx.compile(doc, { ...opts, components });
+        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
