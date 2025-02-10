@@ -6,9 +6,9 @@
 
 <p align="center">
   ReadMe's MDX rendering engine and custom component collection.<br />
-  <small>
+  <sub>
     Use ReadMe? <a href="https://docs.readme.com/rdmd/page/mdx-engine">Learn more about our upcoming move to MDX!</a>
-  </small>
+  </sub>
 </p>
 
 <p align="center">
