@@ -45,9 +45,10 @@ const getConfig = ({ target }) => ({
           fullySpecified: false,
         },
       },
-
+      { test: /tailwindcss\/.*\.css$/, type: 'asset/source' },
       {
         test: /\.css$/,
+        exclude: /node_modules\/tailwindcss\/.*\.css/,
         use: [ExtractCSS.loader, 'css-loader'],
       },
       {
@@ -141,6 +142,7 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
       umd: 'react-dom/server',
     },
   },
+  devtool: 'source-map',
 });
 
 module.exports = [browserConfig, serverConfig];
