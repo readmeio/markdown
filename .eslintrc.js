@@ -13,6 +13,7 @@ module.exports = {
           '**/*.test.[tj]sx',
           '**/vitest.*.[tj]s',
           '**/webpack..*.js',
+          './example/**',
         ],
       },
     ],

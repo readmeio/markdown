@@ -52,6 +52,7 @@ const Embed = ({
   }
 
   if (iframe) {
+    // eslint-disable-next-line jsx-a11y/iframe-has-title
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} />;
   }
 

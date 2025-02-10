@@ -82,6 +82,7 @@ const Doc = () => {
         setError(() => null);
         setContent(() => content);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
         setError(() => e.message);
       }

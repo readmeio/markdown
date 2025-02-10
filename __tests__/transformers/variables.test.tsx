@@ -12,7 +12,7 @@ describe('variables transformer', () => {
         name: 'Test User',
       },
     };
-    const Content = await execute(mdx, { variables });
+    const Content = (await execute(mdx, { variables })) as () => React.ReactNode;
 
     render(<Content />);
 
@@ -26,7 +26,7 @@ describe('variables transformer', () => {
         name: 'Test User',
       },
     };
-    const Content = await execute(mdx, { variables });
+    const Content = (await execute(mdx, { variables })) as () => React.ReactNode;
 
     render(<Content />);
 
@@ -36,7 +36,7 @@ describe('variables transformer', () => {
   it('parses variables into the mdast', () => {
     const mdx = '{user.name}';
 
-    // @ts-ignore
+    // @ts-expect-error - custom matcher types aren't set up right
     expect(rmdx.mdast(mdx)).toStrictEqualExceptPosition({
       children: [
         {
@@ -57,7 +57,6 @@ describe('variables transformer', () => {
   it('does not parse regular expressions into variables', () => {
     const mdx = '{notUser.name}';
 
-    // @ts-ignore
     expect(rmdx.mdast(mdx).children[0].type).toBe('mdxFlowExpression');
   });
 });

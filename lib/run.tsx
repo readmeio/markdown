@@ -107,7 +107,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
       ) : null,
     stylesheet,
     ...exports,
-  };
+  } as RMDXModule;
 };
 
 export default run;

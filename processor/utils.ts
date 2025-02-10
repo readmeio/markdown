@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import type { Node, Root as MdastRoot } from 'mdast';
 import type { Root as HastRoot } from 'hast';
+import type { Node, Root as MdastRoot } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
@@ -8,8 +8,9 @@ import type {
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
 
-import mdast from '../lib/mdast';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
+
+import mdast from '../lib/mdast';
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -224,9 +225,10 @@ export const toAttributes = (object: Record<string, unknown>, keys: string[] = [
  * ```
  *
  */
-export const hasNamedExport = (tree: MdastRoot | HastRoot, name: string): boolean => {
+export const hasNamedExport = (tree: HastRoot | MdastRoot, name: string): boolean => {
   let hasExport = false;
 
+  // eslint-disable-next-line consistent-return
   visit(tree, 'mdxjsEsm', node => {
     if (
       'declaration' in node.data.estree.body[0] &&

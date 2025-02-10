@@ -11,8 +11,8 @@ import mermaidTransformer from './mermaid';
 import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';
 import tablesToJsx from './tables-to-jsx';
-import variablesTransformer from './variables';
 import tailwindTransformer from './tailwind';
+import variablesTransformer from './variables';
 
 export {
   compatabilityTransfomer,

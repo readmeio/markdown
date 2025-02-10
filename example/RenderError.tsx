@@ -19,6 +19,7 @@ class RenderError extends React.Component<PropsWithChildren<Props>, State> {
   }
 
   static componentDidCatch(error: Error, info: { componentStack: string }) {
+    // eslint-disable-next-line no-console
     console.error(error, info.componentStack);
   }
 

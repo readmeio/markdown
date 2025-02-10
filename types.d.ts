@@ -193,9 +193,9 @@ interface TocEntry extends Element {
 type IndexableElements = HastHeading | MdxJsxFlowElementHast;
 
 interface RMDXModule extends MDXModule {
-  toc: IndexableElements[];
   Toc: MDXContent | (() => null);
   stylesheet?: string;
+  toc: IndexableElements[];
 }
 
 interface CustomComponents extends Record<string, RMDXModule> {}

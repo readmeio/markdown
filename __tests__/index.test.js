@@ -1,7 +1,7 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React, { createElement } from 'react';
 
-import { Provider } from '../contexts/BaseUrl';
+import BaseUrlContext from '../contexts/BaseUrl';
 import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, astToPlainText } from '../index';
 import { options } from '../options';
 import { tableFlattening } from '../processor/plugin/table-flattening';
@@ -133,7 +133,7 @@ test.skip('anchor target: should allow download if using HTML', () => {
 test.skip('anchors with baseUrl', () => {
   const { container } = render(
     createElement(
-      Provider,
+      BaseUrlContext.Provider,
       {
         value: '/child/v1.0',
       },
@@ -159,7 +159,7 @@ test.skip('anchors with baseUrl and special characters in url hash', () => {
 
 test.skip('emojis', () => {
   const { container } = render(
-    markdown(`
+    execute(`
 :joy:
 :fa-lock:
 :unknown-emoji:
@@ -172,7 +172,7 @@ test.skip('emojis', () => {
 describe.skip('code samples', () => {
   it('should codify code', () => {
     const { container } = render(
-      markdown(`
+      execute(`
   \`\`\`javascript
   var a = 1;
   \`\`\`
@@ -208,52 +208,6 @@ describe.skip('code samples', () => {
 
 test.skip('should render nothing if nothing passed in', () => {
   expect(_html('')).toBeNull();
-});
-
-test.skip('`correctnewlines` option', () => {
-  let { container } = render(react('test\ntest\ntest', { correctnewlines: true }));
-  expect(container).toContainHTML('<p>test\ntest\ntest</p>');
-
-  cleanup();
-
-  ({ container } = render(react('test\ntest\ntest', { correctnewlines: false })));
-  expect(container).toContainHTML('<p>test<br>\ntest<br>\ntest</p>');
-});
-
-describe.skip('`alwaysThrow` option', () => {
-  it('should throw if `alwaysThrow` is true and magic block has invalid JSON', () => {
-    const shouldThrow = () =>
-      render(
-        markdown(
-          `[block:api-header]
-    {,
-      "title": "Uh-oh, I'm invalid",
-      "level": 2
-    }
-    [/block]`,
-          { alwaysThrow: true },
-        ),
-      );
-
-    expect(shouldThrow).toThrow('Invalid Magic Block JSON');
-  });
-
-  it('should not throw if `alwaysThrow` is true but magic block has valid JSON', () => {
-    const shouldThrow = () =>
-      render(
-        markdown(
-          `[block:api-header]
-    {
-      "title": "Ooh I'm valid 💅",
-      "level": 2
-    }
-    [/block]`,
-          { alwaysThrow: true },
-        ),
-      );
-
-    expect(() => shouldThrow()).not.toThrow('Invalid Magic Block JSON');
-  });
 });
 
 // TODO not sure if this needs to work or not?

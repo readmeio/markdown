@@ -7,14 +7,16 @@ import { run, compile, migrate as baseMigrate } from '../index';
 export const silenceConsole =
   (prop: keyof Console = 'error', impl = () => {}) =>
   fn => {
-    let spy;
+    let spy: ReturnType<typeof vi.spyOn> | undefined;
 
     try {
-      spy = vi.spyOn(console, prop).mockImplementation(impl);
+      spy = vi.spyOn(console, prop);
+      // @ts-expect-error - spy is a spy
+      spy.mockImplementation(impl);
 
       return fn(spy);
     } finally {
-      spy.mockRestore();
+      spy?.mockRestore();
     }
   };
 

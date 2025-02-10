@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
-  attributes?: {};
+  attributes?: Record<string, unknown>;
   empty?: boolean;
   icon: string;
   theme?: string;
@@ -27,7 +27,8 @@ const Callout = (props: Props) => {
   const theme = props.theme || themes[icon] || 'default';
 
   return (
-    // @ts-ignore
+    // @ts-expect-error -- theme is not a valid attribute
+    // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
       <h3 className={`callout-heading${empty ? ' empty' : ''}`}>
         <span className="callout-icon">{icon}</span>
