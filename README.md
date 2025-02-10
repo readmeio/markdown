@@ -1,9 +1,27 @@
-# <img align="right" width="26%" src="https://owlbertsio-resized.s3.amazonaws.com/Reading.psd.full.png"> `@readme/markdown`
+<p align="center">
+  <a href="https://npm.im/@readme/markdown">
+    <img src="https://owlbertsio-resized.s3.amazonaws.com/Reading.psd.full.png" width="150" alt="rmdx" />
+  </a>
+</p>
 
-<img align=right src=https://github.com/readmeio/markdown/workflows/CI/badge.svg alt="RDMD CI Status"> ReadMe's MDX rendering engine and custom component collection.
-<br/>  *(Use ReadMe? [Learn more about our upcoming move to MDX](https://docs.readme.com/rdmd/page/mdx-engine)!)*
+<p align="center">
+  ReadMe's MDX rendering engine and custom component collection.<br />
+  <small>
+    Use ReadMe? <a href="https://docs.readme.com/rdmd/page/mdx-engine">Learn more about our upcoming move to MDX!</a>
+  </small>
+</p>
 
-## Getting Started
+<p align="center">
+  <a href="https://npm.im/@readme/markdown"><img src="https://img.shields.io/npm/v/@readme/markdown?style=for-the-badge" alt="NPM Version" /></a>
+  <a href="https://npm.im/@readme/markdown"><img src="https://img.shields.io/npm/l/@readme/markdown?style=for-the-badge" alt="MIT License" /></a>
+  <a href="https://github.com/readmeio/markdown"><img src="https://img.shields.io/github/actions/workflow/status/readmeio/markdown/ci.yml?branch=main&style=for-the-badge" alt="Build status" /></a>
+</p>
+
+<p align="center">
+  <a href="https://readme.com"><img src="https://raw.githubusercontent.com/readmeio/.github/main/oss-badge.svg" /></a>
+</p>
+
+## Usage
 
 To use the engine, install it from NPM:
 
@@ -16,11 +34,7 @@ Then [`compile`](#compile) and [`run`](#run) your MDX:
 ```jsx
 import RMDX from '@readme/markdown';
 
-export default ({ body }) => (
-  <div className="markdown-body">
-    {RMDX.run(RMDX.compile(body))}
-  </div>
-);
+export default ({ body }) => <div className="markdown-body">{RMDX.run(RMDX.compile(body))}</div>;
 ```
 
 ## API
@@ -42,13 +56,15 @@ A string of compiled Javascript module code.
 
 > [!CAUTION]
 > This is essentially a wrapper around [`mdx.run`](https://mdxjs.com/packages/mdx/#runcode-options) and **it will `eval` the compiled MDX**. Make sure you only call `run` on safe syntax from a trusted author!
->
-> #### Parameters
-> - **`string`** (`string`)—a compiled mdx document
-> - **`opts`** (`RunOpts`, optional)—configuration
->
-> #### Returns
-> An [`RMDXModule`](#rmdxmodule) of renderable components.
+
+#### Parameters
+
+- **`string`** (`string`)—a compiled mdx document
+- **`opts`** (`RunOpts`, optional)—configuration
+
+#### Returns
+
+An [`RMDXModule`](#rmdxmodule) of renderable components.
 
 ### `mdx`
 
@@ -57,7 +73,7 @@ Compiles an AST to a string of MDX syntax.
 #### Parameters
 
 - **`tree`** (`object`)—an abstract syntax tree
-- **`opts`** ([`Options`](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#options "`remark-stringify` Options type"))—`remark-stringify` configuration.
+- **`opts`** ([`Options`](https://github.com/remarkjs/remark/tree/main/packages/remark-stringify#options '`remark-stringify` Options type'))—`remark-stringify` configuration.
 
 #### Returns
 
@@ -67,8 +83,8 @@ An MDX string.
 
 - **`mdast`**: parse MDX syntax to MDAST.
 - **`hast`**: parse MDX syntax to HAST.
-- **`plain`**: parse MDX to a plaintext string with all Markdown syntax removed. (This *does not* `eval` the doc.)
-- **`tags`**: get a list of tag names from the doc. (This *does not* `eval` the doc.)
+- **`plain`**: parse MDX to a plaintext string with all Markdown syntax removed. (This _does not_ `eval` the doc.)
+- **`tags`**: get a list of tag names from the doc. (This _does not_ `eval` the doc.)
 - **`utils`**: additional defaults, helper methods, components, and so on.
 
 ## Types
@@ -103,7 +119,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 - **`toc`** (`HastHeading[]`)—a list of headings in the document
 - **`Toc`** (`() => MDCContent`)—a table of contents component
 
-## Local Development and Testing
+## Local development and testing
 
 To make changes to the RDMD engine locally, run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
 
