@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 8.0.1
+### 🛠 Fixes & Updates
+
+* refactor exports util to support broader formatting and export types ([#1051](https://github.com/readmeio/markdown/issues/1051)) ([61e1a3b](https://github.com/readmeio/markdown/commit/61e1a3b4f3b1c90fd437137cd0235b1e74e03768))
+
 ## Version 8.0.0
 ### ⚠ BREAKING CHANGES
 
