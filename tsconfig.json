@@ -16,7 +16,7 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "sourceMap": true,
-    "target": "ES2017",
+    "target": "es2022",
     "types": ["vitest/globals"]
   },
   "include": ["./index.ts", "./options.js", "./components", "./contexts", "./example", "./lib", "./processor"],

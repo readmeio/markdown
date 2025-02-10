@@ -50,8 +50,8 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime as any;
   const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
-  const executedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
-    const { default: Content, toc, Toc, ...rest } = mod;
+  const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
+    const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
     memo[tag] = Content;
 
     if (rest) {
@@ -63,7 +63,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     return memo;
   }, {});
 
-  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(executedComponents) }: RunOpts = {}) => {
+  const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
       ...runtime,
       Fragment,
@@ -74,25 +74,32 @@ const run = async (string: string, _opts: RunOpts = {}) => {
     } as RunOptions) as Promise<RMDXModule>;
   };
 
-  const { Toc: _Toc, toc, default: Content, ...exports } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
 
+  let Toc: React.FC | undefined;
   const tocMdx = tocToMdx(toc, components);
-  const { default: Toc } = await exec(compile(tocMdx), { useMDXComponents: () => ({ p: Fragment }) });
+  if (tocMdx) {
+    const compiledToc = await compile(tocMdx);
+    const tocModule = await exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
+
+    Toc = tocModule.default;
+  }
 
   return {
     default: () => (
       <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
+        <Components.Style stylesheet={stylesheet} />
         <Content />
       </Contexts>
     ),
     toc,
     Toc: () =>
-      tocMdx &&
-      Toc && (
+      Toc ? (
         <Components.TableOfContents>
           <Toc />
         </Components.TableOfContents>
-      ),
+      ) : null,
+    stylesheet,
     ...exports,
   };
 };

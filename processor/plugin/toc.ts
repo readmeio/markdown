@@ -6,6 +6,7 @@ import { h } from 'hastscript';
 import { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
 import { visit } from 'unist-util-visit';
 import { mdx, plain } from '../../lib';
+import { hasNamedExport } from '../utils';
 
 interface Options {
   components?: Record<string, any>;
@@ -13,6 +14,8 @@ interface Options {
 
 export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
   return (tree: Root): void => {
+    if (hasNamedExport(tree, 'toc')) return;
+
     const headings = tree.children.filter(
       child =>
         (child.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(child.tagName)) ||
