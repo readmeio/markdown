@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 8.2.0
+### ✨ New & Improved
+
+* add tailwind to locally defined components ([#1056](https://github.com/readmeio/markdown/issues/1056)) ([5dc052d](https://github.com/readmeio/markdown/commit/5dc052df83daaa826750a84c653ed879f929632c))
+
+### 📘 Tests & Docs
+
+* reformatting our README a touch in line with our other OSS projects ([#1055](https://github.com/readmeio/markdown/issues/1055)) ([6aa2182](https://github.com/readmeio/markdown/commit/6aa21825734b1154475d2b571eed139e6cc29874))
+
 ## Version 8.1.0
 ### ✨ New & Improved
 

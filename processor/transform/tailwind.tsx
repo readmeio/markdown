@@ -1,12 +1,13 @@
 import type { PhrasingContent, BlockContent, Root } from 'mdast';
 import type { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
+import type { VFile } from 'vfile';
 
 import { valueToEstree } from 'estree-util-value-to-estree';
 import { visit, SKIP } from 'unist-util-visit';
 
 import tailwindBundle from '../../utils/tailwind-bundle';
-import { hasNamedExport, isMDXElement, toAttributes } from '../utils';
+import { hasNamedExport, isMDXElement, toAttributes, getExports } from '../utils';
 
 interface TailwindRootOptions {
   components: Record<string, string>;
@@ -79,10 +80,15 @@ const injectTailwindRoot =
 
 const tailwind: Plugin<[TailwindRootOptions]> =
   ({ components }) =>
-  async (tree: Root) => {
-    visit(tree, isMDXElement, injectTailwindRoot({ components }));
+  async (tree: Root, vfile: VFile) => {
+    const localComponents = getExports(tree).reduce((acc, name) => {
+      acc[name] = String(vfile);
+      return acc;
+    }, {});
 
-    await exportTailwindStylesheet(tree, components);
+    visit(tree, isMDXElement, injectTailwindRoot({ components: { ...components, ...localComponents } }));
+
+    await exportTailwindStylesheet(tree, { ...components, ...localComponents });
 
     return tree;
   };
