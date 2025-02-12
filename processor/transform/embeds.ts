@@ -4,7 +4,6 @@ import type { Paragraph, Parents, Node, Text } from 'mdast';
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
-import mdx from '../../lib/mdx';
 
 const isEmbed = (node: Node): node is Embed => 'title' in node && node.title === '@embed';
 
