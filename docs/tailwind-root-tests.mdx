@@ -1,7 +1,19 @@
 ## Styling Custom Components with Tailwind
 
-```
+```mdx
 <StyledComponent />
 ```
 
 <StyledComponent />
+
+## Styling Locally Defined Components with Tailwind
+
+```mdx
+export const LocalComponent = () => <div className="bg-blue-500 text-white p-4">Local Component</div>;
+
+<LocalComponent />
+```
+
+export const LocalComponent = () => <div className="bg-blue-100 text-black p-2">Local Component</div>;
+
+<LocalComponent />
