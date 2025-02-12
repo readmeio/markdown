@@ -22,8 +22,6 @@ const exportTailwindStylesheet = async (tree: Root, components: TailwindRootOpti
 
   const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: `.readme-tailwind` })).css;
 
-  console.log(stylesheet);
-
   const exportNode: MdxjsEsm = {
     type: 'mdxjsEsm',
     value: '',
