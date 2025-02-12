@@ -13,8 +13,8 @@ describe('Custom Components', () => {
     Example = await execute('It works!', {}, {}, { getDefault: false });
     Multiple = await execute(
       `
-  export const First = () => <div>First</div>;
-  export const Second = () => <div>Second</div>;
+export const First = () => <div>First</div>;
+export const Second = () => <div>Second</div>;
   `,
       {},
       {},
