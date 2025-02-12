@@ -11,7 +11,7 @@ describe('migrating emphasis', () => {
     `);
   });
 
-  it.only('moves whitespace surrounding phrasing content (emphasis, strong, etc) to the appropriate place', () => {
+  it('moves whitespace surrounding phrasing content (emphasis, strong, etc) to the appropriate place', () => {
     const md = '**bold **and also_ italic_ and*** bold italic***aaaaaah';
 
     const mdx = migrate(md);
