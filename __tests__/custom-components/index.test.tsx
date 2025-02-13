@@ -37,4 +37,13 @@ export const Second = () => <div>Second</div>;
     expect(screen.getByText('First')).toBeVisible();
     expect(screen.getByText('Second')).toBeVisible();
   });
+
+  it('renders the default export of a custom component and passes through props', async () => {
+    const Test = await execute(`{props.attr}`, {}, {}, { getDefault: true });
+    const doc = `<Test attr="Hello" />`;
+    const Page = await execute(doc, undefined, { components: { Test } });
+    render(<Page />);
+
+    expect(screen.getByText('Hello')).toBeVisible();
+  });
 });
