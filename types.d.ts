@@ -1,6 +1,19 @@
 import type { NodeTypes } from './enums';
 import type { Element } from 'hast';
-import type { Code, Data, Literal, Parent, Blockquote, Node, Root, Text, Table, BlockContent, Link } from 'mdast';
+import type {
+  Code,
+  Data,
+  Literal,
+  Parent,
+  Blockquote,
+  Node,
+  Root,
+  Text,
+  Table,
+  BlockContent,
+  Link,
+  RootContent,
+} from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXContent, MDXModule } from 'mdx/types';
 
@@ -81,6 +94,7 @@ interface ImageBlockAttrs {
   alt: string;
   border?: string;
   caption?: string;
+  children?: RootContent[];
   className?: string;
   height?: string;
   lazy?: boolean;
@@ -89,7 +103,7 @@ interface ImageBlockAttrs {
   width?: string;
 }
 
-interface ImageBlock extends ImageBlockAttrs, Parent {
+interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {
   data: Data & {
     hName: 'img';
     hProperties: ImageBlockAttrs;

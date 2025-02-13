@@ -30,6 +30,24 @@
               "src": "https://media.giphy.com/media/3o7TKz9bX9v6hZ8NSA/giphy.gif",
               "width": "50%",
               "alt": "",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Captioned",
+                  "position": {
+                    "start": {
+                      "line": 1,
+                      "column": 129,
+                      "offset": 128
+                    },
+                    "end": {
+                      "line": 1,
+                      "column": 138,
+                      "offset": 137
+                    }
+                  }
+                }
+              ],
               "title": null
             }
           }
