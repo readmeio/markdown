@@ -106,6 +106,6 @@ Second code block
     const tree = mdast(md);
 
     expect(tree.children[0].children[0].children[0].type).toBe('code-tabs');
-    expect(tree.children[0].children[0].children.length).toBe(1);
+    expect(tree.children[0].children[0].children).toHaveLength(1);
   });
 });

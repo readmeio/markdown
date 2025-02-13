@@ -1,4 +1,4 @@
-import { Variable } from '../../types';
+import type { Variable } from '../../types';
 
 const variable = (node: Variable) => {
   // @note: coming from RDMD, it's set as `variable`. But when mdx is parsed,

@@ -5,7 +5,7 @@ import { execute } from '../helpers';
 
 describe('Glossary', () => {
   it('renders a glossary item', async () => {
-    const md = `<Glossary>parliament</Glossary>`;
+    const md = '<Glossary>parliament</Glossary>';
     const Content = await execute(md);
     render(<Content />);
 

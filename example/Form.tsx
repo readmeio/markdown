@@ -14,7 +14,11 @@ const Form = () => {
     const { checked } = event.target;
 
     setSearchParams(params => {
-      checked ? params.set(param, 'true') : params.delete(param);
+      if (checked) {
+        params.set(param, 'true');
+      } else {
+        params.delete(param);
+      }
       return params;
     });
   };
@@ -53,7 +57,7 @@ const Form = () => {
         { replace: true },
       );
     }
-  }, [edited, searchParams]);
+  }, [edited, searchParams, setSearchParams]);
 
   return (
     <div className="rdmd-demo--editor">

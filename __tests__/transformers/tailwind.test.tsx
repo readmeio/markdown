@@ -5,7 +5,7 @@ describe('tailwind transformer', () => {
     const testComponent = `
 export const Styled = () => <div className="bg-blue-500 text-white p-4">Hello, World!</div>;
     `;
-    const md = `<Styled />`;
+    const md = '<Styled />';
 
     const TestComponent = await run(await compile(testComponent));
     const { stylesheet } = await run(
@@ -44,6 +44,6 @@ export const stylesheet = ".test { color: red; }";
       },
     );
 
-    expect(stylesheet).toMatchInlineSnapshot(`".test { color: red; }"`);
+    expect(stylesheet).toMatchInlineSnapshot('".test { color: red; }"');
   });
 });

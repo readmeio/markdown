@@ -6,7 +6,7 @@ import Callout from '../../components/Callout';
 describe('Callout', () => {
   it('render _all_ its children', () => {
     render(
-      <Callout title="Title" icon="icon" theme="theme">
+      <Callout icon="icon" theme="theme" title="Title">
         <p>Title</p>
         <p>First Paragraph</p>
         <p>Second Paragraph</p>
@@ -18,7 +18,7 @@ describe('Callout', () => {
 
   it("doesn't render all its children if it's **empty**", () => {
     render(
-      <Callout icon="icon" theme="theme" empty>
+      <Callout empty icon="icon" theme="theme">
         <p>Title</p>
         <p>First Paragraph</p>
         <p>Second Paragraph</p>

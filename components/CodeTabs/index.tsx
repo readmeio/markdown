@@ -5,8 +5,12 @@ import React, { useEffect } from 'react';
 
 let mermaid: Mermaid;
 
+interface Props {
+  children: JSX.Element | JSX.Element[];
+  theme: 'dark' | 'default' | 'light';
+}
 
-const CodeTabs = props => {
+const CodeTabs = (props: Props) => {
   const { children, theme } = props;
 
   // render Mermaid diagram

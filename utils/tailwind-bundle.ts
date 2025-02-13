@@ -1,34 +1,18 @@
 import postcss from 'postcss';
 import prefixer from 'postcss-prefix-selector';
-
 import * as tailwindcss from 'tailwindcss';
-
-// @ts-ignore
+// @ts-expect-error - these are being imported as strings
 import index from 'tailwindcss/index.css';
-// @ts-ignore
+// @ts-expect-error - these are being imported as strings
 import preflight from 'tailwindcss/preflight.css';
-// @ts-ignore
+// @ts-expect-error - these are being imported as strings
 import theme from 'tailwindcss/theme.css';
-// @ts-ignore
+// @ts-expect-error - these are being imported as strings
 import utilities from 'tailwindcss/utilities.css';
 
 /*
  * @note: This is mostly copied from @tailwindcss/browser
  */
-async function createCompiler() {
-  const css = `
-@layer theme, base, components, utilities;
-
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
-`;
-
-  return await tailwindcss.compile(css, {
-    base: '/',
-    loadStylesheet,
-    loadModule,
-  });
-}
 
 async function loadStylesheet(id: string, base: string) {
   function load() {
@@ -57,17 +41,28 @@ async function loadStylesheet(id: string, base: string) {
     throw new Error(`The browser build does not support @import for "${id}"`);
   }
 
-  try {
-    let sheet = load();
+  const sheet = load();
 
-    return sheet;
-  } catch (err) {
-    throw err;
-  }
+  return sheet;
 }
 
 async function loadModule(): Promise<never> {
-  throw new Error(`The browser build does not support plugins or config files.`);
+  throw new Error('The browser build does not support plugins or config files.');
+}
+
+async function createCompiler() {
+  const css = `
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+`;
+
+  return tailwindcss.compile(css, {
+    base: '/',
+    loadStylesheet,
+    loadModule,
+  });
 }
 
 async function tailwindBundle(string: string, { prefix }: { prefix: string }) {
@@ -75,7 +70,7 @@ async function tailwindBundle(string: string, { prefix }: { prefix: string }) {
   const newClasses = new Set<string>(string.split(/[^a-zA-Z0-9_-]+/));
   const css = compiler.build(Array.from(newClasses));
 
-  return await postcss([prefixer({ prefix })]).process(css, { from: undefined });
+  return postcss([prefixer({ prefix })]).process(css, { from: undefined });
 }
 
 export default tailwindBundle;

@@ -1,4 +1,5 @@
-import { HTMLBlock } from '../../types';
+import type { HTMLBlock } from '../../types';
+
 import { reformatHTML, getHProps } from '../utils'
 
 const htmlBlock = (node: HTMLBlock) => {

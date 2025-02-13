@@ -1,24 +1,30 @@
+import type { Embed, EmbedBlock } from '../../types';
+import type { Paragraph, Parents, Node, Text } from 'mdast';
+
 import { visit } from 'unist-util-visit';
-import { Paragraph, Parents, Node } from 'mdast';
 
 import { NodeTypes } from '../../enums';
-import { EmbedBlock } from '../../types';
+
+const isEmbed = (node: Node): node is Embed => 'title' in node && node.title === '@embed';
 
 const embedTransformer = () => {
   return (tree: Node) => {
     visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
-      const [{ url, title, children = [] }] = node.children as any;
+      const [child] = node.children;
+      if (!isEmbed(child)) return;
 
-      if (title !== '@embed') return;
+      const { url, title } = child;
+      const label = (child.children[0] as Text).value;
+
       const newNode = {
         type: NodeTypes.embedBlock,
-        label: children[0]?.value,
+        label,
         title,
         url,
         data: {
-          hProperties: {  
-            url, 
-            title: children[0]?.value ?? title,
+          hProperties: {
+            url,
+            title: label ?? title,
           },
           hName: 'embed',
         },

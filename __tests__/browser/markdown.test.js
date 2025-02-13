@@ -16,13 +16,13 @@ describe('visual regression tests', () => {
       'codeBlocks',
       // skipping this because they sporadically failure with network timing
       // issues
-      //'embeds',
+      // 'embeds',
       'exportTests',
-      //'features',
+      // 'features',
       'headings',
       'images',
       'imageTests',
-      //'lists',
+      // 'lists',
       'mdxComponents',
       // 'mermaid',
       'tables',

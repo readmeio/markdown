@@ -1,10 +1,12 @@
-import { Literal, Node, Paragraph, Parents, Table, TableCell, Text } from 'mdast';
-import { visit, EXIT } from 'unist-util-visit';
-import { Transform } from 'mdast-util-from-markdown';
+/* eslint-disable consistent-return */
+import type { Literal, Node, Paragraph, Parents, Table, TableCell } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { phrasing } from 'mdast-util-phrasing';
+import { visit, EXIT } from 'unist-util-visit';
 
-const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
+const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
   if (!align) return align;
 
   return {
@@ -12,7 +14,7 @@ const alignToStyle = (align: 'left' | 'center' | 'right' | null) => {
     name: 'style',
     value: {
       type: 'mdxJsxAttributeValueExpression',
-      value: `{ textAlign: \"${align}\" }`,
+      value: `{ textAlign: "${align}" }`,
     },
   };
 };
@@ -32,8 +34,8 @@ const visitor = (table: Table, index: number, parent: Parents) => {
 
     // @note: Compatibility with RDMD. Ideally, I'd put this in a separate
     // transformer, but then there'd be some duplication.
-    visit(cell, 'break', (_, index, parent) => {
-      parent.children.splice(index, 1, { type: 'text', value: '\n' });
+    visit(cell, 'break', (_, breakIndex, breakParent) => {
+      breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
     });
 
     if (!phrasing(content) && content.type !== 'escape') {
@@ -57,44 +59,49 @@ const visitor = (table: Table, index: number, parent: Parents) => {
 
   const styles = table.align.map(alignToStyle);
 
-  const head = {
+  const head: MdxJsxFlowElement = {
+    attributes: [],
     type: 'mdxJsxFlowElement',
     name: 'thead',
     children: [
       {
+        attributes: [],
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: table.children[0].children.map((cell, index) => {
+        children: table.children[0].children.map((cell, cellIndex) => {
           return {
+            attributes: [],
             type: 'mdxJsxFlowElement',
             name: 'th',
             children: cell.children,
-            ...(styles[index] && { attributes: [styles[index]] }),
-          };
+            ...(styles[index] && { attributes: [styles[cellIndex]] }),
+          } as MdxJsxFlowElement;
         }),
       },
     ],
   };
 
-  const body = {
+  const body: MdxJsxFlowElement = {
+    attributes: [],
     type: 'mdxJsxFlowElement',
     name: 'tbody',
     children: table.children.splice(1).map(row => {
       return {
+        attributes: [],
         type: 'mdxJsxFlowElement',
         name: 'tr',
-        children: row.children.map((cell, index) => {
+        children: row.children.map((cell, cellIndex) => {
           return {
             type: 'mdxJsxFlowElement',
             name: 'td',
             children: cell.children,
-            ...(styles[index] && { attributes: [styles[index]] }),
+            ...(styles[index] && { attributes: [styles[cellIndex]] }),
           };
         }),
-      };
+      } as MdxJsxFlowElement;
     }),
   };
-  const attributes = [
+  const attributes: MdxJsxFlowElement['attributes'] = [
     {
       type: 'mdxJsxAttribute',
       name: 'align',
@@ -105,14 +112,13 @@ const visitor = (table: Table, index: number, parent: Parents) => {
     },
   ];
 
-  const jsx = {
+  const jsx: MdxJsxFlowElement = {
     type: 'mdxJsxFlowElement',
     name: 'Table',
-    ...(table.align.find(a => a) && { attributes }),
+    attributes: table.align.find(a => a) ? attributes : [],
     children: [head, body],
   };
 
-  // @ts-ignore
   parent.children[index] = jsx;
 };
 

@@ -1,5 +1,6 @@
-import { hast } from '../../lib';
 import { h } from 'hastscript';
+
+import { hast } from '../../lib';
 
 describe('hast transformer', () => {
   it('parses components into the tree', () => {
@@ -19,7 +20,8 @@ describe('hast transformer', () => {
       h('h2', { id: 'its-coming-from-within-the-component' }, "It's coming from within the component!"),
     );
 
-    // @ts-ignore
+    // @ts-expect-error - the custom matcher types are not being set up
+    // correctly
     expect(hast(md, { components })).toStrictEqualExceptPosition(expected);
   });
 });

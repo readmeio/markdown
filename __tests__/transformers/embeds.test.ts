@@ -1,4 +1,3 @@
-
 import { mdast } from '../../index';
 
 describe('embeds transformer', () => {
@@ -11,5 +10,4 @@ describe('embeds transformer', () => {
     expect(tree.children[0].type).toBe('embed-block');
     expect(tree.children[0].data.hProperties.title).toBe('alt');
   });
-
 });

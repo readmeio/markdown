@@ -1,8 +1,10 @@
-import { MdastComponents } from '../../types';
+import type { MdastComponents } from '../../types';
+import type { Parents } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Transform } from 'mdast-util-from-markdown';
-import { Parents } from 'mdast';
+
 import { isMDXElement } from '../utils';
 
 interface Options {
@@ -15,7 +17,7 @@ const inject =
     if (!(node.name in components)) return;
 
     const { children } = components[node.name];
-    parent.children.splice(index, children.length, ...(children as any));
+    parent.children.splice(index, children.length, ...children);
   };
 
 const injectComponents = (opts: Options) => (): Transform => tree => {

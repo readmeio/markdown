@@ -1,6 +1,8 @@
-import { BlockContent, Code, Node } from 'mdast';
-import { CodeTabs } from 'types';
+import type { BlockContent, Code, Node } from 'mdast';
+import type { CodeTabs } from 'types';
+
 import { visit } from 'unist-util-visit';
+
 import { NodeTypes } from '../../enums';
 
 const isCode = (node: Node): node is Code => node?.type === 'code';
@@ -19,7 +21,7 @@ const codeTabsTransformer =
       if (parent.type === 'code-tabs' || !('children' in parent)) return;
 
       const length = parent.children.length;
-      let children = [node];
+      const children = [node];
       let walker = index + 1;
 
       while (walker <= length) {
@@ -30,6 +32,7 @@ const codeTabsTransformer =
         if (olderSibling.position.end.offset + sibling.position.start.column !== sibling.position.start.offset) break;
 
         children.push(sibling);
+        // eslint-disable-next-line no-plusplus
         walker++;
       }
 

@@ -36,7 +36,7 @@ describe.skip('reusable content compiler', () => {
         Defined: '# Whoa',
       };
       const doc = '<Defined />';
-      const string = md(doc, { reusableContent: { tags, serialize: false } });
+      const string = mdx(doc, { reusableContent: { tags, serialize: false } });
 
       expect(string).toBe('# Whoa\n');
     });

@@ -1,11 +1,11 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 
 import { execute } from '../helpers';
 
 describe('run', () => {
   it('allows providing imports', async () => {
-    const mdx = `Hello, world!`;
+    const mdx = 'Hello, world!';
     const Component = await execute(mdx, {}, { imports: { React } });
 
     render(<Component />);
@@ -14,7 +14,7 @@ describe('run', () => {
   });
 
   it('merges the imports with the built-ins', async () => {
-    const mdx = `{user.test}`;
+    const mdx = '{user.test}';
     const Component = await execute(mdx, {}, { imports: { React } });
 
     render(<Component />);

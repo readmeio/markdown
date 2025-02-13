@@ -1,7 +1,10 @@
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+
 import { visit } from 'unist-util-visit';
-import mdast from './mdast';
+
 import { isMDXElement } from '../processor/utils';
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+
+import mdast from './mdast';
 
 const tags = (doc: string) => {
   const set = new Set<string>();

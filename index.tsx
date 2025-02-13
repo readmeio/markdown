@@ -1,7 +1,6 @@
 import * as Components from './components';
 import { getHref } from './components/Anchor';
 import { options } from './options';
-
 import './styles/main.scss';
 
 const utils = {

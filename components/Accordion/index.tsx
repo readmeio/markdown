@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 
 import './style.scss';
 
-const Accordion = ({ children, icon, iconColor, title }) => {
+interface Props extends React.PropsWithChildren<{ icon?: string; iconColor?: string; title: string }> {}
+
+const Accordion = ({ children, icon, iconColor, title }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -18,3 +20,4 @@ const Accordion = ({ children, icon, iconColor, title }) => {
 };
 
 export default Accordion;
+

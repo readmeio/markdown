@@ -1,10 +1,11 @@
-import { Transform } from 'mdast-util-from-markdown';
-import { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
-
-import { NodeTypes } from '../../enums';
-import { Variable } from '../../types';
+import type { Variable } from '../../types';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { visit } from 'unist-util-visit';
+
+import { NodeTypes } from '../../enums';
+
 
 const variables =
   ({ asMdx } = { asMdx: true }): Transform =>
@@ -29,7 +30,7 @@ const variables =
           ? expression.expression.property.name
           : expression.expression.property.value;
 
-      let variable = asMdx
+      const variable = asMdx
         ? ({
             type: 'mdxJsxTextElement',
             name: 'Variable',

@@ -1,4 +1,4 @@
-import { VFileMessage } from 'vfile-message';
+import type { VFileMessage } from 'vfile-message';
 
 export default class MdxSyntaxError extends SyntaxError {
   original: VFileMessage = null;
@@ -22,5 +22,6 @@ export default class MdxSyntaxError extends SyntaxError {
     super(messages.join('\n'));
 
     this.original = error;
+    this.name = 'MdxSyntaxError';
   }
 }

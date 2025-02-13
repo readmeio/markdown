@@ -1,4 +1,6 @@
-import React, { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
+
+import React from 'react';
 
 interface Props {
   error?: string;
@@ -16,7 +18,8 @@ class RenderError extends React.Component<PropsWithChildren<Props>, State> {
     return { hasError: true, message: `${error.message}${error.stack}` };
   }
 
-  componentDidCatch(error: any, info: { componentStack: any }) {
+  static componentDidCatch(error: Error, info: { componentStack: string }) {
+    // eslint-disable-next-line no-console
     console.error(error, info.componentStack);
   }
 

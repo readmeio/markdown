@@ -1,14 +1,16 @@
-import React from 'react';
-import GlossaryContext from './GlossaryTerms';
-import BaseUrlContext from './BaseUrl';
-import { VariablesContext } from '@readme/variable';
-import { RunOpts } from '../lib/run';
+import type { RunOpts } from '../lib/run';
 
-type Props = React.PropsWithChildren & Pick<RunOpts, 'baseUrl' | 'terms' | 'variables'>;
+import { VariablesContext } from '@readme/variable';
+import React from 'react';
+
+import BaseUrlContext from './BaseUrl';
+import GlossaryContext from './GlossaryTerms';
+
+type Props = Pick<RunOpts, 'baseUrl' | 'terms' | 'variables'> & React.PropsWithChildren;
 
 const compose = (
   children: React.ReactNode,
-  ...contexts: [React.Context<typeof VariablesContext | typeof GlossaryContext>, unknown][]
+  ...contexts: [React.Context<typeof GlossaryContext | typeof VariablesContext>, unknown][]
 ) => {
   return contexts.reduce((content, [Context, value]) => {
     return <Context.Provider value={value}>{content}</Context.Provider>;
