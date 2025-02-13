@@ -289,7 +289,7 @@ export const getExports = (tree: Root) => {
     const body = node.data?.estree.body;
     if (!body) return;
 
-    for (const child of body) {
+    body.forEach(child => {
       if (child.type === 'ExportNamedDeclaration') {
         // There are three types of ExportNamedDeclaration that we need to consider: VariableDeclaration, FunctionDeclaration, ClassDeclaration
         const declaration = child.declaration;
@@ -298,16 +298,16 @@ export const getExports = (tree: Root) => {
           // Note: declaration.id.type is always 'Identifier' for FunctionDeclarations and ClassDeclarations
           set.add(declaration.id.name);
         } else {
-          const declarations = declaration.declarations;
-          for (const declaration of declarations) {
-            const id = declaration.id;
+          declaration.declarations.forEach(dec => {
+            const id = dec.id;
+
             if (id.type === 'Identifier') {
               set.add(id.name);
             }
-          }
+          });
         }
       }
-    }
+    });
   });
 
   return Array.from(set);
