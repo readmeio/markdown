@@ -1,4 +1,5 @@
-import type { Root } from 'mdast';
+import type { Root as HastRoot } from 'hast';
+import type { Root as MdastRoot } from 'mdast';
 
 import rehypeRemark from 'rehype-remark';
 import remarkGfm from 'remark-gfm';
@@ -9,7 +10,7 @@ import { unified } from 'unified';
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
-export const mdx = (tree: Root, { hast = false, ...opts } = {}) => {
+export const mdx = (tree: HastRoot | MdastRoot, { hast = false, ...opts } = {}) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
@@ -21,6 +22,8 @@ export const mdx = (tree: Root, { hast = false, ...opts } = {}) => {
     .use(compilers)
     .use(remarkStringify, opts);
 
+  // @ts-expect-error - @todo: coerce the processor and tree to the correct
+  // type depending on the value of hast
   return processor.stringify(processor.runSync(tree));
 };
 

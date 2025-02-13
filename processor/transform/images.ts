@@ -50,6 +50,8 @@ const imageTransformer = () => (tree: Node) => {
     const attrs = getAttrs<ImageBlock>(node);
 
     if (attrs.caption) {
+      // @ts-expect-error - @todo: figure out how to coerce RootContent[] to
+      // the correct type
       node.children = mdast(attrs.caption).children;
     }
   });

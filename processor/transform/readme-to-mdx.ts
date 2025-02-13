@@ -19,10 +19,12 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   visit(tree, NodeTypes.tutorialTile, (tile, index, parent) => {
+    const { ...attrs } = tile;
+
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
       name: 'TutorialTile',
-      attributes: toAttributes(tile, ['backgroundColor', 'emoji', 'id', 'link', 'slug', 'title']),
+      attributes: toAttributes(attrs, ['backgroundColor', 'emoji', 'id', 'link', 'slug', 'title']),
       children: [],
     });
   });

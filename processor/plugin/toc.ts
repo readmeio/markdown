@@ -98,5 +98,8 @@ export const tocToMdx = (toc: IndexableElements[], components: CustomComponents)
   });
 
   const tocHast = tocToHast(tree.children as HastHeading[]);
+  // @ts-expect-error: tocHast is extending Element, but to please mdx we need
+  // to cast it to Root. But I think there's something wrong with our
+  // RootContentMap type.
   return mdx(tocHast, { hast: true });
 };

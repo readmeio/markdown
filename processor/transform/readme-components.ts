@@ -90,12 +90,12 @@ const coerceJsxToMd =
         ...(width && { width }),
         ...(height && { height }),
         alt,
-        children: caption ? mdast(caption).children : node.children,
         title,
       };
 
       const mdNode: ImageBlock = {
         ...attrs,
+        children: caption ? mdast(caption).children : node.children,
         position,
         type: NodeTypes.imageBlock,
         data: {
