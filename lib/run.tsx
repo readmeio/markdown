@@ -86,17 +86,17 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   }
 
   return {
-    default: () => (
+    default: props => (
       <Contexts terms={terms} baseUrl={baseUrl} variables={variables}>
         <Components.Style stylesheet={stylesheet} />
-        <Content />
+        <Content {...props} />
       </Contexts>
     ),
     toc,
-    Toc: () =>
+    Toc: props =>
       Toc ? (
         <Components.TableOfContents>
-          <Toc />
+          <Toc {...props} />
         </Components.TableOfContents>
       ) : null,
     stylesheet,
