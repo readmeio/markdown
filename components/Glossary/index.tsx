@@ -1,7 +1,9 @@
-import React, { useContext } from 'react';
-import Tooltip from '@tippyjs/react';
-import GlossaryContext from '../../contexts/GlossaryTerms';
 import type { GlossaryTerm } from '../../contexts/GlossaryTerms';
+
+import Tooltip from '@tippyjs/react';
+import React, { useContext } from 'react';
+
+import GlossaryContext from '../../contexts/GlossaryTerms';
 
 interface Props extends React.PropsWithChildren {
   term?: string;
@@ -29,9 +31,11 @@ const Glossary = ({ children, term: termProp, terms }: Props) => {
   );
 };
 
-const GlossaryWithContext = props => {
+const GlossaryWithContext = (props: Omit<Props, 'terms'>) => {
   const terms = useContext(GlossaryContext);
   return terms ? <Glossary {...props} terms={terms} /> : <span>{props.term}</span>;
 };
 
-export { Glossary, GlossaryWithContext as default, GlossaryContext };
+export { Glossary, GlossaryContext };
+
+export default GlossaryWithContext;

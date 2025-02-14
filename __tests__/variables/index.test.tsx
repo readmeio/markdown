@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+
 import { execute } from '../helpers';
 
 describe('variables', () => {
   it('renders a variable', async () => {
-    const md = `{user.name}`;
+    const md = '{user.name}';
     const Content = await execute(md, {}, { variables: { user: { name: 'Testing' } } });
 
     render(<Content />);
@@ -13,7 +14,7 @@ describe('variables', () => {
   });
 
   it('renders a default value', async () => {
-    const md = `{user.name}`;
+    const md = '{user.name}';
     const Content = await execute(md);
 
     render(<Content />);

@@ -1,32 +1,33 @@
-import { NodeTypes } from '../../enums';
-import { Properties } from 'hast';
-import { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
-import { Transform } from 'mdast-util-from-markdown';
+/* eslint-disable consistent-return */
+import type { Properties } from 'hast';
+import type { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
 
-import { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
 import { visit, SKIP } from 'unist-util-visit';
 
-import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
+import { NodeTypes } from '../../enums';
 import { mdast } from '../../lib';
+import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 
 const types = {
-  Callout: NodeTypes['callout'],
+  Callout: NodeTypes.callout,
   Code: 'code',
-  CodeTabs: NodeTypes['codeTabs'],
+  CodeTabs: NodeTypes.codeTabs,
   EmbedBlock: NodeTypes['embed-block'],
-  Glossary: NodeTypes['glossary'],
+  Glossary: NodeTypes.glossary,
   ImageBlock: NodeTypes.imageBlock,
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
-  Variable: NodeTypes['variable'],
+  Variable: NodeTypes.variable,
   TutorialTile: NodeTypes.tutorialTile,
 };
 
 enum TableNames {
-  tr = 'tr',
-  th = 'th',
   td = 'td',
+  th = 'th',
+  tr = 'tr',
 }
 
 const tableTypes = {
@@ -41,7 +42,7 @@ interface Options {
 }
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
-  name: 'th' | 'td';
+  name: 'td' | 'th';
 }
 
 const isTableCell = (node: Node): node is MdxJsxTableCell => isMDXElement(node) && ['th', 'td'].includes(node.name);
@@ -53,7 +54,7 @@ const coerceJsxToMd =
 
     if (node.name === 'Code') {
       const { position } = node;
-      const { value, lang = null, meta = null } = getAttrs<Pick<Code, 'value' | 'lang' | 'meta'>>(node);
+      const { value, lang = null, meta = null } = getAttrs<Pick<Code, 'lang' | 'meta' | 'value'>>(node);
 
       const mdNode: Code = {
         lang,
@@ -78,7 +79,7 @@ const coerceJsxToMd =
         title = null,
         width,
         src,
-      } = getAttrs<Pick<ImageBlock, 'alt' | 'align' | 'border' | 'height' | 'title' | 'width' | 'src' | 'caption'>>(
+      } = getAttrs<Pick<ImageBlock, 'align' | 'alt' | 'border' | 'caption' | 'height' | 'src' | 'title' | 'width'>>(
         node,
       );
 
@@ -89,7 +90,7 @@ const coerceJsxToMd =
         ...(width && { width }),
         ...(height && { height }),
         alt,
-        children: caption ? mdast(caption).children : (node.children as any),
+        children: caption ? mdast(caption).children : node.children,
         title,
       };
 
@@ -99,6 +100,7 @@ const coerceJsxToMd =
         type: NodeTypes.imageBlock,
         data: {
           hName: 'img',
+          // @ts-expect-error - @todo: figure out how to coerce RootContent[]
           hProperties: attrs,
         },
       };
@@ -108,17 +110,17 @@ const coerceJsxToMd =
       const { position } = node;
       const children = getChildren<HTMLBlock['children']>(node);
       const { runScripts } = getAttrs<Pick<HTMLBlock['data']['hProperties'], 'runScripts'>>(node);
-      const html = formatHTML(children.map(({ value }) => value).join(''));
+      const htmlString = formatHTML(children.map(({ value }) => value).join(''));
 
       const mdNode: HTMLBlock = {
         position,
-        children: [{ type: 'text', value: html }],
+        children: [{ type: 'text', value: htmlString }],
         type: NodeTypes.htmlBlock,
         data: {
           hName: 'html-block',
           hProperties: {
             ...(runScripts && { runScripts }),
-            html,
+            html: htmlString,
           },
         },
       };
@@ -127,16 +129,16 @@ const coerceJsxToMd =
     } else if (node.name === 'Table') {
       const { position } = node;
       const { align = [...new Array(node.children.length)].map(() => null) } = getAttrs<Pick<Table, 'align'>>(node);
-      let children: TableRow[] = [];
+      const children: TableRow[] = [];
 
-      visit(node, { name: 'tr' }, row => {
-        let rowChildren: TableCell[] = [];
+      visit(node, { name: 'tr' } as Partial<MdxJsxFlowElement>, row => {
+        const rowChildren: TableCell[] = [];
 
-        visit(row, isTableCell, ({ name, children, position }) => {
+        visit(row, isTableCell, ({ name, children: cellChildren, position: cellPosition }) => {
           rowChildren.push({
             type: tableTypes[name],
-            children,
-            position,
+            children: cellChildren,
+            position: cellPosition,
           } as TableCell);
         });
 
@@ -161,9 +163,8 @@ const coerceJsxToMd =
     } else if (node.name === 'Callout') {
       const { icon, empty = false } = getAttrs<Callout['data']['hProperties']>(node);
 
-      // @ts-ignore
       const mdNode: Callout = {
-        children: node.children as any,
+        children: node.children as BlockContent[],
         type: NodeTypes.callout,
         data: {
           hName: node.name,
@@ -208,10 +209,10 @@ const readmeComponents = (opts: Options) => (): Transform => tree => {
   visit(tree, isMDXElement, coerceJsxToMd(opts));
 
   visit(tree, 'paragraph', (node, index, parent) => {
-    // @ts-ignore
+    // @ts-expect-error - the editor can create non-compliant tables!
     if (parent.type !== 'tableRow') return;
 
-    // @ts-ignore
+    // @ts-expect-error - the editor can create non-compliant tables!
     parent.children.splice(index, 1, ...node.children);
   });
 

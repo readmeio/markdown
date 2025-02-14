@@ -1,13 +1,15 @@
-import { visit } from 'unist-util-visit';
+import type { Blockquote, Root } from 'mdast';
+import type { Callout } from 'types';
+
 import emojiRegex from 'emoji-regex';
-import { Blockquote } from 'mdast';
+import { visit } from 'unist-util-visit';
+
 import { NodeTypes } from '../../enums';
-import { Callout } from 'types';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
 const calloutTransformer = () => {
-  return (tree: any) => {
+  return (tree: Root) => {
     visit(tree, 'blockquote', (node: Blockquote | Callout) => {
       if (!(node.children[0].type === 'paragraph' && node.children[0].children[0].type === 'text')) return;
 

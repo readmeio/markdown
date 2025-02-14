@@ -1,27 +1,34 @@
-import React from 'react';
+import type { RMDXModule } from '../../types';
 
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import { execute } from '../helpers';
 import { compile, run } from '../../lib';
 import { RMDXModule } from '../../types';
 
-describe('Custom Components', async () => {
-  const Example = await execute(`It works!`, {}, {}, { getDefault: false });
-  const Multiple = await execute(
-    `
+describe('Custom Components', () => {
+  let Example;
+  let Multiple;
+
+  beforeEach(async () => {
+    Example = await execute('It works!', {}, {}, { getDefault: false });
+    Multiple = await execute(
+      `
 export const First = () => <div>First</div>;
 export const Second = () => <div>Second</div>;
-`,
-    {},
-    {},
-    { getDefault: false },
-  );
+  `,
+      {},
+      {},
+      { getDefault: false },
+    );
+  });
 
   it('renders custom components', async () => {
     const doc = `
 <Example />
     `;
-    const Page = await execute(doc, undefined, { components: { Example } });
+    const Page = (await execute(doc, undefined, { components: { Example } })) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('It works!')).toBeVisible();
@@ -33,7 +40,7 @@ export const Second = () => <div>Second</div>;
 
 <Second />
     `;
-    const Page = await execute(doc, undefined, { components: { Multiple } });
+    const Page = (await execute(doc, undefined, { components: { Multiple } })) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('First')).toBeVisible();

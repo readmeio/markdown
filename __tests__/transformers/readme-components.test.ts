@@ -17,8 +17,8 @@ describe('Readme Components Transformer', () => {
   });
 
   const docs = {
-    ['rdme-callout']: {
-      md: `> 📘 It works!`,
+    'rdme-callout': {
+      md: '> 📘 It works!',
       mdx: `
 <Callout icon="📘">
   It works!
@@ -30,9 +30,9 @@ describe('Readme Components Transformer', () => {
 This is a code block
 ~~~
     `,
-      mdx: `<Code value="This is a code block" />`,
+      mdx: '<Code value="This is a code block" />',
     },
-    ['code-tabs']: {
+    'code-tabs': {
       md: `
 ~~~
 First
@@ -49,12 +49,13 @@ Second
     `,
     },
     image: {
-      md: `![](http://placekitten.com/600/200)`,
-      mdx: `<Image src="http://placekitten.com/600/200" />`,
+      md: '![](http://placekitten.com/600/200)',
+      mdx: '<Image src="http://placekitten.com/600/200" />',
     },
   };
+
   it.each(Object.entries(docs))('matches the equivalent markdown for %s', (type, { md, mdx }) => {
-    let mdTree = mdast(md);
+    const mdTree = mdast(md);
     const mdxTree = mdast(mdx);
 
     expect(mdxTree).toStrictEqualExceptPosition(mdTree);
@@ -85,7 +86,7 @@ Second
   });
 
   it('converts variable phrasing expressions to markdown nodes', () => {
-    const mdx = `{user.name}`;
+    const mdx = '{user.name}';
 
     const tree = mdast(mdx);
     expect(tree.children[0].type).toBe('readme-variable');

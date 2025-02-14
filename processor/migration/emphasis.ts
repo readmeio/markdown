@@ -1,14 +1,13 @@
-import type { Emphasis, Parent, Root, Strong, Text } from 'mdast';
+import type { Emphasis, Node, Parent, Root, Strong, Text } from 'mdast';
 
 import { visit, EXIT } from 'unist-util-visit';
 
-const strongTest = (node: any): node is Emphasis | Strong => ['emphasis', 'strong'].includes(node.type);
+const strongTest = (node: Node): node is Emphasis | Strong => ['emphasis', 'strong'].includes(node.type);
 
 const addSpaceBefore = (index: number, parent: Parent) => {
   if (!(index > 0 && parent.children[index - 1])) return;
 
   const prev = parent.children[index - 1];
-  // @ts-ignore - I think this is also a dependency versioning issue
   if (!('value' in prev) || prev.value.endsWith(' ') || prev.type === 'escape') return;
 
   parent.children.splice(index, 0, { type: 'text', value: ' ' });

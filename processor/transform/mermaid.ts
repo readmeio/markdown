@@ -1,6 +1,7 @@
+import type { Element } from 'hast';
+import type { Node } from 'unist';
+
 import { visit } from 'unist-util-visit';
-import { Node } from 'unist';
-import { Element } from 'hast';
 
 const mermaidTransformer = () => (tree: Node) => {
   visit(tree, 'element', (node: Element) => {

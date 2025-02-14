@@ -1,8 +1,10 @@
-import { Image, Root } from 'mdast';
+import type { FaEmoji, Gemoji } from '../../types';
+import type { Image, Root } from 'mdast';
+
 import { findAndReplace } from 'mdast-util-find-and-replace';
-import Owlmoji from '../../lib/owlmoji';
+
 import { NodeTypes } from '../../enums';
-import { FaEmoji, Gemoji } from '../../types';
+import Owlmoji from '../../lib/owlmoji';
 
 const regex = /:(?<name>\+1|[-\w]+):/g;
 

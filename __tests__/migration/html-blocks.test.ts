@@ -13,7 +13,7 @@ describe('migrating html blocks', () => {
     const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<HTMLBlock>{\`
-      <a href="example.com">${'\\`example.com\\`'}</a>
+      <a href="example.com">\\\`example.com\\\`</a>
       \`}</HTMLBlock>
       "
     `);
@@ -31,7 +31,7 @@ describe('migrating html blocks', () => {
     const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
       "<HTMLBlock>{\`
-      <a href="example.com">${'\\`example.com\\`'}</a>
+      <a href="example.com">\\\`example.com\\\`</a>
       \`}</HTMLBlock>
       "
     `);
