@@ -1,7 +1,9 @@
 import type { MDXContent } from 'mdx/types';
+import type { RMDXModule } from 'types';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+
 
 import * as mdx from '../index';
 
@@ -61,7 +63,7 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, Toc }, setContent] = useState<{ Toc?: MDXContent; default: MDXContent }>({
+  const [{ default: Content, Toc }, setContent] = useState<Pick<RMDXModule, 'default' | 'Toc'>>({
     default: null,
     Toc: null,
   });
