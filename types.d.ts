@@ -1,75 +1,92 @@
-import { Code, Data, Literal, Parent, Blockquote, Node, Root, Text, Table, BlockContent } from 'mdast';
+import type { NodeTypes } from './enums';
+import type { Element } from 'hast';
+import type {
+  Code,
+  Data,
+  Literal,
+  Parent,
+  Blockquote,
+  Node,
+  Root,
+  Text,
+  Table,
+  BlockContent,
+  Link,
+  RootContent,
+} from 'mdast';
+import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
+import type { MDXContent, MDXModule } from 'mdx/types';
 
-import { NodeTypes } from './enums';
-import { Element } from 'hast';
-import { MDXContent, MDXModule } from 'mdx/types';
-import { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
-
-type Callout = Omit<Blockquote, 'type'> & {
-  type: NodeTypes.callout;
+type Callout = Omit<Blockquote, 'children' | 'type'> & {
+  children: BlockContent[];
   data: Data & {
     hName: 'Callout';
     hProperties: {
-      icon: string;
       empty: boolean;
+      icon: string;
     };
   };
+  type: NodeTypes.callout;
 };
 
 interface CodeTabs extends Parent {
-  type: NodeTypes.codeTabs;
   children: Code[];
   data: Data & {
     hName: 'CodeTabs';
   };
+  type: NodeTypes.codeTabs;
+}
+
+interface Embed extends Link {
+  title: '@embed';
 }
 
 interface EmbedBlock extends Node {
-  type: NodeTypes.embedBlock;
-  title?: string;
-  label?: string;
-  url?: string;
   data: Data & {
     hName: 'embed';
     hProperties: {
-      title: string;
+      favicon?: string;
       html?: string;
+      iframe?: boolean;
+      image?: string;
       providerName?: string;
       providerUrl?: string;
+      title: string;
       url: string;
-      image?: string;
-      favicon?: string;
-      iframe?: boolean;
     };
   };
+  label?: string;
+  title?: string;
+  type: NodeTypes.embedBlock;
+  url?: string;
 }
 
 interface Figure extends Node {
-  type: NodeTypes.figure;
+  children: [ImageBlock & { url: string }, FigCaption];
   data: {
     hName: 'figure';
   };
-  children: [ImageBlock & { url: string }, FigCaption];
+  type: NodeTypes.figure;
 }
 
 interface FigCaption extends Node {
-  type: NodeTypes.figcaption;
+  children: BlockContent[];
   data: {
     hName: 'figcaption';
   };
-  children: BlockContent[];
+  type: NodeTypes.figcaption;
 }
 
 interface HTMLBlock extends Node {
-  type: NodeTypes.htmlBlock;
   children: Text[];
   data: Data & {
     hName: 'html-block';
     hProperties: {
-      runScripts?: boolean | string;
       html: string;
+      runScripts?: boolean | string;
     };
   };
+  type: NodeTypes.htmlBlock;
 }
 
 interface ImageBlockAttrs {
@@ -77,6 +94,7 @@ interface ImageBlockAttrs {
   alt: string;
   border?: string;
   caption?: string;
+  children?: RootContent[];
   className?: string;
   height?: string;
   lazy?: boolean;
@@ -85,17 +103,17 @@ interface ImageBlockAttrs {
   width?: string;
 }
 
-interface ImageBlock extends ImageBlockAttrs, Parent {
-  type: NodeTypes.imageBlock;
+interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {
   data: Data & {
     hName: 'img';
     hProperties: ImageBlockAttrs;
   };
+  type: NodeTypes.imageBlock;
 }
 
 interface Gemoji extends Literal {
-  type: NodeTypes.emoji;
   name: string;
+  type: NodeTypes.emoji;
 }
 
 interface FaEmoji extends Literal {
@@ -130,6 +148,7 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    link: Embed | Link;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
@@ -147,6 +166,7 @@ declare module 'mdast' {
   interface RootContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    Link: Embed | Link;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;
@@ -160,38 +180,43 @@ declare module 'mdast' {
 }
 
 interface HastHeading extends Element {
-  tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   depth: number;
+  tagName: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 }
 
 interface TocList extends Element {
-  tagName: 'ul';
   children: TocListItem[];
+  tagName: 'ul';
 }
 
 interface Variables {
+  defaults: { default: string; name: string }[];
   user: Record<string, string>;
-  defaults: { name: string; default: string }[];
 }
 
 interface TocListItem extends Element {
+  children: (TocEntry | TocList)[];
   tagName: 'li';
-  children: (TocList | TocEntry)[];
 }
 
 interface TocEntry extends Element {
-  tagName: 'a';
   children: (Element | Literal)[];
+  tagName: 'a';
 }
 
 type IndexableElements = HastHeading | MdxJsxFlowElementHast;
 
 interface RMDXModule extends MDXModule {
-  toc: IndexableElements[];
-  Toc: MDXContent | (() => null);
+  Toc: React.FC<Record<string, unknown>> | null;
   stylesheet?: string;
+  toc: IndexableElements[];
 }
 
 interface CustomComponents extends Record<string, RMDXModule> {}
 
 interface MdastComponents extends Record<string, Root> {}
+
+declare module '*.md' {
+  const content: string;
+  export default content;
+}

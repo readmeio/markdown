@@ -79,7 +79,7 @@ const migrateTableCells = (vfile: VFile, rdmd: RDMD) => (table: Table) => {
 
   visit(table, 'inlineCode', (code: Code | InlineCode) => {
     if (code.value.includes('\n')) {
-      // eslint-disable-next-line no-param-reassign
+       
       code.type = 'code';
     }
   });

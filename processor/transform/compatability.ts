@@ -1,9 +1,10 @@
-import { Emphasis, Image, Strong, Node, Parent } from 'mdast';
-import { EXIT, SKIP, visit } from 'unist-util-visit';
-import { Transform } from 'mdast-util-from-markdown';
-import { phrasing } from 'mdast-util-phrasing';
+import type { Emphasis, Image, Strong, Node, Parent } from 'mdast';
+import type { Transform } from 'mdast-util-from-markdown';
 
-const strongTest = (node: Node): node is Strong | Emphasis => ['emphasis', 'strong'].includes(node.type);
+import { phrasing } from 'mdast-util-phrasing';
+import { EXIT, SKIP, visit } from 'unist-util-visit';
+
+const strongTest = (node: Node): node is Emphasis | Strong => ['emphasis', 'strong'].includes(node.type);
 
 const compatibilityTransfomer = (): Transform => tree => {
   const trimEmphasis = (node: Emphasis | Strong) => {

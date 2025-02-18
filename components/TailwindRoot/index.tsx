@@ -1,6 +1,8 @@
 import React from 'react';
 
-const TailwindRoot = ({ children, flow }) => {
+interface Props extends React.PropsWithChildren<{ flow: boolean }> {}
+
+const TailwindRoot = ({ children, flow }: Props) => {
   const Tag = flow ? 'div' : 'span';
 
   return <Tag className="readme-tailwind">{children}</Tag>;

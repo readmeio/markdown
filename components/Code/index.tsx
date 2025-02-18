@@ -5,7 +5,8 @@ import React, { createRef } from 'react';
 // apps. Necessary because of people like this:
 // https://github.com/codemirror/CodeMirror/issues/3701#issuecomment-164904534
 let syntaxHighlighter;
-let canonicalLanguage = _ => '';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+let canonicalLanguage = lang => '';
 
 if (typeof window !== 'undefined') {
   import('@readme/syntax-highlighter').then(module => {
@@ -14,7 +15,15 @@ if (typeof window !== 'undefined') {
   });
 }
 
-function CopyCode({ codeRef, rootClass = 'rdmd-code-copy', className = '' }) {
+function CopyCode({
+  codeRef,
+  rootClass = 'rdmd-code-copy',
+  className = '',
+}: {
+  className?: string;
+  codeRef: React.RefObject<HTMLElement>;
+  rootClass?: string;
+}) {
   const copyClass = `${rootClass}_copied`;
   const buttonRef = createRef<HTMLButtonElement>();
 

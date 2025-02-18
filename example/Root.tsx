@@ -1,9 +1,9 @@
 import React from 'react';
-
-import Header from './Header';
-import Doc from './Doc';
 import { useSearchParams } from 'react-router-dom';
+
+import Doc from './Doc';
 import Form from './Form';
+import Header from './Header';
 
 const Root = () => {
   const [searchParams] = useSearchParams();

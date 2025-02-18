@@ -1,11 +1,12 @@
+import { NodeTypes } from '../../enums';
+
 import callout from './callout';
 import codeTabs from './code-tabs';
+import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
-import compatibility from './compatibility';
 import variable from './variable';
-import { NodeTypes } from '../../enums';
 
 function compilers() {
   const data = this.data();

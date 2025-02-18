@@ -1,11 +1,11 @@
 interface Default {
-  name: string;
   default: string;
+  name: string;
 }
 
 export interface Variables {
-  user: Record<string, string>;
   defaults: Default[];
+  user: Record<string, string>;
 }
 
 const User = (variables?: Variables) => {

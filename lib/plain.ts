@@ -1,4 +1,5 @@
-import { Nodes, Parents } from 'hast';
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import type { Nodes, Parents } from 'hast';
 
 import hast from './hast';
 
@@ -54,6 +55,8 @@ function one(node: Nodes, opts: Options) {
 
         return [title, body].filter(Boolean).join(' ');
       }
+      default:
+        break;
     }
   }
 

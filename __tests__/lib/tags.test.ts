@@ -2,13 +2,13 @@ import { tags } from '../../lib';
 
 describe('tags', () => {
   it('returns custom element names', () => {
-    const mdx = `<TagMe />`;
+    const mdx = '<TagMe />';
 
     expect(tags(mdx)).toStrictEqual(['TagMe']);
   });
 
   it('does not return html tags', () => {
-    const mdx = `<br />`;
+    const mdx = '<br />';
 
     expect(tags(mdx)).toStrictEqual([]);
   });

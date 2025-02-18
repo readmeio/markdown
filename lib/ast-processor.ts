@@ -1,20 +1,21 @@
+import type { PluggableList } from 'unified';
+
+import rehypeSlug from 'rehype-slug';
 import { remark } from 'remark';
-import remarkMdx from 'remark-mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
+import remarkMdx from 'remark-mdx';
 
 import transformers, {
   mermaidTransformer,
   readmeComponentsTransformer,
   variablesTransformer,
 } from '../processor/transform';
-import rehypeSlug from 'rehype-slug';
-import { PluggableList } from 'unified';
 
-export type MdastOpts = {
+export interface MdastOpts {
   components?: Record<string, string>;
   remarkPlugins?: PluggableList;
-};
+}
 
 export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
 export const rehypePlugins = [rehypeSlug, mermaidTransformer];

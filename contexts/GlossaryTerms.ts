@@ -1,10 +1,10 @@
 import { createContext } from 'react';
 
-export type GlossaryTerm = {
-  term: string;
-  definition: string;
+export interface GlossaryTerm {
   _id?: string;
-};
+  definition: string;
+  term: string;
+}
 
 const GlossaryContext = createContext<GlossaryTerm[]>([]);
 

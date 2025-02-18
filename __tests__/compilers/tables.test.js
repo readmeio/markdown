@@ -1,5 +1,6 @@
-import { mdast, mdx } from '../../index';
 import { visit, EXIT } from 'unist-util-visit';
+
+import { mdast, mdx } from '../../index';
 
 describe('table compiler', () => {
   it('writes to markdown syntax', () => {

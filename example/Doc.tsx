@@ -1,13 +1,18 @@
+import type { MDXContent } from 'mdx/types';
+import type { RMDXModule } from 'types';
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+
+
 import * as mdx from '../index';
+
+import components from './components';
 import docs from './docs';
 import RenderError from './RenderError';
-import { MDXContent } from 'mdx/types';
-import components from './components';
 
 const executedComponents = {};
-let componentsByExport = { ...components };
+const componentsByExport = { ...components };
 Object.entries(components).forEach(async ([tag, body]) => {
   const mod = await mdx.run(await mdx.compile(body));
 
@@ -58,7 +63,7 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, Toc }, setContent] = useState<{ default: MDXContent; Toc?: MDXContent }>({
+  const [{ default: Content, Toc }, setContent] = useState<Pick<RMDXModule, 'default' | 'Toc'>>({
     default: null,
     Toc: null,
   });
@@ -73,13 +78,13 @@ const Doc = () => {
       };
 
       try {
-        // @ts-ignore
         const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
         const content = await mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
         setContent(() => content);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error(e);
         setError(() => e.message);
       }

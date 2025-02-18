@@ -1,13 +1,13 @@
-import { PhrasingContent, BlockContent, Root } from 'mdast';
-import { Plugin } from 'unified';
-import { VFile } from 'vfile';
+import type { PhrasingContent, BlockContent, Root } from 'mdast';
+import type { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Plugin } from 'unified';
+import type { VFile } from 'vfile';
 
-import { MdxjsEsm, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import { visit, SKIP } from 'unist-util-visit';
 import { valueToEstree } from 'estree-util-value-to-estree';
+import { visit, SKIP } from 'unist-util-visit';
 
-import { getExports, hasNamedExport, isMDXElement, toAttributes } from '../utils';
 import tailwindBundle from '../../utils/tailwind-bundle';
+import { hasNamedExport, isMDXElement, toAttributes, getExports } from '../utils';
 
 interface TailwindRootOptions {
   components: Record<string, string>;
@@ -20,7 +20,7 @@ type Visitor =
 const exportTailwindStylesheet = async (tree: Root, components: TailwindRootOptions['components']): Promise<void> => {
   if (hasNamedExport(tree, 'stylesheet')) return;
 
-  const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: `.readme-tailwind` })).css;
+  const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: '.readme-tailwind' })).css;
 
   const exportNode: MdxjsEsm = {
     type: 'mdxjsEsm',
@@ -74,6 +74,7 @@ const injectTailwindRoot =
 
     parent.children.splice(index, 1, wrapper);
 
+    // eslint-disable-next-line consistent-return
     return SKIP;
   };
 
