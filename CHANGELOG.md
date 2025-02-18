@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 8.3.0
+### ✨ New & Improved
+
+* eslint ([#1053](https://github.com/readmeio/markdown/issues/1053)) ([e93a1f6](https://github.com/readmeio/markdown/commit/e93a1f6a27cfdbd0d290711bebe55a0adf1207c1))
+
+### 🛠 Fixes & Updates
+
+* pass through props ([#1057](https://github.com/readmeio/markdown/issues/1057)) ([613ae3c](https://github.com/readmeio/markdown/commit/613ae3c832c5c227c70f6a50c64b95978d29cc60))
+
 ## Version 8.2.0
 ### ✨ New & Improved
 
