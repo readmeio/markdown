@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 8.4.0
+### ✨ New & Improved
+
+* allow parsing root doc for styles ([#1058](https://github.com/readmeio/markdown/issues/1058)) ([d2ca0c2](https://github.com/readmeio/markdown/commit/d2ca0c2cba45e32a0d7fcf01fc118ded102c51a0))
+
 ## Version 8.3.0
 ### ✨ New & Improved
 
