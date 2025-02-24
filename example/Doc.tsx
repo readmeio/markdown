@@ -4,7 +4,6 @@ import type { RMDXModule } from 'types';
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-
 import * as mdx from '../index';
 
 import components from './components';

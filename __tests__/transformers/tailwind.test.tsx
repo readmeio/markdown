@@ -15,8 +15,6 @@ export const Styled = () => <div className="bg-blue-500 text-white p-4">Hello, W
       },
     );
 
-    // @fixme: I can't get vitest to bundle css as a string, so this at least
-    // asserts that the stylesheet is building?
     expect(stylesheet).toMatchInlineSnapshot(`
       "/*! tailwindcss v4.0.3 | MIT License | https://tailwindcss.com */
       @layer theme, base, components, utilities;
