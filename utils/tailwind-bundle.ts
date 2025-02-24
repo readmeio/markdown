@@ -70,10 +70,6 @@ async function tailwindBundle(string: string, { prefix }: { prefix: string }) {
   const newClasses = new Set<string>(string.split(/[^a-zA-Z0-9_-]+/));
   const css = compiler.build(Array.from(newClasses));
 
-  if (!css.match(/@layer utilities {/)) {
-    return { css: '' };
-  }
-
   return postcss([prefixer({ prefix })]).process(css, { from: undefined });
 }
 
