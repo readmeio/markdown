@@ -11,16 +11,22 @@ import { hasNamedExport, isMDXElement, toAttributes, getExports } from '../utils
 
 interface TailwindRootOptions {
   components: Record<string, string>;
+  root?: boolean;
 }
 
 type Visitor =
   | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | void)
   | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | void);
 
-const exportTailwindStylesheet = async (tree: Root, components: TailwindRootOptions['components']): Promise<void> => {
+const exportTailwindStylesheet = async (
+  tree: Root,
+  vfile: VFile,
+  { components, root }: TailwindRootOptions,
+): Promise<void> => {
   if (hasNamedExport(tree, 'stylesheet')) return;
 
-  const stylesheet = (await tailwindBundle(Object.values(components).join('\n\n'), { prefix: '.readme-tailwind' })).css;
+  const stringToParse = [...Object.values(components), root ? String(vfile) : ''].join('\n\n');
+  const stylesheet = (await tailwindBundle(stringToParse, { prefix: '.readme-tailwind' })).css;
 
   const exportNode: MdxjsEsm = {
     type: 'mdxjsEsm',
@@ -79,7 +85,7 @@ const injectTailwindRoot =
   };
 
 const tailwind: Plugin<[TailwindRootOptions]> =
-  ({ components }) =>
+  ({ components, root }) =>
   async (tree: Root, vfile: VFile) => {
     const localComponents = getExports(tree).reduce((acc, name) => {
       acc[name] = String(vfile);
@@ -88,7 +94,7 @@ const tailwind: Plugin<[TailwindRootOptions]> =
 
     visit(tree, isMDXElement, injectTailwindRoot({ components: { ...components, ...localComponents } }));
 
-    await exportTailwindStylesheet(tree, { ...components, ...localComponents });
+    await exportTailwindStylesheet(tree, vfile, { components: { ...components, ...localComponents }, root });
 
     return tree;
   };
