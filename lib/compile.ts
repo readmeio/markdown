@@ -32,7 +32,7 @@ const compile = async (
   ];
 
   if (useTailwind) {
-    remarkPlugins.push([tailwindTransformer, { components, root: useTailwindRoot }]);
+    remarkPlugins.push([tailwindTransformer, { components, parseRoot: useTailwindRoot }]);
   }
 
   try {
