@@ -89,7 +89,7 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
   return ast;
 };
 
-export const tocToMdx = (toc: IndexableElements[], components: CustomComponents) => {
+export const tocHastToMdx = (toc: IndexableElements[], components: CustomComponents) => {
   const tree: Root = { type: 'root', children: toc };
 
   visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {

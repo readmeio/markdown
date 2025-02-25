@@ -14,7 +14,7 @@ export const Test = ({ color = 'thistle' } = {}) => {
 export default Test;
   `,
   MultipleExports: `
-export const One = () => "One";
+export const One = () => <div>"One"</div>;
 
 export const Two = () => "Two";
   `,
@@ -24,6 +24,21 @@ export const StyledComponent = () => {
     Hello, World!
   </div>;
 }
+  `,
+  Steps: `
+export const Step = ({ children }) => {
+  return (
+    <div className="flex items-center h-full w-full">
+      <div className="bg-gray-800 rounded-md p-6 m-6">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+<div className="bg-gray-500 rounded-md p-3 m-3">
+  {props.children}
+</div>
   `,
 };
 

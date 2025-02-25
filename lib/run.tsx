@@ -12,14 +12,14 @@ import * as runtime from 'react/jsx-runtime';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
-import { tocToMdx } from '../processor/plugin/toc';
+import { tocHastToMdx } from '../processor/plugin/toc';
 import User from '../utils/user';
 
 import compile from './compile';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   baseUrl?: string;
-  components?: CustomComponents;
+  components?: Record<string, string>;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   variables?: Variables;
@@ -54,10 +54,23 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
   const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
-  const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
+
+  const tocsByTag = {};
+  const promises: [string, RMDXModule][] = await Promise.all(
+    Object.entries(components).map(async ([tag, body]) => {
+      const code = await compile(body);
+      console.log(code);
+      const mod = await run(code);
+      return [tag, mod];
+    }),
+  );
+
+  const exportedComponents = promises.reduce((memo, [tag, mod]) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
+
     memo[tag] = Content;
+    tocsByTag[tag] = toc;
 
     if (rest) {
       Object.entries(rest).forEach(([subTag, component]) => {
@@ -67,6 +80,8 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
     return memo;
   }, {});
+
+  console.log(string);
 
   const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
@@ -83,7 +98,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
 
   let Toc: React.FC | undefined;
-  const tocMdx = tocToMdx(toc, components);
+  const tocMdx = tocHastToMdx(toc, tocsByTag);
   if (tocMdx) {
     const compiledToc = await compile(tocMdx);
     const tocModule = await exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });

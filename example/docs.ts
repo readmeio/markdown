@@ -1,4 +1,5 @@
 import calloutTests from '../__tests__/fixtures/callout-tests.md';
+import childTests from '../__tests__/fixtures/child-tests.mdx';
 import codeBlockTests from '../__tests__/fixtures/code-block-tests.md';
 import exportTests from '../__tests__/fixtures/export-tests.mdx';
 import imageTests from '../__tests__/fixtures/image-tests.mdx';
@@ -25,6 +26,7 @@ const lowerCase = (str: string) =>
 const fixtures = Object.entries({
   calloutTests,
   callouts,
+  childTests,
   codeBlockTests,
   codeBlocks,
   embeds,

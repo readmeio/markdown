@@ -8,8 +8,10 @@ import remarkGfm from 'remark-gfm';
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
 import { defaultTransforms, tailwindTransformer } from '../processor/transform';
+import { getExports } from '../processor/utils';
 
 import { rehypePlugins } from './ast-processor';
+import mdast from './mdast';
 
 export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
@@ -24,6 +26,19 @@ const compile = async (
   text: string,
   { components = {}, copyButtons, useTailwind, useTailwindRoot, ...opts }: CompileOpts = {},
 ) => {
+  const componentsByExport = Object.values(components).reduce(
+    (memo, source) => {
+      getExports(mdast(source)).forEach(exported => {
+        if (['toc', 'Toc', 'default'].includes(exported)) return;
+
+        memo[exported] = source;
+      });
+
+      return memo;
+    },
+    { ...components },
+  );
+
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
@@ -32,7 +47,7 @@ const compile = async (
   ];
 
   if (useTailwind) {
-    remarkPlugins.push([tailwindTransformer, { components, parseRoot: useTailwindRoot }]);
+    remarkPlugins.push([tailwindTransformer, { components: componentsByExport, parseRoot: useTailwindRoot }]);
   }
 
   try {
@@ -40,7 +55,7 @@ const compile = async (
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
-      rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
+      rehypePlugins: [...rehypePlugins, [rehypeToc, { components: componentsByExport }]],
       ...opts,
     });
 

@@ -10,19 +10,6 @@ import components from './components';
 import docs from './docs';
 import RenderError from './RenderError';
 
-const executedComponents = {};
-const componentsByExport = { ...components };
-Object.entries(components).forEach(async ([tag, body]) => {
-  const mod = await mdx.run(await mdx.compile(body));
-
-  executedComponents[tag] = mod;
-  Object.keys(mod).forEach(subTag => {
-    if (['toc', 'Toc', 'default', 'stylesheet'].includes(subTag)) return;
-
-    componentsByExport[subTag] = body;
-  });
-});
-
 const terms = [
   {
     term: 'demo',
@@ -77,8 +64,8 @@ const Doc = () => {
       };
 
       try {
-        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
-        const content = await mdx.run(code, { components: executedComponents, terms, variables });
+        const code = await mdx.compile(doc, { ...opts, components, useTailwind: true });
+        const content = await mdx.run(code, { components, terms, variables });
 
         setError(() => null);
         setContent(() => content);
