@@ -12,7 +12,7 @@ import * as runtime from 'react/jsx-runtime';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
-import { tocToMdx } from '../processor/plugin/toc';
+import { tocHastToMdx } from '../processor/plugin/toc';
 import User from '../utils/user';
 
 import compile from './compile';
@@ -54,10 +54,13 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
   const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
+
+  const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
     memo[tag] = Content;
+    tocsByTag[tag] = toc;
 
     if (rest) {
       Object.entries(rest).forEach(([subTag, component]) => {
@@ -83,7 +86,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
 
   let Toc: React.FC | undefined;
-  const tocMdx = tocToMdx(toc, components);
+  const tocMdx = tocHastToMdx(toc, tocsByTag);
   if (tocMdx) {
     const compiledToc = await compile(tocMdx);
     const tocModule = await exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
