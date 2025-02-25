@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 8.4.1
+### 🛠 Fixes & Updates
+
+* nesting children ([#1060](https://github.com/readmeio/markdown/issues/1060)) ([2824e1f](https://github.com/readmeio/markdown/commit/2824e1f232f068222dc0dfefb0c759c55c155ddf))
+
 ## Version 8.4.0
 ### ✨ New & Improved
 
