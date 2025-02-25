@@ -3,32 +3,30 @@ import type { RMDXModule } from '../../types';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { execute } from '../helpers';
 import { compile, run } from '../../lib';
-import { RMDXModule } from '../../types';
+import { execute } from '../helpers';
 
 describe('Custom Components', () => {
-  let Example;
-  let Multiple;
-
-  beforeEach(async () => {
-    Example = await execute('It works!', {}, {}, { getDefault: false });
-    Multiple = await execute(
-      `
+  const Example = 'It works!';
+  const Multiple = `
 export const First = () => <div>First</div>;
 export const Second = () => <div>Second</div>;
-  `,
-      {},
-      {},
-      { getDefault: false },
-    );
-  });
+  `;
+  const Nesting = `
+export const WithChildren = ({ children }) => <div>{children}</div>;
+
+<div>{props.children}</div>
+`;
 
   it('renders custom components', async () => {
     const doc = `
 <Example />
     `;
-    const Page = (await execute(doc, undefined, { components: { Example } })) as RMDXModule['default'];
+    const Page = (await execute(
+      doc,
+      { components: { Example } },
+      { components: { Example } },
+    )) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('It works!')).toBeVisible();
@@ -40,17 +38,33 @@ export const Second = () => <div>Second</div>;
 
 <Second />
     `;
-    const Page = (await execute(doc, undefined, { components: { Multiple } })) as RMDXModule['default'];
+    const Page = (await execute(
+      doc,
+      { components: { Multiple } },
+      { components: { Multiple } },
+    )) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('First')).toBeVisible();
     expect(screen.getByText('Second')).toBeVisible();
   });
 
+  it('renders a nested exported custom component', async () => {
+    const doc = '<Nesting><WithChildren>Hello, Test User!</WithChildren></Nesting>';
+    const Page = (await execute(
+      doc,
+      { components: { Nesting } },
+      { components: { Nesting } },
+    )) as RMDXModule['default'];
+    render(<Page />);
+
+    expect(screen.getByText('Hello, Test User!')).toBeVisible();
+  });
+
   it('renders the default export of a custom component and passes through props', async () => {
-    const Test = (await run(await compile(`{props.attr}`))) as RMDXModule;
-    const doc = `<Test attr="Hello" />`;
-    const Page = await run(await compile(doc), { components: { Test } });
+    const Test = '{props.attr}';
+    const doc = '<Test attr="Hello" />';
+    const Page = await run(await compile(doc, { components: { Test } }), { components: { Test } });
     render(<Page.default />);
 
     expect(screen.getByText('Hello')).toBeVisible();

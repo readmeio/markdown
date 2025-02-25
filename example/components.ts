@@ -14,7 +14,7 @@ export const Test = ({ color = 'thistle' } = {}) => {
 export default Test;
   `,
   MultipleExports: `
-export const One = () => <div>"One"</div>;
+export const One = () => "One";
 
 export const Two = () => "Two";
   `,

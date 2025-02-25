@@ -13,6 +13,7 @@ describe('visual regression tests', () => {
     const docs = [
       'callouts',
       'calloutTests',
+      'childTests',
       'codeBlocks',
       // skipping this because they sporadically failure with network timing
       // issues

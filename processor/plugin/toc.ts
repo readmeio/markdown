@@ -1,4 +1,4 @@
-import type { CustomComponents, HastHeading, IndexableElements, TocList, TocListItem } from '../../types';
+import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, TocList, TocListItem } from '../../types';
 import type { Root } from 'hast';
 import type { MdxjsEsm } from 'mdast-util-mdxjs-esm';
 import type { Transformer } from 'unified';
@@ -89,11 +89,11 @@ const tocToHast = (headings: HastHeading[] = []): TocList => {
   return ast;
 };
 
-export const tocHastToMdx = (toc: IndexableElements[], components: CustomComponents) => {
+export const tocHastToMdx = (toc: IndexableElements[], components: Record<string, RMDXModule['toc']>) => {
   const tree: Root = { type: 'root', children: toc };
 
   visit(tree, 'mdxJsxFlowElement', (node, index, parent) => {
-    const subToc = components[node.name].toc || [];
+    const subToc = components[node.name] || [];
     parent.children.splice(index, 1, ...subToc);
   });
 

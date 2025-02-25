@@ -55,11 +55,10 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
   const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
 
-  const tocsByTag = {};
+  const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const promises: [string, RMDXModule][] = await Promise.all(
     Object.entries(components).map(async ([tag, body]) => {
       const code = await compile(body);
-      console.log(code);
       const mod = await run(code);
       return [tag, mod];
     }),
@@ -80,8 +79,6 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
     return memo;
   }, {});
-
-  console.log(string);
 
   const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
     return mdxRun(text, {
