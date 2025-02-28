@@ -1,17 +1,24 @@
 ---
-title: "Getting Started"
-category: 5fdf7610134322007389a6ec
-excerpt: "ReadMe's Markdown engine, with notes of GitHub, modern styles, and a hint of magic."
-hidden: false
-metadata: 
-  title: "ReadMe-Flavored Markdown"
-  description: "ReadMe's Markdown engine, with notes of GitHub, modern styles, and a hint of magic."
-  image: 
-    0: "https://files.readme.io/aafdc0b-share-image"
-    1: "share-image"
-    2: 600
-    3: 315
-    4: "#2caaf8"
+title: Getting Started
+category:
+  uri: markdown-engine
+metadata:
+  title: ReadMe-Flavored Markdown
+  description: >-
+    ReadMe's Markdown engine, with notes of GitHub, modern styles, and a hint of
+    magic.
+  image:
+    '0': 'https://files.readme.io/aafdc0b-share-image'
+    '1': share-image
+    '2': 600
+    '3': 315
+    '4': '#2caaf8'
+content:
+  excerpt: >-
+    ReadMe's Markdown engine, with notes of GitHub, modern styles, and a hint of
+    magic.
+privacy:
+  view: public
 ---
 [<img src=https://github.com/readmeio/markdown/workflows/CI/badge.svg align=right style="margin-top: 3px; margin-bottom: 3px;" />](https://www.npmjs.com/package/@readme/markdown) A remark-based Markdown engine for parsing and rendering ReadMe docs. (In fact, you're looking at it right now, since we've used it to render every doc in this project!)
 

@@ -1,7 +1,9 @@
 ---
-title: 'Headings'
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Headings
+category:
+  uri: syntax
+privacy:
+  view: public
 ---
 
 ## Examples
