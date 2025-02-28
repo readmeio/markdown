@@ -61,6 +61,6 @@ jobs:
       # Sync docs to rdmd.readme.io
       #
       - name: Sync docs to rdmd.readme.io
-        uses: readmeio/rdme@next
+        uses: readmeio/rdme@v10.2.0-next.4
         with:
           rdme: docs upload ./docs --key=${{ secrets.RDME_KEY }} --version=2
