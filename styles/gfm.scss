@@ -234,6 +234,11 @@
     margin-top: 0 !important;
   }
 
+  // for mdx pages, select the next element after <style>
+  & > style + :nth-child(2) {
+    margin-top: 0 !important;
+  }
+
   & > :last-child {
     margin-bottom: 0 !important;
   }
