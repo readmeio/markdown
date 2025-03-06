@@ -9,11 +9,39 @@
 ## Styling Locally Defined Components with Tailwind
 
 ```mdx
-export const LocalComponent = () => <div className="bg-blue-500 text-white p-4">Local Component</div>;
+export const LocalComponent = () => <div className="bg-blue-500 text-white p-3 rounded-xl">Local Component</div>;
 
 <LocalComponent />
 ```
 
-export const LocalComponent = () => <div className="bg-blue-100 text-black p-2">Local Component</div>;
+export const LocalComponent = () => <div className="bg-blue-100 text-black p-3 rounded-xl">Local Component</div>;
 
 <LocalComponent />
+
+## Updating Styling Dynamically
+
+import { useRef, useEffect } from 'react';
+
+```mdx
+export const Dynamic = () => {
+  const ref = useRef();
+
+useEffect(() => {
+ref.current.classList.add('bg-gray-950', 'text-green-500', 'p-5', 'rounded-xl');
+}, [])
+
+return <div ref={ref}>Dynamic Component</div>
+};
+```
+
+export const Dynamic = () => {
+  const ref = useRef();
+
+useEffect(() => {
+ref.current.classList.add('bg-gray-950', 'text-green-500', 'p-5', 'rounded-xl');
+}, [])
+
+return <div ref={ref}>Dynamic Component</div>
+};
+
+<Dynamic />

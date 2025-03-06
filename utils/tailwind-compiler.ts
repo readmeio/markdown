@@ -52,7 +52,7 @@ async function loadModule(): Promise<never> {
 
 async function createCompiler() {
   const css = `
-@layer theme, base, components, utilities;
+@layer theme, base, components, utilities, readme-markdowtn;
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
@@ -65,12 +65,9 @@ async function createCompiler() {
   });
 }
 
-async function tailwindBundle(string: string, { prefix }: { prefix: string }) {
+export async function tailwindCompiler(classes: string[], { prefix }: { prefix: string }) {
   const compiler = await createCompiler();
-  const newClasses = new Set<string>(string.split(/[^a-zA-Z0-9_-]+/));
-  const css = compiler.build(Array.from(newClasses));
+  const css = compiler.build(Array.from(classes));
 
   return postcss([prefixer({ prefix })]).process(css, { from: undefined });
 }
-
-export default tailwindBundle;

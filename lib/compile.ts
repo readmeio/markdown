@@ -15,15 +15,11 @@ export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
   copyButtons?: boolean;
   useTailwind?: boolean;
-  useTailwindRoot?: boolean;
 };
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = async (
-  text: string,
-  { components = {}, copyButtons, useTailwind, useTailwindRoot, ...opts }: CompileOpts = {},
-) => {
+const compile = async (text: string, { components = {}, copyButtons, useTailwind, ...opts }: CompileOpts = {}) => {
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
@@ -32,7 +28,7 @@ const compile = async (
   ];
 
   if (useTailwind) {
-    remarkPlugins.push([tailwindTransformer, { components, parseRoot: useTailwindRoot }]);
+    remarkPlugins.push([tailwindTransformer, { components }]);
   }
 
   try {

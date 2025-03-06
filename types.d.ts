@@ -208,7 +208,6 @@ type IndexableElements = HastHeading | MdxJsxFlowElementHast;
 
 interface RMDXModule extends MDXModule {
   Toc: React.FC<Record<string, unknown>> | null;
-  stylesheet?: string;
   toc: IndexableElements[];
 }
 
