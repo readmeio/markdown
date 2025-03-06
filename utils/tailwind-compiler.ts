@@ -52,7 +52,7 @@ async function loadModule(): Promise<never> {
 
 async function createCompiler() {
   const css = `
-@layer theme, base, components, utilities, readme-markdowtn;
+@layer theme, base, components, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
