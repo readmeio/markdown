@@ -58,7 +58,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { default: Content, toc, Toc, stylesheets, ...rest } = mod;
+    const { default: Content, toc, Toc, ...rest } = mod;
     memo[tag] = Content;
     tocsByTag[tag] = toc;
 
@@ -97,7 +97,6 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   return {
     default: props => (
       <Contexts baseUrl={baseUrl} terms={terms} variables={variables}>
-        <Components.Style stylesheet={stylesheet} />
         <Content {...props} />
       </Contexts>
     ),

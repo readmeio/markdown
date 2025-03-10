@@ -1,9 +1,9 @@
-import type { MDXContent } from 'mdx/types';
 import type { RMDXModule } from 'types';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
+import { TailwindStyle } from '../components';
 import * as mdx from '../index';
 
 import components from './components';
@@ -98,6 +98,7 @@ const Doc = () => {
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
         <div id="content-container">
           <RenderError error={error}>
+            <TailwindStyle />
             <div className="markdown-body">{Content && <Content />}</div>
           </RenderError>
           {Toc && (
