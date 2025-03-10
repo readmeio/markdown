@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 9.0.0
+### ⚠ BREAKING CHANGES
+
+* CHANGE**: You know have to add the exported `TailwindStyles`
+component onto the page somewhere.
+
+### 🛠 Fixes & Updates
+
+* margin on style tag ([#1062](https://github.com/readmeio/markdown/issues/1062)) ([7d216e3](https://github.com/readmeio/markdown/commit/7d216e3a079596c8ad8506fb9277cb759fbc9806))
+* parse styles at runtime ([#1063](https://github.com/readmeio/markdown/issues/1063)) ([4e13b19](https://github.com/readmeio/markdown/commit/4e13b19ee43f2ead9413810fa06c02e4c45b11fb))
+
 ## Version 8.4.1
 ### 🛠 Fixes & Updates
 
