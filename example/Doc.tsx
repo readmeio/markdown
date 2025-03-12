@@ -98,8 +98,9 @@ const Doc = () => {
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
         <div id="content-container">
           <RenderError error={error}>
-            <TailwindStyle />
-            <div className="markdown-body">{Content && <Content />}</div>
+            <TailwindStyle>
+              <div className="markdown-body">{Content && <Content />}</div>
+            </TailwindStyle>
           </RenderError>
           {Toc && (
             <div className="content-toc">
