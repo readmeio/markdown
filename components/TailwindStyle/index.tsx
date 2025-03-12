@@ -14,7 +14,7 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
 const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
   const [stylesheet, setStylesheet] = useState('');
   const classes = useRef(new Set<string>());
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLStyleElement>(null);
 
   const addClasses = useCallback((element: Node) => {
     if (!(element instanceof HTMLElement)) return;
@@ -41,7 +41,7 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
   useEffect(() => {
     if (!ref.current) return;
 
-    ref.current.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
+    ref.current.parentElement.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
     updateStylesheet();
   });
 
@@ -75,7 +75,7 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
       });
     });
 
-    observer.observe(ref.current, {
+    observer.observe(ref.current.parentElement, {
       subtree: true,
       childList: true,
       attributes: true,
@@ -87,10 +87,12 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
   }, [addClasses, updateStylesheet]);
 
   return (
-    <div ref={ref} style={{ display: 'contents' }}>
-      <style data-tailwind-stylesheet>{stylesheet}</style>
+    <>
+      <style ref={ref} data-tailwind-stylesheet>
+        {stylesheet}
+      </style>
       {children}
-    </div>
+    </>
   );
 };
 
