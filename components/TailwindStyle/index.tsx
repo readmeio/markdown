@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 import { tailwindPrefix } from '../../utils/consts';
 import { tailwindCompiler } from '../../utils/tailwind-compiler';
@@ -12,10 +11,10 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
   });
 };
 
-const TailwindStyle = () => {
+const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
   const [stylesheet, setStylesheet] = useState('');
-  const hasDom = typeof document !== 'undefined';
   const classes = useRef(new Set<string>());
+  const ref = useRef<HTMLDivElement>(null);
 
   const addClasses = useCallback((element: Node) => {
     if (!(element instanceof HTMLElement)) return;
@@ -26,13 +25,31 @@ const TailwindStyle = () => {
   }, []);
 
   const updateStylesheet = useCallback(async () => {
-    const sheet = await tailwindCompiler(Array.from(classes.current), { prefix: `.${tailwindPrefix}` });
+    const candidates = classes.current;
+    if (candidates.size === 0) return;
+
+    const sheet = await tailwindCompiler(Array.from(candidates), { prefix: `.${tailwindPrefix}` });
+    /* @note: don't insert an empty stylesheet */
+    if (sheet.css.match(/^@layer utilities;/m)) return;
+
     setStylesheet(sheet.css);
   }, []);
 
-  // Set up mutation observer to update classes
+  /*
+   * @note: execute once on load
+   */
   useEffect(() => {
-    if (!hasDom) return;
+    if (!ref.current) return;
+
+    ref.current.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
+    updateStylesheet();
+  });
+
+  /*
+   * @note: observe for changes
+   */
+  useEffect(() => {
+    if (!ref.current) return;
 
     const observer = new MutationObserver((records: MutationRecord[]) => {
       let shouldUpdate = false;
@@ -58,7 +75,7 @@ const TailwindStyle = () => {
       });
     });
 
-    observer.observe(document.body, {
+    observer.observe(ref.current, {
       subtree: true,
       childList: true,
       attributes: true,
@@ -67,12 +84,13 @@ const TailwindStyle = () => {
 
     // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
-  }, [addClasses, hasDom, updateStylesheet]);
+  }, [addClasses, updateStylesheet]);
 
-  return hasDom ? (
-    createPortal(<style data-tailwind-stylesheet>{stylesheet}</style>, document.head)
-  ) : (
-    <style data-tailwind-stylesheet>{stylesheet}</style>
+  return (
+    <div ref={ref} style={{ display: 'contents' }}>
+      <style data-tailwind-stylesheet>{stylesheet}</style>
+      {children}
+    </div>
   );
 };
 
