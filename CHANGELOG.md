@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.0.1
+### 🛠 Fixes & Updates
+
+* loading styles in a shadow-dom ([#1064](https://github.com/readmeio/markdown/issues/1064)) ([267b688](https://github.com/readmeio/markdown/commit/267b688d56eeaa924b8dc39e70c4696b98fb92fe))
+
 ## Version 9.0.0
 ### ⚠ BREAKING CHANGES
 
