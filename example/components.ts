@@ -45,7 +45,7 @@ export const Step = ({ children }) => {
 import { useState } from 'react';
 
 export const DarkMode = () => {
-  const [mode, setMode] = useState('light');
+  const [mode, setMode] = useState('dark');
 
   return (
     <div data-color-mode={mode}>
