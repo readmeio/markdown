@@ -58,6 +58,7 @@ const Doc = () => {
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
+  const darkModeDataAttribute = searchParams.has('darkModeDataAttribute');
 
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
@@ -98,7 +99,7 @@ const Doc = () => {
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
         <div id="content-container">
           <RenderError error={error}>
-            <TailwindStyle>
+            <TailwindStyle darkModeDataAttribute={darkModeDataAttribute}>
               <div className="markdown-body">{Content && <Content />}</div>
             </TailwindStyle>
           </RenderError>

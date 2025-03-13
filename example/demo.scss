@@ -146,12 +146,16 @@ body {
     }
 
     div {
-      max-width: 33%;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 0.2em;
       padding: 0.2em 0.4em;
     }
+  }
+
+  .rdmd-demo--options {
+    flex-direction: column;
   }
 
   [name='demo-editor'] {
