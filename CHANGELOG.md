@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.0.3
+### 🛠 Fixes & Updates
+
+* use data attribute for dark theme ([#1066](https://github.com/readmeio/markdown/issues/1066)) ([3996379](https://github.com/readmeio/markdown/commit/3996379de73a7503fb8da960df9419637c867ab0))
+
 ## Version 9.0.2
 ### 🛠 Fixes & Updates
 
