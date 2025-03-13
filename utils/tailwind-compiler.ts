@@ -61,7 +61,7 @@ async function createCompiler({ darkModeDataAttribute }: { darkModeDataAttribute
   if (darkModeDataAttribute) {
     css += `
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));`;
+@custom-variant dark (&:where([data-color-mode=dark], [data-color-mode=dark] *));`;
   }
 
   return tailwindcss.compile(css, {

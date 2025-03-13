@@ -36,7 +36,7 @@ describe('visual regression tests', () => {
     it.each(docs)(
       'renders "%s" without surprises',
       async doc => {
-        const uri = `http://localhost:9966/#/${doc}?ci=true`;
+        const uri = `http://localhost:9966/#/${doc}?ci=true&darkModeDataAttribute=true`;
         await page.goto(uri, { waitUntil: 'networkidle0' });
         await sleep(5000);
 
