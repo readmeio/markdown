@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.0.4
+### 🛠 Fixes & Updates
+
+* use diff attr ([#1067](https://github.com/readmeio/markdown/issues/1067)) ([43c704a](https://github.com/readmeio/markdown/commit/43c704ad82ab79fe1531c94a00391d1a056c0582))
+
 ## Version 9.0.3
 ### 🛠 Fixes & Updates
 
