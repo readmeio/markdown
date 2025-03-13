@@ -104,6 +104,15 @@ const Form = () => {
               type="checkbox"
             />
           </div>
+          <div>
+            <label htmlFor="dark-mode-data-attribute">Set Dark Mode for Tailwind via Data Attribute</label>
+            <input
+              checked={searchParams.has('darkModeDataAttribute')}
+              id="dark-mode-data-attribute"
+              onChange={onCheck('darkModeDataAttribute')}
+              type="checkbox"
+            />
+          </div>
         </fieldset>
         <textarea name="demo-editor" onChange={onChange} value={doc} />
       </div>

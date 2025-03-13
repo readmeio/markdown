@@ -50,13 +50,19 @@ async function loadModule(): Promise<never> {
   throw new Error('The browser build does not support plugins or config files.');
 }
 
-async function createCompiler() {
-  const css = `
+async function createCompiler({ darkModeDataAttribute }: { darkModeDataAttribute?: boolean }) {
+  let css = `
 @layer theme, base, components, utilities;
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 `;
+
+  if (darkModeDataAttribute) {
+    css += `
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));`;
+  }
 
   return tailwindcss.compile(css, {
     base: '/',
@@ -65,8 +71,11 @@ async function createCompiler() {
   });
 }
 
-export async function tailwindCompiler(classes: string[], { prefix }: { prefix: string }) {
-  const compiler = await createCompiler();
+export async function tailwindCompiler(
+  classes: string[],
+  { prefix, darkModeDataAttribute }: { darkModeDataAttribute?: boolean; prefix: string },
+) {
+  const compiler = await createCompiler({ darkModeDataAttribute });
   const css = compiler.build(Array.from(classes));
 
   return postcss([prefixer({ prefix })]).process(css, { from: undefined });

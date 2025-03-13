@@ -40,6 +40,32 @@ export const Step = ({ children }) => {
   {props.children}
 </div>
   `,
+
+  DarkMode: `
+import { useState } from 'react';
+
+export const DarkMode = () => {
+  const [mode, setMode] = useState('light');
+
+  return (
+    <div data-theme={mode}>
+      <button
+        className="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-1 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mb-2 dark:bg-yellow-300 dark:hover:bg-yellow-400 dark:focus:ring-yellow-900 dark:text-black"
+        onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
+        style={{ border: 'none' }}
+      >
+        Toggle Mode
+      </button>
+      <div
+        className="bg-gray-200 dark:bg-gray-900 text-black dark:text-white p-5 rounded-xl"
+        style={{ textTransform: 'capitalize' }}
+      >
+        {mode} Mode Component
+      </div>
+    </div>
+  )
+}
+`,
 };
 
 export default components;

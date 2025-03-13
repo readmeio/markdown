@@ -11,29 +11,47 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
   });
 };
 
-const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
+interface Props {
+  children: React.ReactNode;
+  darkModeDataAttribute?: boolean;
+}
+
+const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
   const [stylesheet, setStylesheet] = useState('');
-  const classes = useRef(new Set<string>());
+  const classesSet = useRef(new Set<string>());
   const ref = useRef<HTMLStyleElement>(null);
+  const [classes, setClasses] = useState<string[]>([]);
 
   const addClasses = useCallback((element: Node) => {
     if (!(element instanceof HTMLElement)) return;
 
     element.classList.forEach(className => {
-      classes.current.add(className);
+      classesSet.current.add(className);
     });
   }, []);
 
-  const updateStylesheet = useCallback(async () => {
-    const candidates = classes.current;
-    if (candidates.size === 0) return;
+  /*
+   * @note: regenerate stylesheet
+   */
+  useEffect(() => {
+    const run = async () => {
+      if (classes.length === 0) {
+        setStylesheet('');
+        return;
+      }
 
-    const sheet = await tailwindCompiler(Array.from(candidates), { prefix: `.${tailwindPrefix}` });
-    /* @note: don't insert an empty stylesheet */
-    if (sheet.css.match(/^@layer utilities;/m)) return;
+      const sheet = await tailwindCompiler(classes, {
+        prefix: `.${tailwindPrefix}`,
+        darkModeDataAttribute,
+      });
+      /* @note: don't insert an empty stylesheet */
+      if (sheet.css.match(/^@layer utilities;/m)) return;
 
-    setStylesheet(sheet.css);
-  }, []);
+      setStylesheet(sheet.css);
+    };
+
+    run();
+  }, [classes, darkModeDataAttribute]);
 
   /*
    * @note: execute once on load
@@ -42,8 +60,8 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
     if (!ref.current) return;
 
     ref.current.parentElement.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
-    updateStylesheet();
-  });
+    setClasses(Array.from(classesSet.current));
+  }, [addClasses]);
 
   /*
    * @note: observe for changes
@@ -70,7 +88,7 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
         }
 
         if (shouldUpdate) {
-          updateStylesheet();
+          setClasses(Array.from(classesSet.current));
         }
       });
     });
@@ -84,7 +102,7 @@ const TailwindStyle = ({ children }: React.PropsWithChildren<unknown>) => {
 
     // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
-  }, [addClasses, updateStylesheet]);
+  }, [addClasses]);
 
   return (
     <>
