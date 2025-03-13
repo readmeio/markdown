@@ -56,6 +56,8 @@ async function createCompiler() {
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 `;
 
   return tailwindcss.compile(css, {
