@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.0.2
+### 🛠 Fixes & Updates
+
+* dont use div ([#1065](https://github.com/readmeio/markdown/issues/1065)) ([b4e30df](https://github.com/readmeio/markdown/commit/b4e30df19c10ab9aec6b9777e45c5b5d895dc25f))
+
 ## Version 9.0.1
 ### 🛠 Fixes & Updates
 
