@@ -2,7 +2,7 @@ import React from 'react';
 
 function TableOfContents({ children }: React.PropsWithChildren) {
   return (
-    <nav>
+    <nav aria-label="Table of contents" role="navigation">
       <ul className="toc-list">
         <li>
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}

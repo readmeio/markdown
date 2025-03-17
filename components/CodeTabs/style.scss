@@ -69,7 +69,8 @@
     color: var(--md-code-text, white);
   }
 
-  &-toolbar button:not(.CodeTabs_active):hover {
+  &-toolbar button:not(.CodeTabs_active):hover,
+  &-toolbar button:not(.CodeTabs_active):focus {
     background: rgba(0, 0, 0, 0.075);
   }
 
