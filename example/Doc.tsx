@@ -99,7 +99,7 @@ const Doc = () => {
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
         <div id="content-container">
           <RenderError error={error}>
-            <TailwindStyle darkModeDataAttribute={darkModeDataAttribute}>
+            <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
               <div className="markdown-body">{Content && <Content />}</div>
             </TailwindStyle>
           </RenderError>
