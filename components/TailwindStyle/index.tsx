@@ -13,7 +13,7 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
 
 interface Props {
   children: React.ReactNode;
-  darkModeDataAttribute?: boolean;
+  darkModeDataAttribute?: string | null;
 }
 
 const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
