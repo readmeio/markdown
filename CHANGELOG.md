@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 9.0.5
+### 🛠 Fixes & Updates
+
+* a11y audit critical issues ([#1068](https://github.com/readmeio/markdown/issues/1068)) ([11c779f](https://github.com/readmeio/markdown/commit/11c779f23baaa25903b41078f993a8c164fd1b73))
+* allow configurable theme ([#1069](https://github.com/readmeio/markdown/issues/1069)) ([5b62c90](https://github.com/readmeio/markdown/commit/5b62c90240693f476735924f3821fd63f2115922))
+
 ## Version 9.0.4
 ### 🛠 Fixes & Updates
 
