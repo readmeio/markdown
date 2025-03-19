@@ -18,6 +18,7 @@ import User from '../utils/user';
 import compile from './compile';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
+  allowMissingComponents?: boolean;
   baseUrl?: string;
   components?: CustomComponents;
   imports?: Record<string, unknown>;
@@ -27,7 +28,7 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
 
 export type RMDXModuleProps = MDXProps & {
   theme: 'dark' | 'light';
-}
+};
 
 const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxComponents => {
   const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
@@ -51,8 +52,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     ...more,
   };
 
-  // @ts-expect-error I'm not sure how to coerce the correct type
-  return () => components;
+  return (() => components) as unknown as UseMdxComponents;
 };
 
 const run = async (string: string, _opts: RunOpts = {}) => {
