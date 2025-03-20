@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Nodes, Parents } from 'hast';
 
-import hast from './hast';
+import { fromHtml } from 'hast-util-from-html';
 
 /* @note: adapted from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
@@ -25,7 +25,7 @@ function one(node: Nodes, opts: Options) {
     switch (node.tagName) {
       case 'html-block': {
         if (!node.properties.html) return '';
-        return all(hast(node.properties.html.toString()), opts);
+        return all(fromHtml(node.properties.html.toString()), opts);
       }
       case 'rdme-callout': {
         const { icon, title } = node.properties;
