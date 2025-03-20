@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.0.6
+### 🛠 Fixes & Updates
+
+* compiling html-blocks to plaint text ([#1070](https://github.com/readmeio/markdown/issues/1070)) ([12e95fd](https://github.com/readmeio/markdown/commit/12e95fdc53f8a677095423627a1e4350f370e9a3))
+
 ## Version 9.0.5
 ### 🛠 Fixes & Updates
 
