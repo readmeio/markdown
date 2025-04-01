@@ -3,7 +3,7 @@ import * as React from 'react';
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
   attributes?: Record<string, unknown>;
   empty?: boolean;
-  icon: string;
+  icon?: string;
   theme?: string;
 }
 
@@ -22,9 +22,17 @@ const themes: Record<string, string> = {
   '\u26A0': 'warn',
 };
 
+const defaultIcons = {
+  info: '\uD83D\uDCD8',
+  warn: '\uD83D\uDEA7',
+  okay: '\uD83D\uDC4D',
+  error: '\u2757\uFE0F',
+};
+
 const Callout = (props: Props) => {
-  const { attributes, children, icon, empty } = props;
-  const theme = props.theme || themes[icon] || 'default';
+  const { attributes, children, empty } = props;
+  const theme = props.theme || themes[props.icon] || 'default';
+  const icon = props.icon || defaultIcons[theme] || '❗';
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
