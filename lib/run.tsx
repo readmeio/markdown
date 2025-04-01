@@ -3,7 +3,7 @@ import type { GlossaryTerm } from '../contexts/GlossaryTerms';
 import type { CustomComponents, RMDXModule } from '../types';
 import type { Variables } from '../utils/user';
 import type { RunOptions, UseMdxComponents } from '@mdx-js/mdx';
-import type { MDXComponents } from 'mdx/types';
+import type { MDXComponents, MDXProps } from 'mdx/types';
 
 import { run as mdxRun } from '@mdx-js/mdx';
 import Variable from '@readme/variable';
@@ -96,7 +96,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   }
 
   return {
-    default: props => (
+    default: (props: MDXProps) => (
       <Contexts baseUrl={baseUrl} terms={terms} theme={theme} variables={variables}>
         <Content {...props} />
       </Contexts>
