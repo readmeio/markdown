@@ -54,7 +54,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
 
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
-  const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
+  const { components = {}, terms, variables, baseUrl, imports = {}, theme, ...opts } = _opts;
 
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
@@ -97,7 +97,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: props => (
-      <Contexts baseUrl={baseUrl} terms={terms} variables={variables}>
+      <Contexts baseUrl={baseUrl} terms={terms} theme={theme} variables={variables}>
         <Content {...props} />
       </Contexts>
     ),

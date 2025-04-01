@@ -1,17 +1,20 @@
 import type { Mermaid } from 'mermaid';
 
 import { uppercase } from '@readme/syntax-highlighter';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
+
+import ThemeContext from 'contexts/Theme';
 
 let mermaid: Mermaid;
 
 interface Props {
   children: JSX.Element | JSX.Element[];
-  theme: 'dark' | 'light';
 }
 
 const CodeTabs = (props: Props) => {
-  const { children, theme } = props;
+  const { children } = props;
+  const theme = useContext(ThemeContext);
+
 
   // render Mermaid diagram
   useEffect(() => {
