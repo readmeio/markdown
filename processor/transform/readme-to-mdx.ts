@@ -107,6 +107,43 @@ const readmeToMdx = (): Transform => tree => {
     } as HTMLBlock);
   });
 
+  visit(tree, NodeTypes.variable, (node, index, parent) => {
+    const identifier = node.data.hProperties.variable || node.data.hProperties.name;
+
+    const validIdentifier = identifier.match(/^(\p{Letter}|[$_])(\p{Letter}|[$_0-9])*$/u);
+    const value = validIdentifier ? `user.${identifier}` : `user[${JSON.stringify(identifier)}]`;
+
+    const mdxFlowExpression = {
+      type: 'mdxFlowExpression',
+      value,
+      data: {
+        estree: {
+          type: 'Program',
+          body: [
+            {
+              type: 'ExpressionStatement',
+              expression: {
+                type: 'MemberExpression',
+                object: {
+                  type: 'Identifier',
+                  name: 'user',
+                },
+                property: {
+                  type: 'Identifier',
+                  name: identifier,
+                },
+              },
+            },
+          ],
+          sourceType: 'module',
+          comments: [],
+        },
+      },
+    };
+
+    parent.children.splice(index, 1, mdxFlowExpression);
+  });
+
   return tree;
 };
 
