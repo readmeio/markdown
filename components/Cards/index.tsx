@@ -15,7 +15,7 @@ export const Card = ({ children, href, icon, iconColor, target, title }: CardPro
   const Tag = href ? 'a' : 'div';
   return (
     <Tag className="Card" href={href} target={target}>
-      {icon && <i className={`Card-icon fa-duotone fa-solid ${icon}`} style={{ color: `${iconColor}` }}></i>}
+      {icon && <i className={`Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties}></i>}
       {title && <p className="Card-title">{title}</p>}
       <div className="Card-content">{children}</div>
     </Tag>
