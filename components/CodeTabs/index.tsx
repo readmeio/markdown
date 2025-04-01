@@ -7,7 +7,7 @@ let mermaid: Mermaid;
 
 interface Props {
   children: JSX.Element | JSX.Element[];
-  theme: 'dark' | 'default' | 'light';
+  theme: 'dark' | 'light';
 }
 
 const CodeTabs = (props: Props) => {

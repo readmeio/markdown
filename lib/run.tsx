@@ -22,6 +22,7 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: CustomComponents;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
+  theme?: 'dark' | 'light';
   variables?: Variables;
 };
 
