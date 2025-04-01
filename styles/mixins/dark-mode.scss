@@ -1,3 +1,12 @@
+/*  We’re planning to move this in to the monorepo in which case
+    we could share the dark mode mix in. Kelly is planning to take
+    some time to make that move so can we add a comment here to
+    circle back on this at that point?
+
+    - Rafe
+      April 2025
+*/
+
 @mixin dark-mode($global: false) {
   $root: &;
 
