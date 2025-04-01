@@ -1,0 +1,38 @@
+@mixin dark-mode($global: false) {
+  $root: &;
+
+  @if not $root {
+    [data-color-mode='dark'] {
+      @content;
+    }
+
+    [data-color-mode='auto'],
+    [data-color-mode='system'] {
+      @media (prefers-color-scheme: dark) {
+        @content;
+      }
+    }
+  } @else if $global {
+    :global([data-color-mode='dark']) & {
+      @content;
+    }
+
+    :global([data-color-mode='auto']) &,
+    :global([data-color-mode='system']) & {
+      @media (prefers-color-scheme: dark) {
+        @content;
+      }
+    }
+  } @else {
+    [data-color-mode='dark'] & {
+      @content;
+    }
+
+    [data-color-mode='auto'] &,
+    [data-color-mode='system'] & {
+      @media (prefers-color-scheme: dark) {
+        @content;
+      }
+    }
+  }
+}
