@@ -12,7 +12,7 @@ $iphone-plus: 414px;
   --Card-title-color: var(--color-text-default, #384248);
 
   @include dark-mode {
-    color: var(--color-primary-inverse, inherit);
+    --Card-icon-color: var(--color-primary-inverse, inherit);
   }
 
   display: grid;
