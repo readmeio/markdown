@@ -1,10 +1,9 @@
-import type { Image, Parent } from 'mdast';
+import type { Image, Parent, Node } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
+import type { Variable, HTMLBlock } from 'types';
 
 import { visit } from 'unist-util-visit';
-
-import { type HTMLBlock } from 'types';
 
 import { NodeTypes } from '../../enums';
 import { toAttributes } from '../utils';
@@ -107,9 +106,9 @@ const readmeToMdx = (): Transform => tree => {
     } as HTMLBlock);
   });
 
-  visit(tree, NodeTypes.variable, (node, index, parent) => {
-    const identifier = node.data.hProperties.variable || node.data.hProperties.name;
-
+  const isVariable = (node: Node): node is Variable => 'type' in node && node.type === NodeTypes.variable;
+  visit(tree, isVariable, (node, index, parent) => {
+    const identifier = (node.data.hProperties.variable || node.data.hProperties.name).toString();
     const validIdentifier = identifier.match(/^(\p{Letter}|[$_])(\p{Letter}|[$_0-9])*$/u);
     const value = validIdentifier ? `user.${identifier}` : `user[${JSON.stringify(identifier)}]`;
 
@@ -132,6 +131,8 @@ const readmeToMdx = (): Transform => tree => {
                   type: 'Identifier',
                   name: identifier,
                 },
+                computed: false,
+                optional: false,
               },
             },
           ],
@@ -141,6 +142,7 @@ const readmeToMdx = (): Transform => tree => {
       },
     };
 
+    // @ts-expect-error -- I have no idea why our mdast types don't always work
     parent.children.splice(index, 1, mdxFlowExpression);
   });
 
