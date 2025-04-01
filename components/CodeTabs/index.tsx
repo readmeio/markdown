@@ -3,7 +3,7 @@ import type { Mermaid } from 'mermaid';
 import { uppercase } from '@readme/syntax-highlighter';
 import React, { useContext, useEffect } from 'react';
 
-import ThemeContext from 'contexts/Theme';
+import ThemeContext from '../../contexts/Theme';
 
 let mermaid: Mermaid;
 
