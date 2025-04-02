@@ -6,7 +6,6 @@ import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
-import variable from './variable';
 
 function compilers() {
   const data = this.data();
@@ -21,7 +20,6 @@ function compilers() {
     [NodeTypes.glossary]: compatibility,
     [NodeTypes.htmlBlock]: htmlBlock,
     [NodeTypes.reusableContent]: compatibility,
-    [NodeTypes.variable]: variable,
     embed: compatibility,
     escape: compatibility,
     figure: compatibility,

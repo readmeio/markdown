@@ -1,6 +1,20 @@
+@import '/styles/mixins/dark-mode.scss';
+
 $iphone-plus: 414px;
 
 .CardsGrid {
+  --Card-bg-color: rgba(var(--color-bg-page-rgb, white), 1);
+  --Card-bg-color-hover: var(--color-bg-hover, #{rgba(black, 0.05)});
+  --Card-border-color: var(--color-border-default, rgba(black, 0.1));
+  --Card-shadow: 0 1px 2px #{rgba(black, 0.05)}, 0 2px 5px #{rgba(black, 0.02)};
+  --Card-content-color: var(--color-text-muted, #4f5a66);
+  --Card-icon-color: var(--project-color-primary, inherit);
+  --Card-title-color: var(--color-text-default, #384248);
+
+  @include dark-mode {
+    --Card-icon-color: var(--color-primary-inverse, inherit);
+  }
+
   display: grid;
   gap: 20px;
 
@@ -8,10 +22,10 @@ $iphone-plus: 414px;
     padding: 15px;
     padding-bottom: 0;
     backdrop-filter: blur(20px);
-    background: rgba(var(--color-bg-page-rgb, white), 1);
-    border: 1px solid var(--color-border-default, rgba(black, 0.1));
+    background: var(--Card-bg-color);
+    border: 1px solid var(--Card-border-color);
     border-radius: 5px;
-    box-shadow: 0 1px 2px #{rgba(black, 0.05)}, 0 2px 5px #{rgba(black, 0.02)};
+    box-shadow: var(--Card-shadow);
 
     &-top {
       display: inline-flex;
@@ -19,31 +33,31 @@ $iphone-plus: 414px;
     }
 
     &-icon {
-      color: var(--project-color-primary, inherit);
+      color: var(--Card-icon-color);
       font-size: 20px;
     }
 
     &-title {
-      color: var(--color-text-default, #384248);
+      color: var(--Card-title-color);
       font-weight: 600;
       margin-top: 10px;
-      
+
       &:first-child {
         margin-top: 0;
       }
     }
 
     &-content {
-      color: var(--color-text-muted, #4f5a66);
+      color: var(--Card-content-color);
     }
   }
 
-  a.Card:not([href=""]) {
+  a.Card:not([href='']) {
     text-decoration: none;
     color: inherit;
 
     &:hover {
-      background: var(--color-bg-hover, #{rgba(black, 0.05)});
+      background: var(--Card-bg-color-hover);
     }
   }
 
