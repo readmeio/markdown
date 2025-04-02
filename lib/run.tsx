@@ -25,6 +25,10 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   variables?: Variables;
 };
 
+export type RMDXModuleProps = MDXProps & {
+  theme: 'dark' | 'light';
+}
+
 const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxComponents => {
   const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
     map[`h${index + 1}`] = Components.Heading((index + 1) as Depth);
@@ -95,7 +99,7 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   }
 
   return {
-    default: (props: MDXProps) => (
+    default: (props: RMDXModuleProps) => (
       <Contexts baseUrl={baseUrl} terms={terms} theme={props.theme} variables={variables}>
         <Content {...props} />
       </Contexts>
