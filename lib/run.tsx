@@ -17,7 +17,6 @@ import compile from './compile';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
-  allowMissingComponents?: boolean;
   baseUrl?: string;
   components?: CustomComponents;
   imports?: Record<string, unknown>;
