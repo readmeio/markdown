@@ -4,6 +4,7 @@ import type { Callout } from 'types';
 import emojiRegex from 'emoji-regex';
 import { visit } from 'unist-util-visit';
 
+import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
@@ -19,6 +20,7 @@ const calloutTransformer = () => {
       if (icon && match) {
         const heading = startText.slice(match.length);
         const empty = !heading.length && node.children[0].children.length === 1;
+        const theme = themes[icon] || 'default';
 
         node.children[0].children[0].value = heading;
 
@@ -29,6 +31,7 @@ const calloutTransformer = () => {
             hProperties: {
               icon,
               empty,
+              theme,
             },
           },
         });

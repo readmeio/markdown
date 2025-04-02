@@ -3,11 +3,11 @@ import * as React from 'react';
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
   attributes?: Record<string, unknown>;
   empty?: boolean;
-  icon: string;
-  theme?: string;
+  icon?: string;
+  theme: string;
 }
 
-const themes: Record<string, string> = {
+export const themes: Record<string, string> = {
   '\uD83D\uDCD8': 'info',
   '\uD83D\uDEA7': 'warn',
   '\u26A0\uFE0F': 'warn',
@@ -22,10 +22,17 @@ const themes: Record<string, string> = {
   '\u26A0': 'warn',
 };
 
+export const defaultIcons = {
+  info: '\uD83D\uDCD8',
+  warn: '\uD83D\uDEA7',
+  okay: '\uD83D\uDC4D',
+  error: '\u2757\uFE0F',
+};
+
 const Callout = (props: Props) => {
-  const { attributes, children, icon, empty } = props;
-  const theme = props.theme || themes[icon] || 'default';
-  
+  const { attributes, children, theme, empty } = props;
+  const icon = props.icon || defaultIcons[theme] || '❗';
+
   return (
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
