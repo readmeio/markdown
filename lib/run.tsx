@@ -1,12 +1,10 @@
-import type { Depth } from '../components/Heading';
 import type { GlossaryTerm } from '../contexts/GlossaryTerms';
 import type { CustomComponents, RMDXModule } from '../types';
 import type { Variables } from '../utils/user';
-import type { RunOptions, UseMdxComponents } from '@mdx-js/mdx';
-import type { MDXComponents, MDXProps } from 'mdx/types';
+import type { RunOptions } from '@mdx-js/mdx';
+import type { MDXProps } from 'mdx/types';
 
 import { run as mdxRun } from '@mdx-js/mdx';
-import Variable from '@readme/variable';
 import React from 'react';
 import * as runtime from 'react/jsx-runtime';
 
@@ -16,6 +14,7 @@ import { tocHastToMdx } from '../processor/plugin/toc';
 import User from '../utils/user';
 
 import compile from './compile';
+import makeUseMDXComponents from './utils/makeUseMdxComponents';
 
 export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   allowMissingComponents?: boolean;
@@ -28,31 +27,6 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
 
 export type RMDXModuleProps = MDXProps & {
   theme: 'dark' | 'light';
-};
-
-const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxComponents => {
-  const headings = Array.from({ length: 6 }).reduce((map, _, index) => {
-    map[`h${index + 1}`] = Components.Heading((index + 1) as Depth);
-    return map;
-  }, {}) as MDXComponents;
-
-  const components = {
-    ...Components,
-    Variable,
-    code: Components.Code,
-    embed: Components.Embed,
-    img: Components.Image,
-    table: Components.Table,
-    'code-tabs': Components.CodeTabs,
-    'embed-block': Components.Embed,
-    'html-block': Components.HTMLBlock,
-    'image-block': Components.Image,
-    'table-of-contents': Components.TableOfContents,
-    ...headings,
-    ...more,
-  };
-
-  return (() => components) as unknown as UseMdxComponents;
 };
 
 const run = async (string: string, _opts: RunOpts = {}) => {
