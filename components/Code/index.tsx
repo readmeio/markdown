@@ -1,5 +1,7 @@
 import copy from 'copy-to-clipboard';
-import React, { createRef } from 'react';
+import React, { createRef, useContext } from 'react';
+
+import ThemeContext from '../../contexts/Theme';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -51,7 +53,8 @@ interface CodeProps {
 }
 
 const Code = (props: CodeProps) => {
-  const { children, copyButtons, lang, theme, value } = props;
+  const { children, copyButtons, lang, value } = props;
+  const theme = useContext(ThemeContext);
 
   const language = canonicalLanguage(lang);
 

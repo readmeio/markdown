@@ -25,7 +25,7 @@ const themes: Record<string, string> = {
 const Callout = (props: Props) => {
   const { attributes, children, icon, empty } = props;
   const theme = props.theme || themes[icon] || 'default';
-
+  
   return (
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
