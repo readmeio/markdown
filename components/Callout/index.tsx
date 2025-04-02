@@ -4,10 +4,10 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteEl
   attributes?: Record<string, unknown>;
   empty?: boolean;
   icon?: string;
-  theme?: string;
+  theme: string;
 }
 
-const themes: Record<string, string> = {
+export const themes: Record<string, string> = {
   '\uD83D\uDCD8': 'info',
   '\uD83D\uDEA7': 'warn',
   '\u26A0\uFE0F': 'warn',
@@ -22,7 +22,7 @@ const themes: Record<string, string> = {
   '\u26A0': 'warn',
 };
 
-const defaultIcons = {
+export const defaultIcons = {
   info: '\uD83D\uDCD8',
   warn: '\uD83D\uDEA7',
   okay: '\uD83D\uDC4D',
@@ -30,8 +30,7 @@ const defaultIcons = {
 };
 
 const Callout = (props: Props) => {
-  const { attributes, children, empty } = props;
-  const theme = props.theme || themes[props.icon] || 'default';
+  const { attributes, children, theme, empty } = props;
   const icon = props.icon || defaultIcons[theme] || '❗';
 
   return (
