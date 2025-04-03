@@ -61,4 +61,14 @@ describe('mdast transformer', () => {
     // correctly
     expect(mdast(esmMdx)).toStrictEqualExceptPosition(esmJson);
   });
+
+  it('throws an error when a component does not exist and missingComponents === "throw"', () => {
+    const mdx = '<NonExistentComponent />';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).toThrow(
+      /Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it./,
+    );
+  });
 });

@@ -33,12 +33,12 @@ describe('run', () => {
     );
   });
 
-  it('renders null for a non-existant component when `allowMissingComponents === true`', async () => {
+  it('renders null for a non-existant component when `missingComponents === "ignore"`', async () => {
     const mdx = `
 ### Hello, world!
 
 <NonExistentComponent />`;
-    const Component = await execute(mdx, { allowMissingComponents: true }, {});
+    const Component = await execute(mdx, { missingComponents: 'ignore' }, {});
 
     expect(() => {
       render(<Component />);
