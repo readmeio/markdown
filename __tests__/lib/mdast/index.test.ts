@@ -61,4 +61,46 @@ describe('mdast transformer', () => {
     // correctly
     expect(mdast(esmMdx)).toStrictEqualExceptPosition(esmJson);
   });
+
+  it('throws an error when a component does not exist and missingComponents === "throw"', () => {
+    const mdx = '<NonExistentComponent />';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).toThrow(
+      /Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it./,
+    );
+  });
+
+  it('does not throw an error when a component is defined in the page and missingComponents === "throw"', () => {
+    const mdx = `
+export const Inlined = () => <div>Inlined</div>;
+
+<Inlined />
+    `;
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).not.toThrow();
+  });
+
+  it('removes a component that does not exist and missingComponents === "ignore"', () => {
+    const mdx = '<NonExistentComponent />';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).toThrow(
+      /Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it./,
+    );
+  });
+
+  it('does not remove a component when it is defined in the page and missingComponents === "ignore"', () => {
+    const mdx = `
+export const Inlined = () => <div>Inlined</div>;
+
+<Inlined />
+    `;
+
+    expect(mdast(mdx, { missingComponents: 'throw' })).toMatchSnapshot();
+  });
 });

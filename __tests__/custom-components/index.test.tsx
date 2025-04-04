@@ -38,7 +38,11 @@ export const WithChildren = ({ children }) => <div>{children}</div>;
     const doc = `
 <Example />
     `;
-    const Page = (await execute(doc, undefined, { components: { Example } })) as RMDXModule['default'];
+    const Page = (await execute(
+      doc,
+      { components: { Example } },
+      { components: { Example } },
+    )) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('It works!')).toBeVisible();
@@ -50,7 +54,11 @@ export const WithChildren = ({ children }) => <div>{children}</div>;
 
 <Second />
     `;
-    const Page = (await execute(doc, undefined, { components: { Multiple } })) as RMDXModule['default'];
+    const Page = (await execute(
+      doc,
+      { components: { Multiple, First: Multiple, Second: Multiple } },
+      { components: { Multiple } },
+    )) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('First')).toBeVisible();
@@ -59,7 +67,11 @@ export const WithChildren = ({ children }) => <div>{children}</div>;
 
   it('renders a nested exported custom component', async () => {
     const doc = '<Nesting><WithChildren>Hello, Test User!</WithChildren></Nesting>';
-    const Page = (await execute(doc, undefined, { components: { Nesting } })) as RMDXModule['default'];
+    const Page = (await execute(
+      doc,
+      { components: { Nesting, WithChildren: Nesting } },
+      { components: { Nesting } },
+    )) as RMDXModule['default'];
     render(<Page />);
 
     expect(screen.getByText('Hello, Test User!')).toBeVisible();
@@ -68,7 +80,7 @@ export const WithChildren = ({ children }) => <div>{children}</div>;
   it('renders the default export of a custom component and passes through props', async () => {
     const Test = (await run(await compile('{props.attr}'))) as RMDXModule;
     const doc = '<Test attr="Hello" />';
-    const Page = await run(await compile(doc), { components: { Test } });
+    const Page = await run(await compile(doc, { components: { Test: '' } }), { components: { Test } });
     render(<Page.default />);
 
     expect(screen.getByText('Hello')).toBeVisible();
