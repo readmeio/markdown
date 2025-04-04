@@ -5,16 +5,18 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
 
 import * as Components from '../../components';
-import { isMDXElement } from '../utils';
+import { getExports, isMDXElement } from '../utils';
 
 const handleMissingComponents =
   ({ components, missingComponents }): Transform =>
   tree => {
+    const inlined = new Set(getExports(tree));
+
     visit(
       tree,
       isMDXElement,
       (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents) => {
-        if (node.name in components || node.name in Components) return;
+        if (node.name in components || node.name in Components || inlined.has(node.name)) return;
 
         if (missingComponents === 'throw') {
           throw new Error(
