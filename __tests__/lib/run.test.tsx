@@ -22,15 +22,15 @@ describe('run', () => {
     expect(screen.getByText('TEST')).toBeInTheDocument();
   });
 
-  it('throws an error when a component does not exist', async () => {
-    const mdx = '<NonExistentComponent />';
+  it('renders null for a non-existant component', async () => {
+    const mdx = `
+### Hello, world!
+
+<NonExistentComponent />`;
     const Component = await execute(mdx, {}, {});
 
-    expect(() => {
-      render(<Component />);
-    }).toThrow(
-      'Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it.',
-    );
+    render(<Component />);
+    expect(screen.getByText('Hello, world!')).toBeInTheDocument();
   });
 
   it('renders null for a non-existant component when `missingComponents === "ignore"`', async () => {
@@ -40,9 +40,24 @@ describe('run', () => {
 <NonExistentComponent />`;
     const Component = await execute(mdx, { missingComponents: 'ignore' }, {});
 
-    expect(() => {
-      render(<Component />);
-    }).not.toThrow();
+    render(<Component />);
     expect(screen.getByText('Hello, world!')).toBeInTheDocument();
+  });
+
+  it('throws an error when a component does not exist and `missingComponents === "throw"`', async () => {
+    const mdx = `
+### Hello, world!
+
+<NonExistentComponent />`;
+
+    let error;
+    try {
+      await execute(mdx, { missingComponents: 'throw' }, {});
+    } catch (e) {
+      error = e;
+    }
+    expect(error.message).toBe(
+      'Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it.',
+    );
   });
 });

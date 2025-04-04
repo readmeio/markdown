@@ -29,11 +29,11 @@ const compile = async (
     remarkGfm,
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
+    [
+      handleMissingComponents,
+      { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
+    ],
   ];
-
-  if (['ignore', 'throw'].includes(missingComponents)) {
-    remarkPlugins.push([handleMissingComponents, { components, missingComponents }]);
-  }
 
   if (useTailwind) {
     remarkPlugins.push([tailwindTransformer, { components }]);
