@@ -1,4 +1,4 @@
-import type { RMDXModuleProps, RunOpts } from '../lib/run';
+import type {  RunOpts } from '../lib/run';
 
 import { VariablesContext } from '@readme/variable';
 import React from 'react';
@@ -7,7 +7,7 @@ import BaseUrlContext from './BaseUrl';
 import GlossaryContext from './GlossaryTerms';
 import ThemeContext from './Theme';
 
-type Props = Pick<RMDXModuleProps, 'theme'> & Pick<RunOpts, 'baseUrl' | 'terms' | 'variables'> & React.PropsWithChildren;
+type Props = Pick<RunOpts, 'baseUrl' | 'terms' | 'theme' | 'variables'> & React.PropsWithChildren;
 
 const compose = (
   children: React.ReactNode,
