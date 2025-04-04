@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.1
+### 🛠 Fixes & Updates
+
+* allow missing components ([#1076](https://github.com/readmeio/markdown/issues/1076)) ([d24c83e](https://github.com/readmeio/markdown/commit/d24c83e62a5beaa0912ef88c38459edc400d68fd))
+
 ## Version 9.1.0
 ### ✨ New & Improved
 
