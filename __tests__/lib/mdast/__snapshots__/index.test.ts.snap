@@ -1,0 +1,332 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mdast transformer > does not remove a component when it is defined in the page and missingComponents === "ignore" 1`] = `
+{
+  "children": [
+    {
+      "data": {
+        "estree": Node {
+          "body": [
+            Node {
+              "declaration": Node {
+                "declarations": [
+                  Node {
+                    "end": 48,
+                    "id": Node {
+                      "end": 21,
+                      "loc": {
+                        "end": {
+                          "column": 20,
+                          "line": 2,
+                          "offset": 21,
+                        },
+                        "start": {
+                          "column": 13,
+                          "line": 2,
+                          "offset": 14,
+                        },
+                      },
+                      "name": "Inlined",
+                      "range": [
+                        14,
+                        21,
+                      ],
+                      "start": 14,
+                      "type": "Identifier",
+                    },
+                    "init": Node {
+                      "async": false,
+                      "body": Node {
+                        "children": [
+                          Node {
+                            "end": 42,
+                            "loc": {
+                              "end": {
+                                "column": 41,
+                                "line": 2,
+                                "offset": 42,
+                              },
+                              "start": {
+                                "column": 34,
+                                "line": 2,
+                                "offset": 35,
+                              },
+                            },
+                            "range": [
+                              35,
+                              42,
+                            ],
+                            "raw": "Inlined",
+                            "start": 35,
+                            "type": "JSXText",
+                            "value": "Inlined",
+                          },
+                        ],
+                        "closingElement": Node {
+                          "end": 48,
+                          "loc": {
+                            "end": {
+                              "column": 47,
+                              "line": 2,
+                              "offset": 48,
+                            },
+                            "start": {
+                              "column": 41,
+                              "line": 2,
+                              "offset": 42,
+                            },
+                          },
+                          "name": Node {
+                            "end": 47,
+                            "loc": {
+                              "end": {
+                                "column": 46,
+                                "line": 2,
+                                "offset": 47,
+                              },
+                              "start": {
+                                "column": 43,
+                                "line": 2,
+                                "offset": 44,
+                              },
+                            },
+                            "name": "div",
+                            "range": [
+                              44,
+                              47,
+                            ],
+                            "start": 44,
+                            "type": "JSXIdentifier",
+                          },
+                          "range": [
+                            42,
+                            48,
+                          ],
+                          "start": 42,
+                          "type": "JSXClosingElement",
+                        },
+                        "end": 48,
+                        "loc": {
+                          "end": {
+                            "column": 47,
+                            "line": 2,
+                            "offset": 48,
+                          },
+                          "start": {
+                            "column": 29,
+                            "line": 2,
+                            "offset": 30,
+                          },
+                        },
+                        "openingElement": Node {
+                          "attributes": [],
+                          "end": 35,
+                          "loc": {
+                            "end": {
+                              "column": 34,
+                              "line": 2,
+                              "offset": 35,
+                            },
+                            "start": {
+                              "column": 29,
+                              "line": 2,
+                              "offset": 30,
+                            },
+                          },
+                          "name": Node {
+                            "end": 34,
+                            "loc": {
+                              "end": {
+                                "column": 33,
+                                "line": 2,
+                                "offset": 34,
+                              },
+                              "start": {
+                                "column": 30,
+                                "line": 2,
+                                "offset": 31,
+                              },
+                            },
+                            "name": "div",
+                            "range": [
+                              31,
+                              34,
+                            ],
+                            "start": 31,
+                            "type": "JSXIdentifier",
+                          },
+                          "range": [
+                            30,
+                            35,
+                          ],
+                          "selfClosing": false,
+                          "start": 30,
+                          "type": "JSXOpeningElement",
+                        },
+                        "range": [
+                          30,
+                          48,
+                        ],
+                        "start": 30,
+                        "type": "JSXElement",
+                      },
+                      "end": 48,
+                      "expression": true,
+                      "generator": false,
+                      "id": null,
+                      "loc": {
+                        "end": {
+                          "column": 47,
+                          "line": 2,
+                          "offset": 48,
+                        },
+                        "start": {
+                          "column": 23,
+                          "line": 2,
+                          "offset": 24,
+                        },
+                      },
+                      "params": [],
+                      "range": [
+                        24,
+                        48,
+                      ],
+                      "start": 24,
+                      "type": "ArrowFunctionExpression",
+                    },
+                    "loc": {
+                      "end": {
+                        "column": 47,
+                        "line": 2,
+                        "offset": 48,
+                      },
+                      "start": {
+                        "column": 13,
+                        "line": 2,
+                        "offset": 14,
+                      },
+                    },
+                    "range": [
+                      14,
+                      48,
+                    ],
+                    "start": 14,
+                    "type": "VariableDeclarator",
+                  },
+                ],
+                "end": 49,
+                "kind": "const",
+                "loc": {
+                  "end": {
+                    "column": 48,
+                    "line": 2,
+                    "offset": 49,
+                  },
+                  "start": {
+                    "column": 7,
+                    "line": 2,
+                    "offset": 8,
+                  },
+                },
+                "range": [
+                  8,
+                  49,
+                ],
+                "start": 8,
+                "type": "VariableDeclaration",
+              },
+              "end": 49,
+              "loc": {
+                "end": {
+                  "column": 48,
+                  "line": 2,
+                  "offset": 49,
+                },
+                "start": {
+                  "column": 0,
+                  "line": 2,
+                  "offset": 1,
+                },
+              },
+              "range": [
+                1,
+                49,
+              ],
+              "source": null,
+              "specifiers": [],
+              "start": 1,
+              "type": "ExportNamedDeclaration",
+            },
+          ],
+          "comments": [],
+          "end": 49,
+          "loc": {
+            "end": {
+              "column": 48,
+              "line": 2,
+              "offset": 49,
+            },
+            "start": {
+              "column": 0,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "range": [
+            1,
+            49,
+          ],
+          "sourceType": "module",
+          "start": 1,
+          "type": "Program",
+        },
+      },
+      "position": {
+        "end": {
+          "column": 49,
+          "line": 2,
+          "offset": 49,
+        },
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "mdxjsEsm",
+      "value": "export const Inlined = () => <div>Inlined</div>;",
+    },
+    {
+      "attributes": [],
+      "children": [],
+      "name": "Inlined",
+      "position": {
+        "end": {
+          "column": 12,
+          "line": 4,
+          "offset": 62,
+        },
+        "start": {
+          "column": 1,
+          "line": 4,
+          "offset": 51,
+        },
+      },
+      "type": "mdxJsxFlowElement",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 5,
+      "line": 5,
+      "offset": 67,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

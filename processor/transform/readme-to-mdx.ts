@@ -1,5 +1,6 @@
 import type { Image, Parent, Node } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxFlowExpression } from 'mdast-util-mdx';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 import type { Variable, HTMLBlock } from 'types';
 
@@ -112,7 +113,7 @@ const readmeToMdx = (): Transform => tree => {
     const validIdentifier = identifier.match(/^(\p{Letter}|[$_])(\p{Letter}|[$_0-9])*$/u);
     const value = validIdentifier ? `user.${identifier}` : `user[${JSON.stringify(identifier)}]`;
 
-    const mdxFlowExpression = {
+    const mdxFlowExpression: MdxFlowExpression = {
       type: 'mdxFlowExpression',
       value,
       data: {
@@ -142,7 +143,6 @@ const readmeToMdx = (): Transform => tree => {
       },
     };
 
-    // @ts-expect-error -- I have no idea why our mdast types don't always work
     parent.children.splice(index, 1, mdxFlowExpression);
   });
 
