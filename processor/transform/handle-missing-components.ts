@@ -10,13 +10,18 @@ import { getExports, isMDXElement } from '../utils';
 const handleMissingComponents =
   ({ components, missingComponents }): Transform =>
   tree => {
-    const inlined = new Set(getExports(tree));
+    const allComponents = new Set([
+      ...getExports(tree),
+      ...Object.keys(Components),
+      ...Object.keys(components),
+      'Variable',
+    ]);
 
     visit(
       tree,
       isMDXElement,
       (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents) => {
-        if (node.name in components || node.name in Components || inlined.has(node.name)) return;
+        if (allComponents.has(node.name) || node.name.match(/^[a-z]/)) return;
 
         if (missingComponents === 'throw') {
           throw new Error(
