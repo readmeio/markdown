@@ -7,24 +7,32 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
-import { defaultTransforms, tailwindTransformer } from '../processor/transform';
+import { defaultTransforms, tailwindTransformer, handleMissingComponents } from '../processor/transform';
 
 import { rehypePlugins } from './ast-processor';
 
 export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
   copyButtons?: boolean;
+  missingComponents?: 'ignore' | 'throw';
   useTailwind?: boolean;
 };
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = async (text: string, { components = {}, copyButtons, useTailwind, ...opts }: CompileOpts = {}) => {
+const compile = async (
+  text: string,
+  { components = {}, missingComponents, copyButtons, useTailwind, ...opts }: CompileOpts = {},
+) => {
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
+    [
+      handleMissingComponents,
+      { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
+    ],
   ];
 
   if (useTailwind) {

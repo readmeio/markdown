@@ -4,6 +4,7 @@ import compatabilityTransfomer from './compatability';
 import divTransformer from './div';
 import embedTransformer from './embeds';
 import gemojiTransformer from './gemoji+';
+import handleMissingComponents from './handle-missing-components';
 import imageTransformer from './images';
 import injectComponents from './inject-components';
 import mdxToHast from './mdx-to-hast';
@@ -24,6 +25,7 @@ export {
   readmeToMdx,
   tablesToJsx,
   tailwindTransformer,
+  handleMissingComponents,
   variablesTransformer,
 };
 

@@ -15,7 +15,7 @@ import type {
   RootContent,
 } from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
-import type { MDXContent, MDXModule } from 'mdx/types';
+import type { MDXModule } from 'mdx/types';
 
 type Callout = Omit<Blockquote, 'children' | 'type'> & {
   children: BlockContent[];

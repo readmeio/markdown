@@ -1,6 +1,22 @@
 Changelog
 ===
 
+## Version 9.1.1
+### 🛠 Fixes & Updates
+
+* allow missing components ([#1076](https://github.com/readmeio/markdown/issues/1076)) ([d24c83e](https://github.com/readmeio/markdown/commit/d24c83e62a5beaa0912ef88c38459edc400d68fd))
+
+## Version 9.1.0
+### ✨ New & Improved
+
+* allow setting only theme ([#1075](https://github.com/readmeio/markdown/issues/1075)) ([736d1fc](https://github.com/readmeio/markdown/commit/736d1fcc3dc913a59d5bbf13bd786d5426adc291))
+* card css ([#1073](https://github.com/readmeio/markdown/issues/1073)) ([8fabdc9](https://github.com/readmeio/markdown/commit/8fabdc95cda9759b53ed09b33091f67cd44ac2ba))
+
+### 🛠 Fixes & Updates
+
+* compiling wild variable names ([#1074](https://github.com/readmeio/markdown/issues/1074)) ([2e29174](https://github.com/readmeio/markdown/commit/2e291741a236d30e6c8c703ef55a688c14751454))
+* pass through theme prop to CodeTabs from RunOpts ([#1072](https://github.com/readmeio/markdown/issues/1072)) ([dadf14e](https://github.com/readmeio/markdown/commit/dadf14ee3dbda567f4a9f8f6962160bf5f245383))
+
 ## Version 9.0.6
 ### 🛠 Fixes & Updates
 
