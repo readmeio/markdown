@@ -21,16 +21,13 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   components?: CustomComponents;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
+  theme?: 'dark' | 'light';
   variables?: Variables;
-};
-
-export type RMDXModuleProps = MDXProps & {
-  theme: 'dark' | 'light';
 };
 
 const run = async (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
-  const { components = {}, terms, variables, baseUrl, imports = {}, ...opts } = _opts;
+  const { components = {}, terms, variables, baseUrl, imports = {}, theme, ...opts } = _opts;
 
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
@@ -72,8 +69,8 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   }
 
   return {
-    default: (props: RMDXModuleProps) => (
-      <Contexts baseUrl={baseUrl} terms={terms} theme={props.theme} variables={variables}>
+    default: (props: MDXProps) => (
+      <Contexts baseUrl={baseUrl} terms={terms} theme={theme} variables={variables}>
         <Content {...props} />
       </Contexts>
     ),
