@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.2
+### 🛠 Fixes & Updates
+
+* pass theme via runopts ([#1077](https://github.com/readmeio/markdown/issues/1077)) ([7e17dfd](https://github.com/readmeio/markdown/commit/7e17dfd69140ab5d360b3f0f7bc10bdc2d1a04a1))
+
 ## Version 9.1.1
 ### 🛠 Fixes & Updates
 
