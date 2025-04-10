@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.3
+### 🛠 Fixes & Updates
+
+* handle named exports ([#1079](https://github.com/readmeio/markdown/issues/1079)) ([3a1f295](https://github.com/readmeio/markdown/commit/3a1f295757e04e3afa78c1f5870a608d4cb74072))
+
 ## Version 9.1.2
 ### 🛠 Fixes & Updates
 
