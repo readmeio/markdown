@@ -72,6 +72,15 @@ describe('mdast transformer', () => {
     );
   });
 
+  it('does not throw an error when a component is defined as a named export and missingComponents === "throw"', () => {
+    const mdx = '<NamedExport />';
+    const Component = 'export const NamedExport = () => "It works?!"';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw', components: { Component } });
+    }).not.toThrow();
+  });
+
   it('does not throw an error when a component is defined in the page and missingComponents === "throw"', () => {
     const mdx = `
 export const Inlined = () => <div>Inlined</div>;
