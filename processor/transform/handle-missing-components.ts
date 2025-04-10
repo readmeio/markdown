@@ -1,3 +1,4 @@
+import type { CompileOpts } from '../../lib/compile';
 import type { Parents } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
@@ -5,15 +6,19 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
 
 import * as Components from '../../components';
+import mdast from '../../lib/mdast';
 import { getExports, isMDXElement } from '../utils';
 
+type HandleMissingComponentsProps = Pick<CompileOpts, 'components' | 'missingComponents'>;
+
 const handleMissingComponents =
-  ({ components, missingComponents }): Transform =>
+  ({ components, missingComponents }: HandleMissingComponentsProps): Transform =>
   tree => {
     const allComponents = new Set([
       ...getExports(tree),
       ...Object.keys(Components),
       ...Object.keys(components),
+      ...Object.values(components).flatMap(doc => getExports(mdast(doc))),
       'Variable',
     ]);
 
