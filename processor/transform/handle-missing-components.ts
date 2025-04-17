@@ -20,6 +20,7 @@ const handleMissingComponents =
       ...Object.keys(components),
       ...Object.values(components).flatMap(doc => getExports(mdast(doc))),
       'Variable',
+      'TutorialTile',
     ]);
 
     visit(
