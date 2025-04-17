@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.4
+### 🛠 Fixes & Updates
+
+* publish new release ([#1088](https://github.com/readmeio/markdown/issues/1088)) ([1bc1081](https://github.com/readmeio/markdown/commit/1bc10818838cc725495e51ee7eb670fe6a5b1f0a))
+
 ## Version 9.1.3
 ### 🛠 Fixes & Updates
 
