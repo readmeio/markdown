@@ -234,8 +234,8 @@
     margin-top: 0 !important;
   }
 
-  // for mdx pages, select the next element after <style>
-  & > style + :nth-child(2) {
+  // for mdx pages, select the first markdown element after the style tags
+  & > :nth-child(1 of :not(style)) {
     margin-top: 0 !important;
   }
 
