@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.5
+### 🛠 Fixes & Updates
+
+* margin element selector ([#1089](https://github.com/readmeio/markdown/issues/1089)) ([742ec8d](https://github.com/readmeio/markdown/commit/742ec8d38bde56e662b9964f221b40bb6c194946))
+
 ## Version 9.1.4
 ### 🛠 Fixes & Updates
 
