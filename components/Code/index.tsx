@@ -56,7 +56,7 @@ interface CodeProps {
 const Code = (props: CodeProps) => {
   const { children, lang, value } = props;
   const theme = useContext(ThemeContext);
-  const copyButtons = useContext(CodeOptsContext);
+  const copyButtons = useContext(CodeOptsContext) || props.copyButtons;
 
   const language = canonicalLanguage(lang);
 
