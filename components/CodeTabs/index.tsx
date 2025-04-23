@@ -1,11 +1,11 @@
 import type { Mermaid } from 'mermaid';
 
-import { uppercase } from '@readme/syntax-highlighter';
 import React, { useContext, useEffect } from 'react';
 
 import ThemeContext from '../../contexts/Theme';
 
 let mermaid: Mermaid;
+let uppercase = (str: string) => str;
 
 interface Props {
   children: JSX.Element | JSX.Element[];
@@ -14,7 +14,6 @@ interface Props {
 const CodeTabs = (props: Props) => {
   const { children } = props;
   const theme = useContext(ThemeContext);
-
 
   // render Mermaid diagram
   useEffect(() => {
@@ -25,6 +24,10 @@ const CodeTabs = (props: Props) => {
           theme: theme === 'dark' ? 'dark' : 'default',
         });
         mermaid.contentLoaded();
+      });
+
+      import('@readme/syntax-highlighter').then(module => {
+        uppercase = module.uppercase;
       });
     }
   }, [theme]);
