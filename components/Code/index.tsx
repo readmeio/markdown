@@ -1,6 +1,7 @@
 import copy from 'copy-to-clipboard';
 import React, { createRef, useContext } from 'react';
 
+import CodeOptsContext from '../../contexts/CodeOpts';
 import ThemeContext from '../../contexts/Theme';
 
 // Only load CodeMirror in the browser, for SSR
@@ -53,8 +54,9 @@ interface CodeProps {
 }
 
 const Code = (props: CodeProps) => {
-  const { children, copyButtons, lang, value } = props;
+  const { children, lang, value } = props;
   const theme = useContext(ThemeContext);
+  const copyButtons = useContext(CodeOptsContext) || props.copyButtons;
 
   const language = canonicalLanguage(lang);
 
