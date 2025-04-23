@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.1.6
+### 🛠 Fixes & Updates
+
+* missing code copy ([#1090](https://github.com/readmeio/markdown/issues/1090)) ([2d95a03](https://github.com/readmeio/markdown/commit/2d95a03c69b0b1b669d4f0874471aea309882247))
+
 ## Version 9.1.5
 ### 🛠 Fixes & Updates
 
