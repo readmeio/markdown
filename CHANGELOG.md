@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.2.0
+### ✨ New & Improved
+
+* external large deps ([#1091](https://github.com/readmeio/markdown/issues/1091)) ([bb1b238](https://github.com/readmeio/markdown/commit/bb1b23830a41cf4243f4a3c25007b881b00fdfee))
+
 ## Version 9.1.6
 ### 🛠 Fixes & Updates
 
