@@ -67,7 +67,7 @@
     "@readme/syntax-highlighter": "^13.1.0",
     "@readme/variable": "^16.1.0",
     "@tippyjs/react": "^4.1.0",
-    "acorn": "v8.12.1",
+    "acorn": "v8.13.0",
     "react": "16.x || 17.x || 18.x",
     "react-dom": "16.x || 17.x || 18.x"
   },
