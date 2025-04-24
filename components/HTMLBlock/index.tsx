@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 
@@ -21,11 +20,14 @@ interface Props {
 }
 
 const HTMLBlock = ({ children = '', runScripts, safeMode = false }: Props) => {
-  let html = children;
+  if (typeof children !== 'string') {
+    throw new TypeError('HTMLBlock: children must be a string');
+  }
+
+  const html = children;
   // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
 
-  if (typeof html !== 'string') html = renderToStaticMarkup(html);
   const [cleanedHtml, exec] = extractScripts(html);
 
   useEffect(() => {
