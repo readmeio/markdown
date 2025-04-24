@@ -83,8 +83,10 @@ const getConfig = ({ target }) => ({
 
 const browserConfig = merge(getConfig({ target: 'web' }), {
   externals: {
+    '@readme/syntax-highlighter': '@readme/syntax-highlighter',
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
+    acorn: 'acorn',
     mermaid: 'mermaid',
     react: {
       amd: 'react',
