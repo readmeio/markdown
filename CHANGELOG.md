@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.2.2
+### 🛠 Fixes & Updates
+
+* dont initialize mermaid ([#1093](https://github.com/readmeio/markdown/issues/1093)) ([30989fa](https://github.com/readmeio/markdown/commit/30989fa4574a5f8f405380da2835382107b60dc7))
+
 ## Version 9.2.1
 ### 🛠 Fixes & Updates
 
