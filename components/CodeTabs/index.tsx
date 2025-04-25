@@ -14,11 +14,11 @@ interface Props {
 const CodeTabs = (props: Props) => {
   const { children } = props;
   const theme = useContext(ThemeContext);
-
+  const hasMermaid = !Array.isArray(children) && children.props?.children.props.lang === 'mermaid';
 
   // render Mermaid diagram
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && hasMermaid) {
       import('mermaid').then(module => {
         mermaid = module.default;
         mermaid.initialize({
@@ -27,7 +27,7 @@ const CodeTabs = (props: Props) => {
         mermaid.contentLoaded();
       });
     }
-  }, [theme]);
+  }, [hasMermaid, theme]);
 
   function handleClick({ target }, index: number) {
     const $wrap = target.parentElement.parentElement;
@@ -42,7 +42,7 @@ const CodeTabs = (props: Props) => {
   }
 
   // render single Mermaid diagram
-  if (!Array.isArray(children) && children.props?.children.props.lang === 'mermaid') {
+  if (hasMermaid) {
     const value = children.props.children.props.value;
     return <pre className="mermaid mermaid_single">{value}</pre>;
   }
