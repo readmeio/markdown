@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.2.1
+### 🛠 Fixes & Updates
+
+* update acorn ([#1092](https://github.com/readmeio/markdown/issues/1092)) ([6d2a40e](https://github.com/readmeio/markdown/commit/6d2a40e88443f678e9f312196c83f5f125c52714))
+
 ## Version 9.2.0
 ### ✨ New & Improved
 
