@@ -30,6 +30,7 @@ describe('visual regression tests', () => {
       'codeBlockTests',
       'tableOfContentsTests',
       'tailwindRootTests',
+      'tutorialTile',
       'varsTest',
     ];
 

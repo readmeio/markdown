@@ -6,6 +6,7 @@ import imageTests from '../__tests__/fixtures/image-tests.mdx';
 import sanitizingTests from '../__tests__/fixtures/sanitizing-tests.md';
 import tableOfContentsTests from '../__tests__/fixtures/table-of-contents-tests.md';
 import tailwindRootTests from '../__tests__/fixtures/tailwind-root-tests.mdx';
+import tutorialTile from '../__tests__/fixtures/tutorial-tile.mdx';
 import varsTest from '../__tests__/fixtures/variable-tests.md';
 import builtInComponents from '../docs/built-in-components.mdx';
 import callouts from '../docs/callouts.md';
@@ -44,6 +45,7 @@ const fixtures = Object.entries({
   tableOfContentsTests,
   tables,
   tailwindRootTests,
+  tutorialTile,
   varsTest,
 }).reduce((memo, [sym, doc]) => {
   const name = lowerCase(sym);
