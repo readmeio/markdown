@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.3.0
+### ✨ New & Improved
+
+* tutorial tile placeholder ([#1094](https://github.com/readmeio/markdown/issues/1094)) ([0199e42](https://github.com/readmeio/markdown/commit/0199e42b1d6766c252de9210ab48653c988456b4))
+
 ## Version 9.2.2
 ### 🛠 Fixes & Updates
 
