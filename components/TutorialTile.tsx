@@ -1,18 +1,20 @@
 import React from 'react';
 
+// We render a placeholder in this library, as the actual implemenation is
+// deeply tied to the main app
 const TutorialTile = () => {
   const style = {
     height: '50px',
-    border: '1px solid var(--color-border-default)',
-    borderRadius: 'var(--border-radius-lg)',
+    border: '1px solid var(--color-border-default, rgba(black, 0.1))',
+    borderRadius: 'var(--border-radius-lg, 7.5px)',
     minWidth: '230px',
     display: 'inline-flex',
     padding: '10px',
   };
 
   const placeholderStyle = {
-    borderRadius: 'var(--border-radius-lg)',
-    backgroundColor: 'var(--color-skeleton)',
+    borderRadius: 'var(--border-radius-lg, 7.5px)',
+    backgroundColor: 'var(--color-skeleton, #384248)',
   };
 
   const avatarStyle = {
