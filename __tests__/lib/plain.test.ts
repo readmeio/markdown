@@ -35,6 +35,19 @@ Is it _me_ you're looking for?
     expect(plain(tree)).toBe('Title Some body');
   });
 
+  it('compiles JSX callouts', () => {
+    const txt = `
+<Callout  icon="📘">
+  Title
+
+  Some body
+</Callout>
+    `;
+    const tree = hast(txt);
+
+    expect(plain(tree)).toBe('Title Some body');
+  });
+
   it('compiles markdown tables', () => {
     const txt = `
 | Header 1 | Header 2 |
@@ -52,5 +65,42 @@ Is it _me_ you're looking for?
     const tree = hast(txt);
 
     expect(plain(tree)).toBe('entitled kittens');
+  });
+
+  it('compiles JSX images to their title', () => {
+    const txt = `
+<Image src="http://placekitten.com/600/600" alt="image **label**" title="entitled kittens" />
+    `;
+    const tree = hast(txt);
+
+    expect(plain(tree)).toBe('entitled kittens');
+  });
+
+  it('compiles html blocks to their plain text', () => {
+    const txt = `
+<HTMLBlock>{\`
+  <p>Paragraph text</p>
+\`}</HTMLBlock>
+    `;
+
+    expect(plain(hast(txt))).toBe('Paragraph text');
+  });
+
+  it('compiles glossary items to their term', () => {
+    const txt = '<Glossary>parliament</Glossary>';
+
+    expect(plain(hast(txt))).toBe('parliament');
+  });
+
+  it('compiles variables to their name', () => {
+    const txt = '{user.name}';
+
+    expect(plain(hast(txt))).toBe('name');
+  });
+
+  it('compiles provided variables to their values', () => {
+    const txt = '{user.name}';
+
+    expect(plain(hast(txt), { variables: { name: 'Owlbert' } })).toBe('Owlbert');
   });
 });

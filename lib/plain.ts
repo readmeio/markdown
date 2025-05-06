@@ -35,19 +35,17 @@ function one(node: Nodes, opts: Options) {
 
         return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
       }
-      case 'readme-glossary-item': {
-        return node.properties.term;
-      }
-      case 'readme-variable': {
-        const key = node.properties.variable.toString();
-        const val = opts.variables[key];
-        return val || `<<${key}>>`;
+      case 'Variable': {
+        const key = node.properties.name.toString();
+        const val = 'variables' in opts && opts.variables[key];
+        return val || key;
       }
       case 'img': {
         return node.properties?.title || '';
       }
       case 'Accordion':
       case 'Card':
+      case 'Callout':
       case 'Tab': {
         const title = node.properties?.title || '';
         const children = node?.children;
