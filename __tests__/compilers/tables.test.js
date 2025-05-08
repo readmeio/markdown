@@ -325,4 +325,17 @@ describe('table compiler', () => {
       </Table>"
     `);
   });
+
+  it('compiles tables with empty cells', () => {
+    const doc = `
+| col1 | col2 | col3                     |
+| :--- | :--: | :----------------------- |
+| →    |      | ← empty cell to the left |
+`;
+    const ast = mdast(doc);
+
+    expect(() => {
+      mdx(ast);
+    }).not.toThrow();
+  });
 });
