@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.3.2
+### 🛠 Fixes & Updates
+
+* crash when compiling empty table cells ([#1099](https://github.com/readmeio/markdown/issues/1099)) ([a88c471](https://github.com/readmeio/markdown/commit/a88c471a25cfa42f2d1117e221d8fcb18d1cd0d5))
+
 ## Version 9.3.1
 ### 🛠 Fixes & Updates
 
