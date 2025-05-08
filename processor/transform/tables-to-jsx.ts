@@ -27,6 +27,8 @@ const visitor = (table: Table, index: number, parent: Parents) => {
   let hasFlowContent = false;
 
   const tableCellVisitor = (cell: TableCell) => {
+    if (cell.children.length === 0) return EXIT;
+
     const content =
       cell.children.length === 1 && cell.children[0].type === 'paragraph'
         ? (cell.children[0] as unknown as Paragraph).children[0]
