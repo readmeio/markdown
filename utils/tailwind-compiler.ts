@@ -20,21 +20,25 @@ async function loadStylesheet(id: string, base: string) {
       return {
         base,
         content: index,
+        path: '',
       };
     } else if (id === 'tailwindcss/preflight' || id === 'tailwindcss/preflight.css' || id === './preflight.css') {
       return {
         base,
         content: preflight,
+        path: '',
       };
     } else if (id === 'tailwindcss/theme' || id === 'tailwindcss/theme.css' || id === './theme.css') {
       return {
         base,
         content: theme,
+        path: '',
       };
     } else if (id === 'tailwindcss/utilities' || id === 'tailwindcss/utilities.css' || id === './utilities.css') {
       return {
         base,
         content: utilities,
+        path: '',
       };
     }
 
