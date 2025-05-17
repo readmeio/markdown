@@ -1,4 +1,6 @@
 @import '../styles/main.scss';
+@import './styles/header.scss';
+@import './styles/theme.scss';
 
 :root {
   color-scheme: light dark;
@@ -8,12 +10,17 @@
   --color-text: black;
   --color-edge: #eee;
   --color-dull: #555;
+
   @media (prefers-color-scheme: dark) {
     --color-page: #121212;
     --color-text: white;
     --color-edge: #333;
     --color-dull: #888;
   }
+}
+
+[data-color-mode] {
+  background: var(--color-bg-page);
 }
 
 body {
@@ -55,7 +62,6 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    background-color: var(--rdmd-demo-blue);
     height: 64px;
   }
 
@@ -64,7 +70,7 @@ body {
     align-items: center;
     width: var(--rdmd-demo-container);
     padding: 0 2em;
-    color: var(--color-page);
+    color: var(--color-text-default);
     display: flex;
     align-items: center;
     h1 {
@@ -80,15 +86,7 @@ body {
     }
     #docsLink {
       margin-left: auto;
-      padding: 0.4em;
-      line-height: 1;
-      color: var(--color-page);
       text-decoration: none;
-      border-radius: 0.3em;
-      &:hover {
-        color: var(--rdmd-demo-blue);
-        background: var(--color-page);
-      }
     }
   }
 
@@ -126,8 +124,6 @@ body {
     &:first-child {
       position: sticky;
       top: -3em;
-      background: var(--color-page);
-      box-shadow: 0 -0.5em var(--color-page);
       z-index: 9999999;
     }
 

@@ -1,0 +1,67 @@
+@import './mixins/expand';
+@import './mixins/dark-mode';
+@import './vars';
+
+// Theme Variables
+:root {
+  // Backgrounds
+  --color-bg-active: rgba(
+    var(--black-rgb),
+    0.1
+  ); // Transparent tint to apply over an arbitrary bg color in "active" state
+  --color-bg-hover: rgba(
+    var(--black-rgb),
+    0.05
+  ); // Transparent tint to apply over an arbitrary bg color in "hover" state
+  --color-bg-page: var(--white);
+  --color-bg-page-rgb: var(--white-rgb);
+  --color-bg-page-rgb-inverse: var(--black-rgb);
+  --color-bg-page-muted: var(--gray90);
+
+  // Text
+  --color-text-default: var(--gray20);
+  --color-text-muted: var(--gray30);
+  --color-text-minimum: var(--gray40);
+  --color-text-minimum-hover: var(--gray30);
+  --color-text-minimum-icon: rgba($gray40, 0.6); // Only used for icons when paired with --color-text-minimum text
+
+  // Accessories
+  --color-border-default: rgba(var(--black-rgb), 0.1);
+  --color-border-muted: rgba(var(--black-rgb), 0.05);
+  --color-skeleton: var(--gray90); // Used to define the background color of the <Skeleton /> component
+  --color-focus-ring: rgba($blue, 0.25); // Used to define the color of the focus ring (outline) on focusable elements
+
+  // Inputs
+  --color-input-background: var(--white);
+  --color-input-text: var(--gray20);
+  --color-input-border: #e5e5e5; // Hex equivalent of rgba(black, 0.1) over --color-input-background
+  --color-input-border-hover: #ccc; // Hex equivalent of rgba(black, 0.2) over --color-input-background
+  --color-input-border-active: var(--blue);
+  --color-input-border-focus: var(--color-focus-ring);
+  --color-input-placeholder: var(--gray60);
+
+  @include expand($css-variables, '--');
+}
+
+@include dark-mode {
+  --color-bg-active: rgba(white, 0.075);
+  --color-bg-hover: rgba(white, 0.05);
+  --color-bg-page: var(--gray0); // NOT THE SAME AS `README`
+  --color-bg-page-rgb: var(--gray0-rgb);
+  --color-bg-page-rgb-inverse: var(--white-rgb);
+  --color-bg-page-muted: var(--gray20);
+  --color-text-default: var(--white);
+  --color-text-muted: var(--gray80);
+  --color-text-minimum: var(--gray70);
+  --color-text-minimum-hover: var(--gray80);
+  --color-text-minimum-icon: rgba($gray70, 0.6);
+  --color-border-default: rgba(white, 0.1);
+  --color-border-muted: rgba(white, 0.05);
+  --color-skeleton: var(--gray20);
+
+  // Inputs
+  --color-input-background: var(--gray20);
+  --color-input-text: white;
+  --color-input-border: #4c555a; // Hex equivalent of rgba(white, 0.1) over --color-input-background
+  --color-input-border-hover: #60686d; // Hex equivalent of rgba(white, 0.2) over --color-input-background
+}

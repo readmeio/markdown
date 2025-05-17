@@ -1,44 +1,72 @@
-@mixin callout($l-offset: 1.33rem) {
-  --background: #{lighten(#dfe2e5, 8.75%)};
-  --border: #{lighten(#6a737d, 12.5%)};
+@import '../../styles/mixins/dark-mode.scss';
 
-  & {
-    background: var(--background);
-    border-color: var(--border);
-    color: var(--text);
-    padding: $l-offset;
+@mixin callout($l-offset: 1.33rem) {
+  --Callout-bg: #{lighten(#dfe2e5, 8.75%)};
+  --Callout-border: #{lighten(#6a737d, 12.5%)};
+
+  // legacy variables
+  --background: var(--Callout-bg);
+  --border: var(--Callout-border);
+
+  background: var(--Callout-bg);
+  border-color: var(--Callout-border);
+  color: var(--color-text-default, var(--text));
+  padding: $l-offset;
+
+  @include dark-mode {
+    --Callout-bg: rgba(var(--gray100-rgb), 0.05);
   }
 
   &_info {
     $color: #46b8da;
-    --background: #e3edf2;
-    --title: #{$color};
-    --border: #{lighten($color, 5%)}; // should be #5bc0de
+    --title: $color; // legacy variable
+
+    --Callout-bg: #e3edf2;
+    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--blue-rgb), 0.05);
+    }
   }
 
   &_warn,
   &_warning {
     $color: #eea236;
-    --background: #fcf8f2;
-    --title: #{$color};
-    --border: #{lighten($color, 5%)};
+    --title: $color; // legacy variable
+
+    --Callout-bg: #e3edf2;
+    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--yellow-rgb), 0.05);
+    }
   }
 
   &_ok,
   &_okay,
   &_success {
     $color: #489e49;
-    --background: #f3f8f3;
-    --title: #{$color};
-    --border: #{lighten($color, 5%)}; // should be #50af51
+    --title: $color; // legacy variable
+
+    --Callout-bg: #f3f8f3;
+    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--green-rgb), 0.05);
+    }
   }
 
   &_err,
   &_error {
     $color: #d43f3a;
-    --background: #fdf7f7;
-    --title: #{$color};
-    --border: #{lighten($color, 5%)}; // should be #d9534f
+    --title: $color; // legacy variable
+
+    --Callout-bg: #fdf7f7;
+    --Callout-border: #{lighten($color, 5%)}; // should be #d9534f
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--red-rgb), 0.05);
+    }
   }
 
   > * {
@@ -57,14 +85,14 @@
     border-color: var(--border, var(--markdown-edge, #eee));
   }
   blockquote {
-    color: var(--text);
+    color: var(--color-text-default, var(--text));
     border-color: var(--border);
     border-width: 3px;
     padding: 0 0 0 0.8em;
   }
 
   .callout-heading {
-    color: var(--title, --text);
+    color: var(--title, var(--color-text-default, var(--text)));
     font-family: var(--markdown-title-font); // match h3
     font-size: 1.25em; // match h3
     font-weight: var(--markdown-title-weight, 600); // match h3
