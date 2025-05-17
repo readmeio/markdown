@@ -1,0 +1,6 @@
+@mixin expand($map, $prefix: '') {
+  // for use with Webpack sass-loader in :export {}
+  @each $key, $val in $map {
+    #{unquote($prefix)}#{unquote($key)}: #{$val};
+  }
+}
