@@ -4,31 +4,31 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('variables', () => {
-  it('renders a variable', async () => {
+  it('renders a variable', () => {
     const md = '{user.name}';
-    const Content = await execute(md, {}, { variables: { user: { name: 'Testing' } } });
+    const Content = execute(md, {}, { variables: { user: { name: 'Testing' } } });
 
     render(<Content />);
 
     expect(screen.getByText('Testing')).toBeVisible();
   });
 
-  it('renders a default value', async () => {
+  it('renders a default value', () => {
     const md = '{user.name}';
-    const Content = await execute(md);
+    const Content = execute(md);
 
     render(<Content />);
 
     expect(screen.getByText('NAME')).toBeVisible();
   });
 
-  it('supports user variables in ESM', async () => {
+  it('supports user variables in ESM', () => {
     const md = `
 export const Hello = () => <p>{user.name}</p>;
 
 <Hello />
 `;
-    const Content = await execute(md, {}, { variables: { user: { name: 'Owlbert' } } });
+    const Content = execute(md, {}, { variables: { user: { name: 'Owlbert' } } });
 
     render(<Content />);
 

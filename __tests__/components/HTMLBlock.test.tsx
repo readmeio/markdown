@@ -33,7 +33,7 @@ describe('HTML Block', () => {
   });
 
   it("doesn't render user scripts with weird endings", () => {
-    render(<HTMLBlock>{'<script>mockFn()</script foo=\'bar\'>'}</HTMLBlock>);
+    render(<HTMLBlock>{"<script>mockFn()</script foo='bar'>"}</HTMLBlock>);
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
@@ -54,9 +54,9 @@ describe('HTML Block', () => {
     expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
   });
 
-  it('renders the html in a `<pre>` tag if safeMode={true}', async () => {
+  it('renders the html in a `<pre>` tag if safeMode={true}', () => {
     const md = '<HTMLBlock safeMode={true}>{`<button onload="alert(\'gotcha!\')"/>`}</HTMLBlock>';
-    const Component = await execute(md);
+    const Component = execute(md);
     expect(renderToStaticMarkup(<Component />)).toMatchInlineSnapshot(
       '"<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>"',
     );
