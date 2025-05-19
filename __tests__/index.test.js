@@ -35,9 +35,9 @@ test.skip('it should have the proper utils exports', () => {
   });
 });
 
-test('image', async () => {
+test('image', () => {
   const md = '![Image](http://example.com/image.png)';
-  const component = await execute(md);
+  const component = execute(md);
   const { container } = render(React.createElement(component));
 
   expect(container.innerHTML).toMatchSnapshot();
@@ -58,8 +58,8 @@ test.skip('check list items', () => {
   expect(container.innerHTML).toMatchSnapshot();
 });
 
-test('gemoji generation', async () => {
-  const component = await execute(':sparkles:');
+test('gemoji generation', () => {
+  const component = execute(':sparkles:');
   const { container } = render(React.createElement(component));
   expect(container.querySelector('.lightbox')).not.toBeInTheDocument();
 });
@@ -69,8 +69,8 @@ test.skip('should strip out inputs', () => {
   expect(screen.queryByRole('input')).not.toBeInTheDocument();
 });
 
-test('tables', async () => {
-  const component = await execute(`| Tables        | Are           | Cool  |
+test('tables', () => {
+  const component = execute(`| Tables        | Are           | Cool  |
 | ------------- |:-------------:| -----:|
 | col 3 is      | right-aligned | $1600 |
 | col 2 is      | centered      |   $12 |

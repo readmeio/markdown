@@ -5,28 +5,28 @@ import * as rmdx from '../../index';
 import { execute } from '../helpers';
 
 describe('variables transformer', () => {
-  it('renders user variables', async () => {
+  it('renders user variables', () => {
     const mdx = '{user.name}';
     const variables = {
       user: {
         name: 'Test User',
       },
     };
-    const Content = (await execute(mdx, { variables })) as () => React.ReactNode;
+    const Content = execute(mdx, { variables }) as () => React.ReactNode;
 
     render(<Content />);
 
     expect(screen.findByText('Test User')).toBeDefined();
   });
 
-  it('renders user variables in a phrasing context', async () => {
+  it('renders user variables in a phrasing context', () => {
     const mdx = 'Hello, {user.name}!';
     const variables = {
       user: {
         name: 'Test User',
       },
     };
-    const Content = (await execute(mdx, { variables })) as () => React.ReactNode;
+    const Content = execute(mdx, { variables }) as () => React.ReactNode;
 
     render(<Content />);
 

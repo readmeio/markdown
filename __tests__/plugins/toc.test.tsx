@@ -4,7 +4,7 @@ import React from 'react';
 import { compile, run } from '../../index';
 
 describe('toc transformer', () => {
-  it('parses out a toc with max depth of 2', async () => {
+  it('parses out a toc with max depth of 2', () => {
     const md = `
 # Title
 
@@ -14,7 +14,7 @@ describe('toc transformer', () => {
 
 ## Second Subheading
 `;
-    const { Toc } = await run(await compile(md));
+    const { Toc } = run(compile(md));
 
     render(<Toc />);
 
@@ -24,7 +24,7 @@ describe('toc transformer', () => {
     expect(screen.findByText('Second Subheading')).toBeDefined();
   });
 
-  it('parses a toc from components', async () => {
+  it('parses a toc from components', () => {
     const md = `
 # Title
 
@@ -36,10 +36,10 @@ describe('toc transformer', () => {
       CommonInfo: '## Common Heading',
     };
     const executed = {
-      CommonInfo: await run(await compile('## Common Heading')),
+      CommonInfo: run(compile('## Common Heading')),
     };
 
-    const { Toc } = await run(await compile(md, { components }), { components: executed });
+    const { Toc } = run(compile(md, { components }), { components: executed });
 
     render(<Toc />);
 
@@ -48,11 +48,11 @@ describe('toc transformer', () => {
     expect(screen.findByText('Subheading')).toBeDefined();
   });
 
-  it('parses out a toc and only uses plain text', async () => {
+  it('parses out a toc and only uses plain text', () => {
     const md = `
 # [Title](http://example.com)
 `;
-    const { Toc } = await run(await compile(md));
+    const { Toc } = run(compile(md));
 
     render(<Toc />);
 
@@ -60,7 +60,7 @@ describe('toc transformer', () => {
     expect(screen.queryByText('[', { exact: false })).toBeNull();
   });
 
-  it('does not inject a toc if one already exists', async () => {
+  it('does not inject a toc if one already exists', () => {
     const md = `
 ## Test Heading
 
@@ -81,7 +81,7 @@ export const toc = [
 ]
     `;
 
-    const { toc } = await run(await compile(md));
+    const { toc } = run(compile(md));
 
     expect(toc).toMatchInlineSnapshot(`
       [

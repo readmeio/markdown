@@ -4,7 +4,7 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('Components', () => {
-  it('Callout', async () => {
+  it('Callout', () => {
     const callout = [
       `
 > ❗️ Error Callout
@@ -19,7 +19,7 @@ describe('Components', () => {
     ];
 
     let md = callout[0];
-    let component = await execute(md);
+    let component = execute(md);
     let { container } = render(React.createElement(component));
 
     expect(container.innerHTML).toMatchSnapshot();
@@ -27,7 +27,7 @@ describe('Components', () => {
     cleanup();
 
     md = callout[1];
-    component = await execute(md);
+    component = execute(md);
     ({ container } = render(React.createElement(component)));
 
     expect(container.innerHTML).toMatchInlineSnapshot(
@@ -64,18 +64,18 @@ describe('Components', () => {
       rdmd: '[rdmd](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")',
     };
 
-    Object.values(fixtures).map(async fx => {
-      const component = await execute(fx);
+    Object.values(fixtures).map(fx => {
+      const component = execute(fx);
       const { container } = render(React.createElement(component));
       return expect(container.innerHTML).toMatchSnapshot();
     });
   });
 
-  it('Image', async () => {
+  it('Image', () => {
     const text =
       '![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")';
 
-    const component = await execute(text);
+    const component = execute(text);
     const { container } = render(React.createElement(component));
 
     expect(container.innerHTML).toMatchSnapshot();

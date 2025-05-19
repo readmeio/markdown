@@ -4,47 +4,47 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('run', () => {
-  it('allows providing imports', async () => {
+  it('allows providing imports', () => {
     const mdx = 'Hello, world!';
-    const Component = await execute(mdx, {}, { imports: { React } });
+    const Component = execute(mdx, {}, { imports: { React } });
 
     render(<Component />);
 
     expect(screen.getByText('Hello, world!')).toBeInTheDocument();
   });
 
-  it('merges the imports with the built-ins', async () => {
+  it('merges the imports with the built-ins', () => {
     const mdx = '{user.test}';
-    const Component = await execute(mdx, {}, { imports: { React } });
+    const Component = execute(mdx, {}, { imports: { React } });
 
     render(<Component />);
 
     expect(screen.getByText('TEST')).toBeInTheDocument();
   });
 
-  it('renders null for a non-existant component', async () => {
+  it('renders null for a non-existant component', () => {
     const mdx = `
 ### Hello, world!
 
 <NonExistentComponent />`;
-    const Component = await execute(mdx, {}, {});
+    const Component = execute(mdx, {}, {});
 
     render(<Component />);
     expect(screen.getByText('Hello, world!')).toBeInTheDocument();
   });
 
-  it('renders null for a non-existant component when `missingComponents === "ignore"`', async () => {
+  it('renders null for a non-existant component when `missingComponents === "ignore"`', () => {
     const mdx = `
 ### Hello, world!
 
 <NonExistentComponent />`;
-    const Component = await execute(mdx, { missingComponents: 'ignore' }, {});
+    const Component = execute(mdx, { missingComponents: 'ignore' }, {});
 
     render(<Component />);
     expect(screen.getByText('Hello, world!')).toBeInTheDocument();
   });
 
-  it('throws an error when a component does not exist and `missingComponents === "throw"`', async () => {
+  it('throws an error when a component does not exist and `missingComponents === "throw"`', () => {
     const mdx = `
 ### Hello, world!
 
@@ -52,7 +52,7 @@ describe('run', () => {
 
     let error;
     try {
-      await execute(mdx, { missingComponents: 'throw' }, {});
+      execute(mdx, { missingComponents: 'throw' }, {});
     } catch (e) {
       error = e;
     }

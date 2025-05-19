@@ -4,9 +4,9 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('Variable', () => {
-  it('render a variable', async () => {
+  it('render a variable', () => {
     const md = '<Variable variable="name" />';
-    const Content = await execute(md);
+    const Content = execute(md);
 
     render(<Content />);
 
