@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.4.0
+### ✨ New & Improved
+
+* convert `run` and `compile` to have synchronous execution ([#1108](https://github.com/readmeio/markdown/issues/1108)) ([fd08b6c](https://github.com/readmeio/markdown/commit/fd08b6cefb3e2602bbca8f7bcd4dea052dd83ab8)), closes [/github.com/readmeio/readme/blob/next/packages/react/src/routes/Doc/Header/index.tsx#L59](https://github.com/readmeio//github.com/readmeio/readme/blob/next/packages/react/src/routes/Doc/Header/index.tsx/issues/L59) [/github.com/readmeio/readme/blob/next/packages/react/src/routes/Discuss/Post/Excerpt.jsx#L81-L83](https://github.com/readmeio//github.com/readmeio/readme/blob/next/packages/react/src/routes/Discuss/Post/Excerpt.jsx/issues/L81-L83)
+
 ## Version 9.3.3
 ### 🛠 Fixes & Updates
 
