@@ -5,7 +5,6 @@ import React from 'react';
 
 import { vi } from 'vitest';
 
-
 import { mdx, compile, run } from '../../index';
 import { migrate } from '../helpers';
 
@@ -227,10 +226,10 @@ This is an image: <img src="http://example.com/#\\>" >
     [/block]
     `;
 
-    it('should wrap raw <style> tags in an <HTMLBlock>', async () => {
+    it('should wrap raw <style> tags in an <HTMLBlock>', () => {
       const converted = migrate(rawStyle);
-      const compiled = await compile(converted);
-      const Component = (await run(compiled)).default;
+      const compiled = compile(converted);
+      const Component = run(compiled).default;
       render(
         <div className="markdown-body">
           <Component />
@@ -239,10 +238,10 @@ This is an image: <img src="http://example.com/#\\>" >
       expect(screen.getByTestId('style-tag').tagName).toMatch('STYLE');
     });
 
-    it('should wrap raw <script> tags in an <HTMLBlock>', async () => {
+    it('should wrap raw <script> tags in an <HTMLBlock>', () => {
       const converted = migrate(rawScript);
-      const compiled = await compile(converted);
-      const Component = (await run(compiled)).default;
+      const compiled = compile(converted);
+      const Component = run(compiled).default;
       render(
         <div className="markdown-body">
           <Component />
@@ -251,14 +250,14 @@ This is an image: <img src="http://example.com/#\\>" >
       expect(screen.queryByTestId('script-tag')).toBeNull();
     });
 
-    it('should never execute <script> tags', async () => {
+    it('should never execute <script> tags', () => {
       /**
        * @note compatability mode has been deprecated for RMDX
        */
       const spy = vi.spyOn(console, 'log');
       const converted = migrate(magicScript);
-      const compiled = await compile(converted);
-      const Component = await run(compiled);
+      const compiled = compile(converted);
+      const Component = run(compiled);
       render(
         <div className="markdown-body">
           <Component.default />

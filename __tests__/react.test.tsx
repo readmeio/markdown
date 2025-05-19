@@ -25,7 +25,7 @@ export default function Counter() {
 <Counter />
     `;
 
-    const Content = await execute(mdx);
+    const Content = execute(mdx);
     render(<Content />);
 
     expect(screen.getByText('You clicked 0 times!')).toBeVisible();
