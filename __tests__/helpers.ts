@@ -22,7 +22,7 @@ export const execute = (doc: string, compileOpts = {}, runOpts = {}, { getDefaul
   const code = compile(doc, compileOpts);
   const mod = run(code, runOpts);
 
-  return getDefault && 'default' in mod ? mod.default : mod;
+  return getDefault ? mod.default : mod;
 };
 
 export const migrate = (doc: string) => {
