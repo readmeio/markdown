@@ -1,7 +1,7 @@
 import type { CompileOptions } from '@mdx-js/mdx';
 import type { PluggableList } from 'unified';
 
-import { compile as mdxCompile } from '@mdx-js/mdx';
+import { compileSync as mdxCompileSync } from '@mdx-js/mdx';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
@@ -20,7 +20,7 @@ export type CompileOpts = CompileOptions & {
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
-const compile = async (
+const compile = (
   text: string,
   { components = {}, missingComponents, copyButtons, useTailwind, ...opts }: CompileOpts = {},
 ) => {
@@ -40,7 +40,7 @@ const compile = async (
   }
 
   try {
-    const vfile = await mdxCompile(text, {
+    const vfile = mdxCompileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,

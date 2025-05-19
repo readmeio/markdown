@@ -4,7 +4,7 @@ import type { Variables } from '../utils/user';
 import type { RunOptions } from '@mdx-js/mdx';
 import type { MDXProps } from 'mdx/types';
 
-import { run as mdxRun } from '@mdx-js/mdx';
+import { runSync as mdxRunSync } from '@mdx-js/mdx';
 import React from 'react';
 import * as runtime from 'react/jsx-runtime';
 
@@ -26,7 +26,7 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> & {
   variables?: Variables;
 };
 
-const run = async (string: string, _opts: RunOpts = {}) => {
+const run = (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
   const { components = {}, terms, variables, baseUrl, imports = {}, theme, copyButtons, ...opts } = _opts;
 
@@ -47,24 +47,24 @@ const run = async (string: string, _opts: RunOpts = {}) => {
   }, {});
 
   const exec = (text: string, { useMDXComponents = makeUseMDXComponents(exportedComponents) }: RunOpts = {}) => {
-    return mdxRun(text, {
+    return mdxRunSync(text, {
       ...runtime,
       Fragment,
       baseUrl: import.meta.url,
       imports: { React, user: User(variables), ...imports },
       useMDXComponents,
       ...opts,
-    } as RunOptions) as Promise<RMDXModule>;
+    } as RunOptions) as RMDXModule;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = await exec(string);
+  const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = exec(string);
 
   let Toc: React.FC | undefined;
   const tocMdx = tocHastToMdx(toc, tocsByTag);
   if (tocMdx) {
-    const compiledToc = await compile(tocMdx);
-    const tocModule = await exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
+    const compiledToc = compile(tocMdx);
+    const tocModule = exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
 
     Toc = tocModule.default;
   }
