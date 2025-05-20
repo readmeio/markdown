@@ -1,16 +1,17 @@
 @import '../../styles/mixins/dark-mode.scss';
 
 @mixin callout($l-offset: 1.33rem) {
-  --Callout-bg: #{lighten(#dfe2e5, 8.75%)};
-  --Callout-border: #{lighten(#6a737d, 12.5%)};
-
   // legacy variables
-  --background: var(--Callout-bg);
-  --border: var(--Callout-border);
+  --background: #{lighten(#dfe2e5, 8.75%)};
+  --border: #{lighten(#6a737d, 12.5%)};
+  --title: var(--text, var(--color-text-default));
+
+  --Callout-bg: var(--background);
+  --Callout-border: var(--border);
 
   background: var(--Callout-bg);
   border-color: var(--Callout-border);
-  color: var(--color-text-default, var(--text));
+  color: var(--text, var(--color-text-default));
   padding: $l-offset;
 
   @include dark-mode {
@@ -19,7 +20,7 @@
 
   &_info {
     $color: #46b8da;
-    --title: $color; // legacy variable
+    --title: #{$color}; // legacy variable
 
     --Callout-bg: #e3edf2;
     --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
@@ -32,7 +33,7 @@
   &_warn,
   &_warning {
     $color: #eea236;
-    --title: $color; // legacy variable
+    --title: #{$color}; // legacy variable
 
     --Callout-bg: #e3edf2;
     --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
@@ -46,7 +47,7 @@
   &_okay,
   &_success {
     $color: #489e49;
-    --title: $color; // legacy variable
+    --title: #{$color}; // legacy variable
 
     --Callout-bg: #f3f8f3;
     --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
@@ -59,7 +60,7 @@
   &_err,
   &_error {
     $color: #d43f3a;
-    --title: $color; // legacy variable
+    --title: #{$color}; // legacy variable
 
     --Callout-bg: #fdf7f7;
     --Callout-border: #{lighten($color, 5%)}; // should be #d9534f
@@ -81,9 +82,11 @@
   a {
     color: inherit;
   }
+
   hr {
     border-color: var(--border, var(--markdown-edge, #eee));
   }
+
   blockquote {
     color: var(--color-text-default, var(--text));
     border-color: var(--border);

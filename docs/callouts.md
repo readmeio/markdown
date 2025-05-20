@@ -104,11 +104,22 @@ Each callout will also have a `theme` attribute that's set to it's emoji prefix.
 
 ```css Custom CSS
 .markdown-body .callout[theme='🎅'] {
-  --background: #c54245;
+  --Callout-bg: #c54245;
   --border: #ffffff6b;
   --text: #f5fffa;
 }
 ```
+
+<HTMLBlock>{`
+
+<style>
+.markdown-body .callout[theme=\"🎅\"] {
+  --background: #c54245 !important;
+  --border: #ffffff6b;
+  --text: #f5fffa;
+}
+</style>`}
+</HTMLBlock>
 
 ```markdown Markdown Syntax
 > 🎅 Old Saint Nick
@@ -225,14 +236,3 @@ The custom icon font defaults to `Font Awesome 6 Pro`.
 > 🥈
 >
 > Lorem ipsum dolor sit amet consectetur adipisicing elit. Error eos animi obcaecati quod repudiandae aliquid nemo veritatis ex, quos delectus minus sit omnis vel dolores libero, recusandae ea dignissimos iure?
-
-<HTMLBlock>{`
-
-<style>
-.markdown-body .callout[theme=\"🎅\"] {
-  --background: #c50a4f;
-  --border: #ffffff6b;
-  --text: #f5fffa;
-}
-</style>`}
-</HTMLBlock>

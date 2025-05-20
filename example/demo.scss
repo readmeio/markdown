@@ -1,6 +1,19 @@
 @import '../styles/main.scss';
 @import './styles/header.scss';
 @import './styles/theme.scss';
+@import './styles/mixins/dark-mode.scss';
+
+// markdown overrides from `readme`
+@include dark-mode(true) {
+  // --table-edges uses hex equivalent of --color-border-default over --color-page-bg
+  // to prevent transparent border issues in safari
+  --table-edges: #3a4348;
+  --table-head: var(--gray15);
+  --table-stripe: var(--gray15);
+  --md-code-background: var(--gray15);
+  --md-code-tabs: var(--gray20);
+  --md-code-text: var(--color-text-default);
+}
 
 :root {
   color-scheme: light dark;
