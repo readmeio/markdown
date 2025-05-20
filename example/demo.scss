@@ -5,6 +5,8 @@
 
 // markdown overrides from `readme`
 @include dark-mode(true) {
+  color: var(--color-text-default);
+
   // --table-edges uses hex equivalent of --color-border-default over --color-page-bg
   // to prevent transparent border issues in safari
   --table-edges: #3a4348;
@@ -13,6 +15,7 @@
   --md-code-background: var(--gray15);
   --md-code-tabs: var(--gray20);
   --md-code-text: var(--color-text-default);
+  --rdmd-demo-logo: url(https://files.readme.io/97584af-brandmark-white.svg);
 }
 
 :root {
@@ -23,6 +26,24 @@
   --color-text: black;
   --color-edge: #eee;
   --color-dull: #555;
+  --rdmd-demo-logo: url(https://files.readme.io/45785f4-brandmark-blue.svg);
+
+  // markdown overrides from `readme`
+  --md-code-text: var(--color-text-default);
+  --markdown-font: var(--font-family);
+  --markdown-font-size: 15px;
+  --markdown-line-height: 1.5;
+  --markdown-title-font: var(--font-family);
+  --markdown-title-weight: var(--font-weight-bold);
+
+  // --table-edges uses hex equivalent of --color-border-default over --color-page-bg
+  // to prevent transparent border issues in safari
+  --table-edges: #e5e5e5;
+  --table-head: var(--gray100);
+  --table-head-text: var(--color-text-default);
+  --table-stripe: var(--gray100);
+  --table-text: var(--color-text-default);
+  --table-row: var(--color-bg-page);
 
   @media (prefers-color-scheme: dark) {
     --color-page: #121212;
@@ -37,6 +58,7 @@
 }
 
 body {
+  color: var(--color-text-default);
   font-family: var(--font-sans);
   margin: 0;
 }
@@ -79,24 +101,25 @@ body {
   }
 
   .rdmd-demo--header-content {
-    display: flex;
     align-items: center;
-    width: var(--rdmd-demo-container);
-    padding: 0 2em;
     color: var(--color-text-default);
     display: flex;
-    align-items: center;
+    gap: 0.5em;
+    padding: 0 2em;
+    width: var(--rdmd-demo-container);
+
     h1 {
-      margin: 0;
-      font-size: 1.5em;
+      font-size: 1.25em;
       line-height: 1;
-      font-weight: 500;
+      margin: 0;
+
       code {
         font-size: inherit;
-        font-family: var(--rdmd-demo-mono);
-        font-weight: bold;
+        font-family: var(--font-family-mono);
+        font-weight: 400;
       }
     }
+
     #docsLink {
       margin-left: auto;
       text-decoration: none;
@@ -109,7 +132,7 @@ body {
     width: 40px;
     background-size: contain;
     background-repeat: no-repeat;
-    background-image: url(https://files.readme.io/97584af-brandmark-white.svg);
+    background-image: var(--rdmd-demo-logo);
     text-indent: -99999px;
     margin-right: 1em;
   }
