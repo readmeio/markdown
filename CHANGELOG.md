@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.4.1
+### 🛠 Fixes & Updates
+
+* missing iframe title ([#1109](https://github.com/readmeio/markdown/issues/1109)) ([3b676d0](https://github.com/readmeio/markdown/commit/3b676d0a271c2f6bef49ec2a6984ae05f2a53589))
+
 ## Version 9.4.0
 ### ✨ New & Improved
 
