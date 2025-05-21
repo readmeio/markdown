@@ -1,0 +1,580 @@
+// THIS FILE WAS DUPED FROM THE README MONOREPO
+
+@import './methods/merge-multiple';
+
+// iPad sizes
+$ipad-pro-10-landscape: 1112px;
+$ipad-pro-10-portrait: 834px;
+$ipad-mini-portrait: 768px;
+
+// iPhone sizes
+$iphone-plus: 414px;
+$iphone: 375px;
+$iphone-se: 320px;
+
+// Dimensions
+$xxl: 120px;
+$xl: 80px;
+$lg: 40px;
+$md: 20px;
+$sm: 10px;
+$xs: 5px;
+
+// Z indices
+$z-banner: 10001;
+$z-toolbar: 10002;
+$z-modal: 10003;
+$z-dropdown: 10004;
+
+// Container sizes
+$container: 1100px;
+$container-lg: 1440px;
+
+// Header sizes
+$header-logo-height: 24px;
+
+// Hub sizes
+$hub-content-max-width: 1280px;
+$hub-main-max-width: 800px;
+$hub-playground-width: 480px;
+$hub-sidebar-width: 288px;
+$hub-toc-width: 280px;
+
+// Param form sizes
+$param-form-width: 140px;
+
+// Param form sizes
+$dash-container-md: $container;
+$dash-container-lg: 1260px;
+$dash-container-xl: 1536px;
+
+// Button sizes
+$button-xs: 20px;
+$button-sm: 30px;
+$button-md: 40px;
+$button-lg: 50px;
+
+// Icon sizes
+$icon-sm: 12px;
+$icon-md: 16px;
+$icon-lg: 20px;
+
+// New Color Palette (generated using Chroma scale #fff, #000)
+$blue: #018ef5;
+$green: #12ca93;
+$purple: #8470be;
+$red: #e95f6a;
+$yellow: #f7c543;
+
+// hdr colors
+$yellow-hdr: color(display-p3 0.97 0.77 0.26);
+
+// Primary RGBs
+$blue-rgb: 17, 140, 253;
+$green-rgb: 18, 202, 147;
+$red-rgb: 233, 95, 106;
+$purple-rgb: 132, 112, 190;
+$yellow-rgb: 247, 197, 67;
+
+// Grays
+$gray0: #12181b;
+$gray10: #242e34;
+$gray15: #303b42;
+$gray20: #384248;
+$gray30: #4f5a66;
+$gray40: #637288;
+$gray50: #7b889b;
+$gray60: #939eae;
+$gray70: #adb4c1;
+$gray80: #c6cbd3;
+$gray85: #dcdee2;
+$gray90: #f0f0f0;
+$gray100: #f8f8f8;
+
+// RGB Grays
+$gray0-rgb: 18, 24, 27;
+$gray10-rgb: 36, 46, 52;
+$gray15-rgb: 48, 59, 66;
+$gray20-rgb: 56, 66, 72;
+$gray50-rgb: 123, 136, 155;
+$gray100-rgb: 248, 248, 248;
+
+// Blues
+$blue0: #002077;
+$blue10: #003290;
+$blue20: #0047aa;
+$blue30: #005dc5;
+$blue40: #0074e1;
+$blue50: $blue;
+$blue60: #619efe;
+$blue70: #8ab0ff;
+$blue80: #abc3ff;
+$blue90: #c8d7ff;
+$blue100: #e4ebff;
+
+// RGB Blues
+$blue0-rgb: 0, 20, 119;
+$blue10-rgb: 0, 32, 128;
+$blue20-rgb: 0, 47, 145;
+$blue30-rgb: 0, 62, 162;
+$blue40-rgb: 0, 78, 180;
+$blue50-rgb: 1, 110, 202;
+$blue60-rgb: 80, 158, 231;
+$blue70-rgb: 102, 175, 243;
+$blue80-rgb: 123, 192, 255;
+$blue90-rgb: 144, 209, 267;
+$blue100-rgb: 165, 226, 279;
+
+// Greens
+$green0: #002e02;
+$green10: #00491f;
+$green20: #00683a;
+$green30: #008756;
+$green40: #00a874;
+$green50: $green;
+$green60: #59d4a4;
+$green70: #81ddb6;
+$green80: #a3e6c8;
+$green90: #c3efda;
+$green100: #e1f7ec;
+
+// RGB Greens
+$green0-rgb: 0, 46, 2;
+$green10-rgb: 0, 73, 31;
+$green20-rgb: 0, 104, 58;
+$green30-rgb: 0, 135, 86;
+$green40-rgb: 0, 168, 116;
+$green50-rgb: 1, 228, 164;
+$green60-rgb: 89, 212, 164;
+$green70-rgb: 129, 221, 174;
+$green80-rgb: 163, 226, 200;
+$green90-rgb: 195, 231, 218;
+$green100-rgb: 225, 247, 236;
+
+// Purples
+$purple0: #110e4d;
+$purple10: #2a1f63;
+$purple20: #403278;
+$purple30: #56468f;
+$purple40: #6d5ba6;
+$purple50: $purple;
+$purple60: #9987c9;
+$purple70: #ae9ed4;
+$purple80: #c2b5df;
+$purple90: #d6cdea;
+$purple100: #ebe6f4;
+
+// RGB Purples
+$purple0-rgb: 17, 14, 121;
+$purple10-rgb: 32, 24, 144;
+$purple20-rgb: 64, 50, 136;
+$purple30-rgb: 89, 75, 159;
+$purple40-rgb: 106, 83, 182;
+$purple50-rgb: 150, 126, 207;
+$purple60-rgb: 186, 163, 226;
+$purple70-rgb: 202, 180, 243;
+$purple80-rgb: 218, 205, 255;
+$purple90-rgb: 234, 221, 272;
+$purple100-rgb: 250, 237, 291;
+
+// Reds
+$red0: #570000;
+$red10: #730014;
+$red20: #900027;
+$red30: #ad273c;
+$red40: #cb4452;
+$red50: $red;
+$red60: #f17c81;
+$red70: #f79799;
+$red80: #fcb1b2;
+$red90: #ffcbcb;
+$red100: #ffe5e5;
+
+// RGB Reds
+$red0-rgb: 87, 0, 0;
+$red10-rgb: 115, 0, 20;
+$red20-rgb: 144, 0, 39;
+$red30-rgb: 170, 39, 60;
+$red40-rgb: 203, 68, 82;
+$red50-rgb: 233, 95, 106;
+$red60-rgb: 241, 124, 129;
+$red70-rgb: 249, 151, 153;
+$red80-rgb: 252, 177, 178;
+$red90-rgb: 255, 203, 203;
+$red100-rgb: 255, 229, 229;
+
+// Yellows
+$yellow0: #3e1d00;
+$yellow10: #5a3c00;
+$yellow20: #7d5b00;
+$yellow30: #a57d00;
+$yellow40: #cda017;
+$yellow50: $yellow;
+$yellow60: #fcce66;
+$yellow70: #ffd885;
+$yellow80: #ffe1a4;
+$yellow90: #ffebc2;
+$yellow100: #fff5e0;
+
+// RGB Yellows
+$yellow0-rgb: 62, 29, 0;
+$yellow10-rgb: 89, 44, 0;
+$yellow20-rgb: 125, 82, 0;
+$yellow30-rgb: 165, 125, 0;
+$yellow40-rgb: 205, 160, 23;
+$yellow50-rgb: 247, 197, 67;
+$yellow60-rgb: 252, 206, 102;
+$yellow70-rgb: 255, 216, 133;
+$yellow80-rgb: 255, 225, 164;
+$yellow90-rgb: 255, 235, 194;
+$yellow100-rgb: 255, 245, 224;
+
+// Alternative Palette for Metrics
+// -------------------------------
+
+// Generated using Chroma by mixing our core colors
+$brown: #7a461c;
+$coral: #ff758c;
+$fuchsia: #cf66c3;
+$gold: #9d8714;
+$indigo: #6b7ede;
+$lavender: #abc3ff;
+$lime: #9ace5a;
+$olive: #837400;
+$orange: #fe8e4f;
+$pink: #e15ca5;
+$teal: #00b6e6;
+$tiffany: #00beaa;
+
+// Pastels generated using Chroma via brighten(2)
+$blue-pastel: #a8edff;
+$green-pastel: #9bfff6;
+$orange-pastel: #f5bc90;
+$purple-pastel: #e8d0ff;
+$red-pastel: #ffc4c9;
+$yellow-pastel: #ffffa7;
+
+// Old Color Palette
+$chalk: $gray80;
+$graphite: $gray30;
+$ivory: $gray90;
+$light-gray: $gray100;
+$minimum-gray: $gray40;
+$shale: $gray60;
+$slate: $gray20;
+$black: #000;
+$black-rgb: 0, 0, 0;
+$white: #fff;
+$white-rgb: 255, 255, 255;
+$off-white: #fdfdfd;
+
+// Miscellaneous
+// ---------------
+
+// Borderse
+$border-width: 1px;
+
+// Transitions
+$transition-fast: 0.15s;
+$transition-slow: 0.3s;
+$transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
+
+// Tables
+$table-layout: auto;
+
+// CSS Variable Mapping
+// ----------------------
+$variables: (
+  'black': $black,
+  'blue': $blue,
+  'blue-rgb': $blue-rgb,
+  'chalk': $chalk,
+  'graphite': $graphite,
+  'green': $green,
+  'green-rgb': $green-rgb,
+  'ivory': $ivory,
+  'light-gray': $light-gray,
+  'minimum-gray': $minimum-gray,
+  'purple': $purple,
+  'purple-rgb': $purple-rgb,
+  'red': $red,
+  'red-rgb': $red-rgb,
+  'shale': $shale,
+  'slate': $slate,
+  'white': $white,
+  'off-white': $off-white,
+  'yellow': $yellow,
+  'yellow-rgb': $yellow-rgb,
+  'border-width': 1px,
+  'border-radius': 5px,
+  'border-radius-lg': calc(var(--border-radius) * 1.5),
+  'box-shadow-menu-dark':
+    '0 1px 3px rgba(0, 0, 0, 0.025), 0 2px 6px rgba(0, 0, 0, 0.025), 0 5px 10px rgba(0, 0, 0, 0.05)',
+  'box-shadow-menu-light': '0 5px 10px rgba(0, 0, 0, .05), 0 2px 6px rgba(0, 0, 0,.025), 0 1px 3px rgba(0, 0, 0, .025)',
+  'box-shadow-pill':
+    'inset 0 1px 1px 0 rgba(255, 255, 255, .2), inset 0 -1px 2px 0 rgba(0, 0, 0, .2), 0 1px 2px 0 rgba(0, 0, 0, .05)',
+  'box-shadow-request': 'inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 -1px 2px rgba(0, 0, 0, .1)',
+  'box-shadow-status':
+    'inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -1px 2px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .1)',
+  'font-family':
+    'Twemoji Country Flags, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif',
+  'font-family-mono': '"SF Mono", SFMono-Regular, ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace',
+  'font-weight-normal': 400,
+  'font-weight': 500,
+  'font-weight-bold': 600,
+  'button-xs': $button-xs,
+  'button-sm': $button-sm,
+  'button-md': $button-md,
+  'button-lg': $button-lg,
+  'icon-sm': $icon-sm,
+  'icon-md': $icon-md,
+  'icon-lg': $icon-lg,
+  'transition-fast': $transition-fast,
+  'transition-slow': $transition-slow,
+  'transition-timing': $transition-timing,
+  'header-logo-height': $header-logo-height,
+  'container': $container,
+  'container-lg': $container-lg,
+  'hub-content-max-width': $hub-content-max-width,
+  'hub-main-max-width': $hub-main-max-width,
+  'hub-playground-width': $hub-playground-width,
+  'hub-sidebar-width': $hub-sidebar-width,
+  'hub-toc-width': $hub-toc-width,
+  'param-form-width': $param-form-width,
+  'dash-container-md': $dash-container-md,
+  'dash-container-lg': $dash-container-lg,
+  'dash-container-xl': $dash-container-xl,
+  'xxl': $xxl,
+  'xl': $xl,
+  'lg': $lg,
+  'md': $md,
+  'sm': $sm,
+  'xs': $xs,
+  'z-banner': $z-banner,
+  'z-toolbar': $z-toolbar,
+  'z-modal': $z-modal,
+  'z-dropdown': $z-dropdown,
+);
+
+// Grays
+$grays: (
+  'gray0': $gray0,
+  'gray10': $gray10,
+  'gray15': $gray15,
+  'gray20': $gray20,
+  'gray30': $gray30,
+  'gray40': $gray40,
+  'gray50': $gray50,
+  'gray60': $gray60,
+  'gray70': $gray70,
+  'gray80': $gray80,
+  'gray85': $gray85,
+  'gray90': $gray90,
+  'gray100': $gray100,
+  'gray0-rgb': $gray0-rgb,
+  'gray10-rgb': $gray10-rgb,
+  'gray15-rgb': $gray15-rgb,
+  'gray20-rgb': $gray20-rgb,
+  'gray50-rgb': $gray50-rgb,
+  'gray100-rgb': $gray100-rgb,
+);
+
+// Blues
+$blues: (
+  'blue0': $blue0,
+  'blue10': $blue10,
+  'blue20': $blue20,
+  'blue30': $blue30,
+  'blue40': $blue40,
+  'blue50': $blue50,
+  'blue60': $blue60,
+  'blue70': $blue70,
+  'blue80': $blue80,
+  'blue90': $blue90,
+  'blue100': $blue100,
+  'blue0-rgb': $blue0-rgb,
+  'blue10-rgb': $blue10-rgb,
+  'blue20-rgb': $blue20-rgb,
+  'blue30-rgb': $blue30-rgb,
+  'blue40-rgb': $blue40-rgb,
+  'blue50-rgb': $blue50-rgb,
+  'blue60-rgb': $blue60-rgb,
+  'blue70-rgb': $blue70-rgb,
+  'blue80-rgb': $blue80-rgb,
+  'blue90-rgb': $blue90-rgb,
+  'blue100-rgb': $blue100-rgb,
+);
+
+// Greens
+$greens: (
+  'green0': $green0,
+  'green10': $green10,
+  'green20': $green20,
+  'green30': $green30,
+  'green40': $green40,
+  'green50': $green50,
+  'green60': $green60,
+  'green70': $green70,
+  'green80': $green80,
+  'green90': $green90,
+  'green100': $green100,
+  'green0-rgb': $green0-rgb,
+  'green10-rgb': $green10-rgb,
+  'green20-rgb': $green20-rgb,
+  'green30-rgb': $green30-rgb,
+  'green40-rgb': $green40-rgb,
+  'green50-rgb': $green50-rgb,
+  'green60-rgb': $green60-rgb,
+  'green70-rgb': $green70-rgb,
+  'green80-rgb': $green80-rgb,
+  'green90-rgb': $green90-rgb,
+  'green100-rgb': $green100-rgb,
+);
+
+// Purples
+$purples: (
+  'purple0': $purple0,
+  'purple10': $purple10,
+  'purple20': $purple20,
+  'purple30': $purple30,
+  'purple40': $purple40,
+  'purple50': $purple50,
+  'purple60': $purple60,
+  'purple70': $purple70,
+  'purple80': $purple80,
+  'purple90': $purple90,
+  'purple100': $purple100,
+  'purple0-rgb': $purple0-rgb,
+  'purple10-rgb': $purple10-rgb,
+  'purple20-rgb': $purple20-rgb,
+  'purple30-rgb': $purple30-rgb,
+  'purple40-rgb': $purple40-rgb,
+  'purple50-rgb': $purple50-rgb,
+  'purple60-rgb': $purple60-rgb,
+  'purple70-rgb': $purple70-rgb,
+  'purple80-rgb': $purple80-rgb,
+  'purple90-rgb': $purple90-rgb,
+  'purple100-rgb': $purple100-rgb,
+);
+
+// Reds
+$reds: (
+  'red0': $red0,
+  'red10': $red10,
+  'red20': $red20,
+  'red30': $red30,
+  'red40': $red40,
+  'red50': $red50,
+  'red60': $red60,
+  'red70': $red70,
+  'red80': $red80,
+  'red90': $red90,
+  'red100': $red100,
+  'red0-rgb': $red0-rgb,
+  'red10-rgb': $red10-rgb,
+  'red20-rgb': $red20-rgb,
+  'red30-rgb': $red30-rgb,
+  'red40-rgb': $red40-rgb,
+  'red50-rgb': $red50-rgb,
+  'red60-rgb': $red60-rgb,
+  'red70-rgb': $red70-rgb,
+  'red80-rgb': $red80-rgb,
+  'red90-rgb': $red90-rgb,
+  'red100-rgb': $red100-rgb,
+);
+
+// Yellows
+$yellows: (
+  'yellow0': $yellow0,
+  'yellow10': $yellow10,
+  'yellow20': $yellow20,
+  'yellow30': $yellow30,
+  'yellow40': $yellow40,
+  'yellow50': $yellow50,
+  'yellow60': $yellow60,
+  'yellow70': $yellow70,
+  'yellow80': $yellow80,
+  'yellow90': $yellow90,
+  'yellow100': $yellow100,
+  'yellow0-rgb': $yellow0-rgb,
+  'yellow10-rgb': $yellow10-rgb,
+  'yellow20-rgb': $yellow20-rgb,
+  'yellow30-rgb': $yellow30-rgb,
+  'yellow40-rgb': $yellow40-rgb,
+  'yellow50-rgb': $yellow50-rgb,
+  'yellow60-rgb': $yellow60-rgb,
+  'yellow70-rgb': $yellow70-rgb,
+  'yellow80-rgb': $yellow80-rgb,
+  'yellow90-rgb': $yellow90-rgb,
+  'yellow100-rgb': $yellow100-rgb,
+);
+
+// Hdr colors
+$hdr-colors: (
+  'yellow-hdr': $yellow-hdr,
+);
+
+// Alt colors
+$alt-shades: (
+  'brown': $brown,
+  'coral': $coral,
+  'fuchsia': $fuchsia,
+  'gold': $gold,
+  'indigo': $indigo,
+  'lavender': $lavender,
+  'lime': $lime,
+  'olive': $olive,
+  'orange': $orange,
+  'pink': $pink,
+  'teal': $teal,
+  'tiffany': $tiffany,
+);
+
+// Pastels
+$pastels: (
+  'blue-pastel': $blue-pastel,
+  'green-pastel': $green-pastel,
+  'orange-pastel': $orange-pastel,
+  'purple-pastel': $purple-pastel,
+  'red-pastel': $red-pastel,
+  'yellow-pastel': $yellow-pastel,
+);
+
+// Legacy colors
+$legacy-shades: (
+  'chalk': $chalk,
+  'graphite': $graphite,
+  'ivory': $ivory,
+  'light-gray': $light-gray,
+  'minimum-gray': $minimum-gray,
+  'shale': $shale,
+  'slate': $slate,
+  'black': $black,
+  'black-rgb': $black-rgb,
+  'white': $white,
+  'white-rgb': $white-rgb,
+);
+
+// Legacy CSS variables mapped to their equivalent. This keeps us backwards
+// compatible and ensures customer stylesheets containing references to these
+// legacy names continue working as is.
+$legacy-variables: (
+  'lightGray': var(--light-gray),
+  'minimumGray': var(--minimum-gray),
+);
+
+// CSS var map
+$css-variables: map-merge-multiple(
+  $variables,
+  $blues,
+  $greens,
+  $grays,
+  $purples,
+  $reds,
+  $yellows,
+  $hdr-colors,
+  $alt-shades,
+  $pastels,
+  $legacy-shades,
+  $legacy-variables
+);

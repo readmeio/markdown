@@ -6,25 +6,37 @@ hidden: true
 
 > 👍 Success
 >
-> <a href="http://www.google.com">Vitae</a> <span>reprehenderit</span> at aliquid error voluptates eum dignissimos.
+> This is the success callout.
 
-> 👎 Block Regression
+> 📘 Info
 >
-> The component
+> This is the info callout.
+
+> 🚧 Warn
 >
-> - was only rendering
-> - one child
+> This is the warn callout.
+
+> ❗ Error
+>
+> This is the error callout.
+
+> 👎 Markdown in callouts
+>
+> Unordered List
+>
+> - List Item 1
+> - List Item 2
 
 <Callout theme="error" icon="🔥">
-Now with MDX
+MDX Callout
 
-### Even supports markdown
+---
 
-Much _wow_
+With Markdown support.
 </Callout>
 
 > ❗
 >
-> Does it still look good?!
+> Description Only
 
-> ❔ Does _this_ look good?!
+> ❔ Title Only _with italics_
