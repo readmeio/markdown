@@ -9,6 +9,7 @@ export enum NodeTypes {
   htmlBlock = 'html-block',
   i = 'i',
   imageBlock = 'image-block',
+  plain = 'plain',
   reusableContent = 'reusable-content',
   tableau = 'tableau',
   tutorialTile = 'tutorial-tile',
