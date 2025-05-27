@@ -127,7 +127,7 @@ If you make changes to the docs or how the markdown is rendered, you may need to
 
 ### Linking Changes to Storybook
 
-In `markdown`, change package.json name to `@readme/mdx`. Then run:
+In `markdown`, change `package.json` name to `@readme/mdx`. Then run:
 
 ```
 npm link && npm watch
