@@ -124,3 +124,19 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 To make changes to the RDMD engine locally, run the local development server. Clone the repo, `cd` in to it, `npm install`, and `npm run start`!
 
 If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
+
+### Linking Changes to Storybook
+
+In `markdown`, change `package.json` name to `@readme/mdx`. Then run:
+
+```
+npm link && npm watch
+```
+
+In `readme` run:
+
+```
+npm link PATH_TO_LOCAL_MARKDOWN_REPO
+```
+
+Will not work with the monorepo app due to `core-js` issues.

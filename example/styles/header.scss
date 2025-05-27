@@ -1,0 +1,30 @@
+.Header {
+  &-button,
+  &-select {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    color: var(--color-text-default);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: var(--font-weight-normal);
+    padding: var(--xs);
+    position: relative;
+    text-align: center;
+
+    &:hover {
+      background: rgba(var(--color-bg-page-rgb-inverse), 0.05);
+    }
+
+    &:active,
+    &:focus {
+      background: rgba(var(--color-bg-page-rgb-inverse), 0.1);
+      outline: none;
+    }
+  }
+
+  &-select {
+    appearance: none;
+  }
+}
