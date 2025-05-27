@@ -136,7 +136,7 @@ npm link && npm watch
 In `readme` run:
 
 ```
-npm link PATH__LOCAL_MARKDOWN_REPO
+npm link PATH_TO_LOCAL_MARKDOWN_REPO
 ```
 
 Will not work with the full app. Use Storybook.
