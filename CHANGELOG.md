@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 9.5.0
+### ✨ New & Improved
+
+* add theme variables ([#1110](https://github.com/readmeio/markdown/issues/1110)) ([40b753e](https://github.com/readmeio/markdown/commit/40b753e83e503c48f9b39e575881a86f9f8e0e28)), closes [#1105](https://github.com/readmeio/markdown/issues/1105)
+
+### 🛠 Fixes & Updates
+
+* add instructions for npm link ([#1112](https://github.com/readmeio/markdown/issues/1112)) ([94874d8](https://github.com/readmeio/markdown/commit/94874d8ce51fe9c3ea0d0f7233433296e3b025d6))
+* export Owlmoji again ([#1113](https://github.com/readmeio/markdown/issues/1113)) ([fb2466e](https://github.com/readmeio/markdown/commit/fb2466ee935ea9a970c5aca0cfbde3986e99485a))
+
 ## Version 9.4.1
 ### 🛠 Fixes & Updates
 
