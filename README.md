@@ -139,4 +139,4 @@ In `readme` run:
 npm link PATH_TO_LOCAL_MARKDOWN_REPO
 ```
 
-Will not work with the full app. Use Storybook.
+Will not work with the monorepo app due to `core-js` issues.
