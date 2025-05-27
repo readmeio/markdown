@@ -130,7 +130,7 @@ If you make changes to the docs or how the markdown is rendered, you may need to
 In `markdown`, change package.json name to `@readme/mdx`. Then run:
 
 ```
-npm link
+npm link && npm watch
 ```
 
 In `readme` run:
