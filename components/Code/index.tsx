@@ -69,7 +69,11 @@ const Code = (props: CodeProps) => {
   };
 
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
-  const highlightedCode = syntaxHighlighter && code ? syntaxHighlighter(code, language, codeOpts, { mdx: true }) : code;
+
+  const highlightedCode =
+    syntaxHighlighter && typeof syntaxHighlighter === 'function' && code
+      ? syntaxHighlighter(code, language, codeOpts, { mdx: true })
+      : code;
 
   if (language === 'mermaid') {
     return code;
