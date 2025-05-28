@@ -52,5 +52,5 @@ export default class Owlmoji {
 
   static nameToEmoji = nameToEmoji;
 
-  static owlmoji = gemoji.concat(owlmoji).sort((a, b) => a.names[0].localeCompare(b.names[0]));
+  static owlmoji = gemoji.concat(owlmoji);
 }

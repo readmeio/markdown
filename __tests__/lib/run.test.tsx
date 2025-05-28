@@ -60,4 +60,43 @@ describe('run', () => {
       'Expected component `NonExistentComponent` to be defined: you likely forgot to import, pass, or provide it.',
     );
   });
+
+  it('supports rendering plain markdown', () => {
+    const md = `
+### Hello, world!
+This is plain markdown and mdx expressions such as {1 + 1} will not evaluate.
+`;
+    const Component = execute(md, { format: 'md' }, {});
+
+    render(<Component />);
+    expect(screen.getByText('Hello, world!')).toBeInTheDocument();
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
+    expect(
+      screen.getByText('This is plain markdown and mdx expressions such as {1 + 1} will not evaluate.'),
+    ).toBeInTheDocument();
+  });
+
+  it('sanitizes HTML when rendering plain markdown', () => {
+    const md = `
+<strong>I am safe html</strong>
+<pre><code data-testid="code">console.log('I am just a string');</code></pre>
+<img src="https://example.com/image.jpg" alt="I am an image" />
+<a href="https://example.com">I am a link</a>
+
+<script>alert('I am unsafe HTML');</script>
+<style>I am unsafe styles</style>
+<iframe src="https://example.com" title="I am an unsafe iframe"></iframe>
+`;
+    const Component = execute(md, { format: 'md' }, {});
+    const { container } = render(<Component />);
+    screen.debug();
+    expect(container.querySelector('strong')).toBeInTheDocument();
+    expect(container.querySelector('pre')).toBeInTheDocument();
+    expect(container.querySelector('code')).toBeInTheDocument();
+    expect(container.querySelector('img')).toBeInTheDocument();
+    expect(container.querySelector('a')).toBeInTheDocument();
+    expect(container.querySelector('script')).not.toBeInTheDocument();
+    expect(container.querySelector('style')).not.toBeInTheDocument();
+    expect(container.querySelector('iframe')).not.toBeInTheDocument();
+  });
 });
