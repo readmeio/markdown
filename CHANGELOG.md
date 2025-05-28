@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.6.0
+### ✨ New & Improved
+
+* **owlmoji:** parity with legacy package's full emoji list ([#1114](https://github.com/readmeio/markdown/issues/1114)) ([bff213d](https://github.com/readmeio/markdown/commit/bff213de097d8f215de104dc8f533e7433e42edd))
+
 ## Version 9.5.0
 ### ✨ New & Improved
 
