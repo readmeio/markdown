@@ -2,6 +2,8 @@ import type { CompileOptions } from '@mdx-js/mdx';
 import type { PluggableList } from 'unified';
 
 import { compileSync as mdxCompileSync } from '@mdx-js/mdx';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
@@ -9,7 +11,7 @@ import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
 import { defaultTransforms, tailwindTransformer, handleMissingComponents } from '../processor/transform';
 
-import { rehypePlugins } from './ast-processor';
+import { rehypePlugins as defaultRehypePlugins } from './ast-processor';
 
 export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
@@ -39,12 +41,32 @@ const compile = (
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
 
+  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }]];
+
+  if (opts.format === 'md') {
+    /**
+     * When running in `md` format we need to sanitize the content for security reasons.
+     * The `mdxCompileSync` has a very aggressive sanitization process that removes
+     * all HTML elements. The `mdx` internal rendering pipeline processess the plugins
+     * before it's internal sanitization, so parse the raw tree first,
+     * then sanitize it to remove any disallowed attributes. This circumvents the
+     * default sanitization.
+     */
+    rehypePlugins.push([
+      rehypeRaw,
+      {
+        passThrough: ['mdxjsEsm'],
+      },
+    ]);
+    rehypePlugins.push(rehypeSanitize);
+  }
+
   try {
     const vfile = mdxCompileSync(text, {
       outputFormat: 'function-body',
       providerImportSource: '#',
       remarkPlugins,
-      rehypePlugins: [...rehypePlugins, [rehypeToc, { components }]],
+      rehypePlugins,
       ...opts,
     });
 
