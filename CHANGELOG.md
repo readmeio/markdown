@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 9.7.0
+### ✨ New & Improved
+
+* **markdown:** sanitize when rendering plain markdown format ([#1116](https://github.com/readmeio/markdown/issues/1116)) ([b5d4e33](https://github.com/readmeio/markdown/commit/b5d4e330aa5aa852860994548fe21c112c0855b9))
+
+### 🛠 Fixes & Updates
+
+* remove owlmoji collection sorting, add unit tests ([#1115](https://github.com/readmeio/markdown/issues/1115)) ([37f8aed](https://github.com/readmeio/markdown/commit/37f8aedd1bf673c18eff673c2b07b0732a4838a2)), closes [/github.com/readmeio/markdown/blob/f369acff29394bc0cc172a9d0ffc918ac478960e/lib/owlmoji.js#L48](https://github.com/readmeio//github.com/readmeio/markdown/blob/f369acff29394bc0cc172a9d0ffc918ac478960e/lib/owlmoji.js/issues/L48) [/github.com/readmeio/markdown/blob/bff213de097d8f215de104dc8f533e7433e42edd/lib/owlmoji.ts#L55](https://github.com/readmeio//github.com/readmeio/markdown/blob/bff213de097d8f215de104dc8f533e7433e42edd/lib/owlmoji.ts/issues/L55)
+
 ## Version 9.6.0
 ### ✨ New & Improved
 
