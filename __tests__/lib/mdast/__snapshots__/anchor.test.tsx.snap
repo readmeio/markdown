@@ -1,0 +1,77 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`convert anchor tag > converts anchor tag to link node 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "position": {
+                "end": {
+                  "column": 41,
+                  "line": 2,
+                  "offset": 41,
+                },
+                "start": {
+                  "column": 35,
+                  "line": 2,
+                  "offset": 35,
+                },
+              },
+              "type": "text",
+              "value": "ReadMe",
+            },
+          ],
+          "data": {
+            "hName": "Anchor",
+            "hProperties": {
+              "href": "https://readme.com",
+            },
+          },
+          "position": {
+            "end": {
+              "column": 50,
+              "line": 2,
+              "offset": 50,
+            },
+            "start": {
+              "column": 1,
+              "line": 2,
+              "offset": 1,
+            },
+          },
+          "type": "link",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 50,
+          "line": 2,
+          "offset": 50,
+        },
+        "start": {
+          "column": 1,
+          "line": 2,
+          "offset": 1,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 5,
+      "line": 3,
+      "offset": 55,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;

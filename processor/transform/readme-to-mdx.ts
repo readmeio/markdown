@@ -92,6 +92,30 @@ const readmeToMdx = (): Transform => tree => {
     }
   });
 
+  const hasExtraLinkAttrs = (attributes: MdxJsxAttribute[]) =>
+  !!attributes.find(attr => !['href', 'label'].includes(attr.name));
+
+  visit(tree, 'link', (link, index, parent) => {
+    if (!('data' in link)) return;
+    const attrs = {...link.data.hProperties};
+
+    if ('url' in link) attrs.href = link.url;
+    if ('url' in attrs) {
+      attrs.href = attrs.url;
+      delete attrs.url;
+    }
+    const attributes = toAttributes(attrs);
+
+   if (hasExtraLinkAttrs(attributes)) {
+      parent.children.splice(index, 1, {
+        type: 'mdxJsxTextElement',
+        name: 'Anchor',
+        attributes,
+        children: link.children,
+      });
+    }
+  });
+
   visit(tree, 'html', (node, index, parent) => {
     const html = node.value;
     const isScriptOrStyleTag = [!!html.match(/^<(?:style|script)/i), !!html.match(/<\/(?:style|script)>$/i)];
