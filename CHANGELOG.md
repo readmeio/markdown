@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 9.8.0
+### ✨ New & Improved
+
+* plain compiler ([#1111](https://github.com/readmeio/markdown/issues/1111)) ([8254a0e](https://github.com/readmeio/markdown/commit/8254a0e98445add4a0e162fdf39a4937420e03ea))
+
+### 🛠 Fixes & Updates
+
+* revert package name ([#1117](https://github.com/readmeio/markdown/issues/1117)) ([dc409de](https://github.com/readmeio/markdown/commit/dc409de0c9abd815898d462988eefea4546a4e32))
+
 ## Version 9.7.0
 ### ✨ New & Improved
 
