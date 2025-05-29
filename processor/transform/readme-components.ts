@@ -205,10 +205,6 @@ const coerceJsxToMd =
         ...hProperties,
         children: node.children as PhrasingContent[],
         type: types[node.name],
-        data: {
-          hName: node.name,
-          ...(Object.keys(hProperties).length && { hProperties }),
-        },
         position: node.position,
       };
 

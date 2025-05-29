@@ -24,12 +24,6 @@ exports[`convert anchor tag > converts anchor tag to link node 1`] = `
               "value": "ReadMe",
             },
           ],
-          "data": {
-            "hName": "Anchor",
-            "hProperties": {
-              "url": "https://readme.com",
-            },
-          },
           "position": {
             "end": {
               "column": 50,
