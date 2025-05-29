@@ -89,6 +89,10 @@ interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
 }
 
+interface Plain extends Literal {
+  type: NodeTypes.plain;
+}
+
 interface ImageBlockAttrs {
   align?: string;
   alt: string;
@@ -161,6 +165,7 @@ declare module 'mdast' {
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.variable]: Variable;
+    [NodeTypes.plain]: Plain;
   }
 
   interface RootContentMap {
