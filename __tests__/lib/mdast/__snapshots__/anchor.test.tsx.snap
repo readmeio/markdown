@@ -27,7 +27,7 @@ exports[`convert anchor tag > converts anchor tag to link node 1`] = `
           "data": {
             "hName": "Anchor",
             "hProperties": {
-              "href": "https://readme.com",
+              "url": "https://readme.com",
             },
           },
           "position": {
@@ -43,6 +43,7 @@ exports[`convert anchor tag > converts anchor tag to link node 1`] = `
             },
           },
           "type": "link",
+          "url": "https://readme.com",
         },
       ],
       "position": {
