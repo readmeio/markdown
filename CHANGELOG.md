@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.9.0
+### ✨ New & Improved
+
+* jsx link as anchor ([#1118](https://github.com/readmeio/markdown/issues/1118)) ([e696858](https://github.com/readmeio/markdown/commit/e696858af97c158024b6a41352bc64d52c0c3ee2))
+
 ## Version 9.8.0
 ### ✨ New & Improved
 
