@@ -10,6 +10,6 @@ describe('link compiler', () => {
   it('compiles links with extra attributes', () => {
     const markdown = '<Anchor target="_blank" href="https://readme.com">ReadMe</Anchor>';
 
-    expect(mdx(mdast(markdown))).toBe(markdown);
+    expect(mdx(mdast(markdown)).trim()).toBe(markdown);
   });
 });

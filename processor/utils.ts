@@ -172,6 +172,7 @@ export const reformatHTML = (html: string): string => {
 
 export const toAttributes = (object: Record<string, unknown>, keys: string[] = []): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
+
   Object.entries(object).forEach(([name, v]) => {
     if (keys.length > 0 && !keys.includes(name)) return;
 
