@@ -1,4 +1,4 @@
-import type { Image, Parent, Node } from 'mdast';
+import type { Image, Parent, Node, Link } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxFlowExpression } from 'mdast-util-mdx';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
@@ -89,6 +89,30 @@ const readmeToMdx = (): Transform => tree => {
         ...(image.title && { title: image.title }),
         ...(image.alt && { alt: image.alt }),
       } as Image);
+    }
+  });
+
+  const hasExtraLinkAttrs = (attributes: MdxJsxAttribute[]) =>
+    !!attributes.find(attr => !['href', 'label'].includes(attr.name));
+
+  // converts links with extra attributes to Anchor elements
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  visit(tree, 'link', ({ type, children, position, ...attrs }: Link & { href?: string }, index, parent) => {
+    if ('url' in attrs) {
+      attrs.href = attrs.url;
+      delete attrs.url;
+    }
+
+    const attributes = toAttributes(attrs);
+
+    if (hasExtraLinkAttrs(attributes)) {
+      parent.children.splice(index, 1, {
+        type: 'mdxJsxTextElement',
+        name: 'Anchor',
+        attributes,
+        children,
+        position,
+      });
     }
   });
 
