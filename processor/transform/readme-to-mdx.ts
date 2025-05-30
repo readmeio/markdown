@@ -95,16 +95,15 @@ const readmeToMdx = (): Transform => tree => {
   const hasExtraLinkAttrs = (attributes: MdxJsxAttribute[]) =>
   !!attributes.find(attr => !['href', 'label'].includes(attr.name));
 
+  // converts links with extra attributes to Anchor elements
   visit(tree, 'link', (link, index, parent) => {
-    const attrs = {...link, href: ''};
+    const attrs = {...link, ...(link.url && { href: link.url })};
 
-    if ('url' in attrs) {
-      attrs.href = attrs.url;
-      delete attrs.url;
-    }
+    if ('url' in attrs) delete attrs.url;
+
     const attributes = toAttributes(attrs);
 
-   if (hasExtraLinkAttrs(attributes)) {
+    if (hasExtraLinkAttrs(attributes)) {
       parent.children.splice(index, 1, {
         type: 'mdxJsxTextElement',
         name: 'Anchor',
