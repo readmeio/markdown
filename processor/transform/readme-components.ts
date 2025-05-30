@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 import type { Properties } from 'hast';
-import type { BlockContent, Code, Node, Parents, Table, TableCell, TableRow } from 'mdast';
+import type { BlockContent, Code, Link, Node, Parents, PhrasingContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
@@ -13,6 +13,7 @@ import { mdast } from '../../lib';
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 
 const types = {
+  Anchor: 'link' as Link['type'],
   Callout: NodeTypes.callout,
   Code: 'code',
   CodeTabs: NodeTypes.codeTabs,
@@ -187,6 +188,23 @@ const coerceJsxToMd =
           hName: 'embed',
           hProperties,
         },
+        position: node.position,
+      };
+
+      parent.children[index] = mdNode;
+    } else if (node.name === 'Anchor') {
+      const hProperties = getAttrs<Properties>(node);
+
+      if (hProperties.href) {
+        hProperties.url = hProperties.href;
+        delete hProperties.href;
+      }
+
+      // @ts-expect-error we don't have a mechanism to enforce the URL attribute type right now
+      const mdNode: Link = {
+        ...hProperties,
+        children: node.children as PhrasingContent[],
+        type: types[node.name],
         position: node.position,
       };
 
