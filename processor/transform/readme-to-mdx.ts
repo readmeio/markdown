@@ -96,10 +96,8 @@ const readmeToMdx = (): Transform => tree => {
   !!attributes.find(attr => !['href', 'label'].includes(attr.name));
 
   visit(tree, 'link', (link, index, parent) => {
-    if (!('data' in link)) return;
-    const attrs = {...link.data.hProperties};
+    const attrs = {...link, href: ''};
 
-    if ('url' in link) attrs.href = link.url;
     if ('url' in attrs) {
       attrs.href = attrs.url;
       delete attrs.url;
