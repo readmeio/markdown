@@ -8,6 +8,11 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteEl
 }
 
 export const themes: Record<string, string> = {
+  'error': 'error',
+  'default': 'default',
+  'info': 'info',
+  'okay': 'okay',
+  'warn': 'warn',
   '\uD83D\uDCD8': 'info',
   '\uD83D\uDEA7': 'warn',
   '\u26A0\uFE0F': 'warn',
