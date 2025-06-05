@@ -130,6 +130,10 @@
   .callout-icon {
     left: -1.5em;
     position: absolute;
+
+    &_fa {
+      transform: translateY(0.1em);
+    }
   }
 }
 @mixin calloutCustomIcons($R: callout) {
@@ -139,7 +143,7 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon:before {
+  &-icon:not([class*='fa-'])::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
