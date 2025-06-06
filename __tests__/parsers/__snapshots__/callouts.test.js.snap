@@ -75,7 +75,6 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
       "data": {
         "hName": "Callout",
         "hProperties": {
-          "empty": false,
           "icon": "ℹ️",
           "theme": "info",
         },

@@ -1,5 +1,5 @@
-import * as React from 'react';
 import emojiRegex from 'emoji-regex';
+import * as React from 'react';
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
   attributes?: Record<string, unknown>;
@@ -36,7 +36,7 @@ export const defaultIcons = {
 };
 
 const Callout = (props: Props) => {
-  const { attributes, children, theme, empty } = props;
+  const { attributes, children, theme = 'default', empty } = props;
   const icon = props.icon || defaultIcons[theme] || '❗';
   const isEmoji = emojiRegex().test(icon);
 
