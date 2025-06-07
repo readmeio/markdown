@@ -4,8 +4,10 @@ import type { MdxFlowExpression } from 'mdast-util-mdx';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 import type { Variable, HTMLBlock } from 'types';
 
+import emojiRegex from 'emoji-regex';
 import { visit } from 'unist-util-visit';
 
+import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import { toAttributes } from '../utils';
 
@@ -16,6 +18,23 @@ const readmeToMdx = (): Transform => tree => {
   visit(tree, 'rdme-pin', (node: Parent, i, parent) => {
     const newNode = node.children[0];
     parent.children.splice(i, 1, newNode);
+  });
+
+  visit(tree, 'rdme-callout', (node, index, parent) => {
+    const isEmoji = emojiRegex().test(node.data.hProperties.icon);
+    const isEmpty = node.data.hProperties?.empty;
+
+    // return the usual markdown if there is an emoji and the icon theme matches our default theme
+    if (isEmoji && themes[node.data.hProperties.icon] === node.data.hProperties.theme) {
+      return;
+    }
+
+    parent.children.splice(index, 1, {
+      type: 'mdxJsxFlowElement',
+      name: 'Callout',
+      attributes: toAttributes(node.data.hProperties, ['icon', (isEmpty && 'empty' ), 'theme'].filter(Boolean)),
+      children: node.children,
+    });
   });
 
   visit(tree, NodeTypes.tutorialTile, (tile, index, parent) => {
