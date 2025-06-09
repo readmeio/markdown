@@ -4,6 +4,12 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
+<Callout theme="default" icon="fa-duotone fa-solid fa-face-awesome">Default</Callout>
+<Callout theme="success" icon="fa-duotone fa-solid fa-face-awesome">Success</Callout>
+<Callout theme="info" icon="fa-duotone fa-solid fa-face-awesome">Info</Callout>
+<Callout theme="warn" icon="fa-duotone fa-solid fa-face-awesome">Warn</Callout>
+<Callout theme="error" icon="fa-duotone fa-solid fa-face-awesome">Error</Callout>
+
 > 👍 Success
 >
 > This is the success callout.
