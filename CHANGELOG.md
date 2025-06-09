@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.10.0
+### ✨ New & Improved
+
+* icons in callouts ([#1121](https://github.com/readmeio/markdown/issues/1121)) ([441c425](https://github.com/readmeio/markdown/commit/441c425222ed12e0dccf3f5857e8472f40c8bebf)), closes [#14815](https://github.com/readmeio/markdown/issues/14815)
+
 ## Version 9.9.0
 ### ✨ New & Improved
 
