@@ -128,12 +128,16 @@
     }
   }
   .callout-icon {
-    left: -1.5em;
+    left: -0.25em;
     position: absolute;
 
     &_fa {
       transform: translateY(0.1em);
     }
+  }
+
+  .callout-icon + .heading.heading {
+    margin-top: 0;
   }
 }
 
