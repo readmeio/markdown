@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.11.0
+### ✨ New & Improved
+
+* remove glossary as special block ([#1124](https://github.com/readmeio/markdown/issues/1124)) ([b812eee](https://github.com/readmeio/markdown/commit/b812eeedba99b513a04f42f577ce724513fc2b06))
+
 ## Version 9.10.0
 ### ✨ New & Improved
 
