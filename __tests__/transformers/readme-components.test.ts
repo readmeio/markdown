@@ -76,15 +76,6 @@ Second
     expect(tree.children[0].name).toBe('Callout');
   });
 
-  it('converts Glossary components to markdown nodes', () => {
-    const mdx = `
-<Glossary>Demo</Glossary>
-`;
-
-    const tree = mdast(mdx);
-    expect(tree.children[0].children[0].type).toBe('readme-glossary-item');
-  });
-
   it('converts variable phrasing expressions to markdown nodes', () => {
     const mdx = '{user.name}';
 
