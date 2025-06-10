@@ -10,11 +10,12 @@ import { unified } from 'unified';
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
-export const mdx = (tree: HastRoot | MdastRoot, { hast = false, ...opts } = {}) => {
+export const mdx = (tree: HastRoot | MdastRoot, { hast = false, remarkTransformers = [], ...opts } = {}) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
     .use(remarkGfm)
+    .use(remarkTransformers)
     .use(divTransformer)
     .use(readmeToMdx)
     .use(tablesToJsx)
