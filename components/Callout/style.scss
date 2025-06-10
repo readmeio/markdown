@@ -136,6 +136,7 @@
     }
   }
 }
+
 @mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
   --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);

@@ -35,37 +35,28 @@ export const defaultIcons = {
   error: '\u2757\uFE0F',
 };
 
-const isChildHeading = (child: React.ReactNode): boolean => {
-  return (
-    typeof child === 'object' &&
-    'type' in child &&
-    child.type &&
-    typeof child.type !== 'string' &&
-    'name' in child.type &&
-    child.type.name === 'HeadingWithDepth'
+const CalloutIcon = ({ icon, isEmoji }: { icon: 'string'; isEmoji: boolean }) => {
+  return isEmoji ? (
+    <span className="callout-icon">{icon}</span>
+  ) : (
+    <span className={`callout-icon callout-icon_fa ${icon}`} />
   );
 };
 
 const Callout = (props: Props) => {
   const { attributes, children, theme = 'default', empty } = props;
+  const [heading, ...content] = React.Children.toArray(children);
+
   const icon = props.icon || defaultIcons[theme] || '❗';
   const isEmoji = emojiRegex().test(icon);
-  const hasHeading = isChildHeading(React.Children.toArray(children)[0]);
-  const Tag = hasHeading ? 'h3' : 'div';
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      <Tag className={`callout-heading${empty ? ' empty' : ''}`}>
-        {isEmoji ? (
-          <span className="callout-icon">{icon}</span>
-        ) : (
-          <span className={`callout-icon callout-icon_fa ${icon}`} />
-        )}
-        {empty || React.Children.toArray(children)[0]}
-      </Tag>
-      {React.Children.toArray(children).slice(1)}
+      <CalloutIcon icon={icon} isEmoji={isEmoji} />
+      {empty ? <p className={`callout-heading${empty ? ' empty' : ''}`} /> : heading}
+      {content}
     </blockquote>
   );
 };
