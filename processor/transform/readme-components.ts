@@ -18,7 +18,6 @@ const types = {
   Code: 'code',
   CodeTabs: NodeTypes.codeTabs,
   EmbedBlock: NodeTypes['embed-block'],
-  Glossary: NodeTypes.glossary,
   ImageBlock: NodeTypes.imageBlock,
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',

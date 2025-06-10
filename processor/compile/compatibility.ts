@@ -76,6 +76,8 @@ const embedToEmbedBlock = (node: CompatEmbed) => {
 const compatibility = (node: CompatNodes) => {
   switch (node.type) {
     case NodeTypes.glossary: {
+      // Glossary terms will no longer be serialized as special node types in the Editor but we want to ensure that we compile historical
+      // data correctly
       const term = node.data?.hProperties?.term || node.children[0].value;
       return `<Glossary>${term}</Glossary>`;
     }
