@@ -51,33 +51,21 @@ const Callout = (props: Props) => {
   const icon = props.icon || defaultIcons[theme] || '❗';
   const isEmoji = emojiRegex().test(icon);
   const hasHeading = isChildHeading(React.Children.toArray(children)[0]);
+  const Tag = hasHeading ? 'h3' : 'div';
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      {hasHeading ? (
-        <>
-          <h3 className={`callout-heading${empty ? ' empty' : ''}`}>
-            {isEmoji ? (
-              <span className="callout-icon">{icon}</span>
-            ) : (
-              <span className={`callout-icon callout-icon_fa ${icon}`} />
-            )}
-            {empty || React.Children.toArray(children)[0]}
-          </h3>
-          {React.Children.toArray(children).slice(1)}
-        </>
-      ) : (
-        <>
-          {isEmoji ? (
-            <span className="callout-icon">{icon}</span>
-          ) : (
-            <span className={`callout-icon callout-icon_fa ${icon}`} />
-          )}
-          {children}
-        </>
-      )}
+      <Tag className={`callout-heading${empty ? ' empty' : ''}`}>
+        {isEmoji ? (
+          <span className="callout-icon">{icon}</span>
+        ) : (
+          <span className={`callout-icon callout-icon_fa ${icon}`} />
+        )}
+        {empty || React.Children.toArray(children)[0]}
+      </Tag>
+      {React.Children.toArray(children).slice(1)}
     </blockquote>
   );
 };
