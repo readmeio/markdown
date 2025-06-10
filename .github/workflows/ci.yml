@@ -60,5 +60,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
-          name: image-snapshots-${{ github.job }}
+          name: image-snapshots
           path: __tests__/browser/__image_snapshots__/
+          overwrite: true
