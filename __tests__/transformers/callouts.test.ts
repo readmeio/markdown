@@ -33,7 +33,7 @@ describe('callouts transformer', () => {
 `;
     const tree = mdast(md);
 
-    expect(tree.children[0].data.hProperties.empty).toBeUndefined();
+    expect(tree.children[0].data.hProperties.empty).toBe(false);
     expect(tree.children[0].children[0].children[1].type).toBe('strong');
   });
 });

@@ -30,7 +30,7 @@ const calloutTransformer = () => {
             hName: 'Callout',
             hProperties: {
               icon,
-              ...(empty && { empty }),
+              empty,
               theme,
             },
           },
