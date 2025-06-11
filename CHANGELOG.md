@@ -1,6 +1,8 @@
 Changelog
 ===
 
+## Version 9.11.1
+
 ## Version 9.11.0
 ### ✨ New & Improved
 
