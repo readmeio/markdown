@@ -5,19 +5,19 @@ hidden: true
 ---
 
 <Callout theme="default" icon="fa-duotone fa-solid fa-face-awesome">
-  Default
+### Default
 </Callout>
 <Callout theme="success" icon="fa-duotone fa-solid fa-face-awesome">
-  Success
+### Success
 </Callout>
 <Callout theme="info" icon="fa-duotone fa-solid fa-face-awesome">
-  Info
+### Info
 </Callout>
 <Callout theme="warn" icon="fa-duotone fa-solid fa-face-awesome">
-  Warn
+### Warn
 </Callout>
 <Callout theme="error" icon="fa-duotone fa-solid fa-face-awesome">
-  Error
+### Error
 </Callout>
 
 > 👍 Success
@@ -44,7 +44,7 @@ hidden: true
 > - List Item 2
 
 <Callout theme="error" icon="🔥">
-MDX Callout
+### MDX Callout
 
 ---
 
