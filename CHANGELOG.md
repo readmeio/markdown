@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.12.0
+### ✨ New & Improved
+
+* callout headings ([#1123](https://github.com/readmeio/markdown/issues/1123)) ([0d7b663](https://github.com/readmeio/markdown/commit/0d7b6638844cea8297f8362f92e9c0f95a354929))
+
 ## Version 9.11.1
 
 ## Version 9.11.0
