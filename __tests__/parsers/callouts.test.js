@@ -3,7 +3,7 @@ import { mdast } from '../../index';
 describe('Parse RDMD Callouts', () => {
   it('renders an info callout', () => {
     const text = `
-> ℹ️ Info Callout
+> 📘 Info Callout
 >
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 

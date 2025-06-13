@@ -1,9 +1,11 @@
+import migrateCallouts from '../processor/transform/migrate-callouts';
+
 import mdastV6 from './mdastV6';
 import mdx from './mdx';
 
 const migrate = (doc: string, { rdmd }): string => {
   return (
-    mdx(mdastV6(doc, { rdmd }))
+    mdx(mdastV6(doc, { rdmd }), { remarkTransformers: [migrateCallouts] })
       .replaceAll(/&#x20;/g, ' ')
       // @note: I'm not sure what's happening, but I think mdx is converting an
       // 'a' to '&#x61;' as a means of escaping it. I think this helps with

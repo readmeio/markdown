@@ -62,3 +62,4 @@ jobs:
         with:
           name: image-snapshots
           path: __tests__/browser/__image_snapshots__/
+          overwrite: true

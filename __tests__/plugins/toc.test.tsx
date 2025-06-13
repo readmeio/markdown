@@ -101,4 +101,18 @@ export const toc = [
       ]
     `);
   });
+
+  it('does not include headings in callouts', () => {
+    const md = `
+### Title
+
+> 📘 Callout
+`;
+    const { Toc } = run(compile(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Title')).toBeDefined();
+    expect(screen.queryByText('Callout')).toBeNull();
+  });
 });

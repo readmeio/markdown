@@ -94,6 +94,7 @@
     padding: 0 0 0 0.8em;
   }
 
+  h3, // for compatibility with old callouts
   .callout-heading {
     --markdown-title-weight: 500;
 
@@ -128,14 +129,19 @@
     }
   }
   .callout-icon {
-    left: -1.5em;
+    left: -0.25em;
     position: absolute;
 
     &_fa {
       transform: translateY(0.1em);
     }
   }
+
+  .callout-icon + .heading.heading {
+    margin-top: 0;
+  }
 }
+
 @mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
   --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
