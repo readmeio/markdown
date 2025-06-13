@@ -94,6 +94,7 @@
     padding: 0 0 0 0.8em;
   }
 
+  h3, // for compatibility with old callouts
   .callout-heading {
     --markdown-title-weight: 500;
 
