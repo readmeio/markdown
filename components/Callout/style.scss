@@ -8,8 +8,11 @@
 
   --Callout-bg: var(--background);
   --Callout-border: var(--border);
+  --Callout-border-radius: 2px;
+  --Callout-title: var(--title, var(--color-text-default, var(--text)));
 
   background: var(--Callout-bg);
+  border-radius: var(--Callout-border-radius);
   border-color: var(--Callout-border);
   color: var(--text, var(--color-text-default));
   padding: $l-offset;
@@ -19,54 +22,50 @@
   }
 
   &_info {
-    $color: #46b8da;
-    --title: #{$color}; // legacy variable
-
-    --Callout-bg: #e3edf2;
-    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+    --Callout-bg: rgba(var(--blue-rgb), 0.1);
+    --Callout-border: rgba(var(--blue-rgb), 1);
+    --Callout-title: var(--blue20);
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--blue-rgb), 0.05);
+      --Callout-bg: rgba(var(--blue-rgb), 0.075);
+      --Callout-title: var(--blue90);
     }
   }
 
   &_warn,
   &_warning {
-    $color: #eea236;
-    --title: #{$color}; // legacy variable
-
-    --Callout-bg: #fcf8f2;
-    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+    --Callout-bg: rgba(var(--yellow-rgb), 0.1);
+    --Callout-border: rgba(var(--yellow-rgb), 1);
+    --Callout-title: var(--yellow10);
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--yellow-rgb), 0.05);
+      --Callout-bg: rgba(var(--yellow-rgb), 0.075);
+      --Callout-title: var(--yellow70);
     }
   }
 
   &_ok,
   &_okay,
   &_success {
-    $color: #489e49;
-    --title: #{$color}; // legacy variable
-
-    --Callout-bg: #f3f8f3;
-    --Callout-border: #{lighten($color, 5%)}; // should be #5bc0de
+    --Callout-bg: rgba(var(--green-rgb), 0.1);
+    --Callout-border: rgba(var(--green-rgb), 1);
+    --Callout-title: var(--green10);
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--green-rgb), 0.05);
+      --Callout-bg: rgba(var(--green-rgb), 0.075);
+      --Callout-title: var(--green80);
     }
   }
 
   &_err,
   &_error {
-    $color: #d43f3a;
-    --title: #{$color}; // legacy variable
-
-    --Callout-bg: #fdf7f7;
-    --Callout-border: #{lighten($color, 5%)}; // should be #d9534f
+    --Callout-bg: rgba(var(--red-rgb), 0.1);
+    --Callout-border: rgba(var(--red-rgb), 1);
+    --Callout-title: var(--red20);
 
     @include dark-mode {
       --Callout-bg: rgba(var(--red-rgb), 0.05);
+      --Callout-title: var(--red90);
     }
   }
 
@@ -74,6 +73,7 @@
     margin-left: $l-offset;
     position: relative;
   }
+
   ul,
   ol {
     padding-left: 1.3em;
@@ -94,11 +94,14 @@
     padding: 0 0 0 0.8em;
   }
 
+  h3, // for compatibility with old callouts
   .callout-heading {
-    color: var(--title, var(--color-text-default, var(--text)));
+    --markdown-title-weight: 500;
+
+    color: var(--Callout-title);
     font-family: var(--markdown-title-font); // match h3
     font-size: 1.25em; // match h3
-    font-weight: var(--markdown-title-weight, 600); // match h3
+    font-weight: var(--markdown-title-weight, 500);
     line-height: 1.25; // match h3
     margin-bottom: calc(#{$l-offset} * 0.5);
 
@@ -126,11 +129,19 @@
     }
   }
   .callout-icon {
-    float: left;
-    margin-left: calc(-#{$l-offset} - 0.5em);
-    margin-right: -0.25rem;
+    left: -0.25em;
+    position: absolute;
+
+    &_fa {
+      transform: translateY(0.1em);
+    }
+  }
+
+  .callout-icon + .heading.heading {
+    margin-top: 0;
   }
 }
+
 @mixin calloutCustomIcons($R: callout) {
   --emoji: 1em;
   --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
@@ -138,7 +149,7 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon:before {
+  &-icon:not([class*='fa-'])::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);

@@ -21,7 +21,7 @@ describe('Readme Components Transformer', () => {
       md: '> 📘 It works!',
       mdx: `
 <Callout icon="📘">
-  It works!
+  ### It works!
 </Callout>`,
     },
     code: {

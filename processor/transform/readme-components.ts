@@ -163,7 +163,7 @@ const coerceJsxToMd =
       return SKIP;
     } else if (node.name === 'Callout') {
       const attrs = getAttrs<Callout['data']['hProperties']>(node);
-      const { icon, empty = false } = getAttrs<Callout['data']['hProperties']>(node);
+      const { icon, empty } = getAttrs<Callout['data']['hProperties']>(node);
       const theme = attrs.theme || themes[icon] || 'default';
 
       const mdNode: Callout = {
@@ -171,7 +171,7 @@ const coerceJsxToMd =
         type: NodeTypes.callout,
         data: {
           hName: node.name,
-          hProperties: { icon, empty, theme },
+          hProperties: { icon, ...(empty && { empty }), theme },
         },
         position: node.position,
       };

@@ -24,6 +24,7 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
               "value": "Info Callout",
             },
           ],
+          "depth": 3,
           "position": {
             "end": {
               "column": 18,
@@ -36,7 +37,7 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
               "offset": 3,
             },
           },
-          "type": "paragraph",
+          "type": "heading",
         },
         {
           "children": [
@@ -75,8 +76,7 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
       "data": {
         "hName": "Callout",
         "hProperties": {
-          "empty": false,
-          "icon": "ℹ️",
+          "icon": "📘",
           "theme": "info",
         },
       },

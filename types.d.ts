@@ -24,6 +24,7 @@ type Callout = Omit<Blockquote, 'children' | 'type'> & {
     hProperties: {
       empty: boolean;
       icon: string;
+      theme: string;
     };
   };
   type: NodeTypes.callout;
