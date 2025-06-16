@@ -69,4 +69,44 @@ describe('callouts transformer', () => {
     expect(tree.children[0].data.hProperties.empty).toBeUndefined();
     expect(tree.children[0].children[0].children[1].type).toBe('strong');
   });
+
+  it('can parse a jsx callout into a rdme-callout', () => {
+    const md = `
+<Callout theme="info">
+### This is a callout
+</Callout>`;
+
+    const tree = mdast(md);
+    removePosition(tree, { force: true });
+
+    expect(tree).toMatchInlineSnapshot(`
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "type": "text",
+                    "value": "This is a callout",
+                  },
+                ],
+                "depth": 3,
+                "type": "heading",
+              },
+            ],
+            "data": {
+              "hName": "Callout",
+              "hProperties": {
+                "icon": undefined,
+                "theme": "info",
+              },
+            },
+            "type": "rdme-callout",
+          },
+        ],
+        "type": "root",
+      }
+    `);
+  });
 });
