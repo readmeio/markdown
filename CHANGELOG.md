@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 9.13.0
+### ✨ New & Improved
+
+* better callout defaults ([#1129](https://github.com/readmeio/markdown/issues/1129)) ([bbdc057](https://github.com/readmeio/markdown/commit/bbdc057eba5a74ca1bd3c083cba48eb89a09abb8))
+
 ## Version 9.12.0
 ### ✨ New & Improved
 
