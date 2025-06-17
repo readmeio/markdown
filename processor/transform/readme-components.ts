@@ -7,7 +7,7 @@ import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types'
 
 import { visit, SKIP } from 'unist-util-visit';
 
-import { themes } from '../../components/Callout';
+import { defaultIcons, themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import { mdast } from '../../lib';
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
@@ -163,7 +163,8 @@ const coerceJsxToMd =
       return SKIP;
     } else if (node.name === 'Callout') {
       const attrs = getAttrs<Callout['data']['hProperties']>(node);
-      const { icon, empty } = getAttrs<Callout['data']['hProperties']>(node);
+      const { empty } = attrs;
+      const icon = attrs.icon || defaultIcons[attrs.theme];
       const theme = attrs.theme || themes[icon] || 'default';
 
       const mdNode: Callout = {
