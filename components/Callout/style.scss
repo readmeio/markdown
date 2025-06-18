@@ -143,7 +143,9 @@
   }
 
   > .callout-icon_fa {
-    color: var(--Callout-title) !important;
+    --fa-primary-color: var(--Callout-title);
+    --fa-secondary-color: var(--Callout-title);
+
     font-size: 1.25em; // match h3
   }
 }
