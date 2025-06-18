@@ -49,7 +49,8 @@
     font-size: 100%;
     margin: 0;
     padding: 0;
-    white-space: pre;
+    text-wrap: wrap;
+    white-space: pre-wrap;
     word-break: normal;
   }
 
