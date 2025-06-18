@@ -4,13 +4,14 @@ category: 5fdf9fc9c2a7ef443e937315
 hidden: true
 ---
 
-# Basics
+## Basics
 
 ### Simple
 
 ```php
 <b><?= "Hello world!" ?></b>;
 ```
+
 ```js
 console.log('Hello world!');
 ```
@@ -20,6 +21,7 @@ console.log('Hello world!');
 ```Zed
 Tab Number Zero
 ```
+
 ```One
 Tab Number One
 ```
@@ -29,14 +31,16 @@ Tab Number One
 ```js English
 console.log('Hello world!');
 ```
+
 ```js French
 console.log('Bonjour le monde!');
 ```
+
 ```js German
 console.log('Hallo welt!');
 ```
 
-# Breakage
+## Breakage
 
 ### Block Separator 👍
 
@@ -82,7 +86,7 @@ Section **Two**
 console.log('one');
 ```
 
-# Block Wraps
+## Block Wraps
 
 ### List-Internal
 
@@ -95,3 +99,9 @@ console.log('one');
   ```URL
   {{company_url}}
   ```
+
+## Formatting
+
+```
+This is a long line that will be wrapped to fit within the container.
+```
