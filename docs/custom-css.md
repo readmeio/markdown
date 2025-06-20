@@ -1,8 +1,11 @@
 ---
-title: "Custom Styling"
-category: 5fdf7610134322007389a6ec
-excerpt: "Styling best-practices and CSS selector references."
-hidden: false
+title: Custom Styling
+category:
+  uri: markdown-engine
+content:
+  excerpt: Styling best-practices and CSS selector references.
+privacy:
+  view: public
 ---
 By and large, the new markdown processor outputs standard HTML. This means most basic CSS element selectors will continue to work seamlessly. Depending on how complex your Markdown and custom CSS are, you should only have to update a few styles here and there!
 
