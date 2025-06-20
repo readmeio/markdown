@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 9.14.0
+### ✨ New & Improved
+
+* code text wrap ([#1131](https://github.com/readmeio/markdown/issues/1131)) ([cf9fe06](https://github.com/readmeio/markdown/commit/cf9fe067b5416dc370ea9a0b660cf77e4045076c))
+
+### 🛠 Fixes & Updates
+
+* callout emoji w/o h3 ([#1132](https://github.com/readmeio/markdown/issues/1132)) ([f9e3dfd](https://github.com/readmeio/markdown/commit/f9e3dfda718ee9c5ede03af27119ec09d0fa7a4d))
+* fa icon styling ([#1130](https://github.com/readmeio/markdown/issues/1130)) ([564d242](https://github.com/readmeio/markdown/commit/564d24278a2ca66f81a19c514f890e2d77e6a0b2))
+
 ## Version 9.13.0
 ### ✨ New & Improved
 
