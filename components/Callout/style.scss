@@ -130,6 +130,7 @@
   }
 
   .callout-icon {
+    font-size: 1.25em; // match h3
     left: -0.25em;
     position: absolute;
 
@@ -145,8 +146,6 @@
   > .callout-icon_fa {
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
-
-    font-size: 1.25em; // match h3
   }
 }
 
