@@ -6,15 +6,15 @@ import ThemeContext from '../../contexts/Theme';
 
 import './style.scss';
 
-interface Props extends React.PropsWithChildren {}
-
 let mermaid: MermaidType;
+
+interface Props {
+  children: JSX.Element;
+}
 
 const Mermaid = ({ children }: Props) => {
   const theme = useContext(ThemeContext);
-  const content = children.props.children;
-  console.log('children', children)
-  console.log('content', content)
+  const content = children.props?.children || null;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
