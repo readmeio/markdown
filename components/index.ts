@@ -16,3 +16,4 @@ export { default as Tabs, Tab } from './Tabs';
 export { default as TailwindRoot } from './TailwindRoot';
 export { default as TailwindStyle } from './TailwindStyle';
 export { default as TutorialTile } from './TutorialTile';
+export { default as PostmanRunButton } from './PostmanRunButton';
