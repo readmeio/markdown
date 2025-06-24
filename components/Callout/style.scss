@@ -132,11 +132,8 @@
   .callout-icon {
     font-size: 1.25em; // match h3
     left: -0.25em;
+    line-height: 1.25; // match h3
     position: absolute;
-
-    &_fa {
-      transform: translateY(0.1em);
-    }
   }
 
   .callout-icon + .heading.heading {
