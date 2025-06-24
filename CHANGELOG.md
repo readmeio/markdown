@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 9.15.0
+### ✨ New & Improved
+
+* jsx mermaid ([#1133](https://github.com/readmeio/markdown/issues/1133)) ([5f22e49](https://github.com/readmeio/markdown/commit/5f22e49dccdd692588338685489a61da1dc7749a))
+
+### 🛠 Fixes & Updates
+
+* **components:** add PostmanRunButton ([#1136](https://github.com/readmeio/markdown/issues/1136)) ([618687f](https://github.com/readmeio/markdown/commit/618687fbd7a0e7a746cd5799e09b4fe2416fb602))
+
 ## Version 9.14.0
 ### ✨ New & Improved
 
