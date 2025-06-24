@@ -1,6 +1,6 @@
 import type { Mermaid as MermaidType } from 'mermaid';
 
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 
 import ThemeContext from '../../contexts/Theme';
 
@@ -8,30 +8,37 @@ import './style.scss';
 
 let mermaid: MermaidType;
 
-interface Props {
-  children: JSX.Element;
-}
-
-const Mermaid = ({ children }: Props) => {
+const Mermaid = ({ children }: React.PropsWithChildren) => {
   const theme = useContext(ThemeContext);
-  const content = children.props?.children || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('mermaid').then(module => {
+      import('mermaid').then(async module => {
         mermaid = module.default;
+        // Initialize Mermaid with the current theme
         mermaid.initialize({
           theme: theme === 'dark' ? 'dark' : 'default',
         });
-        mermaid.contentLoaded();
-      });
+      
+        if (containerRef.current) {
+          const code = containerRef.current.textContent || '';
+          // Render the diagram and inject it into the container
+          const { svg } = await mermaid.render('generatedDiagram', code);
+          if (containerRef.current) {
+            containerRef.current.innerHTML = svg;
+          }
+        }
+      }) 
     }
-    }, [theme]);
+  }, [children, theme]);
 
   return (
-    <pre className="Mermaid mermaid">
-      {content}
-    </pre>
+    <div ref={containerRef}>
+      <pre className="Mermaid mermaid">
+        {children}
+      </pre>
+    </div>
   );
 };
 
