@@ -6,58 +6,31 @@ hidden: false
 
 ## Examples
 
-### Single Diagram
+### JSX Mermaid Component
+
+<Mermaid>
+    graph LR
+        A --- B
+        B-->C[fa:fa-ban forbidden]
+        B-->D(fa:fa-spinner);
+</Mermaid>
+
+### Single Mermaid Code Tab
 
 ```mermaid
     graph LR
-      A --- B
-      B-->C[fa:fa-ban forbidden]
-      B-->D(fa:fa-spinner);
+        A --- B
+        B-->C[fa:fa-ban forbidden]
+        B-->D(fa:fa-spinner);
 ```
 
-```mermaid
-    sequenceDiagram
-        participant Alice
-        participant Bob
-        Alice->>John: Hello John, how are you?
-        loop HealthCheck
-            John->>John: Fight against hypochondria
-        end
-        Note right of John: Rational thoughts <br/>prevail!
-        John-->>Alice: Great!
-        John->>Bob: How about you?
-        Bob-->>John: Jolly good!
-```
-
-### Multiple Tabs
+### Multiple Code Tabs
 
 ```mermaid
-    ---
-    title: Animal example
-    ---
-    classDiagram
-        note "From Duck till Zebra"
-        Animal <|-- Duck
-        note for Duck "can fly\ncan swim\ncan dive\ncan help in debugging"
-        Animal <|-- Fish
-        Animal <|-- Zebra
-        Animal : +int age
-        Animal : +String gender
-        Animal: +isMammal()
-        Animal: +mate()
-        class Duck{
-            +String beakColor
-            +swim()
-            +quack()
-        }
-        class Fish{
-            -int sizeInFeet
-            -canEat()
-        }
-        class Zebra{
-            +bool is_wild
-            +run()
-        }
+    pie title Pets adopted by volunteers
+        "Dogs" : 386
+        "Cats" : 85
+        "Rats" : 15
 ```
 ```mermaid
     stateDiagram-v2
@@ -68,12 +41,6 @@ hidden: false
         Moving --> Still
         Moving --> Crash
         Crash --> [*]
-```
-```mermaid
-    pie title Pets adopted by volunteers
-        "Dogs" : 386
-        "Cats" : 85
-        "Rats" : 15
 ```
 
 ```mermaid diagram
