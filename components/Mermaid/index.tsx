@@ -16,7 +16,7 @@ const Mermaid = ({ children }: React.PropsWithChildren) => {
     if (typeof window === 'undefined') return;
 
     // Initialize Mermaid
-    import('mermaid').then(module => {
+    import('mermaid').then(async module => {
       if (!mermaid) {
         mermaid = module.default;
         mermaid.initialize({
