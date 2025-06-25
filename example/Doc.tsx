@@ -1,5 +1,6 @@
 import type { RMDXModule } from 'types';
 
+import * as rdmd from '@readme/markdown-legacy';
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
@@ -55,6 +56,7 @@ const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
   const ci = searchParams.has('ci');
+  const legacy = searchParams.has('legacy');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
@@ -68,6 +70,7 @@ const Doc = () => {
     Toc: null,
   });
   const [error, setError] = useState<string>(null);
+  const [legacyContent, setLegacyContent] = useState<React.ReactNode>(null);
 
   useEffect(() => {
     const render = async () => {
@@ -90,8 +93,16 @@ const Doc = () => {
       }
     };
 
-    render();
-  }, [doc, lazyImages, safeMode, copyButtons]);
+    if (legacy) {
+      setLegacyContent(rdmd.react(doc));
+    } else {
+      render();
+    }
+  }, [doc, lazyImages, safeMode, copyButtons, legacy]);
+
+  useEffect(() => {
+    if (error) setError(null);
+  }, [error]);
 
   return (
     <div className="rdmd-demo--display">
@@ -100,7 +111,7 @@ const Doc = () => {
         <div id="content-container">
           <RenderError error={error}>
             <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-              <div className="markdown-body">{Content && <Content />}</div>
+              <div className="markdown-body">{legacy ? legacyContent : <Content />}</div>
             </TailwindStyle>
           </RenderError>
           {Toc && (

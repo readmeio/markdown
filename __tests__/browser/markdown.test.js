@@ -47,5 +47,15 @@ describe('visual regression tests', () => {
       },
       10000,
     );
+
+    it('renders callout-tests in legacy mode without surprises', async () => {
+      const uri = 'http://localhost:9966/#/calloutTests?ci=true&darkModeDataAttribute=true&legacy=true';
+      await page.goto(uri, { waitUntil: 'networkidle0' });
+      await sleep(5000);
+
+      const image = await page.screenshot({ fullPage: true });
+
+      expect(image).toMatchImageSnapshot();
+    }, 10000);
   });
 });
