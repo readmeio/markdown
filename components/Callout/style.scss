@@ -16,6 +16,7 @@
   border-color: var(--Callout-border);
   color: var(--text, var(--color-text-default));
   padding: $l-offset;
+  position: relative;
 
   @include dark-mode {
     --Callout-bg: rgba(var(--gray100-rgb), 0.05);
@@ -71,7 +72,6 @@
 
   > * {
     margin-left: $l-offset;
-    position: relative;
   }
 
   ul,
@@ -130,9 +130,10 @@
   }
 
   .callout-icon {
-    font-size: 1.25em; // match h3
+    font-size: 17.5px; // match h3—CANNOT BE EM due to bg compatibility (heading size varies)
     left: -0.25em;
     line-height: 1.25; // match h3
+    margin-left: $l-offset; // already applied via wildcard, but adding here for bg compatibility for when the icon was nested under headings
     position: absolute;
   }
 
