@@ -111,7 +111,7 @@ const Doc = () => {
         <div id="content-container">
           <RenderError error={error}>
             <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-              <div className="markdown-body">{legacy ? legacyContent : <Content />}</div>
+              <div className="markdown-body">{legacy ? legacyContent : Content ? <Content /> : null}</div>
             </TailwindStyle>
           </RenderError>
           {Toc && (
