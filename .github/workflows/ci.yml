@@ -51,6 +51,7 @@ jobs:
         with:
           name: snapshots-diffs
           path: __tests__/browser/__image_snapshots__/__diff_output__
+          overwrite: true
 
       - name: Update regression test snapshots
         if: ${{ failure() }}
