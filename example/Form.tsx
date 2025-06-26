@@ -113,6 +113,10 @@ const Form = () => {
               type="checkbox"
             />
           </div>
+          <div>
+            <label htmlFor="legacy">Render as legacy markdown</label>
+            <input checked={searchParams.has('legacy')} id="legacy" onChange={onCheck('legacy')} type="checkbox" />
+          </div>
         </fieldset>
         <textarea name="demo-editor" onChange={onChange} value={doc} />
       </div>
