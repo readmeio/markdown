@@ -1,5 +1,7 @@
 import type { Root as HastRoot } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
+import type { Plugin } from 'unified';
+import type { VFile } from 'vfile';
 
 import rehypeRemark from 'rehype-remark';
 import remarkGfm from 'remark-gfm';
@@ -10,12 +12,21 @@ import { unified } from 'unified';
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
-export const mdx = (tree: HastRoot | MdastRoot, { hast = false, remarkTransformers = [], ...opts } = {}) => {
+interface Opts {
+  file?: VFile | string;
+  hast?: boolean;
+  remarkTransformers?: Transformer[];
+}
+
+export const mdx = (
+  tree: HastRoot | MdastRoot,
+  { hast = false, remarkTransformers = [], file, ...opts }: Opts = {},
+) => {
   const processor = unified()
     .use(hast ? rehypeRemark : undefined)
     .use(remarkMdx)
     .use(remarkGfm)
-    .use(remarkTransformers)
+    .use(remarkTransformers as Plugin[])
     .use(divTransformer)
     .use(readmeToMdx)
     .use(tablesToJsx)
@@ -25,7 +36,7 @@ export const mdx = (tree: HastRoot | MdastRoot, { hast = false, remarkTransforme
 
   // @ts-expect-error - @todo: coerce the processor and tree to the correct
   // type depending on the value of hast
-  return processor.stringify(processor.runSync(tree));
+  return processor.stringify(processor.runSync(tree, file));
 };
 
 export default mdx;
