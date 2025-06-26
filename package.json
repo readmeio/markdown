@@ -65,8 +65,8 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
-    "@readme/syntax-highlighter": "^13.1.0",
-    "@readme/variable": "^16.1.0",
+    "@readme/syntax-highlighter": "^14.0.0",
+    "@readme/variable": "^17.0.0",
     "@tippyjs/react": "^4.1.0",
     "acorn": "v8.13.0",
     "react": "16.x || 17.x || 18.x",
@@ -157,6 +157,8 @@
     "mermaid": "^11.3.0"
   },
   "overrides": {
-    "conventional-changelog-conventionalcommits": ">= 8.0.0"
+    "conventional-changelog-conventionalcommits": ">= 8.0.0",
+    "@readme/syntax-highlighter": "^14.0.0",
+    "@readme/variable": "^17.0.0"
   }
 }
