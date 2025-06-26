@@ -131,10 +131,14 @@
 
   .callout-icon {
     font-size: 17.5px; // match h3—CANNOT BE EM due to bg compatibility (heading size varies)
-    left: -0.25em;
     line-height: 1.25; // match h3
-    margin-left: $l-offset; // already applied via wildcard, but adding here for bg compatibility for when the icon was nested under headings
+    margin-left: 0; // unset wildcard margin
     position: absolute;
+    transform: translateX(-50%);
+  }
+
+  .callout-heading > .callout-icon {
+    transform: translateX(-150%);
   }
 
   .callout-icon + .heading.heading {
