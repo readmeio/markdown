@@ -1,3 +1,4 @@
+import type { Nodes } from 'hast';
 import type { Blockquote, Heading, Node, Root } from 'mdast';
 import type { Callout } from 'types';
 
@@ -6,6 +7,7 @@ import { visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
+import plain from '../../lib/plain';
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -40,7 +42,8 @@ const calloutTransformer = () => {
     visit(tree, 'blockquote', (node: Blockquote) => {
       if (!(node.children[0].type === 'paragraph' && node.children[0].children[0].type === 'text')) return;
 
-      const startText = node.children[0].children[0].value;
+      // @ts-expect-error -- @todo: update plain to accept mdast
+      const startText = plain(node.children[0]).toString();
       const [match, icon] = startText.match(regex) || [];
 
       if (icon && match) {
@@ -48,7 +51,9 @@ const calloutTransformer = () => {
         const empty = !heading.length && node.children[0].children.length === 1;
         const theme = themes[icon] || 'default';
 
-        node.children[0].children[0].value = heading;
+        const firstChild = findFirst(node.children[0]);
+        firstChild.value = firstChild.value.slice(match.length);
+
         if (heading) {
           node.children[0] = wrapHeading(node);
         }
