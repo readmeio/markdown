@@ -49,10 +49,6 @@ describe('callouts compiler', () => {
   });
 
   it('compiles callouts with icons + theme', () => {
-    const markdown = `<Callout icon="fad fa-wagon-covered" theme="warn">
-  test
-</Callout>`;
-
     const mockAst = {
       type: 'root',
       children: [
@@ -64,18 +60,6 @@ describe('callouts compiler', () => {
                 {
                   type: 'text',
                   value: 'test',
-                  position: {
-                    start: {
-                      line: 2,
-                      column: 3,
-                      offset: 53,
-                    },
-                    end: {
-                      line: 2,
-                      column: 7,
-                      offset: 57,
-                    },
-                  },
                 },
               ],
             },
@@ -92,6 +76,76 @@ describe('callouts compiler', () => {
         },
       ],
     };
+    const markdown = `
+<Callout icon="fad fa-wagon-covered" theme="warn">
+  test
+</Callout>`.trim();
+
+    expect(mdx(mockAst as Root).trim()).toBe(markdown);
+  });
+
+  it('compiles a callout with only a theme set', () => {
+    const mockAst = {
+      type: 'root',
+      children: [
+        {
+          children: [
+            {
+              type: 'heading',
+              depth: 3,
+              children: [
+                {
+                  type: 'text',
+                  value: 'test',
+                },
+              ],
+            },
+          ],
+          type: 'rdme-callout',
+          data: {
+            hName: 'Callout',
+            hProperties: {
+              empty: false,
+              theme: 'warn',
+            },
+          },
+        },
+      ],
+    };
+    const markdown = '> 🚧 test';
+
+    expect(mdx(mockAst as Root).trim()).toBe(markdown);
+  });
+
+  it('compiles a callout with only an icon set', () => {
+    const mockAst = {
+      type: 'root',
+      children: [
+        {
+          children: [
+            {
+              type: 'heading',
+              depth: 3,
+              children: [
+                {
+                  type: 'text',
+                  value: 'test',
+                },
+              ],
+            },
+          ],
+          type: 'rdme-callout',
+          data: {
+            hName: 'Callout',
+            hProperties: {
+              icon: '🚧',
+              empty: false,
+            },
+          },
+        },
+      ],
+    };
+    const markdown = '> 🚧 test';
 
     expect(mdx(mockAst as Root).trim()).toBe(markdown);
   });

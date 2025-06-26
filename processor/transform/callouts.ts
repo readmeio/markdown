@@ -4,7 +4,6 @@ import type { Callout } from 'types';
 import emojiRegex from 'emoji-regex';
 import { visit } from 'unist-util-visit';
 
-
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 

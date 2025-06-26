@@ -69,4 +69,37 @@ describe('callouts transformer', () => {
     expect(tree.children[0].data.hProperties.empty).toBeUndefined();
     expect(tree.children[0].children[0].children[1].type).toBe('strong');
   });
+
+  it('can parse a jsx callout into a rdme-callout', () => {
+    const md = `
+<Callout icon="📘" theme="info">
+### This is a callout
+</Callout>`;
+
+    const tree = mdast(md);
+
+    expect(tree.children[0]).toHaveProperty('type', 'rdme-callout');
+  });
+
+  it('can parse a jsx callout and sets a default icon', () => {
+    const md = `
+<Callout theme="info">
+### This is a callout
+</Callout>`;
+
+    const tree = mdast(md);
+
+    expect(tree.children[0].data.hProperties).toHaveProperty('icon', '📘');
+  });
+
+  it('can parse a jsx callout and set a theme from the icon', () => {
+    const md = `
+<Callout icon="📘">
+### This is a callout
+</Callout>`;
+
+    const tree = mdast(md);
+
+    expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'info');
+  });
 });

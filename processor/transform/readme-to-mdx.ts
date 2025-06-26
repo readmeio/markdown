@@ -7,7 +7,7 @@ import type { Variable, HTMLBlock } from 'types';
 import emojiRegex from 'emoji-regex';
 import { visit } from 'unist-util-visit';
 
-import { themes } from '../../components/Callout';
+import { defaultIcons, themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import { toAttributes } from '../utils';
 
@@ -21,18 +21,24 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   visit(tree, 'rdme-callout', (node, index, parent) => {
-    const isEmoji = emojiRegex().test(node.data.hProperties.icon);
     const isEmpty = node.data.hProperties?.empty;
     const isH3 = node.children[0].type === 'heading' && node.children[0].depth === 3;
+    let { icon, theme } = node.data.hProperties;
+    if (!icon) icon = defaultIcons[theme];
+    if (!theme) theme = themes[icon] || 'default';
+    const isEmoji = emojiRegex().test(icon);
 
     // return the usual markdown if there is an emoji and the icon theme matches our default theme
-    if ((isEmpty || isH3) && isEmoji && themes[node.data.hProperties.icon] === node.data.hProperties.theme) {
+    if ((isEmpty || isH3) && isEmoji && themes[icon] === theme) {
       if (isH3) {
         node.children[0] = {
           type: 'paragraph',
           children: 'children' in node.children[0] ? node.children[0].children : [],
         } as Paragraph;
       }
+
+      node.data.hProperties.icon = icon;
+      node.data.hProperties.theme = theme;
 
       return;
     }

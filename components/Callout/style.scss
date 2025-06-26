@@ -128,17 +128,21 @@
       font: normal normal normal 1em/1 var(--icon-font);
     }
   }
-  .callout-icon {
-    left: -0.25em;
-    position: absolute;
 
-    &_fa {
-      transform: translateY(0.1em);
-    }
+  .callout-icon {
+    font-size: 1.25em; // match h3
+    left: -0.25em;
+    line-height: 1.25; // match h3
+    position: absolute;
   }
 
   .callout-icon + .heading.heading {
     margin-top: 0;
+  }
+
+  > .callout-icon_fa {
+    --fa-primary-color: var(--Callout-title);
+    --fa-secondary-color: var(--Callout-title);
   }
 }
 
