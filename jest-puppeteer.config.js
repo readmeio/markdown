@@ -8,6 +8,6 @@ module.exports = {
     debug: true,
     port: process.env.PORT || 9966,
     protocol: 'http-get',
-    launchTimeout: 45000,
+    launchTimeout: 60000,
   },
 };
