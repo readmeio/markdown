@@ -51,13 +51,14 @@ const readmeToMdx = (): Transform => tree => {
     });
   });
 
+  // Converts tutorial tiles to Recipe components in the migration process
   visit(tree, NodeTypes.tutorialTile, (tile, index, parent) => {
     const { ...attrs } = tile;
 
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
-      name: 'TutorialTile',
-      attributes: toAttributes(attrs, ['backgroundColor', 'emoji', 'id', 'link', 'slug', 'title']),
+      name: 'Recipe',
+      attributes: toAttributes(attrs, ['slug', 'title']),
       children: [],
     });
   });
