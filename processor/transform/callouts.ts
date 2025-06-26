@@ -52,7 +52,9 @@ const calloutTransformer = () => {
         const theme = themes[icon] || 'default';
 
         const firstChild = findFirst(node.children[0]);
-        firstChild.value = firstChild.value.slice(match.length);
+        if (firstChild && 'value' in firstChild && typeof firstChild.value === 'string') {
+          firstChild.value = firstChild.value.slice(match.length);
+        }
 
         if (heading) {
           node.children[0] = wrapHeading(node);
