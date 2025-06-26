@@ -6,16 +6,7 @@ hidden: false
 
 ## Examples
 
-### JSX Mermaid Component
-
-<Mermaid>
-    graph LR
-        A --- B
-        B-->C[fa:fa-ban forbidden]
-        B-->D(fa:fa-spinner);
-</Mermaid>
-
-### Single Mermaid Code Tab
+### Single Code Tab
 
 ```mermaid
     graph LR
