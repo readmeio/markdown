@@ -18,7 +18,7 @@ describe('readme-to-mdx transformer', () => {
     };
 
     expect(mdx(ast)).toMatchInlineSnapshot(`
-      "<TutorialTile backgroundColor="red" emoji="🦉" id="test-id" link="http://example.com" slug="test-id" title="Test" />
+      "<Recipe slug="test-id" title="Test" />
       "
     `);
   });
