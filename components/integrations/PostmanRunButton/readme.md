@@ -1,6 +1,6 @@
 # Postman Run Button
 
-Add a Postman run button to your documentation, allowing users to fork a Postman collection. This component is a dupe of [the version in our Marketplace](https://github.com/readmeio/marketplace/tree/main/components/PostmanRunButton) so our users can easily insert it via the editor.
+Add a "Run in Postman" button to your documentation, allowing users to fork a Postman collection. This component is a dupe of [the version in our Marketplace](https://github.com/readmeio/marketplace/tree/main/components/PostmanRunButton) so our users can easily insert it via the editor.
 
 ### Usage
 
