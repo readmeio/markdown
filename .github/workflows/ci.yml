@@ -11,7 +11,7 @@ jobs:
           - lts/-1
           - lts/*
           - latest
-        react: [16, 17, 18]
+        react: [18, 19]
     steps:
       - uses: actions/checkout@v4
 
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         react: [18]
 
     steps:
@@ -51,6 +51,7 @@ jobs:
         with:
           name: snapshots-diffs
           path: __tests__/browser/__image_snapshots__/__diff_output__
+          overwrite: true
 
       - name: Update regression test snapshots
         if: ${{ failure() }}

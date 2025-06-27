@@ -16,6 +16,7 @@
   border-color: var(--Callout-border);
   color: var(--text, var(--color-text-default));
   padding: $l-offset;
+  position: relative;
 
   @include dark-mode {
     --Callout-bg: rgba(var(--gray100-rgb), 0.05);
@@ -71,7 +72,6 @@
 
   > * {
     margin-left: $l-offset;
-    position: relative;
   }
 
   ul,
@@ -130,10 +130,15 @@
   }
 
   .callout-icon {
-    font-size: 1.25em; // match h3
-    left: -0.25em;
+    font-size: 17.5px; // match h3—CANNOT BE EM due to bg compatibility (heading size varies)
     line-height: 1.25; // match h3
+    margin-left: 0; // unset wildcard margin
     position: absolute;
+    transform: translateX(-50%);
+  }
+
+  .callout-heading > .callout-icon {
+    transform: translateX(-150%);
   }
 
   .callout-icon + .heading.heading {

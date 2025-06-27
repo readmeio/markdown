@@ -2,7 +2,7 @@ import React from 'react';
 
 // We render a placeholder in this library, as the actual implemenation is
 // deeply tied to the main app
-const TutorialTile = () => {
+const Recipe = () => {
   const style = {
     height: '50px',
     border: '1px solid var(--color-border-default, rgba(black, 0.1))',
@@ -43,4 +43,4 @@ const TutorialTile = () => {
   );
 };
 
-export default TutorialTile;
+export default Recipe;

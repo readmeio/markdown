@@ -6,10 +6,16 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
+// This transformer has been necessary for migrating legacy markdown files 
+// where tutorial tiles were wrapped in a div. It also provides a fallback for legacy magic blocks that were never fully supported:
+//     [block:custom-block]
+//     { ... }
+//     [/block]
+// This transformer runs before the readme-to-mdx transformer which reshapes the tutorial tile node
+// to the Recipe component
 const divTransformer = (): Transform => tree => {
   visit(tree, 'div', (node: Node, index, parent: Parent) => {
     const type = node.data?.hName;
-
     switch (type) {
       // Check if the div is a tutorial-tile in disguise
       case NodeTypes.tutorialTile:

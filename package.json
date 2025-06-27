@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "9.15.1",
+  "version": "10.0.0",
   "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
   "browser": "dist/main.js",
@@ -65,12 +65,12 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
-    "@readme/syntax-highlighter": "^13.1.0",
-    "@readme/variable": "^16.1.0",
+    "@readme/syntax-highlighter": "^14.0.0",
+    "@readme/variable": "^17.0.0",
     "@tippyjs/react": "^4.1.0",
     "acorn": "v8.13.0",
-    "react": "16.x || 17.x || 18.x",
-    "react-dom": "16.x || 17.x || 18.x"
+    "react": "18.x || 19.x",
+    "react-dom": "18.x || 19.x"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -157,6 +157,8 @@
     "mermaid": "^11.3.0"
   },
   "overrides": {
-    "conventional-changelog-conventionalcommits": ">= 8.0.0"
+    "conventional-changelog-conventionalcommits": ">= 8.0.0",
+    "@readme/syntax-highlighter": "^14.0.0",
+    "@readme/variable": "^17.0.0"
   }
 }

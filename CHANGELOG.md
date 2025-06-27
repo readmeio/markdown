@@ -1,6 +1,22 @@
 Changelog
 ===
 
+## Version 10.0.0
+### ⚠ BREAKING CHANGES
+
+* CHANGE: This will officially drop support for react@<18
+
+### ✨ New & Improved
+
+* Rename TutorialTile to Recipe and ensure backwards compatibility  ([#1135](https://github.com/readmeio/markdown/issues/1135)) ([2ce856c](https://github.com/readmeio/markdown/commit/2ce856c80451778eadb3c99e2b5045ec7f9c9403))
+
+### 🛠 Fixes & Updates
+
+* don't support jsx mermaid ([#1143](https://github.com/readmeio/markdown/issues/1143)) ([b2aff57](https://github.com/readmeio/markdown/commit/b2aff57014d0b260da28c2b18881b9d58ef3f560))
+* legacy callout styling ([#1139](https://github.com/readmeio/markdown/issues/1139)) ([69ead5c](https://github.com/readmeio/markdown/commit/69ead5cfc8738d68debc398d4e1549b6db51becd))
+* update ci versions ([#1140](https://github.com/readmeio/markdown/issues/1140)) ([993fbb9](https://github.com/readmeio/markdown/commit/993fbb9e2d4e51653b7fc62153e39dd40444f07e))
+* update readme deps ([#1142](https://github.com/readmeio/markdown/issues/1142)) ([27042e8](https://github.com/readmeio/markdown/commit/27042e8a5fb42dd01193fcb7c89db1739e071a45))
+
 ## Version 9.15.1
 ### 🛠 Fixes & Updates
 

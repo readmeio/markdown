@@ -60,7 +60,7 @@ describe('callouts transformer', () => {
 
   it('can parse callouts with markdown in the heading immediately following the emoji', () => {
     const md = `
-> 🚧 **It works!**
+> 🚧**It works!**
 >
 > And, it no longer deletes your content!
 `;
@@ -68,6 +68,61 @@ describe('callouts transformer', () => {
 
     expect(tree.children[0].data.hProperties.empty).toBeUndefined();
     expect(tree.children[0].children[0].children[1].type).toBe('strong');
+  });
+
+  it('can parse callouts with a link in the heading', () => {
+    const md = `
+> 🚧 [It works!](https://example.com)
+>
+> And, it no longer deletes your content!
+`;
+    const tree = mdast(md);
+    removePosition(tree, { force: true });
+
+    expect(tree.children[0]).toMatchInlineSnapshot(`
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "type": "text",
+                "value": "",
+              },
+              {
+                "children": [
+                  {
+                    "type": "text",
+                    "value": "It works!",
+                  },
+                ],
+                "title": null,
+                "type": "link",
+                "url": "https://example.com",
+              },
+            ],
+            "depth": 3,
+            "type": "heading",
+          },
+          {
+            "children": [
+              {
+                "type": "text",
+                "value": "And, it no longer deletes your content!",
+              },
+            ],
+            "type": "paragraph",
+          },
+        ],
+        "data": {
+          "hName": "Callout",
+          "hProperties": {
+            "icon": "🚧",
+            "theme": "warn",
+          },
+        },
+        "type": "rdme-callout",
+      }
+    `);
   });
 
   it('can parse a jsx callout into a rdme-callout', () => {
