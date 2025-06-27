@@ -4,7 +4,7 @@ import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from 'enums';
+import { NodeTypes } from '../../enums';
 
 const migrateLinkReferences: Plugin<[], Root> = () => {
   return (tree: Root, vfile: VFile) => {
