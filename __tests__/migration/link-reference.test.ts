@@ -20,9 +20,21 @@ describe('mdx migration of link references', () => {
 
     const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
-      "[wat\\_wat][wat_wat]
+      "[wat_wat]
 
       [wat_wat]: https://wat.com
+      "
+    `);
+  });
+
+  it('compiles link references like syntax', () => {
+    const md = `
+[* Wat]: <-- must be capitalized
+`;
+
+    const mdx = migrate(md);
+    expect(mdx).toMatchInlineSnapshot(`
+      "[* Wat]: \\<-- must be capitalized
       "
     `);
   });
