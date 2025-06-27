@@ -1,9 +1,10 @@
 import type { LinkReference, Parents, Root } from 'mdast';
-import type { Plain } from 'types';
 import type { Plugin } from 'unified';
 import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
+
+import { NodeTypes } from 'enums';
 
 const migrateLinkReferences: Plugin<[], Root> = () => {
   return (tree: Root, vfile: VFile) => {
@@ -11,9 +12,9 @@ const migrateLinkReferences: Plugin<[], Root> = () => {
       if (!('children' in parent)) return;
 
       parent.children.splice(index, 1, {
-        type: 'plain',
+        type: NodeTypes.plain,
         value: String(vfile).slice(node.position.start.offset, node.position.end.offset),
-      } as Plain);
+      });
     });
   };
 };
