@@ -136,13 +136,6 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
       root: 'ReactDOM',
       umd: 'react-dom',
     },
-    'react-dom/server': {
-      amd: 'react-dom/server',
-      commonjs2: 'react-dom/server',
-      commonjs: 'react-dom/server',
-      root: 'ReactDOM/server',
-      umd: 'react-dom/server',
-    },
   },
   devtool: 'source-map',
 });
