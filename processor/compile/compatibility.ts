@@ -73,7 +73,7 @@ const embedToEmbedBlock = (node: CompatEmbed) => {
   return `<Embed ${formatProps(attributes)} />`;
 };
 
-const compatibility = (node: CompatNodes, ...rest) => {
+const compatibility = (node: CompatNodes) => {
   switch (node.type) {
     case NodeTypes.glossary: {
       // Glossary terms will no longer be serialized as special node types in the Editor but we want to ensure that we compile historical
