@@ -1,6 +1,6 @@
 import type { Root as HastRoot } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
-import type { Plugin } from 'unified';
+import type { PluggableList } from 'unified';
 import type { VFile } from 'vfile';
 
 import rehypeRemark from 'rehype-remark';
@@ -15,7 +15,7 @@ import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } fro
 interface Opts {
   file?: VFile | string;
   hast?: boolean;
-  remarkTransformers?: Plugin[];
+  remarkTransformers?: PluggableList;
 }
 
 export const mdx = (
