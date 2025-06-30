@@ -11,7 +11,7 @@ jobs:
           - lts/-1
           - lts/*
           - latest
-        react: [18, 19]
+        react: [18]
     steps:
       - uses: actions/checkout@v4
 

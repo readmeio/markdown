@@ -65,12 +65,12 @@
   },
   "peerDependencies": {
     "@mdx-js/react": "^3.0.0",
-    "@readme/syntax-highlighter": "^14.0.0",
-    "@readme/variable": "^17.0.0",
+    "@readme/syntax-highlighter": "^14.1.0",
+    "@readme/variable": "^18.0.0",
     "@tippyjs/react": "^4.1.0",
     "acorn": "v8.13.0",
-    "react": "18.x || 19.x",
-    "react-dom": "18.x || 19.x"
+    "react": "18.x",
+    "react-dom": "18.x"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -157,8 +157,9 @@
     "mermaid": "^11.3.0"
   },
   "overrides": {
-    "conventional-changelog-conventionalcommits": ">= 8.0.0",
-    "@readme/syntax-highlighter": "^14.0.0",
-    "@readme/variable": "^17.0.0"
+    "@readme/markdown-legacy": {
+      "@readme/variable": "^18.0.0"
+    },
+    "conventional-changelog-conventionalcommits": ">= 8.0.0"
   }
 }
