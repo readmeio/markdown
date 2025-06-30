@@ -122,20 +122,8 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
     filename: '[name].node.js',
   },
   externals: {
-    react: {
-      amd: 'react',
-      commonjs: 'react',
-      commonjs2: 'react',
-      root: 'React',
-      umd: 'react',
-    },
-    'react-dom': {
-      amd: 'react-dom',
-      commonjs2: 'react-dom',
-      commonjs: 'react-dom',
-      root: 'ReactDOM',
-      umd: 'react-dom',
-    },
+    react: 'react',
+    'react-dom': 'react-dom',
   },
   devtool: 'source-map',
 });
