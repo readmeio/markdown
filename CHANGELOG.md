@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.0.1
+### 🛠 Fixes & Updates
+
+* weird link reference migration issue ([#1144](https://github.com/readmeio/markdown/issues/1144)) ([25b6121](https://github.com/readmeio/markdown/commit/25b6121d7886aafec2b702db1147c2ce4ad7986b))
+
 ## Version 10.0.0
 ### ⚠ BREAKING CHANGES
 
