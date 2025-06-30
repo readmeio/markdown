@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 10.1.0
+### ✨ New & Improved
+
+* trigger build ([f4f76cb](https://github.com/readmeio/markdown/commit/f4f76cbdab8afdf623fc51ba7427a1d611139e70))
+
+### 🛠 Fixes & Updates
+
+* remove react 19 support ([#1146](https://github.com/readmeio/markdown/issues/1146)) ([e3f33c9](https://github.com/readmeio/markdown/commit/e3f33c9f5ee539c64d3f06f2dbc62e338e14666d))
+
 ## Version 10.0.1
 ### 🛠 Fixes & Updates
 
