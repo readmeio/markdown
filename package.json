@@ -1,6 +1,6 @@
 {
-  "name": "@readme/markdown",
-  "description": "ReadMe's React-based Markdown parser",
+  "name": "@readme/markdown-legacy",
+  "description": "ReadMe's React-based Legacy Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "6.87.1",
   "main": "dist/main.node.js",

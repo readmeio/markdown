@@ -1,3 +1,6 @@
+> [!WARNING]
+> This is the deprecated v6 branch. It is no longer being actively maintained.
+
 # @readme/markdown
 
 <img align="right" width="26%" src="https://owlbertsio-resized.s3.amazonaws.com/Reading.psd.full.png">

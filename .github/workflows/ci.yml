@@ -7,11 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version:
-          - lts/-1
-          - lts/*
-          - latest
-        react: [16, 17, 18]
+        node-version: [20]
+        react: [16, 18]
     steps:
       - uses: actions/checkout@v3
 
@@ -39,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20]
         react: [18]
 
     steps:
@@ -49,7 +46,7 @@ jobs:
         run: make ci
 
       - name: Upload snapshot diffs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: snapshots-diffs
@@ -60,7 +57,7 @@ jobs:
         run: make updateSnapshot
 
       - name: Upload snapshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: image-snapshots
