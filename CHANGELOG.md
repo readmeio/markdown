@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 6.88.0
+
+### ✨ New & Improved
+
+* trigger builld ([a050f47](https://github.com/readmeio/markdown/commit/a050f4760d1b515cfc702235f95177f3b9fcee29))
+* v6 release branch ([#1148](https://github.com/readmeio/markdown/issues/1148)) ([ad9e61f](https://github.com/readmeio/markdown/commit/ad9e61f02fe416fe6d6d2533e9c5eef0612d799d))
+
+
+### 🛠 Fixes & Updates
+
+* fix release workflow ([#1149](https://github.com/readmeio/markdown/issues/1149)) ([8d3ecd7](https://github.com/readmeio/markdown/commit/8d3ecd7de07b36a0f4385a7f8c3d1fc6f5d5043c))
+
 ## Version 6.87.1
 
 ### 🛠 Fixes & Updates
