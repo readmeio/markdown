@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.1.1
+### 🛠 Fixes & Updates
+
+* **deps:** moving `syntax-highlighter` and `variable` off peerDeps ([#1147](https://github.com/readmeio/markdown/issues/1147)) ([c9ac515](https://github.com/readmeio/markdown/commit/c9ac5155454ab9d5d283c20b8eace8d8f187f602))
+
 ## Version 10.1.0
 ### ✨ New & Improved
 
