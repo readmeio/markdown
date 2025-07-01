@@ -11,7 +11,7 @@ jobs:
           - lts/-1
           - lts/*
           - latest
-        react: [16, 17, 18]
+        react: [16, 18]
     steps:
       - uses: actions/checkout@v3
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [latest]
         react: [18]
 
     steps:

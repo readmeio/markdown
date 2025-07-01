@@ -1,5 +1,5 @@
 {
-  "name": "@readme/markdown",
+  "name": "@readme/markdown-legacy",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
   "version": "6.87.1",
