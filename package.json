@@ -113,6 +113,9 @@
   "license": "MIT",
   "homepage": "https://rdmd.readme.io",
   "repository": "https://github.com/readmeio/markdown",
+  "publishConfig": {
+    "access": "public"
+  },
   "prettier": "@readme/eslint-config/prettier",
   "bundlewatch": {
     "files": [
