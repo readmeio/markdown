@@ -77,8 +77,8 @@
     margin: 15px auto;
 
     figcaption {
-      font-size: 0.93em;
-      font-style: italic;
+      color: var(--color-text-minimum);
+      font-size: 0.8em;
       margin-top: 8px;
       text-align: center;
     }
@@ -97,7 +97,8 @@
 
   .lightbox.open {
     align-items: center;
-    background: rgba(white, 0.966);
+    backdrop-filter: blur(var(--xs));
+    background-color: rgba(var(--color-bg-page-rgb), 0.95);
     display: flex;
     flex-flow: nowrap column;
     height: 100vh;
@@ -115,6 +116,7 @@
 
     // Close Button
     &::after {
+      color: var(--color-text-muted);
       content: '\f00d';
       cursor: pointer;
       display: inline-block;
@@ -125,7 +127,7 @@
       right: 1em;
       text-rendering: auto;
       top: 1em;
-      transform: scale(1.5);
+      transform: scale(1);
       transition: 0.3s 0.3s ease-in;
     }
 
@@ -140,7 +142,7 @@
       display: inline-flex;
       justify-content: center;
       margin: auto;
-      min-height: calc(100vh + 8px);
+      min-height: 100vh;
       padding: 0;
       position: relative;
     }
@@ -154,7 +156,11 @@
 
       &.border,
       &:not([src$='.png']):not([src$='.svg']):not([src$='.jp2']):not([src$='.tiff']) {
-        box-shadow: 0 0.5em 3em -1em rgba(0, 0, 0, 0.2);
+        border-radius: var(--xs);
+        box-shadow:
+          0 0 0 1px var(--color-border-default),
+          0 2px 6px rgba(black, 0.05),
+          0 4px 12px rgba(black, 0.05);
       }
 
       &[src$='svg'] {
