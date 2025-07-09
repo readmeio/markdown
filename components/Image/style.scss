@@ -83,6 +83,26 @@
       margin-top: 8px;
       text-align: center;
     }
+
+    &.figure-align-floatRight {
+      @extend %img-align-right;
+    }
+
+    &.figure-align-floatLeft {
+      @extend %img-align-left;
+    }
+
+    &.figure-align-alignLeft {
+      display: block;
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    &.figure-align-alignRight {
+      display: block;
+      margin-right: 0;
+      margin-left: auto;
+    }
   }
 
   > .img,
@@ -141,6 +161,7 @@
       align-items: center;
       box-sizing: content-box;
       display: inline-flex;
+      flex-direction: column;
       justify-content: center;
       margin: auto;
       min-height: 100vh;
