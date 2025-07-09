@@ -6,26 +6,30 @@
     border-radius: var(--md-code-radius, var(--markdown-radius, 3px));
     border-radius: 3px;
     background: transparent;
-    box-shadow: inset 0 0 0 1px rgba(black, .15);
-    transition: .3s ease;
+    box-shadow: inset 0 0 0 1px rgba(black, 0.15);
+    transition: 0.3s ease;
     &:hover {
       background: var(--md-code-background, #f6f8fa);
-      box-shadow: inset 0 0 0 1px rgba(black, .1);
+      box-shadow: inset 0 0 0 1px rgba(black, 0.1);
     }
     @at-root .markdown-body > #{$B}_hasImg:nth-of-type(odd) {
       margin-right: 30px;
       padding-right: 0;
-      #{$B}-link { flex-direction: row-reverse }
+      #{$B}-link {
+        flex-direction: row-reverse;
+      }
       #{$B}-img {
-        margin-left: .88em;
+        margin-left: 0.88em;
         margin-right: -30px;
-        box-shadow: -.3em .3em .9em -.3em rgba(black, .15);
+        box-shadow: -0.3em 0.3em 0.9em -0.3em rgba(black, 0.15);
       }
     }
     @at-root .markdown-body > #{$B}_hasImg:nth-of-type(even) {
       margin-left: 30px;
       padding-left: 0;
-      #{$B}-img { margin-left: -30px }
+      #{$B}-img {
+        margin-left: -30px;
+      }
     }
   }
   &:empty {
@@ -35,7 +39,7 @@
   &-media {
     display: flex;
     justify-content: center;
-    >:only-child {
+    > :only-child {
       flex: 1;
       margin: -15px;
       border-radius: 0 !important;
@@ -52,7 +56,8 @@
   &-body {
     flex: 1;
     line-height: 1.3;
-    &, #{$B}-title {
+    &,
+    #{$B}-title {
       font-size: 1.15em;
       overflow: hidden;
       white-space: nowrap;
@@ -61,10 +66,10 @@
     #{$B}-provider {
       display: block;
       text-decoration-color: transparent !important;
-      opacity: .88;
+      opacity: 0.88;
     }
     &-url {
-      opacity: .75;
+      opacity: 0.75;
     }
   }
 
@@ -84,28 +89,28 @@
       padding: 0;
       font-size: inherit !important;
     }
-    transition: .2 ease;
+    transition: 0.2 ease;
     code {
       opacity: 0.8;
     }
-   }
+  }
 
   &-img {
     width: 5em;
     max-width: 5em;
-    margin: 0 .88em 0 0;
+    margin: 0 0.88em 0 0;
     padding: 4px;
     background: white;
-    border: 1px solid rgba(black, .15);
+    border: 1px solid rgba(black, 0.15);
     border-radius: 3px;
     transition: inherit;
-    box-shadow: .3em .3em .9em -.3em rgba(black, .15);
+    box-shadow: 0.3em 0.3em 0.9em -0.3em rgba(black, 0.15);
   }
   &:not(:hover) #{$B}-img {
-    box-shadow: 0 .25em 1em -.5em rgba(black, .133);
+    box-shadow: 0 0.25em 1em -0.5em rgba(black, 0.133);
   }
   &:hover #{$B}-img {
-    border: 1px solid rgba(black, .2);
+    border: 1px solid rgba(black, 0.2);
   }
 
   &-favicon {

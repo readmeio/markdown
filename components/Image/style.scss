@@ -28,23 +28,38 @@
     outline: none !important;
     vertical-align: middle;
 
+    &.img-align-floatRight,
     &.img-align-right,
     &[align='right'],
     &[alt~='align-right'] {
       @extend %img-align-right;
     }
 
+    &.img-align-floatLeft,
     &.img-align-left,
     &[align='left'],
     &[alt~='align-left'] {
       @extend %img-align-left;
-
     }
+
+    &.img-align-alignCenter,
     &.img-align-center,
     &[align='middle'], // hack to fix Firefox; see: https://stackoverflow.com/a/45901819/1341949
     &[align='center'],
     &[alt~='align-center'] {
       @extend %img-align-center;
+    }
+
+    &.img-align-alignLeft {
+      display: block;
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    &.img-align-alignRight {
+      display: block;
+      margin-right: 0;
+      margin-left: auto;
     }
 
     &[width='smart'] {
@@ -54,7 +69,8 @@
     }
 
     &.border {
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--border-radius);
     }
   }
 
@@ -62,10 +78,30 @@
     margin: 15px auto;
 
     figcaption {
-      font-size: 0.93em;
-      font-style: italic;
+      color: var(--color-text-minimum);
+      font-size: 0.8em;
       margin-top: 8px;
       text-align: center;
+    }
+
+    &.figure-align-floatRight {
+      @extend %img-align-right;
+    }
+
+    &.figure-align-floatLeft {
+      @extend %img-align-left;
+    }
+
+    &.figure-align-alignLeft {
+      display: block;
+      margin-left: 0;
+      margin-right: auto;
+    }
+
+    &.figure-align-alignRight {
+      display: block;
+      margin-right: 0;
+      margin-left: auto;
     }
   }
 
@@ -82,7 +118,8 @@
 
   .lightbox.open {
     align-items: center;
-    background: rgba(white, 0.966);
+    backdrop-filter: blur(var(--xs));
+    background-color: rgba(var(--color-bg-page-rgb), 0.95);
     display: flex;
     flex-flow: nowrap column;
     height: 100vh;
@@ -100,6 +137,7 @@
 
     // Close Button
     &::after {
+      color: var(--color-text-muted);
       content: '\f00d';
       cursor: pointer;
       display: inline-block;
@@ -110,7 +148,7 @@
       right: 1em;
       text-rendering: auto;
       top: 1em;
-      transform: scale(1.5);
+      transform: scale(1);
       transition: 0.3s 0.3s ease-in;
     }
 
@@ -123,9 +161,10 @@
       align-items: center;
       box-sizing: content-box;
       display: inline-flex;
+      flex-direction: column;
       justify-content: center;
       margin: auto;
-      min-height: calc(100vh + 8px);
+      min-height: 100vh;
       padding: 0;
       position: relative;
     }
@@ -139,7 +178,11 @@
 
       &.border,
       &:not([src$='.png']):not([src$='.svg']):not([src$='.jp2']):not([src$='.tiff']) {
-        box-shadow: 0 0.5em 3em -1em rgba(0, 0, 0, 0.2);
+        border-radius: var(--xs);
+        box-shadow:
+          0 0 0 1px var(--color-border-default),
+          0 2px 6px rgba(black, 0.05),
+          0 4px 12px rgba(black, 0.05);
       }
 
       &[src$='svg'] {

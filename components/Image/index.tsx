@@ -62,7 +62,7 @@ const Image = (Props: ImageProps) => {
 
   if (children || caption) {
     return (
-      <figure>
+      <figure className={`figure-align-${align}`} style={{ maxWidth: width }}>
         <span
           aria-label={alt}
           className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
