@@ -112,6 +112,10 @@
     &.empty {
       float: left;
       margin-top: calc(#{$l-offset} * 0.5);
+
+      &:is(p) {
+        margin-left: 0;
+      }
     }
 
     > * {
