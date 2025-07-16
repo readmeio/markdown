@@ -111,7 +111,6 @@
 
     &.empty {
       float: left;
-      margin-left: 0;
       margin-top: calc(#{$l-offset} * 0.5);
     }
 
@@ -123,6 +122,7 @@
     // legacy icon behavior (changes in superhub)
     .callout-icon {
       margin-left: calc(-#{$l-offset} - 0.5em);
+      margin-top: 1rem;
     }
 
     &:before {
@@ -143,10 +143,6 @@
     &:only-child {
       float: none;
     }
-  }
-
-  .callout-heading > .callout-icon {
-    transform: translateX(-150%);
   }
 
   .callout-icon + .heading.heading {
