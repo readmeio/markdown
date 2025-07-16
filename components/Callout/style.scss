@@ -1,6 +1,6 @@
 @import '../../styles/mixins/dark-mode.scss';
 
-@mixin callout($l-offset: 1.33rem) {
+@mixin callout($l-offset: 1.25rem) {
   // legacy variables
   --background: #{lighten(#dfe2e5, 8.75%)};
   --border: #{lighten(#6a737d, 12.5%)};
@@ -112,14 +112,18 @@
     &.empty {
       float: left;
       margin-top: calc(#{$l-offset} * 0.5);
-      .callout-icon {
-        line-height: 0;
-      }
     }
+
     > * {
       color: inherit;
       margin: 0;
     }
+
+    // legacy icon behavior (changes in superhub)
+    .callout-icon {
+      margin-left: calc(-#{$l-offset} - 0.5em);
+    }
+
     &:before {
       position: absolute;
       right: 100%;
@@ -130,11 +134,15 @@
   }
 
   .callout-icon {
-    font-size: 17.5px; // match h3—CANNOT BE EM due to bg compatibility (heading size varies)
-    line-height: 1.25; // match h3
-    margin-left: 0; // unset wildcard margin
-    position: absolute;
-    transform: translateX(-50%);
+    float: left;
+    margin-left: 0;
+    margin-top: 1rem;
+    position: relative;
+
+    // float doesn’t work when there’s nothing else
+    &:only-child {
+      float: none;
+    }
   }
 
   .callout-heading > .callout-icon {
