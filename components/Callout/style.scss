@@ -111,6 +111,7 @@
 
     &.empty {
       float: left;
+      margin-left: 0;
       margin-top: calc(#{$l-offset} * 0.5);
     }
 
@@ -136,7 +137,6 @@
   .callout-icon {
     float: left;
     margin-left: 0;
-    margin-top: 1rem;
     position: relative;
 
     // float doesn’t work when there’s nothing else
@@ -156,6 +156,8 @@
   > .callout-icon_fa {
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
+
+    margin-top: 0.35em;
   }
 }
 
