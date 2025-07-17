@@ -164,7 +164,7 @@ const coerceJsxToMd =
     } else if (node.name === 'Callout') {
       const attrs = getAttrs<Callout['data']['hProperties']>(node);
       const { empty } = attrs;
-      const icon = attrs.icon || defaultIcons[attrs.theme];
+      const icon = attrs.icon;
       const theme = attrs.theme || themes[icon] || 'default';
 
       const mdNode: Callout = {
