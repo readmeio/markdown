@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 10.2.0
+### ✨ New & Improved
+
+* allow empty icon in jsx ([#1155](https://github.com/readmeio/markdown/issues/1155)) ([4818ac6](https://github.com/readmeio/markdown/commit/4818ac6a1701fe994d4ffe3693c64fe300f31c0d))
+
+### 🛠 Fixes & Updates
+
+* cleanup ([#1156](https://github.com/readmeio/markdown/issues/1156)) ([6e64fbb](https://github.com/readmeio/markdown/commit/6e64fbbdbc5fc27286fd82ead62f65d2c831b2af))
+* partially revert callout icon behavior ([#1154](https://github.com/readmeio/markdown/issues/1154)) ([58781b7](https://github.com/readmeio/markdown/commit/58781b791c421d6fc1fc03bf4b57be72e6a924d2))
+
 ## Version 10.1.1
 ### 🛠 Fixes & Updates
 
