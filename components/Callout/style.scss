@@ -1,11 +1,6 @@
 @import '../../styles/mixins/dark-mode.scss';
 
 @mixin callout($l-offset: 1.25rem) {
-  // legacy variables
-  --background: #{lighten(#dfe2e5, 8.75%)};
-  --border: #{lighten(#6a737d, 12.5%)};
-  --title: var(--text, var(--color-text-default));
-
   --Callout-bg: var(--background);
   --Callout-border: var(--border);
   --Callout-border-radius: 2px;
@@ -18,60 +13,67 @@
   padding: $l-offset;
   position: relative;
 
-  @include dark-mode {
-    --Callout-bg: rgba(var(--gray100-rgb), 0.05);
+  &_default {
+    // legacy variables
+    --background: #{lighten(#dfe2e5, 8.75%)};
+    --border: #{lighten(#6a737d, 12.5%)};
+    --title: var(--text, var(--color-text-default));
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--gray100-rgb), 0.05);
+    }
   }
 
   &_info {
-    --Callout-bg: rgba(var(--blue-rgb), 0.1);
-    --Callout-border: rgba(var(--blue-rgb), 1);
-    --Callout-title: var(--blue20);
+    --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--blue-rgb), 1));
+    --Callout-title: var(--title, var(--blue20));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--blue-rgb), 0.075);
-      --Callout-title: var(--blue90);
+      --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.075));
+      --Callout-title: var(--title, var(--blue90));
     }
   }
 
   &_warn,
   &_warning {
-    --Callout-bg: rgba(var(--yellow-rgb), 0.1);
-    --Callout-border: rgba(var(--yellow-rgb), 1);
-    --Callout-title: var(--yellow10);
+    --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--yellow-rgb), 1));
+    --Callout-title: var(--title, var(--yellow10));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--yellow-rgb), 0.075);
-      --Callout-title: var(--yellow70);
+      --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.075));
+      --Callout-title: var(--title, var(--yellow70));
     }
   }
 
   &_ok,
   &_okay,
   &_success {
-    --Callout-bg: rgba(var(--green-rgb), 0.1);
-    --Callout-border: rgba(var(--green-rgb), 1);
-    --Callout-title: var(--green10);
+    --Callout-bg: var(--background, rgba(var(--green-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--green-rgb), 1));
+    --Callout-title: var(--title, var(--green10));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--green-rgb), 0.075);
-      --Callout-title: var(--green80);
+      --Callout-bg: var(--background, rgba(var(--green-rgb), 0.075));
+      --Callout-title: var(--title, var(--green80));
     }
   }
 
   &_err,
   &_error {
-    --Callout-bg: rgba(var(--red-rgb), 0.1);
-    --Callout-border: rgba(var(--red-rgb), 1);
-    --Callout-title: var(--red20);
+    --Callout-bg: var(--background, rgba(var(--red-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--red-rgb), 1));
+    --Callout-title: var(--title, var(--red20));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--red-rgb), 0.05);
-      --Callout-title: var(--red90);
+      --Callout-bg: var(--background, rgba(var(--red-rgb), 0.05));
+      --Callout-title: var(--title, var(--red90));
     }
   }
 
   > * {
-    margin-left: $l-offset;
+    margin-left: calc(#{$l-offset} + 0.5rem);
   }
 
   ul,
@@ -116,6 +118,11 @@
       &:is(p) {
         margin-left: 0;
       }
+
+      .callout-icon {
+        margin-left: -#{$l-offset};
+        margin-top: 0.25rem;
+      }
     }
 
     > * {
@@ -125,7 +132,7 @@
 
     // legacy icon behavior (changes in superhub)
     .callout-icon {
-      margin-left: calc(-#{$l-offset} - 0.5em);
+      margin-left: calc(-#{$l-offset} - 0.25rem);
       margin-top: 1rem;
     }
 
@@ -157,7 +164,7 @@
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
 
-    margin-top: 0.35em;
+    margin-top: 0.25rem;
   }
 }
 
