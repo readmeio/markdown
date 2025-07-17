@@ -1,4 +1,3 @@
-import { any } from 'prop-types';
 import React from 'react';
 
 import registerCustomComponents from '../../lib/registerCustomComponents';
@@ -16,9 +15,6 @@ const customComponents = {
     return <span>I should be registered as “two-words”</span>;
   },
 };
-
-customComponents.a.propTypes = { attrToConcatToSafelist: any };
-customComponents.twoWords.propTypes = { attrToBeSafelisted: any };
 
 describe('Custom Component Registrar', () => {
   let registered;
