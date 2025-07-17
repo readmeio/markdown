@@ -187,6 +187,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  &-icon_fa::before,
+  &-icon_fa::after {
+    font-family: inherit;
+    font-size: inherit;
+    top: unset;
+    transform: none;
+  }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
     &_okay {
