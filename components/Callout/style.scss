@@ -121,6 +121,7 @@
 
       .callout-icon {
         margin-left: calc(-#{$l-offset} - 0.25rem);
+        position: static;
       }
     }
 
@@ -147,11 +148,6 @@
     float: left;
     margin-left: 0;
     position: relative;
-
-    // float doesn’t work when there’s nothing else
-    &:only-child {
-      float: none;
-    }
   }
 
   .callout-icon + .heading.heading {
