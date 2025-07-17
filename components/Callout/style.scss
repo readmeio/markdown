@@ -1,11 +1,6 @@
 @import '../../styles/mixins/dark-mode.scss';
 
-@mixin callout($l-offset: 1.33rem) {
-  // legacy variables
-  --background: #{lighten(#dfe2e5, 8.75%)};
-  --border: #{lighten(#6a737d, 12.5%)};
-  --title: var(--text, var(--color-text-default));
-
+@mixin callout($l-offset: 1.25rem) {
   --Callout-bg: var(--background);
   --Callout-border: var(--border);
   --Callout-border-radius: 2px;
@@ -18,60 +13,67 @@
   padding: $l-offset;
   position: relative;
 
-  @include dark-mode {
-    --Callout-bg: rgba(var(--gray100-rgb), 0.05);
+  &_default {
+    // legacy variables
+    --background: #{lighten(#dfe2e5, 8.75%)};
+    --border: #{lighten(#6a737d, 12.5%)};
+    --title: var(--text, var(--color-text-default));
+
+    @include dark-mode {
+      --Callout-bg: rgba(var(--gray100-rgb), 0.05);
+    }
   }
 
   &_info {
-    --Callout-bg: rgba(var(--blue-rgb), 0.1);
-    --Callout-border: rgba(var(--blue-rgb), 1);
-    --Callout-title: var(--blue20);
+    --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--blue-rgb), 1));
+    --Callout-title: var(--title, var(--blue20));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--blue-rgb), 0.075);
-      --Callout-title: var(--blue90);
+      --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.075));
+      --Callout-title: var(--title, var(--blue90));
     }
   }
 
   &_warn,
   &_warning {
-    --Callout-bg: rgba(var(--yellow-rgb), 0.1);
-    --Callout-border: rgba(var(--yellow-rgb), 1);
-    --Callout-title: var(--yellow10);
+    --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--yellow-rgb), 1));
+    --Callout-title: var(--title, var(--yellow10));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--yellow-rgb), 0.075);
-      --Callout-title: var(--yellow70);
+      --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.075));
+      --Callout-title: var(--title, var(--yellow70));
     }
   }
 
   &_ok,
   &_okay,
   &_success {
-    --Callout-bg: rgba(var(--green-rgb), 0.1);
-    --Callout-border: rgba(var(--green-rgb), 1);
-    --Callout-title: var(--green10);
+    --Callout-bg: var(--background, rgba(var(--green-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--green-rgb), 1));
+    --Callout-title: var(--title, var(--green10));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--green-rgb), 0.075);
-      --Callout-title: var(--green80);
+      --Callout-bg: var(--background, rgba(var(--green-rgb), 0.075));
+      --Callout-title: var(--title, var(--green80));
     }
   }
 
   &_err,
   &_error {
-    --Callout-bg: rgba(var(--red-rgb), 0.1);
-    --Callout-border: rgba(var(--red-rgb), 1);
-    --Callout-title: var(--red20);
+    --Callout-bg: var(--background, rgba(var(--red-rgb), 0.1));
+    --Callout-border: var(--border, rgba(var(--red-rgb), 1));
+    --Callout-title: var(--title, var(--red20));
 
     @include dark-mode {
-      --Callout-bg: rgba(var(--red-rgb), 0.05);
-      --Callout-title: var(--red90);
+      --Callout-bg: var(--background, rgba(var(--red-rgb), 0.05));
+      --Callout-title: var(--title, var(--red90));
     }
   }
 
   > * {
-    margin-left: $l-offset;
+    margin-left: calc(#{$l-offset} + 0.5rem);
   }
 
   ul,
@@ -111,15 +113,27 @@
 
     &.empty {
       float: left;
-      margin-top: calc(#{$l-offset} * 0.5);
+
+      &:is(p) {
+        margin-left: 0;
+      }
+
       .callout-icon {
-        line-height: 0;
+        margin-left: -#{$l-offset};
+        margin-top: calc(#{$l-offset} * 0.5);
       }
     }
+
     > * {
       color: inherit;
       margin: 0;
     }
+
+    // legacy icon behavior (changes in superhub)
+    .callout-icon {
+      margin-left: calc(-#{$l-offset} - 0.25rem);
+    }
+
     &:before {
       position: absolute;
       right: 100%;
@@ -130,15 +144,14 @@
   }
 
   .callout-icon {
-    font-size: 17.5px; // match h3—CANNOT BE EM due to bg compatibility (heading size varies)
-    line-height: 1.25; // match h3
-    margin-left: 0; // unset wildcard margin
-    position: absolute;
-    transform: translateX(-50%);
-  }
+    float: left;
+    margin-left: 0;
+    position: relative;
 
-  .callout-heading > .callout-icon {
-    transform: translateX(-150%);
+    // float doesn’t work when there’s nothing else
+    &:only-child {
+      float: none;
+    }
   }
 
   .callout-icon + .heading.heading {
@@ -148,6 +161,8 @@
   > .callout-icon_fa {
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
+
+    margin-top: 0.25rem;
   }
 }
 
@@ -158,7 +173,7 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon:not([class*='fa-'])::before {
+  &-icon::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
@@ -170,6 +185,13 @@
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  &-icon_fa::before,
+  &-icon_fa::after {
+    font-family: inherit;
+    font-size: inherit;
+    top: unset;
+    transform: none;
   }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
