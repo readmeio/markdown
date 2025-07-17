@@ -1,11 +1,10 @@
-import { string, node } from 'prop-types';
 import React, { useContext } from 'react';
 
 import BaseUrlContext from '../contexts/BaseUrl';
 
 // Nabbed from here:
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/markdown/renderer.js#L52
-export function getHref(href, baseUrl) {
+export function getHref(href: string, baseUrl: string) {
   const [path, hash] = href.split('#');
   const hashStr = hash ? `#${hash}` : '';
 
@@ -38,7 +37,7 @@ export function getHref(href, baseUrl) {
   return href;
 }
 
-function docLink(href) {
+function docLink(href: string) {
   const doc = href.match(/^doc:([-_a-zA-Z0-9#]*)$/);
   if (!doc) return false;
 
@@ -48,9 +47,17 @@ function docLink(href) {
   };
 }
 
-function Anchor(props) {
-  const { children, href, target, title, ...attrs } = props;
-  const baseUrl = useContext(BaseUrlContext);
+interface Props {
+  children: React.ReactNode;
+  download?: string;
+  href?: string;
+  target?: string;
+  title?: string;
+}
+
+function Anchor(props: Props) {
+  const { children, href = '', target = '', title = '', ...attrs } = props;
+  const baseUrl: string = useContext(BaseUrlContext);
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
@@ -59,21 +66,5 @@ function Anchor(props) {
     </a>
   );
 }
-
-Anchor.propTypes = {
-  baseUrl: string,
-  children: node.isRequired,
-  download: string,
-  href: string,
-  target: string,
-  title: string,
-};
-
-Anchor.defaultProps = {
-  baseUrl: '/',
-  href: '',
-  target: '',
-  title: '',
-};
 
 export default Anchor;

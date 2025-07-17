@@ -20,6 +20,9 @@ hidden: true
 ### Error
 </Callout>
 
+<Callout theme="info">No Icon Info</Callout>
+<Callout theme="error">No Icon Info</Callout>
+
 > 👍 Success
 >
 > This is the success callout.

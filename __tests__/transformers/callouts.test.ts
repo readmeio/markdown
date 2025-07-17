@@ -136,7 +136,7 @@ describe('callouts transformer', () => {
     expect(tree.children[0]).toHaveProperty('type', 'rdme-callout');
   });
 
-  it('can parse a jsx callout and sets a default icon', () => {
+  it('can parse a jsx callout without an icon', () => {
     const md = `
 <Callout theme="info">
 ### This is a callout
@@ -144,7 +144,12 @@ describe('callouts transformer', () => {
 
     const tree = mdast(md);
 
-    expect(tree.children[0].data.hProperties).toHaveProperty('icon', '📘');
+    expect(tree.children[0].data.hProperties).toMatchInlineSnapshot(`
+      {
+        "icon": undefined,
+        "theme": "info",
+      }
+    `);
   });
 
   it('can parse a jsx callout and set a theme from the icon', () => {
