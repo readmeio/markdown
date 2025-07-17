@@ -133,7 +133,6 @@
     // legacy icon behavior (changes in superhub)
     .callout-icon {
       margin-left: calc(-#{$l-offset} - 0.25rem);
-      margin-top: 1rem;
     }
 
     &:before {
@@ -175,7 +174,7 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon:not([class*='fa-'])::before {
+  &-icon::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
