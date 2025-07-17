@@ -1,8 +1,11 @@
 ---
-title: 'And more...'
-category: 5fdf7610134322007389a6ed
-excerpt: 'Additional Markdown features of the ReadMe platform implementation.'
-hidden: false
+title: And more...
+category:
+  uri: syntax
+content:
+  excerpt: Additional Markdown features of the ReadMe platform implementation.
+privacy:
+  view: public
 ---
 
 We've also built a lot of great features right in to the ReadMe app, which work on top of our markdown engine to give your developers a best-in-class documentation experience. These features aren't all baked in to the new engine itself, but they're worth mentioning nonetheless!

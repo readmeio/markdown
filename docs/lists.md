@@ -1,7 +1,9 @@
 ---
-title: "Lists"
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Lists
+category:
+  uri: syntax
+privacy:
+  view: public
 ---
 
 [block:api-header]
