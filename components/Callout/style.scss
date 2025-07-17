@@ -73,7 +73,7 @@
   }
 
   > * {
-    margin-left: calc(#{$l-offset} + 0.5rem);
+    margin-left: calc(#{$l-offset} + 0.25rem);
   }
 
   ul,
@@ -113,14 +113,14 @@
 
     &.empty {
       float: left;
+      line-height: 1;
 
       &:is(p) {
         margin-left: 0;
       }
 
       .callout-icon {
-        margin-left: -#{$l-offset};
-        margin-top: calc(#{$l-offset} * 0.5);
+        margin-left: calc(-#{$l-offset} - 0.25rem);
       }
     }
 
