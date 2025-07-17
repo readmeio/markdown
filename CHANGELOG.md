@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.1
+### 🛠 Fixes & Updates
+
+* fixes for legacy callout layout ([#1157](https://github.com/readmeio/markdown/issues/1157)) ([912e1df](https://github.com/readmeio/markdown/commit/912e1df798056a3732fa796b3e89142c1f194645))
+
 ## Version 10.2.0
 ### ✨ New & Improved
 
