@@ -39,19 +39,21 @@ const Callout = (props: Props) => {
   const { attributes, theme = 'default', empty } = props;
   const children = React.Children.toArray(props.children);
 
-  const icon = props.icon || defaultIcons[theme] || '❗';
-  const isEmoji = emojiRegex().test(icon);
+  const icon = props.icon;
+  const isEmoji = icon && emojiRegex().test(icon);
   const heading = empty ? <p className={'callout-heading empty'}></p> : children[0];
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
-    <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon}>
-      {isEmoji ? (
-        <span className="callout-icon">{icon}</span>
-      ) : (
-        <span className={`callout-icon callout-icon_fa ${icon}`} />
-      )}
+    <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon || theme}>
+      {icon ? (
+        isEmoji ? (
+          <span className="callout-icon">{icon}</span>
+        ) : (
+          <span className={`callout-icon callout-icon_fa ${icon}`} />
+        )
+      ) : null}
       {heading}
       {children.slice(1)}
     </blockquote>
