@@ -158,6 +158,7 @@ declare module 'mdast' {
     [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.plain]: Plain;
     [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: TutorialTile;
   }
