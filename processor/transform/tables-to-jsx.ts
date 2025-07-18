@@ -40,7 +40,7 @@ const visitor = (table: Table, index: number, parent: Parents) => {
       breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
     });
 
-    if (!phrasing(content) && content.type !== 'escape') {
+    if (!(phrasing(content) || content.type === 'plain') && content.type !== 'escape') {
       hasFlowContent = true;
       return EXIT;
     }

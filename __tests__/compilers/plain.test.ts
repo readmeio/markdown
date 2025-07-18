@@ -1,6 +1,6 @@
-import type { Paragraph, Root, RootContent } from 'mdast';
+import type { Paragraph, Root, RootContent, Table } from 'mdast';
 
-import { mdx } from '../../index';
+import { mdast, mdx } from '../../index';
 
 describe('plain compiler', () => {
   it('compiles plain nodes', () => {
@@ -77,5 +77,72 @@ describe('plain compiler', () => {
     };
 
     expect(mdx(ast)).toBe('before plain after\n');
+  });
+
+  it('treats plain nodes as phrasing in tables', () => {
+    const ast: Root = {
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          align: ['left', 'left'],
+          children: [
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableHead',
+                  children: [
+                    {
+                      type: 'plain',
+                      value: 'Heading 1',
+                    },
+                  ],
+                },
+                {
+                  type: 'tableHead',
+                  children: [
+                    {
+                      type: 'plain',
+                      value: 'Heading 2',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableCell',
+                  children: [
+                    {
+                      type: 'plain',
+                      value: 'Cell A',
+                    },
+                  ],
+                },
+                {
+                  type: 'tableCell',
+                  children: [
+                    {
+                      type: 'plain',
+                      value: 'Cell B',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        } as Table,
+      ],
+    };
+
+    expect(mdx(ast)).toMatchInlineSnapshot(`
+      "| Heading 1 | Heading 2 |
+      | :-------- | :-------- |
+      | Cell A    | Cell B    |
+      "
+    `);
   });
 });
