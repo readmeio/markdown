@@ -177,7 +177,7 @@ This works like a charm:
 <style>
 #my-theme .callout[theme=📸] {
   --emoji: unset;
-  --icon: \"\";
+  --icon: "\f030";
 }
 #my-theme .callout[theme=📷],
 #my-theme .callout[theme=📸] {
