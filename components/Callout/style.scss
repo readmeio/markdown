@@ -117,10 +117,6 @@
       &:is(p) {
         margin-left: 0;
       }
-
-      .callout-icon {
-        margin-left: calc(-#{$l-offset} - 0.25rem);
-      }
     }
 
     > * {
