@@ -127,6 +127,10 @@
     // legacy icon behavior (changes in superhub)
     .callout-icon {
       margin-left: calc(-#{$l-offset} - 0.5em);
+
+      &::before {
+        transform: translate(-50%);
+      }
     }
 
     &:before {
@@ -175,7 +179,6 @@
     font-weight: var(--icon-weight, 400);
     position: absolute;
     top: 50%;
-    transform: translate(-50%);
     display: inline-block;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
