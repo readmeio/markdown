@@ -145,6 +145,11 @@
   .callout-icon {
     float: left;
     margin-left: -0.5rem;
+    position: relative;
+
+    &::before {
+      transform: none;
+    }
 
     // float doesn’t work when there’s nothing else
     &:only-child {
