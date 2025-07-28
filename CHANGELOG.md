@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.3
+### 🛠 Fixes & Updates
+
+* legacy callout typo ([#1161](https://github.com/readmeio/markdown/issues/1161)) ([a895510](https://github.com/readmeio/markdown/commit/a8955105430b08e01010102e8e288905281e11fc))
+
 ## Version 10.2.2
 ### ✨ New & Improved
 
