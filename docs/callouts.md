@@ -154,7 +154,7 @@ With a touch of Custom CSS, we should be able to get a callout using the 📷 em
 ```css Custom CSS
 .callout[theme='📷'] {
   --emoji: unset;
-  --icon: '\f030'; /* https://fontawesome.com/icons/camera?f=classic&s=solid */
+  --icon: '\\f030'; /* https://fontawesome.com/icons/camera?f=classic&s=solid */
   --icon-color: #c50a50;
 }
 ```
@@ -177,7 +177,7 @@ This works like a charm:
 <style>
 #my-theme .callout[theme=📸] {
   --emoji: unset;
-  --icon: "\f030";
+  --icon: '\\f030';
 }
 #my-theme .callout[theme=📷],
 #my-theme .callout[theme=📸] {

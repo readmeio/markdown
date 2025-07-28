@@ -126,7 +126,7 @@
 
     // legacy icon behavior (changes in superhub)
     .callout-icon {
-      margin-left: calc(-#{$l-offset} - 0.5rem);
+      margin-left: calc(-#{$l-offset} - 0.5em);
     }
 
     &:before {
