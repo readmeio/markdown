@@ -147,10 +147,6 @@
     margin-left: -0.5rem;
     position: relative;
 
-    &::before {
-      transform: none;
-    }
-
     // float doesn’t work when there’s nothing else
     &:only-child {
       float: none;
@@ -183,7 +179,6 @@
     font-weight: var(--icon-weight, 400);
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%);
     display: inline-block;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
