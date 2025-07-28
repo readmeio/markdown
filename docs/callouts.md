@@ -172,7 +172,7 @@ This works like a charm:
 > 📸 Cool pix!
 > Vitae reprehenderit at aliquid error voluptates eum dignissimos.
 
-<HTMLBlock>
+<HTMLBlock>{`
 
 <style>
 #my-theme .callout[theme=📸] {
@@ -189,7 +189,7 @@ summary {
   outline: none;
   user-select: none;
 }
-</style>
+</style>`}
 </HTMLBlock>
 
 </div>
