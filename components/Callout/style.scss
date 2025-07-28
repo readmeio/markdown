@@ -175,6 +175,7 @@
     font-weight: var(--icon-weight, 400);
     position: absolute;
     top: 50%;
+    transform: translate(-50%);
     display: inline-block;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
