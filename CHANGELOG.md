@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.4
+### 🛠 Fixes & Updates
+
+* missing css line callouts ([#1162](https://github.com/readmeio/markdown/issues/1162)) ([4235ecb](https://github.com/readmeio/markdown/commit/4235ecb7b160c4b08356f9585daa6e63332c5c6d))
+
 ## Version 10.2.3
 ### 🛠 Fixes & Updates
 
