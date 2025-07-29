@@ -105,6 +105,7 @@
     font-weight: var(--markdown-title-weight, 500);
     line-height: 1.25; // match h3
     margin-bottom: calc(#{$l-offset} * 0.5);
+    position: relative;
 
     &:only-child {
       margin-bottom: 0;
@@ -129,7 +130,7 @@
       margin-left: calc(-#{$l-offset} - 0.5em);
 
       &::before {
-        transform: translate(-50%);
+        transform: translate(-50%, -50%);
       }
     }
 
@@ -145,7 +146,6 @@
   .callout-icon {
     float: left;
     margin-left: -0.5rem;
-    position: relative;
 
     // float doesn’t work when there’s nothing else
     &:only-child {
