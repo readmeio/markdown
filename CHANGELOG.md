@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.5
+### 🛠 Fixes & Updates
+
+* callout icons ([#1163](https://github.com/readmeio/markdown/issues/1163)) ([4c056d7](https://github.com/readmeio/markdown/commit/4c056d7580b3311476a0184e4c79122a43f203ea))
+
 ## Version 10.2.4
 ### 🛠 Fixes & Updates
 
