@@ -125,6 +125,54 @@ describe('callouts transformer', () => {
     `);
   });
 
+  it.only('can parse callouts with inline code in the heading', () => {
+    const md = `
+> 🚧 \`It works!\`
+>
+> And, it no longer deletes your content!
+`;
+    const tree = mdast(md);
+    removePosition(tree, { force: true });
+
+    expect(tree.children[0]).toMatchInlineSnapshot(`
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "type": "text",
+                "value": "",
+              },
+              {
+                "type": "inlineCode",
+                "value": "It works!",
+              },
+            ],
+            "depth": 3,
+            "type": "heading",
+          },
+          {
+            "children": [
+              {
+                "type": "text",
+                "value": "And, it no longer deletes your content!",
+              },
+            ],
+            "type": "paragraph",
+          },
+        ],
+        "data": {
+          "hName": "Callout",
+          "hProperties": {
+            "icon": "🚧",
+            "theme": "warn",
+          },
+        },
+        "type": "rdme-callout",
+      }
+    `);
+  });
+
   it('can parse a jsx callout into a rdme-callout', () => {
     const md = `
 <Callout icon="📘" theme="info">
