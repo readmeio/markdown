@@ -125,7 +125,7 @@ describe('callouts transformer', () => {
     `);
   });
 
-  it.only('can parse callouts with inline code in the heading', () => {
+  it('can parse callouts with inline code in the heading', () => {
     const md = `
 > 🚧 \`It works!\`
 >
