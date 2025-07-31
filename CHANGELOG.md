@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.6
+### 🛠 Fixes & Updates
+
+* **callouts:** inline code in title throws err ([#1165](https://github.com/readmeio/markdown/issues/1165)) ([3cb391c](https://github.com/readmeio/markdown/commit/3cb391c27ae3c076e28df222e745be8572777a6d))
+
 ## Version 10.2.5
 ### 🛠 Fixes & Updates
 
