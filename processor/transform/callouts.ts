@@ -31,7 +31,7 @@ export const wrapHeading = (node: Blockquote | Callout): Heading => {
     depth: 3,
     children: ('children' in firstChild ? firstChild.children : []) as Heading['children'],
     position: {
-      start: findFirst(firstChild).position.start,
+      start: findFirst(firstChild)?.position.start,
       end: findLast(firstChild)?.position.end,
     },
   };
