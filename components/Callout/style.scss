@@ -113,7 +113,6 @@
 
     &.empty {
       float: left;
-      line-height: 1;
 
       &:is(p) {
         margin-left: 0;
@@ -146,6 +145,7 @@
   .callout-icon {
     float: left;
     margin-left: -0.5rem;
+    position: relative;
 
     // float doesn’t work when there’s nothing else
     &:only-child {
