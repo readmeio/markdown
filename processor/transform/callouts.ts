@@ -52,6 +52,9 @@ const calloutTransformer = () => {
 
         if (heading) {
           node.children[0] = wrapHeading(node);
+          // @note: We add to the offset/column the length of the unicode
+          // character that was stripped off, so that the start position of the
+          // heading/text matches where it actually starts.
           node.children[0].position.start.offset += match.length;
           node.children[0].position.start.column += match.length;
         }
