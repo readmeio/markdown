@@ -13,6 +13,7 @@ export enum NodeTypes {
   recipe = 'recipe',
   reusableContent = 'reusable-content',
   tableau = 'tableau',
+  /** @deprecated Deprecated in favor of `recipe`. */
   tutorialTile = 'tutorial-tile',
   variable = 'readme-variable',
 }
