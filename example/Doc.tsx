@@ -3,6 +3,7 @@ import type { RMDXModule } from 'types';
 import * as rdmd from '@readme/markdown-legacy';
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { codeToTokens } from 'shiki';
 
 import { TailwindStyle } from '../components';
 import * as mdx from '../index';
@@ -13,8 +14,8 @@ import RenderError from './RenderError';
 
 const executedComponents = {};
 const componentsByExport = { ...components };
-Object.entries(components).forEach(async ([tag, body]) => {
-  const mod = await mdx.run(await mdx.compile(body));
+Object.entries(components).forEach(([tag, body]) => {
+  const mod = mdx.run(mdx.compile(body));
 
   executedComponents[tag] = mod;
   Object.keys(mod).forEach(subTag => {
@@ -80,9 +81,20 @@ const Doc = () => {
         copyButtons,
       };
 
+      console.time('codeToTokens');
+      window.tokens = await codeToTokens(doc, {
+        lang: 'mdx',
+        theme: 'github-dark',
+      });
+      console.timeEnd('codeToTokens');
+
+      console.time('mdast');
+      mdx.mdast(doc);
+      console.timeEnd('mdast');
+
       try {
-        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
-        const content = await mdx.run(code, { components: executedComponents, terms, variables });
+        const code = mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
+        const content = mdx.run(code, { components: executedComponents, terms, variables });
 
         setError(() => null);
         setContent(() => content);

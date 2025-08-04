@@ -10,6 +10,7 @@ export enum NodeTypes {
   i = 'i',
   imageBlock = 'image-block',
   plain = 'plain',
+  recipe = 'recipe',
   reusableContent = 'reusable-content',
   tableau = 'tableau',
   tutorialTile = 'tutorial-tile',

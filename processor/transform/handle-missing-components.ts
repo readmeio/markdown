@@ -19,6 +19,7 @@ const handleMissingComponents =
       ...Object.keys(Components),
       ...Object.keys(components),
       ...Object.values(components).flatMap(doc => getExports(mdast(doc))),
+      'Recipe',
       'Variable',
       'TutorialTile',
     ]);
