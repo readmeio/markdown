@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 10.2.7
+### 🛠 Fixes & Updates
+
+* empty callout icon ([#1166](https://github.com/readmeio/markdown/issues/1166)) ([e9c905f](https://github.com/readmeio/markdown/commit/e9c905fb920befa7c9280e26626376bd8b53860f))
+* line-height on icon ([#1164](https://github.com/readmeio/markdown/issues/1164)) ([5e4fa42](https://github.com/readmeio/markdown/commit/5e4fa425562ea6ad519d6f8bcd2dc3079574ce93))
+
 ## Version 10.2.6
 ### 🛠 Fixes & Updates
 
