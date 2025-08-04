@@ -210,4 +210,28 @@ describe('callouts transformer', () => {
 
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'info');
   });
+
+  it('can correctly wrap a heading around a callout with a complex heading and preserve the correct position data', () => {
+    const md = `
+> 📘 This is a callout [**with** a _link_](https://example.com)
+    `;
+
+    const tree = mdast(md);
+
+    // @ts-expect-error -- children should be defined
+    expect(tree.children[0].children[0].position).toMatchInlineSnapshot(`
+      {
+        "end": {
+          "column": 64,
+          "line": 2,
+          "offset": 64,
+        },
+        "start": {
+          "column": 3,
+          "line": 2,
+          "offset": 3,
+        },
+      }
+    `);
+  });
 });

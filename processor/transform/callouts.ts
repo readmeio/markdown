@@ -17,12 +17,6 @@ const findFirst = (node: Node): Node | null => {
   return null;
 };
 
-const findLast = (node: Node): Node | null => {
-  if ('children' in node && Array.isArray(node.children)) return findFirst(node.children[node.children.length - 1]);
-  if (node.type === 'text') return node;
-  return null;
-};
-
 export const wrapHeading = (node: Blockquote | Callout): Heading => {
   const firstChild = node.children[0];
 
@@ -31,8 +25,8 @@ export const wrapHeading = (node: Blockquote | Callout): Heading => {
     depth: 3,
     children: ('children' in firstChild ? firstChild.children : []) as Heading['children'],
     position: {
-      start: findFirst(firstChild)?.position.start,
-      end: findLast(firstChild)?.position.end,
+      start: firstChild.position.start,
+      end: firstChild.position.end,
     },
   };
 };
