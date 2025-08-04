@@ -32,9 +32,9 @@ exports[`Parse RDMD Callouts > renders an info callout 1`] = `
               "offset": 18,
             },
             "start": {
-              "column": 3,
+              "column": 6,
               "line": 2,
-              "offset": 3,
+              "offset": 6,
             },
           },
           "type": "heading",
