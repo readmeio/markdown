@@ -211,10 +211,8 @@ describe('callouts transformer', () => {
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'info');
   });
 
-  it('can correctly wrap a heading around a callout with a complex heading and preserve the correct position data', () => {
-    const md = `
-> 📘 This is a callout [**with** a _link_](https://example.com)
-    `;
+  it('can correctly wrap a heading around a callout with a complex title and preserve the correct position data', () => {
+    const md = '> 📘 This is a callout [**with** a _link_](https://example.com)';
 
     const tree = mdast(md);
 
@@ -223,13 +221,13 @@ describe('callouts transformer', () => {
       {
         "end": {
           "column": 64,
-          "line": 2,
-          "offset": 64,
+          "line": 1,
+          "offset": 63,
         },
         "start": {
-          "column": 3,
-          "line": 2,
-          "offset": 3,
+          "column": 6,
+          "line": 1,
+          "offset": 5,
         },
       }
     `);

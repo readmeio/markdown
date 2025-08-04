@@ -52,6 +52,8 @@ const calloutTransformer = () => {
 
         if (heading) {
           node.children[0] = wrapHeading(node);
+          node.children[0].position.start.offset += match.length;
+          node.children[0].position.start.column += match.length;
         }
 
         Object.assign(node, {
