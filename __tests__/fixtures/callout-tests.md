@@ -21,7 +21,9 @@ hidden: true
 </Callout>
 
 <Callout theme="info">No Icon Info</Callout>
-<Callout theme="error">No Icon Info</Callout>
+<Callout theme="error">No Icon Error</Callout>
+
+<Callout icon="👍">No Theme 👍</Callout>
 
 > 👍 Success
 >

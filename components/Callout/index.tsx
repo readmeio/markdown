@@ -5,7 +5,7 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteEl
   attributes?: Record<string, unknown>;
   empty?: boolean;
   icon?: string;
-  theme: string;
+  theme?: string;
 }
 
 export const themes: Record<string, string> = {
@@ -36,12 +36,13 @@ export const defaultIcons = {
 };
 
 const Callout = (props: Props) => {
-  const { attributes, theme = 'default', empty } = props;
+  const { attributes, empty } = props;
   const children = React.Children.toArray(props.children);
 
   const icon = props.icon;
   const isEmoji = icon && emojiRegex().test(icon);
   const heading = empty ? <p className={'callout-heading empty'}></p> : children[0];
+  const theme = props.theme || (icon && themes[icon]) || 'default';
 
   return (
     // @ts-expect-error -- theme is not a valid attribute
