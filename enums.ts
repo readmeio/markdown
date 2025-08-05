@@ -10,8 +10,10 @@ export enum NodeTypes {
   i = 'i',
   imageBlock = 'image-block',
   plain = 'plain',
+  recipe = 'recipe',
   reusableContent = 'reusable-content',
   tableau = 'tableau',
+  /** @deprecated Deprecated in favor of `recipe`. */
   tutorialTile = 'tutorial-tile',
   variable = 'readme-variable',
 }

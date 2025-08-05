@@ -112,4 +112,20 @@ export const Inlined = () => <div>Inlined</div>;
 
     expect(mdast(mdx, { missingComponents: 'throw' })).toMatchSnapshot();
   });
+
+  it('does not throw an error when a Recipe is included and missingComponents === "throw"', () => {
+    const mdx = '<Recipe />';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).not.toThrow();
+  });
+
+  it('does not throw an error when a TutorialTile is included and missingComponents === "throw"', () => {
+    const mdx = '<TutorialTile />';
+
+    expect(() => {
+      mdast(mdx, { missingComponents: 'throw' });
+    }).not.toThrow();
+  });
 });
