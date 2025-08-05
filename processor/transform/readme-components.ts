@@ -7,7 +7,7 @@ import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types'
 
 import { visit, SKIP } from 'unist-util-visit';
 
-import { defaultIcons, themes } from '../../components/Callout';
+import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import { mdast } from '../../lib';
 import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
@@ -22,7 +22,8 @@ const types = {
   HTMLBlock: NodeTypes.htmlBlock,
   Table: 'table',
   Variable: NodeTypes.variable,
-  TutorialTile: NodeTypes.tutorialTile,
+  Recipe: NodeTypes.recipe,
+  TutorialTile: NodeTypes.recipe, // coerce to recipe for backwards compatibility
 };
 
 enum TableNames {

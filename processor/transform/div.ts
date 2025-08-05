@@ -1,4 +1,4 @@
-import type { TutorialTile } from '../../types';
+import type { Recipe } from '../../types';
 import type { Node, Parent } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 
@@ -6,7 +6,7 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
-// This transformer has been necessary for migrating legacy markdown files 
+// This transformer has been necessary for migrating legacy markdown files
 // where tutorial tiles were wrapped in a div. It also provides a fallback for legacy magic blocks that were never fully supported:
 //     [block:custom-block]
 //     { ... }
@@ -24,8 +24,8 @@ const divTransformer = (): Transform => tree => {
           const { hName, hProperties, ...rest } = node.data;
           const tile = {
             ...rest,
-            type: NodeTypes.tutorialTile,
-          } as TutorialTile;
+            type: NodeTypes.recipe,
+          } as Recipe;
           parent.children.splice(index, 1, tile);
         }
         break;
