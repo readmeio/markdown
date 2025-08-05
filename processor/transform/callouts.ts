@@ -16,12 +16,6 @@ const findFirst = (node: Node): Node | null => {
   return null;
 };
 
-const findLast = (node: Node): Node | null => {
-  if ('children' in node && Array.isArray(node.children)) return findFirst(node.children[node.children.length - 1]);
-  if (node.type === 'text') return node;
-  return null;
-};
-
 export const wrapHeading = (node: Blockquote | Callout): Heading => {
   const firstChild = node.children[0];
 
@@ -30,8 +24,8 @@ export const wrapHeading = (node: Blockquote | Callout): Heading => {
     depth: 3,
     children: ('children' in firstChild ? firstChild.children : []) as Heading['children'],
     position: {
-      start: findFirst(firstChild)?.position.start,
-      end: findLast(firstChild)?.position.end,
+      start: firstChild.position.start,
+      end: firstChild.position.end,
     },
   };
 };
@@ -57,6 +51,11 @@ const calloutTransformer = () => {
 
         if (heading) {
           node.children[0] = wrapHeading(node);
+          // @note: We add to the offset/column the length of the unicode
+          // character that was stripped off, so that the start position of the
+          // heading/text matches where it actually starts.
+          node.children[0].position.start.offset += match.length;
+          node.children[0].position.start.column += match.length;
         }
 
         Object.assign(node, {
