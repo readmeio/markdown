@@ -210,4 +210,15 @@ describe('callouts transformer', () => {
 
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'info');
   });
+
+  it('can parse a jsx callout and set a theme from the icon "👍"', () => {
+    const md = `
+<Callout icon="👍">
+### This is a callout
+</Callout>`;
+
+    const tree = mdast(md);
+
+    expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'okay');
+  });
 });

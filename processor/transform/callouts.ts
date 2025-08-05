@@ -1,4 +1,3 @@
-import type { Nodes } from 'hast';
 import type { Blockquote, Heading, Node, Root } from 'mdast';
 import type { Callout } from 'types';
 
