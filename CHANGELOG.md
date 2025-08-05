@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 10.2.8
+### 🛠 Fixes & Updates
+
+* callout heading position data ([#1169](https://github.com/readmeio/markdown/issues/1169)) ([edc9275](https://github.com/readmeio/markdown/commit/edc92758e3b85509c2e7c4fecb3ad07a720f8a44))
+* callouts without themes ([#1168](https://github.com/readmeio/markdown/issues/1168)) ([8361e59](https://github.com/readmeio/markdown/commit/8361e59cc5357670d25d7e4cbba626eb028ef98c))
+* rename tutorial tile ([#1167](https://github.com/readmeio/markdown/issues/1167)) ([1d4a5af](https://github.com/readmeio/markdown/commit/1d4a5af3382d980c2c879b4578fc53c71ebdc384))
+
 ## Version 10.2.7
 ### 🛠 Fixes & Updates
 
