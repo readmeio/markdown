@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.9
+### 🛠 Fixes & Updates
+
+* allow plain in tables ([#1158](https://github.com/readmeio/markdown/issues/1158)) ([2e003c5](https://github.com/readmeio/markdown/commit/2e003c55a33aaef2d0cc81851e8e020467d8fe15))
+
 ## Version 10.2.8
 ### 🛠 Fixes & Updates
 
