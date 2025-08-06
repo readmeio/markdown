@@ -24,8 +24,8 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
     'html-block': Components.HTMLBlock,
     'image-block': Components.Image,
     'table-of-contents': Components.TableOfContents,
-    // Ensures backwards compatibility with historical TutoirialTile component
-    'TutorialTile': Components.Recipe,
+    // Ensures backwards compatibility with historical TutorialTile component
+    TutorialTile: Components.Recipe,
     ...headings,
     ...more,
   };

@@ -129,14 +129,15 @@ interface Tableau extends Omit<Table, 'type'> {
   type: NodeTypes.tableau;
 }
 
-interface TutorialTile extends Node {
+interface Recipe extends Node {
   backgroundColor: string;
   emoji: string;
   id: string;
   link: string;
   slug: string;
   title: string;
-  type: NodeTypes.tutorialTile;
+  // Keeping both types for backwards compatibility
+  type: NodeTypes.recipe | NodeTypes.tutorialTile;
 }
 
 interface Variable extends Node {
@@ -153,14 +154,15 @@ declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    link: Embed | Link;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.plain]: Plain;
+    [NodeTypes.recipe]: Recipe;
     [NodeTypes.tableau]: Tableau;
-    [NodeTypes.tutorialTile]: TutorialTile;
+    [NodeTypes.tutorialTile]: Recipe;
+    link: Embed | Link;
   }
 
   interface PhrasingContentMap {
@@ -171,17 +173,18 @@ declare module 'mdast' {
   }
 
   interface RootContentMap {
+    Link: Embed | Link;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    Link: Embed | Link;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.recipe]: Recipe;
     [NodeTypes.tableau]: Tableau;
-    [NodeTypes.tutorialTile]: TutorialTile;
+    [NodeTypes.tutorialTile]: Recipe;
     [NodeTypes.variable]: Variable;
   }
 }

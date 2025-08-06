@@ -2,7 +2,7 @@ import type { Image, Parent, Node, Link, Paragraph } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxFlowExpression } from 'mdast-util-mdx';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
-import type { Variable, HTMLBlock } from 'types';
+import type { Variable, HTMLBlock, Recipe } from 'types';
 
 import emojiRegex from 'emoji-regex';
 import { visit } from 'unist-util-visit';
@@ -52,8 +52,8 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   // Converts tutorial tiles to Recipe components in the migration process
-  visit(tree, NodeTypes.tutorialTile, (tile, index, parent) => {
-    const { ...attrs } = tile;
+  visit(tree, NodeTypes.tutorialTile, (tile, index, parent: Parent) => {
+    const { ...attrs } = tile as Recipe;
 
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',

@@ -11,7 +11,6 @@
   border-color: var(--Callout-border);
   color: var(--text, var(--color-text-default));
   padding: $l-offset;
-  position: relative;
 
   &_default {
     // legacy variables
@@ -73,7 +72,7 @@
   }
 
   > * {
-    margin-left: calc(#{$l-offset} + 0.25rem);
+    margin-left: $l-offset;
   }
 
   ul,
@@ -106,6 +105,7 @@
     font-weight: var(--markdown-title-weight, 500);
     line-height: 1.25; // match h3
     margin-bottom: calc(#{$l-offset} * 0.5);
+    position: relative;
 
     &:only-child {
       margin-bottom: 0;
@@ -113,14 +113,9 @@
 
     &.empty {
       float: left;
-      line-height: 1;
 
       &:is(p) {
         margin-left: 0;
-      }
-
-      .callout-icon {
-        margin-left: calc(-#{$l-offset} - 0.25rem);
       }
     }
 
@@ -131,7 +126,11 @@
 
     // legacy icon behavior (changes in superhub)
     .callout-icon {
-      margin-left: calc(-#{$l-offset} - 0.25rem);
+      margin-left: calc(-#{$l-offset} - 0.5em);
+
+      &::before {
+        transform: translate(-50%, -50%);
+      }
     }
 
     &:before {
@@ -145,7 +144,7 @@
 
   .callout-icon {
     float: left;
-    margin-left: 0;
+    margin-left: -0.5rem;
     position: relative;
 
     // float doesn’t work when there’s nothing else
@@ -180,7 +179,6 @@
     font-weight: var(--icon-weight, 400);
     position: absolute;
     top: 50%;
-    transform: translate(-50%, -50%);
     display: inline-block;
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;

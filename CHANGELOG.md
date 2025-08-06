@@ -1,6 +1,44 @@
 Changelog
 ===
 
+## Version 10.2.8
+### 🛠 Fixes & Updates
+
+* callout heading position data ([#1169](https://github.com/readmeio/markdown/issues/1169)) ([edc9275](https://github.com/readmeio/markdown/commit/edc92758e3b85509c2e7c4fecb3ad07a720f8a44))
+* callouts without themes ([#1168](https://github.com/readmeio/markdown/issues/1168)) ([8361e59](https://github.com/readmeio/markdown/commit/8361e59cc5357670d25d7e4cbba626eb028ef98c))
+* rename tutorial tile ([#1167](https://github.com/readmeio/markdown/issues/1167)) ([1d4a5af](https://github.com/readmeio/markdown/commit/1d4a5af3382d980c2c879b4578fc53c71ebdc384))
+
+## Version 10.2.7
+### 🛠 Fixes & Updates
+
+* empty callout icon ([#1166](https://github.com/readmeio/markdown/issues/1166)) ([e9c905f](https://github.com/readmeio/markdown/commit/e9c905fb920befa7c9280e26626376bd8b53860f))
+* line-height on icon ([#1164](https://github.com/readmeio/markdown/issues/1164)) ([5e4fa42](https://github.com/readmeio/markdown/commit/5e4fa425562ea6ad519d6f8bcd2dc3079574ce93))
+
+## Version 10.2.6
+### 🛠 Fixes & Updates
+
+* **callouts:** inline code in title throws err ([#1165](https://github.com/readmeio/markdown/issues/1165)) ([3cb391c](https://github.com/readmeio/markdown/commit/3cb391c27ae3c076e28df222e745be8572777a6d))
+
+## Version 10.2.5
+### 🛠 Fixes & Updates
+
+* callout icons ([#1163](https://github.com/readmeio/markdown/issues/1163)) ([4c056d7](https://github.com/readmeio/markdown/commit/4c056d7580b3311476a0184e4c79122a43f203ea))
+
+## Version 10.2.4
+### 🛠 Fixes & Updates
+
+* missing css line callouts ([#1162](https://github.com/readmeio/markdown/issues/1162)) ([4235ecb](https://github.com/readmeio/markdown/commit/4235ecb7b160c4b08356f9585daa6e63332c5c6d))
+
+## Version 10.2.3
+### 🛠 Fixes & Updates
+
+* legacy callout typo ([#1161](https://github.com/readmeio/markdown/issues/1161)) ([a895510](https://github.com/readmeio/markdown/commit/a8955105430b08e01010102e8e288905281e11fc))
+
+## Version 10.2.2
+### ✨ New & Improved
+
+* legacy callouts ([#1160](https://github.com/readmeio/markdown/issues/1160)) ([e7380e9](https://github.com/readmeio/markdown/commit/e7380e9b49bc37286fd29ff3092370da7dceda62))
+
 ## Version 10.2.1
 ### 🛠 Fixes & Updates
 
