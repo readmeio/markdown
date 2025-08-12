@@ -10,7 +10,7 @@ test('should output a glossary item if the term exists', () => {
 
   const trigger = container.querySelector('.GlossaryItem-trigger');
   expect(trigger).toHaveTextContent(term);
-  fireEvent.mouseEnter(trigger.parentElement);
+  fireEvent.mouseEnter(trigger);
   const tooltipContent = screen.getByText(definition, { exact: false });
   expect(tooltipContent).toHaveTextContent(`${term} - ${definition}`);
 });
@@ -22,7 +22,7 @@ test('should be case insensitive', () => {
 
   const trigger = container.querySelector('.GlossaryItem-trigger');
   expect(trigger).toHaveTextContent('acme');
-  fireEvent.mouseEnter(trigger.parentElement);
+  fireEvent.mouseEnter(trigger);
   const tooltipContent = screen.getByText(definition, { exact: false });
   expect(tooltipContent).toHaveTextContent(`${term} - ${definition}`);
 });

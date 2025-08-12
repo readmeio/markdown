@@ -42,9 +42,7 @@ describe('Data Replacements', () => {
         markdown.react('<<glossary:term>>'),
       ),
     );
-    expect(container).toContainHTML(
-      '<p><span id="tooltip-trigger-0.1234"><span class="GlossaryItem-trigger">term</span></span></p>',
-    );
+    expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
   });
 });
 
