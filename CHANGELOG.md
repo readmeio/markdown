@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.3
+
+### 🛠 Fixes & Updates
+
+* try adding tooltip check for client ([#1176](https://github.com/readmeio/markdown/issues/1176)) ([ae42552](https://github.com/readmeio/markdown/commit/ae42552cc0d7db1879374fed592ac0917b1799e0)), closes [/linear.app/readme-io/issue/CX-2117/glossary-popup-not-appearing-in-translated-pages#comment-6ab2666](https://github.com/readmeio//linear.app/readme-io/issue/CX-2117/glossary-popup-not-appearing-in-translated-pages/issues/comment-6ab2666)
+
 ## Version 6.88.2
 
 ### 🛠 Fixes & Updates
