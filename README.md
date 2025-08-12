@@ -129,8 +129,14 @@ If you make changes to the docs or how the markdown is rendered, you may need to
 
 There's currently some `babel` issues that prevent `npm link`ing to our main repo. `npm link`ing does work with our storybook app.
 
+**In this repo, run:**
+
 ```
 npm link && npm run watch
-cd $PATH_TO_LOCAL_README_REPO
+```
+
+**In the main app repo, run:**
+
+```
 npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 ```
