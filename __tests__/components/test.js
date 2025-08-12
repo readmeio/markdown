@@ -6,6 +6,10 @@ const markdown = require('../../index');
 const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {
+  beforeAll(() => {
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.1234);
+  });
+
   it('Variables', () => {
     const { container } = render(
       React.createElement(
@@ -39,7 +43,7 @@ describe('Data Replacements', () => {
       ),
     );
     expect(container).toContainHTML(
-      '<p><span id="tooltip-trigger-mock-uuid-12345"><span class="GlossaryItem-trigger">term</span></span></p>',
+      '<p><span id="tooltip-trigger-0.1234"><span class="GlossaryItem-trigger">term</span></span></p>',
     );
   });
 });
