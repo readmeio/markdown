@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.1
+
+### 🛠 Fixes & Updates
+
+* port glossary tooltip fix to `markdown-legacy`  ([#1174](https://github.com/readmeio/markdown/issues/1174)) ([af63ec4](https://github.com/readmeio/markdown/commit/af63ec4f57c4a22f67be9e723a84d6401f645193)), closes [#1173](https://github.com/readmeio/markdown/issues/1173)
+
 ## Version 6.88.0
 
 ### ✨ New & Improved
