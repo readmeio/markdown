@@ -127,16 +127,16 @@ If you make changes to the docs or how the markdown is rendered, you may need to
 
 ### Linking Changes to Storybook
 
-In `markdown`, change `package.json` name to `@readme/mdx`. Then run:
+There's currently some `babel` issues that prevent `npm link`ing to our main repo. `npm link`ing does work with our storybook app.
+
+**In this repo, run:**
 
 ```
 npm link && npm run watch
 ```
 
-In `readme` run:
+**In the main app repo, run:**
 
 ```
-npm link PATH_TO_LOCAL_MARKDOWN_REPO
+npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 ```
-
-Will not work with the monorepo app due to `core-js` issues.
