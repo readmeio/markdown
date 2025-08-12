@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 10.2.10
+### 🛠 Fixes & Updates
+
+* update glossary to use tooltip with mutation observer ([#1173](https://github.com/readmeio/markdown/issues/1173)) ([fac6673](https://github.com/readmeio/markdown/commit/fac6673cb56d04a971778ff8a3e31b24ba4b4e4d))
+* update link docs ([#1172](https://github.com/readmeio/markdown/issues/1172)) ([481cd12](https://github.com/readmeio/markdown/commit/481cd12a1d303da43acbcba7f7dcb25b82ca26cd))
+
 ## Version 10.2.9
 ### 🛠 Fixes & Updates
 
