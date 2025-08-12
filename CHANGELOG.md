@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.2
+
+### 🛠 Fixes & Updates
+
+* remove use of `crypto.randomUUID` ([#1175](https://github.com/readmeio/markdown/issues/1175)) ([35dec77](https://github.com/readmeio/markdown/commit/35dec773843ce0e7d1e4f54431c24385b10d64e2)), closes [#1174](https://github.com/readmeio/markdown/issues/1174)
+
 ## Version 6.88.1
 
 ### 🛠 Fixes & Updates
