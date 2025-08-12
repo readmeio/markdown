@@ -14,7 +14,7 @@ export default function Tooltip({ children, ...rest }) {
   const [triggerTarget, setTriggerTarget] = React.useState(null);
 
   const triggerId = React.useMemo(() => {
-    return `tooltip-trigger-${crypto.randomUUID()}`;
+    return `tooltip-trigger-${Math.random()}`;
   }, []);
 
   React.useEffect(() => {
