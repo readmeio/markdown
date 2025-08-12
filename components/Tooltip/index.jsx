@@ -18,7 +18,7 @@ export default function Tooltip({ children, ...rest }) {
   }, []);
 
   React.useEffect(() => {
-    if (!triggerRef.current?.parentElement) return () => {};
+    if (typeof window === 'undefined' || !triggerRef.current?.parentElement) return () => {};
 
     const observer = new MutationObserver(records => {
       records.forEach(record => {
