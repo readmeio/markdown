@@ -4,13 +4,13 @@ const React = require('react');
 /**
  * A custom wrapper around `@tippyjs/react` that attaches a MutationObserver to
  * listen for changes of the trigger element's DOM tree.
- * 
+ *
  * This is necessary for features like translation, where we initially render a
  * Glossary term in English but then replace it with the translated term, which
  * creates a stale Tippy reference.
- */ 
+ */
 export default function Tooltip({ children, ...rest }) {
-  const triggerRef = React.useRef<HTMLElement>(null);
+  const triggerRef = React.useRef(null);
   const [triggerTarget, setTriggerTarget] = React.useState(null);
 
   const triggerId = React.useMemo(() => {
@@ -20,18 +20,18 @@ export default function Tooltip({ children, ...rest }) {
   React.useEffect(() => {
     if (!triggerRef.current?.parentElement) return () => {};
 
-    const observer = new MutationObserver((records) => {
+    const observer = new MutationObserver(records => {
       records.forEach(record => {
         // was the node tree changed?
         if (record.type === 'childList') {
           record.addedNodes.forEach(node => {
             // was the node for the tooltip trigger replaced?
-            if(node instanceof HTMLElement && node.id === triggerId)  {
+            if (node instanceof HTMLElement && node.id === triggerId) {
               // if it was, update our reference to it
               setTriggerTarget(node);
             }
           });
-        } 
+        }
       });
     });
 
@@ -48,12 +48,10 @@ export default function Tooltip({ children, ...rest }) {
   }, [triggerTarget]);
 
   return (
-    <Tippy 
-      getReferenceClientRect={getReferenceClientRect}
-      triggerTarget={triggerTarget}
-      {...rest}
-    >
-      <span ref={triggerRef} id={triggerId}>{children}</span>
+    <Tippy getReferenceClientRect={getReferenceClientRect} triggerTarget={triggerTarget} {...rest}>
+      <span ref={triggerRef} id={triggerId}>
+        {children}
+      </span>
     </Tippy>
   );
 }
