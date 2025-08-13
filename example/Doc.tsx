@@ -26,17 +26,14 @@ Object.entries(components).forEach(async ([tag, body]) => {
 
 const terms = [
   {
-    _id: '1',
     term: 'demo',
     definition: 'a thing that breaks on presentation',
   },
   {
-     _id: '2',
     term: 'exogenous',
     definition: 'relating to or developing from external factors',
   },
   {
-     _id: '3',
     term: 'endogenous',
     definition: 'having an internal cause or origin',
   },
