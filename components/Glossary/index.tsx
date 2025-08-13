@@ -1,9 +1,9 @@
 import type { GlossaryTerm } from '../../contexts/GlossaryTerms';
 
+import Tooltip from '@tippyjs/react';
 import React, { useContext } from 'react';
 
 import GlossaryContext from '../../contexts/GlossaryTerms';
-import Tooltip from '../Tooltip';
 
 interface Props extends React.PropsWithChildren {
   term?: string;
