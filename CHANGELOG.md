@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 10.2.11
+### 🛠 Fixes & Updates
+
+* lightbox images in cards ([#1179](https://github.com/readmeio/markdown/issues/1179)) ([3464c9d](https://github.com/readmeio/markdown/commit/3464c9d7bc4e9f3963a8259a47eafc402a38ae9a))
+* npm linking ([#1182](https://github.com/readmeio/markdown/issues/1182)) ([43db6ac](https://github.com/readmeio/markdown/commit/43db6ac27c9a3d69eb898e83a2a3b775e8b46cae))
+
 ## Version 10.2.10
 ### 🛠 Fixes & Updates
 
