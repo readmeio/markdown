@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const ExtractCSS = require('mini-css-extract-plugin');
+const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 
 const env = process.env.NODE_ENV || 'development';
@@ -12,6 +13,9 @@ const getConfig = ({ target }) => ({
     new ExtractCSS({
       filename: '[name].css',
     }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
   ],
   module: {
     rules: [
@@ -21,7 +25,6 @@ const getConfig = ({ target }) => ({
           loader: 'ts-loader',
           options: {
             happyPackMode: true,
-            transpileOnly: true,
           },
         },
         exclude: /node_modules(?!\/@readme\/shared)/,
@@ -82,30 +85,21 @@ const getConfig = ({ target }) => ({
 });
 
 const browserConfig = merge(getConfig({ target: 'web' }), {
+  experiments: {
+    outputModule: true,
+  },
   externals: {
     '@readme/syntax-highlighter': '@readme/syntax-highlighter',
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
     acorn: 'acorn',
     mermaid: 'mermaid',
-    react: {
-      amd: 'react',
-      commonjs: 'react',
-      commonjs2: 'react',
-      root: 'React',
-      umd: 'react',
-    },
-    'react-dom': {
-      amd: 'react-dom',
-      commonjs2: 'react-dom',
-      commonjs: 'react-dom',
-      root: 'ReactDOM',
-      umd: 'react-dom',
-    },
+    react: 'react',
+    'react-dom': 'react-dom',
   },
   output: {
     library: {
-      type: 'umd',
+      type: 'module',
     },
   },
   resolve: {
@@ -122,27 +116,8 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
     filename: '[name].node.js',
   },
   externals: {
-    react: {
-      amd: 'react',
-      commonjs: 'react',
-      commonjs2: 'react',
-      root: 'React',
-      umd: 'react',
-    },
-    'react-dom': {
-      amd: 'react-dom',
-      commonjs2: 'react-dom',
-      commonjs: 'react-dom',
-      root: 'ReactDOM',
-      umd: 'react-dom',
-    },
-    'react-dom/server': {
-      amd: 'react-dom/server',
-      commonjs2: 'react-dom/server',
-      commonjs: 'react-dom/server',
-      root: 'ReactDOM/server',
-      umd: 'react-dom/server',
-    },
+    react: 'react',
+    'react-dom': 'react-dom',
   },
   devtool: 'source-map',
 });
