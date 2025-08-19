@@ -94,12 +94,24 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
     '@tippyjs/react': '@tippyjs/react',
     acorn: 'acorn',
     mermaid: 'mermaid',
-    react: 'react',
-    'react-dom': 'react-dom',
+    react: {
+      amd: 'react',
+      commonjs: 'react',
+      commonjs2: 'react',
+      root: 'React',
+      umd: 'react',
+    },
+    'react-dom': {
+      amd: 'react-dom',
+      commonjs2: 'react-dom',
+      commonjs: 'react-dom',
+      root: 'ReactDOM',
+      umd: 'react-dom',
+    },
   },
   output: {
     library: {
-      type: 'module',
+      type: 'umd',
     },
   },
   resolve: {
