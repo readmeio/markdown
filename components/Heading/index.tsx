@@ -10,6 +10,7 @@ interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLHeading
 const Heading = ({ tag: Tag = 'h3', depth = 3, id, children, ...attrs }: Props) => {
   if (!children) return '';
 
+  console.log('muahaha');
   return (
     <Tag {...attrs} className={`heading heading-${depth} header-scroll`}>
       <div key={`heading-anchor-${id}`} className="heading-anchor anchor waypoint" id={id} />
