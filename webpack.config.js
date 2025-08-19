@@ -25,6 +25,7 @@ const getConfig = ({ target }) => ({
           loader: 'ts-loader',
           options: {
             happyPackMode: true,
+            transpileOnly: true,
           },
         },
         exclude: /node_modules(?!\/@readme\/shared)/,
@@ -85,9 +86,6 @@ const getConfig = ({ target }) => ({
 });
 
 const browserConfig = merge(getConfig({ target: 'web' }), {
-  experiments: {
-    outputModule: true,
-  },
   externals: {
     '@readme/syntax-highlighter': '@readme/syntax-highlighter',
     '@readme/variable': '@readme/variable',
