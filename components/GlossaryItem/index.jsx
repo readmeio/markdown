@@ -1,8 +1,8 @@
-const Tooltip = require('@tippyjs/react').default;
 const PropTypes = require('prop-types');
 const React = require('react');
 
 const GlossaryContext = require('../../contexts/GlossaryTerms');
+const Tooltip = require('../Tooltip').default;
 
 // https://github.com/readmeio/api-explorer/blob/0dedafcf71102feedaa4145040d3f57d79d95752/packages/api-explorer/src/lib/replace-vars.js#L8
 function GlossaryItem({ term, terms }) {
