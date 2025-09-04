@@ -14,7 +14,12 @@ describe('Data Replacements', () => {
     const { container } = render(
       React.createElement(
         markdown.utils.VariablesContext.Provider,
-        { value: { defaults: [{ test: 'Default Value' }], user: { test: 'User Override' } } },
+        {
+          value: {
+            defaults: [{ test: 'Default Value' }],
+            user: { test: 'User Override' },
+          },
+        },
         markdown.react('<<test>>'),
       ),
     );

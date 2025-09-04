@@ -1,4 +1,4 @@
-const Tippy = require('@tippyjs/react').default;
+const Tooltip = require('@tippyjs/react').default;
 const PropTypes = require('prop-types');
 const React = require('react');
 
@@ -66,7 +66,7 @@ function GlossaryItem({ term, terms }) {
   if (!foundTerm) return <span>{term}</span>;
 
   return (
-    <Tippy
+    <Tooltip
       content={
         <div className="GlossaryItem-tooltip-content">
           <strong className="GlossaryItem-term">{foundTerm.term}</strong> - {foundTerm.definition}
@@ -80,7 +80,7 @@ function GlossaryItem({ term, terms }) {
       <span ref={triggerRef} className="GlossaryItem-trigger">
         {term}
       </span>
-    </Tippy>
+    </Tooltip>
   );
 }
 
