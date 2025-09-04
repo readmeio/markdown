@@ -14,12 +14,7 @@ describe('Data Replacements', () => {
     const { container } = render(
       React.createElement(
         markdown.utils.VariablesContext.Provider,
-        {
-          value: {
-            defaults: [{ test: 'Default Value' }],
-            user: { test: 'User Override' },
-          },
-        },
+        { value: { defaults: [{ test: 'Default Value' }], user: { test: 'User Override' } } },
         markdown.react('<<test>>'),
       ),
     );
@@ -42,9 +37,7 @@ describe('Data Replacements', () => {
         markdown.react('<<glossary:term>>'),
       ),
     );
-    expect(container).toContainHTML(
-      '<p><span id="tooltip-trigger-0.1234"><span class="GlossaryItem-trigger">term</span></span></p>',
-    );
+    expect(container).toContainHTML('<p><span class="GlossaryItem-trigger">term</span></p>');
   });
 });
 
