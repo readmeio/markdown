@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.4
+
+### 🛠 Fixes & Updates
+
+* update glossary to use tooltip with mutation observer ([#1188](https://github.com/readmeio/markdown/issues/1188)) ([a3681e3](https://github.com/readmeio/markdown/commit/a3681e30f3b909230c85603be1685d727a6f6588)), closes [/github.com/readmeio/markdown/blob/765dfc1809bdbafc3060c6c762335f229b33e3b4/components/Tooltip/index.tsx#L58](https://github.com/readmeio//github.com/readmeio/markdown/blob/765dfc1809bdbafc3060c6c762335f229b33e3b4/components/Tooltip/index.tsx/issues/L58)
+
 ## Version 6.88.3
 
 ### 🛠 Fixes & Updates
