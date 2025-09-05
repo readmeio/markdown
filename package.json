@@ -30,6 +30,7 @@
     "@readme/variable": "^18.0.0",
     "copy-to-clipboard": "^3.3.2",
     "debug": "^4.3.4",
+    "deepmerge": "^4.3.1",
     "emoji-regex": "^10.2.1",
     "estree-util-value-to-estree": "^3.1.1",
     "gemoji": "^8.1.0",

@@ -2,8 +2,9 @@ import type { CompileOptions } from '@mdx-js/mdx';
 import type { PluggableList } from 'unified';
 
 import { compileSync as mdxCompileSync } from '@mdx-js/mdx';
+import deepmerge from 'deepmerge';
 import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
@@ -21,6 +22,10 @@ export type CompileOpts = CompileOptions & {
 };
 
 const { codeTabsTransformer, ...transforms } = defaultTransforms;
+
+const sanitizeSchema = deepmerge(defaultSchema, {
+  protocols: ['doc', 'ref', 'blog', 'changelog', 'page'],
+});
 
 const compile = (
   text: string,
@@ -58,7 +63,7 @@ const compile = (
         passThrough: ['mdxjsEsm'],
       },
     ]);
-    rehypePlugins.push(rehypeSanitize);
+    rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
   }
 
   try {
