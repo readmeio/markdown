@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 10.2.12
+### 🛠 Fixes & Updates
+
+* readme protocol links ([#1189](https://github.com/readmeio/markdown/issues/1189)) ([6e44f7e](https://github.com/readmeio/markdown/commit/6e44f7e5ea54423b818ece8bff73c98df47823cc))
+
 ## Version 10.2.11
 ### 🛠 Fixes & Updates
 
