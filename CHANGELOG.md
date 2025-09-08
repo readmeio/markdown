@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 11.0.0
+### ⚠ BREAKING CHANGES
+
+* CHANGE**: Changes how emoji's are parsed in markdown.
+
+### 🛠 Fixes & Updates
+
+* emoji context ([#1190](https://github.com/readmeio/markdown/issues/1190)) ([2df077c](https://github.com/readmeio/markdown/commit/2df077c68bae326c60e5d3521f8ebe6771aa46f9))
+
 ## Version 10.2.12
 ### 🛠 Fixes & Updates
 
