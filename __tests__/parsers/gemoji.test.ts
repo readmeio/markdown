@@ -62,19 +62,11 @@ describe('gemoji parser', () => {
     expect(mdast(markdown).children[0].children[0].value).toMatch(/:unknown-emoji:/);
   });
 
-  /**
-   * Our custom gemoji regex should allow escaping gemojis. However, we're
-   * forced to use an extra backslash, as the mdx parser removes the original
-   * backslash from the sequence `\:`
-   */
-  const escapingTests = [
-    ['\\:joy:', '😂'],
-    ['\\\\:joy:', '\\:joy:'],
-    ['\\\\\\:joy:', '\\:joy:'],
-    ['\\\\\\\\:joy:', '😂'],
-  ];
+  const beforeTests = ['letter', '1', '.', ':', "'", '!', '?', ',', ';', '(', '[', ')', ']', '}'];
 
-  it.each(escapingTests)('should parse an escape sequence "%s" as "%s"', (string, expected) => {
-    expect(mdast(string).children[0].children[0].value).toBe(expected);
+  it.each(beforeTests)('should not render an emoji following a "%s"', string => {
+    const tree = mdast(`${string}:joy:`);
+
+    expect(tree.children[0].children[0].value).toBe(`${string}:joy:`);
   });
 });
