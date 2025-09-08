@@ -1,8 +1,11 @@
 ---
-title: "Flavored Syntax"
-category: 5fdf7610134322007389a6ec
-excerpt: "Specs and examples of ReadMe's (restrained) Markdown syntax extensions."
-hidden: false
+title: Flavored Syntax
+category:
+  uri: markdown-engine
+content:
+  excerpt: Specs and examples of ReadMe's (restrained) Markdown syntax extensions.
+privacy:
+  view: public
 ---
 Custom Blocks
 ---
