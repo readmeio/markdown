@@ -6,7 +6,7 @@ import { findAndReplace } from 'mdast-util-find-and-replace';
 import { NodeTypes } from '../../enums';
 import Owlmoji from '../../lib/owlmoji';
 
-const regex = /:(?<name>\+1|[-\w]+):/g;
+const regex = /(?<=^|\s):(?<name>\+1|[-\w]+):/g;
 
 const gemojiReplacer = (_, name: string) => {
   switch (Owlmoji.kind(name)) {

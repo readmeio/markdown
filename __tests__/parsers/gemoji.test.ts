@@ -61,4 +61,12 @@ describe('gemoji parser', () => {
 
     expect(mdast(markdown).children[0].children[0].value).toMatch(/:unknown-emoji:/);
   });
+
+  const beforeTests = ['letter', '1', '.', ':', "'", '!', '?', ',', ';', '(', '[', ')', ']', '}'];
+
+  it.each(beforeTests)('should not render an emoji following a "%s"', string => {
+    const tree = mdast(`${string}:joy:`);
+
+    expect(tree.children[0].children[0].value).toBe(`${string}:joy:`);
+  });
 });
