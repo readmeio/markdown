@@ -16,3 +16,4 @@ export { compile, exports, hast, run, mdast, mdastV6, mdx, migrate, plain, remar
 export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
 export { tailwindCompiler } from './utils/tailwind-compiler';
+export { regex as gemojiRegex } from './processor/transform/gemoji+';
