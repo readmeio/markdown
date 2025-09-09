@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 11.1.0
+### ✨ New & Improved
+
+* trigger release ([bb6c2b7](https://github.com/readmeio/markdown/commit/bb6c2b76ae31138a61af146433b97aa9cd97ec0c))
+
+### 🛠 Fixes & Updates
+
+* export gemoji regex ([#1192](https://github.com/readmeio/markdown/issues/1192)) ([24a3f88](https://github.com/readmeio/markdown/commit/24a3f8886920ec7615ccc0014926c4ff6636c1ae))
+
 ## Version 11.0.0
 ### ⚠ BREAKING CHANGES
 
