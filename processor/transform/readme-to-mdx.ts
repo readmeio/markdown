@@ -87,7 +87,7 @@ const readmeToMdx = (): Transform => tree => {
     if (!('data' in image)) return;
 
     if ('url' in image) image.data.hProperties.src = image.url;
-    const attributes = toAttributes(image.data.hProperties, imageAttrs);
+    const attributes = toAttributes({ ...image, ...image.data.hProperties }, imageAttrs);
 
     if (image.data.hProperties.className === 'emoji') {
       parent.children.splice(index, 1, {
@@ -106,7 +106,7 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   visit(tree, NodeTypes.imageBlock, (image, index, parent) => {
-    const attributes = toAttributes(image.data.hProperties, imageAttrs);
+    const attributes = toAttributes({ ...image, ...image.data.hProperties }, imageAttrs);
 
     if (hasExtra(attributes)) {
       parent.children.splice(index, 1, {
