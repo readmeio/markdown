@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.1.1
+### 🛠 Fixes & Updates
+
+* migrating images with alt text ([#1196](https://github.com/readmeio/markdown/issues/1196)) ([8f66b46](https://github.com/readmeio/markdown/commit/8f66b46c417ef58ec0987998eec921f73f8d7e56))
+
 ## Version 11.1.0
 ### ✨ New & Improved
 
