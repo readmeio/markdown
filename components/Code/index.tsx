@@ -3,6 +3,7 @@ import React, { createRef, useContext } from 'react';
 
 import CodeOptsContext from '../../contexts/CodeOpts';
 import ThemeContext from '../../contexts/Theme';
+import useHydrated from '../../hooks/useHydrated';
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -57,8 +58,9 @@ const Code = (props: CodeProps) => {
   const { children, lang, value } = props;
   const theme = useContext(ThemeContext);
   const copyButtons = useContext(CodeOptsContext) || props.copyButtons;
+  const isHydrated = useHydrated();
 
-  const language = canonicalLanguage(lang);
+  const language = isHydrated ? canonicalLanguage(lang) : '';
 
   const codeRef = createRef<HTMLElement>();
 
@@ -71,7 +73,7 @@ const Code = (props: CodeProps) => {
   const code = value ?? (Array.isArray(children) ? children[0] : children) ?? '';
 
   const highlightedCode =
-    syntaxHighlighter && typeof syntaxHighlighter === 'function' && code
+    syntaxHighlighter && typeof syntaxHighlighter === 'function' && code && isHydrated
       ? syntaxHighlighter(code, language, codeOpts, { mdx: true })
       : code;
 
@@ -86,7 +88,6 @@ const Code = (props: CodeProps) => {
         ref={codeRef}
         className={['rdmd-code', `lang-${language}`, `theme-${theme}`].join(' ')}
         data-lang={language}
-        suppressHydrationWarning={true}
       >
         {highlightedCode}
       </code>
