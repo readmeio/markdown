@@ -115,7 +115,7 @@
     "jest-environment-puppeteer": "^8.0.6",
     "jest-image-snapshot": "^6.4.0",
     "jest-puppeteer": "^10.1.4",
-    "mermaid": "^11.3.0",
+    "mermaid": "^11.12.0",
     "mini-css-extract-plugin": "^2.7.5",
     "prettier": "^3.2.5",
     "puppeteer": "^19.8.3",

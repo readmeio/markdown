@@ -11,7 +11,7 @@ const mermaidTransformer = () => (tree: Node) => {
     if (child.type === 'element' && child.tagName === 'code' && child.properties.lang === 'mermaid') {
       node.properties = {
         ...node.properties,
-        className: ['mermaid', ...((node.properties.className as string[]) || [])],
+        className: ['mermaid-render', ...((node.properties.className as string[]) || [])],
       };
     }
   });
