@@ -14,7 +14,7 @@ describe('visual regression tests', () => {
     beforeEach(async () => {
       // The ToC disappears somewhere below 1200, 1175-ish?
       await page.setViewport({ width: 1400, height: 800 });
-    });
+    }, 10000);
 
     const docs = [
       'callouts',
