@@ -5,10 +5,16 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('visual regression tests', () => {
   describe('rdmd syntax', () => {
+    beforeAll(async () => {
+      // try warming up the browser???
+      const uri = 'http://localhost:9966/#/callouts?ci=true&darkModeDataAttribute=true';
+      await page.goto(uri, { waitUntil: 'networkidle0' });
+    });
+
     beforeEach(async () => {
       // The ToC disappears somewhere below 1200, 1175-ish?
       await page.setViewport({ width: 1400, height: 800 });
-    });
+    }, 10000);
 
     const docs = [
       'callouts',

@@ -22,9 +22,12 @@ const CodeTabs = (props: Props) => {
       import('mermaid').then(module => {
         mermaid = module.default;
         mermaid.initialize({
+          startOnLoad: false,
           theme: theme === 'dark' ? 'dark' : 'default',
         });
-        mermaid.contentLoaded();
+        mermaid.run({
+          nodes: document.querySelectorAll('.mermaid-render'),
+        });
       });
     }
   }, [hasMermaid, theme]);
@@ -44,7 +47,7 @@ const CodeTabs = (props: Props) => {
   // render single Mermaid diagram
   if (hasMermaid) {
     const value = children.props.children.props.value;
-    return <pre className="mermaid mermaid_single">{value}</pre>;
+    return <pre className="mermaid-render mermaid_single">{value}</pre>;
   }
 
   return (
