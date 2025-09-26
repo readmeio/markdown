@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 11.1.2
+### 🛠 Fixes & Updates
+
+* react hydration mismatches ([#1198](https://github.com/readmeio/markdown/issues/1198)) ([895b427](https://github.com/readmeio/markdown/commit/895b42790492ea56e36291a913e7323a6c131fec))
+* upgrade mermaid to latest version ([#1199](https://github.com/readmeio/markdown/issues/1199)) ([d86abb1](https://github.com/readmeio/markdown/commit/d86abb193dccbaeeb5b03eaa8d46d0712c9ade5f))
+
 ## Version 11.1.1
 ### 🛠 Fixes & Updates
 
