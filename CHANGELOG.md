@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 11.2.0
+### ✨ New & Improved
+
+* trigger deploy ([8fc9e6e](https://github.com/readmeio/markdown/commit/8fc9e6e56e96348d464f21115493a1572e8c9836))
+
+### 🛠 Fixes & Updates
+
+* bump optional mermaid dep ([#1201](https://github.com/readmeio/markdown/issues/1201)) ([49fcd7d](https://github.com/readmeio/markdown/commit/49fcd7d8bd0aed8a938cf3d7879ce037cede13c2)), closes [#1199](https://github.com/readmeio/markdown/issues/1199)
+
 ## Version 11.1.2
 ### 🛠 Fixes & Updates
 
