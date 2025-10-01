@@ -1,7 +1,9 @@
 ---
-title: 'Tables'
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Tables
+category:
+  uri: syntax
+privacy:
+  view: public
 ---
 
 ## Syntax
