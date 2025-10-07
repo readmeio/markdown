@@ -38,7 +38,6 @@
     &[align='left'],
     &[alt~='align-left'] {
       @extend %img-align-left;
-
     }
     &.img-align-center,
     &[align='middle'], // hack to fix Firefox; see: https://stackoverflow.com/a/45901819/1341949
@@ -80,6 +79,22 @@
     display: block;
   }
 
+  .lightbox-close {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: inline-block;
+    font-size: inherit;
+    opacity: 1;
+    padding: 0;
+    position: fixed;
+    right: 1em;
+    text-rendering: auto;
+    top: 1em;
+    transform: scale(1.5);
+    transition: 0.3s 0.3s ease-in;
+  }
+
   .lightbox.open {
     align-items: center;
     background: rgba(white, 0.966);
@@ -97,27 +112,6 @@
     user-select: none;
     width: 100vw;
     z-index: 9999999;
-
-    // Close Button
-    &::after {
-      content: '\f00d';
-      cursor: pointer;
-      display: inline-block;
-      font-family: var(--fa-style-family, 'Font Awesome 6 Pro');
-      font-size: inherit;
-      opacity: 1;
-      position: fixed;
-      right: 1em;
-      text-rendering: auto;
-      top: 1em;
-      transform: scale(1.5);
-      transition: 0.3s 0.3s ease-in;
-    }
-
-    &:not(.open)::after {
-      opacity: 0;
-      transform: scale(0);
-    }
 
     .lightbox-inner {
       align-items: center;
