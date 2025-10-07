@@ -82,10 +82,11 @@
   .lightbox-close {
     background: none;
     border: 0;
+    color: var(--color-text-default);
     cursor: pointer;
     display: inline-block;
     font-size: inherit;
-    opacity: 1;
+    opacity: 0.5;
     padding: 0;
     position: fixed;
     right: 1em;
@@ -97,7 +98,7 @@
 
   .lightbox.open {
     align-items: center;
-    background: rgba(white, 0.966);
+    background: rgba(var(--color-bg-page-rgb), 0.966);
     display: flex;
     flex-flow: nowrap column;
     height: 100vh;
