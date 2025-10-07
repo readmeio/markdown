@@ -31,7 +31,7 @@
   --color-border-default: rgba(var(--black-rgb), 0.1);
   --color-border-muted: rgba(var(--black-rgb), 0.05);
   --color-skeleton: var(--gray90); // Used to define the background color of the <Skeleton /> component
-  --color-focus-ring: rgba($blue, 0.25); // Used to define the color of the focus ring (outline) on focusable elements
+  --color-focus-ring: #{rgba($blue, 0.25)}; // Used to define the color of the focus ring (outline) on focusable elements
 
   // Inputs
   --color-input-background: var(--white);
@@ -56,7 +56,7 @@
   --color-text-muted: var(--gray80);
   --color-text-minimum: var(--gray70);
   --color-text-minimum-hover: var(--gray80);
-  --color-text-minimum-icon: rgba($gray70, 0.6);
+  --color-text-minimum-icon: #{rgba($gray70, 0.6)};
   --color-border-default: rgba(white, 0.1);
   --color-border-muted: rgba(white, 0.05);
   --color-skeleton: var(--gray20);
