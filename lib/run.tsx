@@ -76,10 +76,10 @@ const run = (string: string, _opts: RunOpts = {}) => {
       </Contexts>
     ),
     toc,
-    Toc: props =>
+    Toc: (props: { heading?: string }) =>
       Toc ? (
-        <Components.TableOfContents>
-          <Toc {...props} />
+        <Components.TableOfContents heading={props.heading}>
+          <Toc />
         </Components.TableOfContents>
       ) : null,
     stylesheet,
