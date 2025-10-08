@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.5
+
+### 🛠 Fixes & Updates
+
+* port over `isHydrated` work to legacy `Code` component ([#1206](https://github.com/readmeio/markdown/issues/1206)) ([0cacd87](https://github.com/readmeio/markdown/commit/0cacd87db4df04c9414b731daa1de1c6d2df12fb))
+
 ## Version 6.88.4
 
 ### 🛠 Fixes & Updates
