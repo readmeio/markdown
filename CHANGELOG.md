@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 11.2.1
+### 🛠 Fixes & Updates
+
+* adds focus outline to code tabs ([#1204](https://github.com/readmeio/markdown/issues/1204)) ([ecf666f](https://github.com/readmeio/markdown/commit/ecf666fef74427bdcd9fc23f92c092d62d6c0d0e))
+* lightbox close ([#1203](https://github.com/readmeio/markdown/issues/1203)) ([7fef34d](https://github.com/readmeio/markdown/commit/7fef34df0058d86a523c449347e6079d99f6e3e7))
+* pipes in tables ([#1205](https://github.com/readmeio/markdown/issues/1205)) ([23b1595](https://github.com/readmeio/markdown/commit/23b159538634606978ca895a8bf6c65e40c09197))
+
 ## Version 11.2.0
 ### ✨ New & Improved
 
