@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+const React = require('react');
 
 /**
  * A hook that returns whether or not the component has been hydrated.
@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * Waiting to render until after hydration avoids React hydration mismatches.
  */
 export default function useHydrated() {
-  const [isHydrated, setIsHydrated] = useState(false);
-  useEffect(() => setIsHydrated(true), []);
+  const [isHydrated, setIsHydrated] = React.useState(false);
+  React.useEffect(() => setIsHydrated(true), []);
   return isHydrated;
 }
