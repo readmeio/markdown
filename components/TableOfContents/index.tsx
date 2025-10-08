@@ -1,6 +1,6 @@
 import React from 'react';
 
-function TableOfContents({ children }: React.PropsWithChildren) {
+function TableOfContents({ children, heading = 'Table of Contents' }: React.PropsWithChildren<{ heading?: string }>) {
   return (
     <nav aria-label="Table of contents" role="navigation">
       <ul className="toc-list">
@@ -8,7 +8,7 @@ function TableOfContents({ children }: React.PropsWithChildren) {
           {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
           <a className="tocHeader" href="#">
             <i className="icon icon-text-align-left"></i>
-            Table of Contents
+            {heading}
           </a>
         </li>
         <li className="toc-children">{children}</li>

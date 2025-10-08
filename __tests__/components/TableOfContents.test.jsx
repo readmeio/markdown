@@ -16,7 +16,7 @@ const glossaryTerms = [
   },
 ];
 
-describe.skip('Table of Contents', () => {
+describe('Table of Contents', () => {
   it('should have a header', () => {
     const { container } = render(
       <TableOfContents>
@@ -27,7 +27,7 @@ describe.skip('Table of Contents', () => {
     expect(container.querySelectorAll('li')[0]).toHaveTextContent('Table of Contents');
   });
 
-  it('generates TOC from headings', () => {
+  it.skip('generates TOC from headings', () => {
     const txt = '# Heading Zed\n\n# Heading One';
     const ast = reactProcessor().parse(txt);
     const toc = reactTOC(ast);
@@ -36,7 +36,7 @@ describe.skip('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
-  it('includes two heading levels', () => {
+  it.skip('includes two heading levels', () => {
     const txt = '# Heading Zed\n\n## Subheading One\n\n### Deep Heading Two';
     const ast = reactProcessor().parse(txt);
     const toc = reactTOC(ast);
@@ -46,7 +46,7 @@ describe.skip('Table of Contents', () => {
     expect(container.innerHTML).toMatchSnapshot();
   });
 
-  it('normalizes root depth level', () => {
+  it.skip('normalizes root depth level', () => {
     const txt = '##### Heading Zed\n\n###### Subheading Zed';
     const ast = reactProcessor().parse(txt);
     const toc = reactTOC(ast);
@@ -55,7 +55,7 @@ describe.skip('Table of Contents', () => {
     expect(container.querySelectorAll('li > a[href]:not([href="#"])')).toHaveLength(2);
   });
 
-  it('includes variables', () => {
+  it.skip('includes variables', () => {
     const txt = '# Heading <<test>>';
     const ast = reactProcessor().parse(txt);
     const toc = reactTOC(ast);
@@ -64,7 +64,7 @@ describe.skip('Table of Contents', () => {
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
   });
 
-  it('includes glossary items', () => {
+  it.skip('includes glossary items', () => {
     const txt = '# Heading <<glossary:demo>>';
     const ast = reactProcessor().parse(txt);
     const toc = reactTOC(ast);
@@ -73,5 +73,15 @@ describe.skip('Table of Contents', () => {
     expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(
       `Heading ${glossaryTerms[0].term}`,
     );
+  });
+
+  it('accepts custom heading', () => {
+    const { container } = render(
+      <TableOfContents heading="Custom Heading">
+        <h1>Heading 1</h1>
+      </TableOfContents>,
+    );
+
+    expect(container.querySelectorAll('li')[0]).toHaveTextContent('Custom Heading');
   });
 });
