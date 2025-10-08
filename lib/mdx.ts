@@ -10,6 +10,7 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
 import compilers from '../processor/compile';
+import { escapePipesInTables } from '../processor/plugin/pipes-in-tables';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
 
 interface Opts {
@@ -31,6 +32,7 @@ export const mdx = (
     .use(readmeToMdx)
     .use(tablesToJsx)
     .use(compatabilityTransfomer)
+    .use(escapePipesInTables)
     .use(compilers)
     .use(remarkStringify, opts);
 
