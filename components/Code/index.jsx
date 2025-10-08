@@ -1,6 +1,7 @@
 const copy = require('copy-to-clipboard');
 const PropTypes = require('prop-types');
 const React = require('react');
+
 const useHydrated = require('../../hooks/useHydrated');
 
 // Only load CodeMirror in the browser, for SSR
