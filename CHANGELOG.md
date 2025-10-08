@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.3.0
+### ✨ New & Improved
+
+* **TableOfContents:** add prop to control TOC heading label ([#1207](https://github.com/readmeio/markdown/issues/1207)) ([5f28c5e](https://github.com/readmeio/markdown/commit/5f28c5e060badf566536465ee680367fa089efd0))
+
 ## Version 11.2.1
 ### 🛠 Fixes & Updates
 
