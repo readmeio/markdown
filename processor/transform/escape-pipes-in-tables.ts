@@ -6,7 +6,8 @@ export const escapePipesInTables = () => tree => {
       if (!('value' in leaf)) return;
 
       if (leaf.value.match(/|/g)) {
-        leaf.value = leaf.value.replaceAll(/\|/g, '\\|');
+        // escape only unescaped pipes
+        leaf.value = leaf.value.replaceAll(/(?<!\\(\\\\)*)\|/g, '\\|');
       }
     });
 

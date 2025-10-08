@@ -360,7 +360,7 @@ describe('table compiler', () => {
       expect(mdx(tableWithInlineCodeWithEscapedPipe)).toMatchInlineSnapshot(`
         "|              |    |
         | :----------- | :- |
-        | \`foo \\\\| bar\` |    |
+        | \`foo \\| bar\` |    |
         "
       `);
     });
