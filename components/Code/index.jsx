@@ -54,10 +54,9 @@ function Code(props) {
     dark: theme === 'dark',
   };
 
-  const codeContent =
-    syntaxHighlighter && children && isHydrated ? 
-      syntaxHighlighter(children[0], language, codeOpts) 
-      : children?.[0] || '';
+  const codeContent = syntaxHighlighter && children && isHydrated 
+    ? syntaxHighlighter(children[0], language, codeOpts)
+    : children?.[0] || '';
 
   return (
     <React.Fragment>
