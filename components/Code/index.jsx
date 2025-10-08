@@ -55,7 +55,9 @@ function Code(props) {
   };
 
   const codeContent =
-    syntaxHighlighter && children && isHydrated ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
+    syntaxHighlighter && children && isHydrated ? 
+      syntaxHighlighter(children[0], language, codeOpts) 
+      : children?.[0] || '';
 
   return (
     <React.Fragment>
