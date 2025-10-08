@@ -49,6 +49,11 @@
       font: inherit;
       font-size: 0.75em;
       cursor: pointer;
+
+      &:focus-visible {
+        outline: 3px solid var(--color-focus-ring);
+        outline-offset: -3px;
+      }
     }
   }
 
