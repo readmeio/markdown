@@ -2,7 +2,12 @@ import { visit, EXIT } from 'unist-util-visit';
 
 import { mdast, mdx } from '../../index';
 
-import { jsxTableWithInlineCodeWithPipe, tableWithInlineCodeWithPipe, tableWithPipe } from './tables/fixtures';
+import {
+  jsxTableWithInlineCodeWithPipe,
+  tableWithInlineCodeWithPipe,
+  tableWithInlineCodeWithEscapedPipe,
+  tableWithPipe,
+} from './tables/fixtures';
 
 describe('table compiler', () => {
   it('writes to markdown syntax', () => {
@@ -347,6 +352,15 @@ describe('table compiler', () => {
         "|              |    |
         | :----------- | :- |
         | \`foo \\| bar\` |    |
+        "
+      `);
+    });
+
+    it('compiles tables with escaped pipes in inline code', () => {
+      expect(mdx(tableWithInlineCodeWithEscapedPipe)).toMatchInlineSnapshot(`
+        "|              |    |
+        | :----------- | :- |
+        | \`foo \\\\| bar\` |    |
         "
       `);
     });

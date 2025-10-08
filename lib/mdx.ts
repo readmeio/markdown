@@ -10,8 +10,8 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
 import compilers from '../processor/compile';
-import { escapePipesInTables } from '../processor/plugin/pipes-in-tables';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
+import { escapePipesInTables } from '../processor/transform/escape-pipes-in-tables';
 
 interface Opts {
   file?: VFile | string;
