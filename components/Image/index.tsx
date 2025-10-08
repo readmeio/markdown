@@ -84,6 +84,11 @@ const Image = (Props: ImageProps) => {
             <figcaption>{children || caption}</figcaption>
           </span>
         </span>
+        {lightbox && (
+          <button aria-label="Minimize image" className="lightbox-close" type="button">
+            <i aria-hidden="true" className="fa-solid fa-xmark" />
+          </button>
+        )}
       </figure>
     );
   }
@@ -108,6 +113,11 @@ const Image = (Props: ImageProps) => {
           width={width}
         />
       </span>
+      {lightbox && (
+        <button aria-label="Minimize image" className="lightbox-close" type="button">
+          <i aria-hidden="true" className="fa-solid fa-xmark" />
+        </button>
+      )}
     </span>
   );
 };

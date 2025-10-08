@@ -2,6 +2,13 @@ import { visit, EXIT } from 'unist-util-visit';
 
 import { mdast, mdx } from '../../index';
 
+import {
+  jsxTableWithInlineCodeWithPipe,
+  tableWithInlineCodeWithPipe,
+  tableWithInlineCodeWithEscapedPipe,
+  tableWithPipe,
+} from './tables/fixtures';
+
 describe('table compiler', () => {
   it('writes to markdown syntax', () => {
     const markdown = `
@@ -337,5 +344,66 @@ describe('table compiler', () => {
     expect(() => {
       mdx(ast);
     }).not.toThrow();
+  });
+
+  describe('escaping pipes', () => {
+    it('compiles tables with pipes in inline code', () => {
+      expect(mdx(tableWithInlineCodeWithPipe)).toMatchInlineSnapshot(`
+        "|              |    |
+        | :----------- | :- |
+        | \`foo \\| bar\` |    |
+        "
+      `);
+    });
+
+    it('compiles tables with escaped pipes in inline code', () => {
+      expect(mdx(tableWithInlineCodeWithEscapedPipe)).toMatchInlineSnapshot(`
+        "|              |    |
+        | :----------- | :- |
+        | \`foo \\| bar\` |    |
+        "
+      `);
+    });
+
+    it('compiles tables with pipes', () => {
+      expect(mdx(tableWithPipe)).toMatchInlineSnapshot(`
+        "|            |    |
+        | :--------- | :- |
+        | foo \\| bar |    |
+        "
+      `);
+    });
+
+    it('compiles jsx tables with pipes in inline code', () => {
+      expect(mdx(jsxTableWithInlineCodeWithPipe)).toMatchInlineSnapshot(`
+        "<Table align={["left","left"]}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>
+                force
+                jsx
+              </th>
+
+              <th style={{ textAlign: "left" }}>
+
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "left" }}>
+                \`foo | bar\`
+              </td>
+
+              <td style={{ textAlign: "left" }}>
+
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
   });
 });
