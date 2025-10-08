@@ -1,9 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`tableCellInlineCode > preserves escaped pipe chars inside text table cells 1`] = `undefined`;
-
-exports[`tableCellInlineCode > splits table cells when inline code contains "unescaped" pipe chars 1`] = `undefined`;
-
-exports[`tableCellInlineCode > unescapes escaped pipe chars inside inline code within table cells 1`] = `undefined`;
-
-exports[`tableCellInlineCode > unescapes escaped pipe chars inside inline code within table headers 1`] = `undefined`;

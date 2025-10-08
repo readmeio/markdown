@@ -11,6 +11,7 @@ import { unified } from 'unified';
 
 import compilers from '../processor/compile';
 import { compatabilityTransfomer, divTransformer, readmeToMdx, tablesToJsx } from '../processor/transform';
+import { escapePipesInTables } from '../processor/transform/escape-pipes-in-tables';
 
 interface Opts {
   file?: VFile | string;
@@ -31,6 +32,7 @@ export const mdx = (
     .use(readmeToMdx)
     .use(tablesToJsx)
     .use(compatabilityTransfomer)
+    .use(escapePipesInTables)
     .use(compilers)
     .use(remarkStringify, opts);
 

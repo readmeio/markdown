@@ -1,0 +1,161 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table parser > unescaping pipes > parses jsx tables with pipes in inline code 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        "left",
+        "left",
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "force
+jsx",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "inlineCode",
+                      "value": "foo | bar",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "tableau",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`table parser > unescaping pipes > parses tables with pipes 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        "left",
+        "left",
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "foo | bar",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`table parser > unescaping pipes > parses tables with pipes in inline code 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        "left",
+        "left",
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "inlineCode",
+                  "value": "foo | bar",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
