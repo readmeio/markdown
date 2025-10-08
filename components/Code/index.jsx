@@ -1,6 +1,7 @@
 const copy = require('copy-to-clipboard');
 const PropTypes = require('prop-types');
 const React = require('react');
+const useHydrated = require('../../hooks/useHydrated');
 
 // Only load CodeMirror in the browser, for SSR
 // apps. Necessary because of people like this:
@@ -39,9 +40,10 @@ CopyCode.propTypes = {
 
 function Code(props) {
   const { children, className, copyButtons, lang, meta, theme } = props;
+  const isHydrated = useHydrated();
 
   const langClass = className.search(/lang(?:uage)?-\w+/) >= 0 ? className.match(/\s?lang(?:uage)?-(\w+)/)[1] : '';
-  const language = canonicalLanguage(lang) || langClass;
+  const language = isHydrated ? canonicalLanguage(lang) || langClass : langClass;
 
   const codeRef = React.createRef();
 
@@ -52,7 +54,7 @@ function Code(props) {
   };
 
   const codeContent =
-    syntaxHighlighter && children ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
+    syntaxHighlighter && children && isHydrated ? syntaxHighlighter(children[0], language, codeOpts) : children?.[0] || '';
 
   return (
     <React.Fragment>
