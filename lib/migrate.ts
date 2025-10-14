@@ -14,6 +14,7 @@ const migrate = (doc: string, { rdmd }): string => {
       // 'a' to '&#x61;' as a means of escaping it. I think this helps with
       // parsing weird cases.
       .replaceAll(/&#x61;/g, 'a')
+      .replaceAll(/<br(?!\s*\/)\s*>/g, '<br />')
   );
 };
 
