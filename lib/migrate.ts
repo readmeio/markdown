@@ -15,6 +15,7 @@ const migrate = (doc: string, { rdmd }): string => {
       // parsing weird cases.
       .replaceAll(/&#x61;/g, 'a')
       .replaceAll(/<br(?!\s*\/)\s*>/g, '<br />')
+      .replaceAll(/<<([^>]+)>>/g, '{user.$1}')
   );
 };
 
