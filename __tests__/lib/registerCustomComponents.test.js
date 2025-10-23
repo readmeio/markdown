@@ -16,6 +16,9 @@ const customComponents = {
   },
 };
 
+customComponents.a.propTypes = { attrToConcatToSafelist: true };
+customComponents.twoWords.propTypes = { attrToBeSafelisted: true };
+
 describe('Custom Component Registrar', () => {
   let registered;
   let sanitize;

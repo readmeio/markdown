@@ -8,8 +8,7 @@ function Heading({ align = '', id = '', level = 2, tag, showAnchorIcons = true, 
     align,
   };
 
-  // eslint-disable-next-line no-param-reassign
-  children = [
+  const childrenWithAnchor = [
     <div key={`heading-anchor-${id}`} className="heading-anchor anchor waypoint" id={id} />,
     <div key={`heading-text-${id}`} className="heading-text">
       {children}
@@ -18,7 +17,7 @@ function Heading({ align = '', id = '', level = 2, tag, showAnchorIcons = true, 
 
   if (showAnchorIcons) {
     const headingText = children[1];
-    children.push(
+    childrenWithAnchor.push(
       // eslint-disable-next-line jsx-a11y/anchor-has-content
       <a
         key={`heading-anchor-icon-${id}`}
@@ -29,7 +28,7 @@ function Heading({ align = '', id = '', level = 2, tag, showAnchorIcons = true, 
     );
   }
 
-  return React.createElement(tag, attrs, children);
+  return React.createElement(tag, attrs, childrenWithAnchor);
 }
 
 function CreateHeading(level, { showAnchorIcons }) {
