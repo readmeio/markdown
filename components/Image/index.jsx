@@ -1,6 +1,4 @@
 /* eslint-disable no-param-reassign, react/jsx-props-no-spreading, no-fallthrough */
-
-const PropTypes = require('prop-types');
 const React = require('react');
 
 class Image extends React.Component {
@@ -70,18 +68,6 @@ class Image extends React.Component {
     );
   }
 }
-
-Image.propTypes = {
-  align: PropTypes.string,
-  alt: PropTypes.string,
-  caption: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  className: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
-  height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  lazy: PropTypes.bool,
-  src: PropTypes.string.isRequired,
-  title: PropTypes.string,
-  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-};
 
 Image.defaultProps = {
   align: '',

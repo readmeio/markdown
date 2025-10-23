@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
 const BaseUrlContext = require('../contexts/BaseUrl');
@@ -48,8 +47,7 @@ function docLink(href) {
   };
 }
 
-function Anchor(props) {
-  const { baseUrl, children, href, target, title, ...attrs } = props;
+function Anchor({ baseUrl = '/', href = '', target = '', title = '', children, ...attrs }) {
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <a {...attrs} href={getHref(href, baseUrl)} target={target} title={title} {...docLink(href)}>
@@ -57,22 +55,6 @@ function Anchor(props) {
     </a>
   );
 }
-
-Anchor.propTypes = {
-  baseUrl: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  download: PropTypes.string,
-  href: PropTypes.string,
-  target: PropTypes.string,
-  title: PropTypes.string,
-};
-
-Anchor.defaultProps = {
-  baseUrl: '/',
-  href: '',
-  target: '',
-  title: '',
-};
 
 const AnchorWithContext = props => (
   <BaseUrlContext.Consumer>{baseUrl => <Anchor baseUrl={baseUrl} {...props} />}</BaseUrlContext.Consumer>

@@ -1,5 +1,4 @@
 const Tooltip = require('@tippyjs/react').default;
-const PropTypes = require('prop-types');
 const React = require('react');
 
 const GlossaryContext = require('../../contexts/GlossaryTerms');
@@ -83,13 +82,6 @@ function GlossaryItem({ term, terms }) {
     </Tooltip>
   );
 }
-
-GlossaryItem.propTypes = {
-  term: PropTypes.string.isRequired,
-  terms: PropTypes.arrayOf(
-    PropTypes.shape({ definition: PropTypes.string.isRequired, term: PropTypes.string.isRequired }),
-  ).isRequired,
-};
 
 // eslint-disable-next-line react/display-name
 module.exports = props => (

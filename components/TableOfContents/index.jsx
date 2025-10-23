@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
 function TableOfContents({ children }) {
@@ -17,9 +16,5 @@ function TableOfContents({ children }) {
     </nav>
   );
 }
-
-TableOfContents.propTypes = {
-  children: PropTypes.element,
-};
 
 module.exports = TableOfContents;

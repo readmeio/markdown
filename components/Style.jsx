@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
 const Style = ({ children, safeMode }) => {
@@ -9,11 +8,6 @@ const Style = ({ children, safeMode }) => {
   ) : (
     <style>{children}</style>
   );
-};
-
-Style.propTypes = {
-  children: PropTypes.node,
-  safeMode: PropTypes.bool,
 };
 
 const CreateStyle =

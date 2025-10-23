@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 
 import markdown, { reactProcessor, reactTOC, utils } from '../index';
@@ -78,15 +77,6 @@ function DemoContent({ ci, children, fixture, name, onChange, opts }) {
   );
 }
 
-DemoContent.propTypes = {
-  children: PropTypes.node.isRequired,
-  ci: PropTypes.bool,
-  fixture: PropTypes.string,
-  name: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  opts: PropTypes.object,
-};
-
 function Demo({ opts }) {
   return (
     <GlossaryContext.Provider value={terms}>
@@ -117,9 +107,5 @@ function Demo({ opts }) {
     </GlossaryContext.Provider>
   );
 }
-
-Demo.propTypes = {
-  opts: PropTypes.object,
-};
 
 export default Demo;

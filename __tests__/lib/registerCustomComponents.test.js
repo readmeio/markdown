@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
 const registerCustomComponents = require('../../lib/registerCustomComponents');
@@ -16,9 +15,6 @@ const customComponents = {
     return <span>I should be registered as “two-words”</span>;
   },
 };
-
-customComponents.a.propTypes = { attrToConcatToSafelist: PropTypes.any };
-customComponents.twoWords.propTypes = { attrToBeSafelisted: PropTypes.any };
 
 describe('Custom Component Registrar', () => {
   let registered;

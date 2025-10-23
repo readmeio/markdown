@@ -170,7 +170,6 @@ export function plain(text, opts = {}, components = {}) {
 /**
  *  return a React VDOM component tree
  */
-// eslint-disable-next-line react/prop-types
 const PinWrap = ({ children }) => <div className="pin">{children}</div>; // @todo: move this to it's own component
 
 export function reactProcessor(opts = {}, components = {}) {

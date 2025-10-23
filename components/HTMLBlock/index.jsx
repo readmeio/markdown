@@ -1,7 +1,6 @@
 /* eslint-disable no-eval
  */
 const escape = require('lodash.escape');
-const PropTypes = require('prop-types');
 const React = require('react');
 
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
@@ -45,12 +44,6 @@ class HTMLBlock extends React.PureComponent {
 HTMLBlock.defaultProps = {
   runScripts: false,
   safeMode: false,
-};
-
-HTMLBlock.propTypes = {
-  html: PropTypes.string,
-  runScripts: PropTypes.any,
-  safeMode: PropTypes.bool,
 };
 
 const CreateHtmlBlock =
