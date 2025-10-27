@@ -1,12 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading, jsx-a11y/iframe-has-title */
-const propTypes = require('prop-types');
 const React = require('react');
 
 const Favicon = ({ src, alt = 'favicon', ...attr }) => <img {...attr} alt={alt} height="14" src={src} width="14" />;
-Favicon.propTypes = {
-  alt: propTypes.string,
-  src: propTypes.string,
-};
 
 class Embed extends React.Component {
   render() {
@@ -62,19 +57,6 @@ class Embed extends React.Component {
   }
 }
 
-Embed.propTypes = {
-  children: propTypes.oneOfType([propTypes.string, propTypes.array, propTypes.shape({}), propTypes.element]),
-  favicon: propTypes.string,
-  height: propTypes.string,
-  html: propTypes.string,
-  iframe: propTypes.any,
-  image: propTypes.string,
-  lazy: propTypes.bool,
-  provider: propTypes.string,
-  title: propTypes.string,
-  url: propTypes.oneOfType([propTypes.string, propTypes.shape({})]),
-  width: propTypes.string,
-};
 Embed.defaultProps = {
   height: '300px',
   width: '100%',

@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
 function Table(props) {
@@ -11,9 +10,5 @@ function Table(props) {
     </div>
   );
 }
-
-Table.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.node).isRequired,
-};
 
 module.exports = Table;

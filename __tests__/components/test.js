@@ -3,7 +3,6 @@ const { cleanup, fireEvent, render } = require('@testing-library/react');
 const React = require('react');
 
 const markdown = require('../../index');
-const { silenceConsole } = require('../helpers');
 
 describe('Data Replacements', () => {
   beforeAll(() => {
@@ -134,13 +133,9 @@ describe('Components', () => {
       rdmd: '[](https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html "@embed")',
     };
 
-    silenceConsole()(error => {
-      Object.values(fixtures).map(fx => {
-        const { container } = render(markdown.react(fx));
-        return expect(container.innerHTML).toMatchSnapshot();
-      });
-
-      expect(error).toHaveBeenCalledTimes(1);
+    Object.values(fixtures).map(fx => {
+      const { container } = render(markdown.react(fx));
+      return expect(container.innerHTML).toMatchSnapshot();
     });
   });
 

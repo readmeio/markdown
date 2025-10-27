@@ -1,5 +1,4 @@
 const { uppercase } = require('@readme/syntax-highlighter');
-const PropTypes = require('prop-types');
 const React = require('react');
 const { useState } = require('react');
 
@@ -44,11 +43,6 @@ const CodeTabs = props => {
       </div>
     </div>
   );
-};
-
-CodeTabs.propTypes = {
-  children: PropTypes.arrayOf(PropTypes.any).isRequired,
-  theme: PropTypes.string,
 };
 
 function CreateCodeTabs({ theme }) {

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import syntaxFixtures from './docs';
@@ -60,12 +59,6 @@ const Fixtures = ({ lazyImages, render, safeMode, selected, getRoute, setQuery }
   );
 
   return render({ children: fields, name, fixture, onChange, options });
-};
-
-Fixtures.propTypes = {
-  getRoute: PropTypes.func.isRequired,
-  render: PropTypes.func.isRequired,
-  selected: PropTypes.string,
 };
 
 export default Fixtures;

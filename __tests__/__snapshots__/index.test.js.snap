@@ -296,10 +296,7 @@ exports[`export multiple Markdown renderers renders custom React components 1`] 
   
 
   <Callout
-    attributes={null}
-    calloutStyle="info"
     icon="❗️"
-    node={null}
     theme="error"
     title="UhOh"
     value="Lorem ipsum dolor sit amet consectetur adipisicing elit."

@@ -39,7 +39,6 @@
     "parse-entities": "^4.0.1",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
-    "prop-types": "^15.8.1",
     "rehype-raw": "^5.1.0",
     "rehype-react": "^6.2.1",
     "rehype-sanitize": "^4.0.0",

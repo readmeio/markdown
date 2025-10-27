@@ -1,56 +1,39 @@
-const PropTypes = require('prop-types');
 const React = require('react');
 
-function Heading({ tag, showAnchorIcons, ...props }) {
-  if (!props.children) return '';
+function Heading({ align = '', id = '', level = 2, tag, showAnchorIcons = true, children }) {
+  if (!children) return '';
 
   const attrs = {
-    className: `heading heading-${props.level} header-scroll`,
-    align: props.align,
+    className: `heading heading-${level} header-scroll`,
+    align,
   };
 
-  const children = [
-    <div key={`heading-anchor-${props.id}`} className="heading-anchor anchor waypoint" id={props.id} />,
-    <div key={`heading-text-${props.id}`} className="heading-text">
-      {props.children}
+  const childrenWithAnchor = [
+    <div key={`heading-anchor-${id}`} className="heading-anchor anchor waypoint" id={id} />,
+    <div key={`heading-text-${id}`} className="heading-text">
+      {children}
     </div>,
   ];
 
   if (showAnchorIcons) {
-    const headingText = props.children[1];
-    children.push(
+    const headingText = children[1];
+    childrenWithAnchor.push(
       // eslint-disable-next-line jsx-a11y/anchor-has-content
       <a
-        key={`heading-anchor-icon-${props.id}`}
+        key={`heading-anchor-icon-${id}`}
         aria-label={`Skip link to ${headingText}`}
         className="heading-anchor-icon fa fa-anchor"
-        href={`#${props.id}`}
+        href={`#${id}`}
       />,
     );
   }
 
-  return React.createElement(tag, attrs, children);
+  return React.createElement(tag, attrs, childrenWithAnchor);
 }
 
 function CreateHeading(level, { showAnchorIcons }) {
   // eslint-disable-next-line react/display-name
   return props => <Heading {...props} level={level} showAnchorIcons={showAnchorIcons} tag={`h${level}`} />;
 }
-
-Heading.propTypes = {
-  align: PropTypes.oneOf(['left', 'center', 'right', '']),
-  children: PropTypes.array.isRequired,
-  id: PropTypes.string.isRequired,
-  level: PropTypes.number,
-  showAnchorIcons: PropTypes.bool,
-  tag: PropTypes.string.isRequired,
-};
-
-Heading.defaultProps = {
-  align: '',
-  id: '',
-  level: 2,
-  showAnchorIcons: true,
-};
 
 module.exports = CreateHeading;
