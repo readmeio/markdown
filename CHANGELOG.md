@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 6.88.6
+
+### 🛠 Fixes & Updates
+
+* remove prop types ([#1213](https://github.com/readmeio/markdown/issues/1213)) ([78952b5](https://github.com/readmeio/markdown/commit/78952b5d120acb50c426fd8d8e110f0275691422))
+
 ## Version 6.88.5
 
 ### 🛠 Fixes & Updates
