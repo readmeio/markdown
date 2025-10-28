@@ -32,7 +32,7 @@ const compatibilityTransfomer = (): Transform => tree => {
 
   visit(tree, 'html-block', (node: HTMLBlock, index: number, parent: Parent) => {
     const { html, runScripts } = node.data?.hProperties || {};
-    const template = JSON.stringify(html);
+    const string = JSON.stringify(html);
 
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
@@ -41,7 +41,7 @@ const compatibilityTransfomer = (): Transform => tree => {
       children: [
         {
           type: 'mdxFlowExpression',
-          value: template,
+          value: string,
           data: {
             estree: {
               type: 'Program',
@@ -49,18 +49,9 @@ const compatibilityTransfomer = (): Transform => tree => {
                 {
                   type: 'ExpressionStatement',
                   expression: {
-                    type: 'TemplateLiteral',
-                    expressions: [],
-                    quasis: [
-                      {
-                        type: 'TemplateElement',
-                        value: {
-                          raw: template,
-                          cooked: template,
-                        },
-                        tail: true,
-                      },
-                    ],
+                    type: 'Literal',
+                    value: html,
+                    raw: string,
                   },
                 },
               ],

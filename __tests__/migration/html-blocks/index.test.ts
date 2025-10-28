@@ -39,7 +39,7 @@ describe('migrating html blocks', () => {
     `);
   });
 
-  it('does not unescape backslashes', async () => {
+  it.only('does not unescape backslashes', async () => {
     const md = fs.readFileSync(`${__dirname}/fixtures/html-block-escapes/in.md`, 'utf-8');
 
     await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-escapes/out.mdx`);
