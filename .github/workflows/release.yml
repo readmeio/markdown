@@ -13,12 +13,12 @@ jobs:
       # Setup the git repo & Node environemnt.
       #
       - name: Checkout branch (${{ github.ref }})
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false # install breaks with persistant creds!
 
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
