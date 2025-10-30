@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 11.5.0
+### ✨ New & Improved
+
+* add MCPIntro component ([#1219](https://github.com/readmeio/markdown/issues/1219)) ([352fb99](https://github.com/readmeio/markdown/commit/352fb9954a886347de21d63eb654292ac2c70ab0))
+* add support for converting recipe ([#1221](https://github.com/readmeio/markdown/issues/1221)) ([16db568](https://github.com/readmeio/markdown/commit/16db56866600e357116fb27f249f4eff755303d7))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump @mdx-js/mdx from 3.1.0 to 3.1.1 ([#1186](https://github.com/readmeio/markdown/issues/1186)) ([36ba199](https://github.com/readmeio/markdown/commit/36ba19997160c0ee25cf3e66a6b8ecca1952dc37)), closes [mdx-js/mdx#2593](https://github.com/mdx-js/mdx/issues/2593) [mdx-js/mdx#2595](https://github.com/mdx-js/mdx/issues/2595) [mdx-js/mdx#2629](https://github.com/mdx-js/mdx/issues/2629) [mdx-js/mdx#2622](https://github.com/mdx-js/mdx/issues/2622) [mdx-js/mdx#2605](https://github.com/mdx-js/mdx/issues/2605) [mdx-js/mdx#2604](https://github.com/mdx-js/mdx/issues/2604)
+* **deps:** bump estree-util-value-to-estree from 3.4.0 to 3.5.0 ([#1214](https://github.com/readmeio/markdown/issues/1214)) ([c953372](https://github.com/readmeio/markdown/commit/c9533722d3fdea0d17134c8f0f3c027922f851f6)), closes [remcohaszing/estree-util-value-to-estree#6](https://github.com/remcohaszing/estree-util-value-to-estree/issues/6) [#6](https://github.com/readmeio/markdown/issues/6)
+* **deps:** bump postcss from 8.5.3 to 8.5.6 ([#1128](https://github.com/readmeio/markdown/issues/1128)) ([2731484](https://github.com/readmeio/markdown/commit/2731484b18ebe24f01a2da5eb99a52ed201afdc5)), closes [#2052](https://github.com/readmeio/markdown/issues/2052)
+* **deps:** bump remark-mdx from 3.1.0 to 3.1.1 ([#1185](https://github.com/readmeio/markdown/issues/1185)) ([bc7f79a](https://github.com/readmeio/markdown/commit/bc7f79a4afdd5dbf5de659240e132aad23cb1eb0)), closes [mdx-js/mdx#2593](https://github.com/mdx-js/mdx/issues/2593) [mdx-js/mdx#2595](https://github.com/mdx-js/mdx/issues/2595) [mdx-js/mdx#2629](https://github.com/mdx-js/mdx/issues/2629) [mdx-js/mdx#2622](https://github.com/mdx-js/mdx/issues/2622) [mdx-js/mdx#2605](https://github.com/mdx-js/mdx/issues/2605) [mdx-js/mdx#2604](https://github.com/mdx-js/mdx/issues/2604)
+* **deps:** dependabot updates ([#1217](https://github.com/readmeio/markdown/issues/1217)) ([b8b0b78](https://github.com/readmeio/markdown/commit/b8b0b7835a7b07af94435f3f7460d633cee5705c))
+
 ## Version 11.4.0
 ### ✨ New & Improved
 
