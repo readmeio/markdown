@@ -13,6 +13,7 @@ import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';
 import tablesToJsx from './tables-to-jsx';
 import tailwindTransformer from './tailwind';
+import validateMCPIntro from './validate-mcpintro';
 import variablesTransformer from './variables';
 
 export {
@@ -26,6 +27,7 @@ export {
   tablesToJsx,
   tailwindTransformer,
   handleMissingComponents,
+  validateMCPIntro,
   variablesTransformer,
 };
 
