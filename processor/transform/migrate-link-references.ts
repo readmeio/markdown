@@ -1,13 +1,12 @@
 import type { LinkReference, Parents, Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import * as rdmd from '@readme/markdown-legacy';
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
-const migrateLinkReferences: Plugin<[], Root> = () => {
+const migrateLinkReferences: Plugin<[{ rdmd: { md: (node: LinkReference) => string } }], Root> = ({ rdmd }) => {
+
   return (tree: Root) => {
     visit(tree, 'linkReference', (node: LinkReference, index: number, parent: Parents) => {
       if (!('children' in parent)) return;

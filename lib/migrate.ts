@@ -9,7 +9,7 @@ const migrate = (doc: string, { rdmd }): string => {
   const ast = mdastV6(doc, { rdmd });
 
   return (
-    mdx(ast, { remarkTransformers: [migrateCallouts, migrateLinkReferences, migrateHtmlTags], file: doc })
+    mdx(ast, { remarkTransformers: [migrateCallouts, [migrateLinkReferences, { rdmd }], migrateHtmlTags], file: doc })
       .replaceAll(/&#x20;/g, ' ')
       // @note: I'm not sure what's happening, but I think mdx is converting an
       // 'a' to '&#x61;' as a means of escaping it. I think this helps with
