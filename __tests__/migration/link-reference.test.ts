@@ -39,7 +39,7 @@ describe('mdx migration of link references', () => {
     `);
   });
 
-  describe('does not corrupt square bracket content', () => {
+  describe('does not corrupt normal square bracket content', () => {
     it('on regular text', () => {
       const md = `
 hello there [something]

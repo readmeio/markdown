@@ -1,6 +1,8 @@
 import type { LinkReference, Parents, Root } from 'mdast';
 import type { Plugin } from 'unified';
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import * as rdmd from '@readme/markdown-legacy';
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
@@ -12,7 +14,7 @@ const migrateLinkReferences: Plugin<[], Root> = () => {
 
       parent.children.splice(index, 1, {
         type: NodeTypes.plain,
-        value: `[${node.label}]`,
+        value: rdmd.md(node).trim(),
       });
     });
   };
