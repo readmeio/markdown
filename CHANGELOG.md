@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.5.1
+### 🛠 Fixes & Updates
+
+* modify migrate link reference to not accidentally replace [] values ([#1220](https://github.com/readmeio/markdown/issues/1220)) ([d180161](https://github.com/readmeio/markdown/commit/d180161b15d0f2cde4e428b1e3bfb675a58cf34f))
+
 ## Version 11.5.0
 ### ✨ New & Improved
 
