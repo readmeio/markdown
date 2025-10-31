@@ -10,7 +10,12 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
-import { defaultTransforms, tailwindTransformer, handleMissingComponents } from '../processor/transform';
+import {
+  defaultTransforms,
+  tailwindTransformer,
+  handleMissingComponents,
+  validateMCPIntro,
+} from '../processor/transform';
 
 import { rehypePlugins as defaultRehypePlugins } from './ast-processor';
 
@@ -40,6 +45,7 @@ const compile = (
       handleMissingComponents,
       { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
     ],
+    [validateMCPIntro],
   ];
 
   if (useTailwind) {
