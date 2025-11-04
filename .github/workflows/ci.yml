@@ -46,7 +46,7 @@ jobs:
         run: make ci
 
       - name: Upload snapshot diffs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ failure() }}
         with:
           name: snapshots-diffs
@@ -58,7 +58,7 @@ jobs:
         run: make updateSnapshot
 
       - name: Upload snapshots
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ failure() }}
         with:
           name: image-snapshots
