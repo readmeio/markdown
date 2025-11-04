@@ -1,6 +1,21 @@
 import { migrate } from '../helpers';
 
 describe('mdx migration of tables', () => {
+  it('compiles tables with empty cells', () => {
+    const md = `
+| Name | Date |
+| ---- | ---- |
+| test |      |
+`;
+    const mdx = migrate(md);
+    expect(mdx).toMatchInlineSnapshot(`
+      "| Name | Date |
+      | ---- | ---- |
+      | test |      |
+      "
+    `);
+  });
+
   it('compiles tables with newlines and inline code', () => {
     const md = `
 [block:parameters]
