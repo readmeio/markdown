@@ -12,7 +12,7 @@ const utils = {
   calloutIcons: {},
 };
 
-export { compile, exports, hast, run, mdast, mdastV6, mdx, migrate, plain, remarkPlugins, tags } from './lib';
+export { compile, exports, hast, run, mdast, mdastV6, mdx, migrate, plain, remarkPlugins, stripComments, tags } from './lib';
 export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
 export { tailwindCompiler } from './utils/tailwind-compiler';
