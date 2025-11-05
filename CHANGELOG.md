@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.6.0
+### ✨ New & Improved
+
+* add strip comments lib function ([#1225](https://github.com/readmeio/markdown/issues/1225)) ([dab9270](https://github.com/readmeio/markdown/commit/dab9270c72a916e0ce1c8c7ebb5c55cd10f34d63)), closes [/github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts#L18-L63](https://github.com/readmeio//github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts/issues/L18-L63)
+
 ## Version 11.5.2
 ### 🛠 Fixes & Updates
 
