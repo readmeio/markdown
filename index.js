@@ -32,6 +32,7 @@ const toPlainText = require('./processor/plugin/plain-text');
 const sectionAnchorId = require('./processor/plugin/section-anchor-id');
 const tableFlattening = require('./processor/plugin/table-flattening');
 const { remarkTransformers, rehypeTransformers } = require('./processor/transform');
+const stripCommentsTransformer = require('./processor/transform/strip-comments');
 const createSchema = require('./sanitize.schema');
 
 const {
@@ -107,7 +108,6 @@ export function processor(userOpts = {}) {
   const [, parsedOpts] = setup('', userOpts);
   const { sanitize } = parsedOpts;
   const [reusableContent, opts] = parseReusableContent(parsedOpts);
-
   return unified()
     .use(remarkParse, opts.markdownOptions)
     .use(remarkFrontmatter, ['yaml', 'toml'])
@@ -301,6 +301,16 @@ export function md(treeOrString, opts = {}) {
   const tree = typeof treeOrString === 'string' ? mdast(treeOrString, opts) : treeOrString;
 
   return processor(opts).use(remarkStringify, opts.markdownOptions).use(customCompilers).stringify(tree);
+}
+
+/**
+ * Strip HTML comments from markdown text
+ */
+export function stripComments(text, opts = {}) {
+  if (!text) return null;
+  [text, opts] = setup(text, opts);
+
+  return processor(opts).use(stripCommentsTransformer).use(remarkStringify).processSync(text).toString();
 }
 
 const ReadMeMarkdown = (text, opts = {}) => react(text, opts);
