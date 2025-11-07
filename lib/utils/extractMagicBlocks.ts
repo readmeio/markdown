@@ -1,6 +1,9 @@
 interface BlockHit { raw: string; token: string; }
 
-const MAGIC_BLOCK_REGEX = /\[block:([^\]]*)\]([^]+?)\[\/block\]/g;
+// The content matching in this regex captures everything between [block:TYPE] and [/block], including new lines --
+// ((?:(?!\[\/block\])[\s\S])*) prevents greedy matching to ensure it stops at the first [/block] it encounters
+// preventing vulnerability to polynomial backtracking issues.
+const MAGIC_BLOCK_REGEX = /\[block:([^\]]*)\]((?:(?!\[\/block\])[\s\S])*)\[\/block\]/g;
 
 /**
  * Extract legacy magic block syntax from a markdown string.
