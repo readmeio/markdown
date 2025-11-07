@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 11.6.0
+### ✨ New & Improved
+
+* add strip comments lib function ([#1225](https://github.com/readmeio/markdown/issues/1225)) ([dab9270](https://github.com/readmeio/markdown/commit/dab9270c72a916e0ce1c8c7ebb5c55cd10f34d63)), closes [/github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts#L18-L63](https://github.com/readmeio//github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts/issues/L18-L63)
+
+## Version 11.5.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/upload-artifact from 4 to 5 ([#1224](https://github.com/readmeio/markdown/issues/1224)) ([698390a](https://github.com/readmeio/markdown/commit/698390ac2d65cd38ccb47ec255fb27538a6a3a67)), closes [actions/upload-artifact#681](https://github.com/actions/upload-artifact/issues/681) [actions/upload-artifact#712](https://github.com/actions/upload-artifact/issues/712) [actions/upload-artifact#727](https://github.com/actions/upload-artifact/issues/727) [actions/upload-artifact#725](https://github.com/actions/upload-artifact/issues/725) [actions/upload-artifact#734](https://github.com/actions/upload-artifact/issues/734) [actions/upload-artifact#681](https://github.com/actions/upload-artifact/issues/681) [actions/upload-artifact#712](https://github.com/actions/upload-artifact/issues/712) [actions/upload-artifact#727](https://github.com/actions/upload-artifact/issues/727) [actions/upload-artifact#725](https://github.com/actions/upload-artifact/issues/725) [actions/upload-artifact#685](https://github.com/actions/upload-artifact/issues/685) [actions/upload-artifact#685](https://github.com/actions/upload-artifact/issues/685) [actions/upload-artifact#673](https://github.com/actions/upload-artifact/issues/673) [actions/upload-artifact#662](https://github.com/actions/upload-artifact/issues/662) [actions/upload-artifact#578](https://github.com/actions/upload-artifact/issues/578) [actions/upload-artifact#656](https://github.com/actions/upload-artifact/issues/656) [actions/upload-artifact#578](https://github.com/actions/upload-artifact/issues/578) [#734](https://github.com/readmeio/markdown/issues/734) [#725](https://github.com/readmeio/markdown/issues/725) [#727](https://github.com/readmeio/markdown/issues/727) [#712](https://github.com/readmeio/markdown/issues/712)
+* migration erroring when there is empty cell in table ([#1223](https://github.com/readmeio/markdown/issues/1223)) ([227cbb4](https://github.com/readmeio/markdown/commit/227cbb4d6cbc859a4012d0cc46f063ed760a7e0a))
+
 ## Version 11.5.1
 ### 🛠 Fixes & Updates
 
