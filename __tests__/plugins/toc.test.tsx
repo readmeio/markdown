@@ -1,15 +1,9 @@
 import type { IndexableElements } from '../../types';
-import type { FC } from 'react';
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { compile, run } from '../../index';
-
-const renderToc = (Toc?: FC | null) => {
-  if (!Toc) throw new Error('Expected Toc to be defined');
-  render(React.createElement(Toc));
-};
 
 describe('toc transformer', () => {
   it('parses out a toc with max depth of 2', () => {
@@ -24,7 +18,7 @@ describe('toc transformer', () => {
 `;
     const { Toc } = run(compile(md));
 
-    renderToc(Toc);
+    render(<Toc />);
 
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.findByText('Subheading')).toBeDefined();
@@ -49,7 +43,7 @@ describe('toc transformer', () => {
 
     const { Toc } = run(compile(md, { components }), { components: executed });
 
-    renderToc(Toc);
+    render(<Toc />);
 
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.findByText('Common Heading')).toBeDefined();
@@ -62,7 +56,7 @@ describe('toc transformer', () => {
 `;
     const { Toc } = run(compile(md));
 
-    renderToc(Toc);
+    render(<Toc />);
 
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.queryByText('[', { exact: false })).toBeNull();
@@ -118,7 +112,7 @@ export const toc = [
 `;
     const { Toc } = run(compile(md));
 
-    renderToc(Toc);
+    render(<Toc />);
 
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.queryByText('Callout')).toBeNull();
@@ -152,7 +146,7 @@ export const toc = [
 
     const { Toc } = run(compile(md, { components }), { components: executed });
 
-    renderToc(Toc);
+    render(<Toc />);
 
     expect(screen.findByText('Parent Heading')).toBeDefined();
     expect(screen.findByText('Child Heading')).toBeDefined();
