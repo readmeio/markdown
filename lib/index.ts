@@ -11,3 +11,4 @@ export { default as migrate } from './migrate';
 export { default as plain } from './plain';
 export { default as run } from './run';
 export { default as tags } from './tags';
+export { default as stripComments } from './stripComments';
