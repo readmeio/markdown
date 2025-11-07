@@ -11,7 +11,10 @@ export function extractMagicBlocks(markdown: string) {
   let index = 0;
 
   const replaced = markdown.replace(MAGIC_BLOCK_REGEX, (match) => {
-    const token = `\`__MAGIC_BLOCK_${index}__\``;
+    // Use backticks so it becomes a code span, preventing remarkParse from 
+    // parsing special characters in the token as markdown syntax
+    const token = `\`__MAGIC_BLOCK_${index}__\``; 
+
     blocks.push({ token, raw: match });
     index += 1;
     return token;
