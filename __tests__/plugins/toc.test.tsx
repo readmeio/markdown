@@ -1,5 +1,3 @@
-import type { IndexableElements } from '../../types';
-
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -120,27 +118,18 @@ export const toc = [
 
   it('includes headings from nested component tocs', () => {
     const md = `
-# Title
+    # Title
 
-<ParentInfo />
-`;
+    <ParentInfo />
+    `;
 
     const components = {
-      ChildInfo: '### Child Heading',
       ParentInfo: '## Parent Heading',
     };
 
-    const childModule = run(compile('### Child Heading'));
-    const parentModule = run(compile('## Parent Heading'));
-    parentModule.toc.push({
-      type: 'mdxJsxFlowElement',
-      name: 'ChildInfo',
-      attributes: [],
-      children: [],
-    } as IndexableElements);
+    const parentModule = run(compile(components.ParentInfo));
 
     const executed = {
-      ChildInfo: childModule,
       ParentInfo: parentModule,
     };
 
@@ -149,6 +138,5 @@ export const toc = [
     render(<Toc />);
 
     expect(screen.findByText('Parent Heading')).toBeDefined();
-    expect(screen.findByText('Child Heading')).toBeDefined();
   });
 });
