@@ -22,7 +22,7 @@ const readmeToMdx = (): Transform => tree => {
 
   visit(tree, 'rdme-callout', (node, index, parent) => {
     const isEmpty = node.data.hProperties?.empty;
-    const isH3 = node.children[0].type === 'heading' && node.children[0].depth === 3;
+    const isH3 = node.children?.[0] && 'type' in node.children[0] && node.children[0].type === 'heading' && node.children[0].depth === 3;
     let { icon, theme } = node.data.hProperties;
     if (!icon) icon = defaultIcons[theme];
     if (!theme) theme = themes[icon] || 'default';
