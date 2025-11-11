@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 11.7.0
+### ✨ New & Improved
+
+* migrate contents inside comments ([#1229](https://github.com/readmeio/markdown/issues/1229)) ([60691dc](https://github.com/readmeio/markdown/commit/60691dc5b1cbc95dff94f27b9d2c15134abfd3ba))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump tailwindcss from 4.1.16 to 4.1.17 ([#1231](https://github.com/readmeio/markdown/issues/1231)) ([96343ae](https://github.com/readmeio/markdown/commit/96343aed04a5534bfaacad922d0c3f828e704e69)), closes [#19263](https://github.com/readmeio/markdown/issues/19263) [#19242](https://github.com/readmeio/markdown/issues/19242) [#19263](https://github.com/readmeio/markdown/issues/19263) [#19242](https://github.com/readmeio/markdown/issues/19242) [#19272](https://github.com/readmeio/markdown/issues/19272) [#19263](https://github.com/readmeio/markdown/issues/19263) [#19238](https://github.com/readmeio/markdown/issues/19238)
+* empty callouts erroring out ([#1232](https://github.com/readmeio/markdown/issues/1232)) ([e740bfc](https://github.com/readmeio/markdown/commit/e740bfc40dbc43ae16f735bb52250f29d09076e5))
+* extract sections within custom components for TOC ([#1227](https://github.com/readmeio/markdown/issues/1227)) ([615fe1b](https://github.com/readmeio/markdown/commit/615fe1b122ab5ed17c3ef779ac6757c7330061c6))
+* skip wrapping heading in callouts for non pragraph ([#1230](https://github.com/readmeio/markdown/issues/1230)) ([bcb0c0a](https://github.com/readmeio/markdown/commit/bcb0c0a44f68e7f061912bad5e6fe72089ac70a6))
+* **deps-dev:** upgrading to vitest v4 ([#1222](https://github.com/readmeio/markdown/issues/1222)) ([4fbaa3e](https://github.com/readmeio/markdown/commit/4fbaa3ee1efde1b988bb88fc51857a9bc2e60471))
+
 ## Version 11.6.0
 ### ✨ New & Improved
 
