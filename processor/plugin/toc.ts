@@ -5,7 +5,7 @@ import type { Transformer } from 'unified';
 
 import { valueToEstree } from 'estree-util-value-to-estree';
 import { h } from 'hastscript';
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit';
 
 import { mdx, plain } from '../../lib';
 import { hasNamedExport } from '../utils';
@@ -14,15 +14,75 @@ interface Options {
   components?: CustomComponents;
 }
 
+interface CalloutCandidateNode {
+  data?: unknown;
+  name?: unknown;
+  properties?: unknown;
+  tagName?: unknown;
+  type?: unknown;
+}
+
+const isCalloutNode = (node: unknown): boolean => {
+  if (!node || typeof node !== 'object') return false;
+  const { type, name, tagName, data, properties } = node as CalloutCandidateNode;
+
+  if (type === 'mdxJsxFlowElement' && name === 'Callout') {
+    return true;
+  }
+
+  if (type !== 'element') return false;
+
+  if (tagName === 'Callout') return true;
+
+  if (typeof data === 'object' && data && 'hName' in (data as Record<string, unknown>)) {
+    const { hName } = data as { hName?: unknown };
+    if (hName === 'Callout') return true;
+  }
+
+  if (tagName !== 'blockquote') return false;
+
+  if (!properties || typeof properties !== 'object') return false;
+
+  const { className } = properties as { className?: unknown };
+  if (!className) return false;
+
+  if (Array.isArray(className)) {
+    return className.some(cls => typeof cls === 'string' && cls.startsWith('callout'));
+  }
+
+  if (typeof className === 'string') {
+    return className.includes('callout');
+  }
+
+  return false;
+};
+
 export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root> => {
   return (tree: Root): void => {
     if (hasNamedExport(tree, 'toc')) return;
 
-    const headings = tree.children.filter(
-      child =>
-        (child.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(child.tagName)) ||
-        (child.type === 'mdxJsxFlowElement' && child.name in components),
-    ) as IndexableElements[];
+    const headings: IndexableElements[] = [];
+
+    visit(tree, (node, _index, parent) => {
+      if (isCalloutNode(node)) {
+        return SKIP;
+      }
+
+      const insideCallout = parent ? isCalloutNode(parent) : false;
+      if (insideCallout) {
+        return undefined;
+      }
+
+      if (node.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
+        headings.push(node as HastHeading);
+      }
+
+      if (node.type === 'mdxJsxFlowElement' && node.name && node.name in components) {
+        headings.push(node as IndexableElements);
+      }
+
+      return undefined;
+    });
 
     tree.children.unshift({
       type: 'mdxjsEsm',
