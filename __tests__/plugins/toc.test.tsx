@@ -115,4 +115,28 @@ export const toc = [
     expect(screen.findByText('Title')).toBeDefined();
     expect(screen.queryByText('Callout')).toBeNull();
   });
+
+  it('includes headings from nested component tocs', () => {
+    const md = `
+    # Title
+
+    <ParentInfo />
+    `;
+
+    const components = {
+      ParentInfo: '## Parent Heading',
+    };
+
+    const parentModule = run(compile(components.ParentInfo));
+
+    const executed = {
+      ParentInfo: parentModule,
+    };
+
+    const { Toc } = run(compile(md, { components }), { components: executed });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Parent Heading')).toBeDefined();
+  });
 });
