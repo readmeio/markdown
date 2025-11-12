@@ -5,6 +5,8 @@ import { unified } from 'unified';
 
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
+import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
+
 interface Opts {
   mdx?: boolean;
 }
@@ -12,15 +14,20 @@ interface Opts {
 /**
  * Removes Markdown and MDX comments.
  */
-async function stripComments (doc: string, { mdx }: Opts = {}): Promise<string> {
+async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
+  const { replaced, blocks } = extractMagicBlocks(doc);
+
   const processor = unified()
     .use(remarkParse)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
     .use(remarkStringify);
 
-  const file = await processor.process(doc);
-  return String(file);
+  const file = await processor.process(replaced);
+  const stringified = String(file).trim();
+
+  const restored = restoreMagicBlocks(stringified, blocks);
+  return restored;
 }
 
 export default stripComments;
