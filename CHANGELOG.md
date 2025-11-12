@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.7.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump syntax highlighter to beta ([#1233](https://github.com/readmeio/markdown/issues/1233)) ([bf4dd03](https://github.com/readmeio/markdown/commit/bf4dd036a0781b91df997db7a03e0f45549c75cc))
+
 ## Version 11.7.1
 ### 🛠 Fixes & Updates
 
