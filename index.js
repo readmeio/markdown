@@ -28,6 +28,7 @@ const customCompilers = Object.values(require('./processor/compile'));
 const registerCustomComponents = require('./lib/registerCustomComponents');
 const { options, parseOptions } = require('./options');
 const { icons: calloutIcons } = require('./processor/parse/flavored/callout');
+const fixDanglingShortcutReferences = require('./processor/plugin/fix-dangling-shortcut-references');
 const toPlainText = require('./processor/plugin/plain-text');
 const sectionAnchorId = require('./processor/plugin/section-anchor-id');
 const tableFlattening = require('./processor/plugin/table-flattening');
@@ -117,6 +118,7 @@ export function processor(userOpts = {}) {
     .data('reusableContent', reusableContent)
     .use(!opts.correctnewlines ? remarkBreaks : () => {})
     .use(CustomParsers.map(parser => parser.sanitize?.(sanitize) || parser))
+    .use(fixDanglingShortcutReferences)
     .use(remarkTransformers)
     .use(remarkSlug)
     .use(remarkDisableTokenizers, opts.disableTokenizers);
