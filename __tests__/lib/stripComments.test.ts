@@ -2,41 +2,52 @@ import { stripComments } from '../../lib';
 
 describe('removeComments', () => {
   it('removes HTML comments', async () => {
-    const input = `
-# Title
+    const input = `Hello
 
-<br /><!-- This is a comment. -->
+<!-- comment -->
 
-Some text.<!-- This is a comment. -->
+Beep boop bop <!--inline comment-->
+Bop
 
-<p>Another text.<!-- This is a comment. --></p>
+[block:html]
+{
+  "html": "<h1>Magic blocks should not have comments removed.</h1>\n<!--custom html comment-->"
+}
+[/block]
 
-<!-- This is a comment. -->
+<ResuableContent />
 
-More text.
+\`\`\`html
+<div>
+	Code blocks should not have comments removed.
+  <!--code block comment-->
+</div>
+\`\`\`
 
-\`<!-- This is a code block comment. -->\`
-    
-<!-- <p>This is a
-comment</p> -->
-    `;
+[block:image]{ "images": [{ "image": ["https://owlbertsio-resized.s3.amazonaws.com/This-Is-Fine.jpg.full.png", "", "" ], "align": "center" } ]}[/block]
 
-    const expectedOutput = `
-# Title
+\`<!-- code block comment -->\`
 
 <br />
 
-Some text.
+<!--
+  <p>
+    Multiline comment
+  </p>
+-->
 
-<p>Another text.</p>
+Beep boop bop
 
-More text.
+![](https://owlbertsio-resized.s3.amazonaws.com/This-Is-Fine.jpg.full.png)
 
-\`<!-- This is a code block comment. -->\`
-    `;
+Beep boop bop
+
+| A  | B              | C  |
+| :- | :------------- | :- |
+| 1  | <!--comment--> | 3  |`;
 
     const output = await stripComments(input);
-    expect(output.trim()).toBe(expectedOutput.trim());
+    expect(output).toMatchSnapshot();
   });
 
   it('removes MDX comments', async () => {
@@ -51,26 +62,16 @@ Some text.
 
 More text.{/* This is an MDX comment. */}
 
-\`{/* This is a comment in a code element. */}\`
+\`{/* Comment in code element should NOT be removed */}\`
 
 {/**
  * Another MDX comment.
  */}
-    `;
 
-    const expectedOutput = `
-# Title
-
-{foo}
-
-Some text.
-
-More text.
-
-\`{/* This is a comment in a code element. */}\`
+Last text
     `;
 
     const output = await stripComments(input, { mdx: true });
-    expect(output.trim()).toBe(expectedOutput.trim());
+    expect(output).toMatchSnapshot();
   });
 });
