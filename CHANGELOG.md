@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.7.1
+### 🛠 Fixes & Updates
+
+* ignore legacy magic blocks when stripping comments ([#1228](https://github.com/readmeio/markdown/issues/1228)) ([37c0233](https://github.com/readmeio/markdown/commit/37c0233cb573ecbf4f7260318374856be11ba273)), closes [/github.com/readmeio/readme/pull/16342/files#diff-c272ef1c0b573e88f6fc0d9548236cd5d114cab6731f4499cbad12a7ddb7bf14](https://github.com/readmeio//github.com/readmeio/readme/pull/16342/files/issues/diff-c272ef1c0b573e88f6fc0d9548236cd5d114cab6731f4499cbad12a7ddb7bf14) [/github.com/readmeio/markdown/blob/39cb0129ff78c0a9c53f3ff332bb057b506c4db2/lib/stripComments.ts#L15-L24](https://github.com/readmeio//github.com/readmeio/markdown/blob/39cb0129ff78c0a9c53f3ff332bb057b506c4db2/lib/stripComments.ts/issues/L15-L24)
+
 ## Version 11.7.0
 ### ✨ New & Improved
 
