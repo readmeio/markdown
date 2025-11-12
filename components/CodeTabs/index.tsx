@@ -1,11 +1,13 @@
 import type { Mermaid } from 'mermaid';
 
-import { uppercase } from '@readme/syntax-highlighter';
+import syntaxHighlighterUtils from '@readme/syntax-highlighter/utils';
 import React, { useContext, useEffect } from 'react';
 
 import ThemeContext from '../../contexts/Theme';
 
 let mermaid: Mermaid;
+
+const { uppercase } = syntaxHighlighterUtils;
 
 interface Props {
   children: JSX.Element | JSX.Element[];
