@@ -1,8 +1,14 @@
-interface BlockHit { raw: string; token: string; }
+interface BlockHit {
+  raw: string;
+  token: string;
+}
 
-// The content matching in this regex captures everything between [block:TYPE] and [/block], including new lines --
-// ((?:(?!\[\/block\])[\s\S])*) prevents greedy matching to ensure it stops at the first [/block] it encounters
-// preventing vulnerability to polynomial backtracking issues.
+/**
+ * The content matching in this regex captures everything between [block:TYPE]
+ * and [/block], including new lines -- `((?:(?!\[\/block\])[\s\S])*)` prevents
+ * greedy matching to ensure it stops at the first [/block] it encounters
+ * preventing vulnerability to polynomial backtracking issues.
+ */
 const MAGIC_BLOCK_REGEX = /\[block:([^\]]*)\]((?:(?!\[\/block\])[\s\S])*)\[\/block\]/g;
 
 /**
@@ -13,10 +19,10 @@ export function extractMagicBlocks(markdown: string) {
   const blocks: BlockHit[] = [];
   let index = 0;
 
-  const replaced = markdown.replace(MAGIC_BLOCK_REGEX, (match) => {
-    // Use backticks so it becomes a code span, preventing remarkParse from 
+  const replaced = markdown.replace(MAGIC_BLOCK_REGEX, match => {
+    // Use backticks so it becomes a code span, preventing remarkParse from
     // parsing special characters in the token as markdown syntax
-    const token = `\`__MAGIC_BLOCK_${index}__\``; 
+    const token = `\`__MAGIC_BLOCK_${index}__\``;
 
     blocks.push({ token, raw: match });
     index += 1;
@@ -29,8 +35,8 @@ export function extractMagicBlocks(markdown: string) {
 /**
  * Restore extracted magic blocks back into a markdown string.
  */
-export function restoreMagicBlocks(output: string, blocks: BlockHit[]) {
+export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {
   return blocks.reduce((acc, { token, raw }) => {
     return acc.split(token).join(raw);
-  }, output);
+  }, replaced);
 }

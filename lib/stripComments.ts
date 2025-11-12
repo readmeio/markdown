@@ -4,6 +4,7 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
+
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -13,7 +14,7 @@ interface Opts {
 /**
  * Removes Markdown and MDX comments.
  */
-async function stripComments (doc: string, { mdx }: Opts = {}): Promise<string> {
+async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
   const { replaced, blocks } = extractMagicBlocks(doc);
 
   const processor = unified()

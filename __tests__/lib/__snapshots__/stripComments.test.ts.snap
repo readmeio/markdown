@@ -48,5 +48,7 @@ Some text.
 
 More text.
 
-\`{/* This is a comment in a code element. */}\`"
+\`{/* Comment in code element should NOT be removed */}\`
+
+Last text"
 `;

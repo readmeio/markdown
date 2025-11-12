@@ -30,7 +30,7 @@ Bop
 
 <br />
 
-<!-- 
+<!--
   <p>
     Multiline comment
   </p>
@@ -62,11 +62,13 @@ Some text.
 
 More text.{/* This is an MDX comment. */}
 
-\`{/* This is a comment in a code element. */}\`
+\`{/* Comment in code element should NOT be removed */}\`
 
 {/**
  * Another MDX comment.
  */}
+
+Last text
     `;
 
     const output = await stripComments(input, { mdx: true });
