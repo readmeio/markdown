@@ -40,6 +40,32 @@ End text.`);
       },
     ]);
   });
+
+  it('should not extract block tags with no closing tag', () => {
+    const input = `
+# Title
+[block:html]
+[block:html]
+
+[block:html]
+{ "html": "<h1>Hoo ha</h1>" }
+[/block]
+end`;
+    const { replaced, blocks } = extractMagicBlocks(input);
+    expect(replaced).toBe(`
+# Title
+[block:html]
+[block:html]
+
+\`__MAGIC_BLOCK_0__\`
+end`);
+    expect(blocks).toStrictEqual([
+      {
+        token: '`__MAGIC_BLOCK_0__`',
+        raw: expect.stringContaining('<h1>Hoo ha</h1>'),
+      },
+    ]);
+  });
 });
 
 describe('restoreMagicBlocks', () => {

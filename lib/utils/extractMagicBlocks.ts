@@ -10,7 +10,7 @@ interface BlockHit {
  * the first closing tag it encounters preventing vulnerability to polynomial
  * backtracking issues.
  */
-const MAGIC_BLOCK_REGEX = /\[block:.+\](?:(?!\[\/block\])[\s\S])*\[\/block\]/g;
+const MAGIC_BLOCK_REGEX = /\[block:.+\](?:(?!\[block:)(?!\[\/block\])[\s\S])*\[\/block\]/g;
 
 /**
  * Extract legacy magic block syntax from a markdown string.
