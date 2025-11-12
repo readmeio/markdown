@@ -4,12 +4,13 @@ interface BlockHit {
 }
 
 /**
- * The content matching in this regex captures everything between [block:TYPE]
- * and [/block], including new lines -- `((?:(?!\[\/block\])[\s\S])*)` prevents
- * greedy matching to ensure it stops at the first [/block] it encounters
- * preventing vulnerability to polynomial backtracking issues.
+ * The content matching in this regex captures everything between `[block:TYPE]`
+ * and `[/block]`, including new lines. Negative lookahead for the closing
+ * `[/block]` tag is required to prevent greedy matching to ensure it stops at
+ * the first closing tag it encounters preventing vulnerability to polynomial
+ * backtracking issues.
  */
-const MAGIC_BLOCK_REGEX = /\[block:([^\]]*)\]((?:(?!\[\/block\])[\s\S])*)\[\/block\]/g;
+const MAGIC_BLOCK_REGEX = /\[block:.+\](?:(?!\[\/block\])[\s\S])*\[\/block\]/g;
 
 /**
  * Extract legacy magic block syntax from a markdown string.
