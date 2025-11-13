@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { renderToString } from 'react-dom/server';
 
 import { compile, run } from '../../index';
 
@@ -140,7 +141,7 @@ export const toc = [
     expect(screen.findByText('Parent Heading')).toBeDefined();
   });
 
-  it.only('includes does not include custom components', () => {
+  it('preserves nesting even when jsx elements are in the doc', () => {
     const md = `
 # Title
 
@@ -160,11 +161,18 @@ export const toc = [
     };
 
     const compModule = run(compile(components.Comp));
-
     const { Toc } = run(compile(md, { components }), { components: { Comp: compModule } });
 
-    render(<Toc />);
-
-    expect(screen.getByText('Parent Heading')).toBeInTheDocument();
+    const html = renderToString(<Toc />);
+    expect(html).toMatchInlineSnapshot(`
+      "<nav aria-label="Table of contents" role="navigation"><ul class="toc-list"><li><a class="tocHeader" href="#"><i class="icon icon-text-align-left"></i>Table of Contents</a></li><li class="toc-children"><ul>
+      <li><a href="#title">Title</a></li>
+      <li>
+      <ul>
+      <li><a href="#subheading">SubHeading</a></li>
+      </ul>
+      </li>
+      </ul></li></ul></nav>"
+    `);
   });
 });
