@@ -50,4 +50,10 @@ describe('migrating html blocks', () => {
 
     await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-escapes-newlines/out.mdx`);
   });
+
+  it('correctly migrates html with brackets and template literals', async () => {
+    const md = fs.readFileSync(`${__dirname}/fixtures/html-block-with-brackets/in.md`, 'utf-8');
+
+    await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-with-brackets/out.mdx`);
+  });
 });
