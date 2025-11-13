@@ -77,7 +77,6 @@ const readmeToMdx = (): Transform => tree => {
 
   visit(tree, 'figure', (figure, index, parent) => {
     const [image, caption] = figure.children;
-
     const { align, width } = image.data.hProperties;
     const border = image.data.hProperties.className === 'border';
 
