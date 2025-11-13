@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 11.7.3
+### 🛠 Fixes & Updates
+
+* toc ([#1236](https://github.com/readmeio/markdown/issues/1236)) ([2ca2597](https://github.com/readmeio/markdown/commit/2ca2597757516e73f3aaec9abb1f7c99f2a520dd))
+* update snaps ([#1234](https://github.com/readmeio/markdown/issues/1234)) ([a44d952](https://github.com/readmeio/markdown/commit/a44d95290d6448e9e5df80171837d0e5ffd3fb20))
+
 ## Version 11.7.2
 ### 🛠 Fixes & Updates
 
