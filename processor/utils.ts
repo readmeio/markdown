@@ -102,23 +102,6 @@ export const getChildren = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   }, [] as T);
 
 /**
- * Get's the template literal string from an MDX element's first child. Useful
- * for formatting HtmlBlocks.
- *
- * @param {(MdxJsxFlowElement | MdxJsxTextElement)} node
- * @returns {String}
- */
-export const getTemplateLiteral = (node: MdxJsxFlowElement | MdxJsxTextElement): string => {
-  try {
-    // @ts-expect-error - if node is not properly formed, ignore it?
-    return node.children[0].data?.estree.body[0].expression.quasis[0].value.cooked.replaceAll(/^\n|\n$/g, '');
-  } catch (e) {
-    console.error('Error getting template literal from MDX element:', e);
-    return '';
-  }
-};
-
-/**
  * Tests if a node is an MDX element.
  * TODO: Make this more extensible to all types of nodes. isElement(node, 'type' or ['type1', 'type2']), say
  *
