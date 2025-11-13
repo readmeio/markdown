@@ -5,13 +5,14 @@ import migrateLinkReferences from '../processor/transform/migrate-link-reference
 
 import mdastV6 from './mdastV6';
 import mdx from './mdx';
+import migrateComments from './utils/migrateComments';
 
-const migrate = (doc: string, { rdmd }): string => {
+const migrateDoc = (doc: string, { rdmd }): string => {
   const ast = mdastV6(doc, { rdmd });
 
   return (
     mdx(ast, {
-      remarkTransformers: [migrateCallouts, migrateLinkReferences, migrateHtmlTags, migrateHtmlBlocks],
+      remarkTransformers: [migrateCallouts, [migrateLinkReferences, { rdmd }], migrateHtmlTags, migrateHtmlBlocks],
       file: doc,
     })
       .replaceAll(/&#x20;/g, ' ')
@@ -20,6 +21,12 @@ const migrate = (doc: string, { rdmd }): string => {
       // parsing weird cases.
       .replaceAll(/&#x61;/g, 'a')
   );
+};
+
+const migrate = (doc: string, opts): string => {
+  const migratedDoc = migrateDoc(doc, opts);
+  const migratedDocAndComments = migrateComments(migratedDoc, migrateDoc, opts);
+  return migratedDocAndComments;
 };
 
 export default migrate;

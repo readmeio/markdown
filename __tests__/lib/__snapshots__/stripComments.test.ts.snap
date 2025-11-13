@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`removeComments > removes HTML comments 1`] = `
+"Hello
+
+Beep boop bop&#x20;
+Bop
+
+[block:html]
+{
+  "html": "<h1>Magic blocks should not have comments removed.</h1>
+<!--custom html comment-->"
+}
+[/block]
+
+<ResuableContent />
+
+\`\`\`html
+<div>
+	Code blocks should not have comments removed.
+  <!--code block comment-->
+</div>
+\`\`\`
+
+[block:image]{ "images": [{ "image": ["https://owlbertsio-resized.s3.amazonaws.com/This-Is-Fine.jpg.full.png", "", "" ], "align": "center" } ]}[/block]
+
+\`<!-- code block comment -->\`
+
+<br />
+
+Beep boop bop
+
+![](https://owlbertsio-resized.s3.amazonaws.com/This-Is-Fine.jpg.full.png)
+
+Beep boop bop
+
+| A  | B              | C  |
+| :- | :------------- | :- |
+| 1  |  | 3  |"
+`;
+
+exports[`removeComments > removes MDX comments 1`] = `
+"# Title
+
+{foo}
+
+Some text.
+
+More text.
+
+\`{/* Comment in code element should NOT be removed */}\`
+
+Last text"
+`;

@@ -38,4 +38,65 @@ describe('mdx migration of link references', () => {
       "
     `);
   });
+
+  describe('does not corrupt normal square bracket content', () => {
+    it('on regular text', () => {
+      const md = `
+hello there [something]
+`;
+      const mdx = migrate(md);
+      expect(mdx).toMatchInlineSnapshot(`
+        "hello there \\[something]
+        "
+      `);
+    });
+
+    it('on a table cell value', () => {
+      // We've had a case where the [] section in a table cell got accidentally replaced with another section of the content
+      // Check if the [] value is correctly preserved
+      const md = `
+[block:parameters]
+{
+  "data": {
+    "h-0": "Response",
+    "0-0": "{'Message': 'There are validation errors', 'Errors': ['ConsumerDetails: The ExternalId or CustomerID must have a value.']}"
+  },
+  "cols": 2,
+  "rows": 1,
+  "align": [null, null]
+}
+[/block]
+      `;
+
+      const mdx = migrate(md);
+      expect(mdx).toMatchInlineSnapshot(`
+        "<Table>
+          <thead>
+            <tr>
+              <th>
+                Response
+              </th>
+
+              <th>
+
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                \\{'Message': 'There are validation errors', 'Errors': ['ConsumerDetails: The ExternalId or CustomerID must have a value.']}
+              </td>
+
+              <td>
+
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    })
+  })
 });

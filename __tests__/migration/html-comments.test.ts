@@ -5,13 +5,13 @@ describe('migrating html comments', () => {
     const md = `
 <!--
 
- 
+
 
 ## Walkthrough
 
 [block:html]
 {
-  "html": "<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/53dd194717bb4965a8e838b95715ff18" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>"
+  "html": "<div style=\\"position: relative; padding-bottom: 56.25%; height: 0;\\"><iframe src=\\"https://www.loom.com/embed/53dd194717bb4965a8e838b95715ff18\\" frameborder=\\"0\\" webkitallowfullscreen mozallowfullscreen allowfullscreen style=\\"position: absolute; top: 0; left: 0; width: 100%; height: 100%;\\"></iframe></div>"
 }
 [/block]
 
@@ -25,20 +25,41 @@ describe('migrating html comments', () => {
     expect(mdx).toMatchInlineSnapshot(`
       "{/*
 
-       
+
 
       ## Walkthrough
 
-
-      [block:html]
-      {
-        "html": "<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/53dd194717bb4965a8e838b95715ff18" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>"
-      }
-      [/block]
-
-
+      <HTMLBlock>{\`
+      <div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/53dd194717bb4965a8e838b95715ff18" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+      \`}</HTMLBlock>
 
       <br />
+
+
+      */}
+      "
+    `);
+  });
+
+  it('converts markdown within html comments', () => {
+    const md = `
+<!--
+
+### Heading inside comment
+
+- a **list** item
+
+-->
+`;
+
+    const mdx = migrate(md);
+    expect(mdx).toMatchInlineSnapshot(`
+      "{/*
+
+      ### Heading inside comment
+
+      * a **list** item
+
 
       */}
       "

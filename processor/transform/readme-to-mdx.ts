@@ -22,7 +22,7 @@ const readmeToMdx = (): Transform => tree => {
 
   visit(tree, 'rdme-callout', (node, index, parent) => {
     const isEmpty = node.data.hProperties?.empty;
-    const isH3 = node.children[0].type === 'heading' && node.children[0].depth === 3;
+    const isH3 = node.children?.[0] && 'type' in node.children[0] && node.children[0].type === 'heading' && node.children[0].depth === 3;
     let { icon, theme } = node.data.hProperties;
     if (!icon) icon = defaultIcons[theme];
     if (!theme) theme = themes[icon] || 'default';
@@ -52,7 +52,19 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   // Converts tutorial tiles to Recipe components in the migration process
+  // Retaining this for backwards compatibility
   visit(tree, NodeTypes.tutorialTile, (tile, index, parent: Parent) => {
+    const { ...attrs } = tile as Recipe;
+
+    parent.children.splice(index, 1, {
+      type: 'mdxJsxFlowElement',
+      name: 'Recipe',
+      attributes: toAttributes(attrs, ['slug', 'title']),
+      children: [],
+    });
+  });
+
+  visit(tree, NodeTypes.recipe, (tile, index, parent: Parent) => {
     const { ...attrs } = tile as Recipe;
 
     parent.children.splice(index, 1, {
