@@ -10,11 +10,7 @@ const mdastV6 = (doc: string, { rdmd }): Root => {
   const [_normalizedDoc] = rdmd.setup(doc);
   const normalizedDoc = migrationNormalize(_normalizedDoc);
 
-  const proc = rdmd
-    .processor()
-    .use(() => tree => console.log(JSON.stringify(tree, null, 2)))
-    .use(migrationTransformers)
-    .data('rdmd', rdmd);
+  const proc = rdmd.processor().use(migrationTransformers).data('rdmd', rdmd);
 
   const tree = proc.parse(normalizedDoc);
   proc.runSync(tree, normalizedDoc);
