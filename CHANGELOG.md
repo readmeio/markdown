@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.7.4
+### 🛠 Fixes & Updates
+
+* migrating escaped html ([#1218](https://github.com/readmeio/markdown/issues/1218)) ([c2461e0](https://github.com/readmeio/markdown/commit/c2461e0c171148b542bef4fef9872974679ed589)), closes [/github.com/readmeio/markdown/pull/1218/files#diff-6ee34c9f6ef36e20e57970ea252f6c7fdb016cf85f195e8c5212981b1c161586R42-R52](https://github.com/readmeio//github.com/readmeio/markdown/pull/1218/files/issues/diff-6ee34c9f6ef36e20e57970ea252f6c7fdb016cf85f195e8c5212981b1c161586R42-R52)
+
 ## Version 11.7.3
 ### 🛠 Fixes & Updates
 
