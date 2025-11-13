@@ -139,4 +139,32 @@ export const toc = [
 
     expect(screen.findByText('Parent Heading')).toBeDefined();
   });
+
+  it.only('includes does not include custom components', () => {
+    const md = `
+# Title
+
+## SubHeading
+
+<Comp>
+  First
+</Comp>
+
+<Comp>
+  Second
+</Comp>
+`;
+
+    const components = {
+      Comp: 'export const Comp = ({ children }) => { return children; }',
+    };
+
+    const compModule = run(compile(components.Comp));
+
+    const { Toc } = run(compile(md, { components }), { components: { Comp: compModule } });
+
+    render(<Toc />);
+
+    expect(screen.getByText('Parent Heading')).toBeInTheDocument();
+  });
 });
