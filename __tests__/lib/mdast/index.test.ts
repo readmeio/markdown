@@ -5,6 +5,8 @@ import esmMdx from './esm/in.mdx?raw';
 // @ts-expect-error - these are being imported as json
 import esmJson from './esm/out.json';
 // @ts-expect-error - these are being imported as strings
+import htmlBlockMdx from './html-blocks/in.mdx?raw';
+import htmlBlockJson from './html-blocks/out.json';
 import inlineImagesMdx from './images/inline/in.mdx?raw';
 // @ts-expect-error - these are being imported as json
 import inlineImagesJson from './images/inline/out.json';
@@ -18,11 +20,8 @@ import tablesMdx from './tables/in.mdx?raw';
 import tablesJson from './tables/out.json';
 // @ts-expect-error - these are being imported as strings
 import variablesMdx from './variables/in.mdx?raw';
-// @ts-expect-error - these are being imported as json
 import variablesJson from './variables/out.json';
-// @ts-expect-error - these are being imported as strings
 import variablesWithSpacesMdx from './variables-with-spaces/in.mdx?raw';
-// @ts-expect-error - these are being imported as json
 import variablesWithSpacesJson from './variables-with-spaces/out.json';
 
 describe('mdast transformer', () => {
@@ -60,6 +59,12 @@ describe('mdast transformer', () => {
     // @ts-expect-error - the custom matcher types are not being set up
     // correctly
     expect(mdast(esmMdx)).toStrictEqualExceptPosition(esmJson);
+  });
+
+  it('parses HTMLBlock contents', () => {
+    // @ts-expect-error - the custom matcher types are not being set up
+    // correctly
+    expect(mdast(htmlBlockMdx)).toStrictEqualExceptPosition(htmlBlockJson);
   });
 
   it('throws an error when a component does not exist and missingComponents === "throw"', () => {

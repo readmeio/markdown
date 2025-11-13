@@ -1,4 +1,5 @@
 import migrateCallouts from '../processor/transform/migrate-callouts';
+import migrateHtmlBlocks from '../processor/transform/migrate-html-blocks';
 import migrateHtmlTags from '../processor/transform/migrate-html-tags';
 import migrateLinkReferences from '../processor/transform/migrate-link-references';
 
@@ -9,12 +10,17 @@ import migrateComments from './utils/migrateComments';
 const migrateDoc = (doc: string, { rdmd }): string => {
   const ast = mdastV6(doc, { rdmd });
 
-  return mdx(ast, { remarkTransformers: [migrateCallouts, [migrateLinkReferences, { rdmd }], migrateHtmlTags], file: doc })
-    .replaceAll(/&#x20;/g, ' ')
-    // @note: I'm not sure what's happening, but I think mdx is converting an
-    // 'a' to '&#x61;' as a means of escaping it. I think this helps with
-    // parsing weird cases.
-    .replaceAll(/&#x61;/g, 'a');
+  return (
+    mdx(ast, {
+      remarkTransformers: [migrateCallouts, [migrateLinkReferences, { rdmd }], migrateHtmlTags, migrateHtmlBlocks],
+      file: doc,
+    })
+      .replaceAll(/&#x20;/g, ' ')
+      // @note: I'm not sure what's happening, but I think mdx is converting an
+      // 'a' to '&#x61;' as a means of escaping it. I think this helps with
+      // parsing weird cases.
+      .replaceAll(/&#x61;/g, 'a')
+  );
 };
 
 const migrate = (doc: string, opts): string => {
