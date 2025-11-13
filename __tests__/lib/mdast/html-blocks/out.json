@@ -4,13 +4,13 @@
       "children": [
         {
           "type": "text",
-          "value": "<pre><code>RegexpExtract([Address], \"\\\\\\\\s*([a-zA-Z]+)\", 2)</code></pre>"
+          "value": "<pre>\n  <code>\n    RegexpExtract([Address], \"\\\\\\\\s*([a-zA-Z]+)\", 2)\n  </code>\n</pre>"
         }
       ],
       "data": {
         "hName": "html-block",
         "hProperties": {
-          "html": "<pre><code>RegexpExtract([Address], \"\\\\\\\\s*([a-zA-Z]+)\", 2)</code></pre>"
+          "html": "<pre>\n  <code>\n    RegexpExtract([Address], \"\\\\\\\\s*([a-zA-Z]+)\", 2)\n  </code>\n</pre>"
         }
       },
       "type": "html-block"

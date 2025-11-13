@@ -10,7 +10,7 @@ import { visit, SKIP } from 'unist-util-visit';
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import { mdast } from '../../lib';
-import { getAttrs, isMDXElement, getTextValue } from '../utils';
+import { getAttrs, isMDXElement, getChildren, formatHTML } from '../utils';
 
 const types = {
   Anchor: 'link' as Link['type'],
@@ -110,18 +110,19 @@ const coerceJsxToMd =
       parent.children[index] = mdNode;
     } else if (node.name === 'HTMLBlock') {
       const { position } = node;
-      const textValue = getTextValue<HTMLBlock['children']>(node);
+      const children = getChildren<HTMLBlock['children']>(node);
       const { runScripts } = getAttrs<Pick<HTMLBlock['data']['hProperties'], 'runScripts'>>(node);
+      const htmlString = formatHTML(children.map(({ value }) => value).join(''));
 
       const mdNode: HTMLBlock = {
         position,
-        children: [{ type: 'text', value: textValue }],
+        children: [{ type: 'text', value: htmlString }],
         type: NodeTypes.htmlBlock,
         data: {
           hName: 'html-block',
           hProperties: {
             ...(runScripts && { runScripts }),
-            html: textValue,
+            html: htmlString,
           },
         },
       };

@@ -61,7 +61,7 @@ describe('mdast transformer', () => {
     expect(mdast(esmMdx)).toStrictEqualExceptPosition(esmJson);
   });
 
-  it.only('parses HTMLBlock contents', () => {
+  it('parses HTMLBlock contents', () => {
     // @ts-expect-error - the custom matcher types are not being set up
     // correctly
     expect(mdast(htmlBlockMdx)).toStrictEqualExceptPosition(htmlBlockJson);

@@ -14,9 +14,9 @@ describe('migrating html blocks', () => {
 
     const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
-      "<HTMLBlock>
-        {"<a href=\\"example.com\\">\`example.com\`</a>"}
-      </HTMLBlock>
+      "<HTMLBlock>{\`
+      <a href="example.com">\\\`example.com\\\`</a>
+      \`}</HTMLBlock>
       "
     `);
   });
@@ -32,14 +32,14 @@ describe('migrating html blocks', () => {
 
     const mdx = migrate(md);
     expect(mdx).toMatchInlineSnapshot(`
-      "<HTMLBlock>
-        {"<a href=\\"example.com\\">\\\\\`example.com\\\\\`</a>"}
-      </HTMLBlock>
+      "<HTMLBlock>{\`
+      <a href="example.com">\\\\\`example.com\\\\\`</a>
+      \`}</HTMLBlock>
       "
     `);
   });
 
-  it.only('does not unescape backslashes', async () => {
+  it('does not unescape backslashes', async () => {
     const md = fs.readFileSync(`${__dirname}/fixtures/html-block-escapes/in.md`, 'utf-8');
 
     await expect(migrate(md)).toMatchFileSnapshot(`${__dirname}/fixtures/html-block-escapes/out.mdx`);

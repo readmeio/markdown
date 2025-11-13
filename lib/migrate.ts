@@ -1,4 +1,5 @@
 import migrateCallouts from '../processor/transform/migrate-callouts';
+import migrateHtmlBlocks from '../processor/transform/migrate-html-blocks';
 import migrateHtmlTags from '../processor/transform/migrate-html-tags';
 import migrateLinkReferences from '../processor/transform/migrate-link-references';
 
@@ -9,7 +10,10 @@ const migrate = (doc: string, { rdmd }): string => {
   const ast = mdastV6(doc, { rdmd });
 
   return (
-    mdx(ast, { remarkTransformers: [migrateCallouts, migrateLinkReferences, migrateHtmlTags], file: doc })
+    mdx(ast, {
+      remarkTransformers: [migrateCallouts, migrateLinkReferences, migrateHtmlTags, migrateHtmlBlocks],
+      file: doc,
+    })
       .replaceAll(/&#x20;/g, ' ')
       // @note: I'm not sure what's happening, but I think mdx is converting an
       // 'a' to '&#x61;' as a means of escaping it. I think this helps with
