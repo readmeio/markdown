@@ -2,39 +2,35 @@ const { visit } = require('unist-util-visit');
 
 const PROTECTED_PARENTS = new Set(['code', 'inlineCode', 'html', 'jsx']);
 
-const nodeToString = node => {
-  if (!node) return '';
-  if (typeof node.value === 'string') return node.value;
-  if (!node.children || !node.children.length) return '';
-  return node.children.map(child => nodeToString(child)).join('');
-};
+// Resolve the readable label Remark inferred for the link reference.
+const labelFrom = node =>
+  node?.label ??
+  node?.identifier ??
+  (typeof node?.value === 'string' ? node.value : (node?.children || []).map(labelFrom).join(''));
 
-const getSpan = node => {
-  const start = node?.position?.start?.offset;
-  const end = node?.position?.end?.offset;
-  if (typeof start !== 'number' || typeof end !== 'number') return null;
-  return end - start;
-};
-
+// Remark drops extra "[" characters when a shortcut link is immediately followed by another "["
+// (e.g. "[foo][bar"). This plugin visits the AST, looks for link references, and compares the
+// span denoted by the node with the original section to identify dropped [ characters.
 module.exports = function fixDanglingShortcutReferences() {
   return tree => {
-    visit(tree, (node, index, parent) => {
-      if (!parent || !Array.isArray(parent.children)) return;
-      if (PROTECTED_PARENTS.has(parent.type)) return;
-      if (node.type !== 'linkReference' || node.referenceType !== 'shortcut') return;
+    visit(tree, 'linkReference', (node, index, parent) => {
+      // Skip contexts where we should never mutate literals (code, inline code, raw HTML/JSX).
+      if (!parent?.children || PROTECTED_PARENTS.has(parent.type) || node.referenceType !== 'shortcut') return;
 
       const next = parent.children[index + 1];
-      if (!next || next.type !== 'text') return;
+      if (!next || next.type !== 'text') return; // Need the stray "[" token that Remark left as text.
 
-      const label = nodeToString(node);
-      const span = getSpan(node);
-      if (span === null) return;
+      const start = node.position?.start?.offset;
+      const end = node.position?.end?.offset;
+      if (typeof start !== 'number' || typeof end !== 'number') return;
 
-      const expectedSpan = label.length + 2; // "[", "]"
-      const extraChars = span - expectedSpan;
+      const label = labelFrom(node);
+      const extraChars = end - start - (label.length + 2); // surrounding brackets
       if (extraChars <= 0) return;
 
-      const replacement = {
+      // Collapse the broken linkReference + following text into a plain text node that mirrors
+      // the original markdown literal, tagging it so the compiler can output it verbatim.
+      parent.children.splice(index, 2, {
         type: 'text',
         value: `[${label}]${'['.repeat(extraChars)}${next.value}`,
         data: { danglingShortcutLiteral: true },
@@ -42,9 +38,7 @@ module.exports = function fixDanglingShortcutReferences() {
           start: node.position.start,
           end: next.position?.end || node.position.end,
         },
-      };
-
-      parent.children.splice(index, 2, replacement);
+      });
     });
   };
 };
