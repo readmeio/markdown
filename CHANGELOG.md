@@ -1,6 +1,70 @@
 Changelog
 ===
 
+## Version 11.7.4
+### 🛠 Fixes & Updates
+
+* migrating escaped html ([#1218](https://github.com/readmeio/markdown/issues/1218)) ([c2461e0](https://github.com/readmeio/markdown/commit/c2461e0c171148b542bef4fef9872974679ed589)), closes [/github.com/readmeio/markdown/pull/1218/files#diff-6ee34c9f6ef36e20e57970ea252f6c7fdb016cf85f195e8c5212981b1c161586R42-R52](https://github.com/readmeio//github.com/readmeio/markdown/pull/1218/files/issues/diff-6ee34c9f6ef36e20e57970ea252f6c7fdb016cf85f195e8c5212981b1c161586R42-R52)
+
+## Version 11.7.3
+### 🛠 Fixes & Updates
+
+* toc ([#1236](https://github.com/readmeio/markdown/issues/1236)) ([2ca2597](https://github.com/readmeio/markdown/commit/2ca2597757516e73f3aaec9abb1f7c99f2a520dd))
+* update snaps ([#1234](https://github.com/readmeio/markdown/issues/1234)) ([a44d952](https://github.com/readmeio/markdown/commit/a44d95290d6448e9e5df80171837d0e5ffd3fb20))
+
+## Version 11.7.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump syntax highlighter to beta ([#1233](https://github.com/readmeio/markdown/issues/1233)) ([bf4dd03](https://github.com/readmeio/markdown/commit/bf4dd036a0781b91df997db7a03e0f45549c75cc))
+
+## Version 11.7.1
+### 🛠 Fixes & Updates
+
+* ignore legacy magic blocks when stripping comments ([#1228](https://github.com/readmeio/markdown/issues/1228)) ([37c0233](https://github.com/readmeio/markdown/commit/37c0233cb573ecbf4f7260318374856be11ba273)), closes [/github.com/readmeio/readme/pull/16342/files#diff-c272ef1c0b573e88f6fc0d9548236cd5d114cab6731f4499cbad12a7ddb7bf14](https://github.com/readmeio//github.com/readmeio/readme/pull/16342/files/issues/diff-c272ef1c0b573e88f6fc0d9548236cd5d114cab6731f4499cbad12a7ddb7bf14) [/github.com/readmeio/markdown/blob/39cb0129ff78c0a9c53f3ff332bb057b506c4db2/lib/stripComments.ts#L15-L24](https://github.com/readmeio//github.com/readmeio/markdown/blob/39cb0129ff78c0a9c53f3ff332bb057b506c4db2/lib/stripComments.ts/issues/L15-L24)
+
+## Version 11.7.0
+### ✨ New & Improved
+
+* migrate contents inside comments ([#1229](https://github.com/readmeio/markdown/issues/1229)) ([60691dc](https://github.com/readmeio/markdown/commit/60691dc5b1cbc95dff94f27b9d2c15134abfd3ba))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump tailwindcss from 4.1.16 to 4.1.17 ([#1231](https://github.com/readmeio/markdown/issues/1231)) ([96343ae](https://github.com/readmeio/markdown/commit/96343aed04a5534bfaacad922d0c3f828e704e69)), closes [#19263](https://github.com/readmeio/markdown/issues/19263) [#19242](https://github.com/readmeio/markdown/issues/19242) [#19263](https://github.com/readmeio/markdown/issues/19263) [#19242](https://github.com/readmeio/markdown/issues/19242) [#19272](https://github.com/readmeio/markdown/issues/19272) [#19263](https://github.com/readmeio/markdown/issues/19263) [#19238](https://github.com/readmeio/markdown/issues/19238)
+* empty callouts erroring out ([#1232](https://github.com/readmeio/markdown/issues/1232)) ([e740bfc](https://github.com/readmeio/markdown/commit/e740bfc40dbc43ae16f735bb52250f29d09076e5))
+* extract sections within custom components for TOC ([#1227](https://github.com/readmeio/markdown/issues/1227)) ([615fe1b](https://github.com/readmeio/markdown/commit/615fe1b122ab5ed17c3ef779ac6757c7330061c6))
+* skip wrapping heading in callouts for non pragraph ([#1230](https://github.com/readmeio/markdown/issues/1230)) ([bcb0c0a](https://github.com/readmeio/markdown/commit/bcb0c0a44f68e7f061912bad5e6fe72089ac70a6))
+* **deps-dev:** upgrading to vitest v4 ([#1222](https://github.com/readmeio/markdown/issues/1222)) ([4fbaa3e](https://github.com/readmeio/markdown/commit/4fbaa3ee1efde1b988bb88fc51857a9bc2e60471))
+
+## Version 11.6.0
+### ✨ New & Improved
+
+* add strip comments lib function ([#1225](https://github.com/readmeio/markdown/issues/1225)) ([dab9270](https://github.com/readmeio/markdown/commit/dab9270c72a916e0ce1c8c7ebb5c55cd10f34d63)), closes [/github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts#L18-L63](https://github.com/readmeio//github.com/readmeio/readme/blob/f144c87ee8a9f86ef7628b57711428edc1d393f1/packages/hub/lib/serveMarkdown.ts/issues/L18-L63)
+
+## Version 11.5.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/upload-artifact from 4 to 5 ([#1224](https://github.com/readmeio/markdown/issues/1224)) ([698390a](https://github.com/readmeio/markdown/commit/698390ac2d65cd38ccb47ec255fb27538a6a3a67)), closes [actions/upload-artifact#681](https://github.com/actions/upload-artifact/issues/681) [actions/upload-artifact#712](https://github.com/actions/upload-artifact/issues/712) [actions/upload-artifact#727](https://github.com/actions/upload-artifact/issues/727) [actions/upload-artifact#725](https://github.com/actions/upload-artifact/issues/725) [actions/upload-artifact#734](https://github.com/actions/upload-artifact/issues/734) [actions/upload-artifact#681](https://github.com/actions/upload-artifact/issues/681) [actions/upload-artifact#712](https://github.com/actions/upload-artifact/issues/712) [actions/upload-artifact#727](https://github.com/actions/upload-artifact/issues/727) [actions/upload-artifact#725](https://github.com/actions/upload-artifact/issues/725) [actions/upload-artifact#685](https://github.com/actions/upload-artifact/issues/685) [actions/upload-artifact#685](https://github.com/actions/upload-artifact/issues/685) [actions/upload-artifact#673](https://github.com/actions/upload-artifact/issues/673) [actions/upload-artifact#662](https://github.com/actions/upload-artifact/issues/662) [actions/upload-artifact#578](https://github.com/actions/upload-artifact/issues/578) [actions/upload-artifact#656](https://github.com/actions/upload-artifact/issues/656) [actions/upload-artifact#578](https://github.com/actions/upload-artifact/issues/578) [#734](https://github.com/readmeio/markdown/issues/734) [#725](https://github.com/readmeio/markdown/issues/725) [#727](https://github.com/readmeio/markdown/issues/727) [#712](https://github.com/readmeio/markdown/issues/712)
+* migration erroring when there is empty cell in table ([#1223](https://github.com/readmeio/markdown/issues/1223)) ([227cbb4](https://github.com/readmeio/markdown/commit/227cbb4d6cbc859a4012d0cc46f063ed760a7e0a))
+
+## Version 11.5.1
+### 🛠 Fixes & Updates
+
+* modify migrate link reference to not accidentally replace [] values ([#1220](https://github.com/readmeio/markdown/issues/1220)) ([d180161](https://github.com/readmeio/markdown/commit/d180161b15d0f2cde4e428b1e3bfb675a58cf34f))
+
+## Version 11.5.0
+### ✨ New & Improved
+
+* add MCPIntro component ([#1219](https://github.com/readmeio/markdown/issues/1219)) ([352fb99](https://github.com/readmeio/markdown/commit/352fb9954a886347de21d63eb654292ac2c70ab0))
+* add support for converting recipe ([#1221](https://github.com/readmeio/markdown/issues/1221)) ([16db568](https://github.com/readmeio/markdown/commit/16db56866600e357116fb27f249f4eff755303d7))
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump @mdx-js/mdx from 3.1.0 to 3.1.1 ([#1186](https://github.com/readmeio/markdown/issues/1186)) ([36ba199](https://github.com/readmeio/markdown/commit/36ba19997160c0ee25cf3e66a6b8ecca1952dc37)), closes [mdx-js/mdx#2593](https://github.com/mdx-js/mdx/issues/2593) [mdx-js/mdx#2595](https://github.com/mdx-js/mdx/issues/2595) [mdx-js/mdx#2629](https://github.com/mdx-js/mdx/issues/2629) [mdx-js/mdx#2622](https://github.com/mdx-js/mdx/issues/2622) [mdx-js/mdx#2605](https://github.com/mdx-js/mdx/issues/2605) [mdx-js/mdx#2604](https://github.com/mdx-js/mdx/issues/2604)
+* **deps:** bump estree-util-value-to-estree from 3.4.0 to 3.5.0 ([#1214](https://github.com/readmeio/markdown/issues/1214)) ([c953372](https://github.com/readmeio/markdown/commit/c9533722d3fdea0d17134c8f0f3c027922f851f6)), closes [remcohaszing/estree-util-value-to-estree#6](https://github.com/remcohaszing/estree-util-value-to-estree/issues/6) [#6](https://github.com/readmeio/markdown/issues/6)
+* **deps:** bump postcss from 8.5.3 to 8.5.6 ([#1128](https://github.com/readmeio/markdown/issues/1128)) ([2731484](https://github.com/readmeio/markdown/commit/2731484b18ebe24f01a2da5eb99a52ed201afdc5)), closes [#2052](https://github.com/readmeio/markdown/issues/2052)
+* **deps:** bump remark-mdx from 3.1.0 to 3.1.1 ([#1185](https://github.com/readmeio/markdown/issues/1185)) ([bc7f79a](https://github.com/readmeio/markdown/commit/bc7f79a4afdd5dbf5de659240e132aad23cb1eb0)), closes [mdx-js/mdx#2593](https://github.com/mdx-js/mdx/issues/2593) [mdx-js/mdx#2595](https://github.com/mdx-js/mdx/issues/2595) [mdx-js/mdx#2629](https://github.com/mdx-js/mdx/issues/2629) [mdx-js/mdx#2622](https://github.com/mdx-js/mdx/issues/2622) [mdx-js/mdx#2605](https://github.com/mdx-js/mdx/issues/2605) [mdx-js/mdx#2604](https://github.com/mdx-js/mdx/issues/2604)
+* **deps:** dependabot updates ([#1217](https://github.com/readmeio/markdown/issues/1217)) ([b8b0b78](https://github.com/readmeio/markdown/commit/b8b0b7835a7b07af94435f3f7460d633cee5705c))
+
 ## Version 11.4.0
 ### ✨ New & Improved
 

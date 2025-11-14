@@ -7,7 +7,11 @@ import { wrapHeading } from './callouts';
 
 const migrateCallouts: Plugin<[], Root> = (): Transformer<Root> => (tree: Root) => {
   visit(tree, 'rdme-callout', callout => {
-    callout.children[0] = wrapHeading(callout);
+    const firstChild = callout.children?.[0];
+    // This will retain the value of the node if it is not a paragraph, e.g. an HTML node
+    if (firstChild && firstChild.type === 'paragraph') {
+      callout.children[0] = wrapHeading(callout);
+    }
   });
 
   return tree;

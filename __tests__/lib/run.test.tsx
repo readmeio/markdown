@@ -89,7 +89,6 @@ This is plain markdown and mdx expressions such as {1 + 1} will not evaluate.
 `;
     const Component = execute(md, { format: 'md' }, {});
     const { container } = render(<Component />);
-    screen.debug();
     expect(container.querySelector('strong')).toBeInTheDocument();
     expect(container.querySelector('pre')).toBeInTheDocument();
     expect(container.querySelector('code')).toBeInTheDocument();

@@ -13,6 +13,7 @@ let syntaxHighlighter;
 let canonicalLanguage = lang => '';
 
 if (typeof window !== 'undefined') {
+  // @ts-expect-error this library does not have any types defined
   import('@readme/syntax-highlighter').then(module => {
     syntaxHighlighter = module.default;
     canonicalLanguage = module.canonical;

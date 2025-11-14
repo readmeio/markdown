@@ -9,7 +9,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**'],
     globals: true,
     setupFiles: ['./vitest-setup.js'],
-    workspace: [
+    projects: [
       {
         extends: true,
         test: {

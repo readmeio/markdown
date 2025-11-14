@@ -21,11 +21,17 @@ describe('callouts compiler', () => {
     expect(mdx(mdast(markdown))).toBe(markdown);
   });
 
-  it('compiles callouts with no heading or body!?', () => {
+  it('compiles callouts with no heading or body', () => {
     const markdown = `> 🚧
 `;
 
     expect(mdx(mdast(markdown))).toBe(markdown);
+  });
+
+  it('compiles callouts with no heading or body and no new line at the end', () => {
+    const markdown = '> ℹ️';
+
+    expect(mdx(mdast(markdown))).toBe(`${markdown}\n`);
   });
 
   it('compiles callouts with markdown in the heading', () => {
