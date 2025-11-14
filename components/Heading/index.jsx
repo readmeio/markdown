@@ -18,6 +18,7 @@ function Heading({ align = '', id = '', level = 2, tag, showAnchorIcons = true, 
   if (showAnchorIcons) {
     const headingText = children[1];
     childrenWithAnchor.push(
+      // eslint-disable-next-line jsx-a11y/anchor-has-content
       <a
         key={`heading-anchor-icon-${id}`}
         aria-label={`Skip link to ${headingText}`}
