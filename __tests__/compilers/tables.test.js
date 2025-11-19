@@ -1,6 +1,6 @@
 import { visit, EXIT } from 'unist-util-visit';
 
-import { mdast, mdx } from '../../index';
+import { mdast, mdx, mix } from '../../index';
 
 import {
   jsxTableWithInlineCodeWithPipe,
@@ -376,6 +376,405 @@ describe('table compiler', () => {
 
     it('compiles jsx tables with pipes in inline code', () => {
       expect(mdx(jsxTableWithInlineCodeWithPipe)).toMatchInlineSnapshot(`
+        "<Table align={["left","left"]}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>
+                force
+                jsx
+              </th>
+
+              <th style={{ textAlign: "left" }}>
+
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "left" }}>
+                \`foo | bar\`
+              </td>
+
+              <td style={{ textAlign: "left" }}>
+
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+  });
+});
+
+describe('mix table compiler', () => {
+  it.skip('writes to markdown syntax', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`;
+
+    expect(mix(mdast(markdown))).toBe(
+      `|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`,
+    );
+  });
+
+  it.skip('compiles to jsx syntax', () => {
+    const markdown = `
+<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+        🦉
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+        🦉
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+        🦉
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+        🦉
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+    expect(mix(mdast(markdown))).toBe(`<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+        🦉
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+        🦉
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+        🦉
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+        🦉
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`);
+  });
+
+  it.skip('saves to MDX if there are newlines', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n🦉` }];
+    });
+
+    expect(mix(tree)).toMatchInlineSnapshot(`
+      "<Table align={["center","center"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "center" }}>
+              th 1
+              🦉
+            </th>
+
+            <th style={{ textAlign: "center" }}>
+              th 2
+              🦉
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "center" }}>
+              cell 1
+              🦉
+            </td>
+
+            <td style={{ textAlign: "center" }}>
+              cell 2
+              🦉
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it.skip('saves to MDX if there are newlines and null alignment', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| ------ | ------ |
+| cell 1 | cell 2 |
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = [{ type: 'text', value: `${cell.children[0].value}\n🦉` }];
+    });
+
+    expect(mix(tree)).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              th 1
+              🦉
+            </th>
+
+            <th>
+              th 2
+              🦉
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              cell 1
+              🦉
+            </td>
+
+            <td>
+              cell 2
+              🦉
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it.skip('saves to MDX with lists', () => {
+    const markdown = `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`;
+    const list = `
+- 1
+- 2
+- 3
+`;
+
+    const tree = mdast(markdown);
+
+    visit(tree, 'tableCell', cell => {
+      cell.children = mdast(list).children;
+      return EXIT;
+    });
+
+    expect(mix(tree)).toMatchInlineSnapshot(`
+      "<Table align={["center","center"]}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "center" }}>
+              * 1
+              * 2
+              * 3
+            </th>
+
+            <th style={{ textAlign: "center" }}>
+              th 2
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td style={{ textAlign: "center" }}>
+              cell 1
+            </td>
+
+            <td style={{ textAlign: "center" }}>
+              cell 2
+            </td>
+          </tr>
+        </tbody>
+      </Table>
+      "
+    `);
+  });
+
+  it.skip('compiles back to markdown syntax if there are no newlines/blocks', () => {
+    const markdown = `
+<Table align={["center","center"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "center" }}>
+        th 1
+      </th>
+
+      <th style={{ textAlign: "center" }}>
+        th 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "center" }}>
+        cell 1
+      </td>
+
+      <td style={{ textAlign: "center" }}>
+        cell 2
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+    expect(mix(mdast(markdown)).trim()).toBe(
+      `
+|  th 1  |  th 2  |
+| :----: | :----: |
+| cell 1 | cell 2 |
+`.trim(),
+    );
+  });
+
+  it.skip('compiles to jsx if there is a single list item', () => {
+    const doc = `
+<Table>
+  <thead>
+    <tr>
+      <th>
+        * list
+      </th>
+
+      <th>
+        th 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        cell 1
+      </td>
+
+      <td>
+        cell 2
+      </td>
+    </tr>
+  </tbody>
+</Table>
+    `;
+
+    const tree = mdast(doc);
+
+    expect(mix(tree).trim()).toMatchInlineSnapshot(`
+      "<Table>
+        <thead>
+          <tr>
+            <th>
+              * list
+            </th>
+
+            <th>
+              th 2
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>
+              cell 1
+            </td>
+
+            <td>
+              cell 2
+            </td>
+          </tr>
+        </tbody>
+      </Table>"
+    `);
+  });
+
+  it.skip('compiles tables with empty cells', () => {
+    const doc = `
+| col1 | col2 | col3                     |
+| :--- | :--: | :----------------------- |
+| →    |      | ← empty cell to the left |
+`;
+    const ast = mdast(doc);
+
+    expect(() => {
+      mix(ast);
+    }).not.toThrow();
+  });
+
+  describe('escaping pipes', () => {
+    it.skip('compiles tables with pipes in inline code', () => {
+      expect(mix(tableWithInlineCodeWithPipe)).toMatchInlineSnapshot(`
+        "|              |    |
+        | :----------- | :- |
+        | \`foo \\| bar\` |    |
+        "
+      `);
+    });
+
+    it.skip('compiles tables with escaped pipes in inline code', () => {
+      expect(mix(tableWithInlineCodeWithEscapedPipe)).toMatchInlineSnapshot(`
+        "|              |    |
+        | :----------- | :- |
+        | \`foo \\| bar\` |    |
+        "
+      `);
+    });
+
+    it.skip('compiles tables with pipes', () => {
+      expect(mix(tableWithPipe)).toMatchInlineSnapshot(`
+        "|            |    |
+        | :--------- | :- |
+        | foo \\| bar |    |
+        "
+      `);
+    });
+
+    it.skip('compiles jsx tables with pipes in inline code', () => {
+      expect(mix(jsxTableWithInlineCodeWithPipe)).toMatchInlineSnapshot(`
         "<Table align={["left","left"]}>
           <thead>
             <tr>

@@ -42,3 +42,46 @@ describe('variable compiler', () => {
     expect(rmdx.mdx(tree).trim()).toStrictEqual(mdx.trim());
   });
 });
+
+describe('mix variable compiler', () => {
+  it.skip('compiles back to the original mdx', () => {
+    const mdx = `
+## Hello!
+
+{user.name}
+
+### Bye bye!
+    `;
+    const tree = rmdx.mdast(mdx);
+
+    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+  });
+
+  it.skip('with spaces in a variable, it compiles back to the original', () => {
+    const mdx = '{user["oh no"]}';
+    const tree = rmdx.mdast(mdx);
+
+    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+  });
+
+  it.skip('with dashes in a variable name, it compiles back to the original', () => {
+    const mdx = '{user["oh-no"]}';
+    const tree = rmdx.mdast(mdx);
+
+    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+  });
+
+  it.skip('with unicode in the variable name, it compiles back to the original', () => {
+    const mdx = '{user.nuñez}';
+    const tree = rmdx.mdast(mdx);
+
+    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+  });
+
+  it.skip('with quotes in the variable name, it compiles back to the original', () => {
+    const mdx = '{user[`"\'wth`]}';
+    const tree = rmdx.mdast(mdx);
+
+    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+  });
+});

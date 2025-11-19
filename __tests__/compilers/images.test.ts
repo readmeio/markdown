@@ -1,4 +1,4 @@
-import { mdast, mdx } from '../../index';
+import { mdast, mdx, mix } from '../../index';
 
 describe('image compiler', () => {
   it('correctly serializes an image back to markdown', () => {
@@ -39,5 +39,47 @@ describe('image compiler', () => {
     const doc = '<Image border={undefined} />';
 
     expect(mdx(mdast(doc))).toMatch('![]()');
+  });
+});
+
+describe('mix image compiler', () => {
+  it.skip('correctly serializes an image back to markdown', () => {
+    const txt = '![alt text](/path/to/image.png)';
+
+    expect(mix(mdast(txt))).toMatch(txt);
+  });
+
+  it.skip('correctly serializes an inline image back to markdown', () => {
+    const txt = 'Forcing it to be inline: ![alt text](/path/to/image.png)';
+
+    expect(mix(mdast(txt))).toMatch(txt);
+  });
+
+  it.skip('correctly serializes an Image component back to MDX', () => {
+    const doc = '<Image src="/path/to/image.png" width="200px" height="150px" alt="alt text" />';
+
+    expect(mix(mdast(doc))).toMatch(doc);
+  });
+
+  it.skip('ignores empty (undefined, null, or "") attributes', () => {
+    const doc = '<Image src="/path/to/image.png" border={true} alt="" title={null} align={undefined} />';
+
+    expect(mix(mdast(doc))).toMatch('<Image border={true} src="/path/to/image.png" />');
+  });
+
+  it.skip('correctly serializes an Image component with expression attributes back to MDX', () => {
+    const doc = '<Image src="/path/to/image.png" border={false} />';
+
+    expect(mix(mdast(doc))).toMatch('![](/path/to/image.png)');
+
+    const doc2 = '<Image src="/path/to/image.png" border={true} />';
+
+    expect(mix(mdast(doc2))).toMatch('<Image border={true} src="/path/to/image.png" />');
+  });
+
+  it.skip('correctly serializes an Image component with an undefined expression attributes back to MDX', () => {
+    const doc = '<Image border={undefined} />';
+
+    expect(mix(mdast(doc))).toMatch('![]()');
   });
 });

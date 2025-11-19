@@ -1,11 +1,10 @@
 import fs from 'node:fs';
 
 import { render, screen } from '@testing-library/react';
-import React from 'react';
 
 import { vi } from 'vitest';
 
-import { mdx, compile, run } from '../../index';
+import { mdx, mix, compile, run } from '../../index';
 import { migrate } from '../helpers';
 
 describe('compatability with RDMD', () => {
@@ -505,5 +504,121 @@ ${JSON.stringify(
       "Inline: <what even is this>
       "
     `);
+  });
+});
+
+describe('mix compatability with RDMD', () => {
+  it.skip('compiles glossary nodes', () => {
+    const ast = {
+      type: 'readme-glossary-item',
+      data: {
+        hProperties: {
+          term: 'parliament',
+        },
+      },
+    };
+
+    expect(mix(ast).trim()).toBe('<Glossary>parliament</Glossary>');
+  });
+
+  it.skip('compiles mdx glossary nodes', () => {
+    const ast = {
+      type: 'readme-glossary-item',
+      data: {
+        hName: 'Glossary',
+      },
+      children: [{ type: 'text', value: 'parliament' }],
+    };
+
+    expect(mix(ast).trim()).toBe('<Glossary>parliament</Glossary>');
+  });
+
+  it.skip('compiles mdx image nodes', () => {
+    const ast = {
+      type: 'root',
+      children: [
+        {
+          type: 'figure',
+          data: { hName: 'figure' },
+          children: [
+            {
+              align: 'center',
+              width: '300px',
+              src: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
+              url: 'https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif',
+              alt: '',
+              title: '',
+              type: 'image',
+              data: {
+                hProperties: {
+                  align: 'center',
+                  className: 'border',
+                  width: '300px',
+                },
+              },
+            },
+            {
+              type: 'figcaption',
+              data: { hName: 'figcaption' },
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    { type: 'text', value: 'hello ' },
+                    { type: 'strong', children: [{ type: 'text', value: 'cat' }] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(mix(ast).trim()).toMatchInlineSnapshot(`
+      "<Image align="center" width="300px" src="https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif" border={true}>
+        hello **cat**
+      </Image>"
+    `);
+  });
+
+  it.skip('compiles mdx embed nodes', () => {
+    const ast = {
+      data: {
+        hProperties: {
+          html: false,
+          url: 'https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf',
+          title: 'iframe',
+          href: 'https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf',
+          typeOfEmbed: 'iframe',
+          height: '300px',
+          width: '100%',
+          iframe: true,
+        },
+        hName: 'embed',
+        html: false,
+        url: 'https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf',
+        title: 'iframe',
+        href: 'https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf',
+        typeOfEmbed: 'iframe',
+        height: '300px',
+        width: '100%',
+        iframe: true,
+      },
+      type: 'embed',
+    };
+
+    expect(mix(ast).trim()).toBe(
+      '<Embed url="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" title="iframe" href="https://cdn.shopify.com/s/files/1/0711/5132/1403/files/BRK0502-034178M.pdf" typeOfEmbed="iframe" height="300px" width="100%" iframe="true" />',
+    );
+  });
+
+  it.skip('compiles reusable-content nodes', () => {
+    const ast = {
+      type: 'reusable-content',
+      tag: 'Parliament',
+    };
+
+    expect(mix(ast).trim()).toBe('<Parliament />');
   });
 });
