@@ -1,4 +1,4 @@
-import { mdast, mdx } from '../../index';
+import { mdast, mdx, mix } from '../../index';
 
 describe('link compiler', () => {
   it('compiles links without extra attributes', () => {
@@ -11,5 +11,19 @@ describe('link compiler', () => {
     const markdown = '<Anchor target="_blank" href="https://readme.com">ReadMe</Anchor>';
 
     expect(mdx(mdast(markdown)).trim()).toBe(markdown);
+  });
+});
+
+describe('mix link compiler', () => {
+  it.skip('compiles links without extra attributes', () => {
+    const markdown = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+
+    expect(mix(mdast(markdown)).trim()).toBe('[ReadMe](https://readme.com)');
+  });
+
+  it.skip('compiles links with extra attributes', () => {
+    const markdown = '<Anchor target="_blank" href="https://readme.com">ReadMe</Anchor>';
+
+    expect(mix(mdast(markdown)).trim()).toBe(markdown);
   });
 });
