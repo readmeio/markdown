@@ -8,6 +8,7 @@ export { default as mdast } from './mdast';
 export { default as mdastV6 } from './mdastV6';
 export { default as mdx } from './mdx';
 export { default as mix } from './mix';
+export type { MixOpts } from './mix';
 export { default as migrate } from './migrate';
 export { default as plain } from './plain';
 export { default as run } from './run';
