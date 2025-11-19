@@ -9,6 +9,8 @@ import { unified } from 'unified';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 
+import { loadComponents } from './utils/load-components';
+
 export interface MdxishOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
@@ -20,13 +22,22 @@ export interface MdxishOpts {
  * Returns HTML string
  */
 async function processMarkdown(mdContent: string, opts: MdxishOpts = {}): Promise<string> {
-  const { components = {}, jsxContext = {} } = opts;
+  const { components: userComponents = {}, jsxContext = {} } = opts;
+
+  // Automatically load all components from components/ directory
+  // Similar to prototype.js getAvailableComponents approach
+  const autoLoadedComponents = loadComponents();
+
+  // Merge components: user-provided components override auto-loaded ones
+  // This allows users to override or extend the default components
+  const components: CustomComponents = {
+    ...autoLoadedComponents,
+    ...userComponents,
+  };
 
   // Pre-process JSX expressions: converts {expression} to evaluated values
   // This allows: <a href={'value'}> alongside <a href="value">
   const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
-
-  console.log('processed jsx content:', processedContent);
 
   // Process with unified/remark/rehype pipeline
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
