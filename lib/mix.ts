@@ -22,7 +22,18 @@ export interface MixOpts {
  * Returns HTML string
  */
 async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
-  const { components: userComponents = {}, jsxContext = {} } = opts;
+  const { components: userComponents = {}, jsxContext = {
+    // Add any variables you want available in expressions
+    baseUrl: 'https://example.com',
+    siteName: 'My Site',
+    hi: 'Hello from MDX!',
+    userName: 'John Doe',
+    count: 42,
+    price: 19.99,
+    // You can add functions too
+    uppercase: (str) => str.toUpperCase(),
+    multiply: (a, b) => a * b,
+  }} = opts;
 
   // Automatically load all components from components/ directory
   // Similar to prototype.js getAvailableComponents approach
