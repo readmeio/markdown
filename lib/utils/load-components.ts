@@ -1,6 +1,5 @@
 import type { CustomComponents, RMDXModule } from '../../types';
-
-import React from 'react';
+import type React from 'react';
 
 import * as Components from '../../components';
 
@@ -18,6 +17,7 @@ export function loadComponents(): CustomComponents {
     // Skip non-component exports (React components are functions or objects)
     if (typeof Component !== 'function' && typeof Component !== 'object') {
       return;
+    }
 
     // Wrap the component in RMDXModule format
     // RMDXModule expects: { default: Component, Toc: null, toc: [] }
