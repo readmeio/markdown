@@ -11,7 +11,7 @@ import { preprocessJSXExpressions, type JSXContext } from '../processor/transfor
 
 import { loadComponents } from './utils/load-components';
 
-export interface MdxishOpts {
+export interface MixOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
 }
@@ -21,7 +21,7 @@ export interface MdxishOpts {
  * Detects and renders custom component tags from the components hash
  * Returns HTML string
  */
-async function processMarkdown(mdContent: string, opts: MdxishOpts = {}): Promise<string> {
+async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
   const { components: userComponents = {}, jsxContext = {} } = opts;
 
   // Automatically load all components from components/ directory
@@ -48,16 +48,16 @@ async function processMarkdown(mdContent: string, opts: MdxishOpts = {}): Promis
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (content: string) => processMarkdown(content, opts),
-    }) // Our AST hook: finds component elements and renders them
+    }) // AST hook: finds component elements and renders them
     .use(rehypeStringify, { allowDangerousHtml: true }) // Stringify back to HTML
     .process(processedContent);
 
   return String(file);
 }
 
-const mdxish = async (text: string, opts: MdxishOpts = {}): Promise<string> => {
+const mix = async (text: string, opts: MixOpts = {}): Promise<string> => {
   return processMarkdown(text, opts);
 };
 
-export default mdxish;
+export default mix;
 

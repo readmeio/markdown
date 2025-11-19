@@ -5,7 +5,7 @@ import type { Transformer } from 'unified';
 import { fromHtml } from 'hast-util-from-html';
 import { visit } from 'unist-util-visit';
 
-import { componentExists, serializeInnerHTML, renderComponent } from '../../lib/utils/mdxish-components';
+import { componentExists, serializeInnerHTML, renderComponent } from '../../lib/utils/mix-components';
 
 interface Options {
   components: CustomComponents;

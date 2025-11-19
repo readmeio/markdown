@@ -6,7 +6,7 @@ import * as Components from '../../components';
 /**
  * Load components from the components directory and wrap them in RMDXModule format
  * Similar to prototype.js getAvailableComponents, but for React components instead of MDX files
- * This allows mdxish to use React components directly without MDX compilation
+ * This allows mix to use React components directly without MDX compilation
  */
 export function loadComponents(): CustomComponents {
   const components: CustomComponents = {};
