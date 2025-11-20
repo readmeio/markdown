@@ -62,6 +62,20 @@ function smartCamelCase(str: string): string {
   }, str);
 }
 
+function isActualHtmlTag(nodeTagName: string, originalExcerpt: string) {
+  if (originalExcerpt.startsWith(`<${nodeTagName}>`)) {
+    return true;
+  }
+
+  // Add more cases of a character being converted to a tag
+  switch (nodeTagName) {
+    case 'code':
+      return originalExcerpt.startsWith('`');
+    default:
+      return false;
+  }
+}
+
 /**
  * Rehype plugin to dynamically transform ANY custom component elements
  */
@@ -83,8 +97,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
       // This is a hack since tags are normalized to lowercase by the parser, so we need to check the original string
       // for PascalCase tags & potentially custom component
       const originalStringHtml = vfile.toString().substring(node.position.start.offset, node.position.end.offset);
-      if (originalStringHtml.startsWith(`<${node.tagName}>`)) {
-        // Actual HTML tag, skip
+      if (isActualHtmlTag(node.tagName, originalStringHtml)) {
         return;
       }
 
