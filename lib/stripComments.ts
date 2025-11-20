@@ -13,11 +13,6 @@ interface Opts {
 }
 
 /**
- * Regext to match non-MDX text node values like `<<name>>` or `<<my_name>>`.
- * ⚠️ This should only be used with plain markdown and not MDX.
- */
-
-/**
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
