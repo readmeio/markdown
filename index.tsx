@@ -23,6 +23,7 @@ export {
   migrate,
   mix,
   plain,
+  renderHtml,
   remarkPlugins,
   stripComments,
   tags,

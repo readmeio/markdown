@@ -11,6 +11,8 @@ export { default as mix } from './mix';
 export type { MixOpts } from './mix';
 export { default as migrate } from './migrate';
 export { default as plain } from './plain';
+export { default as renderHtml } from './render-html';
+export type { RenderHtmlOpts } from './render-html';
 export { default as run } from './run';
 export { default as tags } from './tags';
 export { default as stripComments } from './stripComments';
