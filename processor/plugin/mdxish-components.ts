@@ -1,6 +1,7 @@
 import type { CustomComponents } from '../../types';
 import type { Root, Element } from 'hast';
 import type { Transformer } from 'unified';
+import type { VFile } from 'vfile';
 
 import { fromHtml } from 'hast-util-from-html';
 import { visit } from 'unist-util-visit';
@@ -65,7 +66,7 @@ function smartCamelCase(str: string): string {
  * Rehype plugin to dynamically transform ANY custom component elements
  */
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
-  return async (tree: Root): Promise<void> => {
+  return async (tree: Root, vfile: VFile): Promise<void> => {
     const transformations: {
       componentName: string;
       index: number;
@@ -78,9 +79,18 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     visit(tree, 'element', (node: Element, index, parent: Element | Root | undefined) => {
       if (index === undefined || !parent) return;
 
+      // Check if the node is an actual HTML tag
+      // This is a hack since tags are normalized to lowercase by the parser, so we need to check the original string
+      // for PascalCase tags & potentially custom component
+      const originalStringHtml = vfile.toString().substring(node.position.start.offset, node.position.end.offset);
+      if (originalStringHtml.startsWith(`<${node.tagName}>`)) {
+        // Actual HTML tag, skip
+        return;
+      }
+
       // Only process tags that have a corresponding component in the components hash
       if (!componentExists(node.tagName, components)) {
-        return; // Skip - it's a regular HTML tag or non-existent component
+        return; // Skip - non-existent component
       }
 
       // This is a custom component! Extract all properties dynamically
