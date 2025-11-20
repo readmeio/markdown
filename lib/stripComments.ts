@@ -12,6 +12,12 @@ interface Opts {
 }
 
 /**
+ * Regext to match non-MDX text node values like `<<name>>` or `<<my_name>>`.
+ * ⚠️ This should only be used with plain markdown and not MDX.
+ */
+const VARIABLE_REGEX = /^<<[^>]+>>$/;
+
+/**
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
@@ -21,7 +27,23 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
     .use(remarkParse)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
-    .use(remarkStringify);
+    .use(
+      remarkStringify,
+      mdx
+        ? {}
+        : {
+            handlers: {
+              // Preserve <<...>> variables without escaping any angle brackets.
+              text(node, _, state, info) {
+                // If text contains <<...>> pattern, return as is.
+                if (VARIABLE_REGEX.test(node.value)) return node.value;
+
+                // Otherwise, handle each text node normally.
+                return state.safe(node.value, info);
+              },
+            },
+          },
+    );
 
   const file = await processor.process(replaced);
   const stringified = String(file).trim();

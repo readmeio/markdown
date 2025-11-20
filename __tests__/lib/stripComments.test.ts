@@ -74,4 +74,23 @@ Last text
     const output = await stripComments(input, { mdx: true });
     expect(output).toMatchSnapshot();
   });
+
+  it('preserves non-mdx variables', async () => {
+    const input = `Hello
+<!-- should be removed -->
+<<user>>
+<!-- should be removed -->
+<<hot_dog>>
+<!-- should be removed -->
+<<HOT_DIGGITY_DOG>>`;
+
+    const output = await stripComments(input);
+    expect(output).toBe(`Hello
+
+<<user>>
+
+<<hot_dog>>
+
+<<HOT_DIGGITY_DOG>>`);
+  });
 });
