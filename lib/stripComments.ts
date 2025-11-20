@@ -1,3 +1,4 @@
+import { VARIABLE_REGEXP } from '@readme/variable';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
@@ -15,7 +16,6 @@ interface Opts {
  * Regext to match non-MDX text node values like `<<name>>` or `<<my_name>>`.
  * ⚠️ This should only be used with plain markdown and not MDX.
  */
-const VARIABLE_REGEX = /^<<[^>]+>>$/;
 
 /**
  * Removes Markdown and MDX comments.
@@ -36,7 +36,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
               // Preserve <<...>> variables without escaping any angle brackets.
               text(node, _, state, info) {
                 // If text contains <<...>> pattern, return as is.
-                if (VARIABLE_REGEX.test(node.value)) return node.value;
+                if (new RegExp(VARIABLE_REGEXP).test(node.value)) return node.value;
 
                 // Otherwise, handle each text node normally.
                 return state.safe(node.value, info);

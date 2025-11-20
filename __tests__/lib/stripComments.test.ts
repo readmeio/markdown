@@ -79,18 +79,16 @@ Last text
     const input = `Hello
 <!-- should be removed -->
 <<user>>
-<!-- should be removed -->
 <<hot_dog>>
-<!-- should be removed -->
-<<HOT_DIGGITY_DOG>>`;
+<<HOT_DIGGITY_DOG>>
+<<glossary:item_term>>`;
 
     const output = await stripComments(input);
     expect(output).toBe(`Hello
 
 <<user>>
-
 <<hot_dog>>
-
-<<HOT_DIGGITY_DOG>>`);
+<<HOT_DIGGITY_DOG>>
+<<glossary:item_term>>`);
   });
 });
