@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -29,6 +30,25 @@ describe('renderHtml', () => {
     expect(screen.getByText(/content\./)).toBeInTheDocument();
   });
 
+  it('rehydrates custom components from mix output when preserveComponents is true', async () => {
+    const md = `<Callout theme="warn" icon="🚧">
+
+**Heads up!**
+
+This is a custom component.
+</Callout>`;
+
+    const html = await mix(md, { preserveComponents: true });
+    expect(html).toContain('data-rmd-component="Callout"');
+
+    const mod = renderHtml(html);
+
+    const { container } = render(<mod.default />);
+    expect(container.querySelector('.callout.callout_warn')).toBeInTheDocument();
+    expect(screen.getByText('Heads up!')).toBeInTheDocument();
+    expect(screen.getByText('This is a custom component.')).toBeInTheDocument();
+  });
+
   it('extracts TOC from headings', () => {
     const html = '<h1>First Heading</h1><p>Content</p><h2>Second Heading</h2><hr>';
     const mod = renderHtml(html);
@@ -38,4 +58,3 @@ describe('renderHtml', () => {
     expect(mod.Toc).toBeDefined();
   });
 });
-

@@ -14,6 +14,7 @@ import { loadComponents } from './utils/load-components';
 export interface MixOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
+  preserveComponents?: boolean;
 }
 
 /**
@@ -22,7 +23,10 @@ export interface MixOpts {
  * Returns HTML string
  */
 async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
-  const { components: userComponents = {}, jsxContext = {
+  const {
+    components: userComponents = {},
+    preserveComponents = false,
+    jsxContext = {
     // Add any variables you want available in expressions
     baseUrl: 'https://example.com',
     siteName: 'My Site',
@@ -58,6 +62,7 @@ async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<s
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
     .use(rehypeMdxishComponents, {
       components,
+      preserveComponents,
       processMarkdown: (content: string) => processMarkdown(content, opts),
     }) // AST hook: finds component elements and renders them
     .use(rehypeStringify, { allowDangerousHtml: true }) // Stringify back to HTML
@@ -71,4 +76,3 @@ const mix = async (text: string, opts: MixOpts = {}): Promise<string> => {
 };
 
 export default mix;
-

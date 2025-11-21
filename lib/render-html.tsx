@@ -8,6 +8,7 @@ import { h } from 'hastscript';
 import React from 'react';
 import rehypeReact from 'rehype-react';
 import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 
 import * as Components from '../components';
 import Contexts from '../contexts';
@@ -27,23 +28,65 @@ export interface RenderHtmlOpts {
 const MAX_DEPTH = 2;
 const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)?.[1] || '1', 10);
 
+function restoreCustomComponents(tree: Root) {
+  visit(tree, 'element', node => {
+    if (!node.properties) return;
+    const componentNameProp = node.properties['data-rmd-component'] ?? node.properties.dataRmdComponent;
+    const componentName = Array.isArray(componentNameProp) ? componentNameProp[0] : componentNameProp;
+    if (typeof componentName !== 'string' || !componentName) return;
+
+    const encodedPropsProp = node.properties['data-rmd-props'] ?? node.properties.dataRmdProps;
+    const encodedProps = Array.isArray(encodedPropsProp) ? encodedPropsProp[0] : encodedPropsProp;
+    let decodedProps: Record<string, unknown> = {};
+    if (typeof encodedProps === 'string') {
+      try {
+        decodedProps = JSON.parse(decodeURIComponent(encodedProps));
+      } catch {
+        decodedProps = {};
+      }
+    }
+
+    delete node.properties['data-rmd-component'];
+    delete node.properties['data-rmd-props'];
+    delete node.properties.dataRmdComponent;
+    delete node.properties.dataRmdProps;
+
+    node.tagName = componentName;
+
+    const sanitizedProps = Object.entries(decodedProps).reduce<Record<string, boolean | number | string>>(
+      (memo, [key, value]) => {
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+          memo[key] = value;
+        }
+        return memo;
+      },
+      {},
+    );
+
+    node.properties = {
+      ...node.properties,
+      ...sanitizedProps,
+    };
+  });
+}
+
 /**
  * Extract headings (h1-h6) from HAST for table of contents
  */
 function extractToc(tree: Root): HastHeading[] {
   const headings: HastHeading[] = [];
 
-  const visit = (node: Root | Root['children'][number]): void => {
+  const traverse = (node: Root | Root['children'][number]): void => {
     if (node.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
       headings.push(node as HastHeading);
     }
 
     if ('children' in node && Array.isArray(node.children)) {
-      node.children.forEach(child => visit(child));
+      node.children.forEach(child => traverse(child));
     }
   };
 
-  visit(tree);
+  traverse(tree);
   return headings;
 }
 
@@ -94,6 +137,8 @@ const renderHtml = (htmlString: string, _opts: RenderHtmlOpts = {}): RMDXModule 
 
   // Parse HTML string to HAST
   const tree = fromHtml(htmlString, { fragment: true }) as Root;
+
+  restoreCustomComponents(tree);
 
   // Extract TOC from HAST
   const headings = extractToc(tree);
@@ -162,4 +207,3 @@ const renderHtml = (htmlString: string, _opts: RenderHtmlOpts = {}): RMDXModule 
 };
 
 export default renderHtml;
-

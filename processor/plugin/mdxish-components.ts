@@ -10,6 +10,7 @@ import { componentExists, serializeInnerHTML, renderComponent } from '../../lib/
 
 interface Options {
   components: CustomComponents;
+  preserveComponents?: boolean;
   processMarkdown: (content: string) => Promise<string>;
 }
 
@@ -79,7 +80,24 @@ function isActualHtmlTag(nodeTagName: string, originalExcerpt: string) {
 /**
  * Rehype plugin to dynamically transform ANY custom component elements
  */
-export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
+function getRegisteredComponentName(componentName: string, components: CustomComponents) {
+  if (componentName in components) return componentName;
+
+  const pascalCase = componentName
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+
+  if (pascalCase in components) return pascalCase;
+
+  return componentName;
+}
+
+export const rehypeMdxishComponents = ({
+  components,
+  processMarkdown,
+  preserveComponents = false,
+}: Options): Transformer<Root, Root> => {
   return async (tree: Root, vfile: VFile): Promise<void> => {
     const transformations: {
       componentName: string;
@@ -106,6 +124,8 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
         return; // Skip - non-existent component
       }
 
+      const registeredName = getRegisteredComponentName(node.tagName, components);
+
       // This is a custom component! Extract all properties dynamically
       const props: Record<string, unknown> = {};
 
@@ -115,6 +135,16 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
           const camelKey = smartCamelCase(key);
           props[camelKey] = value;
         });
+      }
+
+      if (preserveComponents) {
+        if (!node.properties) node.properties = {};
+        node.properties['data-rmd-component'] = registeredName;
+        if (Object.keys(props).length > 0) {
+          const serializedProps = encodeURIComponent(JSON.stringify(props));
+          node.properties['data-rmd-props'] = serializedProps;
+        }
+        return;
       }
 
       // Extract the inner HTML (preserving nested elements) for children prop
@@ -152,4 +182,3 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     }, Promise.resolve());
   };
 };
-
