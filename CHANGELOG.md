@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 11.7.5
+### 🛠 Fixes & Updates
+
+* **stripComments:** preserve legacy MD variables ([#1240](https://github.com/readmeio/markdown/issues/1240)) ([608eae7](https://github.com/readmeio/markdown/commit/608eae7085b7597d0323e221f48dfd93c6fec876))
+* remove CODEOWNERS ([3f71007](https://github.com/readmeio/markdown/commit/3f7100778cc509720e042fb627bfa28db7d5044f))
+
 ## Version 11.7.4
 ### 🛠 Fixes & Updates
 
