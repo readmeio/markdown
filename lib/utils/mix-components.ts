@@ -40,7 +40,14 @@ export function componentExists(componentName: string, components: CustomCompone
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-  return componentName in components || pascalCase in components;
+  const directMatch = componentName in components || pascalCase in components;
+  if (directMatch) return true;
+
+  const matches = Object.keys(components).filter((key) => {
+    return key.toLowerCase() === componentName.toLowerCase() || key.toLowerCase() === pascalCase.toLowerCase();
+  });
+
+  return matches.length > 0;
 }
 
 /**
@@ -61,6 +68,15 @@ export function getComponent(componentName: string, components: CustomComponents
 
   if (pascalCase in components) {
     const mod = components[pascalCase];
+    return mod.default || null;
+  }
+
+  // Try case-insensitive match across all component keys
+  const normalizedName = componentName.toLowerCase();
+  const matchingKey = Object.keys(components).find(key => key.toLowerCase() === normalizedName);
+
+  if (matchingKey) {
+    const mod = components[matchingKey];
     return mod.default || null;
   }
 
