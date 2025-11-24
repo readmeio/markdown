@@ -114,7 +114,10 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
       if (typeof result === 'object') {
         return JSON.stringify(result);
       }
-      return String(result);
+      const resultString = String(result);
+      // Ensure replacement doesn't break inline markdown context
+      // Replace any newlines or multiple spaces with single space to preserve inline flow
+      return resultString.replace(/\s+/g, ' ').trim();
     } catch (error) {
       // Return original if evaluation fails
       return match;

@@ -137,6 +137,12 @@ export const rehypeMdxishComponents = ({
         });
       }
 
+      // Extract the inner HTML (preserving nested elements) for children prop
+      const innerHTML = serializeInnerHTML(node);
+      if (innerHTML.trim()) {
+        props.children = innerHTML.trim();
+      }
+
       if (preserveComponents) {
         if (!node.properties) node.properties = {};
         node.properties['data-rmd-component'] = registeredName;
@@ -145,12 +151,6 @@ export const rehypeMdxishComponents = ({
           node.properties['data-rmd-props'] = serializedProps;
         }
         return;
-      }
-
-      // Extract the inner HTML (preserving nested elements) for children prop
-      const innerHTML = serializeInnerHTML(node);
-      if (innerHTML.trim()) {
-        props.children = innerHTML.trim();
       }
 
       // Store the transformation to process async

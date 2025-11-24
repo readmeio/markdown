@@ -6,9 +6,9 @@ import { mix } from '../../index';
 import renderHtml from '../../lib/render-html';
 
 describe('renderHtml', () => {
-  it('renders simple HTML content', () => {
+  it('renders simple HTML content', async () => {
     const html = '<h1>Hello, world!</h1><p>This is a test paragraph.</p>';
-    const mod = renderHtml(html);
+    const mod = await renderHtml(html);
 
     render(<mod.default />);
 
@@ -19,7 +19,7 @@ describe('renderHtml', () => {
   it('renders HTML from mix output', async () => {
     const md = '### Hello, world!\n\nThis is **markdown** content.';
     const html = await mix(md);
-    const mod = renderHtml(html);
+    const mod = await renderHtml(html);
 
     render(<mod.default />);
 
@@ -41,7 +41,7 @@ This is a custom component.
     const html = await mix(md, { preserveComponents: true });
     expect(html).toContain('data-rmd-component="Callout"');
 
-    const mod = renderHtml(html);
+    const mod = await renderHtml(html);
 
     const { container } = render(<mod.default />);
     expect(container.querySelector('.callout.callout_warn')).toBeInTheDocument();
@@ -49,9 +49,9 @@ This is a custom component.
     expect(screen.getByText('This is a custom component.')).toBeInTheDocument();
   });
 
-  it('extracts TOC from headings', () => {
+  it('extracts TOC from headings', async () => {
     const html = '<h1>First Heading</h1><p>Content</p><h2>Second Heading</h2><hr>';
-    const mod = renderHtml(html);
+    const mod = await renderHtml(html);
 
     expect(mod.toc).toBeDefined();
     expect(mod.toc).toHaveLength(2);

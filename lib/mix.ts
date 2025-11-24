@@ -22,7 +22,7 @@ export interface MixOpts {
  * Detects and renders custom component tags from the components hash
  * Returns HTML string
  */
-async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
+export async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
   const {
     components: userComponents = {},
     preserveComponents = false,
