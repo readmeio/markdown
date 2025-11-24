@@ -13,7 +13,7 @@ import { visit } from 'unist-util-visit';
 import * as Components from '../components';
 import Contexts from '../contexts';
 
-import { processMixMdMdx as mixProcessMarkdown, type MixOpts } from './mix';
+import mix, { type MixOpts } from './mix';
 import plain from './plain';
 import { loadComponents } from './utils/load-components';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';
@@ -230,7 +230,7 @@ const renderHtml = async (htmlString: string, _opts: RenderHtmlOpts = {}): Promi
           ]),
         )
       : {};
-    return mixProcessMarkdown(content, {
+    return mix(content, {
       components,
       preserveComponents: true, // Always preserve when processing children
       jsxContext,

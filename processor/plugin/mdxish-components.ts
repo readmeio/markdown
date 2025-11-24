@@ -29,7 +29,6 @@ const replaceTextChildrenWithFragment = async (
       if (child.type !== 'text' || child.value.trim() === '') {
         return child;
       }
-      console.log(`[rehypeMdxishComponents] processing text node: ${child.value}`);
 
       const mdHast = await processMarkdown(child.value.trim());
       const fragmentChildren = (mdHast.children ?? []).filter(isElementContentNode);
@@ -121,7 +120,6 @@ export const rehypeMdxishComponents = ({
   processMarkdown,
 }: Options): Transformer<Root, Root> => {
   return async (tree: Root, vfile: VFile) => {
-    console.log(`[rehypeMdxishComponents] root tree: ${JSON.stringify(tree, null, 2)}`);
     const transforms: Promise<void>[] = [];
 
     // Visit all elements in the HAST looking for custom component tags
@@ -158,7 +156,6 @@ export const rehypeMdxishComponents = ({
       // 2. For any text nodes inside the node, recursively process them as markdown & replace the text nodes with the processed markdown
 
       // Update the node.tagName to the actual component name in PascalCase
-      console.log(`[rehypeMdxishComponents] updating ${node.tagName} to ${componentName}`);
       node.tagName = componentName;
 
       // For any text nodes inside the current node,
