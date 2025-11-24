@@ -13,7 +13,7 @@ import { visit } from 'unist-util-visit';
 import * as Components from '../components';
 import Contexts from '../contexts';
 
-import { processMarkdown as mixProcessMarkdown, type MixOpts } from './mix';
+import { processMixMdMdx as mixProcessMarkdown, type MixOpts } from './mix';
 import plain from './plain';
 import { loadComponents } from './utils/load-components';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';

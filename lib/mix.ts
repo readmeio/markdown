@@ -1,10 +1,12 @@
 import type { CustomComponents } from '../types';
+import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
+import { VFile } from 'vfile';
 
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
@@ -22,10 +24,9 @@ export interface MixOpts {
  * Detects and renders custom component tags from the components hash
  * Returns HTML string
  */
-export async function processMarkdown(mdContent: string, opts: MixOpts = {}): Promise<string> {
+export async function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   const {
     components: userComponents = {},
-    preserveComponents = false,
     jsxContext = {
     // Add any variables you want available in expressions
     baseUrl: 'https://example.com',
@@ -56,23 +57,29 @@ export async function processMarkdown(mdContent: string, opts: MixOpts = {}): Pr
 
   // Process with unified/remark/rehype pipeline
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
-  const file = await unified()
+  const mdToHastProcessor = unified()
     .use(remarkParse) // Parse markdown to AST
     .use(remarkRehype, { allowDangerousHtml: true }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
     .use(rehypeMdxishComponents, {
       components,
-      preserveComponents,
-      processMarkdown: (content: string) => processMarkdown(content, opts),
-    }) // AST hook: finds component elements and renders them
-    .use(rehypeStringify, { allowDangerousHtml: true }) // Stringify back to HTML
-    .process(processedContent);
+      processMarkdown: (markdownContent: string) => processMixMdMdx(markdownContent, opts),
+    }); // AST hook: finds component elements and renders them
 
-  return String(file);
+  const vfile = new VFile({ value: processedContent });
+  const hast = await mdToHastProcessor.run(mdToHastProcessor.parse(processedContent), vfile) as Root;
+
+  if (!hast) {
+    throw new Error('Markdown pipeline did not produce a HAST tree.');
+  }
+
+  return hast;
 }
 
 const mix = async (text: string, opts: MixOpts = {}): Promise<string> => {
-  return processMarkdown(text, opts);
+  const hast = await processMixMdMdx(text, opts);
+  const file = unified().use(rehypeStringify).stringify(hast);
+  return String(file);
 };
 
 export default mix;

@@ -31,8 +31,9 @@ export function serializeInnerHTML(node: Element): string {
 
 /**
  * Helper to check if a component exists in the components hash
+ * Returns the component name from the components hash or null if not found
  */
-export function componentExists(componentName: string, components: CustomComponents): boolean {
+export function componentExists(componentName: string, components: CustomComponents): string | null {
   // Convert component name to match component keys (components are typically PascalCase)
   // Try both the original name and PascalCase version
   const pascalCase = componentName
@@ -40,14 +41,20 @@ export function componentExists(componentName: string, components: CustomCompone
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join('');
 
-  const directMatch = componentName in components || pascalCase in components;
-  if (directMatch) return true;
+  if (componentName in components) {
+    return componentName;
+  }
+  if (pascalCase in components) {
+    return pascalCase;
+  }
 
-  const matches = Object.keys(components).filter((key) => {
-    return key.toLowerCase() === componentName.toLowerCase() || key.toLowerCase() === pascalCase.toLowerCase();
+  let matchingKey = null;
+  Object.keys(components).forEach((key) => {
+    if (key.toLowerCase() === componentName.toLowerCase() || key.toLowerCase() === pascalCase.toLowerCase()) {
+      matchingKey = key;
+    }
   });
-
-  return matches.length > 0;
+  return matchingKey;
 }
 
 /**

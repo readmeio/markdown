@@ -38,9 +38,7 @@ describe('renderHtml', () => {
 This is a custom component.
 </Callout>`;
 
-    const html = await mix(md, { preserveComponents: true });
-    expect(html).toContain('data-rmd-component="Callout"');
-
+    const html = await mix(md);
     const mod = await renderHtml(html);
 
     const { container } = render(<mod.default />);
