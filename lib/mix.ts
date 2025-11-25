@@ -9,6 +9,7 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
+import calloutTransformer from '../processor/transform/callouts';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 
 import { loadComponents } from './utils/load-components';
@@ -59,6 +60,7 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
   const mdToHastProcessor = unified()
     .use(remarkParse) // Parse markdown to AST
+    .use(calloutTransformer) // Transform blockquotes with emojis to Callout nodes
     .use(remarkRehype, { allowDangerousHtml: true }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
     .use(rehypeMdxishComponents, {
