@@ -24,7 +24,7 @@ export interface MixOpts {
  * Detects and renders custom component tags from the components hash
  * Returns HTML string
  */
-export async function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
+export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   const {
     components: userComponents = {},
     jsxContext = {
@@ -67,7 +67,7 @@ export async function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
     }); // AST hook: finds component elements and renders them
 
   const vfile = new VFile({ value: processedContent });
-  const hast = await mdToHastProcessor.run(mdToHastProcessor.parse(processedContent), vfile) as Root;
+  const hast = mdToHastProcessor.runSync(mdToHastProcessor.parse(processedContent), vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
@@ -76,8 +76,8 @@ export async function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   return hast;
 }
 
-const mix = async (text: string, opts: MixOpts = {}): Promise<string> => {
-  const hast = await processMixMdMdx(text, opts);
+const mix = (text: string, opts: MixOpts = {}): string => {
+  const hast = processMixMdMdx(text, opts);
   const file = unified().use(rehypeStringify).stringify(hast);
   return String(file);
 };

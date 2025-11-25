@@ -9,7 +9,7 @@ import { componentExists } from '../../lib/utils/mix-components';
 
 interface Options {
   components: CustomComponents;
-  processMarkdown: (markdownContent: string) => Promise<Root>;
+  processMarkdown: (markdownContent: string) => Root;
 }
 
 type RootChild = Root['children'][number];
@@ -18,35 +18,33 @@ function isElementContentNode(node: RootChild): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
 
-const replaceTextChildrenWithFragment = async (
+const replaceTextChildrenWithFragment = (
   node: Element,
-  processMarkdown: (markdownContent: string) => Promise<Root>,
+  processMarkdown: (markdownContent: string) => Root,
 ) => {
   if (!node.children || node.children.length === 0) return;
 
-  const nextChildren = await Promise.all(
-    node.children.map(async child => {
-      if (child.type !== 'text' || child.value.trim() === '') {
-        return child;
-      }
+  const nextChildren = node.children.map(child => {
+    if (child.type !== 'text' || child.value.trim() === '') {
+      return child;
+    }
 
-      const mdHast = await processMarkdown(child.value.trim());
-      const fragmentChildren = (mdHast.children ?? []).filter(isElementContentNode);
+    const mdHast = processMarkdown(child.value.trim());
+    const fragmentChildren = (mdHast.children ?? []).filter(isElementContentNode);
 
-      if (fragmentChildren.length === 0) {
-        return child;
-      }
+    if (fragmentChildren.length === 0) {
+      return child;
+    }
 
-      const wrapper: Element = {
-        type: 'element',
-        tagName: 'span',
-        properties: { 'data-mdxish-text-node': true },
-        children: fragmentChildren,
-      };
+    const wrapper: Element = {
+      type: 'element',
+      tagName: 'span',
+      properties: { 'data-mdxish-text-node': true },
+      children: fragmentChildren,
+    };
 
-      return wrapper;
-    }),
-  );
+    return wrapper;
+  });
 
   node.children = nextChildren as Element['children'];
 };
@@ -119,9 +117,7 @@ export const rehypeMdxishComponents = ({
   components,
   processMarkdown,
 }: Options): Transformer<Root, Root> => {
-  return async (tree: Root, vfile: VFile) => {
-    const transforms: Promise<void>[] = [];
-
+  return (tree: Root, vfile: VFile) => {
     // Visit all elements in the HAST looking for custom component tags
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
@@ -129,9 +125,12 @@ export const rehypeMdxishComponents = ({
       // Check if the node is an actual HTML tag
       // This is a hack since tags are normalized to lowercase by the parser, so we need to check the original string
       // for PascalCase tags & potentially custom component
-      const originalStringHtml = vfile.toString().substring(node.position.start.offset, node.position.end.offset);
-      if (isActualHtmlTag(node.tagName, originalStringHtml)) {
-        return;
+      // Note: node.position may be undefined for programmatically created nodes
+      if (node.position?.start && node.position?.end) {
+        const originalStringHtml = vfile.toString().substring(node.position.start.offset, node.position.end.offset);
+        if (isActualHtmlTag(node.tagName, originalStringHtml)) {
+          return;
+        }
       }
 
       // Only process tags that have a corresponding component in the components hash
@@ -161,10 +160,8 @@ export const rehypeMdxishComponents = ({
       // For any text nodes inside the current node,
       // recursively call processMarkdown on the text node's value
       // then, replace the text node with the hast node returned from processMarkdown
-      transforms.push(replaceTextChildrenWithFragment(node, processMarkdown));
+      replaceTextChildrenWithFragment(node, processMarkdown);
     });
-
-    await Promise.all(transforms);
   };
 };
 
