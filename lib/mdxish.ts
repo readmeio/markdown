@@ -2,6 +2,7 @@ import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
+import rehypeSlug from 'rehype-slug';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
@@ -65,6 +66,7 @@ export function mdxish(mdContent: string, opts: MixOpts = {}) {
     .use(mdxishComponentBlocks) // Re-wrap PascalCase HTML blocks as component-like nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
+    .use(rehypeSlug) // Add ids to headings for anchor linking
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (markdownContent: string) => mdxish(markdownContent, opts),

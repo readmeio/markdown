@@ -59,6 +59,10 @@ This is a custom component.
     expect(mod.toc).toBeDefined();
     expect(mod.toc).toHaveLength(2);
     expect(mod.Toc).toBeDefined();
+
+    render(<mod.default />);
+    expect(screen.getByText('First Heading').closest('h1')).toHaveAttribute('id', 'first-heading');
+    expect(screen.getByText('Second Heading').closest('h2')).toHaveAttribute('id', 'second-heading');
   });
 
   it('keeps content after a custom component outside of the component', () => {
