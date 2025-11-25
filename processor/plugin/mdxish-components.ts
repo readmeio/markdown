@@ -18,6 +18,7 @@ function isElementContentNode(node: RootChild): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
 
+// Check if there's no markdown content to be rendered
 function isSingleParagraphTextNode(nodes: ElementContent[]) {
   if (
     nodes.length === 1 &&
@@ -31,6 +32,7 @@ function isSingleParagraphTextNode(nodes: ElementContent[]) {
   return false;
 }
 
+// Parse text children of a node and replace them with the processed markdown
 const parseTextChildren = (
   node: Element,
   processMarkdown: (markdownContent: string) => Root,
@@ -40,6 +42,8 @@ const parseTextChildren = (
   const nextChildren: Element['children'] = [];
 
   node.children.forEach(child => {
+    // Non-text nodes are already processed and should be kept as is
+    // Just readd them to the children array
     if (child.type !== 'text' || child.value.trim() === '') {
       nextChildren.push(child);
       return;
@@ -174,9 +178,6 @@ export const rehypeMdxishComponents = ({
       // Update the node.tagName to the actual component name in PascalCase
       node.tagName = componentName;
 
-      // For any text nodes inside the current node,
-      // recursively call processMarkdown on the text node's value
-      // then, replace the text node with the hast node returned from processMarkdown
       parseTextChildren(node, processMarkdown);
     });
   };
