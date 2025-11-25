@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { mdxish } from '../../index';
-import renderMdxish from '../../lib/render-mdxish';
+import renderMdxish from '../../lib/renderMdxish';
 
 describe('renderMdxish', () => {
   it('renders simple HTML content', () => {
