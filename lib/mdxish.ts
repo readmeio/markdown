@@ -2,7 +2,6 @@ import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
-import rehypeStringify from 'rehype-stringify';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
@@ -24,7 +23,7 @@ export interface MixOpts {
  * Detects and renders custom component tags from the components hash
  * Returns HTML string
  */
-export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
+export function mdxish(mdContent: string, opts: MixOpts = {}) {
   const {
     components: userComponents = {},
     jsxContext = {
@@ -63,7 +62,7 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
     .use(rehypeMdxishComponents, {
       components,
-      processMarkdown: (markdownContent: string) => processMixMdMdx(markdownContent, opts),
+      processMarkdown: (markdownContent: string) => mdxish(markdownContent, opts),
     }); // AST hook: finds component elements and renders them
 
   const vfile = new VFile({ value: processedContent });
@@ -76,10 +75,4 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   return hast;
 }
 
-const mix = (text: string, opts: MixOpts = {}): string => {
-  const hast = processMixMdMdx(text, opts);
-  const file = unified().use(rehypeStringify).stringify(hast);
-  return String(file);
-};
-
-export default mix;
+export default mdxish;

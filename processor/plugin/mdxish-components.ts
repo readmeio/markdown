@@ -1,16 +1,75 @@
 import type { CustomComponents } from '../../types';
-import type { Root, Element } from 'hast';
+import type { Root, Element, ElementContent } from 'hast';
 import type { Transformer } from 'unified';
+import type { VFile } from 'vfile';
 
-import { fromHtml } from 'hast-util-from-html';
 import { visit } from 'unist-util-visit';
 
-import { componentExists, serializeInnerHTML, renderComponent } from '../../lib/utils/mix-components';
+import { componentExists } from '../../lib/utils/mix-components';
 
 interface Options {
   components: CustomComponents;
-  processMarkdown: (content: string) => Promise<string>;
+  processMarkdown: (markdownContent: string) => Root;
 }
+
+type RootChild = Root['children'][number];
+
+function isElementContentNode(node: RootChild): node is ElementContent {
+  return node.type === 'element' || node.type === 'text' || node.type === 'comment';
+}
+
+// Check if there's no markdown content to be rendered
+function isSingleParagraphTextNode(nodes: ElementContent[]) {
+  if (
+    nodes.length === 1 &&
+    nodes[0].type === 'element' &&
+    nodes[0].tagName === 'p' &&
+    nodes[0].children &&
+    nodes[0].children.every((grandchild) => grandchild.type === 'text')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+// Parse text children of a node and replace them with the processed markdown
+const parseTextChildren = (
+  node: Element,
+  processMarkdown: (markdownContent: string) => Root,
+) => {
+  if (!node.children || node.children.length === 0) return;
+
+  const nextChildren: Element['children'] = [];
+
+  node.children.forEach(child => {
+    // Non-text nodes are already processed and should be kept as is
+    // Just readd them to the children array
+    if (child.type !== 'text' || child.value.trim() === '') {
+      nextChildren.push(child);
+      return;
+    }
+
+    const mdHast = processMarkdown(child.value.trim());
+    const fragmentChildren = (mdHast.children ?? []).filter(isElementContentNode);
+
+    // If the processed markdown is just a single paragraph containing only text nodes,
+    // retain the original text node to avoid block-level behavior
+    // This happens when plain text gets wrapped in <p> by the markdown parser
+    // Specific case for anchor tags because they are inline elements
+    if (
+      node.tagName.toLowerCase() === 'anchor' &&
+      isSingleParagraphTextNode(fragmentChildren)
+    ) {
+      nextChildren.push(child);
+      return;
+    }
+
+    nextChildren.push(...fragmentChildren);
+  });
+
+  node.children = nextChildren;
+};
+
 
 /**
  * Helper to intelligently convert lowercase compound words to camelCase
@@ -61,26 +120,44 @@ function smartCamelCase(str: string): string {
   }, str);
 }
 
-/**
- * Rehype plugin to dynamically transform ANY custom component elements
- */
-export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
-  return async (tree: Root): Promise<void> => {
-    const transformations: {
-      componentName: string;
-      index: number;
-      node: Element;
-      parent: Element | Root;
-      props: Record<string, unknown>;
-    }[] = [];
+function isActualHtmlTag(nodeTagName: string, originalExcerpt: string) {
+  if (originalExcerpt.startsWith(`<${nodeTagName}>`)) {
+    return true;
+  }
 
-    // Visit all elements in the AST looking for custom component tags
-    visit(tree, 'element', (node: Element, index, parent: Element | Root | undefined) => {
+  // Add more cases of a character being converted to a tag
+  switch (nodeTagName) {
+    case 'code':
+      return originalExcerpt.startsWith('`');
+    default:
+      return false;
+  }
+}
+
+export const rehypeMdxishComponents = ({
+  components,
+  processMarkdown,
+}: Options): Transformer<Root, Root> => {
+  return (tree: Root, vfile: VFile) => {
+    // Visit all elements in the HAST looking for custom component tags
+    visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
+      // Check if the node is an actual HTML tag
+      // This is a hack since tags are normalized to lowercase by the parser, so we need to check the original string
+      // for PascalCase tags & potentially custom component
+      // Note: node.position may be undefined for programmatically created nodes
+      if (node.position?.start && node.position?.end) {
+        const originalStringHtml = vfile.toString().substring(node.position.start.offset, node.position.end.offset);
+        if (isActualHtmlTag(node.tagName, originalStringHtml)) {
+          return;
+        }
+      }
+
       // Only process tags that have a corresponding component in the components hash
-      if (!componentExists(node.tagName, components)) {
-        return; // Skip - it's a regular HTML tag or non-existent component
+      const componentName = componentExists(node.tagName, components);
+      if (!componentName) {
+        return; // Skip - non-existent component
       }
 
       // This is a custom component! Extract all properties dynamically
@@ -94,39 +171,15 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
         });
       }
 
-      // Extract the inner HTML (preserving nested elements) for children prop
-      const innerHTML = serializeInnerHTML(node);
-      if (innerHTML.trim()) {
-        props.children = innerHTML.trim();
-      }
+      // If we're in a custom component node, we want to transform the node by doing the following:
+      // 1. Update the node.tagName to the actual component name in PascalCase
+      // 2. For any text nodes inside the node, recursively process them as markdown & replace the text nodes with the processed markdown
 
-      // Store the transformation to process async
-      transformations.push({
-        componentName: node.tagName,
-        node,
-        index,
-        parent,
-        props,
-      });
+      // Update the node.tagName to the actual component name in PascalCase
+      node.tagName = componentName;
+
+      parseTextChildren(node, processMarkdown);
     });
-
-    // Process all components sequentially to avoid index shifting issues
-    // Process in reverse order so indices remain valid
-    const reversedTransformations = [...transformations].reverse();
-    await reversedTransformations.reduce(async (previousPromise, { componentName, index, parent, props }) => {
-      await previousPromise;
-      // Render any component dynamically
-      const componentHTML = await renderComponent(componentName, props, components, processMarkdown);
-
-      // Parse the rendered HTML back into HAST nodes
-      const htmlTree = fromHtml(componentHTML, { fragment: true });
-
-      // Replace the component node with the parsed HTML nodes
-      if ('children' in parent && Array.isArray(parent.children)) {
-        // Replace the single component node with the children from the parsed HTML
-        parent.children.splice(index, 1, ...htmlTree.children);
-      }
-    }, Promise.resolve());
   };
 };
 
