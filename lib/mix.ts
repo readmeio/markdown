@@ -62,8 +62,8 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
   const mdToHastProcessor = unified()
     .use(remarkParse) // Parse markdown to AST
-    .use(mdxishComponentBlocks) // Wrap PascalCase HTML blocks as component-like nodes
     .use(calloutTransformer) // Transform blockquotes with emojis to Callout nodes
+    .use(mdxishComponentBlocks) // Wrap PascalCase HTML blocks as component-like nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
     .use(rehypeMdxishComponents, {

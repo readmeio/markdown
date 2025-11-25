@@ -1,9 +1,25 @@
-import type { Node, Parent, Paragraph } from 'mdast';
+import type { Node, Parent, Paragraph, RootContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+
 const isOpeningTag = (value: string) => {
   const match = value.match(/^<([A-Z][A-Za-z0-9]*)[^>]*>$/);
+  return match?.[1];
+};
+
+const extractOpeningAndContent = (value: string) => {
+  const match = value.match(/^<([A-Z][A-Za-z0-9]*)[^>]*>([\s\S]*)$/);
+  if (!match) return null;
+
+  const [, tag, content = ''] = match;
+  return { tag, content };
+};
+
+const isSelfClosingTag = (value: string) => {
+  const match = value.match(/^<([A-Z][A-Za-z0-9]*)([^>]*)\/>$/);
   return match?.[1];
 };
 
@@ -30,6 +46,11 @@ const replaceChild = (parent: Parent, index: number, replacement: Node) => {
   (parent.children as Node[]).splice(index, 2, replacement);
 };
 
+const parseMdChildren = (value: string): RootContent[] => {
+  const parsed = unified().use(remarkParse).parse(value);
+  return parsed.children || [];
+};
+
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
 
@@ -44,8 +65,28 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    const tag = isOpeningTag(value);
-    if (!tag) return;
+    let tag = isOpeningTag(value);
+    let extraChildren: RootContent[] = [];
+
+    const selfClosing = isSelfClosingTag(value);
+    if (selfClosing) {
+      const componentNode: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: selfClosing,
+        attributes: [],
+        children: [],
+        position: node.position,
+      };
+      (parent.children as Node[]).splice(index, 1, componentNode as Node);
+      return;
+    }
+
+    if (!tag) {
+      const result = extractOpeningAndContent(value);
+      if (!result) return;
+      tag = result.tag;
+      extraChildren = parseMdChildren(result.content.trimStart());
+    }
 
     const next = parent.children[index + 1];
     if (!next || next.type !== 'paragraph') return;
@@ -57,7 +98,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       type: 'mdxJsxFlowElement',
       name: tag,
       attributes: [],
-      children: paragraph.children as MdxJsxFlowElement['children'],
+      children: [...(extraChildren as MdxJsxFlowElement['children']), ...(paragraph.children as MdxJsxFlowElement['children'])],
       position: {
         start: node.position?.start,
         end: next.position?.end,

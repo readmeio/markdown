@@ -7,10 +7,11 @@ import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
-import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
-import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
+import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import calloutTransformer from '../processor/transform/callouts';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
+import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 
 import { loadComponents } from './utils/load-components';
 
@@ -60,6 +61,7 @@ export function mdxish(mdContent: string, opts: MixOpts = {}) {
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
   const mdToHastProcessor = unified()
     .use(remarkParse) // Parse markdown to AST
+    .use(calloutTransformer) // Transform blockquotes with emojis to Callout nodes
     .use(mdxishComponentBlocks) // Re-wrap PascalCase HTML blocks as component-like nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
