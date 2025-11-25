@@ -22,6 +22,7 @@ export interface RenderHtmlOpts {
   baseUrl?: string;
   components?: CustomComponents;
   copyButtons?: boolean;
+  imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
   variables?: Variables;

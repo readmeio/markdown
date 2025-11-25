@@ -18,35 +18,52 @@ function isElementContentNode(node: RootChild): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
 
-const replaceTextChildrenWithFragment = (
+function isSingleParagraphTextNode(nodes: ElementContent[]) {
+  if (
+    nodes.length === 1 &&
+    nodes[0].type === 'element' &&
+    nodes[0].tagName === 'p' &&
+    nodes[0].children &&
+    nodes[0].children.every((grandchild) => grandchild.type === 'text')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+const parseTextChildren = (
   node: Element,
   processMarkdown: (markdownContent: string) => Root,
 ) => {
   if (!node.children || node.children.length === 0) return;
 
-  const nextChildren = node.children.map(child => {
+  const nextChildren: Element['children'] = [];
+
+  node.children.forEach(child => {
     if (child.type !== 'text' || child.value.trim() === '') {
-      return child;
+      nextChildren.push(child);
+      return;
     }
 
     const mdHast = processMarkdown(child.value.trim());
     const fragmentChildren = (mdHast.children ?? []).filter(isElementContentNode);
 
-    if (fragmentChildren.length === 0) {
-      return child;
+    // If the processed markdown is just a single paragraph containing only text nodes,
+    // retain the original text node to avoid block-level behavior
+    // This happens when plain text gets wrapped in <p> by the markdown parser
+    // Specific case for anchor tags because they are inline elements
+    if (
+      node.tagName.toLowerCase() === 'anchor' &&
+      isSingleParagraphTextNode(fragmentChildren)
+    ) {
+      nextChildren.push(child);
+      return;
     }
 
-    const wrapper: Element = {
-      type: 'element',
-      tagName: 'span',
-      properties: { 'data-mdxish-text-node': true },
-      children: fragmentChildren,
-    };
-
-    return wrapper;
+    nextChildren.push(...fragmentChildren);
   });
 
-  node.children = nextChildren as Element['children'];
+  node.children = nextChildren;
 };
 
 
@@ -160,7 +177,7 @@ export const rehypeMdxishComponents = ({
       // For any text nodes inside the current node,
       // recursively call processMarkdown on the text node's value
       // then, replace the text node with the hast node returned from processMarkdown
-      replaceTextChildrenWithFragment(node, processMarkdown);
+      parseTextChildren(node, processMarkdown);
     });
   };
 };

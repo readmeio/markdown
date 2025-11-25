@@ -124,7 +124,7 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
     components: componentsForRehype,
   });
 
-  const ReactContent = processor.stringify(tree) as unknown as React.ReactNode;
+  const ReactContent = processor.stringify(tree) as React.ReactNode;
 
   let Toc: React.FC<{ heading?: string }> | undefined;
   if (headings.length > 0) {
@@ -135,7 +135,7 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
       Fragment: React.Fragment,
       components: { p: React.Fragment },
     });
-    const tocReactElement = tocProcessor.stringify(tocHast) as unknown as React.ReactNode;
+    const tocReactElement = tocProcessor.stringify(tocHast) as React.ReactNode;
 
     const TocComponent = (props: { heading?: string }) =>
       tocReactElement ? (

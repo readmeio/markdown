@@ -6,9 +6,9 @@ import { mdxish } from '../../index';
 import renderMdxish from '../../lib/render-mdxish';
 
 describe('renderMdxish', () => {
-  it('renders simple HTML content', async () => {
+  it('renders simple HTML content', () => {
     const input = '<h1>Hello, world!</h1><p>This is a test paragraph.</p>';
-    const tree = await mdxish(input);
+    const tree = mdxish(input);
     const mod = renderMdxish(tree);
 
     render(<mod.default />);
@@ -17,9 +17,9 @@ describe('renderMdxish', () => {
     expect(screen.getByText('This is a test paragraph.')).toBeInTheDocument();
   });
 
-  it('renders HTML from mix output', async () => {
+  it('renders HTML from mix output', () => {
     const md = '### Hello, world!\n\nThis is **markdown** content.';
-    const tree = await mdxish(md);
+    const tree = mdxish(md);
     const mod = renderMdxish(tree);
 
     render(<mod.default />);
@@ -31,7 +31,7 @@ describe('renderMdxish', () => {
     expect(screen.getByText(/content\./)).toBeInTheDocument();
   });
 
-  it('rehydrates custom components from mix output when preserveComponents is true', async () => {
+  it('rehydrates custom components from mix output when preserveComponents is true', () => {
     const md = `<Callout theme="warn" icon="🚧">
 
 **Heads up!**
@@ -39,7 +39,7 @@ describe('renderMdxish', () => {
 This is a custom component.
 </Callout>`;
 
-    const tree = await mdxish(md);
+    const tree = mdxish(md);
     const mod = renderMdxish(tree);
 
     const { container } = render(<mod.default />);
@@ -48,9 +48,9 @@ This is a custom component.
     expect(screen.getByText('This is a custom component.')).toBeInTheDocument();
   });
 
-  it('extracts TOC from headings', async () => {
+  it('extracts TOC from headings', () => {
     const text = '<h1>First Heading</h1><p>Content</p><h2>Second Heading</h2><hr>';
-    const tree = await mdxish(text);
+    const tree = mdxish(text);
     const mod = renderMdxish(tree);
 
     expect(mod.toc).toBeDefined();
