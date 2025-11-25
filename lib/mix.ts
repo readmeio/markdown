@@ -3,12 +3,16 @@ import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
 import rehypeStringify from 'rehype-stringify';
+import rehypeSlug from 'rehype-slug';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
+import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import calloutTransformer from '../processor/transform/callouts';
+import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
 import {
   preprocessJSXExpressions,
   processSelfClosingTags,
@@ -68,8 +72,11 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags
   const mdToHastProcessor = unified()
     .use(remarkParse) // Parse markdown to AST
-    .use(remarkRehype, { allowDangerousHtml: true }) // Convert to HTML AST, preserve raw HTML
+    .use(calloutTransformer) // Transform blockquotes with emojis to Callout nodes
+    .use(mdxishComponentBlocks) // Wrap PascalCase HTML blocks as component-like nodes
+    .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers }) // Convert to HTML AST, preserve raw HTML
     .use(rehypeRaw) // Parse raw HTML in the AST (recognizes custom component tags)
+    .use(rehypeSlug) // Add ids to headings for anchor linking
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (markdownContent: string) => processMixMdMdx(markdownContent, opts),

@@ -27,4 +27,19 @@ describe('Callout', () => {
 
     expect(screen.queryByText('Title')).toBeNull();
   });
+
+  it('strips whitespace-only children so markdown headings render first', () => {
+    const { container } = render(
+      <Callout icon="icon" theme="theme">
+        {'\n'}
+        <h2>Heading</h2>
+        <p>Body</p>
+      </Callout>,
+    );
+
+    const callout = container.querySelector('.callout');
+    expect(callout?.childNodes[1].nodeType).toBe(Node.ELEMENT_NODE);
+    expect((callout?.childNodes[1] as HTMLElement).tagName).toBe('H2');
+    expect(screen.getByText('Body')).toBeVisible();
+  });
 });
