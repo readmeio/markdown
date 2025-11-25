@@ -1,27 +1,11 @@
 import type { Node, Parent, Paragraph, RootContent } from 'mdast';
-import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-const isOpeningTag = (value: string) => {
-  const match = value.match(/^<([A-Z][A-Za-z0-9]*)[^>]*>$/);
-  return match?.[1];
-};
-
-const extractOpeningAndContent = (value: string) => {
-  const match = value.match(/^<([A-Z][A-Za-z0-9]*)[^>]*>([\s\S]*)$/);
-  if (!match) return null;
-
-  const [, tag, content = ''] = match;
-  return { tag, content };
-};
-
-const isSelfClosingTag = (value: string) => {
-  const match = value.match(/^<([A-Z][A-Za-z0-9]*)([^>]*)\/>$/);
-  return match?.[1];
-};
+const tagPattern = /^<([A-Z][A-Za-z0-9]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 
 const isClosingTag = (value: string, tag: string) => new RegExp(`^</${tag}>$`).test(value);
 
@@ -51,6 +35,41 @@ const parseMdChildren = (value: string): RootContent[] => {
   return parsed.children || [];
 };
 
+const parseAttributes = (raw: string): MdxJsxAttribute[] => {
+  const attributes: MdxJsxAttribute[] = [];
+  const attrString = raw.trim();
+  if (!attrString) return attributes;
+
+  const regex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+)/g;
+  let match;
+  while ((match = regex.exec(attrString)) !== null) {
+    const [, name, rawValue] = match;
+    const cleaned = rawValue?.replace(/^['"]|['"]$/g, '') ?? '';
+    attributes.push({
+      type: 'mdxJsxAttribute',
+      name,
+      value: cleaned,
+    });
+  }
+
+  return attributes;
+};
+
+const parseTag = (value: string) => {
+  const match = value.match(tagPattern);
+  if (!match) return null;
+
+  const [, tag, attrString = '', selfClosing = '', content = ''] = match;
+  const attributes = parseAttributes(attrString);
+
+  return {
+    tag,
+    attributes,
+    selfClosing: !!selfClosing,
+    content,
+  };
+};
+
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
 
@@ -65,27 +84,22 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    let tag = isOpeningTag(value);
-    let extraChildren: RootContent[] = [];
+    const parsed = parseTag(value);
+    if (!parsed) return;
 
-    const selfClosing = isSelfClosingTag(value);
+    const { tag, attributes, selfClosing, content = '' } = parsed;
+    const extraChildren: RootContent[] = content ? parseMdChildren(content.trimStart()) : [];
+
     if (selfClosing) {
       const componentNode: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
-        name: selfClosing,
-        attributes: [],
+        name: tag,
+        attributes,
         children: [],
         position: node.position,
       };
       (parent.children as Node[]).splice(index, 1, componentNode as Node);
       return;
-    }
-
-    if (!tag) {
-      const result = extractOpeningAndContent(value);
-      if (!result) return;
-      tag = result.tag;
-      extraChildren = parseMdChildren(result.content.trimStart());
     }
 
     const next = parent.children[index + 1];
@@ -97,7 +111,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     const componentNode: MdxJsxFlowElement = {
       type: 'mdxJsxFlowElement',
       name: tag,
-      attributes: [],
+      attributes,
       children: [...(extraChildren as MdxJsxFlowElement['children']), ...(paragraph.children as MdxJsxFlowElement['children'])],
       position: {
         start: node.position?.start,

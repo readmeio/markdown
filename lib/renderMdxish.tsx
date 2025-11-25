@@ -4,8 +4,8 @@ import type { Root } from 'hast';
 
 import { h } from 'hastscript';
 import React from 'react';
-import rehypeSlug from 'rehype-slug';
 import rehypeReact from 'rehype-react';
+import rehypeSlug from 'rehype-slug';
 import { unified } from 'unified';
 
 import * as Components from '../components';
@@ -154,9 +154,10 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
   const componentMap = makeUseMDXComponents(exportedComponents);
   const componentsForRehype = componentMap();
 
-  const headingWithId =
-    (Tag: keyof JSX.IntrinsicElements) =>
-    ({ id, children, ...rest }: React.HTMLAttributes<HTMLHeadingElement>) => {
+  const headingWithId = (Tag: keyof JSX.IntrinsicElements) => {
+    const ComponentWithId = (props: React.HTMLAttributes<HTMLHeadingElement>) => {
+      // eslint-disable-next-line react/prop-types
+      const { id, children, ...rest } = props;
       const text =
         typeof children === 'string'
           ? children
@@ -166,6 +167,9 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
       const resolvedId = id || slugify(text);
       return React.createElement(Tag, { id: resolvedId, ...rest }, children);
     };
+    ComponentWithId.displayName = `HeadingWithId(${Tag})`;
+    return ComponentWithId;
+  };
 
   componentsForRehype.h1 = headingWithId('h1');
   componentsForRehype.h2 = headingWithId('h2');
