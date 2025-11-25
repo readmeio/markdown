@@ -1,4 +1,5 @@
-import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, TocList } from '../types';
+import type { GlossaryTerm } from '../contexts/GlossaryTerms';
+import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, TocList, Variables } from '../types';
 import type { Root } from 'hast';
 
 import { h } from 'hastscript';
@@ -10,12 +11,19 @@ import * as Components from '../components';
 import Contexts from '../contexts';
 
 import plain from './plain';
-import { type RenderHtmlOpts } from './render-html';
 import { loadComponents } from './utils/load-components';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';
 
 // Re-export opts type for convenience
-export type RenderMdxishOpts = RenderHtmlOpts;
+export interface RenderMdxishOpts {
+  baseUrl?: string;
+  components?: CustomComponents;
+  copyButtons?: boolean;
+  imports?: Record<string, unknown>;
+  terms?: GlossaryTerm[];
+  theme?: 'dark' | 'light';
+  variables?: Variables;
+}
 
 const MAX_DEPTH = 2;
 const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)?.[1] || '1', 10);

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { mix } from '../../index';
-import renderHtml from '../../lib/render-html';
+import renderHtml from '../../lib/renderHtml';
 
 describe('renderHtml', () => {
   it('renders simple HTML content', async () => {
