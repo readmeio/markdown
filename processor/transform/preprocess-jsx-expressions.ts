@@ -13,14 +13,14 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   let protectedContent = content;
 
   // Extract code blocks (```...```)
-  protectedContent = protectedContent.replace(/```[\s\S]*?```/g, (match) => {
+  protectedContent = protectedContent.replace(/```[\s\S]*?```/g, match => {
     const index = codeBlocks.length;
     codeBlocks.push(match);
     return `___CODE_BLOCK_${index}___`;
   });
 
   // Extract inline code (`...`)
-  protectedContent = protectedContent.replace(/`[^`]+`/g, (match) => {
+  protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
     const index = inlineCode.length;
     inlineCode.push(match);
     return `___INLINE_CODE_${index}___`;
@@ -81,48 +81,51 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
 
   // Step 4: Process inline expressions: {expression} in text content
   // This allows MDX-style inline expressions like {1*1} or {variableName}
-  protectedContent = protectedContent.replace(/\{([^{}]+)\}/g, (match, expression: string, offset: number, string: string) => {
-    try {
-      // Skip if this looks like it's part of an HTML tag (already processed above)
-      // Check if immediately preceded by = (not just = somewhere in the previous 10 chars)
-      const beforeMatch = string.substring(Math.max(0, offset - 1), offset);
-      if (beforeMatch === '=') {
+  protectedContent = protectedContent.replace(
+    /\{([^{}]+)\}/g,
+    (match, expression: string, offset: number, string: string) => {
+      try {
+        // Skip if this looks like it's part of an HTML tag (already processed above)
+        // Check if immediately preceded by = (not just = somewhere in the previous 10 chars)
+        const beforeMatch = string.substring(Math.max(0, offset - 1), offset);
+        if (beforeMatch === '=') {
+          return match;
+        }
+
+        const contextKeys = Object.keys(context);
+        const contextValues = Object.values(context);
+
+        // Unescape markdown escaped characters within the expression
+        // Users might write {5 \* 10} to prevent markdown from treating * as formatting
+        const unescapedExpression = expression
+          .replace(/\\\*/g, '*') // Unescape asterisks
+          .replace(/\\_/g, '_') // Unescape underscores
+          .replace(/\\`/g, '`') // Unescape backticks
+          .trim();
+
+        // Evaluate the expression with the given context
+        // Using Function constructor is necessary for dynamic expression evaluation
+        // eslint-disable-next-line no-new-func
+        const func = new Function(...contextKeys, `return ${unescapedExpression}`);
+        const result = func(...contextValues);
+
+        // Convert result to string
+        if (result === null || result === undefined) {
+          return '';
+        }
+        if (typeof result === 'object') {
+          return JSON.stringify(result);
+        }
+        const resultString = String(result);
+        // Ensure replacement doesn't break inline markdown context
+        // Replace any newlines or multiple spaces with single space to preserve inline flow
+        return resultString.replace(/\s+/g, ' ').trim();
+      } catch (error) {
+        // Return original if evaluation fails
         return match;
       }
-
-      const contextKeys = Object.keys(context);
-      const contextValues = Object.values(context);
-
-      // Unescape markdown escaped characters within the expression
-      // Users might write {5 \* 10} to prevent markdown from treating * as formatting
-      const unescapedExpression = expression
-        .replace(/\\\*/g, '*') // Unescape asterisks
-        .replace(/\\_/g, '_') // Unescape underscores
-        .replace(/\\`/g, '`') // Unescape backticks
-        .trim();
-
-      // Evaluate the expression with the given context
-      // Using Function constructor is necessary for dynamic expression evaluation
-      // eslint-disable-next-line no-new-func
-      const func = new Function(...contextKeys, `return ${unescapedExpression}`);
-      const result = func(...contextValues);
-
-      // Convert result to string
-      if (result === null || result === undefined) {
-        return '';
-      }
-      if (typeof result === 'object') {
-        return JSON.stringify(result);
-      }
-      const resultString = String(result);
-      // Ensure replacement doesn't break inline markdown context
-      // Replace any newlines or multiple spaces with single space to preserve inline flow
-      return resultString.replace(/\s+/g, ' ').trim();
-    } catch (error) {
-      // Return original if evaluation fails
-      return match;
-    }
-  });
+    },
+  );
 
   // Step 5: Restore code blocks and inline code
   protectedContent = protectedContent.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
@@ -136,3 +139,19 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   return protectedContent;
 }
 
+/**
+ * Strips self-closing tags and replaces them with opening and closing tags
+ * Opening and closing tags are must easier to process and it ensure a correct AST.
+ *
+ * Example:
+ * - <a/> -> <a></a>
+ * - <img/> -> <img></img>
+ * - <br/> -> <br></br>
+ * - <EmptyComponent/> -> <EmptyComponent></EmptyComponent>
+ *
+ * @param content - The content to process
+ * @returns
+ */
+export function processSelfClosingTags(content: string): string {
+  return content.replace(/<([^>]+)\s*\/>/g, '<$1></$1>');
+}

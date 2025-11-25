@@ -13,7 +13,11 @@ import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
-import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
+import {
+  preprocessJSXExpressions,
+  processSelfClosingTags,
+  type JSXContext,
+} from '../processor/transform/preprocess-jsx-expressions';
 
 import { loadComponents } from './utils/load-components';
 
@@ -32,17 +36,18 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
   const {
     components: userComponents = {},
     jsxContext = {
-    // Add any variables you want available in expressions
-    baseUrl: 'https://example.com',
-    siteName: 'My Site',
-    hi: 'Hello from MDX!',
-    userName: 'John Doe',
-    count: 42,
-    price: 19.99,
-    // You can add functions too
-    uppercase: (str) => str.toUpperCase(),
-    multiply: (a, b) => a * b,
-  }} = opts;
+      // Add any variables you want available in expressions
+      baseUrl: 'https://example.com',
+      siteName: 'My Site',
+      hi: 'Hello from MDX!',
+      userName: 'John Doe',
+      count: 42,
+      price: 19.99,
+      // You can add functions too
+      uppercase: str => str.toUpperCase(),
+      multiply: (a, b) => a * b,
+    },
+  } = opts;
 
   // Automatically load all components from components/ directory
   // Similar to prototype.js getAvailableComponents approach
@@ -57,7 +62,11 @@ export function processMixMdMdx(mdContent: string, opts: MixOpts = {}) {
 
   // Pre-process JSX expressions: converts {expression} to evaluated values
   // This allows: <a href={'value'}> alongside <a href="value">
-  const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
+  let processedContent = preprocessJSXExpressions(mdContent, jsxContext);
+
+  // Strips self-closing tags and replaces them with opening and closing tags
+  // Example: <a/> -> <a></a>
+  processedContent = processSelfClosingTags(processedContent);
 
   // Process with unified/remark/rehype pipeline
   // The rehypeMdxishComponents plugin hooks into the AST to find and transform custom component tags

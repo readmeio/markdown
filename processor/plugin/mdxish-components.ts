@@ -25,7 +25,7 @@ function isSingleParagraphTextNode(nodes: ElementContent[]) {
     nodes[0].type === 'element' &&
     nodes[0].tagName === 'p' &&
     nodes[0].children &&
-    nodes[0].children.every((grandchild) => grandchild.type === 'text')
+    nodes[0].children.every(grandchild => grandchild.type === 'text')
   ) {
     return true;
   }
@@ -33,10 +33,7 @@ function isSingleParagraphTextNode(nodes: ElementContent[]) {
 }
 
 // Parse text children of a node and replace them with the processed markdown
-const parseTextChildren = (
-  node: Element,
-  processMarkdown: (markdownContent: string) => Root,
-) => {
+const parseTextChildren = (node: Element, processMarkdown: (markdownContent: string) => Root) => {
   if (!node.children || node.children.length === 0) return;
 
   const nextChildren: Element['children'] = [];
@@ -56,10 +53,7 @@ const parseTextChildren = (
     // retain the original text node to avoid block-level behavior
     // This happens when plain text gets wrapped in <p> by the markdown parser
     // Specific case for anchor tags because they are inline elements
-    if (
-      node.tagName.toLowerCase() === 'anchor' &&
-      isSingleParagraphTextNode(fragmentChildren)
-    ) {
+    if (node.tagName.toLowerCase() === 'anchor' && isSingleParagraphTextNode(fragmentChildren)) {
       nextChildren.push(child);
       return;
     }
@@ -70,7 +64,6 @@ const parseTextChildren = (
   node.children = nextChildren;
 };
 
-
 /**
  * Helper to intelligently convert lowercase compound words to camelCase
  * e.g., "iconcolor" -> "iconColor", "backgroundcolor" -> "backgroundColor"
@@ -78,7 +71,7 @@ const parseTextChildren = (
 function smartCamelCase(str: string): string {
   // If it has hyphens, convert kebab-case to camelCase
   if (str.includes('-')) {
-    return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    return str.replace(/-([a-z])/g, g => g[1].toUpperCase());
   }
 
   // Common word boundaries for CSS/React props
@@ -120,7 +113,128 @@ function smartCamelCase(str: string): string {
   }, str);
 }
 
+// Standard HTML tags that should never be treated as custom components
+const STANDARD_HTML_TAGS = new Set([
+  'a',
+  'abbr',
+  'address',
+  'area',
+  'article',
+  'aside',
+  'audio',
+  'b',
+  'base',
+  'bdi',
+  'bdo',
+  'blockquote',
+  'body',
+  'br',
+  'button',
+  'canvas',
+  'caption',
+  'cite',
+  'code',
+  'col',
+  'colgroup',
+  'data',
+  'datalist',
+  'dd',
+  'del',
+  'details',
+  'dfn',
+  'dialog',
+  'div',
+  'dl',
+  'dt',
+  'em',
+  'embed',
+  'fieldset',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'head',
+  'header',
+  'hgroup',
+  'hr',
+  'html',
+  'i',
+  'iframe',
+  'img',
+  'input',
+  'ins',
+  'kbd',
+  'label',
+  'legend',
+  'li',
+  'link',
+  'main',
+  'map',
+  'mark',
+  'menu',
+  'meta',
+  'meter',
+  'nav',
+  'noscript',
+  'object',
+  'ol',
+  'optgroup',
+  'option',
+  'output',
+  'p',
+  'param',
+  'picture',
+  'pre',
+  'progress',
+  'q',
+  'rp',
+  'rt',
+  'ruby',
+  's',
+  'samp',
+  'script',
+  'section',
+  'select',
+  'slot',
+  'small',
+  'source',
+  'span',
+  'strong',
+  'style',
+  'sub',
+  'summary',
+  'sup',
+  'table',
+  'tbody',
+  'td',
+  'template',
+  'textarea',
+  'tfoot',
+  'th',
+  'thead',
+  'time',
+  'title',
+  'tr',
+  'track',
+  'u',
+  'ul',
+  'var',
+  'video',
+  'wbr',
+]);
+
 function isActualHtmlTag(nodeTagName: string, originalExcerpt: string) {
+  // If it's a standard HTML tag, always treat it as HTML
+  if (STANDARD_HTML_TAGS.has(nodeTagName.toLowerCase())) {
+    return true;
+  }
+
   if (originalExcerpt.startsWith(`<${nodeTagName}>`)) {
     return true;
   }
@@ -134,16 +248,21 @@ function isActualHtmlTag(nodeTagName: string, originalExcerpt: string) {
   }
 }
 
-export const rehypeMdxishComponents = ({
-  components,
-  processMarkdown,
-}: Options): Transformer<Root, Root> => {
+export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {
+    // Collect nodes to remove (non-existent components)
+    // We collect first, then remove in reverse order to avoid index shifting issues
+    const nodesToRemove: { index: number; parent: Element | Root }[] = [];
+
     // Visit all elements in the HAST looking for custom component tags
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
       // Check if the node is an actual HTML tag
+      if (STANDARD_HTML_TAGS.has(node.tagName.toLowerCase())) {
+        return;
+      }
+
       // This is a hack since tags are normalized to lowercase by the parser, so we need to check the original string
       // for PascalCase tags & potentially custom component
       // Note: node.position may be undefined for programmatically created nodes
@@ -157,7 +276,10 @@ export const rehypeMdxishComponents = ({
       // Only process tags that have a corresponding component in the components hash
       const componentName = componentExists(node.tagName, components);
       if (!componentName) {
-        return; // Skip - non-existent component
+        // Mark non-existent component nodes for removal
+        // This mimics handle-missing-components.ts behavior
+        nodesToRemove.push({ index, parent });
+        return;
       }
 
       // This is a custom component! Extract all properties dynamically
@@ -180,6 +302,12 @@ export const rehypeMdxishComponents = ({
 
       parseTextChildren(node, processMarkdown);
     });
+
+    // Remove non-existent component nodes in reverse order to maintain correct indices
+    for (let i = nodesToRemove.length - 1; i >= 0; i -= 1) {
+      const { parent, index } = nodesToRemove[i];
+      console.log('Removing node:', (parent.children[index] as Element).tagName);
+      parent.children.splice(index, 1);
+    }
   };
 };
-
