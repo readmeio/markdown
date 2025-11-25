@@ -154,29 +154,28 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
   const componentMap = makeUseMDXComponents(exportedComponents);
   const componentsForRehype = componentMap();
 
-  const headingWithId = (Tag: keyof JSX.IntrinsicElements) => {
-    const ComponentWithId = (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-      // eslint-disable-next-line react/prop-types
+  const headingWithId =
+    (Tag: keyof JSX.IntrinsicElements, Wrapped: React.ElementType | undefined) =>
+    (props: React.HTMLAttributes<HTMLHeadingElement>) => {
       const { id, children, ...rest } = props;
       const text =
         typeof children === 'string'
           ? children
           : React.Children.toArray(children)
+              .filter(child => !(typeof child === 'string' && child.trim() === ''))
               .map(child => (typeof child === 'string' ? child : ''))
               .join(' ');
       const resolvedId = id || slugify(text);
-      return React.createElement(Tag, { id: resolvedId, ...rest }, children);
+      const Base = Wrapped || Tag;
+      return React.createElement(Base, { id: resolvedId, ...rest }, children);
     };
-    ComponentWithId.displayName = `HeadingWithId(${Tag})`;
-    return ComponentWithId;
-  };
 
-  componentsForRehype.h1 = headingWithId('h1');
-  componentsForRehype.h2 = headingWithId('h2');
-  componentsForRehype.h3 = headingWithId('h3');
-  componentsForRehype.h4 = headingWithId('h4');
-  componentsForRehype.h5 = headingWithId('h5');
-  componentsForRehype.h6 = headingWithId('h6');
+  componentsForRehype.h1 = headingWithId('h1', componentsForRehype.h1 as React.ElementType | undefined);
+  componentsForRehype.h2 = headingWithId('h2', componentsForRehype.h2 as React.ElementType | undefined);
+  componentsForRehype.h3 = headingWithId('h3', componentsForRehype.h3 as React.ElementType | undefined);
+  componentsForRehype.h4 = headingWithId('h4', componentsForRehype.h4 as React.ElementType | undefined);
+  componentsForRehype.h5 = headingWithId('h5', componentsForRehype.h5 as React.ElementType | undefined);
+  componentsForRehype.h6 = headingWithId('h6', componentsForRehype.h6 as React.ElementType | undefined);
 
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   const processor = unified().use(rehypeReact, {
