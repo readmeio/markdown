@@ -53,7 +53,7 @@ const parseTextChildren = (node: Element, processMarkdown: (markdownContent: str
     // retain the original text node to avoid block-level behavior
     // This happens when plain text gets wrapped in <p> by the markdown parser
     // Specific case for anchor tags because they are inline elements
-    if (node.tagName.toLowerCase() === 'anchor' && isSingleParagraphTextNode(fragmentChildren)) {
+    if ((node.tagName.toLowerCase() === 'anchor' || node.tagName.toLowerCase() === 'glossary') && isSingleParagraphTextNode(fragmentChildren)) {
       nextChildren.push(child);
       return;
     }
