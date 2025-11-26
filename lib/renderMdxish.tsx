@@ -13,6 +13,7 @@ import {
 
 export type { RenderOpts as RenderMdxishOpts };
 
+// Catches all headings up to depth 3
 const MAX_DEPTH = 3;
 
 /**
