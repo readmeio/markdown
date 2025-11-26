@@ -29,16 +29,27 @@ const MAX_DEPTH = 3;
 /**
  * Extract headings (h1-h6) from HAST for table of contents
  */
-function extractToc(tree: Root): HastHeading[] {
+function extractToc(tree: Root, components: CustomComponents): HastHeading[] {
   const headings: HastHeading[] = [];
+  // All components that are blocked from being included in the TOC
+  // Get the keys of all the components
+  const blocked = new Set(Object.keys(components).map(component => component.toLowerCase()));
 
-  const traverse = (node: Root | Root['children'][number]): void => {
-    if (node.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
+  const traverse = (node: Root | Root['children'][number], inBlocked = false): void => {
+    const isBlockedContainer =
+      node.type === 'element' && typeof node.tagName === 'string' && blocked.has(node.tagName.toLowerCase());
+    const blockedHere = inBlocked || isBlockedContainer;
+
+    if (
+      node.type === 'element' &&
+      !blockedHere &&
+      ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)
+    ) {
       headings.push(node as HastHeading);
     }
 
     if ('children' in node && Array.isArray(node.children)) {
-      node.children.forEach(child => traverse(child));
+      node.children.forEach(child => traverse(child, blockedHere));
     }
   };
 
@@ -59,7 +70,7 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
     ...userComponents,
   };
 
-  const headings = extractToc(tree);
+  const headings = extractToc(tree, components);
   const toc = headings;
 
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
