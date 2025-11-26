@@ -155,19 +155,23 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
   const componentsForRehype = componentMap();
 
   const headingWithId =
-    (Tag: keyof JSX.IntrinsicElements, Wrapped: React.ElementType | undefined) =>
-    (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-      const { id, children, ...rest } = props;
-      const text =
-        typeof children === 'string'
-          ? children
-          : React.Children.toArray(children)
-              .filter(child => !(typeof child === 'string' && child.trim() === ''))
-              .map(child => (typeof child === 'string' ? child : ''))
-              .join(' ');
-      const resolvedId = id || slugify(text);
-      const Base = Wrapped || Tag;
-      return React.createElement(Base, { id: resolvedId, ...rest }, children);
+    (Tag: keyof JSX.IntrinsicElements, Wrapped: React.ElementType | undefined) => {
+      const HeadingComponent = (props: React.HTMLAttributes<HTMLHeadingElement>) => {
+        // eslint-disable-next-line react/prop-types
+        const { id, children, ...rest } = props;
+        const text =
+          typeof children === 'string'
+            ? children
+            : React.Children.toArray(children)
+                .filter(child => !(typeof child === 'string' && child.trim() === ''))
+                .map(child => (typeof child === 'string' ? child : ''))
+                .join(' ');
+        const resolvedId = id || slugify(text);
+        const Base = Wrapped || Tag;
+        return React.createElement(Base, { id: resolvedId, ...rest }, children);
+      };
+      HeadingComponent.displayName = `HeadingWithId(${Tag})`;
+      return HeadingComponent;
     };
 
   componentsForRehype.h1 = headingWithId('h1', componentsForRehype.h1 as React.ElementType | undefined);
