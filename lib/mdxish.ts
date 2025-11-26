@@ -17,7 +17,7 @@ import {
   processSelfClosingTags,
   type JSXContext,
 } from '../processor/transform/preprocess-jsx-expressions';
-import variablesTransformer from '../processor/transform/variables';
+import variablesTextTransformer from '../processor/transform/variables-text';
 
 import { loadComponents } from './utils/load-components';
 
@@ -46,7 +46,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(remarkParse)
     .use(calloutTransformer)
     .use(mdxishComponentBlocks)
-    .use(variablesTransformer, { asMdx: false })
+    .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(rehypeRaw)
     .use(rehypeSlug)
