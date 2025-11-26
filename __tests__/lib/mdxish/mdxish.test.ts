@@ -1,12 +1,16 @@
 import { mdxish } from '../../../lib/mdxish';
 
 describe('mdxish', () => {
+    describe('invalid mdx syntax', () => {
+        it('should render unclosed tags', () => {
+            const md = '<br>';
+            expect(() => mdxish(md)).not.toThrow();
+        });
 
-    describe('table of contents', () => {
-        it('should render a table of contents', () => {
-            const md = '# Heading 1\n\n# Heading 2';
-            const tree = mdxish(md);
-            console.log('tree', JSON.stringify(tree, null, 2));
+        it('should render content in new lines', () => {
+            const md = `<div>hello
+</div>`;
+            expect(() => mdxish(md)).not.toThrow();
         });
     });
 });
