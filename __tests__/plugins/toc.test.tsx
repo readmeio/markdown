@@ -175,4 +175,40 @@ export const toc = [
       </ul></li></ul></nav>"
     `);
   });
+
+  it('preserves nesting when component names differ from exported elements', () => {
+    const md = `
+# Title
+
+## SubHeading
+
+<Comp>
+  First
+</Comp>
+`;
+
+    const components = {
+      Comp: 'export const Comp = ({ children }) => { return children; }',
+    };
+
+    const compModule = run(compile(components.Comp));
+    const { Toc } = run(compile(md, { components }), {
+      components: {
+        // 👇🏼 this is what we're guarding against
+        CompDoesNotMatchExportedModule: compModule,
+      },
+    });
+
+    const html = renderToString(<Toc />);
+    expect(html).toMatchInlineSnapshot(`
+      "<nav aria-label="Table of contents" role="navigation"><ul class="toc-list"><li><a class="tocHeader" href="#"><i class="icon icon-text-align-left"></i>Table of Contents</a></li><li class="toc-children"><ul>
+      <li><a href="#title">Title</a></li>
+      <li>
+      <ul>
+      <li><a href="#subheading">SubHeading</a></li>
+      </ul>
+      </li>
+      </ul></li></ul></nav>"
+    `);
+  });
 });
