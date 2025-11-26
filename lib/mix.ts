@@ -1,22 +1,14 @@
-import type { MixOpts } from './mdxish';
+import type { MdxishOpts } from './mdxish';
 
 import rehypeStringify from 'rehype-stringify';
 import { unified } from 'unified';
 
 import { mdxish } from './mdxish';
 
-/**
- * This function is a wrapper around the mdxish function to return a string instead of a HAST tree.
- *
- * @see mdxish
- * @param text
- * @param opts
- * @returns
- */
-const mix = (text: string, opts: MixOpts = {}): string => {
+/** Wrapper around mdxish that returns an HTML string instead of a HAST tree. */
+const mix = (text: string, opts: MdxishOpts = {}): string => {
   const hast = mdxish(text, opts);
-  const file = unified().use(rehypeStringify).stringify(hast);
-  return String(file);
+  return String(unified().use(rehypeStringify).stringify(hast));
 };
 
 export default mix;

@@ -74,13 +74,14 @@ Hello {user.name}!
 
   it('should NOT evaluate user variables inside backticks (inline code)', () => {
     const mdx = `
-Hello \`{user.name}\`!
+User Variables: **\`{user.name}\`** evaluates to {user.name}
     `;
 
     const variables = {
       user: {
         name: 'John Doe',
       },
+      defaults: [],
     };
 
     const hast = rmdx.mdxish(mdx) as Root;
@@ -90,8 +91,10 @@ Hello \`{user.name}\`!
 
     render(React.createElement(Content));
 
-    expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+    // The {user.name} OUTSIDE backticks should be evaluated to "John Doe"
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
 
+    // The {user.name} INSIDE backticks should remain as literal text
     expect(screen.getByText('{user.name}')).toBeInTheDocument();
   });
 });
