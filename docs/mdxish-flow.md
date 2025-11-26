@@ -36,16 +36,6 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  STEP 3: Process Self-Closing Tags                                          │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│  processSelfClosingTags(content)                                            │
-│                                                                             │
-│  <Callout /> → <Callout></Callout>                                          │
-│  <br /> → <br></br>                                                         │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
 │                      UNIFIED PIPELINE (AST Transformations)                 │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
@@ -79,6 +69,17 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  </Callout> into   │                │                             │
 │  mdxJsxFlowElement │                │                             │
 └────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌───────────────────┐                 │                             │
+│ embedTransformer  │                 │                             │
+│  ───────────────  │                 │                             │
+│  [label](url      │                 │                             │
+│    "@embed")      │                 │                             │
+│  Converts embed   │                 │                             │
+│  links to         │                 │                             │
+│  embedBlock nodes │                 │                             │
+└───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
 ┌─────────────────────┐               │                             │
@@ -174,10 +175,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | Phase | Plugin | Purpose |
 |-------|--------|---------|
 | Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
-| Pre-process | `processSelfClosingTags` | Normalize `<Tag />` → `<Tag></Tag>` |
 | MDAST | `remarkParse` | Markdown → AST |
 | MDAST | `calloutTransformer` | Emoji blockquotes → `<Callout>` |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
+| MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | Convert | `remarkRehype` + handlers | MDAST → HAST |
 | HAST | `rehypeRaw` | Raw HTML strings → HAST elements |
@@ -187,35 +188,49 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ## Entry Points, Plugins and Utilities
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         ENTRY POINTS                            │
-├─────────────────────────────────────────────────────────────────┤
-│  mdxish(md) → HAST            Main processor                    │
-│  mix(md) → string             Wrapper that returns HTML string  │
-│  renderMdxish(hast) → React   Converts HAST to React components │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      PIPELINE PLUGINS                           │
-├─────────────────────────────────────────────────────────────────┤
-│  rehypeMdxishComponents      ← Core component detection/transform│
-│  mdxishComponentBlocks       ← PascalCase HTML → MDX elements   │
-│  mdxComponentHandlers        ← MDAST→HAST conversion handlers   │
-│  calloutTransformer          ← Emoji blockquotes → Callout      │
-│  variablesTextTransformer    ← {user.*} → Variable (regex-based)│
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                         UTILITIES                               │
-├─────────────────────────────────────────────────────────────────┤
-│  utils/html-tags.ts          ← STANDARD_HTML_TAGS, etc.         │
-│  lib/utils/load-components   ← Auto-loads React components      │
-│  lib/utils/mix-components    ← componentExists() lookup         │
-│  lib/utils/render-utils      ← Shared render utilities          │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│                         ENTRY POINTS                              │
+├───────────────────────────────────────────────────────────────────┤
+│  mdxish(md) → HAST            Main processor                      │
+│  mix(md) → string             Wrapper that returns HTML string    │
+│  renderMdxish(hast) → React   Converts HAST to React components   │
+└───────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                      PIPELINE PLUGINS                             │
+├───────────────────────────────────────────────────────────────────┤
+│  rehypeMdxishComponents      ← Core component detection/transform │
+│  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
+│  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
+│  calloutTransformer          ← Emoji blockquotes → Callout        │
+│  embedTransformer            ← Embed links → embedBlock nodes     │
+│  variablesTextTransformer    ← {user.*} → Variable (regex-based)  │
+└───────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌───────────────────────────────────────────────────────────────────┐
+│                         UTILITIES                                 │
+├───────────────────────────────────────────────────────────────────┤
+│  utils/html-tags.ts          ← STANDARD_HTML_TAGS, etc.           │
+│  lib/utils/load-components   ← Auto-loads React components        │
+│  lib/utils/mix-components    ← componentExists() lookup           │
+│  lib/utils/render-utils      ← Shared render utilities            │
+└───────────────────────────────────────────────────────────────────┘
 ```
+
+## Embeds
+
+The `embedTransformer` converts special markdown links into embed blocks. The syntax uses the `@embed` title marker:
+
+```markdown
+[Video Title](https://youtube.com/watch?v=abc "@embed")
+```
+
+This creates an `embedBlock` node with:
+- `url` - the embed URL
+- `title` - the link label (e.g., "Video Title")
+- `hName: 'embed'` - renders as `<Embed>` component
 
 ## User Variables
 

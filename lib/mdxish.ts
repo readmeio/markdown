@@ -11,12 +11,9 @@ import { VFile } from 'vfile';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
+import embedTransformer from '../processor/transform/embeds';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
-import {
-  preprocessJSXExpressions,
-  processSelfClosingTags,
-  type JSXContext,
-} from '../processor/transform/preprocess-jsx-expressions';
+import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 import variablesTextTransformer from '../processor/transform/variables-text';
 
 import { loadComponents } from './utils/load-components';
@@ -40,12 +37,13 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  const processedContent = processSelfClosingTags(preprocessJSXExpressions(mdContent, jsxContext));
+  const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
 
   const processor = unified()
     .use(remarkParse)
     .use(calloutTransformer)
     .use(mdxishComponentBlocks)
+    .use(embedTransformer)
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(rehypeRaw)
