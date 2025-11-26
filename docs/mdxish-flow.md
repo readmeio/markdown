@@ -2,13 +2,13 @@
 
 ## Overview
 
-The `mdxish` function processes markdown content with MDX syntax support, detecting and rendering custom component tags from a components hash. It returns a HAST (Hypertext Abstract Syntax Tree).
+The `mdxish` function processes markdown content with MDX-like syntax support, detecting and rendering custom component tags from a components hash. It returns a HAST (Hypertext Abstract Syntax Tree).
 
 ## Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           INPUT: Raw Markdown/MDX                           │
+│                           INPUT: Raw Markdown                               │
 │            "# Hello {user.name}\n<Callout>**Bold**</Callout>"               │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
@@ -61,15 +61,6 @@ The `mdxish` function processes markdown content with MDX syntax support, detect
         │                             │                             │
         ▼                             │                             │
 ┌───────────────────┐                 │                             │
-│  remarkMdx        │                 │                             │
-│  ───────────────  │                 │                             │
-│  Parse MDX exprs  │                 │                             │
-│  {user.name} →    │                 │                             │
-│  mdxTextExpression│                 │                             │
-└───────────────────┘                 │                             │
-        │                             │                             │
-        ▼                             │                             │
-┌───────────────────┐                 │                             │
 │ calloutTransformer│                 │                             │
 │  ───────────────  │                 │                             │
 │  > 📘 Title       │                 │                             │
@@ -90,13 +81,15 @@ The `mdxish` function processes markdown content with MDX syntax support, detect
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
-┌───────────────────┐                 │                             │
-│variablesTransformer                 │                             │
-│  ───────────────  │                 │                             │
-│  {user.name} →    │                 │                             │
-│  <Variable        │                 │                             │
-│    name="name"/>  │                 │                             │
-└───────────────────┘                 │                             │
+┌─────────────────────┐               │                             │
+│variablesTextTransformer             │                             │
+│  ─────────────────  │               │                             │
+│  Parses {user.*}    │               │                             │
+│  patterns from text │               │                             │
+│  using regex →      │               │                             │
+│  <Variable          │               │                             │
+│    name="field"/>   │               │                             │
+└─────────────────────┘               │                             │
         │                             │                             │
         └─────────────────────────────┼─────────────────────────────┘
                                       │
@@ -183,10 +176,9 @@ The `mdxish` function processes markdown content with MDX syntax support, detect
 | Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
 | Pre-process | `processSelfClosingTags` | Normalize `<Tag />` → `<Tag></Tag>` |
 | MDAST | `remarkParse` | Markdown → AST |
-| MDAST | `remarkMdx` | Parse MDX expression nodes |
 | MDAST | `calloutTransformer` | Emoji blockquotes → `<Callout>` |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
-| MDAST | `variablesTransformer` | `{user.*}` → `<Variable>` nodes |
+| MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | Convert | `remarkRehype` + handlers | MDAST → HAST |
 | HAST | `rehypeRaw` | Raw HTML strings → HAST elements |
 | HAST | `rehypeSlug` | Add IDs to headings |
@@ -207,19 +199,32 @@ The `mdxish` function processes markdown content with MDX syntax support, detect
 ┌─────────────────────────────────────────────────────────────────┐
 │                      PIPELINE PLUGINS                           │
 ├─────────────────────────────────────────────────────────────────┤
-│  rehypeMdxishComponents    ← Core component detection/transform │
-│  mdxishComponentBlocks     ← PascalCase HTML → MDX elements     │
-│  mdxComponentHandlers      ← MDAST→HAST conversion handlers     │
-│  calloutTransformer        ← Emoji blockquotes → Callout        │
-│  variablesTransformer      ← {user.*} → Variable nodes          │
+│  rehypeMdxishComponents      ← Core component detection/transform│
+│  mdxishComponentBlocks       ← PascalCase HTML → MDX elements   │
+│  mdxComponentHandlers        ← MDAST→HAST conversion handlers   │
+│  calloutTransformer          ← Emoji blockquotes → Callout      │
+│  variablesTextTransformer    ← {user.*} → Variable (regex-based)│
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                         UTILITIES                               │
 ├─────────────────────────────────────────────────────────────────┤
-│  utils/html-tags.ts        ← STANDARD_HTML_TAGS, etc.           │
-│  lib/utils/load-components ← Auto-loads React components        │
-│  lib/utils/mix-components  ← componentExists() lookup           │
+│  utils/html-tags.ts          ← STANDARD_HTML_TAGS, etc.         │
+│  lib/utils/load-components   ← Auto-loads React components      │
+│  lib/utils/mix-components    ← componentExists() lookup         │
+│  lib/utils/render-utils      ← Shared render utilities          │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+## User Variables
+
+The `variablesTextTransformer` parses `{user.<field>}` patterns directly from text nodes using regex (without requiring `remarkMdx`). Supported patterns:
+
+- `{user.name}` → dot notation
+- `{user.email}`
+- `{user.email_verified}`
+- `{user['field']}` → bracket notation with single quotes
+- `{user["field"]}` → bracket notation with double quotes
+
+All user object fields are supported: `name`, `email`, `email_verified`, `exp`, `iat`, `fromReadmeKey`, `teammateUserId`, etc.
