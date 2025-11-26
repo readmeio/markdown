@@ -1,3 +1,9 @@
+import type { Root } from 'hast';
+
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import * as rmdx from '../../index';
 
 describe('variable compiler', () => {
@@ -43,45 +49,52 @@ describe('variable compiler', () => {
   });
 });
 
-describe('mix variable compiler', () => {
-  it.skip('compiles back to the original mdx', () => {
+describe('mdxish variable compiler', () => {
+  it('should handle user variables', () => {
     const mdx = `
-## Hello!
-
-{user.name}
-
-### Bye bye!
+Hello {user.name}!
     `;
-    const tree = rmdx.mdast(mdx);
 
-    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+    const variables = {
+      user: {
+        name: 'John Doe',
+      },
+      defaults: [],
+    };
+
+    const hast = rmdx.mdxish(mdx) as Root;
+    expect(hast).toBeDefined();
+
+    const { default: Content } = rmdx.renderMdxish(hast, { variables });
+
+    render(React.createElement(Content));
+
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
   });
 
-  it.skip('with spaces in a variable, it compiles back to the original', () => {
-    const mdx = '{user["oh no"]}';
-    const tree = rmdx.mdast(mdx);
+  it('should NOT evaluate user variables inside backticks (inline code)', () => {
+    const mdx = `
+User Variables: **\`{user.name}\`** evaluates to {user.name}
+    `;
 
-    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
-  });
+    const variables = {
+      user: {
+        name: 'John Doe',
+      },
+      defaults: [],
+    };
 
-  it.skip('with dashes in a variable name, it compiles back to the original', () => {
-    const mdx = '{user["oh-no"]}';
-    const tree = rmdx.mdast(mdx);
+    const hast = rmdx.mdxish(mdx) as Root;
+    expect(hast).toBeDefined();
 
-    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
-  });
+    const { default: Content } = rmdx.renderMdxish(hast, { variables });
 
-  it.skip('with unicode in the variable name, it compiles back to the original', () => {
-    const mdx = '{user.nuñez}';
-    const tree = rmdx.mdast(mdx);
+    render(React.createElement(Content));
 
-    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
-  });
+    // The {user.name} OUTSIDE backticks should be evaluated to "John Doe"
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
 
-  it.skip('with quotes in the variable name, it compiles back to the original', () => {
-    const mdx = '{user[`"\'wth`]}';
-    const tree = rmdx.mdast(mdx);
-
-    expect(rmdx.mix(tree).trim()).toStrictEqual(mdx.trim());
+    // The {user.name} INSIDE backticks should remain as literal text
+    expect(screen.getByText('{user.name}')).toBeInTheDocument();
   });
 });

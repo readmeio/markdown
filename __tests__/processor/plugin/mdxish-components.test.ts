@@ -179,8 +179,6 @@ hello
     const result = processor.processSync(processedMd);
     const html = String(result);
 
-    console.log(html);
-
     expect(html).not.toContain('Hello world!');
     expect(html).toContain('Reusable content should work the same way:');
     expect(html).toContain('hello');
