@@ -24,6 +24,8 @@ export interface RenderMdxishOpts {
   variables?: Variables;
 }
 
+const MAX_DEPTH = 3;
+
 /**
  * Extract headings (h1-h6) from HAST for table of contents
  */
@@ -94,7 +96,7 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
 
   let Toc: React.FC<{ heading?: string }> | undefined;
   if (headings.length > 0) {
-    const tocHast = tocToHast(headings);
+    const tocHast = tocToHast(headings, MAX_DEPTH);
     // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
     const tocProcessor = unified().use(rehypeReact, {
       createElement: React.createElement,
