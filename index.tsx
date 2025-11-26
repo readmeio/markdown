@@ -24,7 +24,6 @@ export {
   migrate,
   mix,
   plain,
-  renderHtml,
   renderMdxish,
   remarkPlugins,
   stripComments,

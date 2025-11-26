@@ -12,8 +12,6 @@ export { default as mdxish } from './mdxish';
 export type { MdxishOpts } from './mdxish';
 export { default as migrate } from './migrate';
 export { default as plain } from './plain';
-export { default as renderHtml } from './renderHtml';
-export type { RenderHtmlOpts } from './renderHtml';
 export { default as renderMdxish } from './renderMdxish';
 export type { RenderMdxishOpts } from './renderMdxish';
 export { default as run } from './run';
