@@ -73,8 +73,7 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
 
       // Return as regular HTML attribute
       return `${attributeName}="${result}"`;
-    } catch (error) {
-      // If evaluation fails, leave it as-is (or could throw error)
+    } catch (_error) {
       return match;
     }
   });
@@ -120,7 +119,7 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
         // Ensure replacement doesn't break inline markdown context
         // Replace any newlines or multiple spaces with single space to preserve inline flow
         return resultString.replace(/\s+/g, ' ').trim();
-      } catch (error) {
+      } catch (_error) {
         // Return original if evaluation fails
         return match;
       }
@@ -137,21 +136,4 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   });
 
   return protectedContent;
-}
-
-/**
- * Strips self-closing tags and replaces them with opening and closing tags
- * Opening and closing tags are must easier to process and it ensure a correct AST.
- *
- * Example:
- * - <a/> -> <a></a>
- * - <img/> -> <img></img>
- * - <br/> -> <br></br>
- * - <EmptyComponent/> -> <EmptyComponent></EmptyComponent>
- *
- * @param content - The content to process
- * @returns
- */
-export function processSelfClosingTags(content: string): string {
-  return content.replace(/<([^>]+)\s*\/>/g, '<$1></$1>');
 }
