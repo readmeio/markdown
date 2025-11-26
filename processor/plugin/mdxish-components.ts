@@ -113,6 +113,9 @@ function smartCamelCase(str: string): string {
   }, str);
 }
 
+// Tags that should be passed through and handled at runtime (not by this plugin)
+const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable']);
+
 // Standard HTML tags that should never be treated as custom components
 const STANDARD_HTML_TAGS = new Set([
   'a',
@@ -258,6 +261,11 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
+      // Skip runtime components (like Variable) - they're handled at render time
+      if (RUNTIME_COMPONENT_TAGS.has(node.tagName)) {
+        return;
+      }
+
       // Check if the node is an actual HTML tag
       if (STANDARD_HTML_TAGS.has(node.tagName.toLowerCase())) {
         return;
@@ -306,7 +314,6 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     // Remove non-existent component nodes in reverse order to maintain correct indices
     for (let i = nodesToRemove.length - 1; i >= 0; i -= 1) {
       const { parent, index } = nodesToRemove[i];
-      console.log('Removing node:', (parent.children[index] as Element).tagName);
       parent.children.splice(index, 1);
     }
   };

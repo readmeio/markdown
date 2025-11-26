@@ -2,6 +2,7 @@ import type { GlossaryTerm } from '../contexts/GlossaryTerms';
 import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, TocList, Variables } from '../types';
 import type { Root } from 'hast';
 
+import Variable from '@readme/variable';
 import { h } from 'hastscript';
 import React from 'react';
 import rehypeReact from 'rehype-react';
@@ -47,7 +48,9 @@ const ensureHeadingIds = (tree: Root) => {
     }
 
     if ('children' in node && Array.isArray(node.children)) {
-      node.children.forEach(child => assignId(child));
+      node.children.forEach(child => {
+        assignId(child);
+      });
     }
   };
 
@@ -66,7 +69,9 @@ function extractToc(tree: Root): HastHeading[] {
     }
 
     if ('children' in node && Array.isArray(node.children)) {
-      node.children.forEach(child => traverse(child));
+      node.children.forEach(child => {
+        traverse(child);
+      });
     }
   };
 
@@ -154,25 +159,24 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
   const componentMap = makeUseMDXComponents(exportedComponents);
   const componentsForRehype = componentMap();
 
-  const headingWithId =
-    (Tag: keyof JSX.IntrinsicElements, Wrapped: React.ElementType | undefined) => {
-      const HeadingComponent = (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-        // eslint-disable-next-line react/prop-types
-        const { id, children, ...rest } = props;
-        const text =
-          typeof children === 'string'
-            ? children
-            : React.Children.toArray(children)
-                .filter(child => !(typeof child === 'string' && child.trim() === ''))
-                .map(child => (typeof child === 'string' ? child : ''))
-                .join(' ');
-        const resolvedId = id || slugify(text);
-        const Base = Wrapped || Tag;
-        return React.createElement(Base, { id: resolvedId, ...rest }, children);
-      };
-      HeadingComponent.displayName = `HeadingWithId(${Tag})`;
-      return HeadingComponent;
+  const headingWithId = (Tag: keyof JSX.IntrinsicElements, Wrapped: React.ElementType | undefined) => {
+    const HeadingComponent = (props: React.HTMLAttributes<HTMLHeadingElement>) => {
+      // eslint-disable-next-line react/prop-types
+      const { id, children, ...rest } = props;
+      const text =
+        typeof children === 'string'
+          ? children
+          : React.Children.toArray(children)
+              .filter(child => !(typeof child === 'string' && child.trim() === ''))
+              .map(child => (typeof child === 'string' ? child : ''))
+              .join(' ');
+      const resolvedId = id || slugify(text);
+      const Base = Wrapped || Tag;
+      return React.createElement(Base, { id: resolvedId, ...rest }, children);
     };
+    HeadingComponent.displayName = `HeadingWithId(${Tag})`;
+    return HeadingComponent;
+  };
 
   componentsForRehype.h1 = headingWithId('h1', componentsForRehype.h1 as React.ElementType | undefined);
   componentsForRehype.h2 = headingWithId('h2', componentsForRehype.h2 as React.ElementType | undefined);
@@ -180,6 +184,11 @@ const renderMdxish = (tree: Root, _opts: RenderMdxishOpts = {}): RMDXModule => {
   componentsForRehype.h4 = headingWithId('h4', componentsForRehype.h4 as React.ElementType | undefined);
   componentsForRehype.h5 = headingWithId('h5', componentsForRehype.h5 as React.ElementType | undefined);
   componentsForRehype.h6 = headingWithId('h6', componentsForRehype.h6 as React.ElementType | undefined);
+
+  // Add Variable component for user variable resolution at runtime
+  // Both uppercase and lowercase since HTML normalizes tag names to lowercase
+  componentsForRehype.Variable = Variable;
+  componentsForRehype.variable = Variable;
 
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   const processor = unified().use(rehypeReact, {

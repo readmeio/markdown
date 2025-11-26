@@ -1,3 +1,4 @@
+import type { MixOpts } from './mdxish';
 import type { GlossaryTerm } from '../contexts/GlossaryTerms';
 import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, TocList } from '../types';
 import type { Variables } from '../utils/user';
@@ -13,7 +14,7 @@ import { visit } from 'unist-util-visit';
 import * as Components from '../components';
 import Contexts from '../contexts';
 
-import mix, { type MixOpts } from './mix';
+import mix from './mix';
 import plain from './plain';
 import { loadComponents } from './utils/load-components';
 import makeUseMDXComponents from './utils/makeUseMdxComponents';
@@ -35,10 +36,7 @@ const getDepth = (el: HastHeading) => parseInt(el.tagName?.match(/^h(\d)/)?.[1] 
  * Find component name in components map using case-insensitive matching
  * Returns the actual key from the map, or null if not found
  */
-function findComponentNameCaseInsensitive(
-  componentName: string,
-  components: CustomComponents,
-): string | null {
+function findComponentNameCaseInsensitive(componentName: string, components: CustomComponents): string | null {
   // Try exact match first
   if (componentName in components) {
     return componentName;
@@ -159,7 +157,9 @@ function extractToc(tree: Root): HastHeading[] {
     }
 
     if ('children' in node && Array.isArray(node.children)) {
-      node.children.forEach(child => traverse(child));
+      node.children.forEach(child => {
+        traverse(child);
+      });
     }
   };
 
@@ -225,10 +225,7 @@ const renderHtml = async (htmlString: string, _opts: RenderHtmlOpts = {}): Promi
   const processMarkdown = async (content: string): Promise<string> => {
     const jsxContext: MixOpts['jsxContext'] = variables
       ? Object.fromEntries(
-          Object.entries(variables).map(([key, value]) => [
-            key,
-            typeof value === 'function' ? value : String(value),
-          ]),
+          Object.entries(variables).map(([key, value]) => [key, typeof value === 'function' ? value : String(value)]),
         )
       : {};
     return mix(content, {
