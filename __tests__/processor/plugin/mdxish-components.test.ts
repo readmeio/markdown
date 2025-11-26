@@ -1,51 +1,10 @@
 import type { CustomComponents } from '../../../types';
-import type { Root } from 'hast';
-
-import rehypeRaw from 'rehype-raw';
-import rehypeStringify from 'rehype-stringify';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import { unified } from 'unified';
-import { VFile } from 'vfile';
 
 import { describe, it, expect } from 'vitest';
 
-import { rehypeMdxishComponents } from '../../../processor/plugin/mdxish-components';
-import { processSelfClosingTags } from '../../../processor/transform/preprocess-jsx-expressions';
+import { mix } from '../../../lib';
 
 describe('rehypeMdxishComponents', () => {
-  const createProcessor = (components: CustomComponents = {}) => {
-    const processMarkdown = (processedContent: string): Root => {
-      const processor = unified()
-        .use(remarkParse)
-        .use(remarkRehype, { allowDangerousHtml: true })
-        .use(rehypeRaw)
-        .use(rehypeMdxishComponents, {
-          components,
-          processMarkdown,
-        });
-
-      const vfile = new VFile({ value: processedContent });
-      const hast = processor.runSync(processor.parse(processedContent), vfile) as Root;
-
-      if (!hast) {
-        throw new Error('Markdown pipeline did not produce a HAST tree.');
-      }
-
-      return hast;
-    };
-
-    return unified()
-      .use(remarkParse)
-      .use(remarkRehype, { allowDangerousHtml: true })
-      .use(rehypeRaw)
-      .use(rehypeMdxishComponents, {
-        components,
-        processMarkdown,
-      })
-      .use(rehypeStringify);
-  };
-
   it('should remove non-existent custom components from the tree', () => {
     const md = `<MyDemo> from inside </MyDemo>
 
@@ -53,9 +12,7 @@ Hello
 
 <Custom>`;
 
-    const processor = createProcessor({});
-    const result = processor.processSync(md);
-    const html = String(result);
+    const html = mix(md);
 
     // Should only contain "Hello" and not the non-existent component tags or their content
     expect(html).toContain('Hello');
@@ -71,13 +28,9 @@ Hello
 
 Hello`;
 
-    const processor = createProcessor({ TestComponent });
-    const result = processor.processSync(md);
-    const html = String(result);
-
-    // Should contain the component (tagName will be transformed to TestComponent)
-    expect(html).toContain('TestComponent');
-    expect(html).toContain('Hello');
+    const result = mix(md, { components: { TestComponent } });
+    expect(result).toContain('TestComponent');
+    expect(result).toContain('Hello');
   });
 
   it('should remove nested non-existent components', () => {
@@ -86,15 +39,11 @@ Hello`;
   Hello
 </Outer>`;
 
-    const processor = createProcessor({});
-    const result = processor.processSync(md);
-    const html = String(result);
-
-    // Should remove both Outer and Inner, but keep "Hello"
-    expect(html).not.toContain('Hello');
-    expect(html).not.toContain('Outer');
-    expect(html).not.toContain('Inner');
-    expect(html).not.toContain('nested content');
+    const result = mix(md);
+    expect(result).not.toContain('Hello');
+    expect(result).not.toContain('Outer');
+    expect(result).not.toContain('Inner');
+    expect(result).not.toContain('nested content');
   });
 
   it('should handle mixed existing and non-existent components', () => {
@@ -106,16 +55,12 @@ Hello`;
 
 Hello`;
 
-    const processor = createProcessor({ ExistingComponent });
-    const result = processor.processSync(md);
-    const html = String(result);
-
-    // Should keep existing component and "Hello", but remove non-existent
-    expect(html).toContain('ExistingComponent');
-    expect(html).toContain('Keep this');
-    expect(html).toContain('Hello');
-    expect(html).not.toContain('NonExistent');
-    expect(html).not.toContain('Remove this');
+    const result = mix(md, { components: { ExistingComponent } });
+    expect(result).toContain('ExistingComponent');
+    expect(result).toContain('Keep this');
+    expect(result).toContain('Hello');
+    expect(result).not.toContain('NonExistent');
+    expect(result).not.toContain('Remove this');
   });
 
   it('should preserve regular HTML tags', () => {
@@ -125,16 +70,12 @@ Hello`;
 
 Hello`;
 
-    const processor = createProcessor({});
-    const result = processor.processSync(md);
-    const html = String(result);
-
-    // Should keep HTML div, remove non-existent component, keep Hello
-    expect(html).toContain('<div>');
-    expect(html).toContain('This is HTML');
-    expect(html).toContain('Hello');
-    expect(html).not.toContain('NonExistentComponent');
-    expect(html).not.toContain('Remove this');
+    const result = mix(md);
+    expect(result).toContain('<div>');
+    expect(result).toContain('This is HTML');
+    expect(result).toContain('Hello');
+    expect(result).not.toContain('NonExistentComponent');
+    expect(result).not.toContain('Remove this');
   });
 
   it('should handle empty non-existent components', () => {
@@ -145,16 +86,11 @@ Hello
 <AnotherEmpty />`;
 
     // Preprocess self-closing tags before processing (matching mix.ts behavior)
-    const processedMd = processSelfClosingTags(md);
 
-    const processor = createProcessor({});
-    const result = processor.processSync(processedMd);
-    const html = String(result);
-
-    // Should only contain "Hello"
-    expect(html).toContain('Hello');
-    expect(html).not.toContain('EmptyComponent');
-    expect(html).not.toContain('AnotherEmpty');
+    const result = mix(md);
+    expect(result).toContain('Hello');
+    expect(result).not.toContain('EmptyComponent');
+    expect(result).not.toContain('AnotherEmpty');
   });
 
   it('should correctly handle real-life cases', () => {
@@ -172,16 +108,10 @@ hello
   <Inner> from inside </Inner>
 </Outer>`;
 
-    // Preprocess self-closing tags before processing (matching mix.ts behavior)
-    const processedMd = processSelfClosingTags(md);
-
-    const processor = createProcessor({});
-    const result = processor.processSync(processedMd);
-    const html = String(result);
-
-    expect(html).not.toContain('Hello world!');
-    expect(html).toContain('Reusable content should work the same way:');
-    expect(html).toContain('hello');
-    expect(html).not.toContain('from inside');
+    const result = mix(md);
+    expect(result).not.toContain('Hello world!');
+    expect(result).toContain('Reusable content should work the same way:');
+    expect(result).toContain('hello');
+    expect(result).not.toContain('from inside');
   });
 });
