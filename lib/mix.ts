@@ -2,8 +2,8 @@ import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
-import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
+import rehypeStringify from 'rehype-stringify';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
