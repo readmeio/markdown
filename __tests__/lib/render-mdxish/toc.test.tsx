@@ -1,3 +1,5 @@
+import type { HastHeading } from '../../../types';
+
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
@@ -163,4 +165,25 @@ describe('toc transformer', () => {
         </ul></li></ul></nav>"
       `);
     });
+
+  it('includes headings from reusable components', () => {
+    const md = `# Title
+
+<BlockedComponent/>`;
+
+    const blockedComponentModule = renderMdxish(mdxish('## Callout Heading'));
+    const components = {
+      BlockedComponent: blockedComponentModule,
+    };
+
+    const { toc } = renderMdxish(mdxish(md, { components }), { components });
+
+    expect(toc).toHaveLength(2);
+    const firstHeading = toc[0] as HastHeading;
+    expect(firstHeading.tagName).toBe('h1');
+    expect(firstHeading.properties?.id).toBe('title');
+    const secondHeading = toc[1] as HastHeading;
+    expect(secondHeading.tagName).toBe('h2');
+    expect(secondHeading.properties?.id).toBe('callout-heading');
   });
+});

@@ -1,5 +1,5 @@
 import type { GlossaryTerm } from '../contexts/GlossaryTerms';
-import type { CustomComponents, HastHeading, RMDXModule, Variables } from '../types';
+import type { CustomComponents, HastHeading, IndexableElements, RMDXModule, Variables } from '../types';
 import type { Root } from 'hast';
 
 import React from 'react';
@@ -25,27 +25,52 @@ export interface RenderMdxishOpts {
 }
 
 const MAX_DEPTH = 3;
+const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 
 /**
  * Extract headings (h1-h6) from HAST for table of contents
  */
 function extractToc(tree: Root, components: CustomComponents): HastHeading[] {
   const headings: HastHeading[] = [];
-  // All components that are blocked from being included in the TOC
-  // Get the keys of all the components
-  const blocked = new Set(Object.keys(components).map(component => component.toLowerCase()));
+  const componentsByTag = new Map<string, RMDXModule>(
+    Object.entries(components).map(([tag, mod]) => [tag.toLowerCase(), mod]),
+  );
+  const blocked = new Set([...componentsByTag.keys()]);
+
+  const isHeading = (node: IndexableElements): node is HastHeading =>
+    node.type === 'element' && typeof node.tagName === 'string' && HEADING_TAGS.has(node.tagName);
+
+  const collectComponentHeadings = (tag: string, seen: Set<string>): HastHeading[] => {
+    const component = componentsByTag.get(tag);
+    if (!component?.toc || seen.has(tag)) return [];
+
+    seen.add(tag);
+    const collected = (component.toc as IndexableElements[]).flatMap(entry => {
+      if (isHeading(entry)) return [entry];
+      if (entry.type === 'mdxJsxFlowElement' && typeof entry.name === 'string') {
+        return collectComponentHeadings(entry.name.toLowerCase(), seen);
+      }
+      return [];
+    });
+    seen.delete(tag);
+
+    return collected;
+  };
 
   const traverse = (node: Root | Root['children'][number], inBlocked = false): void => {
-    const isBlockedContainer =
-      node.type === 'element' && typeof node.tagName === 'string' && blocked.has(node.tagName.toLowerCase());
+    const tagName = node.type === 'element' && typeof node.tagName === 'string' ? node.tagName.toLowerCase() : '';
+    const isBlockedContainer = !!tagName && blocked.has(tagName);
     const blockedHere = inBlocked || isBlockedContainer;
 
-    if (
-      node.type === 'element' &&
-      !blockedHere &&
-      ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)
-    ) {
+    if (node.type === 'element' && !blockedHere && HEADING_TAGS.has(node.tagName)) {
       headings.push(node as HastHeading);
+    }
+
+    if (!inBlocked && tagName && componentsByTag.has(tagName)) {
+      const componentHeadings = collectComponentHeadings(tagName, new Set());
+      if (componentHeadings.length > 0) {
+        headings.push(...componentHeadings);
+      }
     }
 
     if ('children' in node && Array.isArray(node.children)) {
