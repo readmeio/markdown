@@ -111,7 +111,7 @@ const renderHtml = async (htmlString: string, opts: RenderOpts = {}): Promise<RM
   await restoreCustomComponents(tree, processMarkdown, components);
 
   // Extract headings and render
-  const headings = extractToc(tree);
+  const headings = extractToc(tree, components);
   const componentsForRehype = exportComponentsForRehype(components);
   const processor = createRehypeReactProcessor(componentsForRehype);
   const content = processor.stringify(tree) as unknown as React.ReactNode;

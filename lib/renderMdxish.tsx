@@ -31,7 +31,7 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
     ...userComponents,
   };
 
-  const headings = extractToc(tree);
+  const headings = extractToc(tree, components);
   const componentsForRehype = exportComponentsForRehype(components);
   const processor = createRehypeReactProcessor(componentsForRehype);
   const content = processor.stringify(tree) as React.ReactNode;

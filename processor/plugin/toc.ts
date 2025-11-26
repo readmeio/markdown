@@ -12,6 +12,7 @@ import { hasNamedExport } from '../utils';
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 const DEFAULT_MAX_DEPTH = 2;
+const isHeadingTag = (tag?: string) => (tag ? HEADING_TAGS.includes(tag) : false);
 
 const isStandardHtmlElement = (node: Element): boolean => STANDARD_HTML_TAGS.has(node.tagName.toLowerCase());
 
@@ -23,14 +24,45 @@ interface Options {
 export const getDepth = (el: HastHeading): number => parseInt(el.tagName?.match(/^h(\d)/)?.[1] || '1', 10);
 
 /** Extract all heading elements (h1-h6) from a HAST tree, excluding those inside custom components */
-export function extractToc(tree: Root): HastHeading[] {
+export function extractToc(tree: Root, components: CustomComponents = {}): HastHeading[] {
   const headings: HastHeading[] = [];
+  const componentsByTag = new Map<string, RMDXModule>(
+    Object.entries(components).map(([tag, mod]) => [tag.toLowerCase(), mod]),
+  );
 
+  // Recursively walk component TOCs so headings declared inside nested custom components are found.
+  const collectComponentHeadings = (tag: string, seen: Set<string>): HastHeading[] => {
+    const component = componentsByTag.get(tag);
+    if (!component?.toc || seen.has(tag)) return [];
+
+    seen.add(tag);
+    const collected = (component.toc as IndexableElements[]).flatMap(entry => {
+      if (entry.type === 'element' && isHeadingTag(entry.tagName)) {
+        return [entry as HastHeading];
+      }
+      if (entry.type === 'mdxJsxFlowElement' && typeof entry.name === 'string') {
+        return collectComponentHeadings(entry.name.toLowerCase(), seen);
+      }
+      return [];
+    });
+    seen.delete(tag);
+
+    return collected;
+  };
+
+  // Depth-first traversal over the HAST tree, collecting headings while skipping custom component bodies.
   const traverse = (node: Root | Root['children'][number]): void => {
     if (node.type === 'element') {
-      if (HEADING_TAGS.includes(node.tagName)) {
+      const tag = node.tagName.toLowerCase();
+
+      if (isHeadingTag(node.tagName)) {
         headings.push(node as HastHeading);
       }
+
+      if (componentsByTag.has(tag)) {
+        headings.push(...collectComponentHeadings(tag, new Set()));
+      }
+
       // Only traverse into standard HTML elements, skip custom components (like Callout)
       if (isStandardHtmlElement(node) && node.children) {
         node.children.forEach(traverse);
