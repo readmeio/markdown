@@ -15,6 +15,7 @@
     "build": "webpack --mode production && npm run build-types",
     "build-types": "npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
+    "prepare": "npm run build",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
     "start": "webpack serve --open --mode development --config ./webpack.dev.js",
