@@ -2,11 +2,14 @@ import type { Properties } from 'hast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
+// Convert inline/flow MDX expressions to plain text so rehype gets a text node (no evaluation here).
 const mdxExpressionHandler: Handler = (_state, node) => ({
   type: 'text',
   value: (node as { value?: string }).value || '',
 });
 
+// Convert MDX JSX nodes back to HAST elements, carrying over props and children
+// Making this consistent with the other nodes
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
   const properties: Properties = {};

@@ -9,6 +9,7 @@ const tagPattern = /^<([A-Z][A-Za-z0-9]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 
 const isClosingTag = (value: string, tag: string) => new RegExp(`^</${tag}>$`).test(value);
 
+// Remove a matching closing tag from a paragraph’s children; returns updated paragraph and whether one was removed.
 const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
   if (!Array.isArray(node.children)) return { paragraph: node, found: false } as const;
 
@@ -26,15 +27,18 @@ const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
   } as const;
 };
 
+// Swap two child nodes (opening html + paragraph) with a single replacement node.
 const replaceChild = (parent: Parent, index: number, replacement: Node) => {
   (parent.children as Node[]).splice(index, 2, replacement);
 };
 
+// Parse markdown inside a component’s inline content into mdast children.
 const parseMdChildren = (value: string): RootContent[] => {
   const parsed = unified().use(remarkParse).parse(value);
   return parsed.children || [];
 };
 
+// Convert raw attribute string into mdxJsxAttribute entries (strings only; no expressions).
 const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
   const attrString = raw.trim();
@@ -55,6 +59,7 @@ const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   return attributes;
 };
 
+// Parse a single HTML-ish tag string into tag name, attributes, self-closing flag, and inline content.
 const parseTag = (value: string) => {
   const match = value.match(tagPattern);
   if (!match) return null;
@@ -70,9 +75,13 @@ const parseTag = (value: string) => {
   };
 };
 
+// Transform HTML blocks that look like PascalCase components into mdxJsxFlowElement nodes.
+// This is needed because remark parses unknown tags as raw HTML; we rewrite them so downstream
+// MDX/rehype tooling treats them as components (supports self-closing and wrapped content).
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
 
+  // Walk children depth-first, rewriting opening/closing component-like HTML pairs.
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
