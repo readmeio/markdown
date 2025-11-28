@@ -201,22 +201,41 @@ describe('mdxish plain compiler', () => {
     expect(textValues).toContain('after');
   });
 
-  it('preserves text content in tables', () => {
-    // Note: mdxish uses remarkParse which doesn't support GFM tables
-    // Tables are parsed as plain text in paragraphs
+  it('parses markdown table syntax as table element (GFM supported)', () => {
+    // Note: mdxish now supports GFM tables via remarkGfm, so markdown table syntax is parsed as table
     const markdown = `| Heading 1 | Heading 2 |
 | :-------- | :-------- |
 | Cell A    | Cell B    |`;
 
     const hast = mdxish(markdown);
-    const paragraph = hast.children[0] as Element;
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table') as Element;
 
-    expect(paragraph.type).toBe('element');
-    expect(paragraph.tagName).toBe('p');
-    // Table syntax is preserved as text content
-    const textNode = paragraph.children[0];
-    expect(textNode.type).toBe('text');
-    expect('value' in textNode && textNode.value).toContain('Heading 1');
-    expect('value' in textNode && textNode.value).toContain('Cell A');
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const thead = table.children.find(child => child.type === 'element' && child.tagName === 'thead') as Element;
+    expect(thead).toBeDefined();
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody') as Element;
+    expect(tbody).toBeDefined();
+
+    // Verify table header content
+    const headerRow = thead.children.find(child => child.type === 'element' && child.tagName === 'tr') as Element;
+    expect(headerRow).toBeDefined();
+    const th = headerRow.children.find(child => child.type === 'element' && child.tagName === 'th') as Element;
+    expect(th).toBeDefined();
+    const headerTextNode = th.children.find(child => child.type === 'text');
+    expect(headerTextNode).toBeDefined();
+    expect(headerTextNode && 'value' in headerTextNode && headerTextNode.value).toContain('Heading 1');
+
+    // Verify table body content
+    const bodyRow = tbody.children.find(child => child.type === 'element' && child.tagName === 'tr') as Element;
+    expect(bodyRow).toBeDefined();
+    const td = bodyRow.children.find(child => child.type === 'element' && child.tagName === 'td') as Element;
+    expect(td).toBeDefined();
+    const cellTextNode = td.children.find(child => child.type === 'text');
+    expect(cellTextNode).toBeDefined();
+    expect(cellTextNode && 'value' in cellTextNode && cellTextNode.value).toContain('Cell A');
   });
 });

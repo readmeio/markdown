@@ -551,8 +551,8 @@ describe('mdxish table compiler', () => {
     expect(textNode && 'value' in textNode && textNode.value).toContain('foo | bar');
   });
 
-  it('preserves markdown table syntax as text (GFM not supported)', () => {
-    // Note: mdxish doesn't support GFM tables, so markdown table syntax is preserved as text
+  it('parses markdown table syntax as table element (GFM supported)', () => {
+    // Note: mdxish now supports GFM tables via remarkGfm, so markdown table syntax is parsed as table
     const markdown = `
 |  th 1  |  th 2  |
 | :----: | :----: |
@@ -560,11 +560,23 @@ describe('mdxish table compiler', () => {
 `;
 
     const hast = mdxish(markdown.trim());
-    const paragraph = hast.children.find(child => child.type === 'element' && child.tagName === 'p');
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
 
-    expect(paragraph).toBeDefined();
-    // Table syntax is preserved as text content
-    const textNode = paragraph.children.find(child => child.type === 'text');
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const thead = table.children.find(child => child.type === 'element' && child.tagName === 'thead');
+    expect(thead).toBeDefined();
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+
+    const th = thead.children
+      .find(child => child.type === 'element' && child.tagName === 'tr')
+      ?.children.find(child => child.type === 'element' && child.tagName === 'th');
+    expect(th).toBeDefined();
+    const textNode = th.children.find(child => child.type === 'text');
     expect(textNode).toBeDefined();
     expect(textNode && 'value' in textNode && textNode.value).toContain('th 1');
   });

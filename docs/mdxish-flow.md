@@ -60,6 +60,19 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
+┌───────────────────┐                 │                             │
+│  remarkGfm        │                 │                             │
+│  ───────────────  │                 │                             │
+│  GitHub Flavored  │                 │                             │
+│  Markdown support:│                 │                             │
+│  - Tables         │                 │                             │
+│  - Strikethrough  │                 │                             │
+│  - Task lists     │                 │                             │
+│  - Autolinks      │                 │                             │
+│  - Footnotes      │                 │                             │
+└───────────────────┘                 │                             │
+        │                             │                             │
+        ▼                             │                             │
 ┌────────────────────┐                │                             │
 │mdxishComponentBlocks                │                             │
 │  ───────────────── │                │                             │
@@ -191,6 +204,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
+| MDAST | `remarkGfm` | GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes |
 | Convert | `remarkRehype` + handlers | MDAST → HAST |
 | HAST | `rehypeRaw` | Raw HTML strings → HAST elements |
 | HAST | `rehypeSlug` | Add IDs to headings |
