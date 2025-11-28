@@ -10,7 +10,11 @@ import { VFile } from 'vfile';
 
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import defaultTransforms from '../processor/transform';
+import calloutTransformer from '../processor/transform/callouts';
+import codeTabsTransformer from '../processor/transform/code-tabs';
+import embedTransformer from '../processor/transform/embeds';
+import gemojiTransformer from '../processor/transform/gemoji+';
+import imageTransformer from '../processor/transform/images';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 import variablesTextTransformer from '../processor/transform/variables-text';
@@ -22,7 +26,7 @@ export interface MdxishOpts {
   jsxContext?: JSXContext;
 }
 
-const [embedTransformer, codeTabsTransformer, ...transforms] = Object.values(defaultTransforms);
+const defaultTransformers = [calloutTransformer, codeTabsTransformer, imageTransformer, gemojiTransformer];
 
 /**
  * Process markdown content with MDX syntax support.
@@ -42,7 +46,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   const processor = unified()
     .use(remarkParse)
-    .use(transforms)
+    .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(embedTransformer)
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
