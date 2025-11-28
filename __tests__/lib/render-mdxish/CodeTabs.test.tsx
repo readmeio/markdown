@@ -1,11 +1,10 @@
 import '@testing-library/jest-dom';
-import { render, prettyDOM } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { mdxish, renderMdxish } from '../../../lib';
 
 describe('code tabs renderer', () => {
-
   describe('given 2 consecutive code blocks', () => {
     const cppCode = `#include <iostream>
 

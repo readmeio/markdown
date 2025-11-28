@@ -50,6 +50,15 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
+┌───────────────────┐                 │                             │
+│  remarkFrontmatter│                 │                             │
+│  ───────────────  │                 │                             │
+│  Parse YAML       │                 │                             │
+│  frontmatter      │                 │                             │
+│  (metadata)       │                 │                             │
+└───────────────────┘                 │                             │
+        │                             │                             │
+        ▼                             │                             │
 ┌────────────────────┐                │                             │
 │defaultTransformers │                │                             │
 │  ───────────────   │                │                             │
@@ -58,6 +67,19 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  3. image          │                │                             │
 │  4. gemoji         │                │                             │
 └────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌───────────────────┐                 │                             │
+│  remarkGfm        │                 │                             │
+│  ───────────────  │                 │                             │
+│  GitHub Flavored  │                 │                             │
+│  Markdown support:│                 │                             │
+│  - Tables         │                 │                             │
+│  - Strikethrough  │                 │                             │
+│  - Task lists     │                 │                             │
+│  - Autolinks      │                 │                             │
+│  - Footnotes      │                 │                             │
+└───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
 ┌────────────────────┐                │                             │
@@ -186,11 +208,13 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 |-------|--------|---------|
 | Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
 | MDAST | `remarkParse` | Markdown → AST |
+| MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
+| MDAST | `remarkGfm` | GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes |
 | Convert | `remarkRehype` + handlers | MDAST → HAST |
 | HAST | `rehypeRaw` | Raw HTML strings → HAST elements |
 | HAST | `rehypeSlug` | Add IDs to headings |

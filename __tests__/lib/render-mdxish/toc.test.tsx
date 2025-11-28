@@ -20,11 +20,11 @@ describe('toc transformer', () => {
 
     render(<Toc />);
 
-      expect(screen.findByText('Title')).toBeDefined();
-      expect(screen.findByText('Subheading')).toBeDefined();
-      expect(screen.findByText('Third')).toBeDefined();
-      expect(screen.queryByText('Fourth')).toBeNull();
-    });
+    expect(screen.findByText('Title')).toBeDefined();
+    expect(screen.findByText('Subheading')).toBeDefined();
+    expect(screen.findByText('Third')).toBeDefined();
+    expect(screen.queryByText('Fourth')).toBeNull();
+  });
 
   it('parses a toc from components', () => {
     const md = `

@@ -372,29 +372,16 @@ Lorem ipsum dolor!`;
   });
 });
 
-describe.skip('export multiple Markdown renderers with mix', () => {
-  const tree = {
-    type: 'root',
-    children: [
-      {
-        type: 'heading',
-        depth: 1,
-        children: [
-          {
-            type: 'text',
-            value: 'Hello World',
-          },
-        ],
-      },
-    ],
-  };
-
-  it.skip('renders MD', () => {
-    expect(mix(tree)).toMatchSnapshot();
+describe('export multiple Markdown renderers with mix', () => {
+  it('renders MD', () => {
+    const markdown = '# Hello World';
+    const html = mix(markdown);
+    expect(html).toContain('<h1');
+    expect(html).toContain('Hello World');
   });
 
-  it.skip('returns null for blank input', () => {
-    expect(mix('')).toBeNull();
+  it('returns empty string for blank input', () => {
+    expect(mix('')).toBe('');
   });
 });
 

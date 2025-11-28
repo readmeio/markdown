@@ -3,6 +3,8 @@ import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
@@ -54,11 +56,13 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   const processor = unified()
     .use(remarkParse)
+    .use(remarkFrontmatter)
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(embedTransformer)
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
+    .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(rehypeRaw)
     .use(rehypeSlug)

@@ -1,4 +1,4 @@
-import { mdast, mdx, mix } from '../../index';
+import { mdast, mdx, mdxish } from '../../index';
 
 describe('code-tabs compiler', () => {
   it('compiles code tabs', () => {
@@ -42,8 +42,8 @@ I should stay here
   });
 });
 
-describe('mix code-tabs compiler', () => {
-  it.skip('compiles code tabs', () => {
+describe('mdxish code-tabs compiler', () => {
+  it('compiles code tabs', () => {
     const markdown = `\`\`\`
 const works = true;
 \`\`\`
@@ -52,10 +52,16 @@ const cool = true;
 \`\`\`
 `;
 
-    expect(mix(mdast(markdown))).toBe(markdown);
+    const hast = mdxish(markdown);
+    // Code blocks should be grouped into CodeTabs
+    const firstChild = hast.children[0];
+    
+    expect(firstChild.type).toBe('element');
+    expect(firstChild.tagName).toBe('CodeTabs');
+    expect(firstChild.children).toHaveLength(2); // Two code blocks
   });
 
-  it.skip('compiles code tabs with metadata', () => {
+  it('compiles code tabs with metadata', () => {
     const markdown = `\`\`\`js Testing
 const works = true;
 \`\`\`
@@ -64,10 +70,15 @@ const cool = true;
 \`\`\`
 `;
 
-    expect(mix(mdast(markdown))).toBe(markdown);
+    const hast = mdxish(markdown);
+    const firstChild = hast.children[0];
+    
+    expect(firstChild.type).toBe('element');
+    expect(firstChild.tagName).toBe('CodeTabs');
+    expect(firstChild.children).toHaveLength(2); // Two code blocks
   });
 
-  it.skip("doesnt't mess with joining other blocks", () => {
+  it("doesnt't mess with joining other blocks", () => {
     const markdown = `\`\`\`
 const works = true;
 \`\`\`
@@ -80,6 +91,15 @@ const cool = true;
 I should stay here
 `;
 
-    expect(mix(mdast(markdown))).toBe(markdown);
+    const hast = mdxish(markdown);
+    // CodeTabs should be first
+    const firstChild = hast.children[0];
+    expect(firstChild.type).toBe('element');
+    expect(firstChild.tagName).toBe('CodeTabs');
+    
+    // Then heading
+    const heading = hast.children.find(c => c.type === 'element' && c.tagName === 'h2');
+    expect(heading).toBeDefined();
+    expect(heading.tagName).toBe('h2');
   });
 });
