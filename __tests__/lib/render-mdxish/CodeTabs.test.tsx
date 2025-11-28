@@ -44,8 +44,10 @@ ${pythonCode}
 
     it('should render the buttons with the correct text', () => {
       const { container } = render(<mod.default />);
-      expect(container.querySelector('button')).toHaveTextContent('C++');
-      expect(container.querySelector('button')).toHaveTextContent('Python');
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveTextContent('C++');
+      expect(buttons[1]).toHaveTextContent('Python');
     });
   });
 });
