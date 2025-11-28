@@ -17,6 +17,7 @@ import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
+import tailwindTransformer from '../processor/transform/tailwind';
 import variablesTextTransformer from '../processor/transform/variables-text';
 
 import { loadComponents } from './utils/load-components';
@@ -24,6 +25,7 @@ import { loadComponents } from './utils/load-components';
 export interface MdxishOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
+  useTailwind?: boolean;
 }
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, imageTransformer, gemojiTransformer];
@@ -35,7 +37,7 @@ const defaultTransformers = [calloutTransformer, codeTabsTransformer, imageTrans
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, jsxContext = {} } = opts;
+  const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -44,12 +46,19 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
 
+  // Create temp map string to string of components
+  const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
+    acc[key] = String(value);
+    return acc;
+  }, {});
+
   const processor = unified()
     .use(remarkParse)
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(embedTransformer)
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
+    .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(rehypeRaw)
     .use(rehypeSlug)

@@ -18,6 +18,7 @@ export interface RenderOpts {
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
+  useTailwind?: boolean;
   variables?: Variables;
 }
 
