@@ -6,12 +6,14 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
-
 const variables =
   ({ asMdx } = { asMdx: true }): Transform =>
   tree => {
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
+
+      // Skip expressions inside inline code - they should stay as literal text
+      if (parent && (parent as { type: string }).type === 'inlineCode') return;
 
       // @ts-expect-error - estree is not defined on our mdx types?!
       if (node.data.estree.type !== 'Program') return;

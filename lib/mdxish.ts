@@ -1,0 +1,84 @@
+import type { CustomComponents } from '../types';
+import type { Root } from 'hast';
+
+import rehypeRaw from 'rehype-raw';
+import rehypeSlug from 'rehype-slug';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import { unified } from 'unified';
+import { VFile } from 'vfile';
+
+import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
+import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import calloutTransformer from '../processor/transform/callouts';
+import codeTabsTransformer from '../processor/transform/code-tabs';
+import embedTransformer from '../processor/transform/embeds';
+import gemojiTransformer from '../processor/transform/gemoji+';
+import imageTransformer from '../processor/transform/images';
+import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
+import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
+import tailwindTransformer from '../processor/transform/tailwind';
+import variablesTextTransformer from '../processor/transform/variables-text';
+
+import { loadComponents } from './utils/load-components';
+
+export interface MdxishOpts {
+  components?: CustomComponents;
+  jsxContext?: JSXContext;
+  useTailwind?: boolean;
+}
+
+const defaultTransformers = [calloutTransformer, codeTabsTransformer, imageTransformer, gemojiTransformer];
+
+/**
+ * Process markdown content with MDX syntax support.
+ * Detects and renders custom component tags from the components hash.
+ *
+ * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ */
+export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+  const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
+
+  const components: CustomComponents = {
+    ...loadComponents(),
+    ...userComponents,
+  };
+
+  const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
+
+  // Create temp map string to string of components
+  const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
+    acc[key] = String(value);
+    return acc;
+  }, {});
+
+  const processor = unified()
+    .use(remarkParse)
+    .use(remarkFrontmatter)
+    .use(defaultTransformers)
+    .use(mdxishComponentBlocks)
+    .use(embedTransformer)
+    .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
+    .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
+    .use(remarkGfm)
+    .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
+    .use(rehypeRaw)
+    .use(rehypeSlug)
+    .use(rehypeMdxishComponents, {
+      components,
+      processMarkdown: (markdown: string) => mdxish(markdown, opts),
+    });
+
+  const vfile = new VFile({ value: processedContent });
+  const hast = processor.runSync(processor.parse(processedContent), vfile) as Root;
+
+  if (!hast) {
+    throw new Error('Markdown pipeline did not produce a HAST tree.');
+  }
+
+  return hast;
+}
+
+export default mdxish;
