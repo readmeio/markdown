@@ -50,6 +50,15 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
+┌───────────────────┐                 │                             │
+│  remarkFrontmatter│                 │                             │
+│  ───────────────  │                 │                             │
+│  Parse YAML       │                 │                             │
+│  frontmatter      │                 │                             │
+│  (metadata)       │                 │                             │
+└───────────────────┘                 │                             │
+        │                             │                             │
+        ▼                             │                             │
 ┌────────────────────┐                │                             │
 │defaultTransformers │                │                             │
 │  ───────────────   │                │                             │
@@ -199,6 +208,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 |-------|--------|---------|
 | Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
 | MDAST | `remarkParse` | Markdown → AST |
+| MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |

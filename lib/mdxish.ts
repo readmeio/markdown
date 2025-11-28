@@ -3,6 +3,7 @@ import type { Root } from 'hast';
 
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
+import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -55,6 +56,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   const processor = unified()
     .use(remarkParse)
+    .use(remarkFrontmatter)
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(embedTransformer)
