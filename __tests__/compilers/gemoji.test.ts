@@ -1,4 +1,6 @@
-import { mdast, mdx, mix } from '../../index';
+import type { Element } from 'hast';
+
+import { mdast, mdx, mdxish } from '../../index';
 
 describe('gemoji compiler', () => {
   it('should compile back to a shortcode', () => {
@@ -20,22 +22,47 @@ describe('gemoji compiler', () => {
   });
 });
 
-describe('mix gemoji compiler', () => {
-  it.skip('should compile back to a shortcode', () => {
+describe('mdxish gemoji compiler', () => {
+  it('should convert gemojis to emoji nodes', () => {
     const markdown = 'This is a gemoji :joy:.';
 
-    expect(mix(mdast(markdown)).trimEnd()).toStrictEqual(markdown);
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    expect(paragraph.tagName).toBe('p');
+
+    // Gemoji should be converted to an emoji node or image
+    const hasEmoji = paragraph.children.some(
+      child => child.type === 'element' && (child.tagName === 'img' || child.tagName === 'i'),
+    );
+    expect(
+      hasEmoji ||
+        paragraph.children.some(child => child.type === 'text' && 'value' in child && child.value?.includes('😂')),
+    ).toBeTruthy();
   });
 
-  it.skip('should compile owlmoji back to a shortcode', () => {
+  it('should convert owlmoji to image nodes', () => {
     const markdown = ':owlbert:';
 
-    expect(mix(mdast(markdown)).trimEnd()).toStrictEqual(markdown);
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const image = paragraph.children.find(child => child.type === 'element' && child.tagName === 'img') as Element;
+    expect(image).toBeDefined();
+    expect(image.properties.alt).toBe(':owlbert:');
   });
 
-  it.skip('should compile font-awsome emojis back to a shortcode', () => {
+  it('should convert font-awesome emojis to icon elements', () => {
     const markdown = ':fa-readme:';
 
-    expect(mix(mdast(markdown)).trimEnd()).toStrictEqual(markdown);
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const icon = paragraph.children.find(child => child.type === 'element' && child.tagName === 'i') as Element;
+    expect(icon).toBeDefined();
+    expect(Array.isArray(icon.properties.className) ? icon.properties.className : []).toContain('fa-readme');
   });
 });
