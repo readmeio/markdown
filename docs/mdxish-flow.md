@@ -50,14 +50,14 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
-┌───────────────────┐                 │                             │
-│ calloutTransformer│                 │                             │
-│  ───────────────  │                 │                             │
-│  > 📘 Title       │                 │                             │
-│  Converts emoji   │                 │                             │
-│  blockquotes to   │                 │                             │
-│  Callout nodes    │                 │                             │
-└───────────────────┘                 │                             │
+┌────────────────────┐                │                             │
+│defaultTransformers │                │                             │
+│  ───────────────   │                │                             │
+│  1. callout        │                │                             │
+│  2. codeTabs       │                │                             │
+│  3. image          │                │                             │
+│  4. gemoji         │                │                             │
+└────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
 ┌────────────────────┐                │                             │
@@ -91,6 +91,16 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  <Variable          │               │                             │
 │    name="field"/>   │               │                             │
 └─────────────────────┘               │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌───────────────────┐                 │                             │
+│tailwindTransformer│                 │                             │
+│  ───────────────  │                 │                             │
+│  (conditional)    │                 │                             │
+│  Processes        │                 │                             │
+│  Tailwind classes │                 │                             │
+│  in components    │                 │                             │
+└───────────────────┘                 │                             │
         │                             │                             │
         └─────────────────────────────┼─────────────────────────────┘
                                       │
@@ -176,10 +186,11 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 |-------|--------|---------|
 | Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
 | MDAST | `remarkParse` | Markdown → AST |
-| MDAST | `calloutTransformer` | Emoji blockquotes → `<Callout>` |
+| MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
+| MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
 | Convert | `remarkRehype` + handlers | MDAST → HAST |
 | HAST | `rehypeRaw` | Raw HTML strings → HAST elements |
 | HAST | `rehypeSlug` | Add IDs to headings |
@@ -203,9 +214,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  rehypeMdxishComponents      ← Core component detection/transform │
 │  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
 │  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
-│  calloutTransformer          ← Emoji blockquotes → Callout        │
+│  defaultTransformers         ← callout, codeTabs, image, gemoji   │
 │  embedTransformer            ← Embed links → embedBlock nodes     │
 │  variablesTextTransformer    ← {user.*} → Variable (regex-based)  │
+│  tailwindTransformer         ← Process Tailwind classes (opt-in)  │
 └───────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
