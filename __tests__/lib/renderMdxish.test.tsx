@@ -61,9 +61,7 @@ This should be outside`;
 
     const components: Record<string, RMDXModule> = {
       MyComponent: {
-        default: (props: MDXProps) => (
-          <div data-testid="my-component">{props.children as React.ReactNode}</div>
-        ),
+        default: (props: MDXProps) => <div data-testid="my-component">{props.children as React.ReactNode}</div>,
         Toc: () => null,
         toc: [],
         stylesheet: undefined,
@@ -105,5 +103,20 @@ Hello`;
     expect(wrapper).toBeEmptyDOMElement();
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(wrapper).not.toContainElement(screen.getByText('Hello'));
+  });
+
+  it('renders HTMLBlock with renderMdxish', () => {
+    const markdown = '<HTMLBlock>{`<p><strong">Hello</strong>, World!</p>`}</HTMLBlock>';
+
+    const tree = mdxish(markdown);
+    const mod = renderMdxish(tree);
+
+    render(<mod.default />);
+
+    const htmlBlock = document.querySelector('.rdmd-html');
+    expect(htmlBlock).toBeInTheDocument();
+    expect(htmlBlock?.innerHTML).toContain('Hello');
+    expect(htmlBlock?.innerHTML).toContain('World!');
+    expect(htmlBlock?.innerHTML).toContain('<p>');
   });
 });

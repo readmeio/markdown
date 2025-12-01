@@ -92,6 +92,18 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
+┌────────────────────┐                │                             │
+│  mdxishHtmlBlocks  │                │                             │
+│  ───────────────── │                │                             │
+│  Transforms        │                │                             │
+│  HTMLBlock MDX JSX │                │                             │
+│  elements and      │                │                             │
+│  template literal  │                │                             │
+│  syntax to         │                │                             │
+│  html-block nodes  │                │                             │
+└────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
 ┌───────────────────┐                 │                             │
 │ embedTransformer  │                 │                             │
 │  ───────────────  │                 │                             │
@@ -224,6 +236,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
+| MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
@@ -251,6 +264,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  rehypeMdxishComponents      ← Core component detection/transform │
 │  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
 │  mdxishTables                ← <Table> JSX → markdown tables      │
+│  mdxishHtmlBlocks            ← <HTMLBlock> → html-block nodes     │
 │  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
 │  defaultTransformers         ← callout, codeTabs, image, gemoji   │
 │  embedTransformer            ← Embed links → embedBlock nodes     │
@@ -324,3 +338,7 @@ The old MDX pipeline relies on `remarkMdx` to convert the table and its markdown
 ```
 
 This gets converted to a markdown `table` node where the cell containing `**Bold text**` is parsed into a `strong` element with a text node containing "Bold text".
+
+## HTMLBlocks
+
+The `mdxishHtmlBlocks` transformer converts `<HTMLBlock>{`...`}</HTMLBlock>` syntax to `html-block` MDAST nodes. The HTML string is stored in `data.hProperties.html` and passed to the React `HTMLBlock` component via the `html` prop during HAST→React conversion, ensuring compatibility with both the `mdxish` and `compile`+`run` pipelines.

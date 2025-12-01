@@ -14,17 +14,29 @@ const extractScripts = (html: string = ''): [string, () => void] => {
 };
 
 interface Props {
-  children: React.ReactElement | string;
+  children?: React.ReactElement | string;
+  html?: string;
   runScripts?: boolean | string;
   safeMode?: boolean;
 }
 
-const HTMLBlock = ({ children = '', runScripts, safeMode = false }: Props) => {
-  if (typeof children !== 'string') {
-    throw new TypeError('HTMLBlock: children must be a string');
+const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode = false }: Props) => {
+  // Use html prop if provided (from HAST properties), otherwise extract from children
+  let html: string;
+  if (htmlProp) {
+    html = htmlProp;
+  } else if (typeof children === 'string') {
+    html = children;
+  } else {
+    // Extract string from React children (text nodes)
+    const textContent = React.Children.toArray(children)
+      .map(child => (typeof child === 'string' ? child : ''))
+      .join('');
+    if (!textContent) {
+      throw new TypeError('HTMLBlock: children must be a string or html prop must be provided');
+    }
+    html = textContent;
   }
-
-  const html = children;
   // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
 
