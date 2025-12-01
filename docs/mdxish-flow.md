@@ -342,3 +342,5 @@ This gets converted to a markdown `table` node where the cell containing `**Bold
 ## HTMLBlocks
 
 The `mdxishHtmlBlocks` transformer converts `<HTMLBlock>{`...`}</HTMLBlock>` syntax to `html-block` MDAST nodes. The HTML string is stored in `data.hProperties.html` and passed to the React `HTMLBlock` component via the `html` prop during HAST→React conversion, ensuring compatibility with both the `mdxish` and `compile`+`run` pipelines.
+
+The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>```javascript\nconst x = 1;\n```</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.

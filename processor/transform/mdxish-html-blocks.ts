@@ -20,15 +20,12 @@ function collectTextContent(node: { children?: unknown[]; lang?: string; type?: 
   } else if (node.type === 'inlineCode' && node.value) {
     parts.push(node.value);
   } else if (node.type === 'code' && node.value) {
-    // Handle code blocks - preserve the code fence syntax
-    // If the code block has a language, include it in the fence
-    // Note: The markdown parser consumes the opening ``` when parsing code fences,
-    // so we need to reconstruct the full fence syntax
+    // Reconstruct code fence syntax (markdown parser consumes opening ```)
     const lang = node.lang || '';
     const fence = `\`\`\`${lang ? `${lang}\n` : ''}`;
     parts.push(fence);
     parts.push(node.value);
-    // Ensure we have a newline before closing fence if content doesn't end with one
+    // Add newline before closing fence if missing
     const closingFence = node.value.endsWith('\n') ? '```' : '\n```';
     parts.push(closingFence);
   } else if (node.children && Array.isArray(node.children)) {
@@ -43,20 +40,19 @@ function collectTextContent(node: { children?: unknown[]; lang?: string; type?: 
 }
 
 /**
- * Extracts boolean attribute from HTML tag string
- * Handles both JSX expression syntax (safeMode={true}) and string syntax (safeMode="true")
- * Returns string "true"/"false" to survive rehypeRaw serialization
+ * Extracts boolean attribute from HTML tag. Handles JSX (safeMode={true}) and string (safeMode="true") syntax.
+ * Returns "true"/"false" string to survive rehypeRaw serialization.
  */
 function extractBooleanAttr(attrs: string, name: string): string | undefined {
-  // Try JSX expression syntax first: name={true} or name={false}
+  // Try JSX syntax: name={true|false}
   const jsxMatch = attrs.match(new RegExp(`${name}=\\{(true|false)\\}`));
   if (jsxMatch) {
-    return jsxMatch[1]; // Return "true" or "false" as string
+    return jsxMatch[1];
   }
-  // Try string syntax: name="true" or name=true
+  // Try string syntax: name="true"|true
   const stringMatch = attrs.match(new RegExp(`${name}="?(true|false)"?`));
   if (stringMatch) {
-    return stringMatch[1]; // Return "true" or "false" as string
+    return stringMatch[1];
   }
   return undefined;
 }
@@ -86,7 +82,7 @@ function createHTMLBlockNode(
 }
 
 /**
- * Checks if a node contains an HTMLBlock opening tag (but NOT closing tag - for split detection)
+ * Checks for opening tag only (for split detection)
  */
 function hasOpeningTagOnly(node: { children?: unknown[]; type?: string; value?: string }): {
   attrs: string;
@@ -119,7 +115,7 @@ function hasOpeningTagOnly(node: { children?: unknown[]; type?: string; value?: 
   };
 
   check(node);
-  // Only return found=true if we have opening but NOT closing (split case)
+  // Return true only if opening without closing (split case)
   return { attrs, found: hasOpening && !hasClosed };
 }
 
@@ -137,12 +133,10 @@ function hasClosingTag(node: { children?: unknown[]; type?: string; value?: stri
 }
 
 /**
- * Transforms HTMLBlock MDX JSX elements to html-block MDAST nodes.
- * Handles both MDX JSX elements and template literal syntax: <HTMLBlock>{`...`}</HTMLBlock>
+ * Transforms HTMLBlock MDX JSX to html-block nodes. Handles <HTMLBlock>{`...`}</HTMLBlock> syntax.
  */
 const mdxishHtmlBlocks = (): Transform => tree => {
-  // Handle HTMLBlock split across root-level children (newlines in content cause this)
-  // Example: paragraph(<HTMLBlock>{`) + html(<div>...</div>) + paragraph(`}</HTMLBlock>)
+  // Handle HTMLBlock split across root children (caused by newlines)
   visit(tree, 'root', (root: Parent) => {
     const children = root.children;
     let i = 0;
@@ -162,7 +156,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         }
 
         if (closingIdx !== -1) {
-          // Collect content between opening and closing (skip the containers, get inner content)
+          // Collect inner content between tags
           const contentParts: string[] = [];
           for (let j = i; j <= closingIdx; j += 1) {
             const node = children[j] as { children?: unknown[]; type?: string; value?: string };
@@ -198,18 +192,14 @@ const mdxishHtmlBlocks = (): Transform => tree => {
     }
   });
 
-  // Handle HTMLBlock parsed as HTML elements (when template literal contains HTML tags)
-  // Example: <HTMLBlock>\n<div>content</div>\n</HTMLBlock>
-  // The tags are parsed as separate 'html' nodes when content contains block-level HTML
-  // When newlines are present, opening and closing tags may be in different block-level nodes
+  // Handle HTMLBlock parsed as HTML elements (when template literal contains block-level HTML tags)
   visit(tree, 'html', (node, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 
     const value = (node as { value?: string }).value;
     if (!value) return;
 
-    // Case 1: Full HTMLBlock in single node (no blank lines in content)
-    // e.g., "<HTMLBlock>\n<div>content</div>\n</HTMLBlock>"
+    // Case 1: Full HTMLBlock in single node
     const fullMatch = value.match(/^<HTMLBlock(\s[^>]*)?>([\s\S]*)<\/HTMLBlock>$/);
     if (fullMatch) {
       const attrs = fullMatch[1] || '';
@@ -233,8 +223,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       return;
     }
 
-    // Case 2: Opening tag only (blank lines caused split into sibling nodes)
-    // e.g., "<HTMLBlock>" followed by sibling nodes, then "</HTMLBlock>"
+    // Case 2: Opening tag only (split by blank lines)
     if (value === '<HTMLBlock>' || value.match(/^<HTMLBlock\s[^>]*>$/)) {
       const siblings = parent.children;
       let closingIdx = -1;
@@ -251,13 +240,13 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         }
       }
 
-      if (closingIdx === -1) return; // No closing tag found
+      if (closingIdx === -1) return;
 
-      // Collect content between opening and closing tags, skipping template literal delimiters
+      // Collect content between tags, skipping template literal delimiters
       const contentParts: string[] = [];
       for (let i = index + 1; i < closingIdx; i += 1) {
         const sibling = siblings[i];
-        // Skip { and } text nodes (template literal syntax)
+        // Skip template literal delimiters
         if (sibling.type === 'text') {
           const textVal = (sibling as { value?: string }).value;
           if (textVal === '{' || textVal === '}' || textVal === '{`' || textVal === '`}') {
@@ -279,15 +268,13 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         : undefined;
       const safeMode = extractBooleanAttr(value, 'safeMode');
 
-      // Replace opening tag with HTMLBlock node and remove consumed siblings
+      // Replace opening tag with HTMLBlock node, remove consumed siblings
       parent.children[index] = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
       parent.children.splice(index + 1, closingIdx - index);
     }
   });
 
-  // Handle HTMLBlock syntax inside paragraphs: <HTMLBlock>{`...`}</HTMLBlock>
-  // Example: Some text <HTMLBlock>{`<div>content</div>`}</HTMLBlock> more text
-  // When HTMLBlock appears inline within a paragraph, tags and braces are parsed as inline elements
+  // Handle HTMLBlock inside paragraphs (parsed as inline elements)
   visit(tree, 'paragraph', (node: Paragraph, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 
@@ -310,7 +297,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         }
       }
 
-      // Look for opening brace `{` after HTMLBlock start
+      // Find opening brace after HTMLBlock start
       if (htmlBlockStartIdx !== -1 && templateLiteralStartIdx === -1 && child.type === 'text') {
         const value = (child as { value?: string }).value;
         if (value === '{') {
@@ -318,7 +305,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         }
       }
 
-      // Look for closing brace `}` before HTMLBlock end
+      // Find closing brace before HTMLBlock end
       if (htmlBlockStartIdx !== -1 && htmlBlockEndIdx === -1 && child.type === 'text') {
         const value = (child as { value?: string }).value;
         if (value === '}') {
@@ -336,7 +323,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
     ) {
       const openingTag = children[htmlBlockStartIdx] as { value?: string };
 
-      // Collect all content between { and } using collectTextContent to handle code blocks
+      // Collect content between braces (handles code blocks)
       const templateContent: string[] = [];
       for (let i = templateLiteralStartIdx + 1; i < templateLiteralEndIdx; i += 1) {
         const child = children[i];
@@ -364,11 +351,9 @@ const mdxishHtmlBlocks = (): Transform => tree => {
     }
   });
 
-  // Ensure existing html-block nodes have their HTML properly structured
+  // Ensure html-block nodes have HTML in children as text node
   visit(tree, 'html-block', (node: HTMLBlock) => {
     const html = node.data?.hProperties?.html;
-
-    // Ensure the HTML string from hProperties is in the children as a text node
     if (
       html &&
       (!node.children ||
