@@ -118,5 +118,6 @@ Hello`;
     expect(htmlBlock?.innerHTML).toContain('Hello');
     expect(htmlBlock?.innerHTML).toContain('World!');
     expect(htmlBlock?.innerHTML).toContain('<p>');
+    expect(htmlBlock?.innerHTML).not.toContain('{');
   });
 });

@@ -17,13 +17,13 @@ interface Props {
   children?: React.ReactElement | string;
   html?: string;
   runScripts?: boolean | string;
-  safeMode?: boolean;
+  safeMode?: boolean | string;
 }
 
-const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode = false }: Props) => {
+const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeModeRaw = false }: Props) => {
   // Use html prop if provided (from HAST properties), otherwise extract from children
-  let html: string;
-  if (htmlProp) {
+  let html: string = '';
+  if (htmlProp !== undefined) {
     html = htmlProp;
   } else if (typeof children === 'string') {
     html = children;
@@ -32,13 +32,11 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode = false
     const textContent = React.Children.toArray(children)
       .map(child => (typeof child === 'string' ? child : ''))
       .join('');
-    if (!textContent) {
-      throw new TypeError('HTMLBlock: children must be a string or html prop must be provided');
-    }
     html = textContent;
   }
   // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
+  const safeMode = typeof safeModeRaw === 'boolean' ? safeModeRaw : safeModeRaw === 'true';
 
   const [cleanedHtml, exec] = extractScripts(html);
 

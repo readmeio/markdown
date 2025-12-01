@@ -1,6 +1,9 @@
+import type { HTMLBlock } from '../../types';
 import type { Properties } from 'hast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
+
+import { NodeTypes } from '../../enums';
 
 // Convert inline/flow MDX expressions to plain text so rehype gets a text node (no evaluation here).
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -34,10 +37,24 @@ const mdxJsxElementHandler: Handler = (state, node) => {
   };
 };
 
+// Convert html-block MDAST nodes to HAST elements, preserving hProperties
+const htmlBlockHandler: Handler = (_state, node) => {
+  const htmlBlockNode = node as HTMLBlock;
+  const hProperties = htmlBlockNode.data?.hProperties || {};
+
+  return {
+    type: 'element',
+    tagName: 'html-block',
+    properties: hProperties as Properties,
+    children: [],
+  };
+};
+
 export const mdxComponentHandlers: Handlers = {
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,
   mdxTextExpression: mdxExpressionHandler,
   mdxjsEsm: () => undefined,
+  [NodeTypes.htmlBlock]: htmlBlockHandler,
 };

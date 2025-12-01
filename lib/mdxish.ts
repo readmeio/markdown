@@ -68,7 +68,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
-    .use(rehypeRaw)
+    .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(rehypeSlug)
     .use(rehypeMdxishComponents, {
       components,

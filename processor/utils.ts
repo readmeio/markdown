@@ -137,14 +137,15 @@ export const formatHTML = (html: string): string => {
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
-  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+  let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
-  // // Get the number of spaces in the first line to determine the tab size
-  // const tab = cleaned.match(/^\s*/)[0].length;
-
-  // // Remove the first indentation level from each line
-  // const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
-  // const unindented = cleaned.replace(tabRegex, '');
+  // Unescape backticks: \` -> ` (users escape backticks in template literals)
+  // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
+  cleaned = cleaned.replace(/\\`/g, '`');
+  // Also handle case where backslash and backtick got separated by markdown parsing
+  // Pattern: backslash followed by any characters, then a backtick
+  // This handles cases like: \example` -> `example` (replacing \ with ` at start)
+  cleaned = cleaned.replace(/\\([^`]*?)`/g, '`$1`');
 
   return cleaned;
 };

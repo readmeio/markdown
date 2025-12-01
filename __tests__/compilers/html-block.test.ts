@@ -3,7 +3,7 @@ import type { Element } from 'hast';
 import { mdast, mdx, mdxish } from '../../index';
 
 function findHTMLBlock(element: Element): Element | undefined {
-  if (element.tagName === 'HTMLBlock') {
+  if (element.tagName === 'HTMLBlock' || element.tagName === 'html-block') {
     return element;
   }
   return element.children
@@ -108,5 +108,47 @@ const foo = () => {
     const htmlBlock = findHTMLBlock(paragraph);
     expect(htmlBlock).toBeDefined();
     expect(htmlBlock?.tagName).toBe('HTMLBlock');
+  });
+
+  it('unescapes backticks in HTML content', () => {
+    const markdown = '<HTMLBlock>{`<code>\\`example\\`</code>`}</HTMLBlock>';
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+    expect(htmlBlock?.tagName).toBe('HTMLBlock');
+
+    // Verify that escaped backticks \` are unescaped to ` in the HTML
+    const htmlProp = htmlBlock?.properties?.html as string;
+    expect(htmlProp).toBeDefined();
+    expect(htmlProp).toContain('<code>`example`</code>');
+    expect(htmlProp).not.toContain('\\`');
+  });
+
+  it('passes safeMode property correctly', () => {
+    // Test with both JSX expression and string syntax
+    const markdown = '<HTMLBlock safeMode={true}>{`<script>alert("XSS")</script><p>Content</p>`}</HTMLBlock>';
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+
+    const allProps = htmlBlock?.properties;
+    expect(allProps).toBeDefined();
+
+    const safeMode = allProps?.safeMode;
+    expect(safeMode).toBe('true');
+
+    // Verify that html property is still present (for safeMode to render as escaped text)
+    const htmlProp = allProps?.html as string;
+    expect(htmlProp).toBeDefined();
+    expect(htmlProp).toContain('<script>alert("XSS")</script>');
+    expect(htmlProp).toContain('<p>Content</p>');
   });
 });
