@@ -7,6 +7,26 @@ import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../enums';
 import { formatHTML } from '../utils';
 
+import { base64Decode, HTML_BLOCK_CONTENT_END, HTML_BLOCK_CONTENT_START } from './preprocess-jsx-expressions';
+
+/**
+ * Decodes HTMLBlock content that was protected during preprocessing.
+ * Content is wrapped in <!--RDMX_HTMLBLOCK:base64:RDMX_HTMLBLOCK-->
+ */
+function decodeProtectedContent(content: string): string {
+  // Escape special regex characters in the markers
+  const startEscaped = HTML_BLOCK_CONTENT_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const endEscaped = HTML_BLOCK_CONTENT_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const markerRegex = new RegExp(`${startEscaped}([A-Za-z0-9+/=]+)${endEscaped}`, 'g');
+  return content.replace(markerRegex, (_match, encoded: string) => {
+    try {
+      return base64Decode(encoded);
+    } catch {
+      return encoded;
+    }
+  });
+}
+
 /**
  * Collects text content from a node and its children recursively
  */
@@ -166,6 +186,8 @@ const mdxishHtmlBlocks = (): Transform => tree => {
           // Remove the opening/closing tags and template literal syntax from content
           let content = contentParts.join('');
           content = content.replace(/^<HTMLBlock[^>]*>\s*\{?\s*`?/, '').replace(/`?\s*\}?\s*<\/HTMLBlock>$/, '');
+          // Decode protected content that was base64 encoded during preprocessing
+          content = decodeProtectedContent(content);
 
           const htmlString = formatHTML(content);
           const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
@@ -207,6 +229,8 @@ const mdxishHtmlBlocks = (): Transform => tree => {
 
       // Remove template literal syntax if present: {`...`}
       content = content.replace(/^\s*\{\s*`/, '').replace(/`\s*\}\s*$/, '');
+      // Decode protected content that was base64 encoded during preprocessing
+      content = decodeProtectedContent(content);
 
       const htmlString = formatHTML(content);
       const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
@@ -257,7 +281,9 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         contentParts.push(collectTextContent(sibling as { children?: unknown[]; type?: string; value?: string }));
       }
 
-      const htmlString = formatHTML(contentParts.join(''));
+      // Decode protected content that was base64 encoded during preprocessing
+      const decodedContent = decodeProtectedContent(contentParts.join(''));
+      const htmlString = formatHTML(decodedContent);
       const runScriptsMatch = value.match(/runScripts="?([^">\s]+)"?/);
       const runScripts = runScriptsMatch
         ? runScriptsMatch[1] === 'true'
@@ -332,7 +358,9 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         );
       }
 
-      const htmlString = formatHTML(templateContent.join(''));
+      // Decode protected content that was base64 encoded during preprocessing
+      const decodedContent = decodeProtectedContent(templateContent.join(''));
+      const htmlString = formatHTML(decodedContent);
 
       let runScripts: boolean | string | undefined;
       let safeMode: string | undefined;

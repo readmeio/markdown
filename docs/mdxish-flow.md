@@ -27,6 +27,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  ─────────────────────────────────────────────────────────────────────────  │
 │  preprocessJSXExpressions(content, jsxContext)                              │
 │                                                                             │
+│  0. Protect HTMLBlock content (base64 encode to prevent parser issues)      │
 │  1. Extract & protect code blocks (```...```) and inline code (`...`)       │
 │  2. Remove JSX comments: {/* comment */} → ""                               │
 │  3. Evaluate attribute expressions: href={baseUrl} → href="https://..."     │
@@ -43,9 +44,9 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
         │                             │                             │
         ▼                             │                             │
 ┌───────────────────┐                 │                             │
-│  remarkParse      │                 │                             │
-│  ───────────────  │                 │     REMARK PHASE            │
-│  Parse markdown   │                 │     (MDAST - Markdown AST)  │
+│  remarkParse      │                 │     REMARK PHASE            │
+│  ───────────────  │                 │     (MDAST - Markdown AST)  │
+│  Parse markdown   │                 │                             │
 │  into MDAST       │                 │                             │
 └───────────────────┘                 │                             │
         │                             │                             │
@@ -100,7 +101,9 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  elements and      │                │                             │
 │  template literal  │                │                             │
 │  syntax to         │                │                             │
-│  html-block nodes  │                │                             │
+│  html-block nodes. │                │                             │
+│  Decodes protected │                │                             │
+│  base64 content.   │                │                             │
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
@@ -230,7 +233,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 
 | Phase | Plugin | Purpose |
 |-------|--------|---------|
-| Pre-process | `preprocessJSXExpressions` | Evaluate `{expressions}` before parsing |
+| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate `{expressions}` |
 | MDAST | `remarkParse` | Markdown → AST |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
@@ -342,5 +345,7 @@ This gets converted to a markdown `table` node where the cell containing `**Bold
 ## HTMLBlocks
 
 The `mdxishHtmlBlocks` transformer converts `<HTMLBlock>{`...`}</HTMLBlock>` syntax to `html-block` MDAST nodes. The HTML string is stored in `data.hProperties.html` and passed to the React `HTMLBlock` component via the `html` prop during HAST→React conversion, ensuring compatibility with both the `mdxish` and `compile`+`run` pipelines.
+
+To prevent the markdown parser from incorrectly consuming `<script>`, `<style>` tags inside HTMLBlocks, the content is base64-encoded during preprocessing and decoded by the transformer.
 
 The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>```javascript\nconst x = 1;\n```</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.

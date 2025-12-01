@@ -5,12 +5,48 @@
 
 export type JSXContext = Record<string, unknown>;
 
+/**
+ * Base64 encode string (works in both Node.js and browser)
+ */
+function base64Encode(str: string): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(str, 'utf-8').toString('base64');
+  }
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+/**
+ * Base64 decode string (works in both Node.js and browser)
+ */
+export function base64Decode(str: string): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(str, 'base64').toString('utf-8');
+  }
+  return decodeURIComponent(escape(atob(str)));
+}
+
+// Markers used to identify protected HTMLBlock content
+// Using HTML comments to avoid markdown parsing issues with underscores
+export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
+export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
+
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
-  // Step 1: Extract and protect code blocks and inline code FIRST
+  // Step 0: Protect HTMLBlock template literal content FIRST
+  // The markdown parser incorrectly parses HTML like <script> inside template literals,
+  // so we base64 encode it to prevent the parser from treating it as HTML.
+  // The mdxishHtmlBlocks transformer will decode this content.
+  let protectedContent = content.replace(
+    /(<HTMLBlock[^>]*>)\{\s*`([\s\S]*?)`\s*\}(<\/HTMLBlock>)/g,
+    (_match, openTag: string, templateContent: string, closeTag: string) => {
+      const encoded = base64Encode(templateContent);
+      return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
+    },
+  );
+
+  // Step 1: Extract and protect code blocks and inline code
   // This prevents JSX comment removal from affecting code examples
   const codeBlocks: string[] = [];
   const inlineCode: string[] = [];
-  let protectedContent = content;
 
   // Extract code blocks (```...```)
   protectedContent = protectedContent.replace(/```[\s\S]*?```/g, match => {
