@@ -18,6 +18,7 @@ import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
+import mdxishTables from '../processor/transform/mdxish-tables';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 import tailwindTransformer from '../processor/transform/tailwind';
 import variablesTextTransformer from '../processor/transform/variables-text';
@@ -59,6 +60,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(remarkFrontmatter)
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
+    .use(mdxishTables)
     .use(embedTransformer)
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })

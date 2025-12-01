@@ -580,4 +580,115 @@ describe('mdxish table compiler', () => {
     expect(textNode).toBeDefined();
     expect(textNode && 'value' in textNode && textNode.value).toContain('th 1');
   });
+
+  it('processes JSX tables with markdown components', () => {
+    const markdown = `
+<Table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bold</td>
+      <td>**Bold text**</td>
+    </tr>
+    <tr>
+      <td>Italic</td>
+      <td>*Italic text*</td>
+    </tr>
+  </tbody>
+</Table>
+`;
+    const hast = mdxish(markdown.trim());
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
+
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+
+    const rows = tbody.children.filter(child => child.type === 'element' && child.tagName === 'tr');
+    expect(rows).toHaveLength(2);
+
+    // Helper to get text from a cell, optionally through a wrapper element
+    const getCellText = (cell, wrapperTag) => {
+      if (wrapperTag) {
+        const wrapper = cell.children.find(c => c.type === 'element' && c.tagName === wrapperTag);
+        const text = wrapper?.children.find(c => c.type === 'text');
+        return text?.value;
+      }
+      const text = cell.children.find(c => c.type === 'text');
+      return text?.value;
+    };
+
+    // Check first row: Bold | **Bold text**
+    const boldCells = rows[0].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(boldCells).toHaveLength(2);
+    expect(getCellText(boldCells[0])).toBe('Bold');
+    expect(getCellText(boldCells[1], 'strong')).toBe('Bold text');
+
+    // Check second row: Italic | *Italic text*
+    const italicCells = rows[1].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(italicCells).toHaveLength(2);
+    expect(getCellText(italicCells[0])).toBe('Italic');
+    expect(getCellText(italicCells[1], 'em')).toBe('Italic text');
+  });
+
+  it('processes GFM tables with markdown components', () => {
+    const markdown = `
+| Feature | Description |
+|---------|-------------|
+| **Bold** | Text with **emphasis** |
+| *Italic* | Text with *emphasis* |
+| Normal | Regular text |
+`;
+
+    const hast = mdxish(markdown.trim());
+
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
+
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+
+    const rows = tbody.children.filter(child => child.type === 'element' && child.tagName === 'tr');
+    expect(rows).toHaveLength(3);
+
+    // Helper to get text from a cell, optionally through a wrapper element
+    const getCellText = (cell, wrapperTag) => {
+      if (wrapperTag) {
+        const wrapper = cell.children.find(c => c.type === 'element' && c.tagName === wrapperTag);
+        const text = wrapper?.children.find(c => c.type === 'text');
+        return text?.value;
+      }
+      const text = cell.children.find(c => c.type === 'text');
+      return text?.value;
+    };
+
+    // Check first row: **Bold** | Text with **emphasis**
+    const boldCells = rows[0].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(boldCells).toHaveLength(2);
+    expect(getCellText(boldCells[0], 'strong')).toBe('Bold');
+    expect(getCellText(boldCells[1], 'strong')).toBe('emphasis');
+
+    // Check second row: *Italic* | Text with *emphasis*
+    const italicCells = rows[1].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(italicCells).toHaveLength(2);
+    expect(getCellText(italicCells[0], 'em')).toBe('Italic');
+    expect(getCellText(italicCells[1], 'em')).toBe('emphasis');
+
+    // Check third row: Normal | Regular text
+    const normalCells = rows[2].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(normalCells).toHaveLength(2);
+    expect(getCellText(normalCells[0])).toBe('Normal');
+    expect(getCellText(normalCells[1])).toBe('Regular text');
+  });
 });

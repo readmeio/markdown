@@ -69,19 +69,6 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
-┌───────────────────┐                 │                             │
-│  remarkGfm        │                 │                             │
-│  ───────────────  │                 │                             │
-│  GitHub Flavored  │                 │                             │
-│  Markdown support:│                 │                             │
-│  - Tables         │                 │                             │
-│  - Strikethrough  │                 │                             │
-│  - Task lists     │                 │                             │
-│  - Autolinks      │                 │                             │
-│  - Footnotes      │                 │                             │
-└───────────────────┘                 │                             │
-        │                             │                             │
-        ▼                             │                             │
 ┌────────────────────┐                │                             │
 │mdxishComponentBlocks                │                             │
 │  ───────────────── │                │                             │
@@ -90,6 +77,18 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  <Callout>text     │                │                             │
 │  </Callout> into   │                │                             │
 │  mdxJsxFlowElement │                │                             │
+└────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌────────────────────┐                │                             │
+│  mdxishTables      │                │                             │
+│  ───────────────── │                │                             │
+│  Converts <Table>  │                │                             │
+│  JSX elements to   │                │                             │
+│  markdown table    │                │                             │
+│  nodes. Re-parses  │                │                             │
+│  markdown in cells │                │                             │
+│  (e.g., **Bold**)  │                │                             │
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
@@ -122,6 +121,19 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  Processes        │                 │                             │
 │  Tailwind classes │                 │                             │
 │  in components    │                 │                             │
+└───────────────────┘                 │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌───────────────────┐                 │                             │
+│  remarkGfm        │                 │                             │
+│  ───────────────  │                 │                             │
+│  GitHub Flavored  │                 │                             │
+│  Markdown support:│                 │                             │
+│  - Tables         │                 │                             │
+│  - Strikethrough  │                 │                             │
+│  - Task lists     │                 │                             │
+│  - Autolinks      │                 │                             │
+│  - Footnotes      │                 │                             │
 └───────────────────┘                 │                             │
         │                             │                             │
         └─────────────────────────────┼─────────────────────────────┘
@@ -211,6 +223,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
+| MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
@@ -237,6 +250,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ├───────────────────────────────────────────────────────────────────┤
 │  rehypeMdxishComponents      ← Core component detection/transform │
 │  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
+│  mdxishTables                ← <Table> JSX → markdown tables      │
 │  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
 │  defaultTransformers         ← callout, codeTabs, image, gemoji   │
 │  embedTransformer            ← Embed links → embedBlock nodes     │
@@ -279,3 +293,34 @@ The `variablesTextTransformer` parses `{user.<field>}` patterns directly from te
 - `{user["field"]}` → bracket notation with double quotes
 
 All user object fields are supported: `name`, `email`, `email_verified`, `exp`, `iat`, `fromReadmeKey`, `teammateUserId`, etc.
+
+## Tables
+
+The `mdxishTables` transformer converts JSX Table elements to markdown table nodes and re-parses markdown content in table cells.
+
+The old MDX pipeline relies on `remarkMdx` to convert the table and its markdown content into MDX JSX elements. Since mdxish does not use `remarkMdx`, we have to do it manually. The workaround is to parse cell contents through `remarkParse` and `remarkGfm` to convert them to MDX JSX elements.
+
+### Example
+
+```html
+<Table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Example</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bold</td>
+      <td>**Bold text**</td>
+    </tr>
+    <tr>
+      <td>Italic</td>
+      <td>*Italic text*</td>
+    </tr>
+  </tbody>
+</Table>
+```
+
+This gets converted to a markdown `table` node where the cell containing `**Bold text**` is parsed into a `strong` element with a text node containing "Bold text".
