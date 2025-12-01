@@ -139,13 +139,26 @@ export const formatHTML = (html: string): string => {
   // Removes the leading/trailing newlines
   let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
+  // Convert literal \n sequences to actual newlines BEFORE processing backticks
+  // This prevents the backtick unescaping regex from incorrectly matching \n sequences
+  cleaned = cleaned.replace(/\\n/g, '\n');
+
   // Unescape backticks: \` -> ` (users escape backticks in template literals)
   // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
   cleaned = cleaned.replace(/\\`/g, '`');
   // Also handle case where backslash and backtick got separated by markdown parsing
-  // Pattern: backslash followed by any characters, then a backtick
+  // Pattern: backslash followed by any characters (but not \n which we already handled), then a backtick
   // This handles cases like: \example` -> `example` (replacing \ with ` at start)
-  cleaned = cleaned.replace(/\\([^`]*?)`/g, '`$1`');
+  // Exclude \n sequences to avoid matching them incorrectly
+  cleaned = cleaned.replace(/\\([^`\\n]*?)`/g, '`$1`');
+
+  // Fix case where markdown parser consumed one backtick from triple backticks
+  // Pattern: `` followed by a word (like ``javascript) should be ```javascript
+  // This handles cases where code fences were parsed and one backtick was lost
+  cleaned = cleaned.replace(/<(\w+[^>]*)>``(\w+)/g, '<$1>```$2');
+
+  // Unescape dollar signs: \$ -> $ (users escape $ in template literals to prevent interpolation)
+  cleaned = cleaned.replace(/\\\$/g, '$');
 
   return cleaned;
 };

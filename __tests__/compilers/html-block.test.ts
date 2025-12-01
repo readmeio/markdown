@@ -151,4 +151,38 @@ const foo = () => {
     expect(htmlProp).toContain('<script>alert("XSS")</script>');
     expect(htmlProp).toContain('<p>Content</p>');
   });
+
+  it('should handle template literal with variables', () => {
+    // eslint-disable-next-line quotes
+    const markdown = `<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`;
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+    // eslint-disable-next-line no-template-curly-in-string
+    expect(htmlBlock?.properties?.html).toBe('<code>const x = ${variable}</code>');
+  });
+
+  it('should handle nested template literals', () => {
+    // Use a regular string to avoid nested template literal syntax error
+    // The content should be: <pre>```javascript\nconst x = 1;\n```</pre>
+    const markdown = '<HTMLBlock>{`<pre>\\`\\`\\`javascript\\nconst x = 1;\\n\\`\\`\\`</pre>`}</HTMLBlock>';
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+
+    // Verify that the HTML content is preserved correctly with newlines
+    const htmlProp = htmlBlock?.properties?.html as string;
+    expect(htmlProp).toBeDefined();
+
+    // The expected content should have triple backticks
+    expect(htmlProp).toBe('<pre>```javascript\nconst x = 1;\n```</pre>');
+  });
 });

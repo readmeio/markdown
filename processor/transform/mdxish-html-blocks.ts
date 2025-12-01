@@ -10,7 +10,7 @@ import { formatHTML } from '../utils';
 /**
  * Collects text content from a node and its children recursively
  */
-function collectTextContent(node: { children?: unknown[]; type?: string; value?: string }): string {
+function collectTextContent(node: { children?: unknown[]; lang?: string; type?: string; value?: string }): string {
   const parts: string[] = [];
 
   if (node.type === 'text' && node.value) {
@@ -19,10 +19,22 @@ function collectTextContent(node: { children?: unknown[]; type?: string; value?:
     parts.push(node.value);
   } else if (node.type === 'inlineCode' && node.value) {
     parts.push(node.value);
+  } else if (node.type === 'code' && node.value) {
+    // Handle code blocks - preserve the code fence syntax
+    // If the code block has a language, include it in the fence
+    // Note: The markdown parser consumes the opening ``` when parsing code fences,
+    // so we need to reconstruct the full fence syntax
+    const lang = node.lang || '';
+    const fence = `\`\`\`${lang ? `${lang}\n` : ''}`;
+    parts.push(fence);
+    parts.push(node.value);
+    // Ensure we have a newline before closing fence if content doesn't end with one
+    const closingFence = node.value.endsWith('\n') ? '```' : '\n```';
+    parts.push(closingFence);
   } else if (node.children && Array.isArray(node.children)) {
     node.children.forEach(child => {
       if (typeof child === 'object' && child !== null) {
-        parts.push(collectTextContent(child as { children?: unknown[]; type?: string; value?: string }));
+        parts.push(collectTextContent(child as { children?: unknown[]; lang?: string; type?: string; value?: string }));
       }
     });
   }
@@ -324,20 +336,13 @@ const mdxishHtmlBlocks = (): Transform => tree => {
     ) {
       const openingTag = children[htmlBlockStartIdx] as { value?: string };
 
-      // Collect all content between { and }
+      // Collect all content between { and } using collectTextContent to handle code blocks
       const templateContent: string[] = [];
       for (let i = templateLiteralStartIdx + 1; i < templateLiteralEndIdx; i += 1) {
         const child = children[i];
-        if (child.type === 'inlineCode') {
-          const value = (child as { value?: string }).value || '';
-          templateContent.push(value);
-        } else if (child.type === 'html') {
-          const value = (child as { value?: string }).value || '';
-          templateContent.push(value);
-        } else if (child.type === 'text') {
-          const value = (child as { value?: string }).value || '';
-          templateContent.push(value);
-        }
+        templateContent.push(
+          collectTextContent(child as { children?: unknown[]; lang?: string; type?: string; value?: string }),
+        );
       }
 
       const htmlString = formatHTML(templateContent.join(''));
