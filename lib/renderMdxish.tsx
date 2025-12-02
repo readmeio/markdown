@@ -13,9 +13,6 @@ import {
 
 export type { RenderOpts as RenderMdxishOpts };
 
-// Catches all headings up to depth 3
-const MAX_DEPTH = 3;
-
 /**
  * Converts a HAST tree to a React component.
  * @param tree - The HAST tree to convert
@@ -37,7 +34,7 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
   const processor = createRehypeReactProcessor(componentsForRehype);
   const content = processor.stringify(tree) as React.ReactNode;
 
-  const tocHast = headings.length > 0 ? tocToHast(headings, MAX_DEPTH) : null;
+  const tocHast = headings.length > 0 ? tocToHast(headings) : null;
 
   return buildRMDXModule(content, headings, tocHast, contextOpts);
 };
