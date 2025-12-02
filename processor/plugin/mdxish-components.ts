@@ -7,6 +7,7 @@ import { visit } from 'unist-util-visit';
 
 import { getComponentName } from '../../lib/utils/mix-components';
 import {
+  CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,
   REACT_HTML_PROP_BOUNDARIES,
   RUNTIME_COMPONENT_TAGS,
@@ -43,10 +44,19 @@ function smartCamelCase(str: string): string {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
-  const allBoundaries = [...REACT_HTML_PROP_BOUNDARIES, ...CSS_STYLE_PROP_BOUNDARIES];
-  return allBoundaries.reduce((result, word) => {
+  const allBoundaries = [...REACT_HTML_PROP_BOUNDARIES, ...CSS_STYLE_PROP_BOUNDARIES, ...CUSTOM_PROP_BOUNDARIES];
+
+  // Return as-is if already a boundary word to avoid incorrect splitting
+  if (allBoundaries.includes(str.toLowerCase())) {
+    return str;
+  }
+
+  // Sort by length (longest first) to prevent shorter matches (e.g., "column" in "columns")
+  const sortedBoundaries = [...allBoundaries].sort((a, b) => b.length - a.length);
+
+  return sortedBoundaries.reduce((res, word) => {
     const regex = new RegExp(`(${word})([a-z])`, 'gi');
-    return result.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
+    return res.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
   }, str);
 }
 

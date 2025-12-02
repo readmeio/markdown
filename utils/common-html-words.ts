@@ -45,6 +45,43 @@ export const REACT_HTML_PROP_BOUNDARIES = getWordBoundariesFromProps(reactHtmlAt
 export const CSS_STYLE_PROP_BOUNDARIES = getWordBoundariesFromProps(reactNativeStylingProps as string[]);
 
 /**
+ * Custom component prop word boundaries not in React HTML or CSS boundaries.
+ */
+export const CUSTOM_PROP_BOUNDARIES = [
+  'alt',
+  'attribute',
+  'attributes',
+  'buttons',
+  'caption',
+  'collection',
+  'columns',
+  'copy',
+  'dark',
+  'data',
+  'depth',
+  'download',
+  'embed',
+  'empty',
+  'favicon',
+  'flow',
+  'iframe',
+  'image',
+  'layout',
+  'lazy',
+  'meta',
+  'provider',
+  'run',
+  'safe',
+  'scripts',
+  'tag',
+  'term',
+  'terms',
+  'theme',
+  'url',
+  'value',
+];
+
+/**
  * Tags that should be passed through and handled at runtime (not by the mdxish plugin)
  */
 export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable']);
