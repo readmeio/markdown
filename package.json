@@ -38,6 +38,7 @@
     "hast-util-from-html": "^2.0.1",
     "hast-util-sanitize": "^4.0.0",
     "hastscript": "^9.0.0",
+    "html-tags": "^5.1.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
