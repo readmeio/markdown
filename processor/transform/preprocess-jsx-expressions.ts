@@ -46,8 +46,9 @@ function evaluateExpression(expression: string, context: JSXContext): unknown {
 
 // Base64 encode HTMLBlock content to prevent parser from consuming <script>/<style> tags
 function protectHTMLBlockContent(content: string): string {
+  // each char matches exactly one way, preventing backtracking
   return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`([\s\S]*?)`\s*\}(<\/HTMLBlock>)/g,
+    /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g,
     (_match, openTag: string, templateContent: string, closeTag: string) => {
       const encoded = base64Encode(templateContent);
       return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
@@ -60,11 +61,30 @@ function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
   const codeBlocks: string[] = [];
   const inlineCode: string[] = [];
 
-  let protectedContent = content.replace(/```[\s\S]*?```/g, match => {
+  let protectedContent = '';
+  let remaining = content;
+  let codeBlockStart = remaining.indexOf('```');
+
+  while (codeBlockStart !== -1) {
+    protectedContent += remaining.slice(0, codeBlockStart);
+    remaining = remaining.slice(codeBlockStart);
+
+    // Find the closing ```
+    const codeBlockEnd = remaining.indexOf('```', 3);
+    if (codeBlockEnd === -1) {
+      // No closing ```, keep the rest as-is
+      break;
+    }
+
+    const match = remaining.slice(0, codeBlockEnd + 3);
     const index = codeBlocks.length;
     codeBlocks.push(match);
-    return `___CODE_BLOCK_${index}___`;
-  });
+    protectedContent += `___CODE_BLOCK_${index}___`;
+
+    remaining = remaining.slice(codeBlockEnd + 3);
+    codeBlockStart = remaining.indexOf('```');
+  }
+  protectedContent += remaining;
 
   protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
     const index = inlineCode.length;
@@ -76,40 +96,76 @@ function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
 }
 
 function removeJSXComments(content: string): string {
-  return content.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '');
+  // This matches: any non-* chars, then (* followed by non-/ followed by non-* chars) repeated
+  return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
+}
+
+// Returns content between balanced braces and end position, or null if unbalanced
+function extractBalancedBraces(content: string, start: number): { content: string; end: number } | null {
+  let depth = 1;
+  let pos = start;
+
+  while (pos < content.length && depth > 0) {
+    const char = content[pos];
+    if (char === '{') depth += 1;
+    else if (char === '}') depth -= 1;
+    pos += 1;
+  }
+
+  if (depth !== 0) return null;
+  return { content: content.slice(start, pos - 1), end: pos };
 }
 
 // Evaluate attribute expressions: attribute={expression} → attribute="value"
 function evaluateAttributeExpressions(content: string, context: JSXContext): string {
-  const jsxAttributeRegex = /(\w+)=\{((?:[^{}]|\{[^}]*\})*)\}/g;
+  // Match attribute names followed by ={
+  const attrStartRegex = /(\w+)=\{/g;
+  let result = '';
+  let lastEnd = 0;
+  let match = attrStartRegex.exec(content);
 
-  return content.replace(jsxAttributeRegex, (match, attributeName: string, expression: string) => {
-    try {
-      const result = evaluateExpression(expression, context);
+  while (match !== null) {
+    const attributeName = match[1];
+    const braceStart = match.index + match[0].length;
 
-      if (typeof result === 'object' && result !== null) {
-        if (attributeName === 'style') {
-          // Convert style object to CSS string
-          const cssString = Object.entries(result)
-            .map(([key, value]) => {
-              const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-              return `${cssKey}: ${value}`;
-            })
-            .join('; ');
-          return `style="${cssString}"`;
+    const extracted = extractBalancedBraces(content, braceStart);
+    if (extracted) {
+      const expression = extracted.content;
+      const fullMatchEnd = extracted.end;
+
+      result += content.slice(lastEnd, match.index);
+
+      try {
+        const evalResult = evaluateExpression(expression, context);
+
+        if (typeof evalResult === 'object' && evalResult !== null) {
+          if (attributeName === 'style') {
+            const cssString = Object.entries(evalResult)
+              .map(([key, value]) => {
+                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                return `${cssKey}: ${value}`;
+              })
+              .join('; ');
+            result += `style="${cssString}"`;
+          } else {
+            result += `${attributeName}='${JSON.stringify(evalResult)}'`;
+          }
+        } else if (attributeName === 'className') {
+          result += `class="${evalResult}"`;
+        } else {
+          result += `${attributeName}="${evalResult}"`;
         }
-        return `${attributeName}='${JSON.stringify(result)}'`;
+      } catch (_error) {
+        result += content.slice(match.index, fullMatchEnd);
       }
 
-      if (attributeName === 'className') {
-        return `class="${result}"`;
-      }
-
-      return `${attributeName}="${result}"`;
-    } catch (_error) {
-      return match;
+      lastEnd = fullMatchEnd;
+      attrStartRegex.lastIndex = fullMatchEnd;
     }
-  });
+    match = attrStartRegex.exec(content);
+  }
+  result += content.slice(lastEnd);
+  return result;
 }
 
 function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
