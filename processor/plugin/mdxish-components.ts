@@ -43,6 +43,7 @@ function smartCamelCase(str: string): string {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
+  const allBoundaries = [...REACT_HTML_PROP_BOUNDARIES, ...CSS_STYLE_PROP_BOUNDARIES];
   return allBoundaries.reduce((result, word) => {
     const regex = new RegExp(`(${word})([a-z])`, 'gi');
     return result.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
