@@ -20,7 +20,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
   attributes.forEach(attribute => {
     if (attribute.type !== 'mdxJsxAttribute' || !attribute.name) return;
 
-    if (attribute.value === null || typeof attribute.value === 'undefined') {
+    if (attribute.value === null) {
       properties[attribute.name] = true;
     } else if (typeof attribute.value === 'string') {
       properties[attribute.name] = attribute.value;
