@@ -6,7 +6,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 const tagPattern = /^<([A-Z][A-Za-z0-9]*)([^>]*?)(\/?)>([\s\S]*)?$/;
-const attributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+)/g;
+const attributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
 const inlineMdProcessor = unified().use(remarkParse);
 
@@ -42,7 +42,8 @@ const parseMdChildren = (value: string): RootContent[] => {
 };
 
 // Convert raw attribute string into mdxJsxAttribute entries (strings only; no expressions).
-const parseAttributes = (raw: string): MdxJsxAttribute[] => {
+// Handles both key-value attributes (theme="info") and boolean attributes (empty).
+export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
   const attrString = raw.trim();
   if (!attrString) return attributes;
@@ -51,12 +52,17 @@ const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   attributePattern.lastIndex = 0;
   let match: RegExpExecArray | null = attributePattern.exec(attrString);
   while (match !== null) {
-    const [, name, rawValue] = match;
-    const cleaned = rawValue?.replace(/^['"]|['"]$/g, '') ?? '';
+    const [, attrName, attrValue] = match;
+
+    // Boolean attribute (no value) -> set to null
+    // Attribute with value -> clean and set string value
+    // Note: Attribute value types can't directly be numbers & booleans. String, nulls, undefined are supported.
+    const value = attrValue ? attrValue.replace(/^['"]|['"]$/g, '') : null;
+
     attributes.push({
       type: 'mdxJsxAttribute',
-      name,
-      value: cleaned,
+      name: attrName,
+      value,
     });
     match = attributePattern.exec(attrString);
   }
