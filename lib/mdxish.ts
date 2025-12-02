@@ -59,10 +59,8 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     return acc;
   }, {});
 
-  // Note: acorn is a peer dependency, but MDX expressions can parse without it
-  // (it's only needed for estree AST generation, which we don't use for evaluation)
   const processor = unified()
-    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
+    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })]) // These 2 extenstions are used to make inline JSX expressions as nodes in the AST, which will be evaluated later
     .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
