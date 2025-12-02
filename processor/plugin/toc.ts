@@ -7,7 +7,7 @@ import { valueToEstree } from 'estree-util-value-to-estree';
 import { h } from 'hastscript';
 
 import { mdx, plain } from '../../lib';
-import { STANDARD_HTML_TAGS } from '../../utils/html-tags';
+import { STANDARD_HTML_TAGS } from '../../utils/common-html-words';
 import { hasNamedExport } from '../utils';
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];

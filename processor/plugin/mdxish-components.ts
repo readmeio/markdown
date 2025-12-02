@@ -11,7 +11,7 @@ import {
   REACT_HTML_PROP_BOUNDARIES,
   RUNTIME_COMPONENT_TAGS,
   STANDARD_HTML_TAGS,
-} from '../../utils/html-tags';
+} from '../../utils/common-html-words';
 
 interface Options {
   components: CustomComponents;
