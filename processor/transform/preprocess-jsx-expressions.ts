@@ -149,7 +149,7 @@ function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): strin
 
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
   // Step 0: Base64 encode HTMLBlock content
-let processed = protectHTMLBlockContent(content);
+  let processed = protectHTMLBlockContent(content);
 
   // Step 1: Protect code blocks and inline code
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
