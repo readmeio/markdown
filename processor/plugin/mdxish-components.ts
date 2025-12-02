@@ -5,7 +5,7 @@ import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
 
-import { componentExists } from '../../lib/utils/mix-components';
+import { getComponentName } from '../../lib/utils/mix-components';
 import { COMMON_WORD_BOUNDARIES, RUNTIME_COMPONENT_TAGS, STANDARD_HTML_TAGS } from '../../utils/html-tags';
 
 interface Options {
@@ -109,7 +109,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
         if (isActualHtmlTag(node.tagName, original)) return;
       }
 
-      const componentName = componentExists(node.tagName, components);
+      const componentName = getComponentName(node.tagName, components);
       if (!componentName) {
         nodesToRemove.push({ index, parent });
         return;

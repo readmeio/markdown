@@ -17,7 +17,7 @@ function toPascalCase(str: string): string {
  * 2. PascalCase version
  * 3. Case-insensitive match
  */
-export function componentExists(componentName: string, components: CustomComponents): string | null {
+export function getComponentName(componentName: string, components: CustomComponents): string | null {
   // 1. Try exact match
   if (componentName in components) return componentName;
 

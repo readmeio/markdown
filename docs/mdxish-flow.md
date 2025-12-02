@@ -281,7 +281,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ├───────────────────────────────────────────────────────────────────┤
 │  utils/html-tags.ts          ← STANDARD_HTML_TAGS, etc.           │
 │  lib/utils/load-components   ← Auto-loads React components        │
-│  lib/utils/mix-components    ← componentExists() lookup           │
+│  lib/utils/mix-components    ← getComponentName() lookup          │
 │  lib/utils/render-utils      ← Shared render utilities            │
 └───────────────────────────────────────────────────────────────────┘
 ```

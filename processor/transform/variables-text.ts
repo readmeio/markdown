@@ -44,7 +44,7 @@ const variablesTextTransformer: Plugin = () => tree => {
 
       // Add text before the match
       if (matchIndex > lastIndex) {
-        parts.push({ type: 'text', value: text.slice(lastIndex, matchIndex) } as Text);
+        parts.push({ type: 'text', value: text.slice(lastIndex, matchIndex) } satisfies Text);
       }
 
       // Extract variable name from either capture group (dot or bracket notation)
@@ -58,14 +58,14 @@ const variablesTextTransformer: Plugin = () => tree => {
           hProperties: { name: varName },
         },
         value: match[0],
-      } as Variable);
+      } satisfies Variable);
 
       lastIndex = matchIndex + match[0].length;
     });
 
     // Add remaining text after last match
     if (lastIndex < text.length) {
-      parts.push({ type: 'text', value: text.slice(lastIndex) } as Text);
+      parts.push({ type: 'text', value: text.slice(lastIndex) } satisfies Text);
     }
 
     // Replace node with parts

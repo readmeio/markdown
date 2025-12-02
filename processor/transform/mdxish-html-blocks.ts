@@ -78,6 +78,24 @@ function extractBooleanAttr(attrs: string, name: string): string | undefined {
 }
 
 /**
+ * Extracts runScripts attribute from HTML tag. Returns boolean for "true"/"false", string for other values, or undefined if not found.
+ */
+function extractRunScriptsAttr(attrs: string): boolean | string | undefined {
+  const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
+  if (!runScriptsMatch) {
+    return undefined;
+  }
+  const value = runScriptsMatch[1];
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return value;
+}
+
+/**
  * Creates an HTMLBlock node from HTML string and optional attributes
  */
 function createHTMLBlockNode(
@@ -190,14 +208,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
           content = decodeProtectedContent(content);
 
           const htmlString = formatHTML(content);
-          const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
-          const runScripts = runScriptsMatch
-            ? runScriptsMatch[1] === 'true'
-              ? true
-              : runScriptsMatch[1] === 'false'
-                ? false
-                : runScriptsMatch[1]
-            : undefined;
+          const runScripts = extractRunScriptsAttr(attrs);
           const safeMode = extractBooleanAttr(attrs, 'safeMode');
 
           // Replace range with single HTMLBlock node
@@ -233,14 +244,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       content = decodeProtectedContent(content);
 
       const htmlString = formatHTML(content);
-      const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
-      const runScripts = runScriptsMatch
-        ? runScriptsMatch[1] === 'true'
-          ? true
-          : runScriptsMatch[1] === 'false'
-            ? false
-            : runScriptsMatch[1]
-        : undefined;
+      const runScripts = extractRunScriptsAttr(attrs);
       const safeMode = extractBooleanAttr(attrs, 'safeMode');
 
       parent.children[index] = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
@@ -284,14 +288,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       // Decode protected content that was base64 encoded during preprocessing
       const decodedContent = decodeProtectedContent(contentParts.join(''));
       const htmlString = formatHTML(decodedContent);
-      const runScriptsMatch = value.match(/runScripts="?([^">\s]+)"?/);
-      const runScripts = runScriptsMatch
-        ? runScriptsMatch[1] === 'true'
-          ? true
-          : runScriptsMatch[1] === 'false'
-            ? false
-            : runScriptsMatch[1]
-        : undefined;
+      const runScripts = extractRunScriptsAttr(value);
       const safeMode = extractBooleanAttr(value, 'safeMode');
 
       // Replace opening tag with HTMLBlock node, remove consumed siblings
@@ -362,16 +359,8 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       const decodedContent = decodeProtectedContent(templateContent.join(''));
       const htmlString = formatHTML(decodedContent);
 
-      let runScripts: boolean | string | undefined;
-      let safeMode: string | undefined;
-      if (openingTag.value) {
-        const runScriptsMatch = openingTag.value.match(/runScripts="?([^">\s]+)"?/);
-        if (runScriptsMatch) {
-          runScripts =
-            runScriptsMatch[1] === 'true' ? true : runScriptsMatch[1] === 'false' ? false : runScriptsMatch[1];
-        }
-        safeMode = extractBooleanAttr(openingTag.value, 'safeMode');
-      }
+      const runScripts = openingTag.value ? extractRunScriptsAttr(openingTag.value) : undefined;
+      const safeMode = openingTag.value ? extractBooleanAttr(openingTag.value, 'safeMode') : undefined;
 
       const mdNode = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
 

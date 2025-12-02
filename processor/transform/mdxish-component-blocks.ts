@@ -6,8 +6,11 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 const tagPattern = /^<([A-Z][A-Za-z0-9]*)([^>]*?)(\/?)>([\s\S]*)?$/;
+const attributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+)/g;
 
-const isClosingTag = (value: string, tag: string) => new RegExp(`^</${tag}>$`).test(value);
+const inlineMdProcessor = unified().use(remarkParse);
+
+const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
 // Remove a matching closing tag from a paragraph’s children; returns updated paragraph and whether one was removed.
 const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
@@ -32,9 +35,9 @@ const replaceChild = (parent: Parent, index: number, replacement: Node) => {
   (parent.children as Node[]).splice(index, 2, replacement);
 };
 
-// Parse markdown inside a component’s inline content into mdast children.
+// Parse markdown inside a component's inline content into mdast children.
 const parseMdChildren = (value: string): RootContent[] => {
-  const parsed = unified().use(remarkParse).parse(value);
+  const parsed = inlineMdProcessor.parse(value);
   return parsed.children || [];
 };
 
@@ -44,9 +47,10 @@ const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   const attrString = raw.trim();
   if (!attrString) return attributes;
 
-  const regex = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+)/g;
-  let match;
-  while ((match = regex.exec(attrString)) !== null) {
+  // Reset regex lastIndex since it's a global regex that maintains state
+  attributePattern.lastIndex = 0;
+  let match: RegExpExecArray | null = attributePattern.exec(attrString);
+  while (match !== null) {
     const [, name, rawValue] = match;
     const cleaned = rawValue?.replace(/^['"]|['"]$/g, '') ?? '';
     attributes.push({
@@ -54,6 +58,7 @@ const parseAttributes = (raw: string): MdxJsxAttribute[] => {
       name,
       value: cleaned,
     });
+    match = attributePattern.exec(attrString);
   }
 
   return attributes;
@@ -121,7 +126,10 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       type: 'mdxJsxFlowElement',
       name: tag,
       attributes,
-      children: [...(extraChildren as MdxJsxFlowElement['children']), ...(paragraph.children as MdxJsxFlowElement['children'])],
+      children: [
+        ...(extraChildren as MdxJsxFlowElement['children']),
+        ...(paragraph.children as MdxJsxFlowElement['children']),
+      ],
       position: {
         start: node.position?.start,
         end: next.position?.end,

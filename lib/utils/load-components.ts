@@ -1,5 +1,7 @@
 import type { CustomComponents, RMDXModule } from '../../types';
-import type React from 'react';
+import type { MDXProps } from 'mdx/types';
+
+import React from 'react';
 
 import * as Components from '../../components';
 
@@ -15,22 +17,23 @@ export function loadComponents(): CustomComponents {
   // This mirrors prototype.js approach of getting all available components
   Object.entries(Components).forEach(([name, Component]) => {
     // Skip non-component exports (React components are functions or objects)
-    if (typeof Component !== 'function' && typeof Component !== 'object') {
+    // Also skip falsy values (null, undefined, etc.) since typeof null === 'object'
+    if (!Component || (typeof Component !== 'function' && typeof Component !== 'object')) {
       return;
     }
 
     // Wrap the component in RMDXModule format
     // RMDXModule expects: { default: Component, Toc: null, toc: [] }
     // getComponent looks for mod.default, so we wrap each component
+    // MDXContent must be a function (props: MDXProps) => Element
     const wrappedModule: RMDXModule = {
-      default: Component as React.ComponentType,
+      default: (props: MDXProps) => React.createElement(Component as React.ComponentType<MDXProps>, props),
       Toc: null,
       toc: [],
-    } as RMDXModule;
+    } satisfies RMDXModule;
 
     components[name] = wrappedModule;
   });
 
   return components;
 }
-

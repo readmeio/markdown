@@ -25,6 +25,9 @@ const tableTypes = {
   td: 'tableCell',
 };
 
+const mdCellProcessor = unified().use(remarkParse).use(remarkGfm);
+const tableNodeProcessor = unified().use(remarkParse).use(remarkMdx).use(mdxishComponentBlocks);
+
 /**
  * Check if children are only text nodes that might contain markdown
  */
@@ -63,8 +66,7 @@ const extractText = (children: unknown[]): string => {
  * Parse markdown text into MDAST nodes
  */
 const parseMarkdown = (text: string): Node[] => {
-  const processor = unified().use(remarkParse).use(remarkGfm);
-  const tree = processor.runSync(processor.parse(text)) as Root;
+  const tree = mdCellProcessor.runSync(mdCellProcessor.parse(text)) as Root;
   return (tree.children || []) as Node[];
 };
 
@@ -181,9 +183,7 @@ const mdxishTables = (): Transform => tree => {
     try {
       // Parse the HTML content with remarkMdx and mdxishComponentBlocks to convert it to MDX JSX elements
       // This creates a proper AST that we can then process
-      const processor = unified().use(remarkParse).use(remarkMdx).use(mdxishComponentBlocks);
-
-      const parsed = processor.runSync(processor.parse(node.value)) as Root;
+      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
 
       // Find the Table element in the parsed result and process it
       visit(parsed, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
