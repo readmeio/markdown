@@ -112,29 +112,6 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
   });
 }
 
-// Evaluate inline expressions: {expression} → result
-function evaluateInlineExpressions(content: string, context: JSXContext): string {
-  return content.replace(/\{([^{}]+)\}/g, (match, expression: string, offset: number, string: string) => {
-    try {
-      // Skip if part of an attribute (preceded by =)
-      if (string.substring(Math.max(0, offset - 1), offset) === '=') {
-        return match;
-      }
-
-      // Unescape markdown characters
-      const unescapedExpression = expression.replace(/\\\*/g, '*').replace(/\\_/g, '_').replace(/\\`/g, '`').trim();
-
-      const result = evaluateExpression(unescapedExpression, context);
-
-      if (result === null || result === undefined) return '';
-      if (typeof result === 'object') return JSON.stringify(result);
-      return String(result).replace(/\s+/g, ' ').trim();
-    } catch (_error) {
-      return match;
-    }
-  });
-}
-
 function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
   let restored = content.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
     return protectedCode.codeBlocks[parseInt(index, 10)];
@@ -157,13 +134,10 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // Step 2: Remove JSX comments
   processed = removeJSXComments(protectedContent);
 
-  // Step 3: Evaluate attribute expressions
+  // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   processed = evaluateAttributeExpressions(processed, context);
 
-  // Step 4: Evaluate inline expressions
-  processed = evaluateInlineExpressions(processed, context);
-
-  // Step 5: Restore protected code blocks
+  // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);
 
   return processed;

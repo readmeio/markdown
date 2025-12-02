@@ -1,6 +1,8 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
 
+import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import remarkFrontmatter from 'remark-frontmatter';
@@ -15,6 +17,7 @@ import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
+import evaluateExpressions from '../processor/transform/evaluate-expressions';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
@@ -56,7 +59,11 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     return acc;
   }, {});
 
+  // Note: acorn is a peer dependency, but MDX expressions can parse without it
+  // (it's only needed for estree AST generation, which we don't use for evaluation)
   const processor = unified()
+    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
+    .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(defaultTransformers)
@@ -64,6 +71,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(embedTransformer)
+    .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using context
     .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm)

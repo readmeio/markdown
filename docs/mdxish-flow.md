@@ -31,8 +31,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  1. Extract & protect code blocks (```...```) and inline code (`...`)       │
 │  2. Remove JSX comments: {/* comment */} → ""                               │
 │  3. Evaluate attribute expressions: href={baseUrl} → href="https://..."     │
-│  4. Evaluate inline expressions: {5 * 10} → 50                              │
-│  5. Restore protected code blocks                                           │
+│  4. Restore protected code blocks                                           │
+│                                                                             │
+│  Note: Inline expressions ({5 * 10}) are now parsed by mdast-util-mdx-      │
+│  expression and evaluated in the AST transformer (evaluateExpressions)      │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
@@ -116,6 +118,18 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  links to         │                 │                             │
 │  embedBlock nodes │                 │                             │
 └───────────────────┘                 │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌─────────────────────┐               │                             │
+│evaluateExpressions  │               │                             │
+│  ─────────────────  │               │                             │
+│  Evaluates MDX      │               │                             │
+│  expressions        │               │                             │
+│  ({expression})     │               │                             │
+│  using jsxContext   │               │                             │
+│  and replaces with │               │                             │
+│  evaluated values   │               │                             │
+└─────────────────────┘               │                             │
         │                             │                             │
         ▼                             │                             │
 ┌─────────────────────┐               │                             │
@@ -233,14 +247,15 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 
 | Phase | Plugin | Purpose |
 |-------|--------|---------|
-| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate `{expressions}` |
-| MDAST | `remarkParse` | Markdown → AST |
+| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`) |
+| MDAST | `remarkParse` + extensions | Markdown → AST with MDX expression parsing (`mdast-util-mdx-expression`) |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
 | MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
+| MDAST | `evaluateExpressions` | Evaluate MDX expressions (`{expression}`) using `jsxContext` |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
 | MDAST | `remarkGfm` | GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes |
