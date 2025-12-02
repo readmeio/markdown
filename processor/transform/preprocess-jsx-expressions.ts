@@ -13,7 +13,7 @@ function base64Encode(str: string): string {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
-/** Base64 decode (Node.js + browser compatible) */
+// Base64 decode (Node.js + browser compatible)
 export function base64Decode(str: string): string {
   if (typeof Buffer !== 'undefined') {
     return Buffer.from(str, 'base64').toString('utf-8');
@@ -145,6 +145,7 @@ function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): strin
   });
 
   return restored;
+}
 
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
   // Step 0: Base64 encode HTMLBlock content
