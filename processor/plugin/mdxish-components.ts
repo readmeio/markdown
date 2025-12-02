@@ -6,7 +6,12 @@ import type { VFile } from 'vfile';
 import { visit } from 'unist-util-visit';
 
 import { getComponentName } from '../../lib/utils/mix-components';
-import { COMMON_WORD_BOUNDARIES, RUNTIME_COMPONENT_TAGS, STANDARD_HTML_TAGS } from '../../utils/html-tags';
+import {
+  CSS_STYLE_PROP_BOUNDARIES,
+  REACT_HTML_PROP_BOUNDARIES,
+  RUNTIME_COMPONENT_TAGS,
+  STANDARD_HTML_TAGS,
+} from '../../utils/html-tags';
 
 interface Options {
   components: CustomComponents;
@@ -38,7 +43,7 @@ function smartCamelCase(str: string): string {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
-  return COMMON_WORD_BOUNDARIES.reduce((result, word) => {
+  return allBoundaries.reduce((result, word) => {
     const regex = new RegExp(`(${word})([a-z])`, 'gi');
     return result.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
   }, str);
