@@ -124,6 +124,8 @@ function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): strin
   return restored;
 }
 
+// We cant rely on remarkMdx since it restricts the syntax a lot
+// so we have to try as much as possible to parse JSX syntax manually
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
   // Step 0: Base64 encode HTMLBlock content
   let processed = protectHTMLBlockContent(content);
@@ -135,6 +137,8 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   processed = removeJSXComments(protectedContent);
 
   // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
+  // For inline expressions, we use a library to parse the expression & evaluate it later
+  // For attribute expressions, it was difficult to use a library to parse them, so do it manually
   processed = evaluateAttributeExpressions(processed, context);
 
   // Step 4: Restore protected code blocks

@@ -72,7 +72,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(mdxishHtmlBlocks)
     .use(embedTransformer)
     .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using context
-    .use(variablesTextTransformer) // we cant rely in remarkMdx to parse the variable, so we have to parse it manually
+    .use(variablesTextTransformer) // We cant rely in remarkMdx to parse the variable, so we have to parse it manually
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
