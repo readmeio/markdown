@@ -1,7 +1,9 @@
 ---
-title: 'Mermaid Diagrams'
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Mermaid Diagrams
+category:
+  uri: syntax
+privacy:
+  view: public
 ---
 
 ## Examples
