@@ -21,22 +21,30 @@ interface Props {
 }
 
 const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeModeRaw = false }: Props) => {
-  // Use html prop if provided (from HAST properties), otherwise extract from children
   let html: string = '';
   if (htmlProp !== undefined) {
+    // MDXish mode: use html prop from HAST properties
     html = htmlProp;
   } else if (typeof children === 'string') {
+    // MDX mode: children is a string
     html = children;
   } else {
-    // Extract string from React children (text nodes)
+    // MDX mode: extract string from React children (text nodes)
     const textContent = React.Children.toArray(children)
       .map(child => (typeof child === 'string' ? child : ''))
       .join('');
     html = textContent;
   }
+
+  // Infer mdxish mode from presence of html prop (from HAST properties)
+  const isMdxish = htmlProp !== undefined;
+
   // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
-  const safeMode = typeof safeModeRaw === 'boolean' ? safeModeRaw : safeModeRaw === 'true';
+
+  // In MDX mode, safeMode is already a boolean from JSX parsing
+  // In mdxish mode, safeMode comes as a string from HAST properties
+  const safeMode = isMdxish ? (typeof safeModeRaw === 'boolean' ? safeModeRaw : safeModeRaw === 'true') : safeModeRaw;
 
   const [cleanedHtml, exec] = extractScripts(html);
 

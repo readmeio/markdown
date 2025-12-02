@@ -12,9 +12,6 @@ const variables =
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
 
-      // Skip expressions inside inline code - they should stay as literal text
-      if (parent && (parent as { type: string }).type === 'inlineCode') return;
-
       // @ts-expect-error - estree is not defined on our mdx types?!
       if (node.data.estree.type !== 'Program') return;
       // @ts-expect-error - estree is not defined on our mdx types?!
