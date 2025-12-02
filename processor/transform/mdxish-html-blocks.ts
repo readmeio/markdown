@@ -207,7 +207,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
           // Decode protected content that was base64 encoded during preprocessing
           content = decodeProtectedContent(content);
 
-          const htmlString = formatHTML(content);
+          const htmlString = formatHTML(content, true);
           const runScripts = extractRunScriptsAttr(attrs);
           const safeMode = extractBooleanAttr(attrs, 'safeMode');
 
@@ -243,7 +243,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       // Decode protected content that was base64 encoded during preprocessing
       content = decodeProtectedContent(content);
 
-      const htmlString = formatHTML(content);
+      const htmlString = formatHTML(content, true);
       const runScripts = extractRunScriptsAttr(attrs);
       const safeMode = extractBooleanAttr(attrs, 'safeMode');
 
@@ -287,7 +287,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
 
       // Decode protected content that was base64 encoded during preprocessing
       const decodedContent = decodeProtectedContent(contentParts.join(''));
-      const htmlString = formatHTML(decodedContent);
+      const htmlString = formatHTML(decodedContent, true);
       const runScripts = extractRunScriptsAttr(value);
       const safeMode = extractBooleanAttr(value, 'safeMode');
 
@@ -357,7 +357,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
 
       // Decode protected content that was base64 encoded during preprocessing
       const decodedContent = decodeProtectedContent(templateContent.join(''));
-      const htmlString = formatHTML(decodedContent);
+      const htmlString = formatHTML(decodedContent, true);
 
       const runScripts = openingTag.value ? extractRunScriptsAttr(openingTag.value) : undefined;
       const safeMode = openingTag.value ? extractBooleanAttr(openingTag.value, 'safeMode') : undefined;

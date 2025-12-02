@@ -1,6 +1,6 @@
 import htmlTags from 'html-tags';
 import reactHtmlAttributes from 'react-html-attributes';
-import reactNativeStylingProps from 'react-native-known-styling-properties';
+import { allProps as reactNativeStylingProps } from 'react-native-known-styling-properties';
 
 /**
  * Extract word boundaries from camelCase strings (e.g., "borderWidth" -> ["border", "width"])
@@ -42,9 +42,7 @@ export const REACT_HTML_PROP_BOUNDARIES = getWordBoundariesFromProps(reactHtmlAt
  * CSS style property word boundaries (e.g., "border", "margin", "padding", "flex", "align")
  * Extracted from react-native-known-styling-properties package
  */
-export const CSS_STYLE_PROP_BOUNDARIES = getWordBoundariesFromProps(
-  Object.values(reactNativeStylingProps).flat() as string[],
-);
+export const CSS_STYLE_PROP_BOUNDARIES = getWordBoundariesFromProps(reactNativeStylingProps as string[]);
 
 /**
  * Tags that should be passed through and handled at runtime (not by the mdxish plugin)
