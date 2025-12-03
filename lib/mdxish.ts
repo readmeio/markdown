@@ -1,5 +1,6 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
+
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
@@ -15,7 +16,7 @@ import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
-import magicBlockRestorer from '../processor/transform/magic-blocks';
+import magicBlockRestorer from '../processor/transform/mdxish-magic-blocks';
 import embedTransformer from '../processor/transform/embeds';
 import evaluateExpressions from '../processor/transform/evaluate-expressions';
 import gemojiTransformer from '../processor/transform/gemoji+';

@@ -10,7 +10,6 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
  * Group 1: block type (e.g., "image", "code", "callout")
