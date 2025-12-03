@@ -10,7 +10,7 @@ import { getAttrs } from '../utils';
 
 const isImage = (node: Node): node is Image => node.type === 'image';
 
-const imageTransformer = () => (tree: Node) => {
+const imageTransformer = ({ isMdxish }: { isMdxish?: boolean } = {}) => (tree: Node) => {
   visit(tree, 'paragraph', (node: Paragraph, i: number, parent: Parents) => {
     // check if inline
     if (parent.type !== 'root' || node.children?.length > 1) return;
@@ -25,6 +25,10 @@ const imageTransformer = () => (tree: Node) => {
       title,
       children: [],
       src: url,
+      // If we are transforming for mdxish, we want to parse image magic blocks ourselves
+      // which may contain properties such as width, align, etc that affects the visual output
+      // so we need to pass all the original properties to the image node
+      ...(isMdxish ? child.data?.hProperties : {}),
     };
 
     const newNode: ImageBlock = {

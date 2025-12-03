@@ -1,6 +1,5 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
-
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
@@ -16,6 +15,7 @@ import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
+import magicBlockRestorer from '../processor/transform/magic-blocks';
 import embedTransformer from '../processor/transform/embeds';
 import evaluateExpressions from '../processor/transform/evaluate-expressions';
 import gemojiTransformer from '../processor/transform/gemoji+';
@@ -28,6 +28,7 @@ import tailwindTransformer from '../processor/transform/tailwind';
 import variablesTextTransformer from '../processor/transform/variables-text';
 
 import { loadComponents } from './utils/load-components';
+import { extractMagicBlocks } from './utils/extractMagicBlocks';
 
 export interface MdxishOpts {
   components?: CustomComponents;
@@ -35,7 +36,7 @@ export interface MdxishOpts {
   useTailwind?: boolean;
 }
 
-const defaultTransformers = [calloutTransformer, codeTabsTransformer, imageTransformer, gemojiTransformer];
+const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer];
 
 /**
  * Process markdown content with MDX syntax support.
@@ -51,7 +52,10 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  const processedContent = preprocessJSXExpressions(mdContent, jsxContext);
+  // Since we are parsing a mix of markdown & mdx, we need to preprocess some things
+  // such as 1) legacy magic blocks, 2) inline JSX expressions manually
+  const { replaced, blocks } = extractMagicBlocks(mdContent);
+  const processedContent = preprocessJSXExpressions(replaced, jsxContext);
 
   // Create temp map string to string of components
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
@@ -64,6 +68,8 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
+    .use(magicBlockRestorer, { blocks })
+    .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(mdxishTables)

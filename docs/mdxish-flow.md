@@ -23,7 +23,19 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
                                       │
                                       ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  STEP 2: Pre-process JSX Expressions                                        │
+│  STEP 2: Extract Magic Blocks                                               │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  extractMagicBlocks(content)                                                │
+│                                                                             │
+│  Extracts legacy `[block:TYPE]JSON[/block]` syntax and replaces them with   │
+│  placeholder tokens. The blocks are restored later by magicBlockRestorer.   │
+│                                                                             │
+│  Result: { replaced: string, blocks: BlockHit[] }                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 3: Pre-process JSX Expressions                                        │
 │  ─────────────────────────────────────────────────────────────────────────  │
 │  preprocessJSXExpressions(content, jsxContext)                              │
 │                                                                             │
@@ -63,12 +75,33 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
         │                             │                             │
         ▼                             │                             │
 ┌────────────────────┐                │                             │
+│magicBlockRestorer  │                │                             │
+│  ───────────────   │                │                             │
+│  Restores legacy   │                │                             │
+│  [block:TYPE]JSON  │                │                             │
+│  [/block] syntax   │                │                             │
+│  from placeholder  │                │                             │
+│  tokens            │                │                             │
+└────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌────────────────────┐                │                             │
+│ imageTransformer   │                │                             │
+│  ───────────────   │                │                             │
+│  Converts inline   │                │                             │
+│  images to image   │                │                             │
+│  blocks. Preserves │                │                             │
+│  magic block props │                │                             │
+│  (width, align)    │                │                             │
+└────────────────────┘                │                             │
+        │                             │                             │
+        ▼                             │                             │
+┌────────────────────┐                │                             │
 │defaultTransformers │                │                             │
 │  ───────────────   │                │                             │
 │  1. callout        │                │                             │
 │  2. codeTabs       │                │                             │
-│  3. image          │                │                             │
-│  4. gemoji         │                │                             │
+│  3. gemoji         │                │                             │
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
@@ -247,10 +280,13 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 
 | Phase | Plugin | Purpose |
 |-------|--------|---------|
+| Pre-process | `extractMagicBlocks` | Extract legacy `[block:TYPE]` syntax, replace with tokens |
 | Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`) |
 | MDAST | `remarkParse` + extensions | Markdown → AST with MDX expression parsing (`mdast-util-mdx-expression`) |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
-| MDAST | `defaultTransformers` | Transform callouts, code tabs, images, gemojis |
+| MDAST | `magicBlockRestorer` | Restore legacy magic blocks from placeholder tokens |
+| MDAST | `imageTransformer` | Transform images to image blocks, preserve magic block properties |
+| MDAST | `defaultTransformers` | Transform callouts, code tabs, gemojis |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
@@ -279,12 +315,14 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌───────────────────────────────────────────────────────────────────┐
 │                      PIPELINE PLUGINS                             │
 ├───────────────────────────────────────────────────────────────────┤
+│  magicBlockRestorer          ← Restore legacy [block:TYPE] syntax │
+│  imageTransformer            ← Images → imageBlock nodes          │
 │  rehypeMdxishComponents      ← Core component detection/transform │
 │  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
 │  mdxishTables                ← <Table> JSX → markdown tables      │
 │  mdxishHtmlBlocks            ← <HTMLBlock> → html-block nodes     │
 │  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
-│  defaultTransformers         ← callout, codeTabs, image, gemoji   │
+│  defaultTransformers         ← callout, codeTabs, gemoji          │
 │  embedTransformer            ← Embed links → embedBlock nodes     │
 │  variablesTextTransformer    ← {user.*} → Variable (regex-based)  │
 │  tailwindTransformer         ← Process Tailwind classes (opt-in)  │
@@ -298,6 +336,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  lib/utils/load-components   ← Auto-loads React components        │
 │  lib/utils/mix-components    ← getComponentName() lookup          │
 │  lib/utils/render-utils      ← Shared render utilities            │
+│  lib/utils/extractMagicBlocks← Extract legacy [block:] syntax     │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
@@ -364,3 +403,21 @@ The `mdxishHtmlBlocks` transformer converts `<HTMLBlock>{`...`}</HTMLBlock>` syn
 To prevent the markdown parser from incorrectly consuming `<script>`, `<style>` tags inside HTMLBlocks, the content is base64-encoded during preprocessing and decoded by the transformer.
 
 The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>```javascript\nconst x = 1;\n```</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.
+
+## Magic Blocks (Legacy)
+
+The `extractMagicBlocks` + `magicBlockRestorer` pipeline handles legacy ReadMe magic block syntax:
+
+```markdown
+[block:image]
+{"images":[{"image":["https://example.com/img.png","caption",{"width":"300"}]}]}
+[/block]
+```
+
+### Flow
+
+1. **Pre-processing (`extractMagicBlocks`)**: Extracts `[block:TYPE]JSON[/block]` patterns and replaces them with placeholder tokens (e.g., `` `__MAGIC_BLOCK_0__` ``). The backticks prevent remarkParse from interpreting special characters in the token.
+
+2. **Restoration (`magicBlockRestorer`)**: After remarkParse, visits `inlineCode` nodes, matches placeholder tokens, and parses the original magic block JSON into MDAST nodes (images, code blocks, callouts, etc.).
+
+This two-phase approach ensures magic blocks don't interfere with markdown parsing while preserving their content for later conversion.
