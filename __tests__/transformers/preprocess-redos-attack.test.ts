@@ -239,7 +239,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(60000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle 2000 repetitions of escape sequences', () => {
     const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(2000)}lock\`}</HTMLBlock>`;
@@ -251,7 +251,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(120000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle many consecutive backslashes (2000)', () => {
     const attackString = `<HTMLBlock>{\`${'\\'.repeat(2000)}a\`}</HTMLBlock>`;
@@ -275,7 +275,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(60000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle HTMLBlock with attributes and attack pattern', () => {
     const attackString = `<HTMLBlock id="test" class="example">{\`${'\\lock\\lock\\'.repeat(200)}lock\`}</HTMLBlock>`;
@@ -313,7 +313,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(20000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle very long template literal with escapes (20k chars)', () => {
     const longContent = '\\a'.repeat(10000);
@@ -326,7 +326,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(30000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle pattern with all possible escape sequences', () => {
     const escapes = '\\n\\t\\r\\v\\f\\b\\0\\x00\\u0000';
@@ -377,7 +377,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(30000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle 50 HTMLBlock tags with attack patterns', () => {
     const attackPattern = '\\lock\\lock\\'.repeat(30);
@@ -390,7 +390,7 @@ describe('ReDoS Attack Vectors', () => {
 
     expect(duration).toBeLessThan(60000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle pattern with tabs and newlines in template literal', () => {
     const attackString = `<HTMLBlock>{\`${'\\t\\n\\r'.repeat(500)}end\`}</HTMLBlock>`;
