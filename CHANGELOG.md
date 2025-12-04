@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.7.7
+### 🛠 Fixes & Updates
+
+* **stripComments:** ensure extraction token is parsed block level ([#1246](https://github.com/readmeio/markdown/issues/1246)) ([30dbf7f](https://github.com/readmeio/markdown/commit/30dbf7f310e949b3bba3c8fd0af33ec7253bcba4)), closes [/github.com/readmeio/markdown/blob/0b855933dc24726142d822ba5e56b1507e6dc190/lib/stripComments.ts#L15-L48](https://github.com/readmeio//github.com/readmeio/markdown/blob/0b855933dc24726142d822ba5e56b1507e6dc190/lib/stripComments.ts/issues/L15-L48) [/github.com/readmeio/markdown/blob/0b855933dc24726142d822ba5e56b1507e6dc190/lib/utils/extractMagicBlocks.ts#L24-L26](https://github.com/readmeio//github.com/readmeio/markdown/blob/0b855933dc24726142d822ba5e56b1507e6dc190/lib/utils/extractMagicBlocks.ts/issues/L24-L26)
+
 ## Version 11.7.6
 ### 🛠 Fixes & Updates
 
