@@ -91,4 +91,18 @@ Last text
 <<HOT_DIGGITY_DOG>>
 <<glossary:item_term>>`);
   });
+
+  it('preserves magic block indentation', async () => {
+    const input = `
+- foo
+- foo
+[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]`;
+
+    const output = await stripComments(input);
+    expect(output).toMatchSnapshot();
+  });
 });
