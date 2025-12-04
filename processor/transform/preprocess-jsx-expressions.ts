@@ -35,7 +35,19 @@ interface ProtectCodeBlocksResult {
   protectedContent: string;
 }
 
-// Helper function to evaluate an expression using the provided context
+/**
+ * Evaluates a JavaScript expression using context variables.
+ *
+ * @param expression
+ * @param context
+ * @returns The evaluated result
+ * @example
+ * ```typescript
+ * const context = { baseUrl: 'https://example.com', path: '/api' };
+ * evaluateExpression('baseUrl + path', context)
+ * // Returns: 'https://example.com/api'
+ * ```
+ */
 function evaluateExpression(expression: string, context: JSXContext): unknown {
   const contextKeys = Object.keys(context);
   const contextValues = Object.values(context);
@@ -44,10 +56,21 @@ function evaluateExpression(expression: string, context: JSXContext): unknown {
   return func(...contextValues);
 }
 
-// Base64 encode HTMLBlock content to prevent parser from consuming <script>/<style> tags
+/**
+ * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
+ *
+ * @param content
+ * @returns Content with HTMLBlock template literals base64 encoded in HTML comments
+ * @example
+ * ```typescript
+ * const input = '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>';
+ * protectHTMLBlockContent(input)
+ * // Returns: '<HTMLBlock><!--RDMX_HTMLBLOCK:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RDMX_HTMLBLOCK--></HTMLBlock>'
+ * ```
+ */
 function protectHTMLBlockContent(content: string): string {
   return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`([\s\S]*?)`\s*\}(<\/HTMLBlock>)/g,
+    /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g,
     (_match, openTag: string, templateContent: string, closeTag: string) => {
       const encoded = base64Encode(templateContent);
       return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
@@ -55,16 +78,50 @@ function protectHTMLBlockContent(content: string): string {
   );
 }
 
-// Protect code blocks and inline code from processing
+/**
+ * Replaces code blocks and inline code with placeholders to protect them from JSX processing.
+ *
+ * @param content
+ * @returns Object containing protected content and arrays of original code blocks
+ * @example
+ * ```typescript
+ * const input = 'Text with `inline code` and ```fenced block```';
+ * protectCodeBlocks(input)
+ * // Returns: {
+ * //   protectedCode: {
+ * //     codeBlocks: ['```fenced block```'],
+ * //     inlineCode: ['`inline code`']
+ * //   },
+ * //   protectedContent: 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___'
+ * // }
+ * ```
+ */
 function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
   const codeBlocks: string[] = [];
   const inlineCode: string[] = [];
 
-  let protectedContent = content.replace(/```[\s\S]*?```/g, match => {
+  let protectedContent = '';
+  let remaining = content;
+  let codeBlockStart = remaining.indexOf('```');
+
+  while (codeBlockStart !== -1) {
+    protectedContent += remaining.slice(0, codeBlockStart);
+    remaining = remaining.slice(codeBlockStart);
+
+    const codeBlockEnd = remaining.indexOf('```', 3);
+    if (codeBlockEnd === -1) {
+      break;
+    }
+
+    const match = remaining.slice(0, codeBlockEnd + 3);
     const index = codeBlocks.length;
     codeBlocks.push(match);
-    return `___CODE_BLOCK_${index}___`;
-  });
+    protectedContent += `___CODE_BLOCK_${index}___`;
+
+    remaining = remaining.slice(codeBlockEnd + 3);
+    codeBlockStart = remaining.indexOf('```');
+  }
+  protectedContent += remaining;
 
   protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
     const index = inlineCode.length;
@@ -75,43 +132,131 @@ function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
   return { protectedCode: { codeBlocks, inlineCode }, protectedContent };
 }
 
+/**
+ * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
+ *
+ * @param content
+ * @returns Content with JSX comments removed
+ * @example
+ * ```typescript
+ * removeJSXComments('Text { /* comment *\/ } more text')
+ * // Returns: 'Text  more text'
+ * ```
+ */
 function removeJSXComments(content: string): string {
-  return content.replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '');
+  return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
 }
 
-// Evaluate attribute expressions: attribute={expression} → attribute="value"
+/**
+ * Extracts content between balanced braces, handling nested braces.
+ *
+ * @param content
+ * @param start
+ * @returns Object with extracted content and end position, or null if braces are unbalanced
+ * @example
+ * ```typescript
+ * const input = 'foo{bar{baz}qux}end';
+ * extractBalancedBraces(input, 3) // start at position 3 (after '{')
+ * // Returns: { content: 'bar{baz}qux', end: 16 }
+ * ```
+ */
+function extractBalancedBraces(content: string, start: number): { content: string; end: number } | null {
+  let depth = 1;
+  let pos = start;
+
+  while (pos < content.length && depth > 0) {
+    const char = content[pos];
+    if (char === '{') depth += 1;
+    else if (char === '}') depth -= 1;
+    pos += 1;
+  }
+
+  if (depth !== 0) return null;
+  return { content: content.slice(start, pos - 1), end: pos };
+}
+
+/**
+ * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
+ * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
+ *
+ * @param content
+ * @param context
+ * @returns Content with attribute expressions evaluated and converted to HTML attributes
+ * @example
+ * ```typescript
+ * const context = { baseUrl: 'https://example.com' };
+ * const input = '<a href={baseUrl}>Link</a>';
+ * evaluateAttributeExpressions(input, context)
+ * // Returns: '<a href="https://example.com">Link</a>'
+ * ```
+ */
 function evaluateAttributeExpressions(content: string, context: JSXContext): string {
-  const jsxAttributeRegex = /(\w+)=\{((?:[^{}]|\{[^}]*\})*)\}/g;
+  const attrStartRegex = /(\w+)=\{/g;
+  let result = '';
+  let lastEnd = 0;
+  let match = attrStartRegex.exec(content);
 
-  return content.replace(jsxAttributeRegex, (match, attributeName: string, expression: string) => {
-    try {
-      const result = evaluateExpression(expression, context);
+  while (match !== null) {
+    const attributeName = match[1];
+    const braceStart = match.index + match[0].length;
 
-      if (typeof result === 'object' && result !== null) {
-        if (attributeName === 'style') {
-          // Convert style object to CSS string
-          const cssString = Object.entries(result)
-            .map(([key, value]) => {
-              const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-              return `${cssKey}: ${value}`;
-            })
-            .join('; ');
-          return `style="${cssString}"`;
+    const extracted = extractBalancedBraces(content, braceStart);
+    if (extracted) {
+      const expression = extracted.content;
+      const fullMatchEnd = extracted.end;
+
+      result += content.slice(lastEnd, match.index);
+
+      try {
+        const evalResult = evaluateExpression(expression, context);
+
+        if (typeof evalResult === 'object' && evalResult !== null) {
+          if (attributeName === 'style') {
+            const cssString = Object.entries(evalResult)
+              .map(([key, value]) => {
+                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                return `${cssKey}: ${value}`;
+              })
+              .join('; ');
+            result += `style="${cssString}"`;
+          } else {
+            result += `${attributeName}='${JSON.stringify(evalResult)}'`;
+          }
+        } else if (attributeName === 'className') {
+          result += `class="${evalResult}"`;
+        } else {
+          result += `${attributeName}="${evalResult}"`;
         }
-        return `${attributeName}='${JSON.stringify(result)}'`;
+      } catch (_error) {
+        result += content.slice(match.index, fullMatchEnd);
       }
 
-      if (attributeName === 'className') {
-        return `class="${result}"`;
-      }
-
-      return `${attributeName}="${result}"`;
-    } catch (_error) {
-      return match;
+      lastEnd = fullMatchEnd;
+      attrStartRegex.lastIndex = fullMatchEnd;
     }
-  });
+    match = attrStartRegex.exec(content);
+  }
+  result += content.slice(lastEnd);
+  return result;
 }
 
+/**
+ * Restores code blocks and inline code by replacing placeholders with original content.
+ *
+ * @param content
+ * @param protectedCode
+ * @returns Content with all code blocks and inline code restored
+ * @example
+ * ```typescript
+ * const content = 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___';
+ * const protectedCode = {
+ *   codeBlocks: ['```js\ncode\n```'],
+ *   inlineCode: ['`inline`']
+ * };
+ * restoreCodeBlocks(content, protectedCode)
+ * // Returns: 'Text with `inline` and ```js\ncode\n```'
+ * ```
+ */
 function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
   let restored = content.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
     return protectedCode.codeBlocks[parseInt(index, 10)];
@@ -124,8 +269,14 @@ function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): strin
   return restored;
 }
 
-// We cant rely on remarkMdx since it restricts the syntax a lot
-// so we have to try as much as possible to parse JSX syntax manually
+/**
+ * Preprocesses JSX-like expressions in markdown before parsing.
+ * Inline expressions are handled separately; attribute expressions are processed here.
+ *
+ * @param content
+ * @param context
+ * @returns Preprocessed content ready for markdown parsing
+ */
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
   // Step 0: Base64 encode HTMLBlock content
   let processed = protectHTMLBlockContent(content);
