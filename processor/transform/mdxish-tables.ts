@@ -155,12 +155,10 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
 };
 
 /**
- * Transformer to convert JSX Table elements to markdown table nodes
- * and re-parse markdown content in table cells.
+ * Converts JSX Table elements to markdown table nodes and re-parses markdown in cells.
  *
- * The old MDX pipeline relies on remarkMdx to convert the table and its markdown content into MDX JSX elements.
- * Since mdxish does not use remarkMdx, we have to do it manually.
- * The workaround is to parse cell contents through remarkParse and remarkGfm to convert them to MDX JSX elements.
+ * Since mdxish doesn't use remarkMdx, we manually parse cell contents through
+ * remarkParse and remarkGfm to convert markdown to MDAST nodes.
  */
 const mdxishTables = (): Transform => tree => {
   // First, handle MDX JSX elements (already converted by mdxishComponentBlocks)

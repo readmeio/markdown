@@ -102,6 +102,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  1. callout        │                │                             │
 │  2. codeTabs       │                │                             │
 │  3. gemoji         │                │                             │
+│  4. embed          │                │                             │
+│     [label](url    │                │                             │
+│       "@embed")    │                │                             │
+│     → embedBlock   │                │                             │
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
@@ -140,17 +144,6 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  Decodes protected │                │                             │
 │  base64 content.   │                │                             │
 └────────────────────┘                │                             │
-        │                             │                             │
-        ▼                             │                             │
-┌───────────────────┐                 │                             │
-│ embedTransformer  │                 │                             │
-│  ───────────────  │                 │                             │
-│  [label](url      │                 │                             │
-│    "@embed")      │                 │                             │
-│  Converts embed   │                 │                             │
-│  links to         │                 │                             │
-│  embedBlock nodes │                 │                             │
-└───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
 ┌─────────────────────┐               │                             │
@@ -286,11 +279,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `magicBlockRestorer` | Restore legacy magic blocks from placeholder tokens |
 | MDAST | `imageTransformer` | Transform images to image blocks, preserve magic block properties |
-| MDAST | `defaultTransformers` | Transform callouts, code tabs, gemojis |
+| MDAST | `defaultTransformers` | Transform callouts, code tabs, gemojis, embeds |
 | MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
-| MDAST | `embedTransformer` | `[label](url "@embed")` → `embedBlock` nodes |
 | MDAST | `evaluateExpressions` | Evaluate MDX expressions (`{expression}`) using `jsxContext` |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
@@ -322,8 +314,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  mdxishTables                ← <Table> JSX → markdown tables      │
 │  mdxishHtmlBlocks            ← <HTMLBlock> → html-block nodes     │
 │  mdxComponentHandlers        ← MDAST→HAST conversion handlers     │
-│  defaultTransformers         ← callout, codeTabs, gemoji          │
-│  embedTransformer            ← Embed links → embedBlock nodes     │
+│  defaultTransformers         ← callout, codeTabs, gemoji, embed   │
 │  variablesTextTransformer    ← {user.*} → Variable (regex-based)  │
 │  tailwindTransformer         ← Process Tailwind classes (opt-in)  │
 └───────────────────────────────────────────────────────────────────┘
@@ -332,26 +323,14 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌───────────────────────────────────────────────────────────────────┐
 │                         UTILITIES                                 │
 ├───────────────────────────────────────────────────────────────────┤
-│  utils/html-tags.ts          ← STANDARD_HTML_TAGS, etc.           │
+│  utils/common-html-words.ts  ← STANDARD_HTML_TAGS, etc.           │
 │  lib/utils/load-components   ← Auto-loads React components        │
 │  lib/utils/mix-components    ← getComponentName() lookup          │
-│  lib/utils/render-utils      ← Shared render utilities            │
+│  lib/utils/render-utils.tsx  ← Shared render utilities            │
 │  lib/utils/extractMagicBlocks← Extract legacy [block:] syntax     │
 └───────────────────────────────────────────────────────────────────┘
 ```
-
-## Embeds
-
-The `embedTransformer` converts special markdown links into embed blocks. The syntax uses the `@embed` title marker:
-
-```markdown
-[Video Title](https://youtube.com/watch?v=abc "@embed")
-```
-
-This creates an `embedBlock` node with:
-- `url` - the embed URL
-- `title` - the link label (e.g., "Video Title")
-- `hName: 'embed'` - renders as `<Embed>` component
+# Some Outstanding Transformers
 
 ## User Variables
 
@@ -400,9 +379,9 @@ This gets converted to a markdown `table` node where the cell containing `**Bold
 
 The `mdxishHtmlBlocks` transformer converts `<HTMLBlock>{`...`}</HTMLBlock>` syntax to `html-block` MDAST nodes. The HTML string is stored in `data.hProperties.html` and passed to the React `HTMLBlock` component via the `html` prop during HAST→React conversion, ensuring compatibility with both the `mdxish` and `compile`+`run` pipelines.
 
-To prevent the markdown parser from incorrectly consuming `<script>`, `<style>` tags inside HTMLBlocks, the content is base64-encoded during preprocessing and decoded by the transformer.
+To prevent the markdown parser from incorrectly consuming `<script>`, `<style>` tags inside HTMLBlocks, the content is base64-encoded during preprocessing and then decoded by the transformer.
 
-The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>```javascript\nconst x = 1;\n```</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.
+The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>\`\`\`javascript\nconst x = 1;\n\`\`\`</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.
 
 ## Magic Blocks (Legacy)
 
