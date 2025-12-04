@@ -8,7 +8,7 @@ import handleMissingComponents from './handle-missing-components';
 import imageTransformer from './images';
 import injectComponents from './inject-components';
 import mdxToHast from './mdx-to-hast';
-import mdxishTables from './mdxish-tables';
+import mdxishTables from './mdxish/mdxish-tables';
 import mermaidTransformer from './mermaid';
 import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';

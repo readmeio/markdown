@@ -1,11 +1,11 @@
-import type { HTMLBlock } from '../../types';
+import type { HTMLBlock } from '../../../types';
 import type { Paragraph, Parent } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../enums';
-import { formatHtmlForMdxish } from '../utils';
+import { NodeTypes } from '../../../enums';
+import { formatHtmlForMdxish } from '../../utils';
 
 import { base64Decode, HTML_BLOCK_CONTENT_END, HTML_BLOCK_CONTENT_START } from './preprocess-jsx-expressions';
 

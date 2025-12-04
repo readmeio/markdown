@@ -9,7 +9,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { visit, SKIP } from 'unist-util-visit';
 
-import { getAttrs, isMDXElement } from '../utils';
+import { getAttrs, isMDXElement } from '../../utils';
 
 import mdxishComponentBlocks from './mdxish-component-blocks';
 

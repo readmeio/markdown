@@ -4,7 +4,7 @@
  * Taken from the v6 branch with some modifications to be more type safe
  * and adapted with the mdxish flow.
  */
-import type { BlockHit } from '../../lib/utils/extractMagicBlocks';
+import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
 import type { Plugin } from 'unified';
 
@@ -211,7 +211,10 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       // Wrap in <figure> if caption is present
       const img: MdastNode = imgData.caption
         ? {
-            children: [block, { children: textToBlock(imgData.caption), data: { hName: 'figcaption' }, type: 'figcaption' }],
+            children: [
+              block,
+              { children: textToBlock(imgData.caption), data: { hName: 'figcaption' }, type: 'figcaption' },
+            ],
             data: { hName: 'figure' },
             type: 'figure',
             url,
@@ -269,19 +272,16 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
        * Example: { "h-0": "Name", "h-1": "Type", "0-0": "id", "0-1": "string" }
        * Becomes: [["Name", "Type"], ["id", "string"]]
        */
-      const sparseData: string[][] = Object.entries(data).reduce(
-        (mapped, [key, v]) => {
-          const [row, col] = key.split('-');
-          // Header row ("h") becomes index 0, data rows are offset by 1
-          const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
-          const colIndex = parseInt(col, 10);
+      const sparseData: string[][] = Object.entries(data).reduce((mapped, [key, v]) => {
+        const [row, col] = key.split('-');
+        // Header row ("h") becomes index 0, data rows are offset by 1
+        const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
+        const colIndex = parseInt(col, 10);
 
-          if (!mapped[rowIndex]) mapped[rowIndex] = [];
-          mapped[rowIndex][colIndex] = v;
-          return mapped;
-        },
-        [] as string[][],
-      );
+        if (!mapped[rowIndex]) mapped[rowIndex] = [];
+        mapped[rowIndex][colIndex] = v;
+        return mapped;
+      }, [] as string[][]);
 
       // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
       const tokenizeCell = compatibilityMode ? textToBlock : textToInline;
@@ -293,7 +293,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         type: 'tableRow',
       }));
 
-      return [wrapPinnedBlocks({ align: paramsJson.align ?? new Array(cols).fill('left'), children, type: 'table' }, json)];
+      return [
+        wrapPinnedBlocks({ align: paramsJson.align ?? new Array(cols).fill('left'), children, type: 'table' }, json),
+      ];
     }
 
     // Embed: external content (YouTube, etc.) with provider detection
@@ -313,7 +315,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       return [
         wrapPinnedBlocks(
           {
-            children: [{ children: [{ type: 'text', value: title || null }], title: embedJson.provider, type: 'link', url }],
+            children: [
+              { children: [{ type: 'text', value: title || null }], title: embedJson.provider, type: 'link', url },
+            ],
             data: { hName: 'rdme-embed', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
@@ -328,7 +332,10 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       return [
         wrapPinnedBlocks(
           {
-            data: { hName: 'html-block', hProperties: { html: htmlJson.html, runScripts: compatibilityMode, safeMode } },
+            data: {
+              hName: 'html-block',
+              hProperties: { html: htmlJson.html, runScripts: compatibilityMode, safeMode },
+            },
             type: 'html-block',
           },
           json,
@@ -383,6 +390,6 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
 
       parent.children.splice(index, 1, ...children);
     });
-};
+  };
 
 export default magicBlockRestorer;

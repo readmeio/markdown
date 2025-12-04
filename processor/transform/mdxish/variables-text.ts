@@ -1,10 +1,10 @@
-import type { Variable } from '../../types';
+import type { Variable } from '../../../types';
 import type { Parent, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../enums';
+import { NodeTypes } from '../../../enums';
 
 /**
  * Matches {user.<field>} patterns:

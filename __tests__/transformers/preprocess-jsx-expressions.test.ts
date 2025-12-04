@@ -1,4 +1,4 @@
-import { preprocessJSXExpressions } from '../../processor/transform/preprocess-jsx-expressions';
+import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('preprocessJSXExpressions', () => {
   describe('Step 3: Evaluate attribute expressions', () => {

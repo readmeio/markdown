@@ -1,7 +1,7 @@
 import type { Element } from 'hast';
 
 import { mdxish } from '../../index';
-import { parseAttributes } from '../../processor/transform/mdxish-component-blocks';
+import { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
 
 describe('mdxish-component-blocks', () => {
   describe('parseAttributes', () => {
