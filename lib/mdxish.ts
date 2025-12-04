@@ -16,20 +16,20 @@ import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
-import magicBlockRestorer from '../processor/transform/mdxish-magic-blocks';
 import embedTransformer from '../processor/transform/embeds';
 import evaluateExpressions from '../processor/transform/evaluate-expressions';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import mdxishComponentBlocks from '../processor/transform/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish-html-blocks';
+import magicBlockRestorer from '../processor/transform/mdxish-magic-blocks';
 import mdxishTables from '../processor/transform/mdxish-tables';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/preprocess-jsx-expressions';
 import tailwindTransformer from '../processor/transform/tailwind';
 import variablesTextTransformer from '../processor/transform/variables-text';
 
-import { loadComponents } from './utils/load-components';
 import { extractMagicBlocks } from './utils/extractMagicBlocks';
+import { loadComponents } from './utils/load-components';
 
 export interface MdxishOpts {
   components?: CustomComponents;
@@ -37,7 +37,7 @@ export interface MdxishOpts {
   useTailwind?: boolean;
 }
 
-const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer];
+const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 /**
  * Process markdown content with MDX syntax support.
@@ -53,19 +53,18 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  // Since we are parsing a mix of markdown & mdx, we need to preprocess some things
-  // such as 1) legacy magic blocks, 2) inline JSX expressions manually
+  // Preprocess content: extract legacy magic blocks and evaluate JSX attribute expressions
   const { replaced, blocks } = extractMagicBlocks(mdContent);
   const processedContent = preprocessJSXExpressions(replaced, jsxContext);
 
-  // Create temp map string to string of components
+  // Create string map of components for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
     acc[key] = String(value);
     return acc;
   }, {});
 
   const processor = unified()
-    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })]) // These 2 extenstions are used to make inline JSX expressions as nodes in the AST, which will be evaluated later
+    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })]) // Parse inline JSX expressions as AST nodes for later evaluation
     .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
@@ -75,9 +74,8 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(mdxishComponentBlocks)
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
-    .use(embedTransformer)
-    .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using context
-    .use(variablesTextTransformer) // We cant rely in remarkMdx to parse the variable, so we have to parse it manually
+    .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text (can't rely on remarkMdx)
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })

@@ -99,13 +99,14 @@ function normalizeProperties(node: Element): void {
 }
 
 /**
- * A plugin to identify custom MDX components and recursively parse its markdown children.
- * If visited node is a custom component, replace its tagName to its PascalCase name so that the
- * react plugin and identify its component code.
+ * Identifies custom MDX components and recursively parses markdown children.
+ * Replaces tagName with PascalCase component name for React component resolution.
+ *
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
- * @param {Options} components - The components to process
- * @param {Options} processMarkdown - The function to process markdown
- * @returns {Transformer<Root, Root>} - The transformer function
+ * @param {Options} options - Configuration options
+ * @param {CustomComponents} options.components - Available custom components
+ * @param {Function} options.processMarkdown - Function to process markdown content
+ * @returns {Transformer<Root, Root>} The transformer function
  */
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {

@@ -18,9 +18,7 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
       const expressionNode = node as MdxFlowExpression | MdxTextExpression;
       if (!('value' in expressionNode)) return;
 
-      // Skip expressions that are part of JSX attributes (handled by preprocessing)
-      // Note: Code blocks are already protected by preprocessing, so expressions
-      // inside code won't reach here
+      // JSX attribute expressions are handled by preprocessing; code blocks are protected
       const expression = expressionNode.value.trim();
 
       // Skip if expression is empty (shouldn't happen, but defensive)
@@ -83,4 +81,3 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
   };
 
 export default evaluateExpressions;
-
