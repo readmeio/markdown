@@ -23,19 +23,19 @@ End text.`;
     expect(replaced).toBe(`
 # Title
 Paragraph text.
-\`__MAGIC_BLOCK_0__\`
+\n\`__MAGIC_BLOCK_0__\`
 
 More text.
-\`__MAGIC_BLOCK_1__\`
+\n\`__MAGIC_BLOCK_1__\`
 End text.`);
 
     expect(blocks).toStrictEqual([
       {
-        token: '`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
       {
-        token: '`__MAGIC_BLOCK_1__`',
+        token: '\n`__MAGIC_BLOCK_1__`',
         raw: expect.stringContaining('<b>second block</b>'),
       },
     ]);
@@ -57,11 +57,11 @@ end`;
 [block:html]
 [block:html]
 
-\`__MAGIC_BLOCK_0__\`
+\n\`__MAGIC_BLOCK_0__\`
 end`);
     expect(blocks).toStrictEqual([
       {
-        token: '`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
     ]);
