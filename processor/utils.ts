@@ -126,11 +126,52 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
  * and unindents the HTML.
  *
+ * @param {string} html - HTML content from template literal
+ * @returns {string} processed HTML
+ */
+export function formatHtmlForMdxish(html: string): string {
+  // Remove leading/trailing backticks if present, since they're used to keep the HTML
+  // from being parsed prematurely
+  let processed = html;
+  if (processed.startsWith('`') && processed.endsWith('`')) {
+    processed = processed.slice(1, -1);
+  }
+  // Removes the leading/trailing newlines
+  let cleaned = processed.replace(/^\s*\n|\n\s*$/g, '');
+
+  // Convert literal \n sequences to actual newlines BEFORE processing backticks
+  // This prevents the backtick unescaping regex from incorrectly matching \n sequences
+  cleaned = cleaned.replace(/\\n/g, '\n');
+
+  // Unescape backticks: \` -> ` (users escape backticks in template literals)
+  // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
+  cleaned = cleaned.replace(/\\`/g, '`');
+
+  // Also handle case where backslash and backtick got separated by markdown parsing
+  // Pattern: backslash followed by any characters (but not \n which we already handled), then a backtick
+  // This handles cases like: \example` -> `example` (replacing \ with ` at start)
+  // Exclude \n sequences to avoid matching them incorrectly
+  cleaned = cleaned.replace(/\\([^`\\n]*?)`/g, '`$1`');
+
+  // Fix case where markdown parser consumed one backtick from triple backticks
+  // Pattern: `` followed by a word (like ``javascript) should be ```javascript
+  // This handles cases where code fences were parsed and one backtick was lost
+  cleaned = cleaned.replace(/<(\w+[^>]*)>``(\w+)/g, '<$1>```$2');
+
+  // Unescape dollar signs: \$ -> $ (users escape $ in template literals to prevent interpolation)
+  cleaned = cleaned.replace(/\\\$/g, '$');
+
+  return cleaned;
+}
+
+/**
+ * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
+ * and unindents the HTML.
+ *
  * @param {string} html
- * @param {boolean} [isMdxish=false]
  * @returns {string} formatted HTML
  */
-export const formatHTML = (html: string, isMdxish = false): string => {
+export const formatHTML = (html: string): string => {
   // Remove leading/trailing backticks if present, since they're used to keep the HTML
   // from being parsed prematurely
   if (html.startsWith('`') && html.endsWith('`')) {
@@ -138,31 +179,14 @@ export const formatHTML = (html: string, isMdxish = false): string => {
     html = html.slice(1, -1);
   }
   // Removes the leading/trailing newlines
-  let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+  const cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
-  // MDXish-specific processing: handle escaped sequences in template literals
-  if (isMdxish) {
-    // Convert literal \n sequences to actual newlines BEFORE processing backticks
-    // This prevents the backtick unescaping regex from incorrectly matching \n sequences
-    cleaned = cleaned.replace(/\\n/g, '\n');
+  // // Get the number of spaces in the first line to determine the tab size
+  // const tab = cleaned.match(/^\s*/)[0].length;
 
-    // Unescape backticks: \` -> ` (users escape backticks in template literals)
-    // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
-    cleaned = cleaned.replace(/\\`/g, '`');
-    // Also handle case where backslash and backtick got separated by markdown parsing
-    // Pattern: backslash followed by any characters (but not \n which we already handled), then a backtick
-    // This handles cases like: \example` -> `example` (replacing \ with ` at start)
-    // Exclude \n sequences to avoid matching them incorrectly
-    cleaned = cleaned.replace(/\\([^`\\n]*?)`/g, '`$1`');
-
-    // Fix case where markdown parser consumed one backtick from triple backticks
-    // Pattern: `` followed by a word (like ``javascript) should be ```javascript
-    // This handles cases where code fences were parsed and one backtick was lost
-    cleaned = cleaned.replace(/<(\w+[^>]*)>``(\w+)/g, '<$1>```$2');
-
-    // Unescape dollar signs: \$ -> $ (users escape $ in template literals to prevent interpolation)
-    cleaned = cleaned.replace(/\\\$/g, '$');
-  }
+  // // Remove the first indentation level from each line
+  // const tabRegex = new RegExp(`^\\s{${tab}}`, 'gm');
+  // const unindented = cleaned.replace(tabRegex, '');
 
   return cleaned;
 };
