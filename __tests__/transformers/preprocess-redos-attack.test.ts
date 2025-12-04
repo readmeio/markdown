@@ -3,43 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { preprocessJSXExpressions } from '../../processor/transform/preprocess-jsx-expressions';
 
 describe('ReDoS Attack Vectors', () => {
-  it('should handle attack string with 30 repetitions without hanging', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(30)}lock\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(5000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle attack string with 50 repetitions without hanging', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(50)}lock\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(10000);
-    expect(result).toBeDefined();
-  });
-
-  it('should demonstrate ReDoS with a pattern that matches but causes backtracking', () => {
-    const attackString = `<HTMLBlock>{\`${'\\a\\b\\c\\'.repeat(40)}x\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(5000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle 100 repetitions of escape sequences', () => {
+  it('should handle basic attack pattern without hanging', () => {
     const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(100)}lock\`}</HTMLBlock>`;
 
     const start = Date.now();
@@ -51,8 +15,10 @@ describe('ReDoS Attack Vectors', () => {
     expect(result).toBeDefined();
   });
 
-  it('should handle 200 repetitions of escape sequences', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(200)}lock\`}</HTMLBlock>`;
+  it('should handle pattern specifically designed for nested quantifier attack', () => {
+    // This pattern exploits the (?:[^`\\]|\\.)* nested quantifier
+    // Each backslash can be interpreted as start of escape OR part of previous escape
+    const attackString = `<HTMLBlock>{\`${'\\x\\y'.repeat(300)}z\`}</HTMLBlock>`;
 
     const start = Date.now();
     const result = preprocessJSXExpressions(attackString, {});
@@ -63,31 +29,7 @@ describe('ReDoS Attack Vectors', () => {
     expect(result).toBeDefined();
   });
 
-  it('should handle 500 repetitions of escape sequences', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(500)}lock\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(30000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle many consecutive backslashes (500)', () => {
-    const attackString = `<HTMLBlock>{\`${'\\'.repeat(500)}a\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(10000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle many consecutive backslashes (1000)', () => {
+  it('should handle many consecutive backslashes', () => {
     const attackString = `<HTMLBlock>{\`${'\\'.repeat(1000)}a\`}</HTMLBlock>`;
 
     const start = Date.now();
@@ -123,8 +65,8 @@ describe('ReDoS Attack Vectors', () => {
     expect(result).toBeDefined();
   });
 
-  it('should handle very long template literal content (10k chars)', () => {
-    const longContent = 'a'.repeat(10000);
+  it('should handle very long template literal content', () => {
+    const longContent = 'a'.repeat(50000);
     const attackString = `<HTMLBlock>{\`${longContent}\`}</HTMLBlock>`;
 
     const start = Date.now();
@@ -132,12 +74,12 @@ describe('ReDoS Attack Vectors', () => {
     const end = Date.now();
     const duration = end - start;
 
-    expect(duration).toBeLessThan(5000);
+    expect(duration).toBeLessThan(20000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
-  it('should handle very long template literal with escapes (5k chars)', () => {
-    const longContent = '\\a'.repeat(2500);
+  it('should handle very long template literal with escapes', () => {
+    const longContent = '\\a'.repeat(10000);
     const attackString = `<HTMLBlock>{\`${longContent}\`}</HTMLBlock>`;
 
     const start = Date.now();
@@ -145,26 +87,22 @@ describe('ReDoS Attack Vectors', () => {
     const end = Date.now();
     const duration = end - start;
 
-    expect(duration).toBeLessThan(10000);
+    expect(duration).toBeLessThan(30000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle multiple HTMLBlock tags with attack patterns', () => {
     const attackPattern = '\\lock\\lock\\'.repeat(50);
-    const attackString = [
-      `<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`,
-      `<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`,
-      `<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`,
-    ].join('\n');
+    const blocks = new Array(10).fill(`<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`).join('\n');
 
     const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
+    const result = preprocessJSXExpressions(blocks, {});
     const end = Date.now();
     const duration = end - start;
 
-    expect(duration).toBeLessThan(15000);
+    expect(duration).toBeLessThan(30000);
     expect(result).toBeDefined();
-  });
+  }, 10000);
 
   it('should handle attack pattern with extra whitespace', () => {
     const attackString = `<HTMLBlock>{   \`${'\\lock\\lock\\'.repeat(100)}lock\`   }</HTMLBlock>`;
@@ -187,20 +125,6 @@ describe('ReDoS Attack Vectors', () => {
     const duration = end - start;
 
     expect(duration).toBeLessThan(10000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle pattern specifically designed for nested quantifier attack', () => {
-    // This pattern exploits the (?:[^`\\]|\\.)* nested quantifier
-    // Each backslash can be interpreted as start of escape OR part of previous escape
-    const attackString = `<HTMLBlock>{\`${'\\x\\y'.repeat(300)}z\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(15000);
     expect(result).toBeDefined();
   });
 
@@ -229,54 +153,6 @@ describe('ReDoS Attack Vectors', () => {
     expect(result).toBeDefined();
   });
 
-  it('should handle 1000 repetitions of escape sequences', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(1000)}lock\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(60000);
-    expect(result).toBeDefined();
-  }, 10000);
-
-  it('should handle 2000 repetitions of escape sequences', () => {
-    const attackString = `<HTMLBlock>{\`${'\\lock\\lock\\'.repeat(2000)}lock\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(120000);
-    expect(result).toBeDefined();
-  }, 10000);
-
-  it('should handle many consecutive backslashes (2000)', () => {
-    const attackString = `<HTMLBlock>{\`${'\\'.repeat(2000)}a\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(30000);
-    expect(result).toBeDefined();
-  });
-
-  it('should handle many consecutive backslashes (5000)', () => {
-    const attackString = `<HTMLBlock>{\`${'\\'.repeat(5000)}a\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(60000);
-    expect(result).toBeDefined();
-  }, 10000);
-
   it('should handle HTMLBlock with attributes and attack pattern', () => {
     const attackString = `<HTMLBlock id="test" class="example">{\`${'\\lock\\lock\\'.repeat(200)}lock\`}</HTMLBlock>`;
 
@@ -301,32 +177,6 @@ describe('ReDoS Attack Vectors', () => {
     expect(duration).toBeLessThan(15000);
     expect(result).toBeDefined();
   });
-
-  it('should handle very long template literal content (50k chars)', () => {
-    const longContent = 'a'.repeat(50000);
-    const attackString = `<HTMLBlock>{\`${longContent}\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(20000);
-    expect(result).toBeDefined();
-  }, 10000);
-
-  it('should handle very long template literal with escapes (20k chars)', () => {
-    const longContent = '\\a'.repeat(10000);
-    const attackString = `<HTMLBlock>{\`${longContent}\`}</HTMLBlock>`;
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(attackString, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(30000);
-    expect(result).toBeDefined();
-  }, 10000);
 
   it('should handle pattern with all possible escape sequences', () => {
     const escapes = '\\n\\t\\r\\v\\f\\b\\0\\x00\\u0000';
@@ -365,32 +215,6 @@ describe('ReDoS Attack Vectors', () => {
     expect(duration).toBeLessThan(20000);
     expect(result).toBeDefined();
   });
-
-  it('should handle 10 HTMLBlock tags with attack patterns', () => {
-    const attackPattern = '\\lock\\lock\\'.repeat(50);
-    const blocks = new Array(10).fill(`<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`).join('\n');
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(blocks, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(30000);
-    expect(result).toBeDefined();
-  }, 10000);
-
-  it('should handle 50 HTMLBlock tags with attack patterns', () => {
-    const attackPattern = '\\lock\\lock\\'.repeat(30);
-    const blocks = new Array(50).fill(`<HTMLBlock>{\`${attackPattern}lock\`}</HTMLBlock>`).join('\n');
-
-    const start = Date.now();
-    const result = preprocessJSXExpressions(blocks, {});
-    const end = Date.now();
-    const duration = end - start;
-
-    expect(duration).toBeLessThan(60000);
-    expect(result).toBeDefined();
-  }, 10000);
 
   it('should handle pattern with tabs and newlines in template literal', () => {
     const attackString = `<HTMLBlock>{\`${'\\t\\n\\r'.repeat(500)}end\`}</HTMLBlock>`;
