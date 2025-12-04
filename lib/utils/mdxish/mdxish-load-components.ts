@@ -1,9 +1,9 @@
-import type { CustomComponents, RMDXModule } from '../../types';
+import type { CustomComponents, RMDXModule } from '../../../types';
 import type { MDXProps } from 'mdx/types';
 
 import React from 'react';
 
-import * as Components from '../../components';
+import * as Components from '../../../components';
 
 /**
  * Load components from the components directory and wrap them in RMDXModule format

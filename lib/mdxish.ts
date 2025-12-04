@@ -29,7 +29,7 @@ import tailwindTransformer from '../processor/transform/tailwind';
 import variablesTextTransformer from '../processor/transform/variables-text';
 
 import { extractMagicBlocks } from './utils/extractMagicBlocks';
-import { loadComponents } from './utils/load-components';
+import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
   components?: CustomComponents;

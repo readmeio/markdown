@@ -1,4 +1,4 @@
-import type { CustomComponents } from '../../types';
+import type { CustomComponents } from '../../../types';
 
 /** Convert a string to PascalCase */
 function toPascalCase(str: string): string {

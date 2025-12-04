@@ -3,13 +3,13 @@ import type { Root } from 'hast';
 
 import { extractToc, tocToHast } from '../processor/plugin/toc';
 
-import { loadComponents } from './utils/load-components';
+import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import {
   buildRMDXModule,
   createRehypeReactProcessor,
   exportComponentsForRehype,
   type RenderOpts,
-} from './utils/render-utils';
+} from './utils/mdxish/mdxish-render-utils';
 
 export type { RenderOpts as RenderMdxishOpts };
 

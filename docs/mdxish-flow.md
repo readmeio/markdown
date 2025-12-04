@@ -324,10 +324,10 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │                         UTILITIES                                 │
 ├───────────────────────────────────────────────────────────────────┤
 │  utils/common-html-words.ts  ← STANDARD_HTML_TAGS, etc.           │
-│  lib/utils/load-components   ← Auto-loads React components        │
-│  lib/utils/mix-components    ← getComponentName() lookup          │
-│  lib/utils/render-utils.tsx  ← Shared render utilities            │
-│  lib/utils/extractMagicBlocks← Extract legacy [block:] syntax     │
+│  utils/load-components   ← Auto-loads React components            │
+│  utils/mdxish/mdxish-get-component-name ← getComponentName()      │
+│  utils/render-utils.tsx  ← Shared render utilities                │
+│  utils/extractMagicBlocks← Extract legacy [block:] syntax         │
 └───────────────────────────────────────────────────────────────────┘
 ```
 # Some Outstanding Transformers

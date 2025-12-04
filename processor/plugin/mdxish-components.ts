@@ -5,7 +5,7 @@ import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
 
-import { getComponentName } from '../../lib/utils/mix-components';
+import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
 import {
   CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,

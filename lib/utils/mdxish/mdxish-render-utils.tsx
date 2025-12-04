@@ -1,15 +1,14 @@
-import type { GlossaryTerm } from '../../contexts/GlossaryTerms';
-import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../types';
+import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
+import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
 
 import Variable from '@readme/variable';
 import React from 'react';
 import rehypeReact from 'rehype-react';
 import { unified } from 'unified';
 
-import * as Components from '../../components';
-import Contexts from '../../contexts';
-
-import makeUseMDXComponents from './makeUseMdxComponents';
+import * as Components from '../../../components';
+import Contexts from '../../../contexts';
+import makeUseMDXComponents from '../makeUseMdxComponents';
 
 export interface RenderOpts {
   baseUrl?: string;
