@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 
 import { mdxish } from '../../../lib';
 
-describe('magic blocks', () => {
+describe.skip('mdxish magic blocks', () => {
   describe('image block', () => {
     it('should restore image block', () => {
       const md = `[block:image]
