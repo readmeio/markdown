@@ -105,4 +105,17 @@ Last text
     const output = await stripComments(input);
     expect(output).toMatchSnapshot();
   });
+
+  it('keeps tight sibling code blocks intact without inserting extra newlines', async () => {
+    const input = `
+\`\`\`
+First code block
+\`\`\`
+\`\`\`
+Second code block
+\`\`\`
+`;
+    const output = await stripComments(input);
+    expect(output).toBe(input.trim());
+  });
 });
