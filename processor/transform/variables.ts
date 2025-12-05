@@ -6,7 +6,6 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
-
 const variables =
   ({ asMdx } = { asMdx: true }): Transform =>
   tree => {

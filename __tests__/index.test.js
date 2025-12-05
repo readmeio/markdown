@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React, { createElement } from 'react';
 
 import BaseUrlContext from '../contexts/BaseUrl';
-import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, astToPlainText } from '../index';
+import { run, compile, utils, html as _html, mdast, hast as _hast, plain, mdx, mix, astToPlainText } from '../index';
 import { options } from '../options';
 import { tableFlattening } from '../processor/plugin/table-flattening';
 
@@ -369,6 +369,19 @@ Lorem ipsum dolor!`;
     expect(_hast('')).toBeNull();
     expect(mdast('')).toBeNull();
     expect(mdx('')).toBeNull();
+  });
+});
+
+describe('export multiple Markdown renderers with mix', () => {
+  it('renders MD', () => {
+    const markdown = '# Hello World';
+    const html = mix(markdown);
+    expect(html).toContain('<h1');
+    expect(html).toContain('Hello World');
+  });
+
+  it('returns empty string for blank input', () => {
+    expect(mix('')).toBe('');
   });
 });
 
