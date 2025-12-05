@@ -37,6 +37,14 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
                 return state.safe(node.value, info);
               },
             },
+            join: [
+              // Preserve tight sibling code blocks without adding extra newlines between them.
+              // Our markdown renderer uses this to group these code blocks into a tabbed interface.
+              (left, right) => {
+                // 0 = no newline between blocks
+                return  (left.type === 'code' && right.type === 'code') ? 0 : undefined;
+              },
+            ],
           },
     );
 
