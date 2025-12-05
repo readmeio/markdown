@@ -85,6 +85,7 @@ interface HTMLBlock extends Node {
     hProperties: {
       html: string;
       runScripts?: boolean | string;
+      safeMode?: string;
     };
   };
   type: NodeTypes.htmlBlock;

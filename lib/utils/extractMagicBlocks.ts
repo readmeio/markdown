@@ -1,4 +1,4 @@
-interface BlockHit {
+export interface BlockHit {
   raw: string;
   token: string;
 }

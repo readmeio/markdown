@@ -8,6 +8,7 @@ import handleMissingComponents from './handle-missing-components';
 import imageTransformer from './images';
 import injectComponents from './inject-components';
 import mdxToHast from './mdx-to-hast';
+import mdxishTables from './mdxish/mdxish-tables';
 import mermaidTransformer from './mermaid';
 import readmeComponentsTransformer from './readme-components';
 import readmeToMdx from './readme-to-mdx';
@@ -21,6 +22,7 @@ export {
   divTransformer,
   injectComponents,
   mdxToHast,
+  mdxishTables,
   mermaidTransformer,
   readmeComponentsTransformer,
   readmeToMdx,
@@ -38,5 +40,7 @@ export const defaultTransforms = {
   imageTransformer,
   gemojiTransformer,
 };
+
+export const mdxishTransformers = [calloutTransformer, codeTabsTransformer, imageTransformer, gemojiTransformer];
 
 export default Object.values(defaultTransforms);

@@ -1,3 +1,9 @@
+import type { Root } from 'hast';
+
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+
 import * as rmdx from '../../index';
 
 describe('variable compiler', () => {
@@ -40,5 +46,55 @@ describe('variable compiler', () => {
     const tree = rmdx.mdast(mdx);
 
     expect(rmdx.mdx(tree).trim()).toStrictEqual(mdx.trim());
+  });
+});
+
+describe('mdxish variable compiler', () => {
+  it('should handle user variables', () => {
+    const mdx = `
+Hello {user.name}!
+    `;
+
+    const variables = {
+      user: {
+        name: 'John Doe',
+      },
+      defaults: [],
+    };
+
+    const hast = rmdx.mdxish(mdx) as Root;
+    expect(hast).toBeDefined();
+
+    const { default: Content } = rmdx.renderMdxish(hast, { variables });
+
+    render(React.createElement(Content));
+
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+  });
+
+  it('should NOT evaluate user variables inside backticks (inline code)', () => {
+    const mdx = `
+User Variables: **\`{user.name}\`** evaluates to {user.name}
+    `;
+
+    const variables = {
+      user: {
+        name: 'John Doe',
+      },
+      defaults: [],
+    };
+
+    const hast = rmdx.mdxish(mdx) as Root;
+    expect(hast).toBeDefined();
+
+    const { default: Content } = rmdx.renderMdxish(hast, { variables });
+
+    render(React.createElement(Content));
+
+    // The {user.name} OUTSIDE backticks should be evaluated to "John Doe"
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+
+    // The {user.name} INSIDE backticks should remain as literal text
+    expect(screen.getByText('{user.name}')).toBeInTheDocument();
   });
 });
