@@ -56,7 +56,12 @@ const CodeTabs = (props: Props) => {
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
         {(Array.isArray(children) ? children : [children]).map((pre, i) => {
-          const { meta, lang } = pre.props.children.props;
+          // the first or only child should be our Code component
+          const codeComponent = Array.isArray(pre.props?.children)
+            ? pre.props.children[0]
+            : pre.props?.children;
+          const lang = codeComponent?.props?.lang;
+          const meta = codeComponent?.props?.meta;
 
           /* istanbul ignore next */
           return (

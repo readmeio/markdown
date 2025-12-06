@@ -74,4 +74,48 @@ Last text
     const output = await stripComments(input, { mdx: true });
     expect(output).toMatchSnapshot();
   });
+
+  it('preserves non-mdx variables', async () => {
+    const input = `Hello
+<!-- should be removed -->
+<<user>>
+<<hot_dog>>
+<<HOT_DIGGITY_DOG>>
+<<glossary:item_term>>`;
+
+    const output = await stripComments(input);
+    expect(output).toBe(`Hello
+
+<<user>>
+<<hot_dog>>
+<<HOT_DIGGITY_DOG>>
+<<glossary:item_term>>`);
+  });
+
+  it('preserves magic block indentation', async () => {
+    const input = `
+- foo
+- foo
+[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]`;
+
+    const output = await stripComments(input);
+    expect(output).toMatchSnapshot();
+  });
+
+  it('keeps tight sibling code blocks intact without inserting extra newlines', async () => {
+    const input = `
+\`\`\`
+First code block
+\`\`\`
+\`\`\`
+Second code block
+\`\`\`
+`;
+    const output = await stripComments(input);
+    expect(output).toBe(input.trim());
+  });
 });
