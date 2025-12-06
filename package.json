@@ -41,7 +41,7 @@
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
-    "mdast-util-mdx-expression": "^2.0.1",
+    "mdast-util-mdx-expression": "2.0.0",
     "mdast-util-phrasing": "^4.1.0",
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-mdx-expression": "^3.0.1",
