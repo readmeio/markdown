@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.8.2
+### 🛠 Fixes & Updates
+
+* correctly restore parse magic blocks in mdxish by updating normalisation regex ([#1252](https://github.com/readmeio/markdown/issues/1252)) ([8e9eeef](https://github.com/readmeio/markdown/commit/8e9eeef91e55884d55d521e9693cc79ee35953f5))
+
 ## Version 11.8.1
 ### 🛠 Fixes & Updates
 
