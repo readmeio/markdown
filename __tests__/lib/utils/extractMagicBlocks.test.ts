@@ -31,10 +31,12 @@ End text.`);
 
     expect(blocks).toStrictEqual([
       {
+        key: '__MAGIC_BLOCK_0__',
         token: '\n`__MAGIC_BLOCK_0__`',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
       {
+        key: '__MAGIC_BLOCK_1__',
         token: '\n`__MAGIC_BLOCK_1__`',
         raw: expect.stringContaining('<b>second block</b>'),
       },
@@ -61,6 +63,7 @@ end`;
 end`);
     expect(blocks).toStrictEqual([
       {
+        key: '__MAGIC_BLOCK_0__',
         token: '\n`__MAGIC_BLOCK_0__`',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
@@ -80,6 +83,7 @@ More text.
 End text.`;
     const blocks = [
       {
+        key: '__MAGIC_BLOCK_0__',
         token: '`__MAGIC_BLOCK_0__`',
         raw: `[block:html]
 {
@@ -88,6 +92,7 @@ End text.`;
 [/block]`,
       },
       {
+        key: '__MAGIC_BLOCK_1__',
         token: '`__MAGIC_BLOCK_1__`',
         raw: `[block:html]
 {
