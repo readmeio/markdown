@@ -368,20 +368,13 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
   tree => {
     if (!blocks.length) return;
 
-    // Build lookup map: token string → original raw magic block content
-    // Tokens are stored with backticks (`__MAGIC_BLOCK_0__`) but parsed as
-    // inlineCode nodes without the backticks, so we normalize here
-    const tokenLookup = new Map(
-      blocks.map(({ token, raw }) => {
-        const normalizedToken = token.replace(/^`|`$/g, '');
-        return [normalizedToken, raw] as const;
-      }),
-    );
+    // Map: key → original raw magic block content
+    const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
-      const raw = tokenLookup.get(node.value);
+      const raw = magicBlockKeys.get(node.value);
       if (!raw) return;
 
       // Parse the original magic block and replace the placeholder with the result

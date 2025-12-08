@@ -1,4 +1,5 @@
 export interface BlockHit {
+  key: string;
   raw: string;
   token: string;
 }
@@ -22,13 +23,17 @@ export function extractMagicBlocks(markdown: string) {
 
   const replaced = markdown.replace(MAGIC_BLOCK_REGEX, match => {
     /**
-     * - Use backticks so it becomes a code span, preventing remarkParse from parsing 
+     * Key is the unique identifier for the magic block
+     * Token is a wrapper around the key to serialize & influences how the block is parsed in the pipeline
+     * with the temporary key
+     * - Use backticks so it becomes a code span, preventing remarkParse from parsing
      *   special characters in the token as markdown syntax
      * - Prepend a newline to the token to ensure it is parsed as a block level node
      */
-    const token = `\n\`__MAGIC_BLOCK_${index}__\``;
+    const key = `__MAGIC_BLOCK_${index}__`;
+    const token = `\n\`${key}\``;
 
-    blocks.push({ token, raw: match });
+    blocks.push({ key, raw: match, token });
     index += 1;
     return token;
   });
