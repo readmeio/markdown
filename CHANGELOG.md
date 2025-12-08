@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.8.1
+### 🛠 Fixes & Updates
+
+* downgrade `mdast-util-mdx-expression` ([#1251](https://github.com/readmeio/markdown/issues/1251)) ([280eed2](https://github.com/readmeio/markdown/commit/280eed241df06858a02e094e34bdb36b50af6788))
+
 ## Version 11.8.0
 ### ✨ New & Improved
 
