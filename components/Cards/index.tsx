@@ -4,6 +4,7 @@ import './style.scss';
 
 interface CardProps
   extends React.PropsWithChildren<{
+    badge?: string;
     href?: string;
     icon?: string;
     iconColor?: string;
@@ -11,13 +12,19 @@ interface CardProps
     title?: string;
   }> {}
 
-export const Card = ({ children, href, icon, iconColor, target, title }: CardProps) => {
+export const Card = ({ badge,children, href, icon, iconColor, target, title }: CardProps) => {
   const Tag = href ? 'a' : 'div';
   return (
-    <Tag className="Card" href={href} target={target}>
-      {icon && <i className={`Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties}></i>}
-      {title && <p className="Card-title">{title}</p>}
-      <div className="Card-content">{children}</div>
+    <Tag className="rm-Card" href={href} target={target}>
+      {icon && <i className={`rm-Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties}></i>}
+      {title && (
+        <div className="rm-Card-title">
+          {title}
+          {badge && <span className="rm-Card-badge">{badge}</span>}
+          {href && <i aria-hidden="true" className="rm-Card-arrow fa-regular fa-arrow-right" />}
+        </div>
+      )}
+      <div className="rm-Card-content">{children}</div>
     </Tag>
   );
 };
@@ -28,7 +35,7 @@ const CardsGrid = ({ columns = 2, children }: CardsGripProps) => {
   // eslint-disable-next-line no-param-reassign
   columns = columns >= 2 ? columns : 2;
   return (
-    <div className="CardsGrid" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+    <div className="rm-CardsGrid" style={{ '--CardsGrid-template-columns': columns } as React.CSSProperties}>
       {children}
     </div>
   );

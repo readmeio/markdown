@@ -11,20 +11,28 @@
 
 ### Cards
 
-<Cards columns={2}>
-  <Card title="First Card" href="https://readme.com" icon="fa fa-home" iconColor="#018ef5" target="_blank">
-    Neque porro quisquam est qui dolorem ipsum quia
+Card in grid:
+
+<Cards>
+  <Card title="First Card" href="https://readme.com" icon="fa fa-traffic-light">
+    Learn how to write and publish docs.
   </Card>
-  <Card title="Second Card" icon="fa fa-user" iconColor="#018ef5">
-    *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
+  <Card badge="Beta" title="First Card" href="https://readme.com" icon="fa fa-traffic-light">
+    Learn how to write and publish docs.
   </Card>
-  <Card title="Third Card" icon="fa fa-star" iconColor="#018ef5">
-    > Ut enim ad minim veniam, quis nostrud ullamco
+  <Card title="First Card" icon="fa fa-traffic-light">
+    Learn how to write and publish docs.
   </Card>
-  <Card title="Fourth Card" icon="fa fa-question" iconColor="#018ef5">
-    **Excepteur sint occaecat cupidatat non proident**
+  <Card badge="Beta" title="First Card" icon="fa fa-traffic-light">
+    Learn how to write and publish docs.
   </Card>
 </Cards>
+
+Just the card:
+
+<Card badge="Beta" title="First Card" icon="fa fa-traffic-light">
+  Learn how to write and publish docs.
+</Card>
 
 ---
 
@@ -41,13 +49,7 @@
 ### Columns
 
 <Columns layout="auto">
-  <Column>
-    Neque porro quisquam est qui dolorem ipsum quia
-  </Column>
-  <Column>
-    *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
-  </Column>
-  <Column>
-    > Ut enim ad minim veniam, quis nostrud ullamco
-  </Column>
+  <Column>Neque porro quisquam est qui dolorem ipsum quia</Column>
+  <Column>*Lorem ipsum dolor sit amet, consectetur adipiscing elit*</Column>
+  <Column>> Ut enim ad minim veniam, quis nostrud ullamco</Column>
 </Columns>
