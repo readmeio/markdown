@@ -67,4 +67,29 @@ ${JSON.stringify(
       expect((element.children[1] as Element).tagName).toBe('tbody');
     });
   })
+
+  describe('embed block', () => {
+    it('should restore embed block', () => {
+      const md = `[block:embed]
+{
+  "url": "https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4",
+  "provider": "youtube.com",
+  "href": "https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4",
+  "typeOfEmbed": "youtube"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
+      const element = ast.children[0] as Element;
+      expect(element.tagName).toBe('Embed');
+      expect(element.properties.url).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
+      expect(element.properties.provider).toBe('youtube.com');
+      expect(element.properties.href).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
+      expect(element.properties.typeOfEmbed).toBe('youtube');
+    });
+  });
 });

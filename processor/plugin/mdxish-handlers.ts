@@ -49,7 +49,20 @@ const htmlBlockHandler: Handler = (_state, node) => {
   };
 };
 
+// Convert custom embed blocks correctly
+const embedHandler: Handler = (state, node) => {
+  const { data } = node as { data?: { hName?: string; hProperties?: Properties } };
+
+  return {
+    type: 'element',
+    tagName: data?.hName === NodeTypes.embedBlock ? 'Embed' : 'embed',
+    properties: (data?.hProperties || {}) as Properties,
+    children: state.all(node),
+  };
+};
+
 export const mdxComponentHandlers: Handlers = {
+  embed: embedHandler,
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,
