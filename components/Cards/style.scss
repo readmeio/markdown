@@ -13,18 +13,18 @@ $iphone-plus: 414px;
 }
 
 .rm-Card {
-  --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
-  --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
+  $card: &;
+
   --Card-badge-bg-color: var(--yellow);
   --Card-badge-color: var(--yellow10);
-  --Card-border-color: var(--color-border-default);
   --Card-content-color: var(--color-text-minimum);
   --Card-gap: 0.25em;
   --Card-href-arrow-opacity: 0;
   --Card-href-arrow-transform: translateX(-5px);
   --Card-icon-color: var(--color-text-default);
+  --Card-icon-opacity: 0.65;
+  --Card-icon-opacity-hover: 0.75;
   --Card-line-height: 1.4;
-  --Card-padding: 1.5em;
   --Card-shadow: none;
   --Card-title-color: var(--color-text-default);
 
@@ -33,11 +33,29 @@ $iphone-plus: 414px;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--Card-shadow);
   display: flex;
-  flex-direction: column;
+  flex-direction: var(--Card-layout);
   gap: var(--Card-gap);
   line-height: var(--Card-line-height);
   padding: var(--Card-padding);
   text-decoration: none;
+
+  &_card {
+    --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
+    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
+    --Card-border-color: var(--color-border-default);
+    --Card-layout: column;
+    --Card-padding: 1.5em;
+  }
+
+  &_tile {
+    --Card-gap: 1em;
+    --Card-icon-opacity: 0.5;
+    --Card-layout: row;
+
+    #{$card}-content {
+      --Card-gap: 0;
+    }
+  }
 
   // needs specificity to override the default link styles; while preserving logic for empty hrefs
   &[href]:not([href='']) {
@@ -47,6 +65,7 @@ $iphone-plus: 414px;
     &:hover,
     &:active,
     &:focus {
+      --Card-icon-opacity: var(--Card-icon-opacity-hover);
       --Card-href-arrow-opacity: 0.75;
       --Card-href-arrow-transform: none;
 
@@ -58,7 +77,7 @@ $iphone-plus: 414px;
     color: var(--Card-icon-color);
     font-size: 1.5em;
     margin-bottom: 0.5em;
-    opacity: 0.65;
+    opacity: var(--Card-icon-opacity);
     transition: opacity var(--transition-timing) var(--transition-fast);
   }
 
@@ -67,7 +86,6 @@ $iphone-plus: 414px;
     color: var(--Card-title-color);
     display: flex;
     gap: 0.5em;
-    font-size: 1.1em;
     font-weight: var(--font-weight-bold);
   }
 
@@ -92,7 +110,10 @@ $iphone-plus: 414px;
 
   &-content {
     color: var(--Card-content-color);
+    display: flex;
+    flex-direction: column;
     font-size: 1.1em;
+    gap: var(--Card-gap);
 
     p:last-child {
       margin-bottom: 0;

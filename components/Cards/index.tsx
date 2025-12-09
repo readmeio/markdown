@@ -8,23 +8,27 @@ interface CardProps
     href?: string;
     icon?: string;
     iconColor?: string;
+    kind?: 'card' | 'tile';
     target?: string;
     title?: string;
-  }> {}
+  }>{}
 
-export const Card = ({ badge,children, href, icon, iconColor, target, title }: CardProps) => {
+export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, target, title }: CardProps) => {
   const Tag = href ? 'a' : 'div';
-  return (
-    <Tag className="rm-Card" href={href} target={target}>
+
+    return (
+    <Tag className={`rm-Card rm-Card_${kind}`} href={href} target={target}>
       {icon && <i className={`rm-Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties}></i>}
-      {title && (
-        <div className="rm-Card-title">
-          {title}
-          {badge && <span className="rm-Card-badge">{badge}</span>}
-          {href && <i aria-hidden="true" className="rm-Card-arrow fa-regular fa-arrow-right" />}
+        <div className="rm-Card-content">
+          {title && (
+            <div className="rm-Card-title">
+              {title}
+              {badge && <span className="rm-Card-badge">{badge}</span>}
+              {href && <i aria-hidden="true" className="rm-Card-arrow fa-regular fa-arrow-right" />}
+            </div>
+          )}
+          {children}
         </div>
-      )}
-      <div className="rm-Card-content">{children}</div>
     </Tag>
   );
 };
