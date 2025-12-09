@@ -18,7 +18,7 @@ export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, ta
 
   return (
     <Tag className={`rm-Card rm-Card_${kind}`} href={href} target={target}>
-      {icon && <i className={`rm-Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties}></i>}
+      {icon && <i className={`rm-Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties} />}
       <div className="rm-Card-content">
         {title && (
           <div className="rm-Card-title">
@@ -33,12 +33,12 @@ export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, ta
   );
 };
 
-interface CardsGridProps extends React.PropsWithChildren<{ columns?: number | string, minWidth?: string }> {}
+interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string, columns?: number | string }> {}
 
-const CardsGrid = ({ columns = 'auto-fit', children, minWidth = '150px' }: CardsGridProps) => {
+const CardsGrid = ({ cardWidth = '150px', columns = 'auto-fit', children }: CardsGridProps) => {
 
   return (
-    <div className="rm-CardsGrid" style={{ '--CardsGrid-columns': columns, '--CardsGrid-minWidth': minWidth } as React.CSSProperties}>
+    <div className="rm-CardsGrid" style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}>
       {children}
     </div>
   );
