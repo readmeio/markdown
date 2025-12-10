@@ -299,6 +299,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         return mapped;
       }, [] as string[][]);
 
+      // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
       const tokenizeCell = compatibilityMode ? textToBlock : parseInline;
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
