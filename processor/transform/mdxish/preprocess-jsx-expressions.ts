@@ -2,8 +2,20 @@
  * Pre-processes JSX-like expressions before markdown parsing.
  * Converts href={'value'} to href="value", evaluates {expressions}, etc.
  */
-
 export type JSXContext = Record<string, unknown>;
+
+// Common operations that might be used in JSX expressions
+// These are not exhaustive, but are a good starting point
+// We probably want to just use a library that'll load most of the common operations for us
+export const DEFAULT_JSX_CONTEXT: JSXContext = {
+  uppercase: (value: string) => value.toUpperCase(),
+  lowercase: (value: string) => value.toLowerCase(),
+
+  add: (a: number, b: number) => a + b,
+  subtract: (a: number, b: number) => a - b,
+  multiply: (a: number, b: number) => a * b,
+  divide: (a: number, b: number) => a / b,
+};
 
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {

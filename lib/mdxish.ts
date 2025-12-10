@@ -24,7 +24,7 @@ import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-componen
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
-import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
+import { preprocessJSXExpressions, type JSXContext, DEFAULT_JSX_CONTEXT } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -46,7 +46,7 @@ const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTran
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
+  const { components: userComponents = {}, jsxContext = DEFAULT_JSX_CONTEXT, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
