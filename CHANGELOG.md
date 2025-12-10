@@ -1,6 +1,25 @@
 Changelog
 ===
 
+## Version 11.8.2
+### 🛠 Fixes & Updates
+
+* correctly restore parse magic blocks in mdxish by updating normalisation regex ([#1252](https://github.com/readmeio/markdown/issues/1252)) ([8e9eeef](https://github.com/readmeio/markdown/commit/8e9eeef91e55884d55d521e9693cc79ee35953f5))
+
+## Version 11.8.1
+### 🛠 Fixes & Updates
+
+* downgrade `mdast-util-mdx-expression` ([#1251](https://github.com/readmeio/markdown/issues/1251)) ([280eed2](https://github.com/readmeio/markdown/commit/280eed241df06858a02e094e34bdb36b50af6788))
+
+## Version 11.8.0
+### ✨ New & Improved
+
+* **mdxish:** add new MDXish engine ([#1243](https://github.com/readmeio/markdown/issues/1243)) ([9e8f85f](https://github.com/readmeio/markdown/commit/9e8f85f0b2c014de5b779a477e7334f8adb55760)), closes [/github.com/readmeio/markdown/pull/1243#discussion_r2587081529](https://github.com/readmeio//github.com/readmeio/markdown/pull/1243/issues/discussion_r2587081529)
+
+### 🛠 Fixes & Updates
+
+* **stripComments:** preserve tabbed code blocks ([#1250](https://github.com/readmeio/markdown/issues/1250)) ([64e58ce](https://github.com/readmeio/markdown/commit/64e58ce29018b9163c473d8cbb7410242157cbe4))
+
 ## Version 11.7.7
 ### 🛠 Fixes & Updates
 
