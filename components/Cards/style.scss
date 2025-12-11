@@ -9,7 +9,7 @@ $iphone-plus: 414px;
 
   display: grid;
   gap: var(--CardsGrid-gap);
-  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-minWidth), 1fr));
+  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
 }
 
 .rm-Card {
@@ -82,7 +82,7 @@ $iphone-plus: 414px;
   }
 
   &-title {
-    align-items: center;
+    align-items: flex-start;
     color: var(--Card-title-color);
     display: flex;
     gap: 0.5em;
@@ -97,11 +97,15 @@ $iphone-plus: 414px;
     font-size: 0.6em;
     padding: 0 0.5em;
     display: inline-flex;
+    position: relative;
+    top: 0.5em;
   }
 
   &-arrow {
     font-size: 0.8em;
     opacity: var(--Card-href-arrow-opacity);
+    position: relative;
+    top: 0.375em;
     transition:
       opacity var(--transition-timing) var(--transition-fast),
       transform var(--transition-timing) var(--transition-fast);
