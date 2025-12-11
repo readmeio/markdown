@@ -49,7 +49,7 @@ const htmlBlockHandler: Handler = (_state, node) => {
   };
 };
 
-// Convert custom embed blocks correctly
+// Convert embed magic blocks to Embed components
 const embedHandler: Handler = (state, node) => {
   const { data } = node as { data?: { hName?: string; hProperties?: Properties } };
 

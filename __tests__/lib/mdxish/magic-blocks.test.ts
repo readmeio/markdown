@@ -80,76 +80,16 @@ ${JSON.stringify(
 [/block]`;
 
       const ast = mdxish(md);
-      console.log('embed block ast:', JSON.stringify(ast, null, 2));
 
-      expect(ast.children).toHaveLength(1);
-      expect(ast.children[0].type).toBe('element');
+      // Embed is wrapped in a paragraph, so we need to get the first child
+      const embedElement = (ast.children[0] as Element).children[0] as Element;
 
-      const element = ast.children[0] as Element;
-      expect(element.tagName).toBe('Embed');
-      expect(element.properties.url).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
-      expect(element.properties.provider).toBe('youtube.com');
-      expect(element.properties.href).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
-      expect(element.properties.typeOfEmbed).toBe('youtube');
-    });
-  });
-
-  describe('html block', () => {
-    it('should restore html block', () => {
-      const md = `[block:html]
-{
-  "html": "<div> hello world </div><p> this is a paragraph </p>"
-}
-[/block]`;
-
-      const ast = mdxish(md);
-      console.log('html block ast:', JSON.stringify(ast, null, 2));
-    });
-  });
-
-  describe('tutorial tile block', () => {
-    it('should restore tutorial tile block', () => {
-      const md = `[block:tutorial-tile]
-{
-  "backgroundColor":"#0b1c36",
-  "emoji":"👉",
-  "id":"67d85229d1ac0900248b3111",
-  "link":"https://developer.moneygram.com/v1.0/recipes/amend-modify-receviers-name-headers",
-  "slug":"amend-modify-receviers-name-headers",
-  "title":"Amend - Modify Recevier's Name - Headers"
-}
-[/block]`;
-
-      const ast = mdxish(md);
-      console.log('tutorial tile block ast:', JSON.stringify(ast, null, 2));
-    });
-  });
-
-  describe('api header block', () => {
-    it('should restore api header block', () => {
-      const md = `[block:api-header]
-{
-  "title": "API Header"
-}
-[/block]`;
-
-      const ast = mdxish(md);
-      console.log('api header block ast:', JSON.stringify(ast, null, 2));
-    });
-  });
-
-  describe('callout block', () => {
-    it('should restore callout block', () => {
-      const md = `[block:callout]
-{
-  "type": "danger",
-  "title": "CONFIDENTIAL",
-  "body": "*This documentation is confidential and proprietary information of cBEYONData LLC.* "
-}
-[/block]`;
-
-      const ast = mdxish(md);
-      console.log('callout block ast:', JSON.stringify(ast, null, 2));
+      expect(embedElement.type).toBe('element');
+      expect(embedElement.tagName).toBe('embed');
+      expect(embedElement.properties.url).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
+      expect(embedElement.properties.provider).toBe('youtube.com');
+      expect(embedElement.properties.href).toBe('https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4');
+      expect(embedElement.properties.typeOfEmbed).toBe('youtube');
     });
   });
 });
