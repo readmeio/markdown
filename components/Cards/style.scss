@@ -5,7 +5,7 @@ $iphone-plus: 414px;
 .rm-CardsGrid {
   --CardsGrid-gap: 1.5em;
   --CardsGrid-columns: auto-fit;
-  --CardsGrid-cardWidth: 200px;
+  --CardsGrid-cardWidth: auto;
 
   display: grid;
   gap: var(--CardsGrid-gap);

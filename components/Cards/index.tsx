@@ -35,7 +35,7 @@ export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, ta
 
 interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string, columns?: number | string }> {}
 
-const CardsGrid = ({ cardWidth = '150px', columns = 'auto-fit', children }: CardsGridProps) => {
+const CardsGrid = ({ cardWidth = '200px', columns = 'auto-fit', children }: CardsGridProps) => {
 
   return (
     <div className="rm-CardsGrid" style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}>
