@@ -46,16 +46,26 @@ const isCalloutStructure = (node: Blockquote): boolean => {
   return firstTextChild?.type === 'text';
 };
 
-const calloutTransformer = () => {
+const calloutTransformer = ({ format }: { format?: string } = {}) => {
   return (tree: Root) => {
     visit(tree, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
       if (!isCalloutStructure(node)) {
+        const content = extractText(node);
+        const isEmpty = !content || content.trim() === '';
+
+        // For 'mdx' format (or undefined): leave empty blockquotes as-is (can be rendered as empty callout)
+        // For 'md' format: always replace non-callout blockquotes with stringified content
+        if (format !== 'md' && isEmpty) {
+          return; // Leave empty blockquote unchanged for mdx format
+        }
+
         // Replace blockquote with a paragraph containing its stringified content
+        // For empty blockquotes in 'md' format, use '>' as the content
         if (index !== undefined && parent) {
-          const content = extractText(node) || '>';
+          const textValue = isEmpty && format === 'md' ? '>' : content;
           const textNode: Text = {
             type: 'text',
-            value: content,
+            value: textValue,
           };
           const paragraphNode: Paragraph = {
             type: 'paragraph',
