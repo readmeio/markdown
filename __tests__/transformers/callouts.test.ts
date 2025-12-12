@@ -1,6 +1,7 @@
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
+import calloutTransformer from '../../processor/transform/callouts';
 
 describe('callouts transformer', () => {
   it('can parse callouts', () => {
@@ -242,5 +243,55 @@ describe('callouts transformer', () => {
     const tree = mdast(md);
 
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'okay');
+  });
+
+  describe('format-specific behavior for empty blockquotes', () => {
+    it('with format "mdx" (or undefined) - leaves empty blockquote as-is', () => {
+      const md = '>';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer({ format: 'mdx' });
+      transformer(tree);
+
+      // Empty blockquote should remain as blockquote when format is 'mdx'
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
+    });
+
+    it('with format undefined - leaves empty blockquote as-is', () => {
+      const md = '>';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Empty blockquote should remain as blockquote when format is undefined
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
+    });
+
+    it('with format "md" - replaces empty blockquote with paragraph containing stringified content', () => {
+      const md = '>';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer({ format: 'md' });
+      transformer(tree);
+
+      // Empty blockquote should be replaced with paragraph when format is 'md'
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(false);
+
+      // Should have a paragraph with '>' as content
+      const hasParagraph = tree.children.some(
+        child =>
+          child.type === 'paragraph' &&
+          'children' in child &&
+          child.children.some(
+            (c: unknown) =>
+              c && typeof c === 'object' && 'type' in c && c.type === 'text' && 'value' in c && c.value === '>',
+          ),
+      );
+      expect(hasParagraph).toBe(true);
+    });
   });
 });
