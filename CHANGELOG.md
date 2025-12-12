@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.9.1
+### 🛠 Fixes & Updates
+
+* **release:** add write perms ([#1265](https://github.com/readmeio/markdown/issues/1265)) ([1e491ae](https://github.com/readmeio/markdown/commit/1e491aeb03b5f825e1c476516e8243f0e20499b8))
+
 ## Version 11.9.0
 ### ✨ New & Improved
 
