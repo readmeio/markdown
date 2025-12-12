@@ -1,7 +1,9 @@
 ---
-title: "Images"
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Images
+category:
+  uri: uri-that-does-not-map-to-5fdf7610134322007389a6ed
+privacy:
+  view: public
 ---
 ## Syntax
 ```
