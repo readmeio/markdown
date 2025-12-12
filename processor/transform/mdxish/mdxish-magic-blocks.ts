@@ -357,6 +357,30 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
+ * Check if a node is a block-level node (cannot be inside a paragraph)
+ */
+const isBlockNode = (node: RootContent): boolean => {
+  const blockTypes = [
+    'heading',
+    'code',
+    'code-tabs',
+    'paragraph',
+    'blockquote',
+    'list',
+    'table',
+    'thematicBreak',
+    'html',
+    'yaml',
+    'toml',
+    'rdme-pin',
+    'rdme-callout',
+    'html-block',
+    'embed',
+  ];
+  return blockTypes.includes(node.type);
+};
+
+/**
  * Unified plugin that restores magic blocks from placeholder tokens.
  *
  * During preprocessing, extractMagicBlocks replaces [block:TYPE]...[/block]
@@ -371,7 +395,17 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     // Map: key → original raw magic block content
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
-    // Find inlineCode nodes that match our placeholder tokens
+    // Collect replacements to apply (we need to visit in reverse to maintain indices)
+    const replacements: {
+      after: RootContent[];
+      before: RootContent[];
+      blockNodes: RootContent[];
+      index: number;
+      inlineNodes: RootContent[];
+      parent: Parent;
+    }[] = [];
+
+    // First pass: collect all replacements
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
       const raw = magicBlockKeys.get(node.value);
@@ -381,8 +415,75 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
-      parent.children.splice(index, 1, ...children);
+      // If parent is a paragraph and we're inserting code-tabs (which must not be in paragraphs), lift them out
+      if (parent.type === 'paragraph' && children.some(child => child.type === 'code-tabs')) {
+        const blockNodes: RootContent[] = [];
+        const inlineNodes: RootContent[] = [];
+
+        // Separate block and inline nodes
+        children.forEach(child => {
+          if (isBlockNode(child)) {
+            blockNodes.push(child);
+          } else {
+            inlineNodes.push(child);
+          }
+        });
+
+        const before = parent.children.slice(0, index);
+        const after = parent.children.slice(index + 1);
+
+        replacements.push({
+          parent,
+          index,
+          blockNodes,
+          inlineNodes,
+          before,
+          after,
+        });
+      } else {
+        // Normal case: just replace the inlineCode with the children
+        parent.children.splice(index, 1, ...children);
+      }
     });
+
+    // Second pass: apply replacements that require lifting block nodes out of paragraphs
+    // Process in reverse order to maintain correct indices
+    for (let i = replacements.length - 1; i >= 0; i -= 1) {
+      const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
+
+      // Find the paragraph's position in the root
+      const rootChildren = (tree as unknown as { children: RootContent[] }).children;
+      const paraIndex = rootChildren.indexOf(parent as never);
+      if (paraIndex === -1) {
+        // Paragraph not found in root - fall back to normal replacement
+        // This shouldn't happen normally, but handle it gracefully
+        // Reconstruct the original index from before.length
+        const originalIndex = before.length;
+        parent.children.splice(originalIndex, 1, ...blockNodes, ...inlineNodes);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // Update or remove the paragraph
+      if (inlineNodes.length > 0) {
+        // Keep paragraph with inline nodes
+        parent.children = [...before, ...inlineNodes, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      } else if (before.length === 0 && after.length === 0) {
+        // Remove empty paragraph and replace with block nodes
+        rootChildren.splice(paraIndex, 1, ...blockNodes);
+      } else {
+        // Keep paragraph with remaining content
+        parent.children = [...before, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      }
+    }
   };
 
 export default magicBlockRestorer;
