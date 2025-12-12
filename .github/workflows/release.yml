@@ -5,6 +5,10 @@ on:
       - main
       - beta
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   Release:
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
@@ -23,7 +27,7 @@ jobs:
           node-version: 20
 
       - name: Update npm
-        run: npm i -g npm@10
+        run: npm i -g npm@latest
 
       - name: Install dependencies
         run: |
@@ -38,7 +42,6 @@ jobs:
         run: npm run release # configured in .releaserc
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN || secrets.GH_TOKEN }} # auth publish to registry
 
       # Push release changes to the remote.
       #
