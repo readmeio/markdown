@@ -45,6 +45,7 @@ const isTextOnly = (children: unknown[]): boolean => {
 
 /**
  * Extract text content from children nodes
+ * This helper function is different from the one in `processor/utils/extract-text.ts` because this works with an array of children nodes.
  */
 const extractText = (children: unknown[]): string => {
   return children
