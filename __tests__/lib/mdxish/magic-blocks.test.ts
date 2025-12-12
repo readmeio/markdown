@@ -66,5 +66,119 @@ ${JSON.stringify(
       expect((element.children[0] as Element).tagName).toBe('thead');
       expect((element.children[1] as Element).tagName).toBe('tbody');
     });
-  })
+  });
+
+  describe('code block', () => {
+    it('should create code-tabs for multiple code blocks', () => {
+      const md = `[block:code]
+{
+  "codes": [
+    {
+      "code": "echo 'Hello World'",
+      "language": "bash"
+    },
+    {
+      "code": "print('Hello World')",
+      "language": "python"
+    }
+  ]
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      // Find the code-tabs element
+      const codeTabsElement = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'CodeTabs',
+      ) as Element;
+
+      expect(codeTabsElement).toBeDefined();
+      expect(codeTabsElement.tagName).toBe('CodeTabs');
+    });
+
+    it('should not wrap code-tabs in paragraph tags', () => {
+      const md = `Some text before
+
+[block:code]
+{
+  "codes": [
+    {
+      "code": "echo 'Hello World'",
+      "language": "bash"
+    },
+    {
+      "code": "print('Hello World')",
+      "language": "python"
+    }
+  ]
+}
+[/block]
+
+Some text after`;
+
+      const ast = mdxish(md);
+
+      // Find the code-tabs element
+      const codeTabsElement = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'CodeTabs',
+      ) as Element;
+
+      expect(codeTabsElement).toBeDefined();
+      expect(codeTabsElement.tagName).toBe('CodeTabs');
+
+      // Verify code-tabs is NOT inside a paragraph
+      // Check all paragraph elements to ensure none contain CodeTabs
+      const paragraphs = ast.children.filter(
+        child => child.type === 'element' && (child as Element).tagName === 'p',
+      ) as Element[];
+
+      paragraphs.forEach(paragraph => {
+        const hasCodeTabs = paragraph.children.some(
+          child => child.type === 'element' && (child as Element).tagName === 'CodeTabs',
+        );
+        expect(hasCodeTabs).toBe(false);
+      });
+
+      // Verify code-tabs is at the root level (not nested in a paragraph)
+      expect(ast.children).toContain(codeTabsElement);
+    });
+
+    it('should lift code-tabs out of paragraphs when inserted mid-paragraph', () => {
+      const md = `Before text [block:code]
+{
+  "codes": [
+    {
+      "code": "echo 'First command'",
+      "language": "bash"
+    },
+    {
+      "code": "echo 'Second command'",
+      "language": "bash"
+    }
+  ]
+}
+[/block] after text`;
+
+      const ast = mdxish(md);
+
+      // Find the code-tabs element
+      const codeTabsElement = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'CodeTabs',
+      ) as Element;
+
+      expect(codeTabsElement).toBeDefined();
+
+      // Verify code-tabs is at root level, not inside a paragraph
+      const paragraphs = ast.children.filter(
+        child => child.type === 'element' && (child as Element).tagName === 'p',
+      ) as Element[];
+
+      paragraphs.forEach(paragraph => {
+        const hasCodeTabs = paragraph.children.some(
+          child => child.type === 'element' && (child as Element).tagName === 'CodeTabs',
+        );
+        expect(hasCodeTabs).toBe(false);
+      });
+    });
+  });
 });
