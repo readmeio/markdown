@@ -16,7 +16,7 @@ interface Props {
 const CodeTabs = (props: Props) => {
   const { children } = props;
   const theme = useContext(ThemeContext);
-  const hasMermaid = !Array.isArray(children) && children.props?.children.props.lang === 'mermaid';
+  const hasMermaid = !Array.isArray(children) && children?.props?.children?.props?.lang === 'mermaid';
 
   // render Mermaid diagram
   useEffect(() => {
@@ -48,7 +48,7 @@ const CodeTabs = (props: Props) => {
 
   // render single Mermaid diagram
   if (hasMermaid) {
-    const value = children.props.children.props.value;
+    const value = children?.props?.children?.props?.value;
     return <pre className="mermaid-render mermaid_single">{value}</pre>;
   }
 
@@ -57,9 +57,9 @@ const CodeTabs = (props: Props) => {
       <div className="CodeTabs-toolbar">
         {(Array.isArray(children) ? children : [children]).map((pre, i) => {
           // the first or only child should be our Code component
-          const codeComponent = Array.isArray(pre.props?.children)
-            ? pre.props.children[0]
-            : pre.props?.children;
+          const preProps = pre?.props || {};
+          const preChildren = preProps.children;
+          const codeComponent = Array.isArray(preChildren) ? preChildren[0] : preChildren;
           const lang = codeComponent?.props?.lang;
           const meta = codeComponent?.props?.meta;
 
