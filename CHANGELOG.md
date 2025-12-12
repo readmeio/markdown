@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 11.9.0
+### ✨ New & Improved
+
+* card component ([#1254](https://github.com/readmeio/markdown/issues/1254)) ([b4f4095](https://github.com/readmeio/markdown/commit/b4f4095ba0495c316deccaba1e93e0e6b952fb6e))
+
+### 🛠 Fixes & Updates
+
+* update for new npm publishing procedure ([#1263](https://github.com/readmeio/markdown/issues/1263)) ([006b5d7](https://github.com/readmeio/markdown/commit/006b5d7b479211a18f8070d5cb1178d1fe7e7f9e))
+* upgrade semantic-release to support OIDC ([#1264](https://github.com/readmeio/markdown/issues/1264)) ([3ee4f8d](https://github.com/readmeio/markdown/commit/3ee4f8d60a118e80db023890c5a7b9817f558d08))
+
 ## Version 11.8.2
 ### 🛠 Fixes & Updates
 
