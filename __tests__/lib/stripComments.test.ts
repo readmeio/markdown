@@ -118,4 +118,35 @@ Second code block
     const output = await stripComments(input);
     expect(output).toBe(input.trim());
   });
+
+  it('does not escape special MD syntax', async () => {
+    const input = `
+#Heading
+
+**bold**
+**bold with space  **
+
+__emphasis__
+__emphasis with space  __
+`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "#Heading
+
+      **bold**
+      **bold with space  **
+
+      **emphasis**
+      __emphasis with space  __"
+    `);
+    await expect(stripComments(input, { mdx: true })).resolves.toMatchInlineSnapshot(`
+      "#Heading
+
+      **bold**
+      **bold with space  **
+
+      **emphasis**
+      __emphasis with space  __"
+    `);
+  });
 });

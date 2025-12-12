@@ -25,13 +25,25 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
     .use(
       remarkStringify,
       mdx
-        ? {}
+        ? {
+            handlers: {
+              text(node, _, state, info) {
+                // Don't escape special markdown characters like #, *, or _.
+                if (/[#*_]/.test(node.value)) return node.value;
+
+                return state.safe(node.value, info);
+              },
+            },
+          }
         : {
             handlers: {
               // Preserve <<...>> variables without escaping any angle brackets.
               text(node, _, state, info) {
                 // If text contains <<...>> pattern, return as is.
                 if (new RegExp(VARIABLE_REGEXP).test(node.value)) return node.value;
+
+                // Don't escape special markdown characters like #, *, or _.
+                if (/[#*_]/.test(node.value)) return node.value;
 
                 // Otherwise, handle each text node normally.
                 return state.safe(node.value, info);
@@ -42,7 +54,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
               // Our markdown renderer uses this to group these code blocks into a tabbed interface.
               (left, right) => {
                 // 0 = no newline between blocks
-                return  (left.type === 'code' && right.type === 'code') ? 0 : undefined;
+                return left.type === 'code' && right.type === 'code' ? 0 : undefined;
               },
             ],
           },
