@@ -40,8 +40,8 @@ $iphone-plus: 414px;
   text-decoration: none;
 
   &_card {
-    --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
-    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
+    --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0);
+    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.025);
     --Card-border-color: var(--color-border-default);
     --Card-layout: column;
     --Card-padding: 1.5em;
@@ -75,7 +75,7 @@ $iphone-plus: 414px;
 
   &-icon {
     color: var(--Card-icon-color);
-    font-size: 1.5em;
+    font-size: 1.4em;
     margin-bottom: 0.5em;
     opacity: var(--Card-icon-opacity);
     transition: opacity var(--transition-timing) var(--transition-fast);
@@ -116,7 +116,7 @@ $iphone-plus: 414px;
     color: var(--Card-content-color);
     display: flex;
     flex-direction: column;
-    font-size: 1.1em;
+    font-size: 1em;
     gap: var(--Card-gap);
 
     p:last-child {
