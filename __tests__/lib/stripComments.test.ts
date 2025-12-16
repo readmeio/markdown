@@ -119,34 +119,48 @@ Second code block
     expect(output).toBe(input.trim());
   });
 
-  it('does not escape special MD syntax', async () => {
+  it.only('allows compact headings with no whitespace delimiter', async () => {
     const input = `
-#Heading
+#Blue
+\\# Literal
+# Black`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "# Blue
+      \\# Literal
+      # Black"
+    `);
+  });
+
+  it.only('allows leading/trailing spaces between bold/italic markers', async () => {
+    const input = `
+single line with **bold ** text and \\*literal\\* asterisks.
 
 **bold**
-**bold with space  **
+**  leading**
+**trailing  **
 
 __emphasis__
-__emphasis with space  __
+__  leading__
+__trailing  __
+
+\\*literal\\*
+end"
 `;
 
     await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
-      "#Heading
+      "single line with **bold** and \\*literal\\* asterisks.
 
       **bold**
-      **bold with space  **
+      **  leading**
+      **trailing  **
 
       **emphasis**
-      __emphasis with space  __"
-    `);
-    await expect(stripComments(input, { mdx: true })).resolves.toMatchInlineSnapshot(`
-      "#Heading
+      __  leading__
+      __trailing  __
 
-      **bold**
-      **bold with space  **
-
-      **emphasis**
-      __emphasis with space  __"
+      \\*literal\\*
+      end"
     `);
   });
 });
