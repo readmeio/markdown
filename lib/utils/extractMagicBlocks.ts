@@ -44,8 +44,18 @@ export function extractMagicBlocks(markdown: string) {
 /**
  * Restore extracted magic blocks back into a markdown string.
  */
-export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {
+export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {  
+  let content = replaced;
+
+  // If a magic block is at the start of the document, the extraction token's prepended 
+  // newline will have been trimmed during processing. We need to account for that here
+  // to ensure the token is found and replaced correctly.
+  const isTokenAtStart = content.startsWith(blocks[0]?.token.trimStart());
+  if (isTokenAtStart) {
+    content = `\n${content}`;
+  }
+
   return blocks.reduce((acc, { token, raw }) => {
     return acc.split(token).join(raw);
-  }, replaced);
+  }, content);
 }
