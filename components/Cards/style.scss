@@ -41,10 +41,15 @@ $iphone-plus: 414px;
 
   &_card {
     --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0);
-    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.025);
+    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0);
     --Card-border-color: var(--color-border-default);
     --Card-layout: column;
     --Card-padding: 1.5em;
+
+    @include dark-mode {
+      --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
+      --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
+    }
   }
 
   &_tile {
