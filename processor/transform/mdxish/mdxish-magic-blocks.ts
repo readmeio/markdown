@@ -263,11 +263,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      // Parse title and body as markdown
       const titleBlocks = textToBlock(calloutJson.title || '');
       const bodyBlocks = textToBlock(calloutJson.body || '');
 
-      // Convert first title block to heading (h3) if it's a paragraph, matching calloutTransformer behavior
       const children: MdastNode[] = [];
       if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
         const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
@@ -417,7 +415,6 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const raw = magicBlockKeys.get(node.value);
       if (!raw) return;
 
-      // Parse the original magic block and replace the placeholder with the result
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
