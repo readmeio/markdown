@@ -9,6 +9,9 @@ import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
 
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../utils';
@@ -91,6 +94,9 @@ export interface ParseMagicBlockOptions {
   safeMode?: boolean;
 }
 
+/** Parses markdown in table cells */
+const cellParser = unified().use(remarkParse).use(remarkGfm);
+
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
  * Pinned blocks are displayed in a sidebar/floating position in the UI.
@@ -127,6 +133,16 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
+
+// Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
+const parseInline = (text: string): MdastNode[] => {
+  if (!text.trim()) return [{ type: 'text', value: '' }];
+  const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
+  return tree.children.flatMap(n =>
+    // This unwraps the extra p node that might appear & wrapping the content
+    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+  );
+};
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -296,7 +312,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       }, [] as string[][]);
 
       // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
-      const tokenizeCell = compatibilityMode ? textToBlock : textToInline;
+      const tokenizeCell = compatibilityMode ? textToBlock : parseInline;
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
