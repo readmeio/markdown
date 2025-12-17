@@ -66,5 +66,82 @@ ${JSON.stringify(
       expect((element.children[0] as Element).tagName).toBe('thead');
       expect((element.children[1] as Element).tagName).toBe('tbody');
     });
-  })
+
+    it('should convert html content inside table cells as nodes in the ast', () => {
+      const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header 0',
+      'h-1': 'Header 1',
+      '0-0': '<h1>this should be a h1 element node</h1>',
+      '0-1': '<strong>this should be a strong element node</strong>',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      // Some extra children are added to the AST by the mdxish wrapper
+      expect(ast.children).toHaveLength(4);
+
+      // Table is the 3rd child
+      const element = ast.children[2] as Element;
+      expect(element.tagName).toBe('table');
+      expect(element.children).toHaveLength(2);
+      expect((element.children[1] as Element).tagName).toBe('tbody');
+
+      // Check that HTML in cells is parsed as element nodes
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell0 = row.children[0] as Element;
+      const cell1 = row.children[1] as Element;
+
+      expect((cell0.children[0] as Element).tagName).toBe('h1');
+      expect((cell1.children[0] as Element).tagName).toBe('strong');
+    });
+
+    it('should restore markdown content inside table cells', () => {
+      const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header 0',
+      'h-1': 'Header 1',
+      '0-0': '**Bold**',
+      '0-1': '*Italic*',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      // Some extra children are added to the AST by the mdxish wrapper
+      expect(ast.children).toHaveLength(4);
+
+      // Table is the 3rd child
+      const element = ast.children[2] as Element;
+      expect(element.tagName).toBe('table');
+      expect(element.children).toHaveLength(2);
+      expect((element.children[1] as Element).tagName).toBe('tbody');
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell0 = row.children[0] as Element;
+      const cell1 = row.children[1] as Element;
+
+      expect((cell0.children[0] as Element).tagName).toBe('strong');
+      expect((cell1.children[0] as Element).tagName).toBe('em');
+    });
+  });
 });
