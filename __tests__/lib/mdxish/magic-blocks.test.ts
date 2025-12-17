@@ -22,6 +22,9 @@ describe('mdxish magic blocks', () => {
 [/block]`;
 
       const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
       const imgElement = ast.children[0] as Element;
       expect(imgElement.tagName).toBe('img');
       expect(imgElement.properties.src).toBe('https://files.readme.io/327e65d-image.png');
@@ -52,7 +55,11 @@ ${JSON.stringify(
 [/block]`;
 
       const ast = mdxish(md);
+
       // Some extra children are added to the AST by the mdxish wrapper
+      expect(ast.children).toHaveLength(4);
+      expect(ast.children[2].type).toBe('element');
+
       const element = ast.children[2] as Element;
       expect(element.tagName).toBe('table');
       expect(element.children).toHaveLength(2);
