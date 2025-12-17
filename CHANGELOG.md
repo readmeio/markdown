@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.9.4
+### 🛠 Fixes & Updates
+
+* **sanitizeComments:** handle magic block on the first line of document ([#1276](https://github.com/readmeio/markdown/issues/1276)) ([0a5ea94](https://github.com/readmeio/markdown/commit/0a5ea94c160524f510e74b01fa0804b6fbd92056))
+
 ## Version 11.9.3
 ### 🛠 Fixes & Updates
 
