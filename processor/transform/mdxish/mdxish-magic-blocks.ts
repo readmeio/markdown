@@ -372,6 +372,46 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
+    // We need to collect modifications first to avoid index issues during iteration
+    const modifications: {
+      children: RootContent[];
+      paragraphIndex: number;
+      parent: Parent;
+    }[] = [];
+
+    /**
+     * Check if a node is a flow (block-level) element that cannot be a child of a paragraph.
+     * Flow elements include: code, heading, image, figure, table, blockquote, list, html,
+     * mdxJsxFlowElement, and custom block types like rdme-callout, embed, html-block, etc.
+     * Note: In magic blocks, images are always block-level, even though MDAST allows inline images.
+     */
+    const isFlowElement = (node: RootContent): boolean => {
+      // Phrasing/inline element types that CAN be children of paragraphs
+      const phrasingTypes = new Set([
+        'text',
+        'emphasis',
+        'strong',
+        'delete',
+        'inlineCode',
+        'break',
+        'link',
+        'footnoteReference',
+        'mdxJsxTextElement',
+      ]);
+
+      // If it's not a phrasing element, it's a flow element
+      // Note: 'image' is not in phrasingTypes because magic block images are always block-level
+      return !phrasingTypes.has(node.type);
+    };
+
+    // First pass: collect all inlineCode nodes that need to be replaced
+    const inlineCodeReplacements: {
+      children: RootContent[];
+      index: number;
+      isFlowElement: boolean;
+      parent: Parent;
+    }[] = [];
+
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
       const raw = magicBlockKeys.get(node.value);
@@ -381,7 +421,83 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
-      parent.children.splice(index, 1, ...children);
+      // Check if the first child is a flow element (block-level element)
+      // Flow elements cannot be children of paragraphs, so we need to unwrap the paragraph
+      const isFlow = isFlowElement(children[0]);
+
+      inlineCodeReplacements.push({ children, index, isFlowElement: isFlow, parent });
+    });
+
+    // Second pass: replace paragraphs containing flow elements with the flow elements directly
+    inlineCodeReplacements.forEach(({ children, index, isFlowElement: isFlow, parent }) => {
+      if (!isFlow || parent.type !== 'paragraph') {
+        parent.children.splice(index, 1, ...children);
+        return;
+      }
+
+      let paragraphParent: Parent | undefined;
+      visit(tree, 'paragraph', (p, pIndex, pParent) => {
+        if (p === parent && pParent && 'children' in pParent) {
+          paragraphParent = pParent as Parent;
+          return false;
+        }
+        return undefined;
+      });
+
+      if (!paragraphParent) return;
+
+      const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
+      if (paragraphIndex === -1) return;
+
+      if (paragraphParent.type === 'listItem') {
+        modifications.push({ children, paragraphIndex, parent: paragraphParent });
+        return;
+      }
+
+      if (paragraphParent.type === 'root' && paragraphIndex > 0) {
+        const prevSibling = paragraphParent.children[paragraphIndex - 1];
+        if (prevSibling.type === 'list' && 'children' in prevSibling && Array.isArray(prevSibling.children)) {
+          const list = prevSibling as { children: RootContent[] };
+          if (list.children.length > 0) {
+            const lastListItem = list.children[list.children.length - 1];
+            if (lastListItem && 'children' in lastListItem && Array.isArray(lastListItem.children)) {
+              modifications.push({ children: [], paragraphIndex, parent: paragraphParent });
+              modifications.push({
+                children,
+                paragraphIndex: (lastListItem.children as RootContent[]).length,
+                parent: lastListItem as unknown as Parent,
+              });
+              return;
+            }
+          }
+        }
+      }
+
+      modifications.push({ children, paragraphIndex, parent: paragraphParent });
+    });
+
+    // Apply modifications (replacing paragraphs with flow elements)
+    // Separate modifications into appends (to list items) and replacements
+    const appends: typeof modifications = [];
+    const replacements: typeof modifications = [];
+
+    modifications.forEach(mod => {
+      // If we're appending to a list item (index equals length), use append logic
+      if (mod.parent.type === 'listItem' && mod.paragraphIndex === mod.parent.children.length) {
+        appends.push(mod);
+      } else {
+        replacements.push(mod);
+      }
+    });
+
+    // Apply appends first (they don't affect indices)
+    appends.forEach(({ children: modChildren, paragraphIndex, parent: modParent }) => {
+      modParent.children.splice(paragraphIndex, 0, ...modChildren);
+    });
+
+    // Then apply replacements in reverse order (bottom-up to avoid index shifting)
+    replacements.reverse().forEach(({ children: modChildren, paragraphIndex, parent: modParent }) => {
+      modParent.children.splice(paragraphIndex, 1, ...modChildren);
     });
   };
 
