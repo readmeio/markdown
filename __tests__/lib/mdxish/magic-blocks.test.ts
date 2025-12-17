@@ -144,4 +144,22 @@ ${JSON.stringify(
       expect((cell1.children[0] as Element).tagName).toBe('em');
     });
   });
+
+  describe('callout block', () => {
+    it('should restore callout block', () => {
+      const md = '[block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]';
+
+      const ast = mdxish(md);
+      console.log(JSON.stringify(ast, null, 2));
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
+      const calloutElement = ast.children[0] as Element;
+      expect(calloutElement.tagName).toBe('Callout');
+      expect(calloutElement.properties.type).toBe('info');
+      expect(calloutElement.properties.theme).toBe('info');
+      expect(calloutElement.properties.icon).toBe('📘');
+      expect(calloutElement.children).toHaveLength(2);
+    });
+  });
 });

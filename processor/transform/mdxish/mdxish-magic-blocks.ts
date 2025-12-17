@@ -6,12 +6,15 @@
  */
 import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+
+import { toAttributes } from '../../utils';
 
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
@@ -260,19 +263,38 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      return [
-        wrapPinnedBlocks(
-          {
-            children: [...textToBlock(calloutJson.title || ''), ...textToBlock(calloutJson.body || '')],
-            data: {
-              hName: 'rdme-callout',
-              hProperties: { icon, theme: theme || 'default', title: calloutJson.title, value: calloutJson.body },
-            },
-            type: 'rdme-callout',
-          },
-          json,
-        ),
-      ];
+      // Parse title and body as markdown
+      const titleBlocks = textToBlock(calloutJson.title || '');
+      const bodyBlocks = textToBlock(calloutJson.body || '');
+
+      // Convert first title block to heading (h3) if it's a paragraph, matching calloutTransformer behavior
+      const children: MdastNode[] = [];
+      if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
+        const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
+        const heading = {
+          type: 'heading',
+          depth: 3,
+          children: (firstTitle.children || []) as unknown[],
+        };
+        children.push(heading as unknown as MdastNode);
+        children.push(...titleBlocks.slice(1), ...bodyBlocks);
+      } else {
+        children.push(...titleBlocks, ...bodyBlocks);
+      }
+
+      // Create mdxJsxFlowElement directly for mdxish
+      const calloutElement: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+          'icon',
+          'theme',
+          'type',
+        ]),
+        children: children as MdxJsxFlowElement['children'],
+      };
+
+      return [wrapPinnedBlocks(calloutElement as unknown as MdastNode, json)];
     }
 
     // Parameters: renders as a table (used for API parameters, etc.)
@@ -388,6 +410,8 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
+    const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
+
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
       const raw = magicBlockKeys.get(node.value);
@@ -397,6 +421,35 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
+      // Check if first child is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
+      const needsUnwrapping = (child: RootContent): boolean => {
+        return child.type === 'mdxJsxFlowElement';
+      };
+
+      if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
+        // Find paragraph's parent and unwrap
+        let paragraphParent: Parent | undefined;
+        visit(tree, 'paragraph', (p, pIndex, pParent) => {
+          if (p === parent && pParent && 'children' in pParent) {
+            paragraphParent = pParent as Parent;
+            return false;
+          }
+          return undefined;
+        });
+
+        if (paragraphParent) {
+          const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
+          if (paragraphIndex !== -1) {
+            modifications.push({ children, index: paragraphIndex, parent: paragraphParent });
+          }
+        }
+      } else {
+        parent.children.splice(index, 1, ...children);
+      }
+    });
+
+    // Apply modifications in reverse order to avoid index shifting
+    modifications.reverse().forEach(({ children, index, parent }) => {
       parent.children.splice(index, 1, ...children);
     });
   };
