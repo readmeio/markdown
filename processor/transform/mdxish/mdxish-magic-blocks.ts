@@ -6,9 +6,12 @@
  */
 import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
+
+import { toAttributes } from '../../utils';
 
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
@@ -71,6 +74,15 @@ interface EmbedJson extends MagicBlockJson {
 
 interface HtmlJson extends MagicBlockJson {
   html: string;
+}
+
+interface RecipeJson extends MagicBlockJson {
+  backgroundColor?: string;
+  emoji?: string;
+  id?: string;
+  link?: string;
+  slug: string;
+  title: string;
 }
 
 export interface ParseMagicBlockOptions {
@@ -343,6 +355,27 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       ];
     }
 
+    // Recipe/TutorialTile: renders as Recipe component
+    case 'recipe':
+    case 'tutorial-tile': {
+      const recipeJson = json as RecipeJson;
+      if (!recipeJson.slug || !recipeJson.title) return [];
+
+      // Create mdxJsxFlowElement directly for mdxish flow
+      // Note: Don't wrap in pinned blocks for mdxish - rehypeMdxishComponents handles component resolution
+      // The node structure matches what mdxishComponentBlocks creates for JSX tags
+      const recipeNode: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Recipe',
+        attributes: toAttributes(recipeJson, ['slug', 'title']),
+        children: [],
+        // Position is optional but helps with debugging
+        position: undefined,
+      };
+
+      return [recipeNode as unknown as MdastNode];
+    }
+
     // Unknown block types: render as generic div with JSON properties
     default: {
       const text = (json as { html?: string; text?: string }).text || (json as { html?: string }).html || '';
@@ -372,6 +405,13 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
+    // We need to collect modifications first to avoid index issues during iteration
+    const modifications: {
+      children: RootContent[];
+      paragraphIndex: number;
+      parent: Parent;
+    }[] = [];
+
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
       const raw = magicBlockKeys.get(node.value);
@@ -381,7 +421,32 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
-      parent.children.splice(index, 1, ...children);
+      // Check if this is a Recipe component (recipe or tutorial-tile magic blocks)
+      const isRecipeComponent =
+        children[0].type === 'mdxJsxFlowElement' &&
+        'name' in children[0] &&
+        (children[0] as MdxJsxFlowElement).name === 'Recipe';
+
+      // Recipe components create mdxJsxFlowElement nodes that are flow (block-level) elements
+      // and cannot be children of paragraphs, so we need to unwrap the paragraph
+      if (isRecipeComponent && parent.type === 'paragraph') {
+        // Only use complex unwrapping logic for Recipe components
+        visit(tree, parent.type, (p, pIndex, pParent) => {
+          if (p === parent && pParent && typeof pIndex === 'number' && 'children' in pParent) {
+            modifications.push({ children, paragraphIndex: pIndex, parent: pParent as Parent });
+            return false;
+          }
+          return undefined;
+        });
+      } else {
+        // For all other magic blocks, use simple replacement
+        parent.children.splice(index, 1, ...children);
+      }
+    });
+
+    // Apply modifications (replacing paragraphs with flow elements)
+    modifications.reverse().forEach(({ children: modChildren, paragraphIndex, parent: modParent }) => {
+      modParent.children.splice(paragraphIndex, 1, ...modChildren);
     });
   };
 
