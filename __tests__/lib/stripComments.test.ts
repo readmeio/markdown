@@ -118,4 +118,49 @@ Second code block
     const output = await stripComments(input);
     expect(output).toBe(input.trim());
   });
+
+  it.only('allows compact headings with no whitespace delimiter', async () => {
+    const input = `
+#Blue
+\\# Literal
+# Black`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "# Blue
+      \\# Literal
+      # Black"
+    `);
+  });
+
+  it.only('allows leading/trailing spaces between bold/italic markers', async () => {
+    const input = `
+single line with **bold ** text and \\*literal\\* asterisks.
+
+**bold**
+**  leading**
+**trailing  **
+
+__emphasis__
+__  leading__
+__trailing  __
+
+\\*literal\\*
+end"
+`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "single line with **bold** and \\*literal\\* asterisks.
+
+      **bold**
+      **  leading**
+      **trailing  **
+
+      **emphasis**
+      __  leading__
+      __trailing  __
+
+      \\*literal\\*
+      end"
+    `);
+  });
 });
