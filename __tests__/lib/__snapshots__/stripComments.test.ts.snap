@@ -60,3 +60,15 @@ More text.
 
 Last text"
 `;
+
+exports[`removeComments > supports a magic block as the first line of the document 1`] = `
+"[block:html]
+{
+  "html": "<div>
+Hello
+</div>"
+}
+[/block]
+
+How are you?"
+`;
