@@ -8,6 +8,9 @@ import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
 import type { Plugin } from 'unified';
 
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 
 /**
@@ -115,6 +118,51 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
+
+// Processor for parsing HTML/markdown in parameters block cell content
+const parametersCellProcessor = unified().use(remarkParse).use(remarkGfm);
+
+/**
+ * Parse cell content in parameters blocks, handling HTML elements like <br> and <span>.
+ * Similar to how `mdxish-tables.ts` handles cell content parsing.
+ */
+const parseParametersCellContent = (text: string, compatibilityMode: boolean): MdastNode[] => {
+  if (!text || !text.trim()) {
+    return compatibilityMode
+      ? [{ children: [{ type: 'text', value: '' }], type: 'paragraph' }]
+      : [{ type: 'text', value: '' }];
+  }
+
+  try {
+    // Parse the text content through remarkParse and remarkGfm to handle HTML
+    const tree = parametersCellProcessor.runSync(parametersCellProcessor.parse(text)) as MdastRoot;
+    const parsedNodes = (tree.children || []) as MdastNode[];
+
+    if (parsedNodes.length === 0) {
+      return compatibilityMode ? [{ children: textToInline(text), type: 'paragraph' }] : textToInline(text);
+    }
+
+    if (compatibilityMode) {
+      // In compatibility mode, wrap in paragraphs if needed
+      return parsedNodes.map(node => {
+        if (node.type === 'paragraph') {
+          return node;
+        }
+        return { children: [node], type: 'paragraph' };
+      });
+    }
+
+    // In inline mode, flatten paragraphs to get inline content
+    return parsedNodes.flatMap(node => {
+      if (node.type === 'paragraph' && node.children) {
+        return node.children as MdastNode[];
+      }
+      return [node];
+    });
+  } catch {
+    return compatibilityMode ? [{ children: textToInline(text), type: 'paragraph' }] : textToInline(text);
+  }
+};
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -283,8 +331,8 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         return mapped;
       }, [] as string[][]);
 
-      // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
-      const tokenizeCell = compatibilityMode ? textToBlock : textToInline;
+      // Parse cell content with HTML support (only for parameters blocks)
+      const tokenizeCell = (cellText: string) => parseParametersCellContent(cellText, compatibilityMode);
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
@@ -359,7 +407,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 /**
  * Unified plugin that restores magic blocks from placeholder tokens.
  *
- * During preprocessing, extractMagicBlocks replaces [block:TYPE]...[/block]
+ * During preprocessing, `extractMagicBlocks` replaces [block:TYPE]...[/block]
  * with inline code tokens like `__MAGIC_BLOCK_0__`. This plugin finds those
  * tokens in the parsed MDAST and replaces them with the parsed block content.
  */
