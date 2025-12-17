@@ -162,35 +162,11 @@ ${JSON.stringify(
     });
 
     // TODO: unskip this test once embed magic blocks are supported
-    // see this PR: https://github.com/readmeio/markdown/pull/1258
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip('should restore embed block inside a list item', () => {
       const md = `- First item
 - [block:embed]{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ","title":"Video"}[/block]`;
 
       const ast = mdxish(md);
-
-      // Debug: log the structure
-      console.log(
-        'Embed Block AST:',
-        JSON.stringify(
-          ast.children.map(c => ({
-            type: c.type,
-            tagName: (c as Element).tagName,
-            children: (c as Element).children
-              ?.filter((ch): ch is Element => ch.type === 'element')
-              .map((ch: Element) => ({
-                type: ch.type,
-                tagName: ch.tagName,
-                children: ch.children
-                  ?.filter((gch): gch is Element => gch.type === 'element')
-                  .map((gch: Element) => ({ type: gch.type, tagName: gch.tagName })),
-              })),
-          })),
-          null,
-          2,
-        ),
-      );
 
       const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
       expect(listElement).toBeDefined();
