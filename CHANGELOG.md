@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.9.3
+### 🛠 Fixes & Updates
+
+* card styles ([#1271](https://github.com/readmeio/markdown/issues/1271)) ([700f9ef](https://github.com/readmeio/markdown/commit/700f9ef1e716c1497b9f12a384b9cb793334afc6))
+
 ## Version 11.9.2
 ### 🛠 Fixes & Updates
 
