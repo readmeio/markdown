@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.10.0
+### ✨ New & Improved
+
+* **mdxish:** support custom component tag extraction with mdxish syntax ([#1277](https://github.com/readmeio/markdown/issues/1277)) ([2974ccf](https://github.com/readmeio/markdown/commit/2974ccfb064da520cfad8dc93088a5e2cb9df31b))
+
 ## Version 11.9.4
 ### 🛠 Fixes & Updates
 
