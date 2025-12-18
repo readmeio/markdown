@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.10.1
+### 🛠 Fixes & Updates
+
+* cardssssssss ([#1278](https://github.com/readmeio/markdown/issues/1278)) ([2066a8e](https://github.com/readmeio/markdown/commit/2066a8e2652636ee03b5d7449ca0a13441c65910)), closes [#1254](https://github.com/readmeio/markdown/issues/1254)
+
 ## Version 11.10.0
 ### ✨ New & Improved
 
