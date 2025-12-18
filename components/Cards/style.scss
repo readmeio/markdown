@@ -2,7 +2,7 @@
 
 $iphone-plus: 414px;
 
-.rm-CardsGrid {
+.CardsGrid {
   --CardsGrid-gap: 1.5em;
   --CardsGrid-columns: auto-fit;
   --CardsGrid-cardWidth: auto;
@@ -12,7 +12,7 @@ $iphone-plus: 414px;
   grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
 }
 
-.rm-Card {
+.Card {
   $card: &;
 
   --Card-badge-bg-color: var(--yellow);
