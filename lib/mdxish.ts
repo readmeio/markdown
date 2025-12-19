@@ -33,11 +33,12 @@ import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
   components?: CustomComponents;
+  format?: string;
   jsxContext?: JSXContext;
   useTailwind?: boolean;
 }
 
-const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
+const defaultTransformers = [codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 /**
  * Process markdown content with MDX syntax support.
@@ -46,7 +47,7 @@ const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTran
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
+  const { components: userComponents = {}, jsxContext = {}, useTailwind, format } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -70,6 +71,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(remarkFrontmatter)
     .use(magicBlockRestorer, { blocks })
     .use(imageTransformer, { isMdxish: true })
+    .use(calloutTransformer, { format })
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(mdxishTables)

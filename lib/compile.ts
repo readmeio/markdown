@@ -26,7 +26,7 @@ export type CompileOpts = CompileOptions & {
   useTailwind?: boolean;
 };
 
-const { codeTabsTransformer, ...transforms } = defaultTransforms;
+const { codeTabsTransformer, calloutTransformer, ...transforms } = defaultTransforms;
 
 const sanitizeSchema = deepmerge(defaultSchema, {
   protocols: ['doc', 'ref', 'blog', 'changelog', 'page'],
@@ -39,6 +39,7 @@ const compile = (
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
+    [calloutTransformer, { format: opts.format }],
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
     [
