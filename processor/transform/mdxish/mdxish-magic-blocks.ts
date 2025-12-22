@@ -215,7 +215,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         data: {
           hProperties: {
             ...(imgData.align && { align: imgData.align }),
-            className: imgData.border ? 'border' : '',
+            ...(imgData.border && { border: imgData.border.toString() }),
             ...(imgData.sizing && { width: imgWidthBySize[imgData.sizing] }),
           },
         },
