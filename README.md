@@ -140,3 +140,25 @@ npm link && npm run watch
 ```
 npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 ```
+
+## Releases
+
+First, update `main` with what’s on `next`:
+
+```
+git switch next
+git pull
+git switch main
+git pull
+git merge --no-ff next
+git push
+```
+
+WAIT until the build is finished, then update `next`:
+
+```
+git pull
+git switch next
+git merge main
+git push
+```

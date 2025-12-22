@@ -3,64 +3,129 @@
 $iphone-plus: 414px;
 
 .CardsGrid {
-  --Card-bg-color: rgba(var(--color-bg-page-rgb, white), 1);
-  --Card-bg-color-hover: var(--color-bg-hover, #{rgba(black, 0.05)});
-  --Card-border-color: var(--color-border-default, rgba(black, 0.1));
-  --Card-shadow: 0 1px 2px #{rgba(black, 0.05)}, 0 2px 5px #{rgba(black, 0.02)};
-  --Card-content-color: var(--color-text-muted, #4f5a66);
-  --Card-icon-color: var(--project-color-primary, inherit);
-  --Card-title-color: var(--color-text-default, #384248);
-
-  @include dark-mode {
-    --Card-icon-color: var(--color-primary-inverse, inherit);
-  }
+  --CardsGrid-gap: 1.5em;
+  --CardsGrid-columns: auto-fit;
+  --CardsGrid-cardWidth: auto;
 
   display: grid;
-  gap: 20px;
+  gap: var(--CardsGrid-gap);
+  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
+}
 
-  .Card {
-    padding: 15px;
-    padding-bottom: 0;
-    background: var(--Card-bg-color);
-    border: 1px solid var(--Card-border-color);
-    border-radius: 5px;
-    box-shadow: var(--Card-shadow);
+.Card {
+  $card: &;
 
-    &-top {
-      display: inline-flex;
-      flex-direction: row;
-    }
+  --Card-badge-bg-color: var(--yellow);
+  --Card-badge-color: var(--yellow10);
+  --Card-content-color: var(--color-text-minimum);
+  --Card-gap: 0.25em;
+  --Card-href-arrow-opacity: 0;
+  --Card-href-arrow-transform: translateX(-5px);
+  --Card-icon-color: var(--color-text-default);
+  --Card-icon-opacity: 0.65;
+  --Card-icon-opacity-hover: 0.75;
+  --Card-line-height: 1.4;
+  --Card-shadow: none;
+  --Card-title-color: var(--color-text-default);
 
-    &-icon {
-      color: var(--Card-icon-color);
-      font-size: 20px;
-    }
+  background: var(--Card-bg-color);
+  border: 1px solid var(--Card-border-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--Card-shadow);
+  display: flex;
+  flex-direction: var(--Card-layout);
+  gap: var(--Card-gap);
+  line-height: var(--Card-line-height);
+  padding: var(--Card-padding);
+  text-decoration: none;
 
-    &-title {
-      color: var(--Card-title-color);
-      font-weight: 600;
-      margin-top: 10px;
+  &_card {
+    --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0);
+    --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0);
+    --Card-border-color: var(--color-border-default);
+    --Card-layout: column;
+    --Card-padding: 1.5em;
 
-      &:first-child {
-        margin-top: 0;
-      }
-    }
-
-    &-content {
-      color: var(--Card-content-color);
+    @include dark-mode {
+      --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
+      --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
     }
   }
 
-  a.Card:not([href='']) {
-    text-decoration: none;
-    color: inherit;
+  &_tile {
+    --Card-gap: 1em;
+    --Card-icon-opacity: 0.5;
+    --Card-layout: row;
 
-    &:hover {
+    #{$card}-content {
+      --Card-gap: 0;
+    }
+  }
+
+  // needs specificity to override the default link styles; while preserving logic for empty hrefs
+  &[href]:not([href='']) {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:active,
+    &:focus {
+      --Card-icon-opacity: var(--Card-icon-opacity-hover);
+      --Card-href-arrow-opacity: 0.75;
+      --Card-href-arrow-transform: none;
+
       background: var(--Card-bg-color-hover);
     }
   }
 
-  @media (max-width: $iphone-plus) {
-    grid-template-columns: 1fr !important;
+  &-icon {
+    color: var(--Card-icon-color);
+    font-size: 1.4em;
+    margin-bottom: 0.5em;
+    opacity: var(--Card-icon-opacity);
+    transition: opacity var(--transition-timing) var(--transition-fast);
+  }
+
+  &-title {
+    align-items: flex-start;
+    color: var(--Card-title-color);
+    display: flex;
+    gap: 0.5em;
+    font-weight: var(--font-weight-bold);
+  }
+
+  &-badge {
+    align-items: center;
+    background: var(--Card-badge-bg-color);
+    border-radius: 1em;
+    color: var(--Card-badge-color);
+    font-size: 0.6em;
+    padding: 0 0.5em;
+    display: inline-flex;
+    position: relative;
+    top: 0.5em;
+  }
+
+  &-arrow {
+    font-size: 0.8em;
+    opacity: var(--Card-href-arrow-opacity);
+    position: relative;
+    top: 0.375em;
+    transition:
+      opacity var(--transition-timing) var(--transition-fast),
+      transform var(--transition-timing) var(--transition-fast);
+    transform: var(--Card-href-arrow-transform);
+  }
+
+  &-content {
+    color: var(--Card-content-color);
+    display: flex;
+    flex-direction: column;
+    font-size: 1em;
+    gap: var(--Card-gap);
+
+    p:last-child {
+      margin-bottom: 0;
+    }
   }
 }
