@@ -118,4 +118,18 @@ Second code block
     const output = await stripComments(input);
     expect(output).toBe(input.trim());
   });
+
+  it('supports a magic block as the first line of the document', async () => {
+    const input = `[block:html]
+{
+  "html": "<div>\nHello\n</div>"
+}
+[/block]
+
+
+How are you?`;
+
+    const output = await stripComments(input);
+    expect(output).toMatchSnapshot();
+  });
 });
