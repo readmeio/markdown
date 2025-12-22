@@ -34,22 +34,9 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // Bold: ** text**, **text **, word** text**, ** text **
     // Italic: * text*, *text *, word* text*, * text *
     // Same patterns for underscore variants
+    const malformedRegex = /([^*_\s]+)?\s*(\*\*|__|\*|_)(?:\s+([^*_\n]+?)\s*\2|([^*_\n]+?)\s+\2)(\S|$)?/g;
 
-    // Combined regex to match all malformed bold and italic patterns
-    // We match bold first (longer patterns), then italic (shorter patterns)
-    // Pattern: ([^*_\s]+)?\s*(\*\*|__|\*|_)(?:\s+([^*_\n]+?)\s*\2|([^*_\n]+?)\s+\2)(\S|$)?
-    // - ([^*_\s]+)? - optional word before, excluding * and _ (capture group 1)
-    //   This ensures we don't match "Hello*" as a word when we have "Hello**"
-    // - \s* - optional whitespace before markers
-    // - (\*\*|__|\*|_) - opening markers: **, __, *, or _ (capture group 2, used as \2 for closing)
-    //   Note: Order matters - longer patterns (**, __) are matched before shorter ones (*, _)
-    // - (?:...) - alternation:
-    //   - \s+([^*_\n]+?)\s*\2 - space after opening, content, optional space before closing (group 3)
-    //   - OR ([^*_\n]+?)\s+\2 - content, space before closing (group 4)
-    // - (\S|$)? - optional non-whitespace after or end of string (capture group 5)
-    const malformedEmphasisRegex = /([^*_\s]+)?\s*(\*\*|__|\*|_)(?:\s+([^*_\n]+?)\s*\2|([^*_\n]+?)\s+\2)(\S|$)?/g;
-
-    const matches = [...text.matchAll(malformedEmphasisRegex)];
+    const matches = [...text.matchAll(malformedRegex)];
     if (matches.length === 0) return;
 
     const parts: (Emphasis | Strong | Text)[] = [];
@@ -59,7 +46,6 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       const matchIndex = match.index ?? 0;
       const fullMatch = match[0];
 
-      // Add text before the match
       if (matchIndex > lastIndex) {
         const beforeText = text.slice(lastIndex, matchIndex);
         if (beforeText) {
@@ -77,29 +63,19 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       // Determine if this is bold (double markers) or italic (single markers)
       const isBold = marker === '**' || marker === '__';
 
-      // Find position of opening markers
       const markerPos = fullMatch.indexOf(marker);
       const spacesBeforeMarkers = wordBefore
         ? fullMatch.slice(wordBefore.length, markerPos)
         : fullMatch.slice(0, markerPos);
 
-      // If there's a space after the opening markers (group 3), we should add a space before the word
-      // BUT only if there's actually a word before AND no spaces already exist before the markers
-      // If there's only a space before the closing markers (group 4), we should NOT add a space
-      // If spaces already exist before markers (like "Hello  **"), we should preserve them and NOT add another
       const shouldAddSpace = !!contentWithSpaceAfter && !!wordBefore && !spacesBeforeMarkers;
 
       if (wordBefore) {
-        // Preserve spacing before markers, and add space only if there was one after opening markers
-        // and no spaces already exist before the markers
         const spacing = spacesBeforeMarkers + (shouldAddSpace ? ' ' : '');
         parts.push({ type: 'text', value: wordBefore + spacing } satisfies Text);
       } else if (spacesBeforeMarkers) {
         parts.push({ type: 'text', value: spacesBeforeMarkers } satisfies Text);
       }
-      // Note: We don't add a space when there's no word before, even if there was a space after opening markers
-      // This matches the behavior where "** text **" or "* text *" should become just a strong/emphasis node, no leading space
-
       if (content) {
         if (isBold) {
           parts.push({
