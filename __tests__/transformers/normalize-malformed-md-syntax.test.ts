@@ -1,4 +1,4 @@
-import type { Code, Paragraph, Strong, Text } from 'mdast';
+import type { Code, Emphasis, Paragraph, Strong, Text } from 'mdast';
 
 import { remark } from 'remark';
 import remarkParse from 'remark-parse';
@@ -453,6 +453,222 @@ describe('normalize-malformed-md-syntax', () => {
       const helloText = textNodes.find(t => t.value.startsWith('Hello'));
       expect(helloText).toBeDefined();
       expect(helloText?.value).toBe('Hello');
+    });
+  });
+
+  describe('italic patterns with spaces (asterisk)', () => {
+    it('should handle space after opening * (with word before)', () => {
+      const md = 'Hello* Wrong Italic*';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello ' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'Wrong Italic' }],
+          },
+        ],
+      });
+    });
+
+    it('should preserve multiple spaces before opening *', () => {
+      const md = 'Hello  * World*';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello  ' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'World' }],
+          },
+        ],
+      });
+    });
+
+    it('should handle space before closing *', () => {
+      const md = '*text *word';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'text' }],
+          },
+          { type: 'text', value: ' w' },
+          { type: 'text', value: 'ord' },
+        ],
+      });
+    });
+
+    it('should handle spaces on both sides', () => {
+      const md = 'Before * text * after';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+      expect(emphasis).toStrictEqual({
+        type: 'emphasis',
+        children: [{ type: 'text', value: 'text' }],
+      });
+    });
+
+    it('should not add space when space is only before closing *', () => {
+      const md = 'Hello*italic *';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'italic' }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('italic patterns with spaces (underscore)', () => {
+    it('should handle space after opening _ (with word before)', () => {
+      const md = 'Hello_ Wrong Italic_';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello ' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'Wrong Italic' }],
+          },
+        ],
+      });
+    });
+
+    it('should preserve multiple spaces before opening _', () => {
+      const md = 'Hello  _ World_';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello  ' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'World' }],
+          },
+        ],
+      });
+    });
+
+    it('should handle space before closing _', () => {
+      const md = '_text _word';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'text' }],
+          },
+          { type: 'text', value: ' w' },
+          { type: 'text', value: 'ord' },
+        ],
+      });
+    });
+
+    it('should handle spaces on both sides', () => {
+      const md = 'Before _ text _ after';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+      expect(emphasis).toStrictEqual({
+        type: 'emphasis',
+        children: [{ type: 'text', value: 'text' }],
+      });
+    });
+
+    it('should not add space when space is only before closing _', () => {
+      const md = 'Hello_italic _';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello' },
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'italic' }],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('should not modify valid italic syntax', () => {
+    it('should leave *valid* italic untouched', () => {
+      const md = '*valid*';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'valid' }],
+          },
+        ],
+      });
+    });
+
+    it('should leave _valid_ italic untouched', () => {
+      const md = '_valid_';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'emphasis',
+            children: [{ type: 'text', value: 'valid' }],
+          },
+        ],
+      });
     });
   });
 });
