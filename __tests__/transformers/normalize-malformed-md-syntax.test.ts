@@ -1,4 +1,4 @@
-import type { Code, Paragraph, Strong } from 'mdast';
+import type { Code, Paragraph, Strong, Text } from 'mdast';
 
 import { remark } from 'remark';
 import remarkParse from 'remark-parse';
@@ -147,6 +147,141 @@ describe('normalize-malformed-md-syntax', () => {
     });
   });
 
+  describe('underscore bold patterns with spaces', () => {
+    it('should handle space after opening __ (with word before)', () => {
+      const md = 'Hello__ Wrong Bold__';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'Wrong Bold' }],
+          },
+        ],
+      });
+    });
+
+    it('should preserve multiple spaces before opening __', () => {
+      const md = 'Hello  __ World__';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello  ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'World' }],
+          },
+        ],
+      });
+    });
+
+    it('should handle space before closing __', () => {
+      const md = '__text __word';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'text' }],
+          },
+          { type: 'text', value: ' w' },
+          { type: 'text', value: 'ord' },
+        ],
+      });
+    });
+
+    it('should handle spaces on both sides', () => {
+      const md = '__ text __';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'text' }],
+          },
+        ],
+      });
+    });
+
+    it('should handle multiple malformed bold patterns in one text', () => {
+      const md = 'Start__ first__ middle__ second __end';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const children = paragraph.children;
+      const strongNodes = children.filter((c): c is Strong => c.type === 'strong');
+
+      expect(strongNodes).toHaveLength(2);
+      expect(strongNodes[0]).toStrictEqual({
+        type: 'strong',
+        children: [{ type: 'text', value: 'first' }],
+      });
+      expect(strongNodes[1]).toStrictEqual({
+        type: 'strong',
+        children: [{ type: 'text', value: 'second' }],
+      });
+    });
+
+    it('should handle case with word before and after', () => {
+      const md = 'Find__ Hello World__ and click';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Find ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'Hello World' }],
+          },
+          { type: 'text', value: ' and click' },
+        ],
+      });
+    });
+
+    it('should handle mixed ** and __ patterns', () => {
+      const md = 'Asterisk** first** Underscore__ second__';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const children = paragraph.children;
+      const strongNodes = children.filter((c): c is Strong => c.type === 'strong');
+
+      expect(strongNodes).toHaveLength(2);
+      expect(strongNodes[0]).toStrictEqual({
+        type: 'strong',
+        children: [{ type: 'text', value: 'first' }],
+      });
+      expect(strongNodes[1]).toStrictEqual({
+        type: 'strong',
+        children: [{ type: 'text', value: 'second' }],
+      });
+    });
+  });
+
   describe('should not modify valid bold syntax', () => {
     it('should leave **valid** bold untouched', () => {
       const md = '**valid**';
@@ -174,6 +309,33 @@ describe('normalize-malformed-md-syntax', () => {
       const children = paragraph.children;
       expect(children.length).toBeGreaterThanOrEqual(1);
     });
+
+    it('should leave __valid__ bold untouched', () => {
+      const md = '__valid__';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'valid' }],
+          },
+        ],
+      });
+    });
+
+    it('should leave word__valid__bold untouched', () => {
+      const md = 'word__valid__bold';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+
+      const paragraph = tree.children[0] as Paragraph;
+      const children = paragraph.children;
+      expect(children.length).toBeGreaterThanOrEqual(1);
+    });
   });
 
   describe('should skip code blocks and inline code', () => {
@@ -189,6 +351,23 @@ describe('normalize-malformed-md-syntax', () => {
           {
             type: 'inlineCode',
             value: '** bold**',
+          },
+        ],
+      });
+    });
+
+    it('should not modify malformed bold with __ inside inline code', () => {
+      const md = '`__ bold__`';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'inlineCode',
+            value: '__ bold__',
           },
         ],
       });
@@ -237,6 +416,43 @@ describe('normalize-malformed-md-syntax', () => {
         children: [{ type: 'text', value: 'Wrong Bold' }],
       });
       expect(paragraph.children.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should not add space when space is only before closing markers', () => {
+      const md = 'Hello**bold **';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Hello' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bold' }],
+          },
+        ],
+      });
+    });
+
+    it('should not add space for valid bold syntax', () => {
+      const md = 'Hello**bold**';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toStrictEqual({
+        type: 'strong',
+        children: [{ type: 'text', value: 'bold' }],
+      });
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      const helloText = textNodes.find(t => t.value.startsWith('Hello'));
+      expect(helloText).toBeDefined();
+      expect(helloText?.value).toBe('Hello');
     });
   });
 });
