@@ -4,12 +4,11 @@
 :root {
   // --markdown-radius: 3px;
   // --markdown-edge: #eee;
-  --markdown-text: inherit;
   --markdown-title: inherit;
-  --markdown-title-font: inherit;
-  --markdown-font: inherit;
-  --markdown-font-size: inherit;
-  --markdown-line-height: 1.5;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
 }
 
 .field-description,

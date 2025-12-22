@@ -21,6 +21,7 @@ export {
   mdastV6,
   mdx,
   mdxish,
+  mdxishTags,
   migrate,
   mix,
   plain,

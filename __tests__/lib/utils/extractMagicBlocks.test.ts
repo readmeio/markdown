@@ -76,15 +76,15 @@ describe('restoreMagicBlocks', () => {
     const replaced = `
 # Title
 Paragraph text.
-\`__MAGIC_BLOCK_0__\`
+\n\`__MAGIC_BLOCK_0__\`
 
 More text.
-\`__MAGIC_BLOCK_1__\`
+\n\`__MAGIC_BLOCK_1__\`
 End text.`;
     const blocks = [
       {
         key: '__MAGIC_BLOCK_0__',
-        token: '`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`',
         raw: `[block:html]
 {
   "html": "<h1>Hoo ha</h1>"
@@ -114,11 +114,39 @@ Paragraph text.
 [/block]
 
 More text.
+
 [block:html]
 {
   "html": "<b>second block</b>"
 }
 [/block]
 End text.`);
+  });
+
+  it('should restore magic blocks at start of document', () => {
+    const replaced = `\`__MAGIC_BLOCK_0__\`
+# Title
+Some text.`;
+    const blocks = [
+      {
+        key: '__MAGIC_BLOCK_0__',
+        token: '\n`__MAGIC_BLOCK_0__`',
+        raw: `[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]`,
+      },
+    ];
+
+    const restored = restoreMagicBlocks(replaced, blocks);
+
+    expect(restored).toBe(`[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]
+# Title
+Some text.`);
   });
 });
