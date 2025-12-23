@@ -96,6 +96,92 @@ describe('normalize-malformed-md-syntax', () => {
       });
     });
 
+    it('should NOT add space before punctuation when no trailing space before closing markers', () => {
+      const md = 'This is ** bold**!';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      // No space before ! because there was no space before closing **
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This ' },
+          { type: 'text', value: 'is ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bold' }],
+          },
+          { type: 'text', value: '!' },
+        ],
+      });
+    });
+
+    it('should preserve space before punctuation when trailing space before closing markers', () => {
+      const md = 'This is ** bold **!';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      // Space before ! because there was a space before closing **
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This ' },
+          { type: 'text', value: 'is ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bold' }],
+          },
+          { type: 'text', value: ' !' },
+        ],
+      });
+    });
+
+    it('should preserve space before word when trailing space before closing markers', () => {
+      const md = 'This is ** bold **Hello';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      // Space before H because there was a space before closing **
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This ' },
+          { type: 'text', value: 'is ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bold' }],
+          },
+          { type: 'text', value: ' H' },
+          { type: 'text', value: 'ello' },
+        ],
+      });
+    });
+
+    it('should NOT add space before word when no trailing space before closing markers', () => {
+      const md = 'This is ** bold**Hello';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      // No space before H because there was no space before closing **
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This ' },
+          { type: 'text', value: 'is ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bold' }],
+          },
+          { type: 'text', value: 'H' },
+          { type: 'text', value: 'ello' },
+        ],
+      });
+    });
+
     it('should handle multiple malformed bold patterns in one text', () => {
       const md = 'Start** first** middle** second **end';
       const tree = processor.parse(md);
