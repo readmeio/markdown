@@ -54,7 +54,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   };
 
   // Preprocess content: extract legacy magic blocks and evaluate JSX attribute expressions
-  const { replaced, blocks } = extractMagicBlocks(mdContent);
+  const { replaced, blocks } = extractMagicBlocks(mdContent, false);
   const processedContent = preprocessJSXExpressions(replaced, jsxContext);
 
   // Create string map of components for tailwind transformer

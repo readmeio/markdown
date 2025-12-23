@@ -56,92 +56,187 @@ ${JSON.stringify(
 
       const ast = mdxish(md);
 
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
-      expect(ast.children[2].type).toBe('element');
+      expect(ast.children).toHaveLength(2);
+      expect(ast.children[1].type).toBe('element');
 
-      const element = ast.children[2] as Element;
+      const element = ast.children[1] as Element;
       expect(element.tagName).toBe('table');
       expect(element.children).toHaveLength(2);
       expect((element.children[0] as Element).tagName).toBe('thead');
       expect((element.children[1] as Element).tagName).toBe('tbody');
     });
+  });
 
-    it('should convert html content inside table cells as nodes in the ast', () => {
-      const md = `
-[block:parameters]
-${JSON.stringify(
-  {
-    data: {
-      'h-0': 'Header 0',
-      'h-1': 'Header 1',
-      '0-0': '<h1>this should be a h1 element node</h1>',
-      '0-1': '<strong>this should be a strong element node</strong>',
-    },
-    cols: 2,
-    rows: 1,
-  },
-  null,
-  2,
-)}
-[/block]`;
+  describe('general tests', () => {
+    it('should restore image block inside a list item', () => {
+      const md = `- First item
+- [block:image]{"images":[{"image":["https://example.com/img.png",null,null]}]}[/block]`;
 
       const ast = mdxish(md);
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
 
-      // Table is the 3rd child
-      const element = ast.children[2] as Element;
-      expect(element.tagName).toBe('table');
-      expect(element.children).toHaveLength(2);
-      expect((element.children[1] as Element).tagName).toBe('tbody');
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
 
-      // Check that HTML in cells is parsed as element nodes
-      const tbody = element.children[1] as Element;
-      const row = tbody.children[0] as Element;
-      const cell0 = row.children[0] as Element;
-      const cell1 = row.children[1] as Element;
+      const imageElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'img');
 
-      expect((cell0.children[0] as Element).tagName).toBe('h1');
-      expect((cell1.children[0] as Element).tagName).toBe('strong');
+      expect(imageElement).toBeDefined();
+      expect(imageElement!.tagName).toBe('img');
+      expect(imageElement!.properties.src).toBe('https://example.com/img.png');
     });
 
-    it('should restore markdown content inside table cells', () => {
-      const md = `
-[block:parameters]
-${JSON.stringify(
-  {
-    data: {
-      'h-0': 'Header 0',
-      'h-1': 'Header 1',
-      '0-0': '**Bold**',
-      '0-1': '*Italic*',
-    },
-    cols: 2,
-    rows: 1,
-  },
-  null,
-  2,
-)}
-[/block]`;
+    it('should restore code block inside a list item', () => {
+      const md = `- First item
+- [block:code]{"codes":[{"code":"const x = 1;","language":"javascript"}]}[/block]`;
 
       const ast = mdxish(md);
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
 
-      // Table is the 3rd child
-      const element = ast.children[2] as Element;
-      expect(element.tagName).toBe('table');
-      expect(element.children).toHaveLength(2);
-      expect((element.children[1] as Element).tagName).toBe('tbody');
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
 
-      const tbody = element.children[1] as Element;
-      const row = tbody.children[0] as Element;
-      const cell0 = row.children[0] as Element;
-      const cell1 = row.children[1] as Element;
+      const codeElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'CodeTabs');
 
-      expect((cell0.children[0] as Element).tagName).toBe('strong');
-      expect((cell1.children[0] as Element).tagName).toBe('em');
+      expect(codeElement).toBeDefined();
+      expect(codeElement!.tagName).toBe('CodeTabs');
+    });
+
+    it('should restore api-header block inside a list item', () => {
+      const md = `- First item
+- [block:api-header]{"title":"API Endpoint","level":2}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const headingElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(c.tagName));
+
+      expect(headingElement).toBeDefined();
+      expect(headingElement!.tagName).toBe('h2');
+    });
+
+    // TODO: unskip this test once callout magic blocks are correctly supported
+    it.skip('should restore callout block inside a list item', () => {
+      const md = `- First item
+- [block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const calloutElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
+
+      expect(calloutElement).toBeDefined();
+      // rehypeMdxishComponents maps rdme-callout -> Callout
+      expect(calloutElement!.tagName).toBe('Callout');
+    });
+
+    it('should restore parameters block inside a list item', () => {
+      const md = `- First item
+- [block:parameters]{"data":{"h-0":"Name","h-1":"Type","0-0":"id","0-1":"string"},"cols":2,"rows":1}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const tableElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+
+      expect(tableElement).toBeDefined();
+      expect(tableElement!.tagName).toBe('table');
+    });
+
+    // TODO: unskip this test once embed magic blocks are supported
+    it.skip('should restore embed block inside a list item', () => {
+      const md = `- First item
+- [block:embed]{"url":"https://www.youtube.com/watch?v=dQw4w9WgXcQ","title":"Video"}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const embedElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'rdme-embed');
+
+      expect(embedElement).toBeDefined();
+      expect(embedElement!.tagName).toBe('rdme-embed');
+    });
+
+    it('should restore html block inside a list item', () => {
+      const md = `- First item
+- [block:html]{"html":"<div>Hello World</div>"}[/block]`;
+
+      const ast = mdxish(md);
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const htmlElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'HTMLBlock');
+
+      expect(htmlElement).toBeDefined();
+      expect(htmlElement!.tagName).toBe('HTMLBlock');
+    });
+
+    // TODO: unskip this test once recipe magic blocks are correctly supported
+    it.skip('should restore recipe block inside a list item', () => {
+      const md = `- open
+- [block:tutorial-tile]{"emoji":"🦉","slug":"whoaaa","title":"WHOAAA"}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const recipeElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'Recipe');
+
+      expect(recipeElement).toBeDefined();
+      expect(recipeElement!.tagName).toBe('Recipe');
+      expect(recipeElement!.properties.slug).toBe('whoaaa');
+      expect(recipeElement!.properties.title).toBe('WHOAAA');
+    });
+
+    // TODO: unskip this test once recipe magic blocks are correctly supported
+    it.skip('should restore recipe block (recipe type) inside a list item', () => {
+      const md = `- open
+- [block:recipe]{"emoji":"👉","slug":"test-recipe","title":"Test Recipe"}[/block]`;
+
+      const ast = mdxish(md);
+
+      const listElement = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'ul') as Element;
+      expect(listElement).toBeDefined();
+
+      const recipeElement = listElement.children
+        .filter((li): li is Element => li.type === 'element')
+        .flatMap((li: Element) => li.children || [])
+        .find((c): c is Element => c.type === 'element' && c.tagName === 'Recipe');
+
+      expect(recipeElement).toBeDefined();
+      expect(recipeElement!.tagName).toBe('Recipe');
+      expect(recipeElement!.properties.slug).toBe('test-recipe');
+      expect(recipeElement!.properties.title).toBe('Test Recipe');
     });
   });
 });

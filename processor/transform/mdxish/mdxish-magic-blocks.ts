@@ -388,6 +388,48 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
+    // We need to collect modifications first to avoid index issues during iteration
+    const modifications: {
+      children: RootContent[];
+      paragraphIndex: number;
+      parent: Parent;
+    }[] = [];
+
+    /**
+     * Check if a node is a flow (block-level) element that cannot be a child of a paragraph.
+     * Flow elements include: code, heading, image, figure, table, blockquote, list, html,
+     * mdxJsxFlowElement, and custom block types like rdme-callout, embed, html-block, etc.
+     * Note: In magic blocks, images are always block-level, even though MDAST allows inline images.
+     */
+    const isFlowElement = (node: RootContent): boolean => {
+      // Phrasing/inline element types that CAN be children of paragraphs
+      const phrasingTypes = new Set([
+        'text',
+        'emphasis',
+        'strong',
+        'delete',
+        'inlineCode',
+        'break',
+        'link',
+        'footnoteReference',
+        'mdxJsxTextElement',
+      ]);
+
+      // If it's not a phrasing element, it's a flow element
+      // Note: 'image' is not in phrasingTypes because magic block images are always block-level
+      return !phrasingTypes.has(node.type);
+    };
+
+    // First pass: collect all inlineCode and code nodes that need to be replaced
+    const inlineCodeReplacements: {
+      children: RootContent[];
+      index: number;
+      isFlowElement: boolean;
+      nodeType: 'code' | 'inlineCode';
+      parent: Parent;
+    }[] = [];
+
+    // Visit inlineCode nodes (for non-indented magic blocks)
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return;
       const raw = magicBlockKeys.get(node.value);
@@ -397,7 +439,205 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return;
 
-      parent.children.splice(index, 1, ...children);
+      // Check if the first child is a flow element (block-level element)
+      // Flow elements cannot be children of paragraphs, so we need to unwrap the paragraph
+      const isFlow = isFlowElement(children[0]);
+
+      inlineCodeReplacements.push({ children, index, isFlowElement: isFlow, nodeType: 'inlineCode', parent });
+    });
+
+    // Visit code nodes (for indented magic blocks that were parsed as code blocks)
+    visit(tree, 'code', (node: Code, index: number, parent: Parent) => {
+      if (!parent || index == null) return;
+      // Code blocks have a 'value' property
+      const codeValue = (node as { value?: string }).value;
+      if (!codeValue) return;
+
+      // Try to find matching magic block key (handle whitespace/newlines)
+      // The code block value might be exactly the key, or might have extra whitespace
+      const trimmedValue = codeValue.trim();
+      let raw = magicBlockKeys.get(trimmedValue);
+
+      // If not found, try matching any line that contains a magic block key
+      // This handles cases where the code block has multiple lines or extra content
+      if (!raw && trimmedValue.includes('__MAGIC_BLOCK_')) {
+        // Try to extract the magic block key from the code value using regex
+        const keyMatch = trimmedValue.match(/__MAGIC_BLOCK_\d+__/);
+        if (keyMatch) {
+          raw = magicBlockKeys.get(keyMatch[0]);
+        }
+
+        // Fallback: try matching line by line using array methods
+        if (!raw) {
+          const lines = trimmedValue.split('\n');
+          const matchingLine = lines.find(line => {
+            const key = line.trim();
+            return magicBlockKeys.has(key);
+          });
+          if (matchingLine) {
+            raw = magicBlockKeys.get(matchingLine.trim());
+          }
+        }
+      }
+
+      if (!raw) return;
+
+      // Parse the original magic block and replace the placeholder with the result
+      const children = parseMagicBlock(raw) as unknown as RootContent[];
+      if (!children.length) return;
+
+      // Code blocks are always flow elements
+      inlineCodeReplacements.push({ children, index, isFlowElement: true, nodeType: 'code', parent });
+    });
+
+    // Second pass: replace paragraphs containing flow elements with the flow elements directly
+    inlineCodeReplacements.forEach(({ children, index, isFlowElement: isFlow, nodeType, parent }) => {
+      // Handle code blocks that were parsed as code blocks (not inline code)
+      if (nodeType === 'code') {
+        // Code blocks are flow elements, so we need to replace them directly in their parent
+        // If code block is in a listItem, we need to replace it while preserving other children
+        if (parent.type === 'listItem') {
+          // Code blocks in listItems should be replaced directly
+          // Other children of the listItem (like nested lists) will be preserved automatically
+          // because we're only replacing the code block node itself
+          modifications.push({ children, paragraphIndex: index, parent });
+          return;
+        }
+
+        // Otherwise, replace the code block directly
+        parent.children.splice(index, 1, ...children);
+        return;
+      }
+
+      // Handle inlineCode nodes
+      if (!isFlow || parent.type !== 'paragraph') {
+        parent.children.splice(index, 1, ...children);
+        return;
+      }
+
+      let paragraphParent: Parent | undefined;
+      visit(tree, 'paragraph', (p, pIndex, pParent) => {
+        if (p === parent && pParent && 'children' in pParent) {
+          paragraphParent = pParent as Parent;
+          return false;
+        }
+        return undefined;
+      });
+
+      if (!paragraphParent) return;
+
+      const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
+      if (paragraphIndex === -1) return;
+
+      if (paragraphParent.type === 'listItem') {
+        // When replacing a paragraph in a listItem, we need to preserve:
+        // 1. Any content before the magic block token within the paragraph
+        // 2. Any content after the magic block token within the paragraph
+        // 3. Other children of the listItem (like nested lists) that come after the paragraph
+        //    These are automatically preserved because we're only replacing the paragraph node itself
+        const paragraph = parent as { children: RootContent[] };
+        const beforeContent = paragraph.children.slice(0, index);
+        const afterContent = paragraph.children.slice(index + 1);
+
+        // Build the nodes to insert: content before → flow element(s) → content after
+        const nodesToInsert: RootContent[] = [];
+
+        // If there's content before the magic block, keep it in a paragraph
+        if (beforeContent.length > 0) {
+          nodesToInsert.push({
+            type: 'paragraph',
+            children: beforeContent,
+          } as RootContent);
+        }
+
+        // Add the flow element(s)
+        nodesToInsert.push(...children);
+
+        // If there's content after the magic block token in the paragraph
+        if (afterContent.length > 0) {
+          // Check if afterContent contains only phrasing/inline content
+          const phrasingTypes = new Set([
+            'text',
+            'emphasis',
+            'strong',
+            'delete',
+            'inlineCode',
+            'break',
+            'link',
+            'footnoteReference',
+            'mdxJsxTextElement',
+          ]);
+          const hasOnlyPhrasing = afterContent.every(node => phrasingTypes.has(node.type));
+
+          if (hasOnlyPhrasing) {
+            // Inline content can't be after a flow element, so wrap it in a paragraph
+            nodesToInsert.push({
+              type: 'paragraph',
+              children: afterContent,
+            } as RootContent);
+          } else {
+            // Flow elements should already be separate nodes (shouldn't happen in practice)
+            nodesToInsert.push(...afterContent);
+          }
+        }
+
+        // Replace the paragraph with the new nodes
+        // The splice operation will preserve other children of the listItem (like nested lists)
+        // that come after this paragraph
+        if (nodesToInsert.length > 0) {
+          modifications.push({ children: nodesToInsert, paragraphIndex, parent: paragraphParent });
+        }
+        return;
+      }
+
+      if (paragraphParent.type === 'root' && paragraphIndex > 0) {
+        const prevSibling = paragraphParent.children[paragraphIndex - 1];
+        if (prevSibling.type === 'list' && 'children' in prevSibling && Array.isArray(prevSibling.children)) {
+          const list = prevSibling as { children: RootContent[] };
+          if (list.children.length > 0) {
+            const lastListItem = list.children[list.children.length - 1];
+            if (lastListItem && 'children' in lastListItem && Array.isArray(lastListItem.children)) {
+              modifications.push({ children: [], paragraphIndex, parent: paragraphParent });
+              modifications.push({
+                children,
+                paragraphIndex: (lastListItem.children as RootContent[]).length,
+                parent: lastListItem as unknown as Parent,
+              });
+              return;
+            }
+          }
+        }
+      }
+
+      modifications.push({ children, paragraphIndex, parent: paragraphParent });
+    });
+
+    // Apply modifications (replacing paragraphs/code blocks with flow elements)
+    // Separate modifications into appends (to list items) and replacements
+    const appends: typeof modifications = [];
+    const replacements: typeof modifications = [];
+
+    modifications.forEach(mod => {
+      // If we're appending to a list item (index equals length), use append logic
+      if (mod.parent.type === 'listItem' && mod.paragraphIndex === mod.parent.children.length) {
+        appends.push(mod);
+      } else {
+        replacements.push(mod);
+      }
+    });
+
+    // Apply appends first (they don't affect indices)
+    appends.forEach(({ children: modChildren, paragraphIndex, parent: modParent }) => {
+      modParent.children.splice(paragraphIndex, 0, ...modChildren);
+    });
+
+    // Then apply replacements in reverse order (bottom-up to avoid index shifting)
+    // This ensures that when we replace nodes, we don't affect indices of nodes we haven't processed yet
+    replacements.reverse().forEach(({ children: modChildren, paragraphIndex, parent: modParent }) => {
+      // Ensure we're not going out of bounds
+      if (paragraphIndex >= 0 && paragraphIndex < modParent.children.length) {
+        modParent.children.splice(paragraphIndex, 1, ...modChildren);
+      }
     });
   };
 

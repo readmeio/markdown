@@ -17,7 +17,7 @@ const MAGIC_BLOCK_REGEX = /\[block:[^\]]{1,100}\](?:(?!\[block:)(?!\[\/block\])[
  * Extract legacy magic block syntax from a markdown string.
  * Returns the modified markdown and an array of extracted blocks.
  */
-export function extractMagicBlocks(markdown: string) {
+export function extractMagicBlocks(markdown: string, prependNewline: boolean = true) {
   const blocks: BlockHit[] = [];
   let index = 0;
 
@@ -31,7 +31,7 @@ export function extractMagicBlocks(markdown: string) {
      * - Prepend a newline to the token to ensure it is parsed as a block level node
      */
     const key = `__MAGIC_BLOCK_${index}__`;
-    const token = `\n\`${key}\``;
+    const token = prependNewline ? `\n\`${key}\`` : `\`${key}\``;
 
     blocks.push({ key, raw: match, token });
     index += 1;
@@ -44,10 +44,10 @@ export function extractMagicBlocks(markdown: string) {
 /**
  * Restore extracted magic blocks back into a markdown string.
  */
-export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {  
+export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {
   let content = replaced;
 
-  // If a magic block is at the start of the document, the extraction token's prepended 
+  // If a magic block is at the start of the document, the extraction token's prepended
   // newline will have been trimmed during processing. We need to account for that here
   // to ensure the token is found and replaced correctly.
   const isTokenAtStart = content.startsWith(blocks[0]?.token.trimStart());
