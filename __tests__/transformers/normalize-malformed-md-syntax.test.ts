@@ -138,6 +138,27 @@ describe('normalize-malformed-md-syntax', () => {
       });
     });
 
+    it('should handle escaped asterisk in content', () => {
+      const md = 'This is ** bo\\*ld**!';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      // Escaped asterisk should be preserved in content
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'This ' },
+          { type: 'text', value: 'is ' },
+          {
+            type: 'strong',
+            children: [{ type: 'text', value: 'bo*ld' }],
+          },
+          { type: 'text', value: '!' },
+        ],
+      });
+    });
+
     it('should preserve space before word when trailing space before closing markers', () => {
       const md = 'This is ** bold **Hello';
       const tree = processor.parse(md);

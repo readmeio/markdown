@@ -35,10 +35,12 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // Pattern for ** bold **
     // Groups: 1=wordBefore, 2=marker, 3=contentWithSpaceAfter, 4=trailingSpace1, 5=contentWithSpaceBefore, 6=trailingSpace2, 7=afterChar
     // trailingSpace1 is for "** text **" pattern, trailingSpace2 is for "**text **" pattern
-    const asteriskBoldRegex = /([^*\s]+)?\s*(\*\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+    const asteriskBoldRegex =
+      /([^*\s]+)?\s*(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
 
     // Pattern for __ bold __
-    const underscoreBoldRegex = /([^_\s]+)?\s*(__)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
+    const underscoreBoldRegex =
+      /([^_\s]+)?\s*(__)(?:\s+((?:[^_\n]|_(?!_))+?)(\s*)\2|((?:[^_\n]|_(?!_))+?)(\s+)\2)(\S|$)?/g;
 
     // Pattern for * italic *
     const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
