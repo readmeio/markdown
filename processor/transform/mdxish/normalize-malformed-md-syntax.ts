@@ -1,7 +1,7 @@
 import type { Emphasis, Parent, Root, Strong, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 /**
  * A remark plugin that normalizes malformed bold and italic markers in text nodes.
@@ -16,12 +16,12 @@ import { visit } from 'unist-util-visit';
  * malformed emphasis syntax. This plugin post-processes the AST to handle these cases.
  */
 const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
-  visit(tree, 'text', (node: Text, index, parent: Parent) => {
-    if (index === undefined || !parent) return;
+  visit(tree, 'text', function visitor(node: Text, index, parent: Parent) {
+    if (index === undefined || !parent) return undefined;
 
     // Skip if inside code blocks or inline code
     if (parent.type === 'inlineCode' || parent.type === 'code') {
-      return;
+      return undefined;
     }
 
     const text = node.value;
@@ -69,7 +69,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       allMatches.push({ isBold: false, marker: '_', match });
     });
 
-    if (allMatches.length === 0) return;
+    if (allMatches.length === 0) return undefined;
 
     allMatches.sort((a, b) => (a.match.index ?? 0) - (b.match.index ?? 0));
 
@@ -84,7 +84,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       }
     });
 
-    if (filteredMatches.length === 0) return;
+    if (filteredMatches.length === 0) return undefined;
 
     const parts: (Emphasis | Strong | Text)[] = [];
     let lastIndex = 0;
@@ -153,7 +153,10 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     if (parts.length > 0) {
       parent.children.splice(index, 1, ...parts);
+      return [SKIP, index + parts.length];
     }
+
+    return undefined;
   });
 
   return tree;
