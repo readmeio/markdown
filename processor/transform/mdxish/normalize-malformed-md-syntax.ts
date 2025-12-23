@@ -10,6 +10,7 @@ import { visit } from 'unist-util-visit';
  * and converts them to proper strong/emphasis nodes, matching the behavior of the legacy rdmd engine.
  *
  * Supports both asterisk (`**bold**`, `*italic*`) and underscore (`__bold__`, `_italic_`) syntax.
+ * Also supports snake_case content like `** some_snake_case**`.
  *
  * This runs after remark-parse, which (in v11+) is strict and doesn't parse
  * malformed emphasis syntax. This plugin post-processes the AST to handle these cases.
@@ -18,13 +19,8 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
   visit(tree, 'text', (node: Text, index, parent: Parent) => {
     if (index === undefined || !parent) return;
 
-    // Skip if inside code blocks, inline code, or already inside strong/emphasis
-    if (
-      parent.type === 'inlineCode' ||
-      parent.type === 'code' ||
-      parent.type === 'strong' ||
-      parent.type === 'emphasis'
-    ) {
+    // Skip if inside code blocks or inline code
+    if (parent.type === 'inlineCode' || parent.type === 'code') {
       return;
     }
 
@@ -34,15 +30,64 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // Bold: ** text**, **text **, word** text**, ** text **
     // Italic: * text*, *text *, word* text*, * text *
     // Same patterns for underscore variants
-    const malformedRegex = /([^*_\s]+)?\s*(\*\*|__|\*|_)(?:\s+([^*_\n]+?)\s*\2|([^*_\n]+?)\s+\2)(\S|$)?/g;
+    // We use separate patterns for each marker type to allow this flexibility.
 
-    const matches = [...text.matchAll(malformedRegex)];
-    if (matches.length === 0) return;
+    // Pattern for ** bold **
+    // Groups: 1=wordBefore, 2=marker, 3=contentWithSpaceAfter, 4=trailingSpace1, 5=contentWithSpaceBefore, 6=trailingSpace2, 7=afterChar
+    // trailingSpace1 is for "** text **" pattern, trailingSpace2 is for "**text **" pattern
+    const asteriskBoldRegex = /([^*\s]+)?\s*(\*\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+
+    // Pattern for __ bold __
+    const underscoreBoldRegex = /([^_\s]+)?\s*(__)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
+
+    // Pattern for * italic *
+    const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+
+    // Pattern for _ italic _
+    const underscoreItalicRegex = /([^_\s]+)?\s*(_)(?!_)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
+
+    interface MatchInfo {
+      isBold: boolean;
+      marker: string;
+      match: RegExpMatchArray;
+    }
+
+    const allMatches: MatchInfo[] = [];
+
+    [...text.matchAll(asteriskBoldRegex)].forEach(match => {
+      allMatches.push({ isBold: true, marker: '**', match });
+    });
+    [...text.matchAll(underscoreBoldRegex)].forEach(match => {
+      allMatches.push({ isBold: true, marker: '__', match });
+    });
+    [...text.matchAll(asteriskItalicRegex)].forEach(match => {
+      allMatches.push({ isBold: false, marker: '*', match });
+    });
+    [...text.matchAll(underscoreItalicRegex)].forEach(match => {
+      allMatches.push({ isBold: false, marker: '_', match });
+    });
+
+    if (allMatches.length === 0) return;
+
+    allMatches.sort((a, b) => (a.match.index ?? 0) - (b.match.index ?? 0));
+
+    const filteredMatches: MatchInfo[] = [];
+    let lastEnd = 0;
+    allMatches.forEach(info => {
+      const start = info.match.index ?? 0;
+      const end = start + info.match[0].length;
+      if (start >= lastEnd) {
+        filteredMatches.push(info);
+        lastEnd = end;
+      }
+    });
+
+    if (filteredMatches.length === 0) return;
 
     const parts: (Emphasis | Strong | Text)[] = [];
     let lastIndex = 0;
 
-    matches.forEach(match => {
+    filteredMatches.forEach(({ match, marker, isBold }) => {
       const matchIndex = match.index ?? 0;
       const fullMatch = match[0];
 
@@ -53,15 +98,14 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
         }
       }
 
-      const wordBefore = match[1]; // e.g., "Hello" in "Hello** Wrong Bold**" or "Hello* Wrong Italic*"
-      const marker = match[2]; // Either "**", "__", "*", or "_"
+      const wordBefore = match[1]; // e.g., "Hello" in "Hello** Wrong Bold**"
       const contentWithSpaceAfter = match[3]; // Content when there's a space after opening markers
-      const contentWithSpaceBefore = match[4]; // Content when there's only a space before closing markers
-      const content = (contentWithSpaceAfter || contentWithSpaceBefore || '').trim(); // The content, trimmed
-      const afterChar = match[5]; // Character after closing markers (if any)
-
-      // Determine if this is bold (double markers) or italic (single markers)
-      const isBold = marker === '**' || marker === '__';
+      const trailingSpace1 = match[4] || ''; // Space before closing markers (for "** text **" pattern)
+      const contentWithSpaceBefore = match[5]; // Content when there's only a space before closing markers
+      const trailingSpace2 = match[6] || ''; // Space before closing markers (for "**text **" pattern)
+      const trailingSpace = trailingSpace1 || trailingSpace2; // Combined trailing space
+      const content = (contentWithSpaceAfter || contentWithSpaceBefore || '').trim();
+      const afterChar = match[7]; // Character after closing markers (if any)
 
       const markerPos = fullMatch.indexOf(marker);
       const spacesBeforeMarkers = wordBefore
@@ -91,7 +135,8 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       }
 
       if (afterChar) {
-        parts.push({ type: 'text', value: ` ${afterChar}` } satisfies Text);
+        const prefix = trailingSpace ? ' ' : '';
+        parts.push({ type: 'text', value: prefix + afterChar } satisfies Text);
       }
 
       lastIndex = matchIndex + fullMatch.length;
