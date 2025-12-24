@@ -12,7 +12,7 @@ import type { Plugin } from 'unified';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../utils';
 
@@ -393,6 +393,13 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
+ * Check if a child node is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
+ */
+const needsUnwrapping = (child: RootContent): boolean => {
+  return child.type === 'mdxJsxFlowElement';
+};
+
+/**
  * Unified plugin that restores magic blocks from placeholder tokens.
  *
  * During preprocessing, extractMagicBlocks replaces [block:TYPE]...[/block]
@@ -411,17 +418,12 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
 
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
-      if (!parent || index == null) return;
+      if (!parent || index == null) return undefined;
       const raw = magicBlockKeys.get(node.value);
-      if (!raw) return;
+      if (!raw) return undefined;
 
       const children = parseMagicBlock(raw) as unknown as RootContent[];
-      if (!children.length) return;
-
-      // Check if first child is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
-      const needsUnwrapping = (child: RootContent): boolean => {
-        return child.type === 'mdxJsxFlowElement';
-      };
+      if (!children.length) return undefined;
 
       if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
         // Find paragraph's parent and unwrap
@@ -440,9 +442,11 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
             modifications.push({ children, index: paragraphIndex, parent: paragraphParent });
           }
         }
-      } else {
-        parent.children.splice(index, 1, ...children);
+        return SKIP;
       }
+
+      parent.children.splice(index, 1, ...children);
+      return [SKIP, index + children.length];
     });
 
     // Apply modifications in reverse order to avoid index shifting

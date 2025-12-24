@@ -150,7 +150,6 @@ ${JSON.stringify(
       const md = '[block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]';
 
       const ast = mdxish(md);
-      console.log(JSON.stringify(ast, null, 2));
       expect(ast.children).toHaveLength(1);
       expect(ast.children[0].type).toBe('element');
 
