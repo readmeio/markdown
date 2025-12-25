@@ -21,13 +21,6 @@ const tags = (doc: string) => {
     }
   });
 
-  // const componentPattern = /<\/?([A-Z][A-Za-z0-9_]*)(?:\s[^>]*)?\/?>/g;
-  // let match: RegExpExecArray | null;
-  // while ((match = componentPattern.exec(sanitizedDoc)) !== null) {
-  //   const tagName = match[1];
-  //   set.add(tagName);
-  // }
-
   return Array.from(set);
 };
 
