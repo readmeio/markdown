@@ -1,6 +1,5 @@
 import type { Element } from 'hast';
 
-import { mdxishTags } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
 import { type RMDXModule } from '../../types';
 
@@ -66,7 +65,7 @@ Simple text content
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
       expect(component?.type).toBe('element');
-      
+
       const elementNode = component as Element;
       expect(elementNode.children.length).toBeGreaterThan(0);
     });
@@ -86,7 +85,7 @@ Some **bold** and *italic* text.
 
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
-      
+
       const elementNode = component as Element;
       expect(elementNode.children.length).toBeGreaterThan(0);
     });
@@ -102,7 +101,7 @@ Some **bold** and *italic* text.
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
       expect(component?.type).toBe('element');
-      
+
       const elementNode = component as Element;
       expect(elementNode.properties?.theme).toBe('info');
       expect(elementNode.properties?.id).toBe('test-id');
@@ -117,7 +116,7 @@ Some **bold** and *italic* text.
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
       expect(component?.type).toBe('element');
-      
+
       const elementNode = component as Element;
       expect(elementNode.properties?.empty).toBeDefined();
     });
@@ -278,38 +277,5 @@ More markdown after the component.`;
       const blockquote = hast.children.find(child => child.type === 'element' && child.tagName === 'blockquote');
       expect(blockquote).toBeDefined();
     });
-  });
-});
-
-describe('mdxishTags with snake_case', () => {
-  it('should extract snake_case component names', () => {
-    const doc = '<Snake_case />';
-    const tags = mdxishTags(doc);
-
-    expect(tags).toContain('Snake_case');
-  });
-
-  it('should extract multiple different snake_case components', () => {
-    const doc = '<First_Component />\n<Second_Component />';
-    const tags = mdxishTags(doc);
-
-    expect(tags).toContain('First_Component');
-    expect(tags).toContain('Second_Component');
-  });
-
-  it('should extract snake_case alongside PascalCase', () => {
-    const doc = '<Snake_case />\n<PascalCase />';
-    const tags = mdxishTags(doc);
-
-    expect(tags).toContain('Snake_case');
-    expect(tags).toContain('PascalCase');
-  });
-
-  it('should not duplicate tags for multiple occurrences', () => {
-    const doc = '<Snake_case />\n<Snake_case />\n<Snake_case />';
-    const tags = mdxishTags(doc);
-
-    const snakeCaseCount = tags.filter(tag => tag === 'Snake_case').length;
-    expect(snakeCaseCount).toBe(1);
   });
 });

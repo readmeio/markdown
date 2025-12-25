@@ -55,12 +55,15 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  // Preprocess content: extract legacy magic blocks and evaluate JSX attribute expressions
-  const { replaced, blocks } = extractMagicBlocks(mdContent);
-  const processedContent = preprocessJSXExpressions(replaced, jsxContext);
-
-  // Preprocess snake_case names for parsing
-  const { content: preprocessedContent, mapping } = processSnakeCaseComponent(processedContent);
+  // Preprocessing pipeline: Transform content to be parser-ready
+  // Step 1: Extract legacy magic blocks
+  const { replaced: contentAfterMagicBlocks, blocks } = extractMagicBlocks(mdContent);
+  // Step 2: Evaluate JSX expressions in attributes
+  const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterMagicBlocks, jsxContext);
+  // Step 3: Replace snake_case component names with parser-safe placeholders
+  // (e.g., <Snake_case /> → <MDXishSnakeCase0 /> which will be restored after parsing)
+  const { content: parserReadyContent, mapping: snakeCaseMapping } =
+    processSnakeCaseComponent(contentAfterJSXEvaluation);
 
   // Create string map for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
@@ -77,7 +80,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
-    .use(restoreSnakeCaseComponentNames, { mapping })
+    .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
@@ -92,8 +95,8 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
     });
 
-  const vfile = new VFile({ value: preprocessedContent });
-  const hast = processor.runSync(processor.parse(preprocessedContent), vfile) as Root;
+  const vfile = new VFile({ value: parserReadyContent });
+  const hast = processor.runSync(processor.parse(parserReadyContent), vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
