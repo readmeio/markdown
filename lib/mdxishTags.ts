@@ -10,13 +10,13 @@ import { extractMagicBlocks } from './utils/extractMagicBlocks';
 
 const tags = (doc: string) => {
   const { replaced: sanitizedDoc } = extractMagicBlocks(doc);
+
   const set = new Set<string>();
-  const processor = remark()
-    .use(mdxishComponentBlocks);
+  const processor = remark().use(mdxishComponentBlocks);
   const tree = processor.parse(sanitizedDoc);
 
   visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (node.name?.match(/^[A-Z]/)) {
+    if (node.name?.match(/^[A-Z][A-Za-z_]*$/)) {
       set.add(node.name);
     }
   });
