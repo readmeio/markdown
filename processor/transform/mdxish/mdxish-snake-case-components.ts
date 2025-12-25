@@ -8,7 +8,7 @@ export interface SnakeCasePreprocessResult {
 /**
  * Replaces snake_case component names with valid HTML placeholders.
  * Required because remark-parse rejects tags with underscores.
- * Example: `<Snake_case />` → `<RdmxSnakeCase0 />`
+ * Example: `<Snake_case />` → `<MDXishSnakeCase0 />`
  */
 export function processSnakeCaseComponent(content: string): SnakeCasePreprocessResult {
   // Early exit if no potential snake_case components
@@ -34,7 +34,7 @@ export function processSnakeCaseComponent(content: string): SnakeCasePreprocessR
 
     if (!placeholder) {
       // eslint-disable-next-line no-plusplus
-      placeholder = `RdmxSnakeCase${counter++}`;
+      placeholder = `MDXishSnakeCase${counter++}`;
       mapping[placeholder] = cleanTagName;
       reverseMap.set(cleanTagName, placeholder);
     }
