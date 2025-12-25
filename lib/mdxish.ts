@@ -23,15 +23,15 @@ import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressi
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
+import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
-import restoreComponentNames from '../processor/transform/mdxish/restore-component-names';
+import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name.ts';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { extractMagicBlocks } from './utils/extractMagicBlocks';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
-import { preprocessComponentNames } from './utils/mdxish/preprocessComponentNames';
 
 export interface MdxishOpts {
   components?: CustomComponents;
@@ -59,24 +59,11 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { replaced, blocks } = extractMagicBlocks(mdContent);
   const processedContent = preprocessJSXExpressions(replaced, jsxContext);
 
-  const { content: preprocessedContent, mapping } = preprocessComponentNames(processedContent);
+  // Preprocess snake_case names for parsing
+  const { content: preprocessedContent, mapping } = processSnakeCaseComponent(processedContent);
 
-  // Remap components hash to use placeholder names as keys
-  // This way components can be found by their placeholder names during processing
-  const remappedComponents: CustomComponents = {};
-  Object.entries(components).forEach(([originalName, component]) => {
-    // Find the placeholder for this component name (if it was remapped)
-    const placeholder = Object.keys(mapping).find(key => mapping[key] === originalName);
-    if (placeholder) {
-      // Use placeholder as key
-      remappedComponents[placeholder] = component;
-    } else {
-      // No remapping needed, use original name
-      remappedComponents[originalName] = component;
-    }
-  });
-
-  const tempComponentsMap = Object.entries(remappedComponents).reduce((acc, [key, value]) => {
+  // Create string map for tailwind transformer
+  const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
     acc[key] = String(value);
     return acc;
   }, {});
@@ -90,7 +77,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
-    .use(restoreComponentNames, { mapping }) // Restores names so HAST matches components
+    .use(restoreSnakeCaseComponentNames, { mapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext

@@ -1,3 +1,5 @@
+import type { Element } from 'hast';
+
 import { mdxishTags } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
 import { type RMDXModule } from '../../types';
@@ -64,9 +66,9 @@ Simple text content
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
       expect(component?.type).toBe('element');
-      if (component?.type === 'element') {
-        expect(component.children.length).toBeGreaterThan(0);
-      }
+      
+      const elementNode = component as Element;
+      expect(elementNode.children.length).toBeGreaterThan(0);
     });
 
     it('should render snake_case component with markdown content', () => {
@@ -84,9 +86,9 @@ Some **bold** and *italic* text.
 
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
-      if (component?.type === 'element') {
-        expect(component.children.length).toBeGreaterThan(0);
-      }
+      
+      const elementNode = component as Element;
+      expect(elementNode.children.length).toBeGreaterThan(0);
     });
   });
 
@@ -99,10 +101,11 @@ Some **bold** and *italic* text.
 
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
-      if (component?.type === 'element') {
-        expect(component.properties?.theme).toBe('info');
-        expect(component.properties?.id).toBe('test-id');
-      }
+      expect(component?.type).toBe('element');
+      
+      const elementNode = component as Element;
+      expect(elementNode.properties?.theme).toBe('info');
+      expect(elementNode.properties?.id).toBe('test-id');
     });
 
     it('should preserve boolean attributes', () => {
@@ -113,9 +116,10 @@ Some **bold** and *italic* text.
 
       const component = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(component).toBeDefined();
-      if (component?.type === 'element') {
-        expect(component.properties?.empty).toBeDefined();
-      }
+      expect(component?.type).toBe('element');
+      
+      const elementNode = component as Element;
+      expect(elementNode.properties?.empty).toBeDefined();
     });
   });
 
@@ -132,7 +136,7 @@ Some **bold** and *italic* text.
       const hast = mdxish(doc, { components });
 
       const componentsFound = hast.children.filter(child => child.type === 'element' && child.tagName === 'Snake_case');
-      expect(componentsFound.length).toBe(3);
+      expect(componentsFound).toHaveLength(3);
     });
 
     it('should render multiple different snake_case components', () => {
@@ -153,8 +157,8 @@ Some **bold** and *italic* text.
         child => child.type === 'element' && child.tagName === 'Second_Component',
       );
 
-      expect(firstComponents.length).toBe(2);
-      expect(secondComponents.length).toBe(1);
+      expect(firstComponents).toHaveLength(2);
+      expect(secondComponents).toHaveLength(1);
     });
   });
 
@@ -174,13 +178,13 @@ Some **bold** and *italic* text.
         child => child.type === 'element' && child.tagName === 'Outer_Component',
       );
       expect(outerComponent).toBeDefined();
+      expect(outerComponent?.type).toBe('element');
 
-      if (outerComponent?.type === 'element') {
-        const innerComponent = outerComponent.children.find(
-          child => child.type === 'element' && (child as any).tagName === 'Inner_Component',
-        );
-        expect(innerComponent).toBeDefined();
-      }
+      const outerElement = outerComponent as Element;
+      const innerComponent = outerElement.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'Inner_Component',
+      );
+      expect(innerComponent).toBeDefined();
     });
   });
 
