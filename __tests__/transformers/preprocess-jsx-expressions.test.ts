@@ -4,21 +4,11 @@ import { preprocessJSXExpressions } from '../../processor/transform/mdxish/prepr
 describe('preprocessJSXExpressions', () => {
   describe('using the default jsx context', () => {
     it('should evaluate the string operations', () => {
-      const content = 'Hello {uppercase("world")} {lowercase("WORLD")}';
+      const content = 'Hello {"world".toUpperCase()} {"world".length}';
       const result = mix(content);
-      expect(result).toContain('Hello WORLD world');
-      expect(result).not.toContain('{uppercase("world")}');
-      expect(result).not.toContain('{lowercase("WORLD")}');
-    });
-
-    it('should evaluate the number operations when the operations are mentioned', () => {
-      const content = 'Hello {add(1, 2)} {subtract(3, 4)} {multiply(5, 6)} {divide(4, 2)}';
-      const result = mix(content);
-      expect(result).toContain('Hello 3 -1 30 2');
-      expect(result).not.toContain('{add(1, 2)}');
-      expect(result).not.toContain('{subtract(3, 4)}');
-      expect(result).not.toContain('{multiply(5, 6)}');
-      expect(result).not.toContain('{divide(4, 2)}');
+      expect(result).toContain('Hello WORLD 5');
+      expect(result).not.toContain('{"world".toUpperCase()}');
+      expect(result).not.toContain('{"world".length}');
     });
 
     it('should evaluate number operations when math symbols are used', () => {
@@ -30,7 +20,7 @@ describe('preprocessJSXExpressions', () => {
     });
 
     it('should not evaluate operations when not in braces', () => {
-      const content = '1 + 2 uppercase("world")';
+      const content = '1 + 2 "world".toUpperCase()';
       const result = mix(content);
       expect(result).toContain(content);
       expect(result).not.toContain('WORLD');

@@ -29,16 +29,6 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
         const contextKeys = Object.keys(context);
         const contextValues = Object.values(context);
 
-        // If no context provided, leave expression as-is
-        if (contextKeys.length === 0) {
-          parent.children.splice(index, 1, {
-            type: 'text',
-            value: `{${expression}}`,
-            position: node.position,
-          });
-          return;
-        }
-
         // eslint-disable-next-line no-new-func
         const func = new Function(...contextKeys, `return ${expression}`);
         const result = func(...contextValues);
