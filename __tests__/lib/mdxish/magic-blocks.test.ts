@@ -68,23 +68,22 @@ ${JSON.stringify(
     });
 
     it('should convert html content inside table cells as nodes in the ast', () => {
-      const md = `
-  [block:parameters]
-  ${JSON.stringify(
-    {
-      data: {
-        'h-0': 'Header 0',
-        'h-1': 'Header 1',
-        '0-0': '<h1>this should be a h1 element node</h1>',
-        '0-1': '<strong>this should be a strong element node</strong>',
-      },
-      cols: 2,
-      rows: 1,
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header 0',
+      'h-1': 'Header 1',
+      '0-0': '<h1>this should be a h1 element node</h1>',
+      '0-1': '<strong>this should be a strong element node</strong>',
     },
-    null,
-    2,
-  )}
-  [/block]`;
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
 
       const ast = mdxish(md);
       // Some extra children are added to the AST by the mdxish wrapper
@@ -107,23 +106,22 @@ ${JSON.stringify(
     });
 
     it('should restore markdown content inside table cells', () => {
-      const md = `
-  [block:parameters]
-  ${JSON.stringify(
-    {
-      data: {
-        'h-0': 'Header 0',
-        'h-1': 'Header 1',
-        '0-0': '**Bold**',
-        '0-1': '*Italic*',
-      },
-      cols: 2,
-      rows: 1,
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header 0',
+      'h-1': 'Header 1',
+      '0-0': '**Bold**',
+      '0-1': '*Italic*',
     },
-    null,
-    2,
-  )}
-  [/block]`;
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
 
       const ast = mdxish(md);
       // Some extra children are added to the AST by the mdxish wrapper

@@ -334,7 +334,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
             children: [
               { children: [{ type: 'text', value: title || '' }], title: embedJson.provider, type: 'link', url },
             ],
-            data: { hName: 'rdme-embed', hProperties: { ...embedJson, href: url, html, title, url } },
+            data: { hName: 'embed-block', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
           json,
