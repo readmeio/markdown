@@ -1,4 +1,4 @@
-import { mdxish } from '../../lib/mdxish';
+import { mix } from '../../lib';
 
 describe('evaluateExpressions', () => {
   it('should evaluate inline MDX expressions and replace with results', () => {
@@ -9,14 +9,13 @@ describe('evaluateExpressions', () => {
     };
 
     const content = 'Total: {count * price} items for {name}';
-    const hast = mdxish(content, { jsxContext: context });
+    const html = mix(content, { jsxContext: context });
 
     // The expressions should be evaluated and converted to text nodes
-    const textContent = JSON.stringify(hast);
-    expect(textContent).toContain('50'); // count * price = 50
-    expect(textContent).toContain('Test'); // name = 'Test'
-    expect(textContent).not.toContain('{count * price}');
-    expect(textContent).not.toContain('{name}');
+    expect(html).toContain('50'); // count * price = 50
+    expect(html).toContain('Test'); // name = 'Test'
+    expect(html).not.toContain('{count * price}');
+    expect(html).not.toContain('{name}');
   });
 
   it('should handle null and undefined expressions', () => {
@@ -26,15 +25,14 @@ describe('evaluateExpressions', () => {
     };
 
     const content = 'Before {nullValue} middle {undefinedValue} after';
-    const hast = mdxish(content, { jsxContext: context });
+    const html = mix(content, { jsxContext: context });
 
     // Null/undefined should be removed (empty string)
-    const textContent = JSON.stringify(hast);
-    expect(textContent).toContain('Before');
-    expect(textContent).toContain('middle');
-    expect(textContent).toContain('after');
-    expect(textContent).not.toContain('nullValue');
-    expect(textContent).not.toContain('undefinedValue');
+    expect(html).toContain('Before');
+    expect(html).toContain('middle');
+    expect(html).toContain('after');
+    expect(html).not.toContain('nullValue');
+    expect(html).not.toContain('undefinedValue');
   });
 
   it('should handle object expressions', () => {
@@ -43,11 +41,18 @@ describe('evaluateExpressions', () => {
     };
 
     const content = 'Object: {obj}';
-    const hast = mdxish(content, { jsxContext: context });
+    const html = mix(content, { jsxContext: context });
 
     // Objects should be JSON stringified (account for JSON escaping in stringified output)
-    const textContent = JSON.stringify(hast);
-    expect(textContent).toContain('{\\"a\\":1,\\"b\\":2}');
+    expect(html).toContain('{"a":1,"b":2}');
+  });
+
+  it('should evaluate the string operations', () => {
+    const content = 'Hello {"world".toUpperCase()} {"world".length}';
+    const html = mix(content);
+    expect(html).toContain('Hello WORLD 5');
+    expect(html).not.toContain('{"world".toUpperCase()}');
+    expect(html).not.toContain('{"world".length}');
   });
 
   it('should preserve expressions in code blocks', () => {
@@ -56,12 +61,18 @@ describe('evaluateExpressions', () => {
     };
 
     const content = '```\nconst x = {count};\n```';
-    const hast = mdxish(content, { jsxContext: context });
+    const html = mix(content, { jsxContext: context });
 
     // Expressions in code blocks should be preserved
-    const textContent = JSON.stringify(hast);
-    expect(textContent).toContain('{count}');
-    expect(textContent).not.toContain('5');
+    expect(html).toContain('{count}');
+    expect(html).not.toContain('5');
+  });
+
+  it('should not evaluate operations when not in braces', () => {
+    const content = '1 + 2 "world".toUpperCase()';
+    const html = mix(content);
+    expect(html).toContain(content);
+    expect(html).not.toContain('WORLD');
+    expect(html).not.toContain('3');
   });
 });
-
