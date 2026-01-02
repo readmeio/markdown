@@ -1,6 +1,14 @@
 import { mix } from '../../lib';
 
 describe('evaluateExpressions', () => {
+  it('should evaluate numeric operations', () => {
+    const content = '{1 + 2 - 1} {4 * 2 / 2}';
+    const html = mix(content);
+    expect(html).toContain('2 4');
+    expect(html).not.toContain('{1 + 2 - 1}');
+    expect(html).not.toContain('{4 * 2 / 2}');
+  });
+
   it('should evaluate inline MDX expressions and replace with results', () => {
     const context = {
       count: 5,
