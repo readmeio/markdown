@@ -24,7 +24,6 @@ const CodeTabs = (props: Props) => {
     ? firstChild.props.children[0]
     : firstChild?.props?.children;
 
-  // Only render as single mermaid if there's exactly one child and it's mermaid
   const hasMermaid = childrenArray.length === 1 && codeComponent?.props?.lang === 'mermaid';
 
   // render Mermaid diagram
