@@ -16,7 +16,16 @@ interface Props {
 const CodeTabs = (props: Props) => {
   const { children } = props;
   const theme = useContext(ThemeContext);
-  const hasMermaid = !Array.isArray(children) && children.props?.children.props.lang === 'mermaid';
+
+  // Handle both array (rehype-react) and single element (MDX/JSX runtime) cases
+  const childrenArray = Array.isArray(children) ? children : [children];
+  const firstChild = childrenArray[0];
+  const codeComponent = Array.isArray(firstChild?.props?.children)
+    ? firstChild.props.children[0]
+    : firstChild?.props?.children;
+
+  // Only render as single mermaid if there's exactly one child and it's mermaid
+  const hasMermaid = childrenArray.length === 1 && codeComponent?.props?.lang === 'mermaid';
 
   // render Mermaid diagram
   useEffect(() => {
@@ -48,20 +57,20 @@ const CodeTabs = (props: Props) => {
 
   // render single Mermaid diagram
   if (hasMermaid) {
-    const value = children.props.children.props.value;
+    const value = codeComponent?.props?.value;
     return <pre className="mermaid-render mermaid_single">{value}</pre>;
   }
 
   return (
     <div className={`CodeTabs CodeTabs_initial theme-${theme}`}>
       <div className="CodeTabs-toolbar">
-        {(Array.isArray(children) ? children : [children]).map((pre, i) => {
+        {childrenArray.map((pre, i) => {
           // the first or only child should be our Code component
-          const codeComponent = Array.isArray(pre.props?.children)
+          const tabCodeComponent = Array.isArray(pre.props?.children)
             ? pre.props.children[0]
             : pre.props?.children;
-          const lang = codeComponent?.props?.lang;
-          const meta = codeComponent?.props?.meta;
+          const lang = tabCodeComponent?.props?.lang;
+          const meta = tabCodeComponent?.props?.meta;
 
           /* istanbul ignore next */
           return (

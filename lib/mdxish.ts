@@ -23,6 +23,7 @@ import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressi
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
+import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
@@ -80,6 +81,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(remarkGfm)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(rehypeRaw, { passThrough: ['html-block'] })
+    .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(rehypeSlug)
     .use(rehypeMdxishComponents, {
       components,
