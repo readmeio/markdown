@@ -62,6 +62,7 @@ const Code = (props: CodeProps) => {
   const isHydrated = useHydrated();
 
   const language = isHydrated ? canonicalLanguage(lang) : '';
+  const isMermaid = lang === 'mermaid' || language === 'mermaid';
 
   const codeRef = createRef<HTMLElement>();
 
@@ -78,7 +79,7 @@ const Code = (props: CodeProps) => {
       ? syntaxHighlighter(code, language, codeOpts, { mdx: true })
       : code;
 
-  if (language === 'mermaid') {
+  if (isMermaid) {
     return code;
   }
 
