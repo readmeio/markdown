@@ -1,9 +1,10 @@
-import type { JSXContext } from './preprocess-jsx-expressions';
 import type { Root } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
+
+import { evaluateExpression, type JSXContext } from './preprocess-jsx-expressions';
 
 /**
  * AST transformer to evaluate MDX expressions using the provided context.
@@ -18,50 +19,24 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
       const expressionNode = node as MdxFlowExpression | MdxTextExpression;
       if (!('value' in expressionNode)) return;
 
-      // JSX attribute expressions are handled by preprocessing; code blocks are protected
       const expression = expressionNode.value.trim();
-
       // Skip if expression is empty (shouldn't happen, but defensive)
       if (!expression) return;
 
       try {
-        // Evaluate the expression using the context
-        const contextKeys = Object.keys(context);
-        const contextValues = Object.values(context);
+        const result = evaluateExpression(expression, context);
 
-        // If no context provided, leave expression as-is
-        if (contextKeys.length === 0) {
-          parent.children.splice(index, 1, {
-            type: 'text',
-            value: `{${expression}}`,
-            position: node.position,
-          });
-          return;
-        }
-
-        // eslint-disable-next-line no-new-func
-        const func = new Function(...contextKeys, `return ${expression}`);
-        const result = func(...contextValues);
-
-        // Convert result to text node(s)
-        if (result === null || result === undefined) {
-          // Replace with empty text node (don't remove, as it affects positioning)
-          parent.children.splice(index, 1, {
-            type: 'text',
-            value: '',
-            position: node.position,
-          });
-          return;
-        }
-
+        // Extract evaluated value text
         let textValue: string;
-        if (typeof result === 'object') {
+        if (result === null || result === undefined) {
+          textValue = '';
+        } else if (typeof result === 'object') {
           textValue = JSON.stringify(result);
         } else {
           textValue = String(result).replace(/\s+/g, ' ').trim();
         }
 
-        // Replace expression node with text node
+        // Replace expression node with text node since the expression is conceptually a text
         parent.children.splice(index, 1, {
           type: 'text',
           value: textValue,

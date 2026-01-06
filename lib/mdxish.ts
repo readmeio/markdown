@@ -25,6 +25,7 @@ import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
+import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
@@ -69,6 +70,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
+    .use(normalizeEmphasisAST)
     .use(magicBlockRestorer, { blocks })
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
