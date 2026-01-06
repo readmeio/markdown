@@ -2,7 +2,15 @@ import { preprocessJSXExpressions } from '../../processor/transform/mdxish/prepr
 
 describe('preprocessJSXExpressions', () => {
   describe('Step 3: Evaluate attribute expressions', () => {
-    it('should evaluate JSX attribute expressions and convert them to string attributes', () => {
+    it('should evaluate expressions in the attributes', () => {
+      const content = '<div style={{ height: 1+1 + "px" }}>Link</div>';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toContain('style="height: 2px"');
+      expect(result).not.toContain('style={{ height: 1+1 + "px" }}');
+    });
+
+    it('should replace variables with their values', () => {
       const context = {
         baseUrl: 'https://example.com',
         userId: '123',

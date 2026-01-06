@@ -6,12 +6,15 @@
  */
 import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+
+import { toAttributes } from '../../utils';
 
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
@@ -260,19 +263,36 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      return [
-        wrapPinnedBlocks(
-          {
-            children: [...textToBlock(calloutJson.title || ''), ...textToBlock(calloutJson.body || '')],
-            data: {
-              hName: 'rdme-callout',
-              hProperties: { icon, theme: theme || 'default', title: calloutJson.title, value: calloutJson.body },
-            },
-            type: 'rdme-callout',
-          },
-          json,
-        ),
-      ];
+      const titleBlocks = textToBlock(calloutJson.title || '');
+      const bodyBlocks = textToBlock(calloutJson.body || '');
+
+      const children: MdastNode[] = [];
+      if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
+        const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
+        const heading = {
+          type: 'heading',
+          depth: 3,
+          children: (firstTitle.children || []) as unknown[],
+        };
+        children.push(heading as unknown as MdastNode);
+        children.push(...titleBlocks.slice(1), ...bodyBlocks);
+      } else {
+        children.push(...titleBlocks, ...bodyBlocks);
+      }
+
+      // Create mdxJsxFlowElement directly for mdxish
+      const calloutElement: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+          'icon',
+          'theme',
+          'type',
+        ]),
+        children: children as MdxJsxFlowElement['children'],
+      };
+
+      return [wrapPinnedBlocks(calloutElement as unknown as MdastNode, json)];
     }
 
     // Parameters: renders as a table (used for API parameters, etc.)
@@ -392,6 +412,7 @@ const isBlockNode = (node: RootContent): boolean => {
     'rdme-callout',
     'html-block',
     'embed',
+    'mdxJsxFlowElement',
   ];
   return blockTypes.includes(node.type);
 };
@@ -423,16 +444,15 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
 
     // First pass: collect all replacements
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
-      if (!parent || index == null) return;
+      if (!parent || index == null) return undefined;
       const raw = magicBlockKeys.get(node.value);
-      if (!raw) return;
+      if (!raw) return undefined;
 
-      // Parse the original magic block and replace the placeholder with the result
       const children = parseMagicBlock(raw) as unknown as RootContent[];
-      if (!children.length) return;
+      if (!children.length) return undefined;
 
-      // If parent is a paragraph and we're inserting code-tabs (which must not be in paragraphs), lift them out
-      if (parent.type === 'paragraph' && children.some(child => child.type === 'code-tabs')) {
+      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
+      if (parent.type === 'paragraph' && children.some(child => isBlockNode(child))) {
         const blockNodes: RootContent[] = [];
         const inlineNodes: RootContent[] = [];
 
@@ -460,6 +480,7 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
         // Normal case: just replace the inlineCode with the children
         parent.children.splice(index, 1, ...children);
       }
+      return undefined;
     });
 
     // Second pass: apply replacements that require lifting block nodes out of paragraphs

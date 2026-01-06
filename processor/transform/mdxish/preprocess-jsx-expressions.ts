@@ -1,10 +1,3 @@
-/**
- * Pre-processes JSX-like expressions before markdown parsing.
- * Converts href={'value'} to href="value", evaluates {expressions}, etc.
- */
-
-export type JSXContext = Record<string, unknown>;
-
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {
   if (typeof Buffer !== 'undefined') {
@@ -36,6 +29,12 @@ interface ProtectCodeBlocksResult {
 }
 
 /**
+ * Pre-processes JSX-like expressions before markdown parsing.
+ * Converts href={'value'} to href="value", evaluates {expressions}, etc.
+ */
+export type JSXContext = Record<string, unknown>;
+
+/**
  * Evaluates a JavaScript expression using context variables.
  *
  * @param expression
@@ -48,7 +47,7 @@ interface ProtectCodeBlocksResult {
  * // Returns: 'https://example.com/api'
  * ```
  */
-function evaluateExpression(expression: string, context: JSXContext): unknown {
+export function evaluateExpression(expression: string, context: JSXContext) {
   const contextKeys = Object.keys(context);
   const contextValues = Object.values(context);
   // eslint-disable-next-line no-new-func
