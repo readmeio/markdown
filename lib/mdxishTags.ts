@@ -6,6 +6,7 @@ import { visit } from 'unist-util-visit';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import { isMDXElement } from '../processor/utils';
 
+import { componentTagPattern } from './constants';
 import { extractMagicBlocks } from './utils/extractMagicBlocks';
 
 const tags = (doc: string) => {
@@ -16,7 +17,7 @@ const tags = (doc: string) => {
   const tree = processor.parse(sanitizedDoc);
 
   visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (node.name?.match(/^[A-Z][A-Za-z_]*$/)) {
+    if (node.name?.match(componentTagPattern)) {
       set.add(node.name);
     }
   });

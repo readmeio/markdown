@@ -26,7 +26,7 @@ import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-block
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
-import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name.ts';
+import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 

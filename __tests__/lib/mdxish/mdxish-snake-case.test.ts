@@ -1,7 +1,7 @@
 import type { Element } from 'hast';
 
-import { mdxish } from '../../lib/mdxish';
-import { type RMDXModule } from '../../types';
+import { mdxish } from '../../../lib/mdxish';
+import { type RMDXModule } from '../../../types';
 
 const stubModule: RMDXModule = {
   default: () => null,

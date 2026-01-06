@@ -1,3 +1,5 @@
+import { componentTagPattern } from '../../../lib/constants';
+
 export type SnakeCaseMapping = Record<string, string>;
 
 export interface SnakeCasePreprocessResult {
@@ -19,8 +21,6 @@ export function processSnakeCaseComponent(content: string): SnakeCasePreprocessR
   const mapping: SnakeCaseMapping = {};
   const reverseMap = new Map<string, string>();
   let counter = 0;
-
-  const componentTagPattern = /<(\/?[A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>/g;
 
   const processedContent = content.replace(componentTagPattern, (match, tagName, attrs, selfClosing) => {
     if (!tagName.includes('_')) {
