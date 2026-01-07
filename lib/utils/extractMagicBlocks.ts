@@ -24,14 +24,18 @@ export function extractMagicBlocks(markdown: string) {
   const replaced = markdown.replace(MAGIC_BLOCK_REGEX, match => {
     /**
      * Key is the unique identifier for the magic block
-     * Token is a wrapper around the key to serialize & influences how the block is parsed in the pipeline
-     * with the temporary key
-     * - Use backticks so it becomes a code span, preventing remarkParse from parsing
-     *   special characters in the token as markdown syntax
-     * - Prepend a newline to the token to ensure it is parsed as a block level node
      */
     const key = `__MAGIC_BLOCK_${index}__`;
-    const token = `\n\`${key}\``;
+
+    /**
+     * Token is a wrapper around the `key` to serialize & influence how the
+     * magic block is parsed in the remark pipeline.
+     * - Use backticks so it becomes a code span, preventing `remarkParse` from
+     *   parsing special characters in the token as markdown syntax
+     * - Prepend a newline to ensure it is parsed as a block level node
+     * - Append a newline to ensure it is separated from following content
+     */
+    const token = `\n\`${key}\`\n`;
 
     blocks.push({ key, raw: match, token });
     index += 1;
@@ -44,18 +48,17 @@ export function extractMagicBlocks(markdown: string) {
 /**
  * Restore extracted magic blocks back into a markdown string.
  */
-export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {  
-  let content = replaced;
+export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {
+  // If a magic block is at the start or end of the document, the extraction
+  // token's newlines will have been trimmed during processing. We need to
+  // account for that here to ensure the token is found and replaced correctly.
+  // These extra newlines will be removed again when the final string is trimmed.
+  const content = `\n${replaced}\n`;
 
-  // If a magic block is at the start of the document, the extraction token's prepended 
-  // newline will have been trimmed during processing. We need to account for that here
-  // to ensure the token is found and replaced correctly.
-  const isTokenAtStart = content.startsWith(blocks[0]?.token.trimStart());
-  if (isTokenAtStart) {
-    content = `\n${content}`;
-  }
-
-  return blocks.reduce((acc, { token, raw }) => {
-    return acc.split(token).join(raw);
+  const restoredContent = blocks.reduce((acc, { token, raw }) => {
+    // Ensure each magic block is separated by newlines when restored.
+    return acc.split(token).join(`\n${raw}\n`);
   }, content);
+
+  return restoredContent.trim();
 }
