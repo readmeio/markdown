@@ -4,7 +4,6 @@ import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
 // Private Use Area character (U+E000) which is extremely unlikely to appear in real content.
-// Try to create a temporary string that is unlikely to appear in real content.
 const TEMP_TRUE_BOOLEAN_VALUE = 'readme-this-is-a-temporary-boolean-attribute-\uE000'
 const TEMP_FALSE_BOOLEAN_VALUE = 'readme-this-is-a-temporary-boolean-attribute-\uE001';
 
