@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 11.11.0
+### ✨ New & Improved
+
+* correctly parse malformed md syntax ([#1279](https://github.com/readmeio/markdown/issues/1279)) ([4bbd8fb](https://github.com/readmeio/markdown/commit/4bbd8fbb70ac1a5e96ebec2866957f34a88a33d0))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** can't render RC with snake_case name ([#1281](https://github.com/readmeio/markdown/issues/1281)) ([0e50d1c](https://github.com/readmeio/markdown/commit/0e50d1c03c0e964273b34f18ad8660421bc12495))
+* **extractMagicBlocks:** ensure magic blocks are surrounded by newlines ([#1286](https://github.com/readmeio/markdown/issues/1286)) ([67a6914](https://github.com/readmeio/markdown/commit/67a6914ae3207584cee265c0b850977e9b6b95e9))
+* **mdxish:** fix rendering callout from magic blocks ([#1275](https://github.com/readmeio/markdown/issues/1275)) ([171a5d8](https://github.com/readmeio/markdown/commit/171a5d89cc98ff25461e3f92a3c940895bd05bdc))
+* **mdxish:** jsx braces not evaluating ([#1256](https://github.com/readmeio/markdown/issues/1256)) ([f9fe3b7](https://github.com/readmeio/markdown/commit/f9fe3b7bc7c467b923b6f00e2553f88569a5200a))
+
 ## Version 11.10.1
 ### 🛠 Fixes & Updates
 

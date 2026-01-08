@@ -132,4 +132,31 @@ How are you?`;
     const output = await stripComments(input);
     expect(output).toMatchSnapshot();
   });
+
+  it('preserves hypen dividers with no newline after magic blocks', async () => {
+    const input = `First line
+[block:html]
+{
+  "html": "<div>i should not get removed</div>"
+}
+[/block]
+---
+### next heading
+Last line`;
+
+    const output = await stripComments(input);
+    expect(output).toBe(`First line
+
+[block:html]
+{
+  "html": "<div>i should not get removed</div>"
+}
+[/block]
+
+***
+
+### next heading
+
+Last line`);
+  });
 });
