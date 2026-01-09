@@ -1,14 +1,17 @@
 ---
-title: 'Callouts'
-category: 5fdf7610134322007389a6ed
-hidden: false
+title: Callouts
+category:
+  uri: uri-that-does-not-map-to-5fdf7610134322007389a6ed
 metadata:
   image:
-    0: 'https://files.readme.io/9134da7-rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png'
-    1: 'rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png'
-    2: 530
-    3: 173
-    4: '#edf3ec'
+    '0': >-
+      https://files.readme.io/9134da7-rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png
+    '1': rdmd.readme-stage-pr-2438.readme.ninja_docs_callouts.png
+    '2': 530
+    '3': 173
+    '4': '#edf3ec'
+privacy:
+  view: public
 ---
 
 ## Syntax

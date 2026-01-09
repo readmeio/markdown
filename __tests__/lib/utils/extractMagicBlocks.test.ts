@@ -23,21 +23,21 @@ End text.`;
     expect(replaced).toBe(`
 # Title
 Paragraph text.
-\n\`__MAGIC_BLOCK_0__\`
+\n\`__MAGIC_BLOCK_0__\`\n
 
 More text.
-\n\`__MAGIC_BLOCK_1__\`
+\n\`__MAGIC_BLOCK_1__\`\n
 End text.`);
 
     expect(blocks).toStrictEqual([
       {
         key: '__MAGIC_BLOCK_0__',
-        token: '\n`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`\n',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
       {
         key: '__MAGIC_BLOCK_1__',
-        token: '\n`__MAGIC_BLOCK_1__`',
+        token: '\n`__MAGIC_BLOCK_1__`\n',
         raw: expect.stringContaining('<b>second block</b>'),
       },
     ]);
@@ -59,12 +59,12 @@ end`;
 [block:html]
 [block:html]
 
-\n\`__MAGIC_BLOCK_0__\`
+\n\`__MAGIC_BLOCK_0__\`\n
 end`);
     expect(blocks).toStrictEqual([
       {
         key: '__MAGIC_BLOCK_0__',
-        token: '\n`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`\n',
         raw: expect.stringContaining('<h1>Hoo ha</h1>'),
       },
     ]);
@@ -76,15 +76,14 @@ describe('restoreMagicBlocks', () => {
     const replaced = `
 # Title
 Paragraph text.
-\`__MAGIC_BLOCK_0__\`
-
+\n\`__MAGIC_BLOCK_0__\`\n
 More text.
-\`__MAGIC_BLOCK_1__\`
+\n\`__MAGIC_BLOCK_1__\`\n
 End text.`;
     const blocks = [
       {
         key: '__MAGIC_BLOCK_0__',
-        token: '`__MAGIC_BLOCK_0__`',
+        token: '\n`__MAGIC_BLOCK_0__`\n',
         raw: `[block:html]
 {
   "html": "<h1>Hoo ha</h1>"
@@ -93,7 +92,7 @@ End text.`;
       },
       {
         key: '__MAGIC_BLOCK_1__',
-        token: '`__MAGIC_BLOCK_1__`',
+        token: '\n`__MAGIC_BLOCK_1__`\n',
         raw: `[block:html]
 {
   "html": "<b>second block</b>"
@@ -104,9 +103,9 @@ End text.`;
 
     const restored = restoreMagicBlocks(replaced, blocks);
 
-    expect(restored).toBe(`
-# Title
+    expect(restored).toBe(`# Title
 Paragraph text.
+
 [block:html]
 {
   "html": "<h1>Hoo ha</h1>"
@@ -114,11 +113,40 @@ Paragraph text.
 [/block]
 
 More text.
+
 [block:html]
 {
   "html": "<b>second block</b>"
 }
 [/block]
+
 End text.`);
+  });
+
+  it('should restore magic blocks at start of document', () => {
+    const replaced = `\`__MAGIC_BLOCK_0__\`
+# Title
+Some text.`;
+    const blocks = [
+      {
+        key: '__MAGIC_BLOCK_0__',
+        token: '\n`__MAGIC_BLOCK_0__`\n',
+        raw: `[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]`,
+      },
+    ];
+
+    const restored = restoreMagicBlocks(replaced, blocks);
+
+    expect(restored).toBe(`[block:html]
+{
+  "html": "<h1>Hoo ha</h1>"
+}
+[/block]
+# Title
+Some text.`);
   });
 });

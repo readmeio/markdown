@@ -6,9 +6,15 @@
  */
 import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
 import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import { visit } from 'unist-util-visit';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+import { SKIP, visit } from 'unist-util-visit';
+
+import { toAttributes } from '../../utils';
 
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
@@ -79,6 +85,9 @@ export interface ParseMagicBlockOptions {
   safeMode?: boolean;
 }
 
+/** Parses markdown in table cells */
+const cellParser = unified().use(remarkParse).use(remarkGfm);
+
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
  * Pinned blocks are displayed in a sidebar/floating position in the UI.
@@ -115,6 +124,16 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
+
+// Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
+const parseInline = (text: string): MdastNode[] => {
+  if (!text.trim()) return [{ type: 'text', value: '' }];
+  const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
+  return tree.children.flatMap(n =>
+    // This unwraps the extra p node that might appear & wrapping the content
+    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+  );
+};
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -244,19 +263,36 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      return [
-        wrapPinnedBlocks(
-          {
-            children: [...textToBlock(calloutJson.title || ''), ...textToBlock(calloutJson.body || '')],
-            data: {
-              hName: 'rdme-callout',
-              hProperties: { icon, theme: theme || 'default', title: calloutJson.title, value: calloutJson.body },
-            },
-            type: 'rdme-callout',
-          },
-          json,
-        ),
-      ];
+      const titleBlocks = textToBlock(calloutJson.title || '');
+      const bodyBlocks = textToBlock(calloutJson.body || '');
+
+      const children: MdastNode[] = [];
+      if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
+        const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
+        const heading = {
+          type: 'heading',
+          depth: 3,
+          children: (firstTitle.children || []) as unknown[],
+        };
+        children.push(heading as unknown as MdastNode);
+        children.push(...titleBlocks.slice(1), ...bodyBlocks);
+      } else {
+        children.push(...titleBlocks, ...bodyBlocks);
+      }
+
+      // Create mdxJsxFlowElement directly for mdxish
+      const calloutElement: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+          'icon',
+          'theme',
+          'type',
+        ]),
+        children: children as MdxJsxFlowElement['children'],
+      };
+
+      return [wrapPinnedBlocks(calloutElement as unknown as MdastNode, json)];
     }
 
     // Parameters: renders as a table (used for API parameters, etc.)
@@ -284,7 +320,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       }, [] as string[][]);
 
       // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
-      const tokenizeCell = compatibilityMode ? textToBlock : textToInline;
+      const tokenizeCell = compatibilityMode ? textToBlock : parseInline;
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
@@ -357,6 +393,13 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
+ * Check if a child node is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
+ */
+const needsUnwrapping = (child: RootContent): boolean => {
+  return child.type === 'mdxJsxFlowElement';
+};
+
+/**
  * Unified plugin that restores magic blocks from placeholder tokens.
  *
  * During preprocessing, extractMagicBlocks replaces [block:TYPE]...[/block]
@@ -372,15 +415,42 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
     // Find inlineCode nodes that match our placeholder tokens
+    const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
+
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
-      if (!parent || index == null) return;
+      if (!parent || index == null) return undefined;
       const raw = magicBlockKeys.get(node.value);
-      if (!raw) return;
+      if (!raw) return undefined;
 
-      // Parse the original magic block and replace the placeholder with the result
       const children = parseMagicBlock(raw) as unknown as RootContent[];
-      if (!children.length) return;
+      if (!children.length) return undefined;
 
+      if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
+        // Find paragraph's parent and unwrap
+        let paragraphParent: Parent | undefined;
+        visit(tree, 'paragraph', (p, pIndex, pParent) => {
+          if (p === parent && pParent && 'children' in pParent) {
+            paragraphParent = pParent as Parent;
+            return false;
+          }
+          return undefined;
+        });
+
+        if (paragraphParent) {
+          const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
+          if (paragraphIndex !== -1) {
+            modifications.push({ children, index: paragraphIndex, parent: paragraphParent });
+          }
+        }
+        return SKIP;
+      }
+
+      parent.children.splice(index, 1, ...children);
+      return [SKIP, index + children.length];
+    });
+
+    // Apply modifications in reverse order to avoid index shifting
+    modifications.reverse().forEach(({ children, index, parent }) => {
       parent.children.splice(index, 1, ...children);
     });
   };
