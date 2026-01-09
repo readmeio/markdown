@@ -42,7 +42,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
               // Our markdown renderer uses this to group these code blocks into a tabbed interface.
               (left, right) => {
                 // 0 = no newline between blocks
-                return  (left.type === 'code' && right.type === 'code') ? 0 : undefined;
+                return left.type === 'code' && right.type === 'code' ? 0 : undefined;
               },
             ],
           },
