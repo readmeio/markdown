@@ -129,6 +129,12 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const parseInline = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
   const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
+  
+  // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
+  if (tree.children.length > 1) {
+    return tree.children as MdastNode[];
+  }
+  
   return tree.children.flatMap(n =>
     // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
