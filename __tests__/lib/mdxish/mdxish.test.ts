@@ -1,6 +1,6 @@
 import type { Root } from 'hast';
 
-import { mdxish } from '../../../lib/mdxish';
+import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -13,9 +13,9 @@ describe('mdxish should render', () => {
   describe('relaxed md syntax, such as', () => {
     it('wrong bold syntax', () => {
       const md = `**Bold**
-  
+
 Normal
-  
+
 Hello** Wrong Bold**`;
       const tree = mdxish(md);
 
@@ -39,5 +39,14 @@ Hello** Wrong Bold**`;
       const strongTexts = getStrongTexts(tree);
       expect(strongTexts.length).toBeGreaterThanOrEqual(2);
     });
+  });
+});
+
+describe('mdxishAstProcessor', () => {
+  it('should return an ast', () => {
+    const md = 'rafe is cool';
+    const { processor, parserReadyContent } = mdxishAstProcessor(md);
+    expect(parserReadyContent).toBe(md);
+    expect(processor).toBeDefined();
   });
 });
