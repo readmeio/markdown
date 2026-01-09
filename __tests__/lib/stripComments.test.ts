@@ -118,4 +118,45 @@ Second code block
     const output = await stripComments(input);
     expect(output).toBe(input.trim());
   });
+
+  it('supports a magic block as the first line of the document', async () => {
+    const input = `[block:html]
+{
+  "html": "<div>\nHello\n</div>"
+}
+[/block]
+
+
+How are you?`;
+
+    const output = await stripComments(input);
+    expect(output).toMatchSnapshot();
+  });
+
+  it('preserves hypen dividers with no newline after magic blocks', async () => {
+    const input = `First line
+[block:html]
+{
+  "html": "<div>i should not get removed</div>"
+}
+[/block]
+---
+### next heading
+Last line`;
+
+    const output = await stripComments(input);
+    expect(output).toBe(`First line
+
+[block:html]
+{
+  "html": "<div>i should not get removed</div>"
+}
+[/block]
+
+***
+
+### next heading
+
+Last line`);
+  });
 });
