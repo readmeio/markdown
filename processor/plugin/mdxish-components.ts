@@ -55,7 +55,7 @@ function smartCamelCase(str: string): string {
   const sortedBoundaries = [...allBoundaries].sort((a, b) => b.length - a.length);
 
   return sortedBoundaries.reduce((res, word) => {
-    const regex = new RegExp(`(${word})([a-z])`, 'gi');
+    const regex = new RegExp(`(${word})([a-z])`, 'g');
     return res.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
   }, str);
 }
