@@ -107,9 +107,10 @@ const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
 /**
  * Transform PascalCase HTML blocks into mdxJsxFlowElement nodes.
  *
- * Remark parses unknown/custom component tags as raw HTML nodes. This transformer
- * identifies these patterns and converts them to proper MDX JSX elements so they
- * can be rendered as React components.
+ * Remark parses unknown/custom component tags as raw HTML nodes.
+ * These are the custom readme MDX syntax for components.
+ * This transformer identifies these patterns and converts them to proper MDX JSX elements so they
+ * can be rendered with their component definition code.
  *
  * ## Supported HTML Structures
  *
