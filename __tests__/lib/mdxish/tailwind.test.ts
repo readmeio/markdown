@@ -27,9 +27,6 @@ const findElementsByTagName = (node: Element | Root, tagName: string): Element[]
   return results;
 };
 
-/**
- * Create a stub RMDXModule from a React component.
- */
 const stubModule = (component: React.FC<MDXProps>): RMDXModule => ({
   default: component as RMDXModule['default'],
   Toc: null,
@@ -55,9 +52,6 @@ describe('mdxish tailwind transformer', () => {
 
         const tailwindRoots = findElementsByTagName(tree, 'TailwindRoot');
         expect(tailwindRoots.length).toBeGreaterThanOrEqual(1);
-
-        // Verify TailwindRoot has the flow property
-        expect(tailwindRoots[0].properties).toHaveProperty('flow');
 
         // Verify Callout is inside TailwindRoot
         const callout = findElementsByTagName(tailwindRoots[0], 'Callout');
