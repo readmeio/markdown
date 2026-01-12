@@ -143,6 +143,48 @@ ${JSON.stringify(
       expect((cell0.children[0] as Element).tagName).toBe('strong');
       expect((cell1.children[0] as Element).tagName).toBe('em');
     });
+
+    it('should preserve multiple paragraphs with links in table cells', () => {
+      const md = `
+[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Feature',
+      'h-1': 'Description',
+      '0-0':
+        '**Webhooks**  \nProfile activity event delivery service to your listener endpoint. Configured via API: you provide the endpoint and then consume webhook notifications.  \n  \n[Introduction to Webhooks v3](doc:an-introduction-to-webhooks-v3-1)',
+      '0-1': 'Available',
+    },
+    cols: 2,
+    rows: 1,
+    align: ['left', 'left'],
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(4);
+
+      // Table is the 3rd child
+      const element = ast.children[2] as Element;
+      expect(element.tagName).toBe('table');
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell = row.children[0] as Element;
+
+      expect(cell.children.length).toBeGreaterThan(1);
+      expect(cell.children[0].type).toBe('element');
+      expect((cell.children[0] as Element).tagName).toBe('p');
+
+      const lastParagraph = cell.children[cell.children.length - 1] as Element;
+      expect(lastParagraph.tagName).toBe('p');
+      expect((lastParagraph.children[0] as Element).tagName).toBe('a');
+      expect((lastParagraph.children[0] as Element).properties.href).toBe('doc:an-introduction-to-webhooks-v3-1');
+    });
   });
 
   describe('callout block', () => {
