@@ -141,20 +141,6 @@ describe('mdxish-component-blocks', () => {
           attributes: [{ type: 'mdxJsxAttribute', name: 'theme', value: 'info' }],
         });
       });
-    });
-
-    describe('Case 3: Inline components', () => {
-      it('should transform inline component with text content', () => {
-        const markdown = '<MyComponent>Click me</MyComponent>';
-        const tree = parseWithPlugin(markdown);
-
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
-        expect(mdxNodes).toHaveLength(1);
-        expect(mdxNodes[0]).toMatchObject({
-          type: 'mdxJsxFlowElement',
-          name: 'MyComponent',
-        });
-      });
 
       it('should transform inline component with spaces around content', () => {
         const markdown = '<MyComponent>   content with spaces   </MyComponent>';
@@ -169,7 +155,7 @@ describe('mdxish-component-blocks', () => {
       });
     });
 
-    describe('Case 4: Block components', () => {
+    describe('Case 3: Multi-line components', () => {
       it('should transform a block component with markdown content', () => {
         const markdown = `<MyComponent>
 Some **markdown** content

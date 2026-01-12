@@ -187,6 +187,9 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  *
  * ### 2. Self-contained blocks (entire component in single HTML node)
  * ```
+ * <Button>Click me</Button>
+ * ```
+ * ```
  * <Component>
  *   <h2>Title</h2>
  *   <p>Content</p>
@@ -198,19 +201,14 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * ### 3. Multi-sibling components (closing tag in a following sibling)
  * Handles various structures where the closing tag is in a later sibling, such as:
  *
- * #### 3a. Inline components (closing tag as sibling HTML node)
- * ```
- * <Button>Click me</Button>
- * ```
- *
- * #### 3b. Block components (closing tag in sibling paragraph)
+ * #### 3a. Block components (closing tag in sibling paragraph)
  * ```
  * <Callout>
  * Some **markdown** content
  * </Callout>
  * ```
  *
- * #### 3c. Multi-paragraph components (closing tag several siblings away)
+ * #### 3b. Multi-paragraph components (closing tag several siblings away)
  * ```
  * <Callout>
  *
@@ -220,7 +218,7 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * </Callout>
  * ```
  *
- * #### 3d. Nested components split by blank lines (closing tag embedded in HTML sibling)
+ * #### 3c. Nested components split by blank lines (closing tag embedded in HTML sibling)
  * ```
  * <Outer>
  *   <Inner>content</Inner>
