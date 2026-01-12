@@ -130,7 +130,8 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
   const closingTagStr = `</${tag}>`;
   const maxIndex = Math.min(startIndex + MAX_LOOKAHEAD, parent.children.length);
 
-  for (let i = startIndex + 1; i < maxIndex; i += 1) {
+  let i = startIndex + 1;
+  for (; i < maxIndex; i += 1) {
     const sibling = parent.children[i];
 
     // Check HTML siblings
@@ -159,6 +160,13 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
         return { closingIndex: i, extraClosingChildren: [], strippedParagraph: paragraph };
       }
     }
+  }
+
+  if (i < parent.children.length) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `Closing tag </${tag}> not found within ${MAX_LOOKAHEAD} siblings, stopping scan`,
+    );
   }
 
   return null;
@@ -299,7 +307,8 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       startPosition: node.position,
       endPosition: parent.children[closingIndex]?.position,
     });
-    substituteNodeWithMdxNode(parent, index, componentNode);
+    // Remove all nodes from opening tag to closing tag (inclusive) and replace with component node
+    (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode);
   };
 
   // Travel the tree depth-first
