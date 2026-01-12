@@ -24,7 +24,7 @@ const injectTailwindRoot =
     if (!('children' in parent)) return;
 
     const attrs = {
-      flow: String(node.type === 'mdxJsxFlowElement'),
+      flow: node.type === 'mdxJsxFlowElement',
     };
 
     const wrapper = {
