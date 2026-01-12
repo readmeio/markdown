@@ -5,11 +5,14 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-const tagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
-const attributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
+const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
+const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
-/** Maximum number of siblings to scan forward when looking for a closing tag */
-const MAX_LOOKAHEAD = 20;
+/**
+ * Maximum number of siblings to scan forward when looking for a closing tag
+ * to avoid scanning too far and degrading performance
+ */
+const MAX_LOOKAHEAD = 30;
 
 /**
  * Tags that have dedicated transformers and should NOT be handled by this plugin.
@@ -39,13 +42,13 @@ export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   const attrString = raw.trim();
   if (!attrString) return attributes;
 
-  attributePattern.lastIndex = 0;
-  let match: RegExpExecArray | null = attributePattern.exec(attrString);
+  tagAttributePattern.lastIndex = 0;
+  let match: RegExpExecArray | null = tagAttributePattern.exec(attrString);
   while (match !== null) {
     const [, attrName, attrValue] = match;
     const value = attrValue ? attrValue.replace(/^['"]|['"]$/g, '') : null;
     attributes.push({ type: 'mdxJsxAttribute', name: attrName, value });
-    match = attributePattern.exec(attrString);
+    match = tagAttributePattern.exec(attrString);
   }
 
   return attributes;
@@ -55,15 +58,15 @@ export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
  * Parse an HTML tag string into structured data.
  */
 const parseTag = (value: string) => {
-  const match = value.match(tagPattern);
+  const match = value.match(pascalCaseTagPattern);
   if (!match) return null;
 
-  const [, tag, attrString = '', selfClosing = '', content = ''] = match;
+  const [, tag, attrString = '', selfClosing = '', contentAfterTag = ''] = match;
   return {
     tag,
     attributes: parseAttributes(attrString),
     selfClosing: !!selfClosing,
-    content,
+    contentAfterTag,
   };
 };
 
@@ -92,7 +95,7 @@ const createComponentNode = ({ tag, attributes, children, startPosition, endPosi
 /**
  * Remove a closing tag from a paragraph's children and return the updated paragraph.
  */
-const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
+const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
   if (!Array.isArray(node.children)) return { paragraph: node, found: false } as const;
 
   const children = [...node.children];
@@ -121,7 +124,7 @@ interface ScanResult {
  * - HTML siblings with embedded closing tag (e.g., `...\n</Tag>`)
  * - Paragraph siblings containing the closing tag as a child
  *
- * Returns null if not found within MAX_LOOKAHEAD siblings.
+ * Returns null if not found within MAX_LOOKAHEAD siblings
  */
 const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): ScanResult | null => {
   const closingTagStr = `</${tag}>`;
@@ -151,7 +154,7 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
 
     // Check paragraph siblings
     if (sibling.type === 'paragraph') {
-      const { paragraph, found } = stripClosingFromParagraph(sibling as Paragraph, tag);
+      const { paragraph, found } = stripClosingTagFromParagraph(sibling as Paragraph, tag);
       if (found) {
         return { closingIndex: i, extraClosingChildren: [], strippedParagraph: paragraph };
       }
@@ -161,13 +164,18 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
   return null;
 };
 
+const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
+  (parent.children as Node[]).splice(index, 1, mdxNode);
+};
+
 /**
- * Transform PascalCase HTML blocks into mdxJsxFlowElement nodes.
+ * Transform PascalCase HTML nodes into mdxJsxFlowElement nodes.
  *
  * Remark parses unknown/custom component tags as raw HTML nodes.
  * These are the custom readme MDX syntax for components.
  * This transformer identifies these patterns and converts them to proper MDX JSX elements so they
- * can be rendered with their component definition code.
+ * can be accurately recognized and rendered later with their component definition code.
+ * Though for some tags, we need to handle them specially
  *
  * ## Supported HTML Structures
  *
@@ -188,18 +196,11 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
  * The opening tag, content, and closing tag are all captured in one HTML node.
  *
  * ### 3. Multi-sibling components (closing tag in a following sibling)
- * Handles various structures where the closing tag is in a later sibling:
+ * Handles various structures where the closing tag is in a later sibling, such as:
  *
  * #### 3a. Inline components (closing tag as sibling HTML node)
  * ```
  * <Button>Click me</Button>
- * ```
- * Parsed as:
- * ```
- * paragraph
- *   html: "<Button>"
- *   text: "Click me"
- *   html: "</Button>"
  * ```
  *
  * #### 3b. Block components (closing tag in sibling paragraph)
@@ -227,8 +228,6 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
  *   <Inner>content</Inner>
  * </Outer>
  * ```
- *
- * Uses forward scanning with MAX_LOOKAHEAD limit to find closing tags.
  */
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
@@ -236,18 +235,17 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
-
     if ('children' in node && Array.isArray(node.children)) {
       stack.push(node as Parent);
     }
 
+    // Only visit HTML nodes with an actual html tag
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
-
     const parsed = parseTag(value);
     if (!parsed) return;
 
-    const { tag, attributes, selfClosing, content = '' } = parsed;
+    const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
     // Skip tags that have dedicated transformers
     if (EXCLUDED_TAGS.has(tag)) return;
@@ -262,20 +260,20 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         children: [],
         startPosition: node.position,
       });
-      (parent.children as Node[]).splice(index, 1, componentNode as Node);
+      substituteNodeWithMdxNode(parent, index, componentNode);
       return;
     }
 
     // Case 2: Self-contained block (closing tag in content)
-    if (content.includes(closingTagStr)) {
-      const innerContent = content.substring(0, content.lastIndexOf(closingTagStr)).trim();
+    if (contentAfterTag.includes(closingTagStr)) {
+      const componentInnerContent = contentAfterTag.substring(0, contentAfterTag.lastIndexOf(closingTagStr)).trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
-        children: innerContent ? (parseMdChildren(innerContent) as MdxJsxFlowElement['children']) : [],
+        children: componentInnerContent ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
         startPosition: node.position,
       });
-      (parent.children as Node[]).splice(index, 1, componentNode as Node);
+      substituteNodeWithMdxNode(parent, index, componentNode);
       return;
     }
 
@@ -285,7 +283,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     if (!scanResult) return;
 
     const { closingIndex, extraClosingChildren, strippedParagraph } = scanResult;
-    const extraChildren = content ? (parseMdChildren(content.trimStart()) as MdxJsxFlowElement['children']) : [];
+    const extraChildren = contentAfterTag ? (parseMdChildren(contentAfterTag.trimStart()) as MdxJsxFlowElement['children']) : [];
 
     // Collect all intermediate siblings between opening tag and closing tag
     const intermediateChildren = parent.children.slice(index + 1, closingIndex) as MdxJsxFlowElement['children'];
@@ -303,9 +301,10 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       startPosition: node.position,
       endPosition: parent.children[closingIndex]?.position,
     });
-    (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode as Node);
+    substituteNodeWithMdxNode(parent, index, componentNode);
   };
 
+  // Travel the tree depth-first
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {

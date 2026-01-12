@@ -3,8 +3,7 @@ import type { Element, Root, RootContent } from 'hast';
 
 import { describe, it, expect } from 'vitest';
 
-import { mix } from '../../../lib';
-import { mdxish } from '../../../lib/mdxish';
+import { mix, mdxish } from '../../../lib';
 
 describe('rehypeMdxishComponents', () => {
   it('should remove non-existent custom components from the tree', () => {
