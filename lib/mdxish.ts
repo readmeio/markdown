@@ -1,5 +1,6 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
+import type { Root as MdastRoot } from 'mdast';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
@@ -9,6 +10,7 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
@@ -93,6 +95,17 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
      */
     parserReadyContent,
   };
+}
+
+/**
+ * Converts an Mdast to a Markdown string.
+ */
+export function mdxishMdastToMd(mdast: MdastRoot) {
+  const md = unified().use(remarkGfm).use(remarkStringify, {
+    bullet: '-',
+    emphasis: '_',
+  }).stringify(mdast);
+  return md;
 }
 
 /**

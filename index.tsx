@@ -22,6 +22,7 @@ export {
   mdx,
   mdxish,
   mdxishAstProcessor,
+  mdxishMdastToMd,
   mdxishTags,
   migrate,
   mix,
