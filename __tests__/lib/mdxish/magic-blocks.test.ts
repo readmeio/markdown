@@ -187,6 +187,46 @@ ${JSON.stringify(
     });
   });
 
+  describe('recipe block', () => {
+    it('should restore tutorial-tile block to Recipe component', () => {
+      const md = `[block:tutorial-tile]
+{
+  "emoji": "🦉",
+  "slug": "whoaaa",
+  "title": "WHOAAA"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
+      const recipeElement = ast.children[0] as Element;
+      expect(recipeElement.tagName).toBe('Recipe');
+      expect(recipeElement.properties.slug).toBe('whoaaa');
+      expect(recipeElement.properties.title).toBe('WHOAAA');
+    });
+
+    it('should restore recipe block to Recipe component', () => {
+      const md = `[block:recipe]
+{
+  "slug": "test-recipe",
+  "title": "Test Recipe",
+  "emoji": "👉"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
+      const recipeElement = ast.children[0] as Element;
+      expect(recipeElement.tagName).toBe('Recipe');
+      expect(recipeElement.properties.slug).toBe('test-recipe');
+      expect(recipeElement.properties.title).toBe('Test Recipe');
+    });
+  });
+
   describe('callout block', () => {
     it('should restore callout block', () => {
       const md = '[block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]';
