@@ -8,6 +8,16 @@ import { unified } from 'unified';
 const tagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const attributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
+/** Maximum number of siblings to scan forward when looking for a closing tag */
+const MAX_LOOKAHEAD = 20;
+
+/**
+ * Tags that have dedicated transformers and should NOT be handled by this plugin.
+ * These components have special parsing requirements that the generic component
+ * block transformer cannot handle correctly.
+ */
+const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table']);
+
 const inlineMdProcessor = unified().use(remarkParse);
 
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
@@ -80,15 +90,6 @@ const createComponentNode = ({ tag, attributes, children, startPosition, endPosi
 });
 
 /**
- * Find the index of a closing tag among sibling nodes.
- * Returns -1 if not found.
- */
-const findClosingTagIndex = (parent: Parent, startIndex: number, tag: string): number =>
-  parent.children.findIndex(
-    (child, idx) => idx > startIndex && child.type === 'html' && isClosingTag((child as { value?: string }).value || '', tag),
-  );
-
-/**
  * Remove a closing tag from a paragraph's children and return the updated paragraph.
  */
 const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
@@ -102,6 +103,62 @@ const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
 
   children.splice(closingIndex, 1);
   return { paragraph: { ...node, children }, found: true } as const;
+};
+
+interface ScanResult {
+  /** Index of the sibling containing the closing tag */
+  closingIndex: number;
+  /** Additional children parsed from the closing sibling (content before closing tag in HTML blocks) */
+  extraClosingChildren: MdxJsxFlowElement['children'];
+  /** For paragraph siblings, the paragraph with closing tag stripped */
+  strippedParagraph?: Paragraph;
+}
+
+/**
+ * Scan forward through siblings to find a closing tag.
+ * Handles:
+ * - Exact match HTML siblings (e.g., `</Tag>`)
+ * - HTML siblings with embedded closing tag (e.g., `...\n</Tag>`)
+ * - Paragraph siblings containing the closing tag as a child
+ *
+ * Returns null if not found within MAX_LOOKAHEAD siblings.
+ */
+const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): ScanResult | null => {
+  const closingTagStr = `</${tag}>`;
+  const maxIndex = Math.min(startIndex + MAX_LOOKAHEAD, parent.children.length);
+
+  for (let i = startIndex + 1; i < maxIndex; i += 1) {
+    const sibling = parent.children[i];
+
+    // Check HTML siblings
+    if (sibling.type === 'html') {
+      const siblingValue = (sibling as { value?: string }).value || '';
+
+      // Exact match (standalone closing tag)
+      if (isClosingTag(siblingValue, tag)) {
+        return { closingIndex: i, extraClosingChildren: [] };
+      }
+
+      // Embedded closing tag (closing tag at end of HTML block content)
+      if (siblingValue.includes(closingTagStr)) {
+        const contentBeforeClose = siblingValue.substring(0, siblingValue.lastIndexOf(closingTagStr)).trim();
+        const extraChildren = contentBeforeClose
+          ? (parseMdChildren(contentBeforeClose) as MdxJsxFlowElement['children'])
+          : [];
+        return { closingIndex: i, extraClosingChildren: extraChildren };
+      }
+    }
+
+    // Check paragraph siblings
+    if (sibling.type === 'paragraph') {
+      const { paragraph, found } = stripClosingFromParagraph(sibling as Paragraph, tag);
+      if (found) {
+        return { closingIndex: i, extraClosingChildren: [], strippedParagraph: paragraph };
+      }
+    }
+  }
+
+  return null;
 };
 
 /**
@@ -130,7 +187,10 @@ const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
  * Parsed as: `html: "<Component>\n  <h2>Title</h2>\n  <p>Content</p>\n</Component>"`
  * The opening tag, content, and closing tag are all captured in one HTML node.
  *
- * ### 3. Inline components (opening/closing tags as siblings in same paragraph)
+ * ### 3. Multi-sibling components (closing tag in a following sibling)
+ * Handles various structures where the closing tag is in a later sibling:
+ *
+ * #### 3a. Inline components (closing tag as sibling HTML node)
  * ```
  * <Button>Click me</Button>
  * ```
@@ -142,21 +202,33 @@ const stripClosingFromParagraph = (node: Paragraph, tag: string) => {
  *   html: "</Button>"
  * ```
  *
- * ### 4. Block components (opening tag followed by paragraph with closing tag)
+ * #### 3b. Block components (closing tag in sibling paragraph)
  * ```
  * <Callout>
  * Some **markdown** content
  * </Callout>
  * ```
- * Parsed as:
+ *
+ * #### 3c. Multi-paragraph components (closing tag several siblings away)
  * ```
- * html: "<Callout>"
- * paragraph
- *   text: "Some "
- *   strong: "markdown"
- *   text: " content"
- *   html: "</Callout>"
+ * <Callout>
+ *
+ * First paragraph
+ *
+ * Second paragraph
+ * </Callout>
  * ```
+ *
+ * #### 3d. Nested components split by blank lines (closing tag embedded in HTML sibling)
+ * ```
+ * <Outer>
+ *   <Inner>content</Inner>
+ *
+ *   <Inner>content</Inner>
+ * </Outer>
+ * ```
+ *
+ * Uses forward scanning with MAX_LOOKAHEAD limit to find closing tags.
  */
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
@@ -176,6 +248,10 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, content = '' } = parsed;
+
+    // Skip tags that have dedicated transformers
+    if (EXCLUDED_TAGS.has(tag)) return;
+
     const closingTagStr = `</${tag}>`;
 
     // Case 1: Self-closing tag
@@ -203,38 +279,31 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       return;
     }
 
-    // Case 3: Inline component (closing tag is sibling in same parent)
-    const closingIdx = findClosingTagIndex(parent, index, tag);
-    if (closingIdx !== -1) {
-      const siblingChildren = parent.children.slice(index + 1, closingIdx) as MdxJsxFlowElement['children'];
-      const extraChildren = content ? (parseMdChildren(content.trimStart()) as MdxJsxFlowElement['children']) : [];
-      const componentNode = createComponentNode({
-        tag,
-        attributes,
-        children: [...extraChildren, ...siblingChildren],
-        startPosition: node.position,
-        endPosition: parent.children[closingIdx]?.position,
-      });
-      (parent.children as Node[]).splice(index, closingIdx - index + 1, componentNode as Node);
-      return;
-    }
+    // Case 3: Multi-sibling component (closing tag in a following sibling)
+    // Scans forward through siblings to find closing tag in HTML or paragraph nodes
+    const scanResult = scanForClosingTag(parent, index, tag);
+    if (!scanResult) return;
 
-    // Case 4: Block component (closing tag in next sibling paragraph)
-    const next = parent.children[index + 1];
-    if (!next || next.type !== 'paragraph') return;
-
-    const { paragraph, found } = stripClosingFromParagraph(next as Paragraph, tag);
-    if (!found) return;
-
+    const { closingIndex, extraClosingChildren, strippedParagraph } = scanResult;
     const extraChildren = content ? (parseMdChildren(content.trimStart()) as MdxJsxFlowElement['children']) : [];
+
+    // Collect all intermediate siblings between opening tag and closing tag
+    const intermediateChildren = parent.children.slice(index + 1, closingIndex) as MdxJsxFlowElement['children'];
+
+    // For paragraph siblings, include the paragraph's children (with closing tag stripped)
+    // For HTML siblings, include any content parsed from before the closing tag
+    const closingChildren = strippedParagraph
+      ? (strippedParagraph.children as MdxJsxFlowElement['children'])
+      : extraClosingChildren;
+
     const componentNode = createComponentNode({
       tag,
       attributes,
-      children: [...extraChildren, ...(paragraph.children as MdxJsxFlowElement['children'])],
+      children: [...extraChildren, ...intermediateChildren, ...closingChildren],
       startPosition: node.position,
-      endPosition: next.position,
+      endPosition: parent.children[closingIndex]?.position,
     });
-    (parent.children as Node[]).splice(index, 2, componentNode as Node);
+    (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode as Node);
   };
 
   while (stack.length) {

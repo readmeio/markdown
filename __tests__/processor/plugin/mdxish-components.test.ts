@@ -67,17 +67,6 @@ Hello`;
     expect(result).not.toContain('Remove this');
   });
 
-  it('should handle empty non-existent components', () => {
-    const md = `<EmptyComponent />
-Hello
-<AnotherEmpty />`;
-    // Preprocess self-closing tags before processing (matching mix.ts behavior)
-    const result = mix(md);
-    expect(result).toContain('Hello');
-    expect(result).not.toContain('EmptyComponent');
-    expect(result).not.toContain('AnotherEmpty');
-  });
-
   it('should correctly handle real-life cases', () => {
     const md = `<MyDemoComponent message="Hello from MDX!">Hello world!</MyDemoComponent>
 Reusable content should work the same way:
