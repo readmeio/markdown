@@ -89,7 +89,7 @@ hello
  * HTML lowercases attribute names, so `iconColor` becomes `iconcolor`.
  * The smartCamelCase function restores camelCase using known word boundaries.
  *
- * Regression test for: https://github.com/readmeio/markdown/issues/XXX
+ * Regression test for: https://linear.app/readme-io/issue/CX-2731/mdx-ish-custom-components-have-issues-working-loading
  * Bug: 'iconcolor' was becoming 'iconColOr' instead of 'iconColor'
  * Fix: Changed regex from case-insensitive ('gi') to case-sensitive ('g')
  */
