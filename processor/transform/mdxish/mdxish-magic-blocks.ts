@@ -79,6 +79,15 @@ interface HtmlJson extends MagicBlockJson {
   html: string;
 }
 
+interface RecipeJson extends MagicBlockJson {
+  backgroundColor?: string;
+  emoji?: string;
+  id?: string;
+  link?: string;
+  slug: string;
+  title: string;
+}
+
 export interface ParseMagicBlockOptions {
   alwaysThrow?: boolean;
   compatibilityMode?: boolean;
@@ -129,6 +138,12 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const parseInline = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
   const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
+  
+  // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
+  if (tree.children.length > 1) {
+    return tree.children as MdastNode[];
+  }
+  
   return tree.children.flatMap(n =>
     // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
@@ -377,6 +392,27 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
           json,
         ),
       ];
+    }
+
+    // Recipe/TutorialTile: renders as Recipe component
+    case 'recipe':
+    case 'tutorial-tile': {
+      const recipeJson = json as RecipeJson;
+      if (!recipeJson.slug || !recipeJson.title) return [];
+
+      // Create mdxJsxFlowElement directly for mdxish flow
+      // Note: Don't wrap in pinned blocks for mdxish - rehypeMdxishComponents handles component resolution
+      // The node structure matches what mdxishComponentBlocks creates for JSX tags
+      const recipeNode: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Recipe',
+        attributes: toAttributes(recipeJson, ['slug', 'title']),
+        children: [],
+        // Position is optional but helps with debugging
+        position: undefined,
+      };
+
+      return [recipeNode as unknown as MdastNode];
     }
 
     // Unknown block types: render as generic div with JSON properties
