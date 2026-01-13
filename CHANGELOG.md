@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 11.12.0
+### ✨ New & Improved
+
+* **mdxish:** support tutorial tile in mdxish ([#1273](https://github.com/readmeio/markdown/issues/1273)) ([94c3753](https://github.com/readmeio/markdown/commit/94c37531993be78e847d494331e77f3f8dbc94ff))
+
+### 🛠 Fixes & Updates
+
+* space/line break got stripped in table cell ([#1288](https://github.com/readmeio/markdown/issues/1288)) ([223b6cf](https://github.com/readmeio/markdown/commit/223b6cf63450c6966dc232dda01811b321449856))
+
 ## Version 11.11.0
 ### ✨ New & Improved
 
