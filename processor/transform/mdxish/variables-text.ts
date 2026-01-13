@@ -31,6 +31,8 @@ const variablesTextTransformer: Plugin = () => tree => {
     if (parent.type === 'inlineCode') return;
 
     const text = node.value;
+    if (typeof text !== 'string' || !text.trim()) return;
+
     if (!text.includes('{user.') && !text.includes('{user[')) return;
 
     const matches = [...text.matchAll(USER_VAR_REGEX)];
