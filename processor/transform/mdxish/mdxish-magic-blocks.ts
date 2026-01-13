@@ -371,9 +371,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         wrapPinnedBlocks(
           {
             children: [
-              { children: [{ type: 'text', value: title || null }], title: embedJson.provider, type: 'link', url },
+              { children: [{ type: 'text', value: title || '' }], title: embedJson.provider, type: 'link', url },
             ],
-            data: { hName: 'rdme-embed', hProperties: { ...embedJson, href: url, html, title, url } },
+            data: { hName: 'embed-block', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
           json,
