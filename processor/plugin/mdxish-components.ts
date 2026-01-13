@@ -54,8 +54,11 @@ function smartCamelCase(str: string): string {
   // Sort by length (longest first) to prevent shorter matches (e.g., "column" in "columns")
   const sortedBoundaries = [...allBoundaries].sort((a, b) => b.length - a.length);
 
+  // Use case-sensitive matching ('g' not 'gi') so that once a letter is
+  // capitalized by a longer boundary, shorter boundaries won't re-match it.
+  // This prevents issues like 'iconcolor' becoming 'iconColOr' instead of 'iconColor'.
   return sortedBoundaries.reduce((res, word) => {
-    const regex = new RegExp(`(${word})([a-z])`, 'gi');
+    const regex = new RegExp(`(${word})([a-z])`, 'g');
     return res.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
   }, str);
 }
