@@ -295,14 +295,18 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         children.push(...titleBlocks, ...bodyBlocks);
       }
 
+      // If there is no title or title is empty
+      const empty = !titleBlocks.length || !titleBlocks[0].children[0]?.value;
+
       // Create mdxJsxFlowElement directly for mdxish
       const calloutElement: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Callout',
-        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default', empty }, [
           'icon',
           'theme',
           'type',
+          'empty',
         ]),
         children: children as MdxJsxFlowElement['children'],
       };
