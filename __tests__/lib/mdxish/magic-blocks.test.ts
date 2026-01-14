@@ -68,8 +68,7 @@ ${JSON.stringify(
     });
 
     it('should convert html content inside table cells as nodes in the ast', () => {
-      const md = `
-[block:parameters]
+      const md = `[block:parameters]
 ${JSON.stringify(
   {
     data: {
@@ -107,8 +106,7 @@ ${JSON.stringify(
     });
 
     it('should restore markdown content inside table cells', () => {
-      const md = `
-[block:parameters]
+      const md = `[block:parameters]
 ${JSON.stringify(
   {
     data: {
