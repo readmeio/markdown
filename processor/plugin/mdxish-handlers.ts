@@ -49,7 +49,23 @@ const htmlBlockHandler: Handler = (_state, node) => {
   };
 };
 
+// Convert embed magic blocks to Embed components
+const embedHandler: Handler = (state, node) => {
+  // Assert to get the minimum properties we need
+  const { data } = node as { data?: { hName?: string; hProperties?: Properties } };
+
+  return {
+    type: 'element',
+    // To differentiate between regular embeds and magic block embeds,
+    // magic block embeds have a certain hName
+    tagName: data?.hName === NodeTypes.embedBlock ? 'Embed' : 'embed',
+    properties: data?.hProperties,
+    children: state.all(node),
+  };
+};
+
 export const mdxComponentHandlers: Handlers = {
+  embed: embedHandler,
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,

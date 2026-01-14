@@ -341,6 +341,35 @@ ${JSON.stringify(
     });
   });
 
+  describe('embed block', () => {
+    it('should restore embed block', () => {
+      const md = `[block:embed]
+{
+  "url": "https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4",
+  "provider": "youtube.com",
+  "href": "https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4",
+  "typeOfEmbed": "youtube"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      // Embed is wrapped in a paragraph, so we need to get the first child
+      const embedElement = (ast.children[0] as Element).children[0] as Element;
+
+      expect(embedElement.type).toBe('element');
+      expect(embedElement.tagName).toBe('embed');
+      expect(embedElement.properties.url).toBe(
+        'https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4',
+      );
+      expect(embedElement.properties.provider).toBe('youtube.com');
+      expect(embedElement.properties.href).toBe(
+        'https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4',
+      );
+      expect(embedElement.properties.typeOfEmbed).toBe('youtube');
+    });
+  });
+
   describe('callout block', () => {
     it('should restore callout block', () => {
       const md = '[block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]';
