@@ -139,7 +139,7 @@ const parseTableCell = (text: string): MdastNode[] => {
 
 // Parse markdown/HTML into block-level nodes (preserves paragraphs, headings, lists, etc.)
 const parseBlock = (text: string): MdastNode[] => {
-  if (!text.trim()) return [];
+  if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
