@@ -10,7 +10,43 @@ interface Options {
   variables?: Record<string, string>;
 }
 
+interface MdxExpressionNode {
+  data?: {
+    estree?: {
+      body: {
+        expression: {
+          object?: { name: string };
+          property?: { name?: string; type: string; value?: string };
+        };
+        type: string;
+      }[];
+      type: string;
+    };
+  };
+  type: string;
+}
+
 const STRIP_TAGS = ['script', 'style'];
+
+/**
+ * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
+ * Uses ESTree AST inspection, matching the approach in processor/transform/variables.ts
+ */
+function extractMdxVariableKey(node: MdxExpressionNode): string | undefined {
+  const estree = node.data?.estree;
+  if (estree?.type !== 'Program') return undefined;
+
+  const [statement] = estree.body;
+  if (statement?.type !== 'ExpressionStatement') return undefined;
+
+  const { expression } = statement;
+  if (expression?.object?.name !== 'user') return undefined;
+
+  const { property } = expression;
+  if (!property || !['Literal', 'Identifier'].includes(property.type)) return undefined;
+
+  return property.type === 'Identifier' ? property.name : property.value;
+}
 
 function one(node: Nodes, opts: Options) {
   if (node.type === 'comment') return '';
@@ -35,7 +71,7 @@ function one(node: Nodes, opts: Options) {
 
         return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
       }
-      case 'Variable': {
+      case 'variable': {
         const key = node.properties.name.toString();
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
@@ -55,6 +91,14 @@ function one(node: Nodes, opts: Options) {
       }
       default:
         break;
+    }
+  }
+
+  // Handle MDX expressions like {user.name}
+  if ('type' in node && (node as { type: string }).type === 'mdxTextExpression') {
+    const key = extractMdxVariableKey(node as MdxExpressionNode);
+    if (key && 'variables' in opts) {
+      return opts.variables[key] || key;
     }
   }
 
