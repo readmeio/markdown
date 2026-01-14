@@ -61,7 +61,7 @@ const run = (string: string, _opts: RunOpts = {}) => {
   const { Toc: _Toc, toc, default: Content, stylesheet, ...exports } = exec(string);
 
   let Toc: React.FC | undefined;
-  const tocMdx = tocHastToMdx(toc, tocsByTag);
+  const tocMdx = tocHastToMdx(toc, tocsByTag, variables);
   if (tocMdx) {
     const compiledToc = compile(tocMdx);
     const tocModule = exec(compiledToc, { useMDXComponents: () => ({ p: Fragment }) });
