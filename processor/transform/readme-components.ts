@@ -201,10 +201,21 @@ const coerceJsxToMd =
         delete hProperties.href;
       }
 
+      // Unwrap any autolinked children to prevent nested links.
+      // GFM's autolink feature can convert URL-like text inside Anchor children
+      // into link nodes, which would create invalid nested links when Anchor
+      // is converted back to a link node.
+      const children = (node.children as PhrasingContent[]).flatMap(child => {
+        if (child.type === 'link') {
+          return (child as Link).children;
+        }
+        return child;
+      });
+
       // @ts-expect-error we don't have a mechanism to enforce the URL attribute type right now
       const mdNode: Link = {
         ...hProperties,
-        children: node.children as PhrasingContent[],
+        children,
         type: types[node.name],
         position: node.position,
       };
