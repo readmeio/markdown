@@ -1,7 +1,6 @@
 import type { Root } from 'hast';
-import type { Root as MdastRoot } from 'mdast';
 
-import { mdxish, mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib/mdxish';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -40,31 +39,5 @@ Hello** Wrong Bold**`;
       const strongTexts = getStrongTexts(tree);
       expect(strongTexts.length).toBeGreaterThanOrEqual(2);
     });
-  });
-});
-
-describe('mdxishAstProcessor', () => {
-  it('should return an ast', () => {
-    const md = 'rafe is cool';
-    const { processor, parserReadyContent } = mdxishAstProcessor(md);
-    expect(parserReadyContent).toBe(md);
-    expect(processor).toBeDefined();
-  });
-});
-
-describe('mdxishMdastToMd', () => {
-  it('should convert a simple paragraph', () => {
-    const mdast: MdastRoot = {
-      type: 'root',
-      children: [
-        {
-          type: 'paragraph',
-          children: [{ type: 'text', value: 'Hello world' }],
-        },
-      ],
-    };
-
-    const result = mdxishMdastToMd(mdast);
-    expect(result).toBe('Hello world\n');
   });
 });
