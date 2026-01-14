@@ -26,11 +26,13 @@ import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressi
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
+import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
+import { preserveBooleanProperties, restoreBooleanProperties } from '../processor/transform/mdxish/retain-boolean-attributes';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -127,7 +129,10 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
+    .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
+    .use(restoreBooleanProperties)
+    .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(rehypeSlug)
     .use(rehypeMdxishComponents, {
       components,

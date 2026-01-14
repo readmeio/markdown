@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 11.12.1
+### 🛠 Fixes & Updates
+
+* check not null before checking value in transformer ([#1291](https://github.com/readmeio/markdown/issues/1291)) ([decb5f4](https://github.com/readmeio/markdown/commit/decb5f4bcb4a1470908e62e6e33dcdb42480ccd7))
+* **mdxish:** empty heading for callouts without a title ([#1285](https://github.com/readmeio/markdown/issues/1285)) ([126adbd](https://github.com/readmeio/markdown/commit/126adbd740184b25099be57f6ae8b8f3b174f8bb))
+* **mdxish:** more complete component syntax extraction ([#1290](https://github.com/readmeio/markdown/issues/1290)) ([b017682](https://github.com/readmeio/markdown/commit/b017682a71969bbc6a9933cf78cbbe447277e9fa))
+* **mdxish:** properly parse embed magic blocks ([#1258](https://github.com/readmeio/markdown/issues/1258)) ([8e8126a](https://github.com/readmeio/markdown/commit/8e8126a75c6dd1b20da5b66a889fd6202cb49d55))
+
+## Version 11.12.0
+### ✨ New & Improved
+
+* **mdxish:** support tutorial tile in mdxish ([#1273](https://github.com/readmeio/markdown/issues/1273)) ([94c3753](https://github.com/readmeio/markdown/commit/94c37531993be78e847d494331e77f3f8dbc94ff))
+
+### 🛠 Fixes & Updates
+
+* space/line break got stripped in table cell ([#1288](https://github.com/readmeio/markdown/issues/1288)) ([223b6cf](https://github.com/readmeio/markdown/commit/223b6cf63450c6966dc232dda01811b321449856))
+
 ## Version 11.11.0
 ### ✨ New & Improved
 
