@@ -56,11 +56,12 @@ ${JSON.stringify(
 
       const ast = mdxish(md);
 
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
-      expect(ast.children[2].type).toBe('element');
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
 
-      const element = ast.children[2] as Element;
+      expect(element).toBeDefined();
       expect(element.tagName).toBe('table');
       expect(element.children).toHaveLength(2);
       expect((element.children[0] as Element).tagName).toBe('thead');
@@ -86,11 +87,11 @@ ${JSON.stringify(
 [/block]`;
 
       const ast = mdxish(md);
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
 
-      // Table is the 3rd child
-      const element = ast.children[2] as Element;
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
       expect(element.tagName).toBe('table');
       expect(element.children).toHaveLength(2);
       expect((element.children[1] as Element).tagName).toBe('tbody');
@@ -124,11 +125,13 @@ ${JSON.stringify(
 [/block]`;
 
       const ast = mdxish(md);
-      // Some extra children are added to the AST by the mdxish wrapper
-      expect(ast.children).toHaveLength(4);
 
-      // Table is the 3rd child
-      const element = ast.children[2] as Element;
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
       expect(element.tagName).toBe('table');
       expect(element.children).toHaveLength(2);
       expect((element.children[1] as Element).tagName).toBe('tbody');
@@ -164,10 +167,13 @@ ${JSON.stringify(
 [/block]`;
 
       const ast = mdxish(md);
-      expect(ast.children).toHaveLength(4);
 
-      // Table is the 3rd child
-      const element = ast.children[2] as Element;
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
       expect(element.tagName).toBe('table');
 
       const tbody = element.children[1] as Element;
@@ -352,8 +358,8 @@ ${JSON.stringify(
 
       const ast = mdxish(md);
 
-      // Embed is wrapped in a paragraph, so we need to get the first child
-      const embedElement = (ast.children[0] as Element).children[0] as Element;
+      // Embed is a block-level element, so it should be lifted to root level
+      const embedElement = ast.children[0] as Element;
 
       expect(embedElement.type).toBe('element');
       expect(embedElement.tagName).toBe('embed');
