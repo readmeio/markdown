@@ -90,7 +90,4 @@ describe('mdxishAstProcessor', () => {
       ],
     });
   });
-
-  
-
 });
