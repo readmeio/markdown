@@ -1,5 +1,6 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
+import type { Root as MdastRoot } from 'mdast';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
@@ -9,9 +10,11 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
+import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
+import compilers from '../processor/compile';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -44,13 +47,7 @@ export interface MdxishOpts {
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
-/**
- * Process markdown content with MDX syntax support.
- * Detects and renders custom component tags from the components hash.
- *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
- */
-export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
 
   const components: CustomComponents = {
@@ -90,7 +87,47 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text (can't rely on remarkMdx)
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
-    .use(remarkGfm)
+    .use(remarkGfm);
+
+  return {
+    processor,
+    /**
+     * @todo we need to return this transformed content for now
+     * but ultimately need to properly tokenize our special markdown syntax
+     * into hast nodes instead of relying on transformed content
+     */
+    parserReadyContent,
+  };
+}
+
+/**
+ * Converts an Mdast to a Markdown string.
+ */
+export function mdxishMdastToMd(mdast: MdastRoot) {
+  const md = unified().use(remarkGfm).use(compilers).use(remarkStringify, {
+    bullet: '-',
+    emphasis: '_',
+  }).stringify(mdast);
+  return md;
+}
+
+/**
+ * Processes markdown content with MDX syntax support and returns a HAST.
+ * Detects and renders custom component tags from the components hash.
+ *
+ * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ */
+export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+  const { components: userComponents = {} } = opts;
+
+  const components: CustomComponents = {
+    ...loadComponents(),
+    ...userComponents,
+  };
+
+  const { processor, parserReadyContent } = mdxishAstProcessor(mdContent, opts);
+
+  processor
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
