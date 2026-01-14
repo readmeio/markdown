@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 11.13.0
+### ✨ New & Improved
+
+* **mdxish:** add mermaid support ([#1284](https://github.com/readmeio/markdown/issues/1284)) ([3f73461](https://github.com/readmeio/markdown/commit/3f734613c0fc8fe39d97297dc6f920328e04ed4e))
+* export mdxish ast processor ([#1289](https://github.com/readmeio/markdown/issues/1289)) ([ee4a4dc](https://github.com/readmeio/markdown/commit/ee4a4dc01a8b3d11e38f87af2ba3bb36334687da))
+* **mdxish:** parse content in callout magic blocks ([#1287](https://github.com/readmeio/markdown/issues/1287)) ([43481b7](https://github.com/readmeio/markdown/commit/43481b7bfe1355a96a8f264f4858ac5674e52733))
+
+### 🛠 Fixes & Updates
+
+* Image borders are not rendering ([#1280](https://github.com/readmeio/markdown/issues/1280)) ([ff2ce93](https://github.com/readmeio/markdown/commit/ff2ce9375c95a147413cce3b11046953f178bbb8))
+* prevent nested links when Anchor label looks like a URL ([#1283](https://github.com/readmeio/markdown/issues/1283)) ([cd6a491](https://github.com/readmeio/markdown/commit/cd6a491d07cb98b1577b6ba54fb79d310eca8a26)), closes [readmeio/readme#16851](https://github.com/readmeio/readme/issues/16851)
+
 ## Version 11.12.1
 ### 🛠 Fixes & Updates
 
