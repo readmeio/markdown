@@ -94,8 +94,6 @@ export interface ParseMagicBlockOptions {
   safeMode?: boolean;
 }
 
-/** Parses markdown in table cells */
-const cellParser = unified().use(remarkParse).use(remarkGfm);
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
@@ -134,21 +132,33 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
+
+/** Parses markdown and html to markdown nodes */
+const contentParser = unified().use(remarkParse).use(remarkGfm);
+
 // Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
-const parseInline = (text: string): MdastNode[] => {
+const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
-  
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+
   // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
   }
-  
+
   return tree.children.flatMap(n =>
     // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
   );
 };
+
+// Parse markdown/HTML into block-level nodes (preserves paragraphs, headings, lists, etc.)
+const parseBlock = (text: string): MdastNode[] => {
+  if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  return tree.children as MdastNode[];
+};
+
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -278,8 +288,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      const titleBlocks = textToBlock(calloutJson.title || '');
-      const bodyBlocks = textToBlock(calloutJson.body || '');
+      // Parses html & markdown content
+      const titleBlocks = parseBlock(calloutJson.title || '');
+      const bodyBlocks = parseBlock(calloutJson.body || '');
 
       const children: MdastNode[] = [];
       if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
@@ -339,7 +350,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       }, [] as string[][]);
 
       // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
-      const tokenizeCell = compatibilityMode ? textToBlock : parseInline;
+      const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
