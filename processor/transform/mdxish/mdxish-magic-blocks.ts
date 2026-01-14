@@ -433,29 +433,31 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
+ * Block-level node types that cannot be nested inside paragraphs.
+ */
+const blockTypes = [
+  'heading',
+  'code',
+  'code-tabs',
+  'paragraph',
+  'blockquote',
+  'list',
+  'table',
+  'thematicBreak',
+  'html',
+  'yaml',
+  'toml',
+  'rdme-pin',
+  'rdme-callout',
+  'html-block',
+  'embed',
+  'mdxJsxFlowElement',
+];
+
+/**
  * Check if a node is a block-level node (cannot be inside a paragraph)
  */
-const isBlockNode = (node: RootContent): boolean => {
-  const blockTypes = [
-    'heading',
-    'code',
-    'code-tabs',
-    'paragraph',
-    'blockquote',
-    'list',
-    'table',
-    'thematicBreak',
-    'html',
-    'yaml',
-    'toml',
-    'rdme-pin',
-    'rdme-callout',
-    'html-block',
-    'embed',
-    'mdxJsxFlowElement',
-  ];
-  return blockTypes.includes(node.type);
-};
+const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.type);
 
 /**
  * Unified plugin that restores magic blocks from placeholder tokens.
