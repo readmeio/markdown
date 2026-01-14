@@ -531,8 +531,8 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
 
       // Find the paragraph's position in the root
-      const rootChildren = (tree as unknown as { children: RootContent[] }).children;
-      const paraIndex = rootChildren.indexOf(parent as never);
+      const rootChildren = tree.children;
+      const paraIndex = rootChildren.findIndex(child => child === parent);
       if (paraIndex === -1) {
         // Paragraph not found in root - fall back to normal replacement
         // This shouldn't happen normally, but handle it gracefully
