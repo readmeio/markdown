@@ -185,7 +185,7 @@ describe('mdxish callout compiler', () => {
 
     expect(callout.tagName).toBe('Callout');
     expect(callout.properties?.icon).toBe('🚧');
-    expect(callout.properties?.empty).toBe('');
+    expect(callout.properties?.empty).toBe(true);
     expect(callout.properties?.theme).toBe('warn');
   });
 
@@ -198,7 +198,7 @@ describe('mdxish callout compiler', () => {
 
     expect(callout.tagName).toBe('Callout');
     expect(callout.properties?.icon).toBe('🚧');
-    expect(callout.properties?.empty).toBe('');
+    expect(callout.properties?.empty).toBe(true);
     expect(callout.properties?.theme).toBe('warn');
   });
 
@@ -210,7 +210,7 @@ describe('mdxish callout compiler', () => {
 
     expect(callout.tagName).toBe('Callout');
     expect(callout.properties?.icon).toBe('ℹ️');
-    expect(callout.properties?.empty).toBe('');
+    expect(callout.properties?.empty).toBe(true);
     expect(callout.properties?.theme).toBe('info');
   });
 

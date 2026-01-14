@@ -79,6 +79,15 @@ interface HtmlJson extends MagicBlockJson {
   html: string;
 }
 
+interface RecipeJson extends MagicBlockJson {
+  backgroundColor?: string;
+  emoji?: string;
+  id?: string;
+  link?: string;
+  slug: string;
+  title: string;
+}
+
 export interface ParseMagicBlockOptions {
   alwaysThrow?: boolean;
   compatibilityMode?: boolean;
@@ -131,6 +140,12 @@ const contentParser = unified().use(remarkParse).use(remarkGfm);
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+
+  // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
+  if (tree.children.length > 1) {
+    return tree.children as MdastNode[];
+  }
+
   return tree.children.flatMap(n =>
     // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
@@ -291,14 +306,18 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         children.push(...titleBlocks, ...bodyBlocks);
       }
 
+      // If there is no title or title is empty
+      const empty = !titleBlocks.length || !titleBlocks[0].children[0]?.value;
+
       // Create mdxJsxFlowElement directly for mdxish
       const calloutElement: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Callout',
-        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default', empty }, [
           'icon',
           'theme',
           'type',
+          'empty',
         ]),
         children: children as MdxJsxFlowElement['children'],
       };
@@ -363,9 +382,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         wrapPinnedBlocks(
           {
             children: [
-              { children: [{ type: 'text', value: title || null }], title: embedJson.provider, type: 'link', url },
+              { children: [{ type: 'text', value: title || '' }], title: embedJson.provider, type: 'link', url },
             ],
-            data: { hName: 'rdme-embed', hProperties: { ...embedJson, href: url, html, title, url } },
+            data: { hName: 'embed-block', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
           json,
@@ -388,6 +407,27 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
           json,
         ),
       ];
+    }
+
+    // Recipe/TutorialTile: renders as Recipe component
+    case 'recipe':
+    case 'tutorial-tile': {
+      const recipeJson = json as RecipeJson;
+      if (!recipeJson.slug || !recipeJson.title) return [];
+
+      // Create mdxJsxFlowElement directly for mdxish flow
+      // Note: Don't wrap in pinned blocks for mdxish - rehypeMdxishComponents handles component resolution
+      // The node structure matches what mdxishComponentBlocks creates for JSX tags
+      const recipeNode: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Recipe',
+        attributes: toAttributes(recipeJson, ['slug', 'title']),
+        children: [],
+        // Position is optional but helps with debugging
+        position: undefined,
+      };
+
+      return [recipeNode as unknown as MdastNode];
     }
 
     // Unknown block types: render as generic div with JSON properties
