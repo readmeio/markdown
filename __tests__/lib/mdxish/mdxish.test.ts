@@ -13,9 +13,9 @@ describe('mdxish should render', () => {
   describe('relaxed md syntax, such as', () => {
     it('wrong bold syntax', () => {
       const md = `**Bold**
-
+  
 Normal
-
+  
 Hello** Wrong Bold**`;
       const tree = mdxish(md);
 
