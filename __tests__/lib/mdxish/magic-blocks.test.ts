@@ -389,5 +389,40 @@ ${JSON.stringify(
       expect(calloutElement.properties.icon).toBe('📘');
       expect(calloutElement.children).toHaveLength(2);
     });
+
+    it('should convert html content inside callout title and body as nodes in the ast', () => {
+      const md = `[block:callout]
+${JSON.stringify(
+        {
+          type: 'info',
+          title: '*HTML Title*',
+          body: '*Italic body*, **bold text**, `code block`',
+        },
+        null,
+        2,
+      )}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+
+      const calloutElement = ast.children[0] as Element;
+      expect(calloutElement.children.length).toBeGreaterThan(0);
+
+      // Title should be italicized
+      const titleHeading = calloutElement.children[0] as Element;
+      expect(titleHeading.tagName).toBe('h3');
+      expect(titleHeading.children.length).toBeGreaterThan(0);
+      expect((titleHeading.children[0] as Element).tagName).toBe('em');
+
+      // Body should have parsed markdown
+      const bodyParagraph = calloutElement.children[1] as Element;
+
+      // Body can have multiple inline elements (em, strong, code)
+      const bodyChildren = bodyParagraph.children as Element[];
+      expect(bodyChildren.some(child => child.tagName === 'em')).toBe(true);
+      expect(bodyChildren.some(child => child.tagName === 'strong')).toBe(true);
+      expect(bodyChildren.some(child => child.tagName === 'code')).toBe(true);
+    });
   });
 });
