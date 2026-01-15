@@ -150,7 +150,9 @@ const flattenVariables = (variables?: Variables): Record<string, string> => {
   if (!variables) return {};
   return {
     ...variables.user,
-    ...Object.fromEntries(variables.defaults.filter(d => !(d.name in variables.user)).map(d => [d.name, d.default])),
+    ...Object.fromEntries(
+      (variables.defaults || []).filter(d => !(d.name in variables.user)).map(d => [d.name, d.default]),
+    ),
   };
 };
 
