@@ -71,7 +71,9 @@ function one(node: Nodes, opts: Options) {
 
         return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
       }
-      case 'variable': {
+      // 'variable' (lowercase) comes from mdxish() after rehypeRaw normalizes HTML tag names
+      case 'variable':
+      case 'Variable': {
         const key = node.properties.name.toString();
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
