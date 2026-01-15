@@ -21,6 +21,8 @@ export {
   mdastV6,
   mdx,
   mdxish,
+  mdxishAstProcessor,
+  mdxishMdastToMd,
   mdxishTags,
   migrate,
   mix,
