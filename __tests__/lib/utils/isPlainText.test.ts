@@ -1,5 +1,5 @@
 import { hast, plain } from '../../../lib';
-import { isPlainText } from '../../../lib/utils/isPlainText';
+import isPlainText from '../../../lib/utils/isPlainText';
 
 describe('isPlainText', () => {
   describe('magic blocks detection', () => {
@@ -167,9 +167,9 @@ Some text {variable} more text.`;
       expect(plain(hast(content))).toBe('Title Some text variable more text.');
     });
 
-    it.skip('should not detect empty braces', () => {
+    it('should detect empty braces', () => {
       const content = '{}';
-      expect(isPlainText(content)).toBe(true);
+      expect(isPlainText(content)).toBe(false);
       expect(plain(hast(content))).toBe('');
     });
 

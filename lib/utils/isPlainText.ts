@@ -6,7 +6,7 @@
  * be stripped or sanitized by `.plain()`.
  *
  */
-export function isPlainText(content: string): boolean {
+export default function isPlainText(content: string): boolean {
   if (!content || typeof content !== 'string') {
     return true;
   }
@@ -75,9 +75,10 @@ export function isPlainText(content: string): boolean {
     }
   }
 
-  // Match simple MDX variable expressions like {variable}, {user.name}, {getValue()}
+  // Match simple MDX variable expressions like {variable}, {user.name}, {getValue()}, {}
   // Use bounded quantifier to prevent ReDoS - limit to reasonable variable name length
-  const jsxExpressionPattern = /\{[^}"]{1,50}\}/;
+  // Allow empty braces {} to be detected as well
+  const jsxExpressionPattern = /\{[^}"]{0,50}\}/;
   if (jsxExpressionPattern.test(contentForHtmlMdx)) {
     return false;
   }
