@@ -691,4 +691,88 @@ describe('mdxish table compiler', () => {
     expect(getCellText(normalCells[0])).toBe('Normal');
     expect(getCellText(normalCells[1])).toBe('Regular text');
   });
+
+  it('processes GFM tables with long separator lines and long cell content', () => {
+    const markdown = `| **File Name**      | **Description**                                                                                                                                                                                                                                                                                                                                                                 |
+| :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| styles.css         | A baseline stylesheet containing the application's default styling for buttons, fields, text, and other elements that may appear in the user interface. This file is included in the settings configuration array, which loads it after all other stylesheets are loaded from the platform so that default styles are overridden with the custom theme values specified here. |
+| styles-mobile.css  | A stylesheet extending the base styles.css file to optimize the user interface for mobile devices. This file is included in the mobile stylesheets configuration array, which should be placed after the main stylesheets setting so any styling loaded from that file is overridden for mobile viewports and touch-based interactions on smaller screens.                      |`;
+
+    const hast = mdxish(markdown);
+
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
+
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const thead = table.children.find(child => child.type === 'element' && child.tagName === 'thead');
+    expect(thead).toBeDefined();
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+
+    const rows = tbody.children.filter(child => child.type === 'element' && child.tagName === 'tr');
+    expect(rows).toHaveLength(2);
+
+    const firstRowCells = rows[0].children.filter(child => child.type === 'element' && child.tagName === 'td');
+    expect(firstRowCells).toHaveLength(2);
+
+    const getTextContent = (node) => {
+      if (node.type === 'text') return node.value;
+      if (node.children) return node.children.map(getTextContent).join('');
+      return '';
+    };
+
+    const descriptionText = getTextContent(firstRowCells[1]);
+
+    expect(descriptionText).toContain('default styles are overridden');
+  });
+
+  it('parses table with malformed separator (colon after pipe is normalized)', () => {
+    // The separator row has "|: ---" instead of "| :---"
+    const markdown = `| **File Name**      | **Description**                                              |
+| :------------------ |: ------------------------------------------------------------ |
+| styles.css         | A baseline stylesheet containing the application's default styling for buttons, fields, text, and other elements that may appear in the user interface. |
+| styles-mobile.css  | A stylesheet extending the base styles.css file to optimize the user interface for mobile devices and smaller screens. |`;
+
+    const hast = mdxish(markdown);
+
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
+
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const thead = table.children.find(child => child.type === 'element' && child.tagName === 'thead');
+    expect(thead).toBeDefined();
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+  });
+
+  it('parses table with double colon typo in separator (e.g., | ::--- instead of | :---)', () => {
+    // The separator row has "| ::---" instead of "| :---"
+    const markdown = `| **Feature** | **Admin** | **User** |
+| :--- | ::--- | ::--- |
+| View Dashboard | Yes | Yes |
+| Edit Settings | Yes | No |`;
+
+    const hast = mdxish(markdown);
+
+    const table = hast.children.find(child => child.type === 'element' && child.tagName === 'table');
+
+    expect(table).toBeDefined();
+    expect(table.type).toBe('element');
+    expect(table.tagName).toBe('table');
+
+    const thead = table.children.find(child => child.type === 'element' && child.tagName === 'thead');
+    expect(thead).toBeDefined();
+
+    const tbody = table.children.find(child => child.type === 'element' && child.tagName === 'tbody');
+    expect(tbody).toBeDefined();
+    
+    const rows = tbody.children.filter(child => child.type === 'element' && child.tagName === 'tr');
+    expect(rows).toHaveLength(2);
+  });
 });
