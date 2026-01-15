@@ -137,9 +137,13 @@ More text.`;
 
   describe('MDX expressions detection', () => {
     it('should detect MDX expressions', () => {
-      const content = '{variable}';
+      let content = '{variable}';
       expect(isPlainText(content)).toBe(true);
       expect(plain(hast(content))).toBe('variable');
+
+      content = '{{variable}}';
+      expect(isPlainText(content)).toBe(true);
+      expect(plain(hast(content))).toBe('{variable}');
     });
 
     it('should detect MDX expressions with complex content', () => {

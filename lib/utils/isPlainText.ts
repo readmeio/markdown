@@ -25,7 +25,7 @@ export function isPlainText(content: string): boolean {
   // Check for magic blocks: `[block:TYPE]...[/block]
   // Must have both opening and closing tags
   // Only check after removing code blocks to avoid detecting magic blocks in code
-  const magicBlockPattern = /\[block:[^\]]{1,100}\][\s\S]*?\[\/block\]/;
+  const magicBlockPattern = /\[block:[^\]]{1,50}\][\s\S]*?\[\/block\]/;
   if (magicBlockPattern.test(contentWithoutCode)) {
     return true;
   }
@@ -45,15 +45,16 @@ export function isPlainText(content: string): boolean {
   // - Self-closing: <Component /> or <Component/>
   // - With attributes: <Component prop="value" />
   // - With children: <Component>...</Component>
-  // Use separate patterns to avoid ReDoS from nested quantifiers
-  const jsxSelfClosingPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]*)?\/>/;
+  // Use simpler, safer patterns to avoid ReDoS from backtracking
+  // Match self-closing tags with bounded attribute length to prevent excessive backtracking
+  const jsxSelfClosingPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]{0,50})?\/>/;
   if (jsxSelfClosingPattern.test(content)) {
     return true;
   }
 
   // For components with children, use a safer pattern that limits backtracking
-  // Match opening tag, then look for closing tag with same name (bounded search)
-  const jsxWithChildrenPattern = /<([A-Z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]{0,10000}<\/\1>/;
+  // Match opening tag with bounded attributes, then look for closing tag with same name
+  const jsxWithChildrenPattern = /<([A-Z][a-zA-Z0-9]*)(?:\s[^>]{0,50})?>[\s\S]{0,50}<\/\1>/;
   if (jsxWithChildrenPattern.test(content)) {
     return true;
   }
@@ -83,7 +84,9 @@ export function isPlainText(content: string): boolean {
     }
   }
 
-  const jsxExpressionPattern = /\{[^}"]{1,}\}/;
+  // Match simple MDX variable expressions like {variable}, {user.name}, {getValue()}
+  // Use bounded quantifier to prevent ReDoS - limit to reasonable variable name length
+  const jsxExpressionPattern = /\{[^}"]{1,50}\}/;
   if (jsxExpressionPattern.test(contentForHtmlMdx)) {
     return true;
   }
