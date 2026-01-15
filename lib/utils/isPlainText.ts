@@ -45,8 +45,16 @@ export function isPlainText(content: string): boolean {
   // - Self-closing: <Component /> or <Component/>
   // - With attributes: <Component prop="value" />
   // - With children: <Component>...</Component>
-  const jsxElementPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]*)?(\/>|>[\s\S]*?<\/[A-Z][a-zA-Z0-9]*>)/;
-  if (jsxElementPattern.test(content)) {
+  // Use separate patterns to avoid ReDoS from nested quantifiers
+  const jsxSelfClosingPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]*)?\/>/;
+  if (jsxSelfClosingPattern.test(content)) {
+    return true;
+  }
+
+  // For components with children, use a safer pattern that limits backtracking
+  // Match opening tag, then look for closing tag with same name (bounded search)
+  const jsxWithChildrenPattern = /<([A-Z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]{0,10000}<\/\1>/;
+  if (jsxWithChildrenPattern.test(content)) {
     return true;
   }
 
