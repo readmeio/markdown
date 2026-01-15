@@ -79,14 +79,21 @@ interface HtmlJson extends MagicBlockJson {
   html: string;
 }
 
+interface RecipeJson extends MagicBlockJson {
+  backgroundColor?: string;
+  emoji?: string;
+  id?: string;
+  link?: string;
+  slug: string;
+  title: string;
+}
+
 export interface ParseMagicBlockOptions {
   alwaysThrow?: boolean;
   compatibilityMode?: boolean;
   safeMode?: boolean;
 }
 
-/** Parses markdown in table cells */
-const cellParser = unified().use(remarkParse).use(remarkGfm);
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
@@ -125,15 +132,33 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
+
+/** Parses markdown and html to markdown nodes */
+const contentParser = unified().use(remarkParse).use(remarkGfm);
+
 // Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
-const parseInline = (text: string): MdastNode[] => {
+const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const tree = cellParser.runSync(cellParser.parse(text)) as MdastRoot;
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+
+  // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
+  if (tree.children.length > 1) {
+    return tree.children as MdastNode[];
+  }
+
   return tree.children.flatMap(n =>
     // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
   );
 };
+
+// Parse markdown/HTML into block-level nodes (preserves paragraphs, headings, lists, etc.)
+const parseBlock = (text: string): MdastNode[] => {
+  if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  return tree.children as MdastNode[];
+};
+
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -218,7 +243,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         data: {
           hProperties: {
             ...(imgData.align && { align: imgData.align }),
-            className: imgData.border ? 'border' : '',
+            ...(imgData.border && { border: imgData.border.toString() }),
             ...(imgData.sizing && { width: imgWidthBySize[imgData.sizing] }),
           },
         },
@@ -263,8 +288,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      const titleBlocks = textToBlock(calloutJson.title || '');
-      const bodyBlocks = textToBlock(calloutJson.body || '');
+      // Parses html & markdown content
+      const titleBlocks = parseBlock(calloutJson.title || '');
+      const bodyBlocks = parseBlock(calloutJson.body || '');
 
       const children: MdastNode[] = [];
       if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
@@ -280,14 +306,18 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         children.push(...titleBlocks, ...bodyBlocks);
       }
 
+      // If there is no title or title is empty
+      const empty = !titleBlocks.length || !titleBlocks[0].children[0]?.value;
+
       // Create mdxJsxFlowElement directly for mdxish
       const calloutElement: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Callout',
-        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default' }, [
+        attributes: toAttributes({ icon, theme: theme || 'default', type: theme || 'default', empty }, [
           'icon',
           'theme',
           'type',
+          'empty',
         ]),
         children: children as MdxJsxFlowElement['children'],
       };
@@ -320,7 +350,7 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       }, [] as string[][]);
 
       // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
-      const tokenizeCell = compatibilityMode ? textToBlock : parseInline;
+      const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const children = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
@@ -352,9 +382,9 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         wrapPinnedBlocks(
           {
             children: [
-              { children: [{ type: 'text', value: title || null }], title: embedJson.provider, type: 'link', url },
+              { children: [{ type: 'text', value: title || '' }], title: embedJson.provider, type: 'link', url },
             ],
-            data: { hName: 'rdme-embed', hProperties: { ...embedJson, href: url, html, title, url } },
+            data: { hName: 'embed-block', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
           json,
@@ -377,6 +407,27 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
           json,
         ),
       ];
+    }
+
+    // Recipe/TutorialTile: renders as Recipe component
+    case 'recipe':
+    case 'tutorial-tile': {
+      const recipeJson = json as RecipeJson;
+      if (!recipeJson.slug || !recipeJson.title) return [];
+
+      // Create mdxJsxFlowElement directly for mdxish flow
+      // Note: Don't wrap in pinned blocks for mdxish - rehypeMdxishComponents handles component resolution
+      // The node structure matches what mdxishComponentBlocks creates for JSX tags
+      const recipeNode: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Recipe',
+        attributes: toAttributes(recipeJson, ['slug', 'title']),
+        children: [],
+        // Position is optional but helps with debugging
+        position: undefined,
+      };
+
+      return [recipeNode as unknown as MdastNode];
     }
 
     // Unknown block types: render as generic div with JSON properties

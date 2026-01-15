@@ -26,8 +26,6 @@ export type CompileOpts = CompileOptions & {
   useTailwind?: boolean;
 };
 
-const { codeTabsTransformer, calloutTransformer, ...transforms } = defaultTransforms;
-
 const sanitizeSchema = deepmerge(defaultSchema, {
   protocols: ['doc', 'ref', 'blog', 'changelog', 'page'],
 });
@@ -36,6 +34,9 @@ const compile = (
   text: string,
   { components = {}, missingComponents, copyButtons, useTailwind, ...opts }: CompileOpts = {},
 ) => {
+  // Destructure at runtime to avoid circular dependency issues
+  const { codeTabsTransformer, calloutTransformer, ...transforms } = defaultTransforms;
+
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,

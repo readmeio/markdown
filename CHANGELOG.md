@@ -1,6 +1,35 @@
 Changelog
 ===
 
+## Version 11.13.0
+### ✨ New & Improved
+
+* **mdxish:** add mermaid support ([#1284](https://github.com/readmeio/markdown/issues/1284)) ([3f73461](https://github.com/readmeio/markdown/commit/3f734613c0fc8fe39d97297dc6f920328e04ed4e))
+* export mdxish ast processor ([#1289](https://github.com/readmeio/markdown/issues/1289)) ([ee4a4dc](https://github.com/readmeio/markdown/commit/ee4a4dc01a8b3d11e38f87af2ba3bb36334687da))
+* **mdxish:** parse content in callout magic blocks ([#1287](https://github.com/readmeio/markdown/issues/1287)) ([43481b7](https://github.com/readmeio/markdown/commit/43481b7bfe1355a96a8f264f4858ac5674e52733))
+
+### 🛠 Fixes & Updates
+
+* Image borders are not rendering ([#1280](https://github.com/readmeio/markdown/issues/1280)) ([ff2ce93](https://github.com/readmeio/markdown/commit/ff2ce9375c95a147413cce3b11046953f178bbb8))
+* prevent nested links when Anchor label looks like a URL ([#1283](https://github.com/readmeio/markdown/issues/1283)) ([cd6a491](https://github.com/readmeio/markdown/commit/cd6a491d07cb98b1577b6ba54fb79d310eca8a26)), closes [readmeio/readme#16851](https://github.com/readmeio/readme/issues/16851)
+
+## Version 11.12.1
+### 🛠 Fixes & Updates
+
+* check not null before checking value in transformer ([#1291](https://github.com/readmeio/markdown/issues/1291)) ([decb5f4](https://github.com/readmeio/markdown/commit/decb5f4bcb4a1470908e62e6e33dcdb42480ccd7))
+* **mdxish:** empty heading for callouts without a title ([#1285](https://github.com/readmeio/markdown/issues/1285)) ([126adbd](https://github.com/readmeio/markdown/commit/126adbd740184b25099be57f6ae8b8f3b174f8bb))
+* **mdxish:** more complete component syntax extraction ([#1290](https://github.com/readmeio/markdown/issues/1290)) ([b017682](https://github.com/readmeio/markdown/commit/b017682a71969bbc6a9933cf78cbbe447277e9fa))
+* **mdxish:** properly parse embed magic blocks ([#1258](https://github.com/readmeio/markdown/issues/1258)) ([8e8126a](https://github.com/readmeio/markdown/commit/8e8126a75c6dd1b20da5b66a889fd6202cb49d55))
+
+## Version 11.12.0
+### ✨ New & Improved
+
+* **mdxish:** support tutorial tile in mdxish ([#1273](https://github.com/readmeio/markdown/issues/1273)) ([94c3753](https://github.com/readmeio/markdown/commit/94c37531993be78e847d494331e77f3f8dbc94ff))
+
+### 🛠 Fixes & Updates
+
+* space/line break got stripped in table cell ([#1288](https://github.com/readmeio/markdown/issues/1288)) ([223b6cf](https://github.com/readmeio/markdown/commit/223b6cf63450c6966dc232dda01811b321449856))
+
 ## Version 11.11.0
 ### ✨ New & Improved
 
