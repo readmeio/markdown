@@ -41,7 +41,11 @@ export function isPlainText(content: string): boolean {
 
   // Check for JSX elements (PascalCase components) in the original content
   // This includes code blocks since JSX code examples should be detected
-  const jsxElementPattern = /<[A-Z][a-zA-Z0-9]*(\s[^>]*)?(\/>|>[\s\S]*?<\/[A-Z][a-zA-Z0-9]*>)/;
+  // Pattern matches:
+  // - Self-closing: <Component /> or <Component/>
+  // - With attributes: <Component prop="value" />
+  // - With children: <Component>...</Component>
+  const jsxElementPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]*)?(\/>|>[\s\S]*?<\/[A-Z][a-zA-Z0-9]*>)/;
   if (jsxElementPattern.test(content)) {
     return true;
   }
@@ -49,11 +53,27 @@ export function isPlainText(content: string): boolean {
   // Check for MDX expressions and HTML tags in the original content
   // But exclude code blocks and inline code that contain magic block patterns
   // to avoid false positives from HTML in JSON strings inside magic blocks
+  // Use a safer approach to avoid ReDoS: find code blocks first, then check if they contain [block:
   let contentForHtmlMdx = content;
-  const codeBlocksWithMagicBlocks = /```[^\n]*\n[\s\S]*?\[block:[\s\S]*?```/g;
-  const inlineCodeWithMagicBlocks = /`[^`\n]*\[block:[^`\n]*`/g;
-  contentForHtmlMdx = contentForHtmlMdx.replace(codeBlocksWithMagicBlocks, '');
-  contentForHtmlMdx = contentForHtmlMdx.replace(inlineCodeWithMagicBlocks, '');
+
+  // Find code blocks using the same pattern as above, then check if they contain [block:
+  // This avoids ReDoS by using a two-step process instead of nested quantifiers
+  const codeBlockPattern = /```[^\n]*\n[\s\S]*?```/g;
+  const codeBlockMatch = codeBlockPattern.exec(content);
+  if (codeBlockMatch !== null) {
+    if (codeBlockMatch[0].includes('[block:')) {
+      contentForHtmlMdx = contentForHtmlMdx.replace(codeBlockMatch[0], '');
+    }
+  }
+
+  // Find inline code blocks and check if they contain [block: pattern
+  const inlineCodePattern = /`[^`\n]+`/g;
+  const inlineCodeMatch = inlineCodePattern.exec(content);
+  if (inlineCodeMatch !== null) {
+    if (inlineCodeMatch[0].includes('[block:')) {
+      contentForHtmlMdx = contentForHtmlMdx.replace(inlineCodeMatch[0], '');
+    }
+  }
 
   const jsxExpressionPattern = /\{[^}"]{1,}\}/;
   if (jsxExpressionPattern.test(contentForHtmlMdx)) {
