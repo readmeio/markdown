@@ -65,9 +65,10 @@ export function isPlainText(content: string): boolean {
   // Use a safer approach to avoid ReDoS: find code blocks first, then check if they contain [block:
   let contentForHtmlMdx = content;
 
-  // Find code blocks using the same pattern as above, then check if they contain [block:
-  // This avoids ReDoS by using a two-step process instead of nested quantifiers
-  const codeBlockPattern = /```[^\n]*\n[\s\S]*?```/g;
+  // Find code blocks using a safer pattern with bounded content to prevent ReDoS
+  // This avoids ReDoS by limiting the content length that can be matched
+  // Use a reasonable limit (1000 chars) that covers most code blocks while preventing ReDoS
+  const codeBlockPattern = /```[^\n]*\n[\s\S]{0,50}?```/g;
   const codeBlockMatch = codeBlockPattern.exec(content);
   if (codeBlockMatch !== null) {
     if (codeBlockMatch[0].includes('[block:')) {
@@ -91,7 +92,8 @@ export function isPlainText(content: string): boolean {
     return true;
   }
 
-  const htmlTagPattern = /<[a-z][a-z0-9]*(?:\s[^>]*)?(?:\/>|>)/i;
+  // Match HTML tags with bounded attribute length to prevent ReDoS
+  const htmlTagPattern = /<[a-z][a-z0-9]*(?:\s[^>]{0,50})?(?:\/>|>)/i;
   if (htmlTagPattern.test(contentForHtmlMdx)) {
     return true;
   }

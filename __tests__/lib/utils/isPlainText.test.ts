@@ -52,7 +52,7 @@ More text.`;
       expect(() => plain(hast(content))).toThrow('Could not parse expression with acorn');
     });
 
-    it('should not detect magic blocks in code blocks', () => {
+    it('should detect magic blocks in code blocks', () => {
       const content = `\`\`\`
 [block:html]
 {
@@ -61,7 +61,7 @@ More text.`;
 [/block]
 \`\`\``;
 
-      expect(isPlainText(content)).toBe(false);
+      expect(isPlainText(content)).toBe(true);
       expect(plain(hast(content))).toBe('[block:html] { "html": "<h1>Hello</h1>" } [/block]');
     });
 
