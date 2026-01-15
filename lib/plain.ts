@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import type { ExpressionStatement, Identifier, MemberExpression, SimpleLiteral } from 'estree';
 import type { Nodes, Parents } from 'hast';
+import type { MdxTextExpressionHast } from 'mdast-util-mdx-expression';
 
 import { fromHtml } from 'hast-util-from-html';
 
@@ -10,42 +12,39 @@ interface Options {
   variables?: Record<string, string>;
 }
 
-interface MdxExpressionNode {
-  data?: {
-    estree?: {
-      body: {
-        expression: {
-          object?: { name: string };
-          property?: { name?: string; type: string; value?: string };
-        };
-        type: string;
-      }[];
-      type: string;
-    };
-  };
-  type: string;
-}
-
 const STRIP_TAGS = ['script', 'style'];
 
 /**
  * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
  * Uses ESTree AST inspection, matching the approach in processor/transform/variables.ts
+ *
+ * @see https://github.com/syntax-tree/mdast-util-mdx-expression - MdxTextExpressionHast type
+ * @see https://github.com/estree/estree/blob/master/es5.md - ESTree spec for expression types
  */
-function extractMdxVariableKey(node: MdxExpressionNode): string | undefined {
+function extractMdxVariableKey(node: MdxTextExpressionHast): string | undefined {
   const estree = node.data?.estree;
-  if (estree?.type !== 'Program') return undefined;
+  if (!estree || estree.type !== 'Program' || estree.body.length === 0) return undefined;
 
-  const [statement] = estree.body;
-  if (statement?.type !== 'ExpressionStatement') return undefined;
+  const statement = estree.body[0];
+  if (statement.type !== 'ExpressionStatement') return undefined;
 
-  const { expression } = statement;
-  if (expression?.object?.name !== 'user') return undefined;
+  const expr = (statement as ExpressionStatement).expression;
+  if (expr.type !== 'MemberExpression') return undefined;
 
-  const { property } = expression;
-  if (!property || !['Literal', 'Identifier'].includes(property.type)) return undefined;
+  const memberExpr = expr as MemberExpression;
+  const obj = memberExpr.object;
+  if (obj.type !== 'Identifier' || (obj as Identifier).name !== 'user') return undefined;
 
-  return property.type === 'Identifier' ? property.name : property.value;
+  const prop = memberExpr.property;
+  if (prop.type === 'Identifier') {
+    return (prop as Identifier).name;
+  }
+  if (prop.type === 'Literal') {
+    const val = (prop as SimpleLiteral).value;
+    return typeof val === 'string' ? val : undefined;
+  }
+
+  return undefined;
 }
 
 function one(node: Nodes, opts: Options) {
@@ -97,10 +96,10 @@ function one(node: Nodes, opts: Options) {
   }
 
   // Handle MDX expressions like {user.name}
-  if ('type' in node && (node as { type: string }).type === 'mdxTextExpression') {
-    const key = extractMdxVariableKey(node as MdxExpressionNode);
-    if (key && 'variables' in opts) {
-      return opts.variables[key] || key;
+  if (node.type === 'mdxTextExpression') {
+    const key = extractMdxVariableKey(node as MdxTextExpressionHast);
+    if (key) {
+      return ('variables' in opts && opts.variables[key]) || key;
     }
   }
 
