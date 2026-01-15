@@ -60,26 +60,16 @@ export function isPlainText(content: string): boolean {
   }
 
   // Check for MDX expressions and HTML tags in the original content
-  // But exclude code blocks and inline code that contain magic block patterns
-  // to avoid false positives from HTML in JSON strings inside magic blocks
-  // Use a safer approach to avoid ReDoS: find code blocks first, then check if they contain [block:
+  // HTML/JSX/MDX in code blocks should be detected (as per test requirements)
+  // But exclude inline code that contains magic block patterns to avoid false positives
   let contentForHtmlMdx = content;
 
-  // Find code blocks using a safer pattern with bounded content to prevent ReDoS
-  // This avoids ReDoS by limiting the content length that can be matched
-  // Use a reasonable limit (1000 chars) that covers most code blocks while preventing ReDoS
-  const codeBlockPattern = /```[^\n]*\n[\s\S]{0,50}?```/g;
-  const codeBlockMatch = codeBlockPattern.exec(content);
-  if (codeBlockMatch !== null) {
-    if (codeBlockMatch[0].includes('[block:')) {
-      contentForHtmlMdx = contentForHtmlMdx.replace(codeBlockMatch[0], '');
-    }
-  }
-
   // Find inline code blocks and check if they contain [block: pattern
+  // Exclude these from HTML/MDX detection to avoid false positives
   const inlineCodePattern = /`[^`\n]+`/g;
-  const inlineCodeMatch = inlineCodePattern.exec(content);
-  if (inlineCodeMatch !== null) {
+  let inlineCodeMatch: RegExpExecArray | null;
+  inlineCodePattern.lastIndex = 0;
+  while ((inlineCodeMatch = inlineCodePattern.exec(content)) !== null) {
     if (inlineCodeMatch[0].includes('[block:')) {
       contentForHtmlMdx = contentForHtmlMdx.replace(inlineCodeMatch[0], '');
     }
