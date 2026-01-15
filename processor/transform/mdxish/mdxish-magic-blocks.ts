@@ -94,7 +94,6 @@ export interface ParseMagicBlockOptions {
   safeMode?: boolean;
 }
 
-
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
  * Pinned blocks are displayed in a sidebar/floating position in the UI.
@@ -132,7 +131,6 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
-
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
@@ -158,7 +156,6 @@ const parseBlock = (text: string): MdastNode[] => {
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
-
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -203,14 +200,15 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         value: obj.code.trim(),
       }));
 
-      // Single code block without a tab name renders as a plain code block
+      // Single code block without a tab name (meta or language) renders as a plain code block
+      // Otherwise, we want to render it as a code tabs block
       if (children.length === 1) {
         if (!children[0].value) return [];
-        if (children[0].meta) return [wrapPinnedBlocks(children[0], json)];
+        if (!(children[0].meta || children[0].lang)) return [wrapPinnedBlocks(children[0], json)];
       }
 
-      // Multiple code blocks render as tabbed code blocks
-      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'code-tabs' }, type: 'code-tabs' }, json)];
+      // Multiple code blocks or a single code block with a tab name (meta or language) renders as a code tabs block
+      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'CodeTabs' }, type: 'code-tabs' }, json)];
     }
 
     // API header: renders as a heading element (h1-h6)
