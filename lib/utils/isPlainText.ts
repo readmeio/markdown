@@ -8,7 +8,7 @@
  */
 export function isPlainText(content: string): boolean {
   if (!content || typeof content !== 'string') {
-    return false;
+    return true;
   }
 
   // Exclude markdown code blocks and inline code to avoid false positives
@@ -27,7 +27,7 @@ export function isPlainText(content: string): boolean {
   // Only check after removing code blocks to avoid detecting magic blocks in code
   const magicBlockPattern = /\[block:[^\]]{1,50}\][\s\S]*?\[\/block\]/;
   if (magicBlockPattern.test(contentWithoutCode)) {
-    return true;
+    return false;
   }
 
   // Check for markdown links: [text](url) or [text][reference]
@@ -36,7 +36,7 @@ export function isPlainText(content: string): boolean {
   // Only check after removing code blocks
   const markdownLinkPattern = /(?<!!)\[([^\]]+)\]\(([^)]+)\)|(?<!!)\[([^\]]+)\]\[([^\]]*)\]/;
   if (markdownLinkPattern.test(contentWithoutCode)) {
-    return true;
+    return false;
   }
 
   // Check for JSX elements (PascalCase components) in the original content
@@ -49,14 +49,14 @@ export function isPlainText(content: string): boolean {
   // Match self-closing tags with bounded attribute length to prevent excessive backtracking
   const jsxSelfClosingPattern = /<[A-Z][a-zA-Z0-9]*(?:\s[^>]{0,50})?\/>/;
   if (jsxSelfClosingPattern.test(content)) {
-    return true;
+    return false;
   }
 
   // For components with children, use a safer pattern that limits backtracking
   // Match opening tag with bounded attributes, then look for closing tag with same name
   const jsxWithChildrenPattern = /<([A-Z][a-zA-Z0-9]*)(?:\s[^>]{0,50})?>[\s\S]{0,50}<\/\1>/;
   if (jsxWithChildrenPattern.test(content)) {
-    return true;
+    return false;
   }
 
   // Check for MDX expressions and HTML tags in the original content
@@ -79,14 +79,14 @@ export function isPlainText(content: string): boolean {
   // Use bounded quantifier to prevent ReDoS - limit to reasonable variable name length
   const jsxExpressionPattern = /\{[^}"]{1,50}\}/;
   if (jsxExpressionPattern.test(contentForHtmlMdx)) {
-    return true;
+    return false;
   }
 
   // Match HTML tags with bounded attribute length to prevent ReDoS
   const htmlTagPattern = /<[a-z][a-z0-9]*(?:\s[^>]{0,50})?(?:\/>|>)/i;
   if (htmlTagPattern.test(contentForHtmlMdx)) {
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
