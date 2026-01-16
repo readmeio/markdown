@@ -14,6 +14,14 @@ export function base64Decode(str: string): string {
   return decodeURIComponent(escape(atob(str)));
 }
 
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
@@ -238,7 +246,8 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
               .join('; ');
             result += `style="${cssString}"`;
           } else {
-            result += `${attributeName}='${JSON.stringify(evalResult)}'`;
+            const jsonValue = escapeHtmlAttribute(JSON.stringify(evalResult));
+            result += `${attributeName}="${jsonValue}"`;
           }
         } else if (attributeName === 'className') {
           result += `class="${evalResult}"`;
