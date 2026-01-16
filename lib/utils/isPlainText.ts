@@ -1,3 +1,5 @@
+import { MAGIC_BLOCK_REGEX } from './extractMagicBlocks';
+
 /**
  * Detects if content contains HTML, magic blocks, or MDX syntax.
  *
@@ -22,11 +24,9 @@ export default function isPlainText(content: string): boolean {
   contentWithoutCode = contentWithoutCode.replace(codeBlockRegex, '');
   contentWithoutCode = contentWithoutCode.replace(inlineCodeRegex, '');
 
-  // Check for magic blocks: `[block:TYPE]...[/block]
-  // Must have both opening and closing tags
+  // Check for magic blocks: `[block:TYPE]...[/block]`
   // Only check after removing code blocks to avoid detecting magic blocks in code
-  const magicBlockPattern = /\[block:[^\]]{1,50}\][\s\S]*?\[\/block\]/;
-  if (magicBlockPattern.test(contentWithoutCode)) {
+  if (contentWithoutCode.match(MAGIC_BLOCK_REGEX) !== null) {
     return false;
   }
 
