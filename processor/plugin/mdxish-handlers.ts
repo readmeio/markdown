@@ -4,12 +4,23 @@ import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
+import { JSON_VALUE_MARKER } from '../transform/mdxish/preprocess-jsx-expressions';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
   type: 'text',
   value: (node as { value?: string }).value || '',
 });
+
+// Since we serialize component / html tag attributes
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
 
 // Convert MDX JSX elements to HAST elements, preserving attributes and children
 const mdxJsxElementHandler: Handler = (state, node) => {
@@ -22,6 +33,11 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     if (attribute.value === null) {
       properties[attribute.name] = true;
     } else if (typeof attribute.value === 'string') {
+      // If the attribute value starts with the JSON_VALUE_MARKER,
+      // it's an array / object that was serialized during JSX preprocessing
+      if (attribute.name.startsWith(JSON_VALUE_MARKER)) {
+        properties[attribute.name] = decodeHtmlEntities(attribute.value);
+      }
       properties[attribute.name] = attribute.value;
     } else {
       properties[attribute.name] = (attribute.value as MdxJsxAttributeValueExpression).value;
