@@ -13,11 +13,17 @@ interface TabsProps {
 const Tabs = ({ children }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
 
+  // Filter out non-element children which we've seen get passed in
+  // and causing an prop access error
+  const tabElements = React.Children.toArray(children).filter(
+    (child): child is React.ReactElement => React.isValidElement(child),
+  );
+
   return (
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {children?.map((tab, index: number) => (
+          {tabElements.map((tab, index: number) => (
             <button
               key={tab.props.title}
               className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
@@ -34,7 +40,7 @@ const Tabs = ({ children }: TabsProps) => {
           ))}
         </nav>
       </header>
-      <section>{children && children[activeTab]}</section>
+      <section>{tabElements[activeTab]}</section>
     </div>
   );
 };
