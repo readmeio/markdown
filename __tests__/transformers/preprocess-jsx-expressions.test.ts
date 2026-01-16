@@ -37,7 +37,9 @@ describe('preprocessJSXExpressions', () => {
       const content = '<div foo={a ? {b: 1} : {c: 2}}>Link</div>';
       const result = preprocessJSXExpressions(content, context);
 
-      expect(result).toContain(`foo='${expectedJson}'`);
+      // Objects are serialized with JSON_VALUE_MARKER prefix and HTML-escaped
+      const escapedJson = expectedJson.replace(/"/g, '&quot;');
+      expect(result).toContain(`foo="${escapedJson}"`);
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
     });
 
