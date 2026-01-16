@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.14.1
+### 🛠 Fixes & Updates
+
+* exporting `isPlainText` from the library ([ba5a427](https://github.com/readmeio/markdown/commit/ba5a4270b84e214ba5ff79da9b9bded53823bb95))
+
 ## Version 11.14.0
 ### ✨ New & Improved
 
