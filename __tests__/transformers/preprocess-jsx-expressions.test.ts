@@ -1,4 +1,4 @@
-import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
+import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('preprocessJSXExpressions', () => {
   describe('Step 3: Evaluate attribute expressions', () => {
@@ -39,7 +39,7 @@ describe('preprocessJSXExpressions', () => {
 
       // Objects are serialized with JSON_VALUE_MARKER prefix and HTML-escaped
       const escapedJson = expectedJson.replace(/"/g, '&quot;');
-      expect(result).toContain(`foo="${escapedJson}"`);
+      expect(result).toContain(`foo="${JSON_VALUE_MARKER}${escapedJson}"`);
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
     });
 
