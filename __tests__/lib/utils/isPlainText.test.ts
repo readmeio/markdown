@@ -257,12 +257,331 @@ More markdown.`;
     });
   });
 
+  describe('markdown syntax detection', () => {
+    describe('headings', () => {
+      it('should detect h1 headings', () => {
+        const content = '# Title';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Title');
+      });
+
+      it('should detect h2 headings', () => {
+        const content = '## Subtitle';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Subtitle');
+      });
+
+      it('should detect h6 headings', () => {
+        const content = '###### Small heading';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Small heading');
+      });
+
+      it('should detect headings in mixed content', () => {
+        const content = `Some text
+
+# Heading
+
+More text.`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Some text Heading More text.');
+      });
+
+      it('should not detect headings in code blocks', () => {
+        const content = '```\n# Title\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('# Title');
+      });
+
+      it('should not detect headings in inline code', () => {
+        const content = 'Here is `# Title` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is # Title in code');
+      });
+    });
+
+    describe('bold text', () => {
+      it('should detect asterisk bold syntax', () => {
+        const content = '**bold text**';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('bold text');
+      });
+
+      it('should detect underscore bold syntax', () => {
+        const content = '__bold text__';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('bold text');
+      });
+
+      it('should detect bold in mixed content', () => {
+        const content = 'This is **bold** text';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('This is bold text');
+      });
+
+      it('should not detect bold in code blocks', () => {
+        const content = '```\n**bold**\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('**bold**');
+      });
+
+      it('should not detect bold in inline code', () => {
+        const content = 'Here is `**bold**` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is **bold** in code');
+      });
+    });
+
+    describe('italic text', () => {
+      it('should detect asterisk italic syntax', () => {
+        const content = '*italic text*';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('italic text');
+      });
+
+      it('should detect underscore italic syntax', () => {
+        const content = '_italic text_';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('italic text');
+      });
+
+      it('should detect italic in mixed content', () => {
+        const content = 'This is *italic* text';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('This is italic text');
+      });
+
+      it('should not detect italic in code blocks', () => {
+        const content = '```\n*italic*\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('*italic*');
+      });
+
+      it('should not detect italic in inline code', () => {
+        const content = 'Here is `*italic*` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is *italic* in code');
+      });
+    });
+
+    describe('strikethrough', () => {
+      it('should detect strikethrough syntax', () => {
+        const content = '~~strikethrough text~~';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('strikethrough text');
+      });
+
+      it('should detect strikethrough in mixed content', () => {
+        const content = 'This is ~~strikethrough~~ text';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('This is strikethrough text');
+      });
+
+      it('should not detect strikethrough in code blocks', () => {
+        const content = '```\n~~text~~\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('~~text~~');
+      });
+
+      it('should not detect strikethrough in inline code', () => {
+        const content = 'Here is `~~text~~` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is ~~text~~ in code');
+      });
+    });
+
+    describe('lists', () => {
+      it('should detect unordered lists with dash', () => {
+        const content = '- List item';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('List item');
+      });
+
+      it('should detect unordered lists with asterisk', () => {
+        const content = '* List item';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('List item');
+      });
+
+      it('should detect unordered lists with plus', () => {
+        const content = '+ List item';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('List item');
+      });
+
+      it('should detect ordered lists', () => {
+        const content = '1. First item';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('First item');
+      });
+
+      it('should detect numbered lists', () => {
+        const content = '42. Item';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Item');
+      });
+
+      it('should detect lists in mixed content', () => {
+        const content = `Some text
+
+- List item
+
+More text.`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Some text List item More text.');
+      });
+
+      it('should not detect lists in code blocks', () => {
+        const content = '```\n- item\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('- item');
+      });
+
+      it('should not detect lists in inline code', () => {
+        const content = 'Here is `- item` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is - item in code');
+      });
+    });
+
+    describe('blockquotes', () => {
+      it('should detect blockquote syntax', () => {
+        const content = '> Quote text';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Quote text');
+      });
+
+      it('should detect blockquotes in mixed content', () => {
+        const content = `Some text
+
+> Quote here
+
+More text.`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Some text Quote here More text.');
+      });
+
+      it('should not detect blockquotes in code blocks', () => {
+        const content = '```\n> quote\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('> quote');
+      });
+
+      it('should not detect blockquotes in inline code', () => {
+        const content = 'Here is `> quote` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is > quote in code');
+      });
+    });
+
+    describe('horizontal rules', () => {
+      it('should detect horizontal rule with dashes', () => {
+        const content = '---';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('');
+      });
+
+      it('should detect horizontal rule with asterisks', () => {
+        const content = '***';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('');
+      });
+
+      it('should detect horizontal rule with equals', () => {
+        const content = '===\n';
+        expect(isPlainText(content)).toBe(false);
+        // Note: plain() may preserve === in some cases
+        expect(plain(hast(content))).toMatch(/^=+$/);
+      });
+
+      it('should detect horizontal rules in mixed content', () => {
+        const content = `Some text
+
+---
+
+More text.`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Some text More text.');
+      });
+
+      it('should not detect horizontal rules in code blocks', () => {
+        const content = '```\n---\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('---');
+      });
+
+      it('should not detect horizontal rules in inline code', () => {
+        const content = 'Here is `---` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is --- in code');
+      });
+    });
+
+    describe('tables', () => {
+      it('should detect simple table', () => {
+        const content = '| Col1 | Col2 |';
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('| Col1 | Col2 |');
+      });
+
+      it('should detect table with header separator', () => {
+        const content = `| Col1 | Col2 |
+|------|------|
+| Val1 | Val2 |`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Col1 Col2 Val1 Val2');
+      });
+
+      it('should detect tables in mixed content', () => {
+        const content = `Some text
+
+| Col | Value |
+
+More text.`;
+        expect(isPlainText(content)).toBe(false);
+        expect(plain(hast(content))).toBe('Some text | Col | Value | More text.');
+      });
+
+      it('should not detect tables in code blocks', () => {
+        const content = '```\n| col |\n```';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('| col |');
+      });
+
+      it('should not detect tables in inline code', () => {
+        const content = 'Here is `| col |` in code';
+        expect(isPlainText(content)).toBe(true);
+        expect(plain(hast(content))).toBe('Here is | col | in code');
+      });
+    });
+
+    describe('mixed markdown syntax', () => {
+      it('should detect multiple markdown syntaxes together', () => {
+        const content = `# Heading
+
+This is **bold** and *italic* text.
+
+- List item
+- Another item
+
+> Blockquote
+
+| Table | Column |`;
+        expect(isPlainText(content)).toBe(false);
+        const result = plain(hast(content));
+        expect(result).toBe(
+          'Heading This is bold and italic text. List item Another item Blockquote | Table | Column |',
+        );
+      });
+    });
+  });
+
   describe('edge cases', () => {
     it('should return false for empty string', () => {
       expect(isPlainText('')).toBe(true);
     });
 
-    it('should return false for plain markdown', () => {
+    it('should detect plain markdown syntax', () => {
       const content = `# Title
 
 This is just plain markdown text.
@@ -272,7 +591,7 @@ This is just plain markdown text.
 
 **Bold** and *italic* text.`;
 
-      expect(isPlainText(content)).toBe(true);
+      expect(isPlainText(content)).toBe(false);
       expect(plain(hast(content))).toBe(
         'Title This is just plain markdown text. List item 1 List item 2 Bold and italic text.',
       );

@@ -39,6 +39,70 @@ export default function isPlainText(content: string): boolean {
     return false;
   }
 
+  // Check for markdown headings: # Title, ## Title, etc.
+  // Must be at start of line or after whitespace, followed by space
+  // Only check after removing code blocks
+  const headingPattern = /(^|\n)\s*#{1,6}\s+\S/m;
+  if (headingPattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown bold: **text** or __text__
+  // Must have content between the markers
+  // Only check after removing code blocks
+  const boldPattern = /\*\*[^\s*]([^*]*[^\s*])?\*\*|__[^\s_]([^_]*[^\s_])?__/;
+  if (boldPattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown italic: *text* or _text_
+  // Must have content between the markers and not be part of bold
+  // Only check after removing code blocks
+  const italicPattern = /(?<!\*)\*[^\s*]([^*]*[^\s*])?\*(?!\*)|(?<!_)_[^\s_]([^_]*[^\s_])?_(?!_)/;
+  if (italicPattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown strikethrough: ~~text~~
+  // Must have content between the markers
+  // Only check after removing code blocks
+  const strikethroughPattern = /~~[^\s~]([^~]*[^\s~])?~~/;
+  if (strikethroughPattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown lists: - item, * item, + item, or 1. item
+  // Must be at start of line or after whitespace
+  // Only check after removing code blocks
+  const listPattern = /(^|\n)\s*([-*+]|\d+\.)\s+\S/m;
+  if (listPattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown blockquotes: > text
+  // Must be at start of line or after whitespace
+  // Only check after removing code blocks
+  const blockquotePattern = /(^|\n)\s*>\s+\S/m;
+  if (blockquotePattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown horizontal rules: ---, ***, ===
+  // Must be at least 3 characters, at start of line or after whitespace
+  // Only check after removing code blocks
+  const horizontalRulePattern = /(^|\n)\s*([-*=]{3,})\s*(\n|$)/m;
+  if (horizontalRulePattern.test(contentWithoutCode)) {
+    return false;
+  }
+
+  // Check for markdown tables: | col1 | col2 |
+  // Must have at least one pipe character with content
+  // Only check after removing code blocks
+  const tablePattern = /\|([^\n]*\|[^\n]*)+\|/;
+  if (tablePattern.test(contentWithoutCode)) {
+    return false;
+  }
+
   // Check for JSX elements (PascalCase components) in the original content
   // This includes code blocks since JSX code examples should be detected
   // Pattern matches:
