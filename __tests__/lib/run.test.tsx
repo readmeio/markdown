@@ -4,6 +4,32 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('run', () => {
+  it('resolves user variables in TOC headings', () => {
+    const mdx = '# Hello {user.name}';
+    const variables = {
+      user: { name: 'Kelly' },
+      defaults: [],
+    };
+    const mod = execute(mdx, {}, { variables }, { getDefault: false });
+
+    render(<mod.Toc />);
+
+    expect(screen.getByText('Hello Kelly')).toBeInTheDocument();
+  });
+
+  it('falls back to field name when user variable not found in TOC', () => {
+    const mdx = '# Hello {user.unknown}';
+    const variables = {
+      user: {},
+      defaults: [],
+    };
+    const mod = execute(mdx, {}, { variables }, { getDefault: false });
+
+    render(<mod.Toc />);
+
+    expect(screen.getByText('Hello unknown')).toBeInTheDocument();
+  });
+
   it('allows providing imports', () => {
     const mdx = 'Hello, world!';
     const Component = execute(mdx, {}, { imports: { React } });
