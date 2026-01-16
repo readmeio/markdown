@@ -3,6 +3,7 @@ import type { Element } from 'hast';
 
 import { mdxish, compile, run } from '../../../lib';
 
+describe('processing mdx components in mdxish', () => {
   const exampleComponentCode = `
 export const ExampleComponent = ({ header }) => {
   return (
