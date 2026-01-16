@@ -80,12 +80,12 @@ export const AdvancedTable = ({ data }) => {
 <AdvancedTable
   data={[
     {
-      'code': 'INPUT_CODE_1',
-      'status': 'INPUT_STATUS_1',
+      'code': '<INPUT_CODE_1>',
+      'status': '<INPUT_STATUS_1>',
     },
     {
-      'code': 'INPUT_CODE_2',
-      'status': 'INPUT_STATUS_2',
+      'code': '<INPUT_CODE_2>',
+      'status': '<INPUT_STATUS_2>',
     }
   ]}
 />
@@ -96,12 +96,12 @@ export const AdvancedTable = ({ data }) => {
       expect(componentNode.tagName).toBe('AdvancedTable');
       expect(componentNode.properties?.data).toStrictEqual(JSON.stringify([
         {
-          code: 'INPUT_CODE_1',
-          status: 'INPUT_STATUS_1',
+          code: '<INPUT_CODE_1>',
+          status: '<INPUT_STATUS_1>',
         },
         {
-          code: 'INPUT_CODE_2',
-          status: 'INPUT_STATUS_2',
+          code: '<INPUT_CODE_2>',
+          status: '<INPUT_STATUS_2>',
         },
       ]));
     });
