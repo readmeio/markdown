@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 11.14.0
+### ✨ New & Improved
+
+* creation of a new `isPlainText` utility ([#1295](https://github.com/readmeio/markdown/issues/1295)) ([84ef2a2](https://github.com/readmeio/markdown/commit/84ef2a289b34adbab88c40f18fb43f8784f37d88))
+
 ## Version 11.13.0
 ### ✨ New & Improved
 
