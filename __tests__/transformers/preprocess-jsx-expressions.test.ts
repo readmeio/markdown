@@ -40,5 +40,45 @@ describe('preprocessJSXExpressions', () => {
       expect(result).toContain(`foo='${expectedJson}'`);
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
     });
+
+    it('should evaluate template literals in JSX expression attributes', () => {
+      const content = '<Component header={`Getting Started`} />';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toContain('header="Getting Started"');
+      expect(result).not.toContain('{`');
+    });
+
+    it('should evaluate template literals with interpolation in JSX expression attributes', () => {
+      const context = { name: 'World' };
+      const content = '<Component greeting={`Hello World!`} />';
+      const result = preprocessJSXExpressions(content, context);
+
+      expect(result).toContain('greeting="Hello World!"');
+    });
+  });
+
+  describe('Code block protection', () => {
+    it('should preserve inline code outside of JSX expressions', () => {
+      const content = 'Text with `inline code` here';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('Text with `inline code` here');
+    });
+
+    it('should preserve fenced code blocks containing JSX-like syntax', () => {
+      const content = '```jsx\n<div style={{ color: "red" }}></div>\n```';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
+    });
+
+    it('should not evaluate expressions inside inline code', () => {
+      const context = { baseUrl: 'https://example.com' };
+      const content = 'Use `href={baseUrl}` syntax';
+      const result = preprocessJSXExpressions(content, context);
+
+      expect(result).toBe('Use `href={baseUrl}` syntax');
+    });
   });
 });

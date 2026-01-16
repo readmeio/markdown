@@ -174,6 +174,18 @@ function extractBalancedBraces(content: string, start: number): { content: strin
   return { content: content.slice(start, pos - 1), end: pos };
 }
 
+function restoreInlineCode(content: string, protectedCode: ProtectedCode) {
+  return content.replace(/___INLINE_CODE_(\d+)___/g, (_m, idx: string) => {
+    return protectedCode.inlineCode[parseInt(idx, 10)];
+  });
+}
+
+function restoreCodeBlocks(content: string, protectedCode: ProtectedCode) {
+  return content.replace(/___CODE_BLOCK_(\d+)___/g, (_m, idx: string) => {
+    return protectedCode.codeBlocks[parseInt(idx, 10)];
+  });
+}
+
 /**
  * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
  * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
@@ -189,7 +201,7 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * // Returns: '<a href="https://example.com">Link</a>'
  * ```
  */
-function evaluateAttributeExpressions(content: string, context: JSXContext): string {
+function evaluateAttributeExpressions(content: string, context: JSXContext, protectedCode?: ProtectedCode) {
   const attrStartRegex = /(\w+)=\{/g;
   let result = '';
   let lastEnd = 0;
@@ -201,7 +213,14 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
 
     const extracted = extractBalancedBraces(content, braceStart);
     if (extracted) {
-      const expression = extracted.content;
+      // The expression might contain template literals in MDX component tag props
+      // E.g. <Component greeting={`Hello World!`} />
+      // that is processed as inline code. So we need to restore the inline codes
+      // in the expression
+      let expression = extracted.content;
+      if (protectedCode) {
+        expression = restoreInlineCode(expression, protectedCode);
+      }
       const fullMatchEnd = extracted.end;
 
       result += content.slice(lastEnd, match.index);
@@ -256,15 +275,9 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
  * // Returns: 'Text with `inline` and ```js\ncode\n```'
  * ```
  */
-function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
-  let restored = content.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.codeBlocks[parseInt(index, 10)];
-  });
-
-  restored = restored.replace(/___INLINE_CODE_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.inlineCode[parseInt(index, 10)];
-  });
-
+function restoreProtectedCodes(content: string, protectedCode: ProtectedCode) {
+  let restored = restoreCodeBlocks(content, protectedCode);
+  restored = restoreInlineCode(restored, protectedCode);
   return restored;
 }
 
@@ -289,10 +302,10 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   // For inline expressions, we use a library to parse the expression & evaluate it later
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(processed, context);
+  processed = evaluateAttributeExpressions(processed, context, protectedCode);
 
   // Step 4: Restore protected code blocks
-  processed = restoreCodeBlocks(processed, protectedCode);
+  processed = restoreProtectedCodes(processed, protectedCode);
 
   return processed;
 }
