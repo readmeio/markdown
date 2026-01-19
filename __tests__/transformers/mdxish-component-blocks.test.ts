@@ -199,7 +199,7 @@ Alert content here
       });
 
       describe('nested components', () => {
-        it('should convert outer component to mdxJsxFlowElement when nested component are separated by newlines', () => {
+        it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
           const markdown = `
 <MyComponent>
   <NestedComponent>
@@ -213,10 +213,18 @@ Alert content here
           const tree = parseWithPlugin(markdown);
 
           const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
-          expect(mdxNodes).toHaveLength(1);
+          expect(mdxNodes).toHaveLength(3);
           expect(mdxNodes[0]).toMatchObject({
             type: 'mdxJsxFlowElement',
             name: 'MyComponent',
+          });
+          expect(mdxNodes[1]).toMatchObject({
+            type: 'mdxJsxFlowElement',
+            name: 'NestedComponent',
+          });
+          expect(mdxNodes[2]).toMatchObject({
+            type: 'mdxJsxFlowElement',
+            name: 'NestedComponent',
           });
         });
       });

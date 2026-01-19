@@ -42,7 +42,7 @@ function areAllChildrenComponents(children: ElementContent[]): boolean {
     if (child.type === 'text') return false;
     // Comments don't affect the check
     if (child.type === 'comment') return true;
-    // Only check elements - custom components (not in STANDARD_HTML_TAGS) are considered
+    // Standard HTML tags are not considered components
     if (child.type === 'element' && 'tagName' in child) {
       return !STANDARD_HTML_TAGS.has(child.tagName.toLowerCase());
     }

@@ -5,7 +5,7 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
+const pascalCaseTagPattern = /^\s*<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
 /**
@@ -68,6 +68,14 @@ const parseTag = (value: string) => {
     selfClosing: !!selfClosing,
     contentAfterTag,
   };
+};
+
+const parseAndUpdateSiblings = (stack: Parent[], parent: Parent, index: number, content: string) => {
+  const extraSiblings = parseMdChildren(content) as Node[];
+  if (extraSiblings.length > 0) {
+    (parent.children as Node[]).splice(index + 1, 0, ...extraSiblings);
+    stack.push(parent);
+  }
 };
 
 interface ComponentNodeOptions {
@@ -267,12 +275,21 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // If there's content after the self-closing tag, parse it and insert as siblings
+      const remainingContent = contentAfterTag.trim();
+      if (remainingContent) {
+        parseAndUpdateSiblings(stack, parent, index, remainingContent);
+      }
       return;
     }
 
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
-      const componentInnerContent = contentAfterTag.substring(0, contentAfterTag.lastIndexOf(closingTagStr)).trim();
+      // Use indexOf to find the FIRST closing tag (for sibling components like <A>...</A><A>...</A>)
+      const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
+      const componentInnerContent = contentAfterTag.substring(0, closingTagIndex).trim();
+      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
@@ -280,6 +297,16 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // Process children recursively to handle nested components (e.g., <Item /> inside <ChildCounter>)
+      if (componentNode.children.length > 0) {
+        stack.push(componentNode as Parent);
+      }
+
+      // If there's content after the closing tag (sibling components), parse and insert as siblings
+      if (contentAfterClose) {
+        parseAndUpdateSiblings(stack, parent, index, contentAfterClose);
+      }
       return;
     }
 
@@ -309,6 +336,11 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     });
     // Remove all nodes from opening tag to closing tag (inclusive) and replace with component node
     (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode);
+    // Since we might be merging sibling nodes together, unlike the other cases,
+    // we need to process the children of the new node
+    if (componentNode.children.length > 0) {
+      stack.push(componentNode as Parent);
+    }
   };
 
   // Travel the tree depth-first
