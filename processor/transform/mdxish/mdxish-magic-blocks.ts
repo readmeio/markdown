@@ -102,7 +102,7 @@ const wrapPinnedBlocks = (node: MdastNode, json: MagicBlockJson): MdastNode => {
   if (!json.sidebar) return node;
   return {
     children: [node],
-    data: { className: 'pin', hName: 'rdme-pin' },
+    data: { hName: 'rdme-pin', hProperties: { className: 'pin' } },
     type: 'rdme-pin',
   };
 };

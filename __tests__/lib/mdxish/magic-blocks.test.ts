@@ -343,6 +343,31 @@ ${JSON.stringify(
         expect(hasCodeTabs).toBe(false);
       });
     });
+
+    it('should wrap code block with sidebar: true in rdme-pin element', () => {
+      const md = `[block:code]
+{
+  "sidebar": true,
+  "codes": [
+    {
+      "code": "const sidebar = 'deprecated'",
+      "language": "javascript"
+    }
+  ]
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+
+      const rdmePin = ast.children[0] as Element;
+      expect(rdmePin.tagName).toBe('rdme-pin');
+      expect(rdmePin.properties.className).toContain('pin');
+
+      const codeTabs = rdmePin.children.find(c => (c as Element).tagName === 'CodeTabs') as Element;
+      expect(codeTabs).toBeDefined();
+      expect(codeTabs.tagName).toBe('CodeTabs');
+    });
   });
 
   describe('embed block', () => {
