@@ -46,73 +46,74 @@ const isCalloutStructure = (node: Blockquote): boolean => {
   return firstTextChild?.type === 'text';
 };
 
-const calloutTransformer = ({ format }: { format?: string } = {}) => {
+const processBlockquote = (
+  node: Blockquote,
+  index: number | undefined,
+  parent: Parent | undefined,
+) => {
+  if (!isCalloutStructure(node)) {
+    // Replace non-callout blockquotes with a paragraph containing their stringified content
+    // For empty blockquotes, use '>' as the content to preserve the original syntax
+    if (index !== undefined && parent) {
+      const content = extractText(node);
+      const isEmpty = !content || content.trim() === '';
+      const textValue = isEmpty ? '>' : content;
+      const textNode: Text = {
+        type: 'text',
+        value: textValue,
+      };
+      const paragraphNode: Paragraph = {
+        type: 'paragraph',
+        children: [textNode],
+        position: node.position,
+      };
+      parent.children.splice(index, 1, paragraphNode);
+    }
+    return;
+  }
+
+  // isCalloutStructure ensures node.children[0] is a Paragraph with children
+  const firstParagraph = node.children[0] as Paragraph;
+  const startText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
+  const [match, icon] = startText.match(regex) || [];
+
+  if (icon && match) {
+    const heading = startText.slice(match.length);
+    const empty = !heading.length && firstParagraph.children.length === 1;
+    const theme = themes[icon] || 'default';
+
+    const firstChild = findFirst(node.children[0]);
+    if (firstChild && 'value' in firstChild && typeof firstChild.value === 'string') {
+      firstChild.value = firstChild.value.slice(match.length);
+    }
+
+    if (heading) {
+      node.children[0] = wrapHeading(node);
+      // @note: We add to the offset/column the length of the unicode
+      // character that was stripped off, so that the start position of the
+      // heading/text matches where it actually starts.
+      node.children[0].position.start.offset += match.length;
+      node.children[0].position.start.column += match.length;
+    }
+
+    Object.assign(node, {
+      type: NodeTypes.callout,
+      data: {
+        hName: 'Callout',
+        hProperties: {
+          icon,
+          ...(empty && { empty }),
+          theme,
+        },
+      },
+    });
+  }
+};
+
+const calloutTransformer = () => {
   return (tree: Root) => {
     visit(tree, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
-      if (!isCalloutStructure(node)) {
-        const content = extractText(node);
-        const isEmpty = !content || content.trim() === '';
-
-        // For 'mdx' format (or undefined): leave empty blockquotes as-is (can be rendered as empty callout)
-        // For 'md' format: always replace non-callout blockquotes with stringified content
-        if (format !== 'md' && isEmpty) {
-          return; // Leave empty blockquote unchanged for mdx format
-        }
-
-        // Replace blockquote with a paragraph containing its stringified content
-        // For empty blockquotes in 'md' format, use '>' as the content
-        if (index !== undefined && parent) {
-          const textValue = isEmpty && format === 'md' ? '>' : content;
-          const textNode: Text = {
-            type: 'text',
-            value: textValue,
-          };
-          const paragraphNode: Paragraph = {
-            type: 'paragraph',
-            children: [textNode],
-            position: node.position,
-          };
-          parent.children.splice(index, 1, paragraphNode);
-        }
-        return;
-      }
-
-      // @ts-expect-error -- @todo: update plain to accept mdast
-      const startText = plain(node.children[0]).toString();
-      const [match, icon] = startText.match(regex) || [];
-
-      if (icon && match) {
-        const heading = startText.slice(match.length);
-        // @ts-expect-error - isCalloutStructure ensures node.children[0] is a paragraph with children
-        const empty = !heading.length && node.children[0].children.length === 1;
-        const theme = themes[icon] || 'default';
-
-        const firstChild = findFirst(node.children[0]);
-        if (firstChild && 'value' in firstChild && typeof firstChild.value === 'string') {
-          firstChild.value = firstChild.value.slice(match.length);
-        }
-
-        if (heading) {
-          node.children[0] = wrapHeading(node);
-          // @note: We add to the offset/column the length of the unicode
-          // character that was stripped off, so that the start position of the
-          // heading/text matches where it actually starts.
-          node.children[0].position.start.offset += match.length;
-          node.children[0].position.start.column += match.length;
-        }
-
-        Object.assign(node, {
-          type: NodeTypes.callout,
-          data: {
-            hName: 'Callout',
-            hProperties: {
-              icon,
-              ...(empty && { empty }),
-              theme,
-            },
-          },
-        });
-      }
+      processBlockquote(node, index, parent);
     });
   };
 };

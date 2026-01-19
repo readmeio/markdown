@@ -40,7 +40,7 @@ const compile = (
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
-    [calloutTransformer, { format: opts.format }],
+    calloutTransformer,
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
     [
