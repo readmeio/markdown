@@ -52,15 +52,15 @@ const processBlockquote = (
   parent: Parent | undefined,
 ) => {
   if (!isCalloutStructure(node)) {
-    // Replace non-callout blockquotes with a paragraph containing their stringified content
-    // For empty blockquotes, use '>' as the content to preserve the original syntax
-    if (index !== undefined && parent) {
-      const content = extractText(node);
-      const isEmpty = !content || content.trim() === '';
-      const textValue = isEmpty ? '>' : content;
+    // Only stringify empty blockquotes (no extractable text content)
+    // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
+    const content = extractText(node);
+    const isEmpty = !content || content.trim() === '';
+
+    if (isEmpty && index !== undefined && parent) {
       const textNode: Text = {
         type: 'text',
-        value: textValue,
+        value: '>',
       };
       const paragraphNode: Paragraph = {
         type: 'paragraph',
