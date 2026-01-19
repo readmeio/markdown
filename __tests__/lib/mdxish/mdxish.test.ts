@@ -18,16 +18,15 @@ describe('mdxish should render', () => {
   });
 
   describe('should handle just ">"', () => {
-    it('with format undefined (mdx) - leaves empty blockquote as-is in HAST', () => {
+    it('replaces empty blockquote with paragraph containing ">"', () => {
       const md = '>';
 
       const tree = mdxish(md);
-      // With format undefined, empty blockquote is left as blockquote, which becomes empty <blockquote> in HAST
-      // Extracting text from empty blockquote gives whitespace, not '>'
+      // Empty blockquote is replaced with paragraph containing '>'
       const textContent = extractText(tree);
-      expect(textContent.trim()).toBe('');
+      expect(textContent.trim()).toBe('>');
 
-      // Verify it's a blockquote element in HAST
+      // Verify it's NOT a blockquote element in HAST
       const hasBlockquote = tree.children.some(
         child =>
           child &&
@@ -37,16 +36,7 @@ describe('mdxish should render', () => {
           'tagName' in child &&
           child.tagName === 'blockquote',
       );
-      expect(hasBlockquote).toBe(true);
-    });
-
-    it('with format "md" - replaces empty blockquote with paragraph containing ">"', () => {
-      const md = '>';
-
-      const tree = mdxish(md, { format: 'md' });
-      const textContent = extractText(tree);
-      // With format 'md', empty blockquote is replaced with paragraph containing '>'
-      expect(textContent.trim()).toBe('>');
+      expect(hasBlockquote).toBe(false);
     });
   });
 

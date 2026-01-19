@@ -245,39 +245,15 @@ describe('callouts transformer', () => {
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'okay');
   });
 
-  describe('format-specific behavior for empty blockquotes', () => {
-    it('with format "mdx" (or undefined) - leaves empty blockquote as-is', () => {
-      const md = '>';
-
-      const tree = mdast(md, { missingComponents: 'ignore' });
-      const transformer = calloutTransformer({ format: 'mdx' });
-      transformer(tree);
-
-      // Empty blockquote should remain as blockquote when format is 'mdx'
-      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
-      expect(hasBlockquote).toBe(true);
-    });
-
-    it('with format undefined - leaves empty blockquote as-is', () => {
+  describe('non-callout blockquotes', () => {
+    it('replaces empty blockquote with paragraph containing ">"', () => {
       const md = '>';
 
       const tree = mdast(md, { missingComponents: 'ignore' });
       const transformer = calloutTransformer();
       transformer(tree);
 
-      // Empty blockquote should remain as blockquote when format is undefined
-      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
-      expect(hasBlockquote).toBe(true);
-    });
-
-    it('with format "md" - replaces empty blockquote with paragraph containing stringified content', () => {
-      const md = '>';
-
-      const tree = mdast(md, { missingComponents: 'ignore' });
-      const transformer = calloutTransformer({ format: 'md' });
-      transformer(tree);
-
-      // Empty blockquote should be replaced with paragraph when format is 'md'
+      // Empty blockquote should be replaced with paragraph
       const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
       expect(hasBlockquote).toBe(false);
 
@@ -292,6 +268,18 @@ describe('callouts transformer', () => {
           ),
       );
       expect(hasParagraph).toBe(true);
+    });
+
+    it('leaves blockquote with text but no emoji as blockquote', () => {
+      const md = '> some text without emoji';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Blockquote with valid structure (paragraph > text) but no emoji should remain as blockquote
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
     });
   });
 });
