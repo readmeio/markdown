@@ -16,10 +16,13 @@ const MAX_LOOKAHEAD = 30;
 
 /**
  * Tags that have dedicated transformers and should NOT be handled by this plugin.
- * These components have special parsing requirements that the generic component
- * block transformer cannot handle correctly.
+ * These components either have special parsing requirements that the generic component
+ * block transformer cannot handle correctly, or are inline components that we don't
+ * want to convert to mdxJsxFlowElement which is a block level element.
+ *
+ * Glossary and Anchor are inline components.
  */
-const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table']);
+const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
 
 const inlineMdProcessor = unified().use(remarkParse);
 
