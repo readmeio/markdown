@@ -30,6 +30,7 @@ import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-merma
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
+import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import { preserveBooleanProperties, restoreBooleanProperties } from '../processor/transform/mdxish/retain-boolean-attributes';
@@ -58,9 +59,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   // Preprocessing pipeline: Transform content to be parser-ready
   // Step 1: Extract legacy magic blocks
   const { replaced: contentAfterMagicBlocks, blocks } = extractMagicBlocks(mdContent);
-  // Step 2: Evaluate JSX expressions in attributes
-  const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterMagicBlocks, jsxContext);
-  // Step 3: Replace snake_case component names with parser-safe placeholders
+  // Step 2: Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
+  const contentAfterTableNormalization = normalizeTableSeparator(contentAfterMagicBlocks);
+  // Step 3: Evaluate JSX expressions in attributes
+  const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
+  // Step 4: Replace snake_case component names with parser-safe placeholders
   // (e.g., <Snake_case /> → <MDXishSnakeCase0 /> which will be restored after parsing)
   const { content: parserReadyContent, mapping: snakeCaseMapping } =
     processSnakeCaseComponent(contentAfterJSXEvaluation);
