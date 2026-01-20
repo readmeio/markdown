@@ -18,4 +18,3 @@ export { default as run } from './run';
 export { default as tags } from './tags';
 export { default as mdxishTags } from './mdxishTags';
 export { default as stripComments } from './stripComments';
-export { default as isPlainText } from './utils/isPlainText';
