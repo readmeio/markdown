@@ -395,6 +395,43 @@ ${JSON.stringify(
       const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
       expect(listItems).toHaveLength(3);
     });
+
+    it('should not split a list when magic block appears in the middle', () => {
+      const md = `- First item
+- Second item
+- [block:html]{"html":"<strong>Magic block content</strong>"}[/block]
+- Fourth item
+- Fifth item`;
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(5);
+
+      const thirdItem = listItems[2];
+      const hasHtmlBlock =
+        JSON.stringify(thirdItem).includes('html-block') || JSON.stringify(thirdItem).includes('strong');
+      expect(hasHtmlBlock).toBe(true);
+    });
+
+    it('should not split a list when tutorial-tile block appears in the middle', () => {
+      const md = `- First item
+- Second item
+- [block:tutorial-tile]{"emoji":"🦉","slug":"recipe","title":"Recipe"}[/block]
+- Fourth item
+- Fifth item`;
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(5);
+    });
   });
 
   describe('legacy rdmd comparison - magic blocks in lists', () => {
@@ -448,6 +485,34 @@ ${JSON.stringify(
       const lists = ast.children.filter((c): c is List => c.type === 'list');
       expect(lists).toHaveLength(1);
       expect(lists[0].children).toHaveLength(1);
+    });
+
+    it('legacy rdmd: does not split list when magic block appears in the middle', () => {
+      const md = `- First item
+- Second item
+- [block:html]{"html":"<strong>Magic block content</strong>"}[/block]
+- Fourth item
+- Fifth item`;
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(5);
+    });
+
+    it('legacy rdmd: does not split list when tutorial-tile appears in the middle', () => {
+      const md = `- First item
+- Second item
+- [block:tutorial-tile]{"emoji":"🦉","slug":"recipe","title":"Recipe"}[/block]
+- Fourth item
+- Fifth item`;
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(5);
     });
   });
 });
