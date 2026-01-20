@@ -276,7 +276,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // If there's content after the self-closing tag, parse it and insert as siblings
+      // Check and parse if there's relevant content after the current closing tag
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
         parseAndUpdateSiblings(stack, parent, index, remainingContent);
@@ -286,7 +286,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
 
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
-      // Use indexOf to find the FIRST closing tag (for sibling components like <A>...</A><A>...</A>)
+      // Find the first closing tag
       const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex).trim();
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
@@ -298,12 +298,12 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // Process children recursively to handle nested components (e.g., <Item /> inside <ChildCounter>)
+      // Since the inner content might contain unparsed components, process it recursively
       if (componentNode.children.length > 0) {
         stack.push(componentNode as Parent);
       }
 
-      // If there's content after the closing tag (sibling components), parse and insert as siblings
+      // Check and parse if there's relevant content after the current closing tag
       if (contentAfterClose) {
         parseAndUpdateSiblings(stack, parent, index, contentAfterClose);
       }
@@ -343,7 +343,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     }
   };
 
-  // Travel the tree depth-first
+  // Process the nodes with the components depth-first to maintain the correct order of the nodes
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {
