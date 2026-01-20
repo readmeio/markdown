@@ -5,7 +5,7 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-const pascalCaseTagPattern = /^\s*<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
+const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
 /**
@@ -256,7 +256,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // Only visit HTML nodes with an actual html tag
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
-    const parsed = parseTag(value);
+    const parsed = parseTag(value.trim());
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
