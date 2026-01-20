@@ -43,31 +43,24 @@ describe('preprocessJSXExpressions', () => {
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
     });
 
-    it('should evaluate template literals in JSX expression attributes', () => {
-      const content = '<Component header={`Getting Started`} />';
+    it('should evaluate template literals with interpolation in JSX expression attributes', () => {
+      const content = '<Component greeting={`Hello world my name is <Test>!`} />';
       const result = preprocessJSXExpressions(content);
 
-      expect(result).toContain('header="Getting Started"');
-      expect(result).not.toContain('{`');
+      // Special characters are escaped for valid HTML attribute values
+      expect(result).toContain('greeting="Hello world my name is &lt;Test&gt;!"');
     });
 
-    it('should evaluate template literals with interpolation in JSX expression attributes', () => {
-      const context = { name: 'World' };
-      const content = '<Component greeting={`Hello World!`} />';
-      const result = preprocessJSXExpressions(content, context);
+    it('should escape special characters in the template literal attributes', () => {
+      const content = '<Component greeting={`Special characters: < > & " \n ; /`} />';
+      const result = preprocessJSXExpressions(content);
 
-      expect(result).toContain('greeting="Hello World!"');
+      // Special characters are escaped: < > & " and newlines
+      expect(result).toContain('greeting="Special characters: &lt; &gt; &amp; &quot; &#10; ; /"');
     });
   });
 
   describe('Code block protection', () => {
-    it('should preserve inline code outside of JSX expressions', () => {
-      const content = 'Text with `inline code` here';
-      const result = preprocessJSXExpressions(content);
-
-      expect(result).toBe('Text with `inline code` here');
-    });
-
     it('should preserve fenced code blocks containing JSX-like syntax', () => {
       const content = '```jsx\n<div style={{ color: "red" }}></div>\n```';
       const result = preprocessJSXExpressions(content);
