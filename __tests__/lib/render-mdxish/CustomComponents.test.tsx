@@ -69,7 +69,6 @@ export const SimpleStep = ({ header, children }) => (
 </SimpleStepper>
         `;
         const tree = mdxish(md, { components });
-        console.log('[CustomComponents.test.tsx] simple stepper tree', JSON.stringify(tree, null, 2));
         const mod = renderMdxish(tree, { components });
         const { container } = render(<mod.default />);
 
@@ -119,8 +118,6 @@ export const Item = ({ label }) => <div className="item">{label}</div>;
 </ChildCounter>
       `;
       const tree = mdxish(md, { components });
-      console.log('[CustomComponents.test.tsx] child counter tree', JSON.stringify(tree, null, 2));
-
       const mod = renderMdxish(tree, { components });
       const { container } = render(<mod.default />);
 
@@ -169,10 +166,9 @@ export const CustomItem = ({ label }) => <span className="custom-item">{label}</
 
 </MixedContainer>
       `;
-      const mod = renderMdxish(mdxish(md, { components }), { components });
+      const tree = mdxish(md, { components });
+      const mod = renderMdxish(tree, { components });
       const { container } = render(<mod.default />);
-
-      console.log(container.innerHTML);
 
       // Whitespace nodes should be preserved since there's a standard HTML tag mixed in
       const childCount = parseInt(container.querySelector('[data-testid="child-count"]')?.textContent || '0', 10);
@@ -242,8 +238,6 @@ export const Leaf = ({ name }) => <span className="leaf">{name}</span>;
 </Outer>
       `;
       const tree = mdxish(md, { components });
-      console.log('[CustomComponents.test.tsx] nested components tree', JSON.stringify(tree, null, 2));
-
       const mod = renderMdxish(tree, { components });
       const { container } = render(<mod.default />);
 
