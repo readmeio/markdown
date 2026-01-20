@@ -31,7 +31,6 @@ export {
   remarkPlugins,
   stripComments,
   tags,
-  isPlainText,
 } from './lib';
 export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
