@@ -23,9 +23,9 @@ import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
+import magicBlockTransformer from '../processor/transform/mdxish/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
-import magicBlockRestorer from '../processor/transform/mdxish/mdxish-magic-blocks';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
@@ -37,7 +37,8 @@ import { preserveBooleanProperties, restoreBooleanProperties } from '../processo
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
-import { extractMagicBlocks } from './utils/extractMagicBlocks';
+import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
@@ -57,13 +58,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   // Preprocessing pipeline: Transform content to be parser-ready
-  // Step 1: Extract legacy magic blocks
-  const { replaced: contentAfterMagicBlocks, blocks } = extractMagicBlocks(mdContent);
-  // Step 2: Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
-  const contentAfterTableNormalization = normalizeTableSeparator(contentAfterMagicBlocks);
-  // Step 3: Evaluate JSX expressions in attributes
+  // Step 1: Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
+  const contentAfterTableNormalization = normalizeTableSeparator(mdContent);
+  // Step 2: Evaluate JSX expressions in attributes
   const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
-  // Step 4: Replace snake_case component names with parser-safe placeholders
+  // Step 3: Replace snake_case component names with parser-safe placeholders
   // (e.g., <Snake_case /> → <MDXishSnakeCase0 /> which will be restored after parsing)
   const { content: parserReadyContent, mapping: snakeCaseMapping } =
     processSnakeCaseComponent(contentAfterJSXEvaluation);
@@ -75,12 +74,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   }, {});
 
   const processor = unified()
-    .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })]) // Parse inline JSX expressions as AST nodes for later evaluation
-    .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
+    .data('micromarkExtensions', [magicBlock(), mdxExpression({ allowEmpty: true })])
+    .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
-    .use(magicBlockRestorer, { blocks })
+    .use(magicBlockTransformer)
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
