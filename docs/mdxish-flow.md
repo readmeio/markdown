@@ -359,13 +359,20 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
                                 │
                                 ▼
 ┌───────────────────────────────────────────────────────────────────┐
+│                   MICROMARK EXTENSIONS                            │
+├───────────────────────────────────────────────────────────────────┤
+│  lib/micromark/magic-block   ← Tokenizer for [block:TYPE] syntax  │
+│  lib/mdast-util/magic-block  ← Token → MDAST node converter       │
+└───────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌───────────────────────────────────────────────────────────────────┐
 │                         UTILITIES                                 │
 ├───────────────────────────────────────────────────────────────────┤
 │  utils/common-html-words.ts  ← STANDARD_HTML_TAGS, etc.           │
 │  utils/load-components   ← Auto-loads React components            │
 │  utils/mdxish/mdxish-get-component-name ← getComponentName()      │
 │  utils/render-utils.tsx  ← Shared render utilities                │
-│  utils/extractMagicBlocks← Extract legacy [block:] syntax         │
 └───────────────────────────────────────────────────────────────────┘
 ```
 # Some Outstanding Transformers
