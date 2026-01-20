@@ -257,5 +257,87 @@ export const Leaf = ({ name }) => <span className="leaf">{name}</span>;
       expect(innerCounts[1]?.textContent).toBe('1'); // Second Inner has 1 Leaf
       expect(container.querySelectorAll('.leaf')).toHaveLength(3);
     });
+
+    it('should handle deeply nested custom components of the same type', () => {
+      const customComponentCode = `
+import React, { useMemo } from 'react';
+
+export const A = ({ children }) => {
+  const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
+  return (
+    <div data-testid="a" className="level-a">
+      <span data-testid="a-count">{childArray.length}</span>
+      {children}
+    </div>
+  );
+};
+
+export const B = ({ children }) => {
+  const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
+  return (
+    <div data-testid="b" className="level-b">
+      <span data-testid="b-count">{childArray.length}</span>
+      {children}
+    </div>
+  );
+};
+
+export const C = ({ children }) => {
+  const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
+  return (
+    <div data-testid="c" className="level-c">
+      <span data-testid="c-count">{childArray.length}</span>
+      {children}
+    </div>
+  );
+};
+
+export const D = () => <span className="level-d">leaf</span>;
+
+<A>
+  <B>
+    <C>
+      <D />
+    </C>
+  </B>
+</A>
+      `;
+
+      const compiledModule = run(compile(customComponentCode));
+      const components: Record<string, RMDXModule> = {
+        A: compiledModule,
+        B: compiledModule,
+        C: compiledModule,
+        D: compiledModule,
+      };
+
+      const md = `
+<A>
+  <B>
+    <C>
+      <D />
+      <D />
+    </C>
+    <C>
+      <D />
+      <D />
+    </C>
+  </B>
+</A>
+      `;
+      const tree = mdxish(md, { components });
+      const mod = renderMdxish(tree, { components });
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('[data-testid="a-count"]')?.textContent).toBe('1');
+      // B should have 2 C children
+      expect(container.querySelector('[data-testid="b-count"]')?.textContent).toBe('2');
+      // There should be 2 C children
+      const CSpans = container.querySelectorAll('[data-testid="c-count"]');
+      // Each C should have 2 D children
+      expect(CSpans[0]?.textContent).toBe('2');
+      expect(CSpans[1]?.textContent).toBe('2');
+      expect(container.querySelectorAll('.level-d')).toHaveLength(4);
+    });
   })
 });
