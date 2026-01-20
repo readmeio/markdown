@@ -460,6 +460,7 @@ const blockTypes = [
   'rdme-callout',
   'html-block',
   'embed',
+  'figure',
   'mdxJsxFlowElement',
 ];
 
@@ -488,7 +489,6 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       after: RootContent[];
       before: RootContent[];
       blockNodes: RootContent[];
-      index: number;
       inlineNodes: RootContent[];
       parent: Parent;
     }[] = [];
@@ -521,7 +521,6 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
 
         replacements.push({
           parent,
-          index,
           blockNodes,
           inlineNodes,
           before,
