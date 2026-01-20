@@ -8,14 +8,21 @@ describe('mdxish should render', () => {
       const md = '<br>';
       expect(() => mdxish(md)).not.toThrow();
     });
+
+    it('should render unclosed curly braces', () => {
+      const md1 = 'Hello {user.name';
+      expect(() => mdxish(md1)).not.toThrow();
+      const md2 = 'This is an api: /param1/{param2 that has a unclosed curly brace';
+      expect(() => mdxish(md2)).not.toThrow();
+    });
   });
 
   describe('relaxed md syntax, such as', () => {
     it('wrong bold syntax', () => {
       const md = `**Bold**
-  
+
 Normal
-  
+
 Hello** Wrong Bold**`;
       const tree = mdxish(md);
 

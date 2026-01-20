@@ -61,7 +61,8 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  1. Extract & protect code blocks (```...```) and inline code (`...`)       │
 │  2. Remove JSX comments: {/* comment */} → ""                               │
 │  3. Evaluate attribute expressions: href={baseUrl} → href="https://..."     │
-│  4. Restore protected code blocks                                           │
+│  4. Escape unbalanced braces to prevent MDX expression parsing errors       │
+│  5. Restore protected code blocks                                           │
 │                                                                             │
 │  Note: Inline expressions ({5 * 10}) are now parsed by mdast-util-mdx-      │
 │  expression and evaluated in the AST transformer (evaluateExpressions)      │
@@ -314,7 +315,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 |-------|--------|---------|
 | Pre-process | `extractMagicBlocks` | Extract legacy `[block:TYPE]` syntax, replace with tokens |
 | Pre-process | `normalizeTableSeparator` | Fix malformed table separators (`|: ---`, `|::---` → `| :---`) |
-| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`) |
+| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`), escape unbalanced braces |
 | Pre-process | `processSnakeCaseComponent` | Replace snake_case component names with parser-safe placeholders |
 | MDAST | `remarkParse` + extensions | Markdown → AST with MDX expression parsing (`mdast-util-mdx-expression`) |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |

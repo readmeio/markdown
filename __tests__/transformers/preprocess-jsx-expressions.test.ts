@@ -1,3 +1,4 @@
+import { mdxish } from '../../lib';
 import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('preprocessJSXExpressions', () => {
@@ -39,6 +40,92 @@ describe('preprocessJSXExpressions', () => {
 
       expect(result).toContain(`foo='${expectedJson}'`);
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
+    });
+  });
+
+  describe('Step 4: Escape unbalanced braces', () => {
+    it('should not modify balanced braces', () => {
+      const content = 'Hello {name}, your balance is {amount}';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
+    });
+
+    it('should escape unclosed opening brace', () => {
+      const content = 'Hello {user.name';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('Hello \\{user.name');
+    });
+
+    it('should escape unmatched closing brace', () => {
+      const content = 'Hello user.name}';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('Hello user.name\\}');
+    });
+
+    it('should only escape the unbalanced brace, not balanced ones', () => {
+      // {customerId} is balanced, {loginPolicyId is not (missing closing brace)
+      const content = 'API path: /{customerId}/config/{loginPolicyId';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('API path: /{customerId}/config/\\{loginPolicyId');
+      expect(() => mdxish(result)).not.toThrow();
+    });
+
+    it('should escape all unbalanced braces when multiple are unclosed', () => {
+      const content = 'Path: /{param1/{param2';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('Path: /\\{param1/\\{param2');
+      expect(() => mdxish(result)).not.toThrow();
+    });
+
+    it('should escape unbalanced braces even though the bracket counts are equal', () => {
+      const content = 'Close 1 } Open 1 { 1 + 1 } Open 2 {';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe('Close 1 \\} Open 1 { 1 + 1 } Open 2 \\{');
+      expect(() => mdxish(result)).not.toThrow();
+    });
+
+    it('should leave nested balanced braces alone', () => {
+      const content = 'Expression: {a{b}c}';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
+    });
+
+    it('should not double-escape already escaped braces', () => {
+      const content = 'Already escaped: \\{foo\\}';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
+    });
+
+    describe('should not escape braces in protected content', () => {
+      it('fenced code blocks', () => {
+        const content = '```js\nconst x = {unclosed\n```';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('inline code', () => {
+        const content = 'Use `{unclosed` for templates';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+    });
+
+    it('should handle string literals inside expressions', () => {
+      // The closing brace inside the string should not close the expression
+      const content = '{"}"}';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
     });
   });
 });
