@@ -315,7 +315,11 @@ ${JSON.stringify(
 
 - [block:tutorial-tile]{"backgroundColor":"#018FF4","emoji":"🦉","id":"6969d34fdc1aff2380513c23","link":"http://legacy.readme.local:3000/v1.0/recipes/recipe-title","slug":"recipe-title","title":"Recipe Title"}[/block]
 
-- [block:html]{"html":"<h1>Hoo ha</h1>"}[/block]
+- [block:html]
+    {
+      "html":"<h1>Hoo ha</h1>"
+    }
+  [/block]
 
 - [block:parameters]{"data":{"h-0":"Response","h-1":"","0-0":"{'Message': 'There are **validation errors**', 'Errors': ['ConsumerDetails: <div>The ExternalId or CustomerID</div> must have a value.']}","0-1":""},"cols":2,"rows":1,"align":[null,null]}[/block]
 
@@ -399,7 +403,11 @@ ${JSON.stringify(
     it('should not split a list when magic block appears in the middle', () => {
       const md = `- First item
 - Second item
-- [block:html]{"html":"<strong>Magic block content</strong>"}[/block]
+- [block:html]
+    {
+      "html":"<strong>Magic block content</strong>"
+    }
+  [/block]
 - Fourth item
 - Fifth item`;
 
@@ -431,6 +439,35 @@ ${JSON.stringify(
 
       const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
       expect(listItems).toHaveLength(5);
+    });
+
+    it('should handle indented magic block in nested list with continuation', () => {
+      const md = `1. Navigate to the **Settings** page, select a specific option.
+2. On the selected option's page, you can perform actions:
+
+   [block:image]{"images":[{"image":["https://files.readme.io/test.png",null,"Screenshot"],"align":"center","border":true}]}[/block]
+
+   1. View the option's attributes:
+      - Label (editable)
+      - Description (editable)`;
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ol');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(2);
+
+      const secondItem = listItems[1];
+      const hasImage = JSON.stringify(secondItem).includes('img') || JSON.stringify(secondItem).includes('figure');
+      expect(hasImage).toBe(true);
+
+      const nestedOl = secondItem.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ol');
+      expect(nestedOl).toBeDefined();
+
+      const nestedItems = nestedOl?.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(nestedItems?.length).toBeGreaterThanOrEqual(1);
     });
   });
 
