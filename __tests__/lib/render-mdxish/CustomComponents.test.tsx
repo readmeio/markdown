@@ -260,7 +260,7 @@ export const A = ({ children }) => {
   const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
   return (
     <div data-testid="a" className="level-a">
-      <span data-testid="a-count">{childArray.length}</span>
+      <span data-testid="a-children-count">{childArray.length}</span>
       {children}
     </div>
   );
@@ -270,7 +270,7 @@ export const B = ({ children }) => {
   const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
   return (
     <div data-testid="b" className="level-b">
-      <span data-testid="b-count">{childArray.length}</span>
+      <span data-testid="b-children-count">{childArray.length}</span>
       {children}
     </div>
   );
@@ -280,7 +280,7 @@ export const C = ({ children }) => {
   const childArray = useMemo(() => (Array.isArray(children) ? children : [children]), [children]);
   return (
     <div data-testid="c" className="level-c">
-      <span data-testid="c-count">{childArray.length}</span>
+      <span data-testid="c-children-count">{childArray.length}</span>
       {children}
     </div>
   );
@@ -323,11 +323,11 @@ export const D = () => <span className="level-d">leaf</span>;
       const mod = renderMdxish(tree, { components });
       const { container } = render(<mod.default />);
 
-      expect(container.querySelector('[data-testid="a-count"]')?.textContent).toBe('1');
+      expect(container.querySelector('[data-testid="a-children-count"]')?.textContent).toBe('1');
       // B should have 2 C children
-      expect(container.querySelector('[data-testid="b-count"]')?.textContent).toBe('2');
+      expect(container.querySelector('[data-testid="b-children-count"]')?.textContent).toBe('2');
       // There should be 2 C children
-      const CSpans = container.querySelectorAll('[data-testid="c-count"]');
+      const CSpans = container.querySelectorAll('[data-testid="c-children-count"]');
       // Each C should have 2 D children
       expect(CSpans[0]?.textContent).toBe('2');
       expect(CSpans[1]?.textContent).toBe('2');

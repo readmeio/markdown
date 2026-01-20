@@ -153,6 +153,17 @@ describe('mdxish-component-blocks', () => {
           name: 'MyComponent',
         });
       });
+
+      it('should identify component after another component in the same line (parseSibling)', () => {
+        const markdown = '<MyComponent>content</MyComponent><AnotherComponent />';
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(2);
+        const names = mdxNodes.map(n => (n as { name?: string }).name);
+        expect(names).toContain('MyComponent');
+        expect(names).toContain('AnotherComponent');
+      });
     });
 
     describe('Case 3: Multi-line components', () => {
@@ -227,6 +238,25 @@ Alert content here
             name: 'NestedComponent',
           });
         });
+      });
+
+      it('should identify nested component that contains normal sibling content', () => {
+        const markdown = `<MyComponent>
+        <NestedComponent />
+More content here
+</MyComponent>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(2);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'MyComponent',
+        });
+        const foundNestedComponent = mdxNodes[0].children.some(child => {
+          return child.type === 'mdxJsxFlowElement' && (child as { name?: string }).name === 'NestedComponent';
+        });
+        expect(foundNestedComponent).toBe(true);
       });
     });
 
