@@ -1,4 +1,7 @@
 import type { Element } from 'hast';
+import type { List, Root as MdastRoot } from 'mdast';
+
+import * as rdmd from '@readme/markdown-legacy';
 
 import { mdxish } from '../../../lib';
 
@@ -306,4 +309,145 @@ ${JSON.stringify(
     });
   });
 
+  describe('magic blocks in lists', () => {
+    it('should preserve list structure when magic block is a list item', () => {
+      const md = `- <br />
+
+- [block:tutorial-tile]{"backgroundColor":"#018FF4","emoji":"🦉","id":"6969d34fdc1aff2380513c23","link":"http://legacy.readme.local:3000/v1.0/recipes/recipe-title","slug":"recipe-title","title":"Recipe Title"}[/block]
+
+- [block:html]{"html":"<h1>Hoo ha</h1>"}[/block]
+
+- [block:parameters]{"data":{"h-0":"Response","h-1":"","0-0":"{'Message': 'There are **validation errors**', 'Errors': ['ConsumerDetails: <div>The ExternalId or CustomerID</div> must have a value.']}","0-1":""},"cols":2,"rows":1,"align":[null,null]}[/block]
+
+- [block:embed]{"url":"https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4","provider":"youtube.com","href":"https://www.youtube.com/watch?v=FVikHLyW500&list=RD3-9V38W00CM&index=4","typeOfEmbed":"youtube"}[/block]`;
+
+      const ast = mdxish(md);
+      const listElements = ast.children.filter(
+        (child): child is Element => child.type === 'element' && child.tagName === 'ul',
+      );
+
+      expect(listElements).toHaveLength(1);
+      expect(listElements[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li')).toHaveLength(5);
+    });
+
+    it('should not create extra newlines when tutorial-tile block is in a list item', () => {
+      const md = '- [block:tutorial-tile]{"emoji":"🦉","slug":"recipe-title","title":"Recipe Title"}[/block]';
+
+      const ast = mdxish(md);
+
+      expect(ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul')).toHaveLength(1);
+
+      const list = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul') as Element;
+      const listItems = list.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(1);
+
+      const firstItem = listItems[0];
+      const hasRecipe = JSON.stringify(firstItem).includes('Recipe');
+      expect(hasRecipe).toBe(true);
+    });
+
+    it('should not create extra newlines when html block is in a list item', () => {
+      const md = '- [block:html]{"html":"<h1>Hello</h1>"}[/block]';
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(1);
+    });
+
+    it('should not create extra newlines when embed block is in a list item', () => {
+      const md = '- [block:embed]{"url":"https://www.youtube.com/watch?v=FVikHLyW500","provider":"youtube.com","href":"https://www.youtube.com/watch?v=FVikHLyW500","typeOfEmbed":"youtube"}[/block]';
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(1);
+    });
+
+    it('should not create extra newlines when parameters block is in a list item', () => {
+      const md = '- [block:parameters]{"data":{"h-0":"Header","0-0":"Value"},"cols":1,"rows":1}[/block]';
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(1);
+    });
+
+    it('should handle mixed content lists with magic blocks', () => {
+      const md = `- Regular text item
+- [block:callout]{"type":"info","title":"Note","body":"Info"}[/block]
+- Another text item`;
+
+      const ast = mdxish(md);
+
+      const lists = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+
+      const listItems = lists[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      expect(listItems).toHaveLength(3);
+    });
+  });
+
+  describe('legacy rdmd comparison - magic blocks in lists', () => {
+    /**
+     * Using the legacy engine as a comparison test for the mdxish pipeline.
+     * Mdxish pipeline should show parity with the legacy engine in terms of
+     * magic block handling in lists.
+     */
+
+    it('legacy rdmd: preserves list structure with tutorial-tile block', () => {
+      const md = '- [block:tutorial-tile]{"emoji":"🦉","slug":"recipe-title","title":"Recipe Title"}[/block]';
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(1);
+    });
+
+    it('legacy rdmd: preserves list structure with multiple magic blocks', () => {
+      const md = `- [block:tutorial-tile]{"emoji":"🦉","slug":"recipe-title","title":"Recipe Title"}[/block]
+
+- [block:html]{"html":"<h1>Hello</h1>"}[/block]
+
+- [block:embed]{"url":"https://www.youtube.com/watch?v=test","provider":"youtube.com","href":"https://www.youtube.com/watch?v=test","typeOfEmbed":"youtube"}[/block]`;
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(3);
+    });
+
+    it('legacy rdmd: preserves mixed content list with magic blocks', () => {
+      const md = `- Regular text item
+- [block:callout]{"type":"info","title":"Note","body":"Info"}[/block]
+- Another text item`;
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(3);
+    });
+
+    it('legacy rdmd: preserves list with parameters block', () => {
+      const md = '- [block:parameters]{"data":{"h-0":"Header","0-0":"Value"},"cols":1,"rows":1}[/block]';
+
+      const ast = rdmd.mdast(md) as MdastRoot;
+
+      const lists = ast.children.filter((c): c is List => c.type === 'list');
+      expect(lists).toHaveLength(1);
+      expect(lists[0].children).toHaveLength(1);
+    });
+  });
 });
