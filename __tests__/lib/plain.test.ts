@@ -103,4 +103,24 @@ Is it _me_ you're looking for?
 
     expect(plain(hast(txt), { variables: { name: 'Owlbert' } })).toBe('Owlbert');
   });
+
+  it('removes MDX comments', () => {
+    const md = `
+## Hello!
+
+{/* comment */}
+
+{
+ /**
+  * multi
+  * line
+  * comment
+  */
+}
+Is it _me_ you're looking for?
+`;
+
+    const tree = hast(md);
+    expect(plain(tree)).toBe("Hello! Is it me you're looking for?");
+  });
 });

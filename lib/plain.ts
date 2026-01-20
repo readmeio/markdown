@@ -16,6 +16,12 @@ function one(node: Nodes, opts: Options) {
   if (node.type === 'comment') return '';
 
   if ('type' in node && node.type === 'text') {
+    // Remove MDX comments {/* comment */}
+    const trimmedValue = node.value.trim();
+    if (trimmedValue.startsWith('/*') && trimmedValue.endsWith('*/')) {
+      return '';
+    }
+
     return node.value;
   }
 
