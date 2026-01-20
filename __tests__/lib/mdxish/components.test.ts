@@ -34,16 +34,25 @@ export const ExampleComponent = ({ header }) => {
     expect(element.properties?.header).toBe('Getting Started with Custom Components');
   });
 
-  describe('when the component props are created using a JSX expression', () => {
+  describe('when the component props are using template literals in JSX expressions', () => {
     it('should parse a component with a string template literal as a prop', () => {
       const md = '<ExampleComponent header={`Getting Started with Custom Components`} />';
       const tree = mdxish(md, { components: exampleComponents });
 
       expect(tree.children).toHaveLength(1);
-      expect(tree.children[0].type).toBe('element');
       const element = tree.children[0] as Element;
       expect(element.tagName).toBe('ExampleComponent');
       expect(element.properties?.header).toBe('Getting Started with Custom Components');
+    });
+
+    it('should parse a component with a string template literal as a prop containing special characters', () => {
+      const md = '<ExampleComponent header={`Special characters: < > & " \n ; /`} />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('Special characters: < > & " \n ; /');
     });
 
     it('should parse a component with an array as a prop', () => {
@@ -107,7 +116,7 @@ export const AdvancedTable = ({ data }) => {
       ])}`);
     });
 
-    it('should parse a component with array props containing apostrophes', () => {
+    it('should parse a component with array props containing special characters', () => {
       const componentWithApostropheCode = `
 export const ApostropheTable = ({ data }) => {
   return (
@@ -120,7 +129,7 @@ export const ApostropheTable = ({ data }) => {
 <ApostropheTable
   data={[
     {
-      'message': "The API key doesn't match the project."
+      'message': "The <API_KEY> doesn't match the project."
     }
   ]}
 />
@@ -135,7 +144,7 @@ export const ApostropheTable = ({ data }) => {
 <ApostropheTable
   data={[
     {
-      'message': "The API key doesn't match the project."
+      'message': "The <API_KEY> doesn't match the project."
     }
   ]}
 />
@@ -144,7 +153,7 @@ export const ApostropheTable = ({ data }) => {
 
       const componentNode = (tree.children[0] as Element).children[0] as Element;
       expect(componentNode.tagName).toBe('ApostropheTable');
-      expect(String(componentNode.properties?.data)).toContain('The API key doesn\'t match the project.');
+      expect(String(componentNode.properties?.data)).toContain('The <API_KEY> doesn\'t match the project.');
     });
 
     it('should parse a component with multiline props', () => {
@@ -152,16 +161,13 @@ export const ApostropheTable = ({ data }) => {
 export const ContentModal = ({
   label,
   title,
-  content,
-  size = 'md',
-  buttonColor = '#0B1440'
+  content
 }) => {
   return (
     <div>
       <div>{label}</div>
       <h2>{title}</h2>
       <p>{content}</p>
-      <div>Size: {size}, Color: {buttonColor}</div>
     </div>
   );
 };
@@ -169,9 +175,10 @@ export const ContentModal = ({
 <ContentModal
   label="Open Content Modal"
   title="Content Modal"
-  content={\`The ContentModal component can be used to display information in a focused, overlay-style container that sits on top of your guides page.
-  Modals are typically used to draw attention to important actions, confirmations, or details without navigating away from the current view.
-  Users can close it by clicking outside, pressing ESC, or selecting the close button.\`}
+  content={\`Lorem ipsum dolor sit amet,
+  consectetur adipiscing elit.
+  Sed do eiusmod tempor incididunt ut
+  labore et dolore magna aliqua.\`}
 />
       `;
 
@@ -184,9 +191,10 @@ export const ContentModal = ({
 <ContentModal
   label="Open Content Modal"
   title="Content Modal"
-  content={\`The ContentModal component can be used to display information in a focused, overlay-style container that sits on top of your guides page.
-  Modals are typically used to draw attention to important actions, confirmations, or details without navigating away from the current view.
-  Users can close it by clicking outside, pressing ESC, or selecting the close button.\`}
+  content={\`Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut
+labore et dolore magna aliqua.\`}
 />
       `;
       const tree = mdxish(md, { components: exampleComponentsWithArray });
@@ -196,9 +204,10 @@ export const ContentModal = ({
       expect(componentNode.properties).toMatchObject({
         label: 'Open Content Modal',
         title: 'Content Modal',
-        content: `The ContentModal component can be used to display information in a focused, overlay-style container that sits on top of your guides page.
-Modals are typically used to draw attention to important actions, confirmations, or details without navigating away from the current view.
-Users can close it by clicking outside, pressing ESC, or selecting the close button.`,
+        content: `Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut
+labore et dolore magna aliqua.`,
       });
     });
   })

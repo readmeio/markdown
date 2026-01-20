@@ -19,7 +19,8 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '&#10;');
 }
 
 // Marker prefix for JSON-serialized complex values (arrays/objects)
@@ -227,8 +228,8 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
     if (extracted) {
       // The expression might contain template literals in MDX component tag props
       // E.g. <Component greeting={`Hello World!`} />
-      // that is processed as inline code. So we need to restore the inline codes
-      // in the expression
+      // that is marked as inline code. So we need to restore the inline codes
+      // in the expression to evaluate it
       let expression = extracted.content;
       if (protectedCode) {
         expression = restoreInlineCode(expression, protectedCode);
@@ -257,9 +258,11 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
             result += `${attributeName}="${jsonValue}"`;
           }
         } else if (attributeName === 'className') {
-          result += `class="${evalResult}"`;
+          // Escape special characters so that it doesn't break and split the attribute value to nodes
+          // This will be restored later in the pipeline
+          result += `class="${escapeHtmlAttribute(String(evalResult))}"`;
         } else {
-          result += `${attributeName}="${evalResult}"`;
+          result += `${attributeName}="${escapeHtmlAttribute(String(evalResult))}"`;
         }
       } catch (_error) {
         result += content.slice(match.index, fullMatchEnd);

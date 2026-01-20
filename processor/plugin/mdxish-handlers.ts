@@ -15,9 +15,9 @@ const mdxExpressionHandler: Handler = (_state, node) => ({
 function decodeHtmlEntities(value: string) {
   return value
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
+    .replace(/&#10;/g, '\n')
     .replace(/&amp;/g, '&');
 }
 
