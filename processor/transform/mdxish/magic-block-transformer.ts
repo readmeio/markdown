@@ -1,11 +1,12 @@
 /**
- * Legacy magic block parser for RDMD compatibility.
- * Parses `[block:TYPE]JSON[/block]` syntax and returns MDAST nodes.
- * Taken from the v6 branch with some modifications to be more type safe
- * and adapted with the mdxish flow.
+ * Unified plugin that transforms `magicBlock` MDAST nodes into final nodes.
+ *
+ * This replaces the magicBlockRestorer plugin by working directly with
+ * parsed `magicBlock` nodes from the micromark tokenizer instead of
+ * finding placeholder tokens.
  */
-import type { BlockHit } from '../../../lib/utils/extractMagicBlocks';
-import type { Code, Parent, Root as MdastRoot, RootContent } from 'mdast';
+import type { MagicBlockNode } from '../../../lib/mdast-util/magic-block/types';
+import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -14,15 +15,8 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
-import { toAttributes } from '../../utils';
 
-/**
- * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
- * Group 1: block type (e.g., "image", "code", "callout")
- * Group 2: JSON content between the tags
- * Taken from the v6 branch
- */
-const RGXP = /^\s*\[block:([^\]]*)\]([^]+?)\[\/block\]/;
+import { toAttributes } from '../../utils';
 
 interface MdastNode {
   [key: string]: unknown;
@@ -30,6 +24,9 @@ interface MdastNode {
   type: string;
 }
 
+/**
+ * Base interface for magic block JSON data.
+ */
 interface MagicBlockJson {
   [key: string]: unknown;
   sidebar?: boolean;
@@ -88,19 +85,16 @@ interface RecipeJson extends MagicBlockJson {
   title: string;
 }
 
-export interface ParseMagicBlockOptions {
-  alwaysThrow?: boolean;
+export interface MagicBlockTransformerOptions {
   compatibilityMode?: boolean;
   safeMode?: boolean;
 }
 
-
 /**
- * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
- * Pinned blocks are displayed in a sidebar/floating position in the UI.
+ * Wraps a node in a "pinned" container if sidebar: true is set.
  */
-const wrapPinnedBlocks = (node: MdastNode, json: MagicBlockJson): MdastNode => {
-  if (!json.sidebar) return node;
+const wrapPinnedBlocks = (node: MdastNode, data: MagicBlockJson): MdastNode => {
+  if (!data.sidebar) return node;
   return {
     children: [node],
     data: { className: 'pin', hName: 'rdme-pin' },
@@ -117,106 +111,70 @@ const imgSizeValues: Record<string, string> = {
 };
 
 /**
- * Proxy that resolves image sizing values:
- * - "full" → "100%", "original" → "auto" (from imgSizeValues)
- * - Pure numbers like "50" → "50%" (percentage)
- * - Anything else passes through as-is (e.g., "200px")
+ * Proxy that resolves image sizing values.
  */
 const imgWidthBySize = new Proxy(imgSizeValues, {
   get: (widths, size: string) => (size?.match(/^\d+$/) ? `${size}%` : size in widths ? widths[size] : size),
 });
 
-// Simple text to inline nodes (just returns text node - no markdown parsing)
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
-
-// Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
-
-/** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
-// Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
 
-  // If there are multiple block-level nodes, keep them as-is to preserve the document structure and spacing
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
   }
 
   return tree.children.flatMap(n =>
-    // This unwraps the extra p node that might appear & wrapping the content
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
   );
 };
 
-// Parse markdown/HTML into block-level nodes (preserves paragraphs, headings, lists, etc.)
 const parseBlock = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
 
-
 /**
- * Parse a magic block string and return MDAST nodes.
- *
- * @param raw - The raw magic block string including [block:TYPE] and [/block] tags
- * @param options - Parsing options for compatibility and error handling
- * @returns Array of MDAST nodes representing the parsed block
+ * Transform a magicBlock node into final MDAST nodes.
  */
-function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): MdastNode[] {
-  const { alwaysThrow = false, compatibilityMode = false, safeMode = false } = options;
+function transformMagicBlock(
+  blockType: string,
+  data: MagicBlockJson,
+  options: MagicBlockTransformerOptions = {},
+): MdastNode[] {
+  const { compatibilityMode = false, safeMode = false } = options;
 
-  const matchResult = RGXP.exec(raw);
-  if (!matchResult) return [];
+  if (Object.keys(data).length < 1) return [];
 
-  const [, rawType, jsonStr] = matchResult;
-  const type = rawType?.trim();
-  if (!type) return [];
-
-  let json: MagicBlockJson;
-  try {
-    json = JSON.parse(jsonStr);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Invalid Magic Block JSON:', err);
-    if (alwaysThrow) throw new Error('Invalid Magic Block JSON');
-    return [];
-  }
-
-  if (Object.keys(json).length < 1) return [];
-
-  // Each case handles a different magic block type and returns appropriate MDAST nodes
-  switch (type) {
-    // Code blocks: single code block or tabbed code blocks (multiple languages)
+  switch (blockType) {
     case 'code': {
-      const codeJson = json as CodeBlockJson;
+      const codeJson = data as CodeBlockJson;
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
         lang: obj.language,
-        meta: obj.name || null, // Tab name shown in the UI
+        meta: obj.name || null,
         type: 'code',
         value: obj.code.trim(),
       }));
 
-      // Single code block without a tab name renders as a plain code block
       if (children.length === 1) {
         if (!children[0].value) return [];
-        if (children[0].meta) return [wrapPinnedBlocks(children[0], json)];
+        if (children[0].meta) return [wrapPinnedBlocks(children[0], data)];
       }
 
-      // Multiple code blocks render as tabbed code blocks
-      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'code-tabs' }, type: 'code-tabs' }, json)];
+      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'code-tabs' }, type: 'code-tabs' }, data)];
     }
 
-    // API header: renders as a heading element (h1-h6)
     case 'api-header': {
-      const headerJson = json as ApiHeaderJson;
-      // In compatibility mode, default to h1; otherwise h2
+      const headerJson = data as ApiHeaderJson;
       const depth = headerJson.level || (compatibilityMode ? 1 : 2);
       return [
         wrapPinnedBlocks(
@@ -225,18 +183,16 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
             depth,
             type: 'heading',
           },
-          json,
+          data,
         ),
       ];
     }
 
-    // Image block: renders as <img> or <figure> with caption
     case 'image': {
-      const imageJson = json as ImageBlockJson;
+      const imageJson = data as ImageBlockJson;
       const imgData = imageJson.images.find(i => i.image);
       if (!imgData?.image) return [];
 
-      // Image array format: [url, title?, alt?]
       const [url, title, alt] = imgData.image;
       const block: MdastNode = {
         alt: alt || imgData.caption || '',
@@ -252,7 +208,6 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         url,
       };
 
-      // Wrap in <figure> if caption is present
       const img: MdastNode = imgData.caption
         ? {
             children: [
@@ -264,13 +219,11 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
             url,
           }
         : block;
-      return [wrapPinnedBlocks(img, json)];
+      return [wrapPinnedBlocks(img, data)];
     }
 
-    // Callout: info/warning/error boxes with icon and theme
     case 'callout': {
-      const calloutJson = json as CalloutJson;
-      // Preset callout types map to [icon, theme] tuples
+      const calloutJson = data as CalloutJson;
       const types: Record<string, [string, string]> = {
         danger: ['❗️', 'error'],
         info: ['📘', 'info'],
@@ -278,7 +231,6 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         warning: ['🚧', 'warn'],
       };
 
-      // Resolve type to [icon, theme] - use preset if available, otherwise custom
       const resolvedType =
         typeof calloutJson.type === 'string' && calloutJson.type in types
           ? types[calloutJson.type]
@@ -288,7 +240,6 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      // Parses html & markdown content
       const titleBlocks = parseBlock(calloutJson.title || '');
       const bodyBlocks = parseBlock(calloutJson.body || '');
 
@@ -306,10 +257,8 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         children.push(...titleBlocks, ...bodyBlocks);
       }
 
-      // If there is no title or title is empty
-      const empty = !titleBlocks.length || !titleBlocks[0].children[0]?.value;
+      const empty = !titleBlocks.length || !titleBlocks[0].children?.[0]?.value;
 
-      // Create mdxJsxFlowElement directly for mdxish
       const calloutElement: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Callout',
@@ -322,36 +271,30 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         children: children as MdxJsxFlowElement['children'],
       };
 
-      return [wrapPinnedBlocks(calloutElement as unknown as MdastNode, json)];
+      return [wrapPinnedBlocks(calloutElement as unknown as MdastNode, data)];
     }
 
-    // Parameters: renders as a table (used for API parameters, etc.)
     case 'parameters': {
-      const paramsJson = json as ParametersJson;
-      const { cols, data, rows } = paramsJson;
+      const paramsJson = data as ParametersJson;
+      const { cols, data: tableData, rows } = paramsJson;
 
-      if (!Object.keys(data).length) return [];
+      if (!Object.keys(tableData).length) return [];
 
-      /**
-       * Convert sparse key-value data to 2D array.
-       * Keys are formatted as "ROW-COL" where ROW is "h" for header or a number.
-       * Example: { "h-0": "Name", "h-1": "Type", "0-0": "id", "0-1": "string" }
-       * Becomes: [["Name", "Type"], ["id", "string"]]
-       */
-      const sparseData: string[][] = Object.entries(data).reduce((mapped, [key, v]) => {
-        const [row, col] = key.split('-');
-        // Header row ("h") becomes index 0, data rows are offset by 1
-        const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
-        const colIndex = parseInt(col, 10);
+      const sparseData: string[][] = Object.entries(tableData).reduce(
+        (mapped, [key, v]) => {
+          const [row, col] = key.split('-');
+          const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
+          const colIndex = parseInt(col, 10);
 
-        if (!mapped[rowIndex]) mapped[rowIndex] = [];
-        mapped[rowIndex][colIndex] = v;
-        return mapped;
-      }, [] as string[][]);
+          if (!mapped[rowIndex]) mapped[rowIndex] = [];
+          mapped[rowIndex][colIndex] = v;
+          return mapped;
+        },
+        [] as string[][],
+      );
 
-      // In compatibility mode, wrap cell content in paragraphs; otherwise inline text
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
-      const children = Array.from({ length: rows + 1 }, (_, y) => ({
+      const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
@@ -360,15 +303,16 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
       }));
 
       return [
-        wrapPinnedBlocks({ align: paramsJson.align ?? new Array(cols).fill('left'), children, type: 'table' }, json),
+        wrapPinnedBlocks(
+          { align: paramsJson.align ?? new Array(cols).fill('left'), children: tableChildren, type: 'table' },
+          data,
+        ),
       ];
     }
 
-    // Embed: external content (YouTube, etc.) with provider detection
     case 'embed': {
-      const embedJson = json as EmbedJson;
+      const embedJson = data as EmbedJson;
       const { html, title, url } = embedJson;
-      // Extract provider name from URL hostname (e.g., "youtube.com" → "youtube.com")
       try {
         embedJson.provider = new URL(url).hostname
           .split(/(?:www)?\./)
@@ -387,14 +331,13 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
             data: { hName: 'embed-block', hProperties: { ...embedJson, href: url, html, title, url } },
             type: 'embed',
           },
-          json,
+          data,
         ),
       ];
     }
 
-    // HTML block: raw HTML content (scripts enabled only in compatibility mode)
     case 'html': {
-      const htmlJson = json as HtmlJson;
+      const htmlJson = data as HtmlJson;
       return [
         wrapPinnedBlocks(
           {
@@ -404,39 +347,33 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
             },
             type: 'html-block',
           },
-          json,
+          data,
         ),
       ];
     }
 
-    // Recipe/TutorialTile: renders as Recipe component
     case 'recipe':
     case 'tutorial-tile': {
-      const recipeJson = json as RecipeJson;
+      const recipeJson = data as RecipeJson;
       if (!recipeJson.slug || !recipeJson.title) return [];
 
-      // Create mdxJsxFlowElement directly for mdxish flow
-      // Note: Don't wrap in pinned blocks for mdxish - rehypeMdxishComponents handles component resolution
-      // The node structure matches what mdxishComponentBlocks creates for JSX tags
       const recipeNode: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Recipe',
         attributes: toAttributes(recipeJson, ['slug', 'title']),
         children: [],
-        // Position is optional but helps with debugging
         position: undefined,
       };
 
       return [recipeNode as unknown as MdastNode];
     }
 
-    // Unknown block types: render as generic div with JSON properties
     default: {
-      const text = (json as { html?: string; text?: string }).text || (json as { html?: string }).html || '';
+      const text = (data as { html?: string; text?: string }).text || (data as { html?: string }).html || '';
       return [
         wrapPinnedBlocks(
-          { children: textToBlock(text), data: { hName: type || 'div', hProperties: json, ...json }, type: 'div' },
-          json,
+          { children: textToBlock(text), data: { hName: blockType || 'div', hProperties: data, ...data }, type: 'div' },
+          data,
         ),
       ];
     }
@@ -444,37 +381,29 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
- * Check if a child node is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
+ * Check if a child node is a flow element that needs unwrapping.
  */
 const needsUnwrapping = (child: RootContent): boolean => {
   return child.type === 'mdxJsxFlowElement';
 };
 
 /**
- * Unified plugin that restores magic blocks from placeholder tokens.
- *
- * During preprocessing, extractMagicBlocks replaces [block:TYPE]...[/block]
- * with inline code tokens like `__MAGIC_BLOCK_0__`. This plugin finds those
- * tokens in the parsed MDAST and replaces them with the parsed block content.
+ * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
  */
-const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
-  ({ blocks }) =>
+const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
+  (options = {}) =>
   tree => {
-    if (!blocks.length) return;
-
-    // Map: key → original raw magic block content
-    const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
-
-    // Find inlineCode nodes that match our placeholder tokens
     const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
 
-    visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
-      if (!parent || index == null) return undefined;
-      const raw = magicBlockKeys.get(node.value);
-      if (!raw) return undefined;
+    visit(tree, 'magicBlock', (node: MagicBlockNode, index: number | undefined, parent: Parent | undefined) => {
+      if (!parent || index === undefined) return undefined;
 
-      const children = parseMagicBlock(raw) as unknown as RootContent[];
-      if (!children.length) return undefined;
+      const children = transformMagicBlock(node.blockType, node.data as MagicBlockJson, options) as unknown as RootContent[];
+      if (!children.length) {
+        // Remove the node if transformation returns nothing
+        parent.children.splice(index, 1);
+        return [SKIP, index];
+      }
 
       if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
         // Find paragraph's parent and unwrap
@@ -506,4 +435,4 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     });
   };
 
-export default magicBlockRestorer;
+export default magicBlockTransformer;
