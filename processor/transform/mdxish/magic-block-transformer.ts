@@ -165,12 +165,15 @@ function transformMagicBlock(
         value: obj.code.trim(),
       }));
 
+      // Single code block without a tab name (meta or language) renders as a plain code block
+      // Otherwise, we want to render it as a code tabs block
       if (children.length === 1) {
         if (!children[0].value) return [];
-        if (children[0].meta) return [wrapPinnedBlocks(children[0], data)];
+        if (!(children[0].meta || children[0].lang)) return [wrapPinnedBlocks(children[0], data)];
       }
 
-      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'code-tabs' }, type: 'code-tabs' }, data)];
+      // Multiple code blocks or a single code block with a tab name (meta or language) renders as a code tabs block
+      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'CodeTabs' }, type: 'code-tabs' }, data)];
     }
 
     case 'api-header': {
