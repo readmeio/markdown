@@ -153,6 +153,17 @@ describe('mdxish-component-blocks', () => {
           name: 'MyComponent',
         });
       });
+
+      it('should identify component after another component in the same line (parseSibling)', () => {
+        const markdown = '<MyComponent>content</MyComponent><AnotherComponent />';
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(2);
+        const names = mdxNodes.map(n => (n as { name?: string }).name);
+        expect(names).toContain('MyComponent');
+        expect(names).toContain('AnotherComponent');
+      });
     });
 
     describe('Case 3: Multi-line components', () => {
@@ -199,7 +210,7 @@ Alert content here
       });
 
       describe('nested components', () => {
-        it('should convert outer component to mdxJsxFlowElement when nested component are separated by newlines', () => {
+        it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
           const markdown = `
 <MyComponent>
   <NestedComponent>
@@ -213,12 +224,39 @@ Alert content here
           const tree = parseWithPlugin(markdown);
 
           const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
-          expect(mdxNodes).toHaveLength(1);
+          expect(mdxNodes).toHaveLength(3);
           expect(mdxNodes[0]).toMatchObject({
             type: 'mdxJsxFlowElement',
             name: 'MyComponent',
           });
+          expect(mdxNodes[1]).toMatchObject({
+            type: 'mdxJsxFlowElement',
+            name: 'NestedComponent',
+          });
+          expect(mdxNodes[2]).toMatchObject({
+            type: 'mdxJsxFlowElement',
+            name: 'NestedComponent',
+          });
         });
+      });
+
+      it('should identify nested component that contains normal sibling content', () => {
+        const markdown = `<MyComponent>
+        <NestedComponent />
+More content here
+</MyComponent>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(2);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'MyComponent',
+        });
+        const foundNestedComponent = mdxNodes[0].children.some(child => {
+          return child.type === 'mdxJsxFlowElement' && (child as { name?: string }).name === 'NestedComponent';
+        });
+        expect(foundNestedComponent).toBe(true);
       });
     });
 
