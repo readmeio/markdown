@@ -35,12 +35,11 @@ const compile = (
   { components = {}, missingComponents, copyButtons, useTailwind, ...opts }: CompileOpts = {},
 ) => {
   // Destructure at runtime to avoid circular dependency issues
-  const { codeTabsTransformer, calloutTransformer, ...transforms } = defaultTransforms;
+  const { codeTabsTransformer, ...transforms } = defaultTransforms;
 
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
-    calloutTransformer,
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
     [

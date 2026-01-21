@@ -42,12 +42,11 @@ import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
   components?: CustomComponents;
-  format?: string;
   jsxContext?: JSXContext;
   useTailwind?: boolean;
 }
 
-const defaultTransformers = [codeTabsTransformer, gemojiTransformer, embedTransformer];
+const defaultTransformers = [codeTabsTransformer, gemojiTransformer, embedTransformer, calloutTransformer];
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
@@ -83,7 +82,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(normalizeEmphasisAST)
     .use(magicBlockRestorer, { blocks })
     .use(imageTransformer, { isMdxish: true })
-    .use(calloutTransformer)
     .use(defaultTransformers)
     .use(mdxishComponentBlocks)
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
