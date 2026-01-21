@@ -573,8 +573,8 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
       effects.enter('magicBlockMarkerTypeEnd');
       effects.consume(code);
       effects.exit('magicBlockMarkerTypeEnd');
-      effects.enter('magicBlockData');
-      return captureData;
+      // Don't enter magicBlockData yet - wait to see if we have content
+      return beforeData;
     }
 
     if (isTypeChar(code)) {
@@ -585,16 +585,150 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     return nok(code);
   }
 
-  function captureData(code: Code): State | undefined {
-    // Fail on EOF - magic block must be closed on same line
+  /**
+   * State before data content - handles line endings before entering data token.
+   */
+  function beforeData(code: Code): State | undefined {
+    // Fail on EOF - magic block must be closed
     if (code === null) {
       return nok(code);
     }
 
-    // Text tokenizer only handles single-line blocks
-    // Fail on line endings - let flow tokenizer handle multiline blocks
+    // Handle line endings before any data - consume them without entering data token
     if (markdownLineEnding(code)) {
+      effects.enter('magicBlockLineEnding');
+      effects.consume(code);
+      effects.exit('magicBlockLineEnding');
+      return beforeData;
+    }
+
+    // Check for closing marker directly (without entering data)
+    if (code === leftBracket) {
+      effects.enter('magicBlockMarkerEnd');
+      effects.consume(code);
+      return expectSlashFromBeforeData;
+    }
+
+    // We have content - enter data token and start capturing
+    effects.enter('magicBlockData');
+    return captureData(code);
+  }
+
+  /**
+   * Check for slash in closing marker when coming from beforeData.
+   */
+  function expectSlashFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+
+    if (code === slash) {
+      effects.consume(code);
+      return expectClosingBFromBeforeData;
+    }
+
+    // Not a closing marker - this is data content
+    effects.exit('magicBlockMarkerEnd');
+    effects.enter('magicBlockData');
+    if (code === quoteMark) inString = true;
+    effects.consume(code);
+    return captureData;
+  }
+
+  function expectClosingBFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== charB) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+    effects.consume(code);
+    return expectClosingLFromBeforeData;
+  }
+
+  function expectClosingLFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== charL) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+    effects.consume(code);
+    return expectClosingOFromBeforeData;
+  }
+
+  function expectClosingOFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== charO) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+    effects.consume(code);
+    return expectClosingCFromBeforeData;
+  }
+
+  function expectClosingCFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== charC) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+    effects.consume(code);
+    return expectClosingKFromBeforeData;
+  }
+
+  function expectClosingKFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== charK) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+    effects.consume(code);
+    return expectClosingBracketFromBeforeData;
+  }
+
+  function expectClosingBracketFromBeforeData(code: Code): State | undefined {
+    if (code === null) return nok(code);
+    if (code !== rightBracket) {
+      effects.exit('magicBlockMarkerEnd');
+      effects.enter('magicBlockData');
+      if (code === quoteMark) inString = true;
+      effects.consume(code);
+      return captureData;
+    }
+
+    effects.consume(code);
+    effects.exit('magicBlockMarkerEnd');
+    effects.exit('magicBlock');
+    return ok;
+  }
+
+  function captureData(code: Code): State | undefined {
+    // Fail on EOF - magic block must be closed
+    if (code === null) {
+      effects.exit('magicBlockData');
       return nok(code);
+    }
+
+    // Handle multiline magic blocks within text/paragraphs
+    // Exit data, consume line ending with proper token, then re-enter data
+    if (markdownLineEnding(code)) {
+      effects.exit('magicBlockData');
+      effects.enter('magicBlockLineEnding');
+      effects.consume(code);
+      effects.exit('magicBlockLineEnding');
+      return beforeData; // Go back to beforeData to handle potential empty lines
     }
 
     if (escapeNext) {

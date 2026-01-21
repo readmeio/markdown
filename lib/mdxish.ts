@@ -1,6 +1,7 @@
 import type { CustomComponents } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
+import type { Extension } from 'micromark-util-types';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
@@ -73,8 +74,15 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     return acc;
   }, {});
 
+  // Get mdxExpression extension and remove its flow construct to prevent
+  // `{...}` from interrupting paragraphs (which breaks multiline magic blocks)
+  const mdxExprExt = mdxExpression({ allowEmpty: true });
+  const mdxExprTextOnly: Extension = {
+    text: mdxExprExt.text,
+  };
+
   const processor = unified()
-    .data('micromarkExtensions', [magicBlock(), mdxExpression({ allowEmpty: true })])
+    .data('micromarkExtensions', [magicBlock(), mdxExprTextOnly])
     .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()])
     .use(remarkParse)
     .use(remarkFrontmatter)
