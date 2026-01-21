@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 12.0.1
+### 🛠 Fixes & Updates
+
+* preserve blockquotes containing only an image ([#1304](https://github.com/readmeio/markdown/issues/1304)) ([860823d](https://github.com/readmeio/markdown/commit/860823d915000b00739baeed2e178fb3d6720901))
+
 ## Version 12.0.0
 ### ⚠ BREAKING CHANGES
 
