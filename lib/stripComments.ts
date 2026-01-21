@@ -4,6 +4,7 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
+import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
@@ -11,8 +12,6 @@ import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBloc
 interface Opts {
   mdx?: boolean;
 }
-
-const surroundedSyntax = /^([*_]{1,2})[^*]+\1$/;
 
 /**
  * Removes Markdown and MDX comments.
@@ -22,6 +21,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
 
   const processor = unified()
     .use(remarkParse)
+    .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
     .use(
@@ -32,14 +32,8 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
             handlers: {
               // Preserve <<...>> variables without escaping any angle brackets.
               text(node, _, state, info) {
-                const testValue = node.value.trim();
-                console.log(node, `"${testValue}"`);
-
                 // If text contains <<...>> pattern, return as is.
                 if (new RegExp(VARIABLE_REGEXP).test(node.value)) return node.value;
-
-                // Don't escape special markdown characters like #, *, or _.
-                if (surroundedSyntax.test(testValue)) return node.value;
 
                 // Otherwise, handle each text node normally.
                 return state.safe(node.value, info);

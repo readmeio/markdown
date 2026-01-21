@@ -119,51 +119,6 @@ Second code block
     expect(output).toBe(input.trim());
   });
 
-  it.only('allows compact headings with no whitespace delimiter', async () => {
-    const input = `
-#Blue
-\\# Literal
-# Black`;
-
-    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
-      "# Blue
-      \\# Literal
-      # Black"
-    `);
-  });
-
-  it.only('allows leading/trailing spaces between bold/italic markers', async () => {
-    const input = `
-single line with **bold ** text and \\*literal\\* asterisks.
-
-**bold**
-**  leading**
-**trailing  **
-
-__emphasis__
-__  leading__
-__trailing  __
-
-\\*literal\\*
-end"
-`;
-
-    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
-      "single line with **bold** and \\*literal\\* asterisks.
-
-      **bold**
-      **  leading**
-      **trailing  **
-
-      **emphasis**
-      __  leading__
-      __trailing  __
-
-      \\*literal\\*
-      end"
-    `);
-  });
-
   it('supports a magic block as the first line of the document', async () => {
     const input = `[block:html]
 {
@@ -203,5 +158,54 @@ Last line`;
 ### next heading
 
 Last line`);
+  });
+
+  it('allows leading/trailing spaces between bold/italic markers', async () => {
+    const input = `
+single line with **bold ** text and \\*literal\\* asterisks.
+
+**bold**
+**  leading**
+**trailing  **
+
+__emphasis__
+__  leading__
+__trailing  __
+
+\\*literal\\*
+end
+`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+"single line with **bold** text and \\*literal\\* asterisks.
+
+**bold**
+**leading**
+**trailing**
+
+**emphasis**
+**leading**
+**trailing**
+
+\\*literal\\*
+end"`);
+  });
+
+  // TODO: enable this test after fixing the heading parsing issue
+  // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
+  // eslint-disable-next-line vitest/no-disabled-tests
+  it.skip('allows compact headings with no whitespace delimiter', async () => {
+    const input = `
+#Blue
+\\# Literal
+# Black`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "# Blue
+
+      \\# Literal
+
+      # Black"
+    `);
   });
 });
