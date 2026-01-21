@@ -14,6 +14,16 @@ describe('link compiler', () => {
 
     expect(mdx(mdast(markdown)).trim()).toBe(markdown);
   });
+
+  it('does not create nested links when Anchor label looks like a URL', () => {
+    const markdown = '<Anchor target="_blank" href="https://example.com">https://example.com</Anchor>';
+
+    // GFM autolinks URL-like text, but we unwrap it and the serializer escapes
+    // the colon to prevent re-autolinking on next parse
+    expect(mdx(mdast(markdown)).trim()).toBe(
+      '<Anchor target="_blank" href="https://example.com">https\\://example.com</Anchor>',
+    );
+  });
 });
 
 describe('mdxish link compiler', () => {

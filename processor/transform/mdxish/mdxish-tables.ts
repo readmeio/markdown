@@ -10,6 +10,7 @@ import { unified } from 'unified';
 import { visit, SKIP } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement } from '../../utils';
+import { extractText } from '../extract-text';
 
 import mdxishComponentBlocks from './mdxish-component-blocks';
 
@@ -44,18 +45,13 @@ const isTextOnly = (children: unknown[]): boolean => {
 };
 
 /**
- * Extract text content from children nodes
+ * Convenience wrapper that extracts text content from an array of children nodes.
  */
-const extractText = (children: unknown[]): string => {
+const extractTextFromChildren = (children: unknown[]): string => {
   return children
     .map(child => {
       if (child && typeof child === 'object' && 'type' in child) {
-        if (child.type === 'text' && 'value' in child && typeof child.value === 'string') {
-          return child.value;
-        }
-        if (child.type === 'mdxJsxTextElement' && 'children' in child && Array.isArray(child.children)) {
-          return extractText(child.children);
-        }
+        return extractText(child as Parameters<typeof extractText>[0]);
       }
       return '';
     })
@@ -92,7 +88,7 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
 
       // If cell contains only text nodes, try to re-parse as markdown
       if (isTextOnly(cellChildren as unknown[])) {
-        const textContent = extractText(cellChildren as unknown[]);
+        const textContent = extractTextFromChildren(cellChildren as unknown[]);
         if (textContent.trim()) {
           try {
             const parsed = parseMarkdown(textContent);

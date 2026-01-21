@@ -11,6 +11,16 @@ const mdxExpressionHandler: Handler = (_state, node) => ({
   value: (node as { value?: string }).value || '',
 });
 
+// Since we serialize component / html tag attributes
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#10;/g, '\n')
+    .replace(/&amp;/g, '&');
+}
+
 // Convert MDX JSX elements to HAST elements, preserving attributes and children
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
@@ -22,7 +32,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     if (attribute.value === null) {
       properties[attribute.name] = true;
     } else if (typeof attribute.value === 'string') {
-      properties[attribute.name] = attribute.value;
+      properties[attribute.name] = decodeHtmlEntities(attribute.value);
     } else {
       properties[attribute.name] = (attribute.value as MdxJsxAttributeValueExpression).value;
     }
@@ -49,7 +59,23 @@ const htmlBlockHandler: Handler = (_state, node) => {
   };
 };
 
+// Convert embed magic blocks to Embed components
+const embedHandler: Handler = (state, node) => {
+  // Assert to get the minimum properties we need
+  const { data } = node as { data?: { hName?: string; hProperties?: Properties } };
+
+  return {
+    type: 'element',
+    // To differentiate between regular embeds and magic block embeds,
+    // magic block embeds have a certain hName
+    tagName: data?.hName === NodeTypes.embedBlock ? 'Embed' : 'embed',
+    properties: data?.hProperties,
+    children: state.all(node),
+  };
+};
+
 export const mdxComponentHandlers: Handlers = {
+  embed: embedHandler,
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,

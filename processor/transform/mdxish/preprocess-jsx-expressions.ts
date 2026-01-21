@@ -1,10 +1,3 @@
-/**
- * Pre-processes JSX-like expressions before markdown parsing.
- * Converts href={'value'} to href="value", evaluates {expressions}, etc.
- */
-
-export type JSXContext = Record<string, unknown>;
-
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {
   if (typeof Buffer !== 'undefined') {
@@ -21,6 +14,19 @@ export function base64Decode(str: string): string {
   return decodeURIComponent(escape(atob(str)));
 }
 
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '&#10;');
+}
+
+// Marker prefix for JSON-serialized complex values (arrays/objects)
+// Using a prefix that won't conflict with regular string values
+export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
+
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
@@ -36,6 +42,12 @@ interface ProtectCodeBlocksResult {
 }
 
 /**
+ * Pre-processes JSX-like expressions before markdown parsing.
+ * Converts href={'value'} to href="value", evaluates {expressions}, etc.
+ */
+export type JSXContext = Record<string, unknown>;
+
+/**
  * Evaluates a JavaScript expression using context variables.
  *
  * @param expression
@@ -48,7 +60,7 @@ interface ProtectCodeBlocksResult {
  * // Returns: 'https://example.com/api'
  * ```
  */
-function evaluateExpression(expression: string, context: JSXContext): unknown {
+export function evaluateExpression(expression: string, context: JSXContext) {
   const contextKeys = Object.keys(context);
   const contextValues = Object.values(context);
   // eslint-disable-next-line no-new-func
@@ -175,6 +187,18 @@ function extractBalancedBraces(content: string, start: number): { content: strin
   return { content: content.slice(start, pos - 1), end: pos };
 }
 
+function restoreInlineCode(content: string, protectedCode: ProtectedCode) {
+  return content.replace(/___INLINE_CODE_(\d+)___/g, (_m, idx: string) => {
+    return protectedCode.inlineCode[parseInt(idx, 10)];
+  });
+}
+
+function restoreCodeBlocks(content: string, protectedCode: ProtectedCode) {
+  return content.replace(/___CODE_BLOCK_(\d+)___/g, (_m, idx: string) => {
+    return protectedCode.codeBlocks[parseInt(idx, 10)];
+  });
+}
+
 /**
  * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
  * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
@@ -190,7 +214,7 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * // Returns: '<a href="https://example.com">Link</a>'
  * ```
  */
-function evaluateAttributeExpressions(content: string, context: JSXContext): string {
+function evaluateAttributeExpressions(content: string, context: JSXContext, protectedCode?: ProtectedCode) {
   const attrStartRegex = /(\w+)=\{/g;
   let result = '';
   let lastEnd = 0;
@@ -202,7 +226,14 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
 
     const extracted = extractBalancedBraces(content, braceStart);
     if (extracted) {
-      const expression = extracted.content;
+      // The expression might contain template literals in MDX component tag props
+      // E.g. <Component greeting={`Hello World!`} />
+      // that is marked as inline code. So we need to restore the inline codes
+      // in the expression to evaluate it
+      let expression = extracted.content;
+      if (protectedCode) {
+        expression = restoreInlineCode(expression, protectedCode);
+      }
       const fullMatchEnd = extracted.end;
 
       result += content.slice(lastEnd, match.index);
@@ -220,12 +251,18 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
               .join('; ');
             result += `style="${cssString}"`;
           } else {
-            result += `${attributeName}='${JSON.stringify(evalResult)}'`;
+            // These are arrays / objects attribute values
+            // Mark JSON-serialized values with a prefix so they can be parsed back correctly
+            const jsonValue = escapeHtmlAttribute(JSON_VALUE_MARKER + JSON.stringify(evalResult));
+            // Use double quotes so that multi-paragraph values are not split into multiple attributes by the processors
+            result += `${attributeName}="${jsonValue}"`;
           }
         } else if (attributeName === 'className') {
-          result += `class="${evalResult}"`;
+          // Escape special characters so that it doesn't break and split the attribute value to nodes
+          // This will be restored later in the pipeline
+          result += `class="${escapeHtmlAttribute(String(evalResult))}"`;
         } else {
-          result += `${attributeName}="${evalResult}"`;
+          result += `${attributeName}="${escapeHtmlAttribute(String(evalResult))}"`;
         }
       } catch (_error) {
         result += content.slice(match.index, fullMatchEnd);
@@ -257,15 +294,9 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
  * // Returns: 'Text with `inline` and ```js\ncode\n```'
  * ```
  */
-function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
-  let restored = content.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.codeBlocks[parseInt(index, 10)];
-  });
-
-  restored = restored.replace(/___INLINE_CODE_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.inlineCode[parseInt(index, 10)];
-  });
-
+function restoreProtectedCodes(content: string, protectedCode: ProtectedCode) {
+  let restored = restoreCodeBlocks(content, protectedCode);
+  restored = restoreInlineCode(restored, protectedCode);
   return restored;
 }
 
@@ -290,10 +321,10 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   // For inline expressions, we use a library to parse the expression & evaluate it later
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(processed, context);
+  processed = evaluateAttributeExpressions(processed, context, protectedCode);
 
   // Step 4: Restore protected code blocks
-  processed = restoreCodeBlocks(processed, protectedCode);
+  processed = restoreProtectedCodes(processed, protectedCode);
 
   return processed;
 }

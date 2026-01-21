@@ -84,7 +84,7 @@ export const CUSTOM_PROP_BOUNDARIES = [
 /**
  * Tags that should be passed through and handled at runtime (not by the mdxish plugin)
  */
-export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable']);
+export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'rdme-pin']);
 
 /**
  * Standard HTML tags that should never be treated as custom components.
