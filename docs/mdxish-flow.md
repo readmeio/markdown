@@ -70,7 +70,8 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  into MDAST with  │                 │                             │
 │  micromark exts:  │                 │                             │
 │  - magicBlock()   │                 │                             │
-│  - mdxExpression()│                 │                             │
+│  - mdxExpression  │                 │                             │
+│    (text only)    │                 │                             │
 └───────────────────┘                 │                             │
         │                             │                             │
         ▼                             │                             │
@@ -308,7 +309,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | Pre-process | `normalizeTableSeparator` | Fix malformed table separators (`|: ---`, `|::---` → `| :---`) |
 | Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`) |
 | Pre-process | `processSnakeCaseComponent` | Replace snake_case component names with parser-safe placeholders |
-| MDAST | `remarkParse` + micromark extensions | Markdown → AST with `magicBlock()` and `mdxExpression()` tokenizers |
+| MDAST | `remarkParse` + micromark extensions | Markdown → AST with `magicBlock()` and `mdxExpression()` (text construct only) tokenizers |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
 | MDAST | `normalizeEmphasisAST` | Fix malformed bold/italic syntax (`** bold**` → `**bold**`) |
 | MDAST | `magicBlockTransformer` | Transform parsed `magicBlock` nodes into final MDAST nodes (images, callouts, etc.) |
@@ -428,9 +429,9 @@ To prevent the markdown parser from incorrectly consuming `<script>`, `<style>` 
 
 The transformer handles nested template literals with code fences (e.g., `<HTMLBlock>{`<pre>\`\`\`javascript\nconst x = 1;\n\`\`\`</pre>`}</HTMLBlock>`), preserving newlines and correctly reconstructing triple backticks that may be consumed by the markdown parser. The `formatHTML` utility processes the content to unescape backticks, convert `\n` sequences to actual newlines, and fix cases where the parser consumed backticks from code fences.
 
-## Magic Blocks (Legacy)
+## Magic Blocks
 
-The `extractMagicBlocks` + `magicBlockRestorer` pipeline handles legacy ReadMe magic block syntax:
+Magic blocks use a custom micromark tokenizer (`lib/micromark/magic-block`) to parse ReadMe's legacy block syntax:
 
 ```markdown
 [block:image]
@@ -438,10 +439,16 @@ The `extractMagicBlocks` + `magicBlockRestorer` pipeline handles legacy ReadMe m
 [/block]
 ```
 
-### Flow
+### Tokenizer Architecture
 
-1. **Pre-processing (`extractMagicBlocks`)**: Extracts `[block:TYPE]JSON[/block]` patterns and replaces them with placeholder tokens (e.g., `` `__MAGIC_BLOCK_0__` ``). The backticks prevent remarkParse from interpreting special characters in the token.
+The tokenizer has two constructs:
 
-2. **Restoration (`magicBlockRestorer`)**: After remarkParse, visits `inlineCode` nodes, matches placeholder tokens, and parses the original magic block JSON into MDAST nodes (images, code blocks, callouts, etc.).
+1. **Flow construct**: Handles block-level magic blocks that start at the beginning of a line. Uses a state machine to parse the opening marker (`[block:TYPE]`), capture body content across multiple lines, and detect the closing marker (`[/block]`).
 
-This two-phase approach ensures magic blocks don't interfere with markdown parsing while preserving their content for later conversion.
+2. **Text construct**: Handles inline magic blocks that appear within paragraphs or other text content. Supports multiline content by consuming line endings and continuing to capture data until the closing marker.
+
+The tokens are then converted to MDAST nodes by `lib/mdast-util/magic-block`, which the `magicBlockTransformer` plugin transforms into final MDAST nodes (images, code blocks, callouts, embeds, etc.).
+
+### mdxExpression Compatibility
+
+The `mdxExpression` extension's flow construct was removed to prevent it from interrupting magic block parsing. When a magic block's body starts with `{` on a new line, the flow construct would intercept it and break parsing. Only the text construct is used, which means standalone expressions like `{1 + 1}` get wrapped in `<p>` tags.
