@@ -1,5 +1,70 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`table parser > jsx tables with images > parses jsx tables with images in cells 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        "left",
+        "left",
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Image",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Description",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "alt": "",
+                  "title": null,
+                  "type": "image",
+                  "url": "https://example.com/image.png",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An image",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "tableau",
+    },
+  ],
+  "type": "root",
+}
+`;
+
 exports[`table parser > unescaping pipes > parses jsx tables with pipes in inline code 1`] = `
 {
   "children": [
