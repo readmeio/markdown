@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 12.1.0
+### ✨ New & Improved
+
+* **lib/plain:** remove MDX comments from plain text ([#1303](https://github.com/readmeio/markdown/issues/1303)) ([b5b63ad](https://github.com/readmeio/markdown/commit/b5b63ad167e681aa03f588ae57525994981b732a))
+
 ## Version 12.0.1
 ### 🛠 Fixes & Updates
 
