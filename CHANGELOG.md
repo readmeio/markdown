@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 11.15.0
+### ✨ New & Improved
+
+* correctly parse malformed table syntax ([#1293](https://github.com/readmeio/markdown/issues/1293)) ([dd40b2e](https://github.com/readmeio/markdown/commit/dd40b2ed0729934797a080fe42ae7706fc5fc174)), closes [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279)
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** glossary and anchor components not inline ([#1294](https://github.com/readmeio/markdown/issues/1294)) ([96ca62e](https://github.com/readmeio/markdown/commit/96ca62ea022422c10f5072a398db485d262b665e))
+* remove `isPlainText` ([#1302](https://github.com/readmeio/markdown/issues/1302)) ([c426816](https://github.com/readmeio/markdown/commit/c42681697cd1950d4ca364d15996a39d2574f34f))
+
 ## Version 11.14.1
 ### 🛠 Fixes & Updates
 

@@ -97,7 +97,7 @@ const wrapPinnedBlocks = (node: MdastNode, data: MagicBlockJson): MdastNode => {
   if (!data.sidebar) return node;
   return {
     children: [node],
-    data: { className: 'pin', hName: 'rdme-pin' },
+    data: { hName: 'rdme-pin', hProperties: { className: 'pin' } },
     type: 'rdme-pin',
   };
 };
@@ -383,9 +383,30 @@ function transformMagicBlock(
 /**
  * Check if a child node is a flow element that needs unwrapping.
  */
-const needsUnwrapping = (child: RootContent): boolean => {
-  return child.type === 'mdxJsxFlowElement';
-};
+const blockTypes = [
+  'heading',
+  'code',
+  'code-tabs',
+  'paragraph',
+  'blockquote',
+  'list',
+  'table',
+  'thematicBreak',
+  'html',
+  'yaml',
+  'toml',
+  'rdme-pin',
+  'rdme-callout',
+  'html-block',
+  'embed',
+  'figure',
+  'mdxJsxFlowElement',
+];
+
+/**
+ * Check if a node is a block-level node (cannot be inside a paragraph)
+ */
+const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.type);
 
 /**
  * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
@@ -393,7 +414,7 @@ const needsUnwrapping = (child: RootContent): boolean => {
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
+    const replacements: { after: RootContent[]; before: RootContent[]; blockNodes: RootContent[]; inlineNodes: RootContent[]; parent: Parent }[] = [];
 
     visit(tree, 'magicBlock', (node: MagicBlockNode, index: number | undefined, parent: Parent | undefined) => {
       if (!parent || index === undefined) return undefined;
@@ -405,34 +426,75 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         return [SKIP, index];
       }
 
-      if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
-        // Find paragraph's parent and unwrap
-        let paragraphParent: Parent | undefined;
-        visit(tree, 'paragraph', (p, pIndex, pParent) => {
-          if (p === parent && pParent && 'children' in pParent) {
-            paragraphParent = pParent as Parent;
-            return false;
+      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
+      if (parent.type === 'paragraph' && children.some(child => isBlockNode(child))) {
+        const blockNodes: RootContent[] = [];
+        const inlineNodes: RootContent[] = [];
+
+        // Separate block and inline nodes
+        children.forEach(child => {
+          if (isBlockNode(child)) {
+            blockNodes.push(child);
+          } else {
+            inlineNodes.push(child);
           }
-          return undefined;
         });
 
-        if (paragraphParent) {
-          const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
-          if (paragraphIndex !== -1) {
-            modifications.push({ children, index: paragraphIndex, parent: paragraphParent });
-          }
-        }
-        return SKIP;
+        const before = parent.children.slice(0, index);
+        const after = parent.children.slice(index + 1);
+
+        replacements.push({
+          parent,
+          blockNodes,
+          inlineNodes,
+          before,
+          after,
+        });
+      } else {
+        // Normal case: just replace the inlineCode with the children
+        parent.children.splice(index, 1, ...children);
+      }
+      return undefined;
+    });
+
+    // Second pass: apply replacements that require lifting block nodes out of paragraphs
+    // Process in reverse order to maintain correct indices
+    for (let i = replacements.length - 1; i >= 0; i -= 1) {
+      const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
+
+      // Find the paragraph's position in the root
+      const rootChildren = tree.children;
+      const paraIndex = rootChildren.findIndex(child => child === parent);
+      if (paraIndex === -1) {
+        // Paragraph not found in root - fall back to normal replacement
+        // This shouldn't happen normally, but handle it gracefully
+        // Reconstruct the original index from before.length
+        const originalIndex = before.length;
+        parent.children.splice(originalIndex, 1, ...blockNodes, ...inlineNodes);
+        // eslint-disable-next-line no-continue
+        continue;
       }
 
-      parent.children.splice(index, 1, ...children);
-      return [SKIP, index + children.length];
-    });
-
-    // Apply modifications in reverse order to avoid index shifting
-    modifications.reverse().forEach(({ children, index, parent }) => {
-      parent.children.splice(index, 1, ...children);
-    });
+      // Update or remove the paragraph
+      if (inlineNodes.length > 0) {
+        // Keep paragraph with inline nodes
+        parent.children = [...before, ...inlineNodes, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      } else if (before.length === 0 && after.length === 0) {
+        // Remove empty paragraph and replace with block nodes
+        rootChildren.splice(paraIndex, 1, ...blockNodes);
+      } else {
+        // Keep paragraph with remaining content
+        parent.children = [...before, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      }
+    }
   };
 
 export default magicBlockTransformer;
