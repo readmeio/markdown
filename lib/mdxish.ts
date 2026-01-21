@@ -46,7 +46,7 @@ export interface MdxishOpts {
   useTailwind?: boolean;
 }
 
-const defaultTransformers = [codeTabsTransformer, gemojiTransformer, embedTransformer, calloutTransformer];
+const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
