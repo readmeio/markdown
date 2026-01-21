@@ -281,5 +281,31 @@ describe('callouts transformer', () => {
       const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
       expect(hasBlockquote).toBe(true);
     });
+
+    it('should parse a blockquote containing only an image correctly', () => {
+      const md = `
+> ![](https://example.com/image.png)
+`;
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Blockquote should remain as blockquote
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
+
+      // Inside the blockquote, there should be an image inside a paragraph
+      const blockquote = tree.children.find(child => child.type === 'blockquote') as {
+        children: { children?: { type: string; url?: string }[]; type: string }[];
+      };
+      expect(blockquote).toBeDefined();
+      const hasImage = blockquote.children.some(
+        child =>
+          child.type === 'paragraph' &&
+          child.children?.some(c => c.type === 'image' && c.url === 'https://example.com/image.png'),
+      );
+      expect(hasImage).toBe(true);
+    });
   });
 });
