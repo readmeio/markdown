@@ -12,7 +12,7 @@ import type { Plugin } from 'unified';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { SKIP, visit } from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../utils';
 
@@ -94,7 +94,6 @@ export interface ParseMagicBlockOptions {
   safeMode?: boolean;
 }
 
-
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set in the JSON.
  * Pinned blocks are displayed in a sidebar/floating position in the UI.
@@ -103,7 +102,7 @@ const wrapPinnedBlocks = (node: MdastNode, json: MagicBlockJson): MdastNode => {
   if (!json.sidebar) return node;
   return {
     children: [node],
-    data: { className: 'pin', hName: 'rdme-pin' },
+    data: { hName: 'rdme-pin', hProperties: { className: 'pin' } },
     type: 'rdme-pin',
   };
 };
@@ -132,7 +131,6 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 // Simple text to block nodes (wraps in paragraph)
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
-
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
@@ -158,7 +156,6 @@ const parseBlock = (text: string): MdastNode[] => {
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
-
 
 /**
  * Parse a magic block string and return MDAST nodes.
@@ -203,14 +200,15 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
         value: obj.code.trim(),
       }));
 
-      // Single code block without a tab name renders as a plain code block
+      // Single code block without a tab name (meta or language) renders as a plain code block
+      // Otherwise, we want to render it as a code tabs block
       if (children.length === 1) {
         if (!children[0].value) return [];
-        if (children[0].meta) return [wrapPinnedBlocks(children[0], json)];
+        if (!(children[0].meta || children[0].lang)) return [wrapPinnedBlocks(children[0], json)];
       }
 
-      // Multiple code blocks render as tabbed code blocks
-      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'code-tabs' }, type: 'code-tabs' }, json)];
+      // Multiple code blocks or a single code block with a tab name (meta or language) renders as a code tabs block
+      return [wrapPinnedBlocks({ children, className: 'tabs', data: { hName: 'CodeTabs' }, type: 'code-tabs' }, json)];
     }
 
     // API header: renders as a heading element (h1-h6)
@@ -444,11 +442,32 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
 }
 
 /**
- * Check if a child node is a flow element that needs unwrapping (mdxJsxFlowElement, etc.)
+ * Block-level node types that cannot be nested inside paragraphs.
  */
-const needsUnwrapping = (child: RootContent): boolean => {
-  return child.type === 'mdxJsxFlowElement';
-};
+const blockTypes = [
+  'heading',
+  'code',
+  'code-tabs',
+  'paragraph',
+  'blockquote',
+  'list',
+  'table',
+  'thematicBreak',
+  'html',
+  'yaml',
+  'toml',
+  'rdme-pin',
+  'rdme-callout',
+  'html-block',
+  'embed',
+  'figure',
+  'mdxJsxFlowElement',
+];
+
+/**
+ * Check if a node is a block-level node (cannot be inside a paragraph)
+ */
+const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.type);
 
 /**
  * Unified plugin that restores magic blocks from placeholder tokens.
@@ -465,9 +484,16 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
     // Map: key → original raw magic block content
     const magicBlockKeys = new Map(blocks.map(({ key, raw }) => [key, raw] as const));
 
-    // Find inlineCode nodes that match our placeholder tokens
-    const modifications: { children: RootContent[]; index: number; parent: Parent }[] = [];
+    // Collect replacements to apply (we need to visit in reverse to maintain indices)
+    const replacements: {
+      after: RootContent[];
+      before: RootContent[];
+      blockNodes: RootContent[];
+      inlineNodes: RootContent[];
+      parent: Parent;
+    }[] = [];
 
+    // First pass: collect all replacements
     visit(tree, 'inlineCode', (node: Code, index: number, parent: Parent) => {
       if (!parent || index == null) return undefined;
       const raw = magicBlockKeys.get(node.value);
@@ -476,34 +502,75 @@ const magicBlockRestorer: Plugin<[{ blocks: BlockHit[] }], MdastRoot> =
       const children = parseMagicBlock(raw) as unknown as RootContent[];
       if (!children.length) return undefined;
 
-      if (children[0] && needsUnwrapping(children[0]) && parent.type === 'paragraph') {
-        // Find paragraph's parent and unwrap
-        let paragraphParent: Parent | undefined;
-        visit(tree, 'paragraph', (p, pIndex, pParent) => {
-          if (p === parent && pParent && 'children' in pParent) {
-            paragraphParent = pParent as Parent;
-            return false;
+      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
+      if (parent.type === 'paragraph' && children.some(child => isBlockNode(child))) {
+        const blockNodes: RootContent[] = [];
+        const inlineNodes: RootContent[] = [];
+
+        // Separate block and inline nodes
+        children.forEach(child => {
+          if (isBlockNode(child)) {
+            blockNodes.push(child);
+          } else {
+            inlineNodes.push(child);
           }
-          return undefined;
         });
 
-        if (paragraphParent) {
-          const paragraphIndex = paragraphParent.children.indexOf(parent as RootContent);
-          if (paragraphIndex !== -1) {
-            modifications.push({ children, index: paragraphIndex, parent: paragraphParent });
-          }
-        }
-        return SKIP;
+        const before = parent.children.slice(0, index);
+        const after = parent.children.slice(index + 1);
+
+        replacements.push({
+          parent,
+          blockNodes,
+          inlineNodes,
+          before,
+          after,
+        });
+      } else {
+        // Normal case: just replace the inlineCode with the children
+        parent.children.splice(index, 1, ...children);
+      }
+      return undefined;
+    });
+
+    // Second pass: apply replacements that require lifting block nodes out of paragraphs
+    // Process in reverse order to maintain correct indices
+    for (let i = replacements.length - 1; i >= 0; i -= 1) {
+      const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
+
+      // Find the paragraph's position in the root
+      const rootChildren = tree.children;
+      const paraIndex = rootChildren.findIndex(child => child === parent);
+      if (paraIndex === -1) {
+        // Paragraph not found in root - fall back to normal replacement
+        // This shouldn't happen normally, but handle it gracefully
+        // Reconstruct the original index from before.length
+        const originalIndex = before.length;
+        parent.children.splice(originalIndex, 1, ...blockNodes, ...inlineNodes);
+        // eslint-disable-next-line no-continue
+        continue;
       }
 
-      parent.children.splice(index, 1, ...children);
-      return [SKIP, index + children.length];
-    });
-
-    // Apply modifications in reverse order to avoid index shifting
-    modifications.reverse().forEach(({ children, index, parent }) => {
-      parent.children.splice(index, 1, ...children);
-    });
+      // Update or remove the paragraph
+      if (inlineNodes.length > 0) {
+        // Keep paragraph with inline nodes
+        parent.children = [...before, ...inlineNodes, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      } else if (before.length === 0 && after.length === 0) {
+        // Remove empty paragraph and replace with block nodes
+        rootChildren.splice(paraIndex, 1, ...blockNodes);
+      } else {
+        // Keep paragraph with remaining content
+        parent.children = [...before, ...after];
+        // Insert block nodes after the paragraph
+        if (blockNodes.length > 0) {
+          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        }
+      }
+    }
   };
 
 export default magicBlockRestorer;
