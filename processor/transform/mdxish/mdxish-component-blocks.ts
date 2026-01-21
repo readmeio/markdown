@@ -73,6 +73,18 @@ const parseTag = (value: string) => {
   };
 };
 
+/**
+ * Parse substring content of a node and update the parent's children to include the new nodes.
+ */
+const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string) => {
+  const siblingNodes = parseMdChildren(sibling) as Node[];
+  // The new sibling nodes might contain new components to be processed
+  if (siblingNodes.length > 0) {
+    (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
+    stack.push(parent);
+  }
+};
+
 interface ComponentNodeOptions {
   attributes: MdxJsxAttribute[];
   children: MdxJsxFlowElement['children'];
@@ -248,10 +260,11 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       stack.push(node as Parent);
     }
 
-    // Only visit HTML nodes with an actual html tag
+    // Only visit HTML nodes with an actual html tag,
+    // which means a potential unparsed MDX component
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
-    const parsed = parseTag(value);
+    const parsed = parseTag(value.trim());
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
@@ -270,12 +283,21 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // Check and parse if there's relevant content after the current closing tag
+      const remainingContent = contentAfterTag.trim();
+      if (remainingContent) {
+        parseSibling(stack, parent, index, remainingContent);
+      }
       return;
     }
 
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
-      const componentInnerContent = contentAfterTag.substring(0, contentAfterTag.lastIndexOf(closingTagStr)).trim();
+      // Find the first closing tag
+      const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
+      const componentInnerContent = contentAfterTag.substring(0, closingTagIndex).trim();
+      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
@@ -283,6 +305,14 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // After the closing tag, there might be more content to be processed
+      if (contentAfterClose) {
+        parseSibling(stack, parent, index, contentAfterClose);
+      } else if (componentNode.children.length > 0) {
+        // The content inside the component block might contain new components to be processed
+        stack.push(componentNode as Parent);
+      }
       return;
     }
 
@@ -312,9 +342,14 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     });
     // Remove all nodes from opening tag to closing tag (inclusive) and replace with component node
     (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode);
+    // Since we might be merging sibling nodes together and combining content,
+    // there might be new components to process
+    if (componentNode.children.length > 0) {
+      stack.push(componentNode as Parent);
+    }
   };
 
-  // Travel the tree depth-first
+  // Process the nodes with the components depth-first to maintain the correct order of the nodes
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {

@@ -21,5 +21,16 @@ describe('mdx serialization', () => {
     // Check that the line does NOT have leading spaces (indentation)
     expect(contentLine).not.toMatch(/^\s+/);
   });
-});
 
+  describe('should print out just ">"', () => {
+    it('serializes empty blockquote as escaped ">"', () => {
+      const md = '>';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const serialized = mdx(tree);
+
+      // Empty blockquote is replaced with paragraph containing '>', which serializes to '\>'
+      expect(serialized.trim()).toContain('\\>');
+    });
+  });
+});

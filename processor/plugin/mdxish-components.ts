@@ -25,6 +25,31 @@ function isElementContentNode(node: Root['children'][number]): node is ElementCo
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
 
+/**
+ * Components are assumed to be block-level, so whitespace between them can be removed
+ * We want to remove them because it can be treated as actual children of the component
+ * when it doesn't need to.
+ *
+ * It can be a problem because it can be passed as args to the components, like the ones
+ * defined in /components, which can break the type assumptions of the components and cause
+ * type errors, accessing properties that don't exist.
+ */
+function areAllChildrenComponents(children: ElementContent[]): boolean {
+  return children.every(child => {
+    // Whitespace-only text nodes don't affect the check
+    if (child.type === 'text' && !child.value.trim()) return true;
+    // Text with actual content means we have mixed content
+    if (child.type === 'text') return false;
+    // Comments don't affect the check
+    if (child.type === 'comment') return true;
+    // Standard HTML tags are not considered components
+    if (child.type === 'element' && 'tagName' in child) {
+      return !STANDARD_HTML_TAGS.has(child.tagName.toLowerCase());
+    }
+    return false;
+  });
+}
+
 /** Check if nodes represent a single paragraph with only text (no markdown formatting) */
 function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
   return (
@@ -75,6 +100,7 @@ function isActualHtmlTag(tagName: string, originalExcerpt: string): boolean {
 function parseTextChildren(node: Element, processMarkdown: (content: string) => Root): void {
   if (!node.children?.length) return;
 
+  // First pass: Recursively process text children as they may contain stringified markdown / mdx content
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
@@ -88,6 +114,15 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
 
     return children;
   });
+
+  // Post-processing: remove whitespace-only text nodes if all siblings are components
+  // This prevents whitespace between component children from being counted as extra children
+  if (areAllChildrenComponents(node.children)) {
+    node.children = node.children.filter(child => {
+      if (child.type === 'text' && !child.value.trim()) return false;
+      return true;
+    });
+  }
 }
 
 /** Convert node properties from kebab-case/lowercase to camelCase */
