@@ -1,4 +1,4 @@
-import { hast, plain } from '../../index';
+import { hast, mdxish, plain } from '../../index';
 
 describe('plain compiler', () => {
   it('returns plain text of markdown components', () => {
@@ -112,15 +112,37 @@ Is it _me_ you're looking for?
 
 {
  /**
-  * multi
-  * line
-  * comment
+  * multi-line-comment
   */
 }
+
+{
+  /* multiple comments */
+  this-should-stay
+  /* another comment */
+}
+
 Is it _me_ you're looking for?
 `;
 
-    const tree = hast(md);
+    const hastTree = hast(md);
+    expect(plain(hastTree)).toBe("Hello! this-should-stay Is it me you're looking for?");
+  });
+
+  it('removes HTML comments', () => {
+    const md = `
+## Hello!
+
+<!-- comment -->
+
+<!--
+  multi-line-comment
+-->
+Is it _me_ you're looking for?
+`;
+
+    // NOTE: using mdxish here to allow HTML comment syntax in the markdown.
+    const tree = mdxish(md);
     expect(plain(tree)).toBe("Hello! Is it me you're looking for?");
   });
 });

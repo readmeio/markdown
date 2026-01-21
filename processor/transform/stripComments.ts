@@ -3,7 +3,7 @@ import type { Root } from 'mdast';
 import { visit, SKIP } from 'unist-util-visit';
 
 const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
-const MDX_COMMENT_REGEX = /\/\*[\s\S]*?\*\//g;
+export const MDX_COMMENT_REGEX = /\/\*(?:(?!\*\/)[\s\S])*\*\//g;
 
 /**
  * A remark plugin to remove comments from Markdown and MDX.
