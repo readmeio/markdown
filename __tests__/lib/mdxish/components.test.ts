@@ -2,6 +2,7 @@ import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
 import { mdxish, compile, run } from '../../../lib';
+import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('processing mdx components in mdxish', () => {
   const exampleComponentCode = `
@@ -103,7 +104,7 @@ export const AdvancedTable = ({ data }) => {
 
       const componentNode = (tree.children[0] as Element).children[0] as Element;
       expect(componentNode.tagName).toBe('AdvancedTable');
-      expect(componentNode.properties?.data).toStrictEqual(JSON.stringify([
+      expect(componentNode.properties?.data).toBe(`${JSON_VALUE_MARKER}${JSON.stringify([
         {
           code: '<INPUT_CODE_1>',
           status: '<INPUT_STATUS_1>',
@@ -112,7 +113,7 @@ export const AdvancedTable = ({ data }) => {
           code: '<INPUT_CODE_2>',
           status: '<INPUT_STATUS_2>',
         },
-      ]));
+      ])}`);
     });
 
     it('should parse a component with array props containing special characters', () => {

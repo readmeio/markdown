@@ -23,6 +23,10 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/\n/g, '&#10;');
 }
 
+// Marker prefix for JSON-serialized complex values (arrays/objects)
+// Using a prefix that won't conflict with regular string values
+export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
+
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
@@ -247,7 +251,10 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
               .join('; ');
             result += `style="${cssString}"`;
           } else {
-            const jsonValue = escapeHtmlAttribute(JSON.stringify(evalResult));
+            // These are arrays / objects attribute values
+            // Mark JSON-serialized values with a prefix so they can be parsed back correctly
+            const jsonValue = escapeHtmlAttribute(JSON_VALUE_MARKER + JSON.stringify(evalResult));
+            // Use double quotes so that multi-paragraph values are not split into multiple attributes by the processors
             result += `${attributeName}="${jsonValue}"`;
           }
         } else if (attributeName === 'className') {
