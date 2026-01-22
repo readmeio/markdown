@@ -200,6 +200,60 @@ function restoreCodeBlocks(content: string, protectedCode: ProtectedCode) {
 }
 
 /**
+ * Escapes unbalanced braces in content to prevent MDX expression parsing errors.
+ * Handles: already-escaped braces, string literals inside expressions, nested balanced braces.
+ */
+function escapeUnbalancedBraces(content: string): string {
+  const opens: number[] = [];
+  const unbalanced = new Set<number>();
+  let strDelim: string | null = null;
+  let strEscaped = false;
+
+  for (let i = 0; i < content.length; i += 1) {
+    const ch = content[i];
+
+    // Track strings inside expressions to ignore braces within them
+    if (opens.length > 0) {
+      if (strDelim) {
+        if (strEscaped) strEscaped = false;
+        else if (ch === '\\') strEscaped = true;
+        else if (ch === strDelim) strDelim = null;
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === '`') {
+        strDelim = ch;
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+    }
+
+    // Skip already-escaped braces (count preceding backslashes)
+    if (ch === '{' || ch === '}') {
+      let bs = 0;
+      for (let j = i - 1; j >= 0 && content[j] === '\\'; j -= 1) bs += 1;
+      if (bs % 2 === 1) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+    }
+
+    if (ch === '{') opens.push(i);
+    else if (ch === '}') {
+      if (opens.length > 0) opens.pop();
+      else unbalanced.add(i);
+    }
+  }
+
+  opens.forEach(pos => unbalanced.add(pos));
+  if (unbalanced.size === 0) return content;
+
+  return Array.from(content)
+    .map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch))
+    .join('');
+}
+
+/**
  * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
  * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
  *
@@ -323,7 +377,10 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
   processed = evaluateAttributeExpressions(processed, context, protectedCode);
 
-  // Step 4: Restore protected code blocks
+  // Step 4: Escape unbalanced braces to prevent MDX expression parsing errors
+  processed = escapeUnbalancedBraces(processed);
+
+  // Step 5: Restore protected code blocks
   processed = restoreProtectedCodes(processed, protectedCode);
 
   return processed;
