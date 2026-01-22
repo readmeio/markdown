@@ -381,7 +381,7 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   processed = escapeUnbalancedBraces(processed);
 
   // Step 5: Restore protected code blocks
-  processed = restoreCodeBlocks(processed, protectedCode);
+  processed = restoreProtectedCodes(processed, protectedCode);
 
   return processed;
 }
