@@ -3,12 +3,23 @@
 exports[`removeComments > preserves magic block indentation 1`] = `
 "* foo
 * foo
-
-[block:html]
-{
+  [block:html]
+  {
   "html": "<h1>Hoo ha</h1>"
-}
-[/block]"
+  }
+  [/block]"
+`;
+
+exports[`removeComments > preserves magic blocks inside markdown lists 1`] = `
+"* Item one with a magic block:
+  [block:callout]
+  {
+    "type": "info",
+    "body": "This callout is inside a list item"
+  }
+  [/block]
+* Item two
+* Item three with inline magic block [block:image]{ "images": [{ "image": ["test.png"] }]}[/block]"
 `;
 
 exports[`removeComments > removes HTML comments 1`] = `

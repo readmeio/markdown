@@ -6,7 +6,8 @@ import { unified } from 'unified';
 
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
-import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
+import { magicBlockFromMarkdown, magicBlockToMarkdown } from './mdast-util/magic-block';
+import { magicBlock } from './micromark/magic-block';
 
 interface Opts {
   mdx?: boolean;
@@ -16,9 +17,10 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
-  const { replaced, blocks } = extractMagicBlocks(doc);
-
   const processor = unified()
+    .data('micromarkExtensions', [magicBlock()])
+    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
+    .data('toMarkdownExtensions', [magicBlockToMarkdown()])
     .use(remarkParse)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
@@ -48,11 +50,8 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
           },
     );
 
-  const file = await processor.process(replaced);
-  const stringified = String(file).trim();
-
-  const restored = restoreMagicBlocks(stringified, blocks);
-  return restored;
+  const file = await processor.process(doc);
+  return String(file).trim();
 }
 
 export default stripComments;
