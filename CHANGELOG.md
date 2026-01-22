@@ -1,6 +1,69 @@
 Changelog
 ===
 
+## Version 12.1.0
+### ✨ New & Improved
+
+* **lib/plain:** remove MDX comments from plain text ([#1303](https://github.com/readmeio/markdown/issues/1303)) ([b5b63ad](https://github.com/readmeio/markdown/commit/b5b63ad167e681aa03f588ae57525994981b732a))
+
+## Version 12.0.1
+### 🛠 Fixes & Updates
+
+* preserve blockquotes containing only an image ([#1304](https://github.com/readmeio/markdown/issues/1304)) ([860823d](https://github.com/readmeio/markdown/commit/860823d915000b00739baeed2e178fb3d6720901))
+
+## Version 12.0.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** the component tree.
+
+**3. HTML Entity Decoding**
+Because we introduced the double quotes, I needed to encode & decode
+some special characters in the attributes so it doesn't split the
+attributes nodes
+
+**Before**
+<img width="854" height="349" alt="Screenshot 2026-01-16 at 9 18 19 pm"
+src="https://github.com/user-attachments/assets/a948297d-6d88-410c-8c38-6324dda1d260"
+/>
+
+**After**
+
+https://github.com/user-attachments/assets/3973a605-eb30-4312-9029-5aa1f5aa9cb6
+
+## 🧬 QA & Testing
+
+- [Broken on production][prod].
+- [Working in this PR app][demo].
+
+1. In an mdxish project, create a custom component with some props
+2. In a document, use the component while passing in template literal
+prop. For example:
+```
+<MyComponent title={`Hello world`} />
+```
+
+[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
+[prod]: https://SUBDOMAIN.readme.io
+[icn]:
+https://user-images.githubusercontent.com/886627/160426047-1bee9488-305a-4145-bb2b-09d8b757d38a.svg
+
+### 🛠 Fixes & Updates
+
+* allow parsing empty callouts like `>` without breaking ([#1260](https://github.com/readmeio/markdown/issues/1260)) ([98a8c65](https://github.com/readmeio/markdown/commit/98a8c65ea8d742fa62beeba92c811f4d6a0e972f))
+* **mdxish:** fix rendering issues with `Code` magic blocks ([#1259](https://github.com/readmeio/markdown/issues/1259)) ([ea6e7bb](https://github.com/readmeio/markdown/commit/ea6e7bb7ee285d76eed884738f421b5262156cca))
+* **mdxish:** process jsx attributes on custom components ([#1298](https://github.com/readmeio/markdown/issues/1298)) ([7f21a5e](https://github.com/readmeio/markdown/commit/7f21a5e38da9a920130305aa44f0626a22a2c917))
+* **mdxish:** remove unused whitespace nodes when rehyping components ([#1297](https://github.com/readmeio/markdown/issues/1297)) ([33e868a](https://github.com/readmeio/markdown/commit/33e868aa9edac55bd3c0ce19f053d0e5b34f06c3))
+
+## Version 11.15.0
+### ✨ New & Improved
+
+* correctly parse malformed table syntax ([#1293](https://github.com/readmeio/markdown/issues/1293)) ([dd40b2e](https://github.com/readmeio/markdown/commit/dd40b2ed0729934797a080fe42ae7706fc5fc174)), closes [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279)
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** glossary and anchor components not inline ([#1294](https://github.com/readmeio/markdown/issues/1294)) ([96ca62e](https://github.com/readmeio/markdown/commit/96ca62ea022422c10f5072a398db485d262b665e))
+* remove `isPlainText` ([#1302](https://github.com/readmeio/markdown/issues/1302)) ([c426816](https://github.com/readmeio/markdown/commit/c42681697cd1950d4ca364d15996a39d2574f34f))
+
 ## Version 11.14.1
 ### 🛠 Fixes & Updates
 

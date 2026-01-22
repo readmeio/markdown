@@ -1,6 +1,7 @@
 import type { Root } from 'hast';
 
 import { mdxish } from '../../../lib/mdxish';
+import { extractText } from '../../../processor/transform/extract-text';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -14,6 +15,35 @@ describe('mdxish should render', () => {
       expect(() => mdxish(md1)).not.toThrow();
       const md2 = 'This is an api: /param1/{param2 that has a unclosed curly brace';
       expect(() => mdxish(md2)).not.toThrow();
+    });
+  });
+
+  it('should render content in new lines', () => {
+    const md = `<div>hello
+</div>`;
+    expect(() => mdxish(md)).not.toThrow();
+  });
+
+  describe('should handle just ">"', () => {
+    it('replaces empty blockquote with paragraph containing ">"', () => {
+      const md = '>';
+
+      const tree = mdxish(md);
+      // Empty blockquote is replaced with paragraph containing '>'
+      const textContent = extractText(tree);
+      expect(textContent.trim()).toBe('>');
+
+      // Verify it's NOT a blockquote element in HAST
+      const hasBlockquote = tree.children.some(
+        child =>
+          child &&
+          typeof child === 'object' &&
+          'type' in child &&
+          child.type === 'element' &&
+          'tagName' in child &&
+          child.tagName === 'blockquote',
+      );
+      expect(hasBlockquote).toBe(false);
     });
   });
 

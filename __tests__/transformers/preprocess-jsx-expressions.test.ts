@@ -1,7 +1,7 @@
 import type { Element, Root } from 'hast';
 
 import { mdxish } from '../../lib';
-import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
+import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 // Helper function to find an element by tag name in a hast tree
 function findElementByTagName(node: Element | Root, tagName: string): Element | undefined {
@@ -52,8 +52,43 @@ describe('preprocessJSXExpressions', () => {
       const content = '<div foo={a ? {b: 1} : {c: 2}}>Link</div>';
       const result = preprocessJSXExpressions(content, context);
 
-      expect(result).toContain(`foo='${expectedJson}'`);
+      // Objects are serialized with JSON_VALUE_MARKER prefix and HTML-escaped
+      const escapedJson = expectedJson.replace(/"/g, '&quot;');
+      expect(result).toContain(`foo="${JSON_VALUE_MARKER}${escapedJson}"`);
       expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
+    });
+
+    it('should evaluate template literals with interpolation in JSX expression attributes', () => {
+      const content = '<Component greeting={`Hello world my name is <Test>!`} />';
+      const result = preprocessJSXExpressions(content);
+
+      // Special characters are escaped for valid HTML attribute values
+      expect(result).toContain('greeting="Hello world my name is &lt;Test&gt;!"');
+    });
+
+    it('should escape special characters in the template literal attributes', () => {
+      const content = '<Component greeting={`Special characters: < > & " \n ; /`} />';
+      const result = preprocessJSXExpressions(content);
+
+      // Special characters are escaped: < > & " and newlines
+      expect(result).toContain('greeting="Special characters: &lt; &gt; &amp; &quot; &#10; ; /"');
+    });
+  });
+
+  describe('Code block protection', () => {
+    it('should preserve fenced code blocks containing JSX-like syntax', () => {
+      const content = '```jsx\n<div style={{ color: "red" }}></div>\n```';
+      const result = preprocessJSXExpressions(content);
+
+      expect(result).toBe(content);
+    });
+
+    it('should not evaluate expressions inside inline code', () => {
+      const context = { baseUrl: 'https://example.com' };
+      const content = 'Use `href={baseUrl}` syntax';
+      const result = preprocessJSXExpressions(content, context);
+
+      expect(result).toBe('Use `href={baseUrl}` syntax');
     });
   });
 

@@ -1,6 +1,7 @@
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
+import calloutTransformer from '../../processor/transform/callouts';
 
 describe('callouts transformer', () => {
   it('can parse callouts', () => {
@@ -242,5 +243,69 @@ describe('callouts transformer', () => {
     const tree = mdast(md);
 
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'okay');
+  });
+
+  describe('non-callout blockquotes', () => {
+    it('replaces empty blockquote with paragraph containing ">"', () => {
+      const md = '>';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Empty blockquote should be replaced with paragraph
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(false);
+
+      // Should have a paragraph with '>' as content
+      const hasParagraph = tree.children.some(
+        child =>
+          child.type === 'paragraph' &&
+          'children' in child &&
+          child.children.some(
+            (c: unknown) =>
+              c && typeof c === 'object' && 'type' in c && c.type === 'text' && 'value' in c && c.value === '>',
+          ),
+      );
+      expect(hasParagraph).toBe(true);
+    });
+
+    it('leaves blockquote with text but no emoji as blockquote', () => {
+      const md = '> some text without emoji';
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Blockquote with valid structure (paragraph > text) but no emoji should remain as blockquote
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
+    });
+
+    it('should parse a blockquote containing only an image correctly', () => {
+      const md = `
+> ![](https://example.com/image.png)
+`;
+
+      const tree = mdast(md, { missingComponents: 'ignore' });
+      const transformer = calloutTransformer();
+      transformer(tree);
+
+      // Blockquote should remain as blockquote
+      const hasBlockquote = tree.children.some(child => child.type === 'blockquote');
+      expect(hasBlockquote).toBe(true);
+
+      // Inside the blockquote, there should be an image inside a paragraph
+      const blockquote = tree.children.find(child => child.type === 'blockquote') as {
+        children: { children?: { type: string; url?: string }[]; type: string }[];
+      };
+      expect(blockquote).toBeDefined();
+      const hasImage = blockquote.children.some(
+        child =>
+          child.type === 'paragraph' &&
+          child.children?.some(c => c.type === 'image' && c.url === 'https://example.com/image.png'),
+      );
+      expect(hasImage).toBe(true);
+    });
   });
 });

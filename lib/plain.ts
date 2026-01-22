@@ -3,6 +3,8 @@ import type { Nodes, Parents } from 'hast';
 
 import { fromHtml } from 'hast-util-from-html';
 
+import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
+
 /* @note: adapted from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 
@@ -16,7 +18,9 @@ function one(node: Nodes, opts: Options) {
   if (node.type === 'comment') return '';
 
   if ('type' in node && node.type === 'text') {
-    return node.value;
+    // Remove all MDX comments from text nodes. We need this here because we
+    // don't control whether comments are parsed into comment vs text nodes.
+    return node.value.replace(MDX_COMMENT_REGEX, '');
   }
 
   if ('tagName' in node) {
