@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 12.1.1
+### 🛠 Fixes & Updates
+
+* **stripComments:** dont escape special markdown chars *, _, # ([#1267](https://github.com/readmeio/markdown/issues/1267)) ([73b7fca](https://github.com/readmeio/markdown/commit/73b7fca860465907da19ca2a708b993d536204fc))
+* **mdxish:** escape unbalanced curly brackets ([#1300](https://github.com/readmeio/markdown/issues/1300)) ([6d988b0](https://github.com/readmeio/markdown/commit/6d988b05bd3066288144e916bb77404f9630be06))
+
 ## Version 12.1.0
 ### ✨ New & Improved
 
