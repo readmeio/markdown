@@ -1,4 +1,5 @@
 import { componentTagPattern } from '../../../lib/constants';
+import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 export type SnakeCaseMapping = Record<string, string>;
 
@@ -7,28 +8,67 @@ export interface SnakeCasePreprocessResult {
   mapping: SnakeCaseMapping;
 }
 
+export interface ProcessSnakeCaseOptions {
+  /**
+   * Set of known component names
+   * Used to filter which snake_case components to transform
+  */
+  knownComponents?: Set<string>;
+}
+
 /**
  * Replaces snake_case component names with valid HTML placeholders.
  * Required because remark-parse rejects tags with underscores.
  * Example: `<Snake_case />` → `<MDXishSnakeCase0 />`
+ *
+ * Code blocks and inline code are protected and will not be transformed.
+ *
+ * @param content - The markdown content to process
+ * @param options - Options including knownComponents to filter by
  */
-export function processSnakeCaseComponent(content: string): SnakeCasePreprocessResult {
+export function processSnakeCaseComponent(
+  content: string,
+  options: ProcessSnakeCaseOptions = {}
+): SnakeCasePreprocessResult {
+  const { knownComponents } = options;
+
   // Early exit if no potential snake_case components
   if (!/[A-Z][A-Za-z0-9]*_[A-Za-z0-9_]*/.test(content)) {
     return { content, mapping: {} };
   }
 
+  // Step 1: Extract code blocks to protect them from transformation
+  const { protectedCode, protectedContent } = protectCodeBlocks(content);
+
+  // Find the highest existing placeholder number to avoid collisions
+  // e.g., if content has <MDXishSnakeCase0 />, start counter from 1
+  const placeholderPattern = /MDXishSnakeCase(\d+)/g;
+  let startCounter = 0;
+  let placeholderMatch: RegExpExecArray | null;
+  while ((placeholderMatch = placeholderPattern.exec(content)) !== null) {
+    const num = parseInt(placeholderMatch[1], 10);
+    if (num >= startCounter) {
+      startCounter = num + 1;
+    }
+  }
+
   const mapping: SnakeCaseMapping = {};
   const reverseMap = new Map<string, string>();
-  let counter = 0;
+  let counter = startCounter;
 
-  const processedContent = content.replace(componentTagPattern, (match, tagName, attrs, selfClosing) => {
+  // Step 2: Transform snake_case components in non-code content
+  const processedContent = protectedContent.replace(componentTagPattern, (match, tagName, attrs, selfClosing) => {
     if (!tagName.includes('_')) {
       return match;
     }
 
     const isClosing = tagName.startsWith('/');
     const cleanTagName = isClosing ? tagName.slice(1) : tagName;
+
+    // Only transform if it's a known component (or if no filter is provided)
+    if (knownComponents && !knownComponents.has(cleanTagName)) {
+      return match;
+    }
 
     let placeholder = reverseMap.get(cleanTagName);
 
@@ -43,8 +83,11 @@ export function processSnakeCaseComponent(content: string): SnakeCasePreprocessR
     return `<${processedTagName}${attrs}${selfClosing}>`;
   });
 
+  // Step 3: Restore code blocks (untouched)
+  const finalContent = restoreCodeBlocks(processedContent, protectedCode);
+
   return {
-    content: processedContent,
+    content: finalContent,
     mapping,
   };
 }

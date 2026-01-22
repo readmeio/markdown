@@ -1,3 +1,10 @@
+import {
+  type ProtectedCode,
+  protectCodeBlocks,
+  restoreCodeBlocks,
+  restoreInlineCode,
+} from '../../../lib/utils/mdxish/protect-code-blocks';
+
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {
   if (typeof Buffer !== 'undefined') {
@@ -30,16 +37,6 @@ export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
-
-interface ProtectedCode {
-  codeBlocks: string[];
-  inlineCode: string[];
-}
-
-interface ProtectCodeBlocksResult {
-  protectedCode: ProtectedCode;
-  protectedContent: string;
-}
 
 /**
  * Pre-processes JSX-like expressions before markdown parsing.
@@ -91,60 +88,6 @@ function protectHTMLBlockContent(content: string): string {
 }
 
 /**
- * Replaces code blocks and inline code with placeholders to protect them from JSX processing.
- *
- * @param content
- * @returns Object containing protected content and arrays of original code blocks
- * @example
- * ```typescript
- * const input = 'Text with `inline code` and ```fenced block```';
- * protectCodeBlocks(input)
- * // Returns: {
- * //   protectedCode: {
- * //     codeBlocks: ['```fenced block```'],
- * //     inlineCode: ['`inline code`']
- * //   },
- * //   protectedContent: 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___'
- * // }
- * ```
- */
-function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
-  const codeBlocks: string[] = [];
-  const inlineCode: string[] = [];
-
-  let protectedContent = '';
-  let remaining = content;
-  let codeBlockStart = remaining.indexOf('```');
-
-  while (codeBlockStart !== -1) {
-    protectedContent += remaining.slice(0, codeBlockStart);
-    remaining = remaining.slice(codeBlockStart);
-
-    const codeBlockEnd = remaining.indexOf('```', 3);
-    if (codeBlockEnd === -1) {
-      break;
-    }
-
-    const match = remaining.slice(0, codeBlockEnd + 3);
-    const index = codeBlocks.length;
-    codeBlocks.push(match);
-    protectedContent += `___CODE_BLOCK_${index}___`;
-
-    remaining = remaining.slice(codeBlockEnd + 3);
-    codeBlockStart = remaining.indexOf('```');
-  }
-  protectedContent += remaining;
-
-  protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
-    const index = inlineCode.length;
-    inlineCode.push(match);
-    return `___INLINE_CODE_${index}___`;
-  });
-
-  return { protectedCode: { codeBlocks, inlineCode }, protectedContent };
-}
-
-/**
  * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
  *
  * @param content
@@ -185,18 +128,6 @@ function extractBalancedBraces(content: string, start: number): { content: strin
 
   if (depth !== 0) return null;
   return { content: content.slice(start, pos - 1), end: pos };
-}
-
-function restoreInlineCode(content: string, protectedCode: ProtectedCode) {
-  return content.replace(/___INLINE_CODE_(\d+)___/g, (_m, idx: string) => {
-    return protectedCode.inlineCode[parseInt(idx, 10)];
-  });
-}
-
-function restoreCodeBlocks(content: string, protectedCode: ProtectedCode) {
-  return content.replace(/___CODE_BLOCK_(\d+)___/g, (_m, idx: string) => {
-    return protectedCode.codeBlocks[parseInt(idx, 10)];
-  });
 }
 
 /**
@@ -278,29 +209,6 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
 }
 
 /**
- * Restores code blocks and inline code by replacing placeholders with original content.
- *
- * @param content
- * @param protectedCode
- * @returns Content with all code blocks and inline code restored
- * @example
- * ```typescript
- * const content = 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___';
- * const protectedCode = {
- *   codeBlocks: ['```js\ncode\n```'],
- *   inlineCode: ['`inline`']
- * };
- * restoreCodeBlocks(content, protectedCode)
- * // Returns: 'Text with `inline` and ```js\ncode\n```'
- * ```
- */
-function restoreProtectedCodes(content: string, protectedCode: ProtectedCode) {
-  let restored = restoreCodeBlocks(content, protectedCode);
-  restored = restoreInlineCode(restored, protectedCode);
-  return restored;
-}
-
-/**
  * Preprocesses JSX-like expressions in markdown before parsing.
  * Inline expressions are handled separately; attribute expressions are processed here.
  *
@@ -324,7 +232,7 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   processed = evaluateAttributeExpressions(processed, context, protectedCode);
 
   // Step 4: Restore protected code blocks
-  processed = restoreProtectedCodes(processed, protectedCode);
+  processed = restoreCodeBlocks(processed, protectedCode);
 
   return processed;
 }

@@ -56,6 +56,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     ...userComponents,
   };
 
+  // Build set of known component names for snake_case filtering
+  const knownComponents = new Set(Object.keys(components));
+
   // Preprocessing pipeline: Transform content to be parser-ready
   // Step 1: Extract legacy magic blocks
   const { replaced: contentAfterMagicBlocks, blocks } = extractMagicBlocks(mdContent);
@@ -65,8 +68,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
   // Step 4: Replace snake_case component names with parser-safe placeholders
   // (e.g., <Snake_case /> → <MDXishSnakeCase0 /> which will be restored after parsing)
-  const { content: parserReadyContent, mapping: snakeCaseMapping } =
-    processSnakeCaseComponent(contentAfterJSXEvaluation);
+  // Only transforms tags that exist in the components list to avoid transforming code examples
+  const { content: parserReadyContent, mapping: snakeCaseMapping } = processSnakeCaseComponent(
+    contentAfterJSXEvaluation,
+    { knownComponents }
+  );
 
   // Create string map for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
