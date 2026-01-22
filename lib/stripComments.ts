@@ -4,6 +4,7 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 
+import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
@@ -20,6 +21,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
 
   const processor = unified()
     .use(remarkParse)
+    .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
     .use(
