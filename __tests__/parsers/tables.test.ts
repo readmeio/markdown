@@ -64,4 +64,30 @@ describe('table parser', () => {
       expect(ast).toMatchSnapshot();
     });
   });
+
+  describe('jsx tables with images', () => {
+    it('parses jsx tables with images in cells', () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>![](https://example.com/image.png)</td>
+      <td>An image</td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const ast = mdast(doc);
+      removePosition(ast, { force: true });
+
+      expect(ast).toMatchSnapshot();
+    });
+  });
 });

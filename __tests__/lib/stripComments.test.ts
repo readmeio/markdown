@@ -174,4 +174,53 @@ Last line`);
     const output = await stripComments(input);
     expect(output).toMatchSnapshot();
   });
+
+  it('allows leading/trailing spaces between bold/italic markers', async () => {
+    const input = `
+single line with **bold ** text and \\*literal\\* asterisks.
+
+**bold**
+**  leading**
+**trailing  **
+
+__emphasis__
+__  leading__
+__trailing  __
+
+\\*literal\\*
+end
+`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+"single line with **bold** text and \\*literal\\* asterisks.
+
+**bold**
+**leading**
+**trailing**
+
+**emphasis**
+**leading**
+**trailing**
+
+\\*literal\\*
+end"`);
+  });
+
+  // TODO: enable this test after fixing the heading parsing issue
+  // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
+  // eslint-disable-next-line vitest/no-disabled-tests
+  it.skip('allows compact headings with no whitespace delimiter', async () => {
+    const input = `
+#Blue
+\\# Literal
+# Black`;
+
+    await expect(stripComments(input)).resolves.toMatchInlineSnapshot(`
+      "# Blue
+
+      \\# Literal
+
+      # Black"
+    `);
+  });
 });
