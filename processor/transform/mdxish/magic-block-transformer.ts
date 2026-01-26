@@ -216,7 +216,7 @@ function transformMagicBlock(
         ? {
             children: [
               block,
-              { children: textToBlock(imgData.caption), data: { hName: 'figcaption' }, type: 'figcaption' },
+              { children: parseBlock(imgData.caption), data: { hName: 'figcaption' }, type: 'figcaption' },
             ],
             data: { hName: 'figure' },
             type: 'figure',
@@ -244,24 +244,40 @@ function transformMagicBlock(
 
       if (!(calloutJson.title || calloutJson.body)) return [];
 
-      const titleBlocks = parseBlock(calloutJson.title || '');
-      const bodyBlocks = parseBlock(calloutJson.body || '');
+      const hasTitle = !!calloutJson.title?.trim();
+      const hasBody = !!calloutJson.body?.trim();
+      const empty = !hasTitle;
 
       const children: MdastNode[] = [];
-      if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
-        const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
-        const heading = {
+
+      if (hasTitle) {
+        const titleBlocks = parseBlock(calloutJson.title || '');
+        if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
+          const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
+          const heading = {
+            type: 'heading',
+            depth: 3,
+            children: (firstTitle.children || []) as unknown[],
+          };
+          children.push(heading as unknown as MdastNode);
+          children.push(...titleBlocks.slice(1));
+        } else {
+          children.push(...titleBlocks);
+        }
+      } else {
+        // Add empty heading placeholder so body goes to children.slice(1)
+        // The Callout component expects children[0] to be the heading
+        children.push({
           type: 'heading',
           depth: 3,
-          children: (firstTitle.children || []) as unknown[],
-        };
-        children.push(heading as unknown as MdastNode);
-        children.push(...titleBlocks.slice(1), ...bodyBlocks);
-      } else {
-        children.push(...titleBlocks, ...bodyBlocks);
+          children: [{ type: 'text', value: '' }],
+        } as unknown as MdastNode);
       }
 
-      const empty = !titleBlocks.length || !titleBlocks[0].children?.[0]?.value;
+      if (hasBody) {
+        const bodyBlocks = parseBlock(calloutJson.body || '');
+        children.push(...bodyBlocks);
+      }
 
       const calloutElement: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',

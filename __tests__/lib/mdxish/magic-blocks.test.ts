@@ -35,6 +35,103 @@ describe('mdxish magic blocks', () => {
       expect(imgElement.properties.align).toBe('left');
       expect(imgElement.properties.width).toBe('50%');
     });
+
+    it('should parse markdown in image caption', () => {
+      const md = `[block:image]
+{
+"images": [
+  {
+    "image": [
+      "https://files.readme.io/327e65d-image.png",
+      null,
+      "Alt text"
+    ],
+    "caption": "This caption has **bold** and *italic* text"
+  }
+]
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+
+      const figure = ast.children[0] as Element;
+      expect(figure.tagName).toBe('figure');
+
+      // Find the figcaption
+      const figcaption = figure.children.find(child => (child as Element).tagName === 'figcaption') as Element;
+      expect(figcaption).toBeDefined();
+
+      // Check that markdown was parsed - should contain strong and em elements
+      const paragraph = figcaption.children[0] as Element;
+      expect(paragraph.tagName).toBe('p');
+
+      const hasStrong = paragraph.children.some(child => (child as Element).tagName === 'strong');
+      const hasEmphasis = paragraph.children.some(child => (child as Element).tagName === 'em');
+
+      expect(hasStrong).toBe(true);
+      expect(hasEmphasis).toBe(true);
+    });
+
+    it('should parse HTML in image caption', () => {
+      const md = `[block:image]
+{
+"images": [
+  {
+    "image": [
+      "https://files.readme.io/327e65d-image.png",
+      null,
+      "Alt text"
+    ],
+    "caption": "<a href=\\"https://example.com\\">Click here</a> for more info"
+  }
+]
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(ast.children).toHaveLength(1);
+
+      const figure = ast.children[0] as Element;
+      expect(figure.tagName).toBe('figure');
+
+      // Find the figcaption
+      const figcaption = figure.children.find(child => (child as Element).tagName === 'figcaption') as Element;
+      expect(figcaption).toBeDefined();
+
+      // Check that HTML was parsed - should contain an anchor element
+      const paragraph = figcaption.children[0] as Element;
+      const hasAnchor = paragraph.children.some(child => (child as Element).tagName === 'a');
+
+      expect(hasAnchor).toBe(true);
+    });
+
+    it('should parse markdown links in image caption', () => {
+      const md = `[block:image]
+{
+"images": [
+  {
+    "image": [
+      "https://files.readme.io/327e65d-image.png",
+      null,
+      "Alt text"
+    ],
+    "caption": "Check out [this link](https://example.com) for details"
+  }
+]
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const figure = ast.children[0] as Element;
+      const figcaption = figure.children.find(child => (child as Element).tagName === 'figcaption') as Element;
+      const paragraph = figcaption.children[0] as Element;
+
+      const anchor = paragraph.children.find(child => (child as Element).tagName === 'a') as Element;
+      expect(anchor).toBeDefined();
+      expect(anchor.properties.href).toBe('https://example.com');
+    });
   });
 
   describe('table block', () => {
@@ -60,9 +157,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
 
       // Find the table element dynamically (may have different indices due to whitespace handling)
-      const element = ast.children.find(
-        (c): c is Element => c.type === 'element' && c.tagName === 'table',
-      );
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
       expect(element).toBeDefined();
       expect(element!.tagName).toBe('table');
       expect(element!.children).toHaveLength(2);
@@ -91,9 +186,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
 
       // Find the table element dynamically
-      const element = ast.children.find(
-        (c): c is Element => c.type === 'element' && c.tagName === 'table',
-      );
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
       expect(element).toBeDefined();
       expect(element!.tagName).toBe('table');
       expect(element!.children).toHaveLength(2);
@@ -130,9 +223,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
 
       // Find the table element dynamically
-      const element = ast.children.find(
-        (c): c is Element => c.type === 'element' && c.tagName === 'table',
-      );
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
       expect(element).toBeDefined();
       expect(element!.tagName).toBe('table');
       expect(element!.children).toHaveLength(2);
@@ -171,9 +262,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
 
       // Find the table element dynamically
-      const element = ast.children.find(
-        (c): c is Element => c.type === 'element' && c.tagName === 'table',
-      );
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
       expect(element).toBeDefined();
       expect(element!.tagName).toBe('table');
 
@@ -410,7 +499,7 @@ ${JSON.stringify(
   });
 
   describe('callout block', () => {
-    it('should restore callout block', () => {
+    it('should restore callout block with title and body', () => {
       const md = '[block:callout]{"type":"info","title":"Note","body":"This is important"}[/block]';
 
       const ast = mdxish(md);
@@ -423,19 +512,46 @@ ${JSON.stringify(
       expect(calloutElement.properties.theme).toBe('info');
       expect(calloutElement.properties.icon).toBe('📘');
       expect(calloutElement.children).toHaveLength(2);
+
+      expect(calloutElement.properties.empty).toBeUndefined();
+
+      const titleHeading = calloutElement.children[0] as Element;
+      expect(titleHeading.tagName).toBe('h3');
+      expect(titleHeading.children).toHaveLength(1);
+      expect((titleHeading.children[0] as { value: string }).value).toBe('Note');
+
+      const bodyParagraph = calloutElement.children[1] as Element;
+      expect(bodyParagraph.tagName).toBe('p');
+    });
+
+    it('should set empty property when callout has no title', () => {
+      const md = '[block:callout]{"type":"info","body":"This is important"}[/block]';
+
+      const ast = mdxish(md);
+      const calloutElement = ast.children[0] as Element;
+
+      expect(calloutElement.properties.empty).toBe('true');
+
+      // Should have 2 children: empty heading placeholder + body paragraph
+      expect(calloutElement.children).toHaveLength(2);
+      const emptyHeading = calloutElement.children[0] as Element;
+      expect(emptyHeading.tagName).toBe('h3');
+
+      const bodyParagraph = calloutElement.children[1] as Element;
+      expect(bodyParagraph.tagName).toBe('p');
     });
 
     it('should convert html content inside callout title and body as nodes in the ast', () => {
       const md = `[block:callout]
 ${JSON.stringify(
-        {
-          type: 'info',
-          title: '*HTML Title*',
-          body: '*Italic body*, **bold text**, `code block`',
-        },
-        null,
-        2,
-      )}
+  {
+    type: 'info',
+    title: '*HTML Title*',
+    body: '*Italic body*, **bold text**, `code block`',
+  },
+  null,
+  2,
+)}
 [/block]`;
 
       const ast = mdxish(md);
@@ -444,20 +560,38 @@ ${JSON.stringify(
       const calloutElement = ast.children[0] as Element;
       expect(calloutElement.children.length).toBeGreaterThan(0);
 
-      // Title should be italicized
+      expect(calloutElement.properties.empty).toBeUndefined();
+
       const titleHeading = calloutElement.children[0] as Element;
       expect(titleHeading.tagName).toBe('h3');
       expect(titleHeading.children.length).toBeGreaterThan(0);
       expect((titleHeading.children[0] as Element).tagName).toBe('em');
 
-      // Body should have parsed markdown
       const bodyParagraph = calloutElement.children[1] as Element;
 
-      // Body can have multiple inline elements (em, strong, code)
       const bodyChildren = bodyParagraph.children as Element[];
       expect(bodyChildren.some(child => child.tagName === 'em')).toBe(true);
       expect(bodyChildren.some(child => child.tagName === 'strong')).toBe(true);
       expect(bodyChildren.some(child => child.tagName === 'code')).toBe(true);
+    });
+
+    it('should handle all callout types correctly', () => {
+      const types = [
+        { type: 'info', expectedIcon: '📘', expectedTheme: 'info' },
+        { type: 'warning', expectedIcon: '🚧', expectedTheme: 'warn' },
+        { type: 'danger', expectedIcon: '❗️', expectedTheme: 'error' },
+        { type: 'success', expectedIcon: '👍', expectedTheme: 'okay' },
+      ];
+
+      types.forEach(({ type, expectedIcon, expectedTheme }) => {
+        const md = `[block:callout]{"type":"${type}","title":"Title","body":"Body"}[/block]`;
+        const ast = mdxish(md);
+        const calloutElement = ast.children[0] as Element;
+
+        expect(calloutElement.properties.icon).toBe(expectedIcon);
+        expect(calloutElement.properties.theme).toBe(expectedTheme);
+        expect(calloutElement.properties.type).toBe(expectedTheme);
+      });
     });
   });
 
@@ -483,7 +617,9 @@ ${JSON.stringify(
       );
 
       expect(listElements).toHaveLength(1);
-      expect(listElements[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li')).toHaveLength(5);
+      expect(
+        listElements[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li'),
+      ).toHaveLength(5);
     });
 
     it('should not create extra newlines when tutorial-tile block is in a list item', () => {
@@ -515,7 +651,8 @@ ${JSON.stringify(
     });
 
     it('should not create extra newlines when embed block is in a list item', () => {
-      const md = '- [block:embed]{"url":"https://www.youtube.com/watch?v=FVikHLyW500","provider":"youtube.com","href":"https://www.youtube.com/watch?v=FVikHLyW500","typeOfEmbed":"youtube"}[/block]';
+      const md =
+        '- [block:embed]{"url":"https://www.youtube.com/watch?v=FVikHLyW500","provider":"youtube.com","href":"https://www.youtube.com/watch?v=FVikHLyW500","typeOfEmbed":"youtube"}[/block]';
 
       const ast = mdxish(md);
 
