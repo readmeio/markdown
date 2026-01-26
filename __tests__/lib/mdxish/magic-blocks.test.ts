@@ -722,6 +722,16 @@ ${JSON.stringify(
       expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
     });
 
+    it('should gracefully handle image block with non-array images', () => {
+      const md = `[block:image]
+{
+  "images": "not-an-array"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
     it('should gracefully handle code block with missing codes array', () => {
       const md = `[block:code]
 {
@@ -736,11 +746,85 @@ ${JSON.stringify(
       expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
     });
 
+    it('should gracefully handle code block with non-array codes', () => {
+      const md = `[block:code]
+{
+  "codes": "not-an-array"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
     it('should gracefully handle parameters block with missing data object', () => {
       const md = `[block:parameters]
 {
   "cols": 2,
   "rows": 1
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle parameters block with invalid cols/rows', () => {
+      const md = `[block:parameters]
+{
+  "data": {"h-0": "Header"},
+  "cols": "invalid",
+  "rows": 1
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should gracefully handle embed block with missing url', () => {
+      const md = `[block:embed]
+{
+  "title": "My Embed"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle html block with missing html property', () => {
+      const md = `[block:html]
+{
+  "content": "<h1>Hello</h1>"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle recipe block with missing required fields', () => {
+      const md = `[block:recipe]
+{
+  "emoji": "🦉"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle callout block with missing title and body', () => {
+      const md = `[block:callout]
+{
+  "type": "info"
 }
 [/block]`;
 

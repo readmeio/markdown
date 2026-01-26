@@ -155,7 +155,7 @@ function transformMagicBlock(
   switch (blockType) {
     case 'code': {
       const codeJson = data as CodeBlockJson;
-      if (!codeJson.codes) return [];
+      if (!codeJson.codes || !Array.isArray(codeJson.codes)) return [];
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
@@ -193,7 +193,7 @@ function transformMagicBlock(
 
     case 'image': {
       const imageJson = data as ImageBlockJson;
-      if (!imageJson.images) return [];
+      if (!imageJson.images || !Array.isArray(imageJson.images)) return [];
       const imgData = imageJson.images.find(i => i.image);
       if (!imgData?.image) return [];
 
@@ -283,6 +283,7 @@ function transformMagicBlock(
       const { cols, data: tableData, rows } = paramsJson;
 
       if (!tableData || !Object.keys(tableData).length) return [];
+      if (typeof cols !== 'number' || typeof rows !== 'number' || cols < 1 || rows < 0) return [];
 
       const sparseData: string[][] = Object.entries(tableData).reduce((mapped, [key, v]) => {
         const [row, col] = key.split('-');
@@ -313,6 +314,7 @@ function transformMagicBlock(
 
     case 'embed': {
       const embedJson = data as EmbedJson;
+      if (!embedJson.url) return [];
       const { html, title, url } = embedJson;
       try {
         embedJson.provider = new URL(url).hostname
@@ -339,6 +341,7 @@ function transformMagicBlock(
 
     case 'html': {
       const htmlJson = data as HtmlJson;
+      if (typeof htmlJson.html !== 'string') return [];
       return [
         wrapPinnedBlocks(
           {
