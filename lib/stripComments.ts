@@ -1,4 +1,6 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
+import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxExpression } from 'micromark-extension-mdx-expression';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
@@ -11,15 +13,25 @@ import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBloc
 
 interface Opts {
   mdx?: boolean;
+  mdxish?: boolean;
 }
 
 /**
  * Removes Markdown and MDX comments.
  */
-async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
+async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
   const { replaced, blocks } = extractMagicBlocks(doc);
 
-  const processor = unified()
+  const processor = unified();
+
+  // MDXish uses micromark extensions to parse JSX expressions (for both HTML and JSX comments)
+  if (mdxish) {
+    processor
+      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()]);
+  }
+
+  processor
     .use(remarkParse)
     .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
