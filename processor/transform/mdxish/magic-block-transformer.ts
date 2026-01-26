@@ -15,7 +15,6 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
-
 import { toAttributes } from '../../utils';
 
 interface MdastNode {
@@ -156,6 +155,7 @@ function transformMagicBlock(
   switch (blockType) {
     case 'code': {
       const codeJson = data as CodeBlockJson;
+      if (!codeJson.codes) return [];
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
@@ -193,6 +193,7 @@ function transformMagicBlock(
 
     case 'image': {
       const imageJson = data as ImageBlockJson;
+      if (!imageJson.images) return [];
       const imgData = imageJson.images.find(i => i.image);
       if (!imgData?.image) return [];
 
@@ -281,20 +282,17 @@ function transformMagicBlock(
       const paramsJson = data as ParametersJson;
       const { cols, data: tableData, rows } = paramsJson;
 
-      if (!Object.keys(tableData).length) return [];
+      if (!tableData || !Object.keys(tableData).length) return [];
 
-      const sparseData: string[][] = Object.entries(tableData).reduce(
-        (mapped, [key, v]) => {
-          const [row, col] = key.split('-');
-          const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
-          const colIndex = parseInt(col, 10);
+      const sparseData: string[][] = Object.entries(tableData).reduce((mapped, [key, v]) => {
+        const [row, col] = key.split('-');
+        const rowIndex = row === 'h' ? 0 : parseInt(row, 10) + 1;
+        const colIndex = parseInt(col, 10);
 
-          if (!mapped[rowIndex]) mapped[rowIndex] = [];
-          mapped[rowIndex][colIndex] = v;
-          return mapped;
-        },
-        [] as string[][],
-      );
+        if (!mapped[rowIndex]) mapped[rowIndex] = [];
+        mapped[rowIndex][colIndex] = v;
+        return mapped;
+      }, [] as string[][]);
 
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
@@ -417,12 +415,22 @@ const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.typ
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    const replacements: { after: RootContent[]; before: RootContent[]; blockNodes: RootContent[]; inlineNodes: RootContent[]; parent: Parent }[] = [];
+    const replacements: {
+      after: RootContent[];
+      before: RootContent[];
+      blockNodes: RootContent[];
+      inlineNodes: RootContent[];
+      parent: Parent;
+    }[] = [];
 
     visit(tree, 'magicBlock', (node: MagicBlockNode, index: number | undefined, parent: Parent | undefined) => {
       if (!parent || index === undefined) return undefined;
 
-      const children = transformMagicBlock(node.blockType, node.data as MagicBlockJson, options) as unknown as RootContent[];
+      const children = transformMagicBlock(
+        node.blockType,
+        node.data as MagicBlockJson,
+        options,
+      ) as unknown as RootContent[];
       if (!children.length) {
         // Remove the node if transformation returns nothing
         parent.children.splice(index, 1);

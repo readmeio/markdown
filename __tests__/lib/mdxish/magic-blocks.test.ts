@@ -704,4 +704,58 @@ ${JSON.stringify(
       expect(lists[0].children).toHaveLength(5);
     });
   });
+
+  describe('malformed JSON handling', () => {
+    it('should gracefully handle image block with missing images array', () => {
+      // This format is invalid - images should be an array, not a direct url
+      const md = `[block:image]
+{
+  "url": "test.png"
+}
+[/block]`;
+
+      // Should not throw an error
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      // Should produce empty output since the format is invalid
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle code block with missing codes array', () => {
+      const md = `[block:code]
+{
+  "code": "console.log('hello')",
+  "language": "javascript"
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle parameters block with missing data object', () => {
+      const md = `[block:parameters]
+{
+  "cols": 2,
+  "rows": 1
+}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const ast = mdxish(md);
+      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+    });
+
+    it('should gracefully handle empty JSON object', () => {
+      const md = `[block:image]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+  });
 });
