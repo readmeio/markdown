@@ -64,13 +64,18 @@ const embedHandler: Handler = (state, node) => {
   // Assert to get the minimum properties we need
   const { data } = node as { data?: { hName?: string; hProperties?: Properties } };
 
+  // Magic block embeds (hName === 'embed-block') render as Embed component
+  // which doesn't use children - it renders based on props only
+  const isMagicBlockEmbed = data?.hName === NodeTypes.embedBlock;
+
   return {
     type: 'element',
     // To differentiate between regular embeds and magic block embeds,
     // magic block embeds have a certain hName
-    tagName: data?.hName === NodeTypes.embedBlock ? 'Embed' : 'embed',
+    tagName: isMagicBlockEmbed ? 'Embed' : 'embed',
     properties: data?.hProperties,
-    children: state.all(node),
+    // Don't include children for magic block embeds - Embed component renders based on props
+    children: isMagicBlockEmbed ? [] : state.all(node),
   };
 };
 
