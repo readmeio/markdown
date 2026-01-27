@@ -96,6 +96,7 @@ const parseBlock = (text: string): MdastNode[] => {
 function transformMagicBlock(
   blockType: string,
   data: MagicBlockJson,
+  rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
   const { compatibilityMode = false, safeMode = false } = options;
@@ -119,7 +120,7 @@ function transformMagicBlock(
       case 'tutorial-tile':
         return [EMPTY_RECIPE_PLACEHOLDER];
       default:
-        return [];
+        return [{ type: 'paragraph', children: [{ type: 'text', value: rawValue }] }];
     }
   }
 
@@ -427,6 +428,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       const children = transformMagicBlock(
         node.blockType,
         node.data as MagicBlockJson,
+        node.value,
         options,
       ) as unknown as RootContent[];
       if (!children.length) {

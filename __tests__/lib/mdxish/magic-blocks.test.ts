@@ -916,6 +916,36 @@ ${JSON.stringify(
       expect(textContent.length).toBeGreaterThan(0);
     });
 
+    it('should not error if there is newlines before the data object', () => {
+      const md = `[block:callout]
+
+
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should not error if there is newlines after the data object', () => {
+      const md = `[block:callout]
+{}
+
+
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should not error if there is newlines before and after the data object', () => {
+      const md = `[block:callout]
+
+{}
+
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
     it('should treat [block:] in a list as plain text', () => {
       const md = '- [block:]{}[/block]';
 
@@ -923,6 +953,119 @@ ${JSON.stringify(
       const ast = mdxish(md);
       const lists = ast.children.filter(c => c.type === 'element' && c.tagName === 'ul');
       expect(lists).toHaveLength(1);
+    });
+
+    it('should render unknown block type as raw text', () => {
+      const md = '[block:unknowntype]{"foo":"bar"}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const paragraphs = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(1);
+      const textContent = JSON.stringify(paragraphs[0]);
+      expect(textContent).toContain('[block:unknowntype]');
+    });
+
+    it('should render unknown block type with empty data as raw text', () => {
+      const md = '[block:foo]{}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const paragraphs = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(1);
+      const textContent = JSON.stringify(paragraphs[0]);
+      expect(textContent).toContain('[block:foo]');
+    });
+
+    it('should render multiline unknown block type as multiple paragraphs', () => {
+      const md = `[block:foo]
+
+AAAA
+
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const paragraphs = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(3);
+    });
+
+    it('should treat known block type with non-JSON data as plain text', () => {
+      const md = `[block:callout]
+
+asdasdasd
+
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const paragraphs = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(3);
+      expect(JSON.stringify(paragraphs[0])).toContain('[block:callout]');
+    });
+  });
+
+  describe('trailing content after [/block]', () => {
+    it('should handle trailing whitespace after [/block]', () => {
+      const md = '[block:image]{"images":[{"image":["https://example.com/img.png"]}]}[/block] ';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const images = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(images).toHaveLength(1);
+    });
+
+    it('should handle trailing newline after [/block]', () => {
+      const md = '[block:image]{"images":[{"image":["https://example.com/img.png"]}]}[/block]\n';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const images = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(images).toHaveLength(1);
+    });
+
+    it('should handle trailing text after [/block]', () => {
+      const md = '[block:image]{"images":[{"image":["https://example.com/img.png"]}]}[/block]some text after';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const paragraph = ast.children.find(c => c.type === 'element' && (c as Element).tagName === 'p') as Element;
+      expect(paragraph).toBeDefined();
+      const img = paragraph.children.find(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(img).toBeDefined();
+    });
+
+    it('should handle multiple spaces after [/block]', () => {
+      const md = '[block:image]{"images":[{"image":["https://example.com/img.png"]}]}[/block]   ';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const images = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(images).toHaveLength(1);
+    });
+
+    it('should handle tabs after [/block]', () => {
+      const md = '[block:callout]{"type":"info","title":"Test","body":"Content"}[/block]\t';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const callouts = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'Callout');
+      expect(callouts).toHaveLength(1);
+    });
+
+    it('should handle content on the same line after multiline [/block]', () => {
+      const md = `[block:parameters]
+{
+  "data": {"h-0": "Header", "0-0": "Value"},
+  "cols": 1,
+  "rows": 1
+}
+[/block] trailing content`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const tables = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'table');
+      expect(tables).toHaveLength(1);
     });
   });
 

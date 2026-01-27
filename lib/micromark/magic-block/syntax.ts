@@ -22,9 +22,27 @@ declare module 'micromark-util-types' {
     magicBlockMarkerEnd: 'magicBlockMarkerEnd';
     magicBlockMarkerStart: 'magicBlockMarkerStart';
     magicBlockMarkerTypeEnd: 'magicBlockMarkerTypeEnd';
+    magicBlockTrailing: 'magicBlockTrailing';
     magicBlockType: 'magicBlockType';
   }
 }
+
+/**
+ * Known magic block types that the tokenizer will recognize.
+ * Unknown types will not be tokenized as magic blocks.
+ */
+const KNOWN_BLOCK_TYPES = new Set([
+  'code',
+  'api-header',
+  'image',
+  'callout',
+  'parameters',
+  'table',
+  'embed',
+  'html',
+  'recipe',
+  'tutorial-tile',
+]);
 
 /**
  * Check if a character is valid for a magic block type identifier.
@@ -113,6 +131,8 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
   // State for tracking JSON content
   let inString = false;
   let escapeNext = false;
+  let blockType = '';
+  let seenOpenBrace = false;
 
   return start;
 
@@ -173,6 +193,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     }
 
     if (isTypeChar(code)) {
+      blockType += String.fromCharCode(code as number);
       effects.consume(code);
       return captureType;
     }
@@ -182,6 +203,9 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
 
   function captureType(code: Code): State | undefined {
     if (code === codes.rightSquareBracket) {
+      if (!KNOWN_BLOCK_TYPES.has(blockType)) {
+        return nok(code);
+      }
       effects.exit('magicBlockType');
       effects.enter('magicBlockMarkerTypeEnd');
       effects.consume(code);
@@ -191,6 +215,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     }
 
     if (isTypeChar(code)) {
+      blockType += String.fromCharCode(code as number);
       effects.consume(code);
       return captureType;
     }
@@ -213,9 +238,99 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
       return effects.check(nonLazyContinuation, continuationOkBeforeData, after)(code);
     }
 
-    // We have content - enter data token and start capturing
+    // Check for closing marker directly (without entering data)
+    // This handles cases like [block:type]\n{}\n\n[/block] where there are
+    // newlines after the data object
+    if (code === codes.leftSquareBracket) {
+      effects.enter('magicBlockMarkerEnd');
+      effects.consume(code);
+      return expectSlashFromContinuation;
+    }
+
+    // If we've already seen the opening brace, just continue capturing data
+    if (seenOpenBrace) {
+      effects.enter('magicBlockData');
+      return captureData(code);
+    }
+
+    // Skip whitespace (spaces/tabs) before the data - stay in beforeData
+    // Don't enter magicBlockData token yet until we confirm there's a '{'
+    if (code === codes.space || code === codes.horizontalTab) {
+      return beforeDataWhitespace(code);
+    }
+
+    // Data must start with '{' for valid JSON
+    if (code !== codes.leftCurlyBrace) {
+      effects.exit('magicBlock');
+      return nok(code);
+    }
+
+    // We have '{' - enter data token and start capturing
+    seenOpenBrace = true;
     effects.enter('magicBlockData');
     return captureData(code);
+  }
+
+  /**
+   * Consume whitespace before the data without creating a token.
+   * Uses a temporary token to satisfy micromark's requirement.
+   */
+  function beforeDataWhitespace(code: Code): State | undefined {
+    if (code === null) {
+      effects.exit('magicBlock');
+      return nok(code);
+    }
+
+    if (markdownLineEnding(code)) {
+      return effects.check(nonLazyContinuation, continuationOkBeforeData, after)(code);
+    }
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      // We need to consume this but can't without a token - use magicBlockData
+      // and track that we haven't seen '{' yet
+      effects.enter('magicBlockData');
+      effects.consume(code);
+      return beforeDataWhitespaceContinue;
+    }
+
+    if (code === codes.leftCurlyBrace) {
+      seenOpenBrace = true;
+      effects.enter('magicBlockData');
+      return captureData(code);
+    }
+
+    effects.exit('magicBlock');
+    return nok(code);
+  }
+
+  /**
+   * Continue consuming whitespace or validate the opening brace.
+   */
+  function beforeDataWhitespaceContinue(code: Code): State | undefined {
+    if (code === null) {
+      effects.exit('magicBlockData');
+      effects.exit('magicBlock');
+      return nok(code);
+    }
+
+    if (markdownLineEnding(code)) {
+      effects.exit('magicBlockData');
+      return effects.check(nonLazyContinuation, continuationOk, after)(code);
+    }
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.consume(code);
+      return beforeDataWhitespaceContinue;
+    }
+
+    if (code === codes.leftCurlyBrace) {
+      seenOpenBrace = true;
+      return captureData(code);
+    }
+
+    effects.exit('magicBlockData');
+    effects.exit('magicBlock');
+    return nok(code);
   }
 
   /**
@@ -473,8 +588,68 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
 
     effects.consume(code);
     effects.exit('magicBlockMarkerEnd');
+    // Check for trailing whitespace on the same line
+    return consumeTrailing;
+  }
+
+  /**
+   * Consume trailing whitespace (spaces/tabs) on the same line after [/block].
+   * For concrete flow constructs, we must end at eol/eof or fail.
+   * Trailing whitespace is consumed; other content causes nok (text tokenizer handles it).
+   */
+  function consumeTrailing(code: Code): State | undefined {
+    // End of file - done
+    if (code === null) {
+      effects.exit('magicBlock');
+      return ok(code);
+    }
+
+    // Line ending - done
+    if (markdownLineEnding(code)) {
+      effects.exit('magicBlock');
+      return ok(code);
+    }
+
+    // Space or tab - consume as trailing whitespace
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.enter('magicBlockTrailing');
+      effects.consume(code);
+      return consumeTrailingContinue;
+    }
+
+    // Any other character - fail flow tokenizer, let text tokenizer handle it
     effects.exit('magicBlock');
-    return ok;
+    return nok(code);
+  }
+
+  /**
+   * Continue consuming trailing whitespace.
+   */
+  function consumeTrailingContinue(code: Code): State | undefined {
+    // End of file - done
+    if (code === null) {
+      effects.exit('magicBlockTrailing');
+      effects.exit('magicBlock');
+      return ok(code);
+    }
+
+    // Line ending - done
+    if (markdownLineEnding(code)) {
+      effects.exit('magicBlockTrailing');
+      effects.exit('magicBlock');
+      return ok(code);
+    }
+
+    // More space or tab - keep consuming
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.consume(code);
+      return consumeTrailingContinue;
+    }
+
+    // Non-whitespace after whitespace - fail flow tokenizer
+    effects.exit('magicBlockTrailing');
+    effects.exit('magicBlock');
+    return nok(code);
   }
 
   /**
@@ -495,6 +670,8 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
   // State for tracking JSON content
   let inString = false;
   let escapeNext = false;
+  let blockType = '';
+  let seenOpenBrace = false;
 
   return start;
 
@@ -555,6 +732,7 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     }
 
     if (isTypeChar(code)) {
+      blockType += String.fromCharCode(code as number);
       effects.consume(code);
       return captureType;
     }
@@ -564,6 +742,9 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
 
   function captureType(code: Code): State | undefined {
     if (code === codes.rightSquareBracket) {
+      if (!KNOWN_BLOCK_TYPES.has(blockType)) {
+        return nok(code);
+      }
       effects.exit('magicBlockType');
       effects.enter('magicBlockMarkerTypeEnd');
       effects.consume(code);
@@ -573,6 +754,7 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     }
 
     if (isTypeChar(code)) {
+      blockType += String.fromCharCode(code as number);
       effects.consume(code);
       return captureType;
     }
@@ -582,6 +764,7 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
 
   /**
    * State before data content - handles line endings before entering data token.
+   * Whitespace before '{' is allowed.
    */
   function beforeData(code: Code): State | undefined {
     // Fail on EOF - magic block must be closed
@@ -604,9 +787,87 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
       return expectSlashFromBeforeData;
     }
 
-    // We have content - enter data token and start capturing
+    // If we've already seen the opening brace, just continue capturing data
+    if (seenOpenBrace) {
+      effects.enter('magicBlockData');
+      return captureData(code);
+    }
+
+    // Skip whitespace (spaces/tabs) before the data
+    if (code === codes.space || code === codes.horizontalTab) {
+      return beforeDataWhitespace(code);
+    }
+
+    // Data must start with '{' for valid JSON
+    if (code !== codes.leftCurlyBrace) {
+      return nok(code);
+    }
+
+    // We have '{' - enter data token and start capturing
+    seenOpenBrace = true;
     effects.enter('magicBlockData');
     return captureData(code);
+  }
+
+  /**
+   * Consume whitespace before the data.
+   */
+  function beforeDataWhitespace(code: Code): State | undefined {
+    if (code === null) {
+      return nok(code);
+    }
+
+    if (markdownLineEnding(code)) {
+      effects.enter('magicBlockLineEnding');
+      effects.consume(code);
+      effects.exit('magicBlockLineEnding');
+      return beforeData;
+    }
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.enter('magicBlockData');
+      effects.consume(code);
+      return beforeDataWhitespaceContinue;
+    }
+
+    if (code === codes.leftCurlyBrace) {
+      seenOpenBrace = true;
+      effects.enter('magicBlockData');
+      return captureData(code);
+    }
+
+    return nok(code);
+  }
+
+  /**
+   * Continue consuming whitespace or validate the opening brace.
+   */
+  function beforeDataWhitespaceContinue(code: Code): State | undefined {
+    if (code === null) {
+      effects.exit('magicBlockData');
+      return nok(code);
+    }
+
+    if (markdownLineEnding(code)) {
+      effects.exit('magicBlockData');
+      effects.enter('magicBlockLineEnding');
+      effects.consume(code);
+      effects.exit('magicBlockLineEnding');
+      return beforeData;
+    }
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.consume(code);
+      return beforeDataWhitespaceContinue;
+    }
+
+    if (code === codes.leftCurlyBrace) {
+      seenOpenBrace = true;
+      return captureData(code);
+    }
+
+    effects.exit('magicBlockData');
+    return nok(code);
   }
 
   /**
