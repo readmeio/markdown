@@ -24,7 +24,7 @@ import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
-import magicBlockTransformer from '../processor/transform/mdxish/magic-block-transformer';
+import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
@@ -34,7 +34,10 @@ import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malfor
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
-import { preserveBooleanProperties, restoreBooleanProperties } from '../processor/transform/mdxish/retain-boolean-attributes';
+import {
+  preserveBooleanProperties,
+  restoreBooleanProperties,
+} from '../processor/transform/mdxish/retain-boolean-attributes';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -114,10 +117,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
  * Converts an Mdast to a Markdown string.
  */
 export function mdxishMdastToMd(mdast: MdastRoot) {
-  const md = unified().use(remarkGfm).use(compilers).use(remarkStringify, {
-    bullet: '-',
-    emphasis: '_',
-  }).stringify(mdast);
+  const md = unified()
+    .use(remarkGfm)
+    .use(compilers)
+    .use(remarkStringify, {
+      bullet: '-',
+      emphasis: '_',
+    })
+    .stringify(mdast);
   return md;
 }
 

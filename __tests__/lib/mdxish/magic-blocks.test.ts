@@ -855,8 +855,9 @@ ${JSON.stringify(
       expect(() => mdxish(md)).not.toThrow();
 
       const ast = mdxish(md);
-      // Should produce empty output since the format is invalid
-      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+      // Should produce a placeholder image element so the editor can show "Choose Image" UI
+      const images = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(images).toHaveLength(1);
     });
 
     it('should gracefully handle image block with non-array images', () => {
@@ -880,7 +881,9 @@ ${JSON.stringify(
       expect(() => mdxish(md)).not.toThrow();
 
       const ast = mdxish(md);
-      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+      // Should produce a placeholder code element so the editor can show empty code block
+      const codeBlocks = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'pre');
+      expect(codeBlocks).toHaveLength(1);
     });
 
     it('should gracefully handle code block with non-array codes', () => {
@@ -929,7 +932,11 @@ ${JSON.stringify(
       expect(() => mdxish(md)).not.toThrow();
 
       const ast = mdxish(md);
-      expect(ast.children.filter(c => c.type === 'element')).toHaveLength(0);
+      const embeds = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'embed');
+      expect(embeds).toHaveLength(1);
+      // Verify the placeholder has empty url property
+      const embedElement = embeds[0] as Element;
+      expect(embedElement.properties?.url).toBe('');
     });
 
     it('should gracefully handle html block with missing html property', () => {
@@ -1001,6 +1008,74 @@ ${JSON.stringify(
       const ast = mdxish(md);
       const lists = ast.children.filter(c => c.type === 'element' && c.tagName === 'ul');
       expect(lists).toHaveLength(1);
+    });
+  });
+
+  describe('empty data handling', () => {
+    it('should return placeholder image for image block with empty data', () => {
+      const md = `[block:image]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const images = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'img');
+      expect(images).toHaveLength(1);
+    });
+
+    it('should return placeholder code block for code block with empty data', () => {
+      const md = `[block:code]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const codeBlocks = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'pre');
+      expect(codeBlocks).toHaveLength(1);
+    });
+
+    it('should return placeholder embed for embed block with empty data', () => {
+      const md = `[block:embed]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const embeds = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'embed');
+      expect(embeds).toHaveLength(1);
+    });
+
+    it('should return placeholder recipe for recipe block with empty data', () => {
+      const md = `[block:recipe]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const recipes = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'Recipe');
+      expect(recipes).toHaveLength(1);
+    });
+
+    it('should return placeholder callout for callout block with empty data', () => {
+      const md = `[block:callout]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const callouts = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'Callout');
+      expect(callouts).toHaveLength(1);
+    });
+
+    it('should return placeholder table for parameters block with empty data', () => {
+      const md = `[block:parameters]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const tables = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'table');
+      expect(tables).toHaveLength(1);
     });
   });
 });

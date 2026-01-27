@@ -5,7 +5,20 @@
  * parsed `magicBlock` nodes from the micromark tokenizer instead of
  * finding placeholder tokens.
  */
-import type { MagicBlockNode } from '../../../lib/mdast-util/magic-block/types';
+import type {
+  MdastNode,
+  MagicBlockJson,
+  CodeBlockJson,
+  ApiHeaderJson,
+  ImageBlockJson,
+  CalloutJson,
+  ParametersJson,
+  EmbedJson,
+  HtmlJson,
+  RecipeJson,
+  MagicBlockTransformerOptions,
+} from './types';
+import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -15,79 +28,16 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
-import { toAttributes } from '../../utils';
+import { toAttributes } from '../../../utils';
 
-interface MdastNode {
-  [key: string]: unknown;
-  children?: MdastNode[];
-  type: string;
-}
-
-/**
- * Base interface for magic block JSON data.
- */
-interface MagicBlockJson {
-  [key: string]: unknown;
-  sidebar?: boolean;
-}
-
-interface CodeBlockJson extends MagicBlockJson {
-  codes: { code: string; language: string; name?: string }[];
-}
-
-interface ApiHeaderJson extends MagicBlockJson {
-  level?: number;
-  title?: string;
-}
-
-interface ImageBlockJson extends MagicBlockJson {
-  images: {
-    align?: string;
-    border?: boolean;
-    caption?: string;
-    image?: [string, string?, string?];
-    sizing?: string;
-  }[];
-}
-
-interface CalloutJson extends MagicBlockJson {
-  body?: string;
-  icon?: string;
-  title?: string;
-  type?: string | [string, string];
-}
-
-interface ParametersJson extends MagicBlockJson {
-  align?: string[];
-  cols: number;
-  data: Record<string, string>;
-  rows: number;
-}
-
-interface EmbedJson extends MagicBlockJson {
-  html?: boolean;
-  provider?: string;
-  title?: string | null;
-  url: string;
-}
-
-interface HtmlJson extends MagicBlockJson {
-  html: string;
-}
-
-interface RecipeJson extends MagicBlockJson {
-  backgroundColor?: string;
-  emoji?: string;
-  id?: string;
-  link?: string;
-  slug: string;
-  title: string;
-}
-
-export interface MagicBlockTransformerOptions {
-  compatibilityMode?: boolean;
-  safeMode?: boolean;
-}
+import {
+  EMPTY_IMAGE_PLACEHOLDER,
+  EMPTY_EMBED_PLACEHOLDER,
+  EMPTY_CODE_PLACEHOLDER,
+  EMPTY_CALLOUT_PLACEHOLDER,
+  EMPTY_TABLE_PLACEHOLDER,
+  EMPTY_RECIPE_PLACEHOLDER,
+} from './placeholder';
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set.
@@ -150,12 +100,35 @@ function transformMagicBlock(
 ): MdastNode[] {
   const { compatibilityMode = false, safeMode = false } = options;
 
-  if (Object.keys(data).length < 1) return [];
+  // Handle empty data by returning placeholder nodes for known block types
+  // This allows the editor to show appropriate placeholder UI instead of nothing
+  if (Object.keys(data).length < 1) {
+    switch (blockType) {
+      case 'image':
+        return [EMPTY_IMAGE_PLACEHOLDER];
+      case 'embed':
+        return [EMPTY_EMBED_PLACEHOLDER];
+      case 'code':
+        return [EMPTY_CODE_PLACEHOLDER];
+      case 'callout':
+        return [EMPTY_CALLOUT_PLACEHOLDER];
+      case 'parameters':
+      case 'table':
+        return [EMPTY_TABLE_PLACEHOLDER];
+      case 'recipe':
+      case 'tutorial-tile':
+        return [EMPTY_RECIPE_PLACEHOLDER];
+      default:
+        return [];
+    }
+  }
 
   switch (blockType) {
     case 'code': {
       const codeJson = data as CodeBlockJson;
-      if (!codeJson.codes || !Array.isArray(codeJson.codes)) return [];
+      if (!codeJson.codes || !Array.isArray(codeJson.codes)) {
+        return [wrapPinnedBlocks(EMPTY_CODE_PLACEHOLDER satisfies MdastNode, data)];
+      }
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
@@ -193,9 +166,13 @@ function transformMagicBlock(
 
     case 'image': {
       const imageJson = data as ImageBlockJson;
-      if (!imageJson.images || !Array.isArray(imageJson.images)) return [];
+      if (!imageJson.images || !Array.isArray(imageJson.images)) {
+        return [wrapPinnedBlocks(EMPTY_IMAGE_PLACEHOLDER satisfies MdastNode, data)];
+      }
       const imgData = imageJson.images.find(i => i.image);
-      if (!imgData?.image) return [];
+      if (!imgData?.image) {
+        return [wrapPinnedBlocks(EMPTY_IMAGE_PLACEHOLDER satisfies MdastNode, data)];
+      }
 
       const [url, title, alt] = imgData.image;
       const block: MdastNode = {
@@ -330,7 +307,9 @@ function transformMagicBlock(
 
     case 'embed': {
       const embedJson = data as EmbedJson;
-      if (!embedJson.url) return [];
+      if (!embedJson.url) {
+        return [wrapPinnedBlocks(EMPTY_EMBED_PLACEHOLDER satisfies MdastNode, data)];
+      }
       const { html, title, url } = embedJson;
       try {
         embedJson.provider = new URL(url).hostname
