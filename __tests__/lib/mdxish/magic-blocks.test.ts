@@ -1003,6 +1003,102 @@ asdasdasd
       expect(paragraphs).toHaveLength(3);
       expect(JSON.stringify(paragraphs[0])).toContain('[block:callout]');
     });
+
+    it('should handle unclosed block (no [/block])', () => {
+      const md = '[block:callout]{"type":"info"}';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle missing closing bracket on opening marker', () => {
+      const md = '[block:callout{"type":"info"}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle invalid/malformed JSON gracefully', () => {
+      const md = '[block:callout]{type: info, broken json}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle nested block markers', () => {
+      const md = '[block:callout]{"body":"[block:code]{}[/block]"}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle partial closing marker [/bloc]', () => {
+      const md = '[block:callout]{}[/bloc]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle partial closing marker [/]', () => {
+      const md = '[block:callout]{}[/]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle block with only whitespace before JSON', () => {
+      const md = '[block:callout]   {}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      // Should parse as a valid callout
+      const callouts = ast.children.filter(c => c.type === 'element' && (c as Element).tagName === 'Callout');
+      expect(callouts).toHaveLength(1);
+    });
+
+    it('should handle block type with numbers', () => {
+      const md = '[block:type123]{}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle empty string as block type', () => {
+      const md = '[block:]{}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle special characters after block marker', () => {
+      const md = '[block:callout]!@#$%^&*(){}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle JSON with escaped quotes', () => {
+      const md = '[block:callout]{"body":"say \\"hello\\""}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle JSON with unicode', () => {
+      const md = '[block:callout]{"body":"🎉 emoji test 日本語"}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle very long content without crashing', () => {
+      const longContent = 'a'.repeat(10000);
+      const md = `[block:callout]{"body":"${longContent}"}[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle multiple blocks in sequence', () => {
+      const md = '[block:callout]{}[/block][block:callout]{}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should handle block immediately followed by another block', () => {
+      const md = `[block:callout]{"type":"info"}[/block]
+[block:code]{"codes":[{"code":"test","language":"js"}]}[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
   });
 
   describe('trailing content after [/block]', () => {
