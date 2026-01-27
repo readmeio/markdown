@@ -106,17 +106,38 @@ Last text
     expect(output).toMatchSnapshot();
   });
 
-  it('keeps tight sibling code blocks intact without inserting extra newlines', async () => {
-    const input = `
+  describe('code block sibling handling', () => {
+    it('keeps tight sibling code blocks intact without inserting extra newlines', async () => {
+      const input = `
 \`\`\`
 First code block
 \`\`\`
 \`\`\`
 Second code block
 \`\`\`
-`;
-    const output = await stripComments(input);
-    expect(output).toBe(input.trim());
+  `;
+      const output = await stripComments(input);
+      expect(output).toBe(input.trim());
+    });
+
+    it('retains newlines around code blocks that are not tight siblings', async () => {
+      const input = `
+\`\`\`
+Thing
+\`\`\`
+
+\`\`\`
+Thing
+\`\`\`
+
+\`\`\`
+Thing
+\`\`\`
+  `;
+      const output = await stripComments(input);
+      expect(output).toBe(input.trim());
+    });
+
   });
 
   it('supports a magic block as the first line of the document', async () => {
