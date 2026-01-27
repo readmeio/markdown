@@ -49,7 +49,7 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
                     right.position &&
                     right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
                   
-                    // 0 = no newline between blocks
+                  // 0 = no newline between blocks
                   return isTight ? 0 : undefined;
                 }
                 return undefined;
