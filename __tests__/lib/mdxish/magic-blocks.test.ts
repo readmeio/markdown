@@ -1,7 +1,4 @@
 import type { Element } from 'hast';
-import type { List, Root as MdastRoot } from 'mdast';
-
-import * as rdmd from '@readme/markdown-legacy';
 
 import { mdxish } from '../../../lib';
 
