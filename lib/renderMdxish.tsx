@@ -22,7 +22,7 @@ export type { RenderOpts as RenderMdxishOpts };
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
-  const { components: userComponents = {}, ...contextOpts } = opts;
+  const { components: userComponents = {}, variables, ...contextOpts } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -34,9 +34,9 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
   const processor = createRehypeReactProcessor(componentsForRehype);
   const content = processor.stringify(tree) as React.ReactNode;
 
-  const tocHast = headings.length > 0 ? tocToHast(headings) : null;
+  const tocHast = headings.length > 0 ? tocToHast(headings, variables) : null;
 
-  return buildRMDXModule(content, headings, tocHast, contextOpts);
+  return buildRMDXModule(content, headings, tocHast, { ...contextOpts, variables });
 };
 
 export default renderMdxish;

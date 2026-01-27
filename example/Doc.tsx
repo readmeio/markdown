@@ -57,6 +57,7 @@ const Doc = () => {
   const [searchParams] = useSearchParams();
   const ci = searchParams.has('ci');
   const legacy = searchParams.has('legacy');
+  const mdxish = searchParams.has('mdxish');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
@@ -93,12 +94,15 @@ const Doc = () => {
       }
     };
 
-    if (legacy) {
+    if (mdxish) {
+      setError(() => null);
+      setContent(mdx.renderMdxish(mdx.mdxish(doc)));
+    } else if (legacy) {
       setLegacyContent(rdmd.react(doc));
     } else {
       render();
     }
-  }, [doc, lazyImages, safeMode, copyButtons, legacy]);
+  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish]);
 
   useEffect(() => {
     if (error) setError(null);

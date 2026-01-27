@@ -75,6 +75,36 @@ Last text
     expect(output).toMatchSnapshot();
   });
 
+  it('removes both HTML and JSX comments with mdxish option', async () => {
+    const input = `
+# Title
+
+<!-- HTML comment -->
+
+Some text.
+
+{/* JSX comment */}
+
+More text.<!-- inline HTML comment -->{/* inline JSX comment */}
+
+\`{/* Comment in code element should NOT be removed */}\`
+\`<!-- Code block HTML comment should NOT be removed -->\`
+
+{/**
+ * Multiline JSX comment.
+ */}
+
+<!--
+  Multiline HTML comment.
+-->
+
+Last text
+    `;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toMatchSnapshot();
+  });
+
   it('preserves non-mdx variables', async () => {
     const input = `Hello
 <!-- should be removed -->
