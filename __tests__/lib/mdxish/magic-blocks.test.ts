@@ -979,4 +979,28 @@ ${JSON.stringify(
       expect(() => mdxish(md)).not.toThrow();
     });
   });
+
+  describe('malformed syntax handling', () => {
+    it('should treat [block:] (empty type name) as plain text', () => {
+      const md = `[block:]
+{}
+[/block]`;
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const magicBlocks = ast.children.filter(c => c.type === 'element' && c.tagName?.startsWith('MagicBlock'));
+      expect(magicBlocks).toHaveLength(0);
+      const textContent = ast.children.filter(c => c.type === 'text' || c.type === 'element');
+      expect(textContent.length).toBeGreaterThan(0);
+    });
+
+    it('should treat [block:] in a list as plain text', () => {
+      const md = '- [block:]{}[/block]';
+
+      expect(() => mdxish(md)).not.toThrow();
+      const ast = mdxish(md);
+      const lists = ast.children.filter(c => c.type === 'element' && c.tagName === 'ul');
+      expect(lists).toHaveLength(1);
+    });
+  });
 });
