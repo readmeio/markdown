@@ -1,12 +1,58 @@
 import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Node, Parent, RootContent } from 'mdast';
+import type { Image, Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import { visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { getAttrs } from '../../utils';
+
+/**
+ * Magic block image node structure (from magicBlockTransformer)
+ */
+interface MagicBlockImage extends Image {
+  data?: {
+    hProperties?: {
+      align?: string;
+      border?: string;
+      width?: string;
+    };
+  };
+}
+
+/**
+ * Magic block embed node structure (from magicBlockTransformer)
+ */
+interface MagicBlockEmbed extends Node {
+  children?: RootContent[];
+  data?: {
+    hName?: string;
+    hProperties?: {
+      favicon?: string;
+      href?: string;
+      html?: string;
+      image?: string;
+      provider?: string;
+      providerName?: string;
+      providerUrl?: string;
+      title?: string;
+      url?: string;
+    };
+  };
+  type: 'embed';
+}
+
+/**
+ * Figure node that may contain an image (from magicBlockTransformer with caption)
+ */
+interface FigureNode extends Node {
+  children: RootContent[];
+  data?: {
+    hName?: string;
+  };
+  type: 'figure';
+}
 
 interface ImageAttrs {
   align?: string;
@@ -145,6 +191,69 @@ const transformRecipe = (jsx: MdxJsxFlowElement): Recipe => {
   };
 };
 
+/**
+ * Transform a magic block image node into an ImageBlock.
+ * Magic block images have structure: { type: 'image', url, title, alt, data.hProperties }
+ */
+const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
+  const { alt = '', data, position, title = '', url = '' } = node;
+  const hProps = data?.hProperties || {};
+  const { align, border, width } = hProps;
+
+  const hProperties: ImageBlock['data']['hProperties'] = {
+    alt,
+    src: url,
+    title,
+    ...(align && { align }),
+    ...(border && { border }),
+    ...(width && { width }),
+  };
+
+  return {
+    type: NodeTypes.imageBlock,
+    align,
+    alt,
+    border,
+    src: url,
+    title,
+    width,
+    data: {
+      hName: 'img',
+      hProperties,
+    },
+    position,
+  };
+};
+
+/**
+ * Transform a magic block embed node into an EmbedBlock.
+ * Magic block embeds have structure: { type: 'embed', children, data.hProperties }
+ */
+const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
+  const { data, position } = node;
+  const hProps = data?.hProperties || {};
+  const { favicon, html, image, providerName, providerUrl, title = '', url = '' } = hProps;
+
+  return {
+    type: NodeTypes.embedBlock,
+    title,
+    url,
+    data: {
+      hName: 'embed',
+      hProperties: {
+        title,
+        url,
+        ...(favicon && { favicon }),
+        ...(html && { html }),
+        ...(image && { image }),
+        ...(providerName && { providerName }),
+        ...(providerUrl && { providerUrl }),
+      },
+    },
+    position,
+  };
+};
+
 type ComponentTransformer = (jsx: MdxJsxFlowElement) => RootContent;
 
 const COMPONENT_MAP: Record<string, ComponentTransformer> = {
@@ -155,15 +264,18 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
 };
 
 /**
- * Transform mdxJsxFlowElement nodes into proper MDAST node types.
+ * Transform mdxJsxFlowElement nodes and magic block nodes into proper MDAST node types.
  *
- * This transformer runs after mdxishComponentBlocks and converts JSX component
- * elements (Image, Callout, Embed, Recipe) into their corresponding MDAST types
- * (image-block, rdme-callout, embed-block, recipe).
+ * This transformer runs after mdxishComponentBlocks and converts:
+ * - JSX component elements (Image, Callout, Embed, Recipe) into their corresponding MDAST types
+ * - Magic block image nodes (type: 'image') into image-block
+ * - Magic block embed nodes (type: 'embed') into embed-block
+ * - Figure nodes containing images (from magic blocks with captions) - transforms the inner image
  *
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
+  // Transform JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
 
@@ -174,6 +286,43 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
 
     // Replace the JSX node with the MDAST node
     (parent.children as Node[])[index] = newNode;
+  });
+
+  // Transform magic block images (type: 'image') to image-block
+  // Note: Standard markdown images are wrapped in paragraphs and handled by imageTransformer
+  // Magic block images are direct children of root, so we handle them here
+  visit(tree, 'image', (node: MagicBlockImage, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return SKIP;
+
+    // Skip images inside paragraphs (those are standard markdown images handled by imageTransformer)
+    if (parent.type === 'paragraph') return SKIP;
+
+    const newNode = transformMagicBlockImage(node);
+    (parent.children as Node[])[index] = newNode;
+
+    return SKIP;
+  });
+
+  // Transform magic block embeds (type: 'embed') to embed-block
+  visit(tree, 'embed', (node: MagicBlockEmbed, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return SKIP;
+
+    const newNode = transformMagicBlockEmbed(node);
+    (parent.children as Node[])[index] = newNode;
+
+    return SKIP;
+  });
+
+  // Transform images inside figure nodes (magic blocks with captions)
+  const isFigure = (node: Node): node is FigureNode => node.type === 'figure';
+  visit(tree, isFigure, node => {
+    // Find and transform the image child
+    node.children = node.children.map(child => {
+      if (child.type === 'image') {
+        return transformMagicBlockImage(child as MagicBlockImage);
+      }
+      return child;
+    });
   });
 
   return tree;

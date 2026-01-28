@@ -153,6 +153,163 @@ This is a warning message.
     });
   });
 
+  describe('magic blocks', () => {
+    const processWithNewTypes = (md: string): Root => {
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      return processor.runSync(processor.parse(parserReadyContent)) as Root;
+    };
+
+    it('should transform magic block image to image-block node', () => {
+      // Magic block images are now transformed to 'image-block' type
+      // Magic block image array format: [url, title, alt]
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "Image title",
+        "Alt text"
+      ],
+      "align": "center"
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.src).toBe('https://example.com/photo.jpg');
+      expect(imageNode.title).toBe('Image title');
+      expect(imageNode.alt).toBe('Alt text');
+      expect(imageNode.align).toBe('center');
+      expect(imageNode.data?.hName).toBe('img');
+      expect(imageNode.data?.hProperties?.src).toBe('https://example.com/photo.jpg');
+    });
+
+    it('should handle mix of magic blocks and JSX components', () => {
+      // Both magic block images and JSX <Image /> become 'image-block' type
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/magic.jpg",
+        "Magic image title",
+        "Magic alt"
+      ]
+    }
+  ]
+}
+[/block]
+
+<Image src="https://example.com/jsx.jpg" alt="JSX image" />
+
+<Callout icon="📘" theme="info">
+Some callout content
+</Callout>`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(3);
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock); // Magic block becomes 'image-block'
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock); // JSX becomes 'image-block'
+      expect(ast.children[2].type).toBe(NodeTypes.callout);
+
+      const magicImage = ast.children[0] as ImageBlock;
+      expect(magicImage.src).toBe('https://example.com/magic.jpg');
+      expect(magicImage.data?.hProperties?.src).toBe('https://example.com/magic.jpg');
+
+      const jsxImage = ast.children[1] as ImageBlock;
+      expect(jsxImage.data?.hProperties?.src).toBe('https://example.com/jsx.jpg');
+    });
+
+    it('should transform magic block embed to embed-block node', () => {
+      const md = `[block:embed]
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "title": "Never Gonna Give You Up",
+  "html": "<iframe></iframe>"
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.embedBlock);
+
+      const embedNode = ast.children[0] as EmbedBlock;
+      expect(embedNode.url).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      expect(embedNode.title).toBe('Never Gonna Give You Up');
+      expect(embedNode.data?.hName).toBe('embed');
+      expect(embedNode.data?.hProperties?.url).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    });
+
+    it('should transform magic block recipe to recipe node', () => {
+      const md = `[block:tutorial-tile]
+{
+  "slug": "my-recipe",
+  "title": "My Recipe"
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.recipe);
+
+      const recipeNode = ast.children[0] as Recipe;
+      expect(recipeNode.slug).toBe('my-recipe');
+      expect(recipeNode.title).toBe('My Recipe');
+    });
+
+    it('should handle magic block callout (blockquote syntax)', () => {
+      const md = `> 📘 Info Title
+>
+> This is callout content.`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+
+      const calloutNode = ast.children[0] as Callout;
+      expect(calloutNode.data?.hProperties?.icon).toBe('📘');
+      expect(calloutNode.data?.hProperties?.theme).toBe('info');
+    });
+
+    it('should transform magic block callout ([block:callout] syntax) to rdme-callout node', () => {
+      const md = `[block:callout]
+{
+  "type": "info",
+  "title": "Info Title",
+  "body": "This is the callout body."
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+
+      const calloutNode = ast.children[0] as Callout;
+      expect(calloutNode.data?.hProperties?.icon).toBe('📘');
+      expect(calloutNode.data?.hProperties?.theme).toBe('info');
+      expect(calloutNode.data?.hName).toBe('Callout');
+    });
+
+    it('should handle basic markdown image', () => {
+      const md = '![Alt text](https://example.com/image.jpg)';
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      // Basic markdown images become image-block via imageTransformer
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.src).toBe('https://example.com/image.jpg');
+      expect(imageNode.alt).toBe('Alt text');
+    });
+  });
+
   describe('with newEditorTypes disabled (default)', () => {
     const processWithoutNewTypes = (md: string): Root => {
       const { processor, parserReadyContent } = mdxishAstProcessor(md);
