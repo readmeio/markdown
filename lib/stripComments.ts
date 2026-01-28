@@ -57,8 +57,16 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
               // Preserve tight sibling code blocks without adding extra newlines between them.
               // Our markdown renderer uses this to group these code blocks into a tabbed interface.
               (left, right) => {
-                // 0 = no newline between blocks
-                return left.type === 'code' && right.type === 'code' ? 0 : undefined;
+                if (left.type === 'code' && right.type === 'code') {
+                  const isTight =
+                    left.position &&
+                    right.position &&
+                    right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
+                  
+                  // 0 = no newline between blocks
+                  return isTight ? 0 : undefined;
+                }
+                return undefined;
               },
             ],
           },
