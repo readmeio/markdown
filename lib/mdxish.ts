@@ -27,6 +27,7 @@ import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressi
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
+import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
@@ -48,13 +49,14 @@ import { loadComponents } from './utils/mdxish/mdxish-load-components';
 export interface MdxishOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
+  newEditorTypes?: boolean;
   useTailwind?: boolean;
 }
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const { components: userComponents = {}, jsxContext = {}, useTailwind } = opts;
+  const { components: userComponents = {}, jsxContext = {}, newEditorTypes = false, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -97,6 +99,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
+    .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
     .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text (can't rely on remarkMdx)
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
