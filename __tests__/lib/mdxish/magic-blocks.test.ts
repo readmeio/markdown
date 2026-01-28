@@ -261,7 +261,7 @@ ${JSON.stringify(
 
     it('should not wrap code-tabs in paragraph tags', () => {
       const md = `Some text before
-  
+
   [block:code]
   {
     "codes": [
@@ -276,7 +276,7 @@ ${JSON.stringify(
     ]
   }
   [/block]
-  
+
   Some text after`;
 
       const ast = mdxish(md);
@@ -449,5 +449,28 @@ ${JSON.stringify(
       expect(bodyChildren.some(child => child.tagName === 'strong')).toBe(true);
       expect(bodyChildren.some(child => child.tagName === 'code')).toBe(true);
     });
+
+    it('should correctly parse callout blocks where there is special characters in the content', () => {
+      const md = `[block:callout]
+{
+  "type": "info",
+  "title": "This is the recommended method for authentication",
+  "body": "This provides a higher level of security, versus [Auth Token 2.0 Verification](doc:auth-token-20-verification-amd). \n"
+}
+[/block]
+      `;
+
+      const ast = mdxish(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('element');
+
+      const calloutElement = ast.children[0] as Element;
+      expect(calloutElement.tagName).toBe('Callout');
+      expect(calloutElement.properties.type).toBe('info');
+      expect(calloutElement.properties.theme).toBe('info');
+      expect(calloutElement.properties.icon).toBe('📘');
+      expect(calloutElement.children).toHaveLength(2);
+    })
   });
 });

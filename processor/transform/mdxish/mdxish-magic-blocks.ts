@@ -164,6 +164,60 @@ const parseBlock = (text: string): MdastNode[] => {
  * @param options - Parsing options for compatibility and error handling
  * @returns Array of MDAST nodes representing the parsed block
  */
+function sanitizeMagicBlockJson(jsonStr: string): string {
+  // Recover from legacy blocks that contain raw newlines/tabs inside JSON strings.
+  let out = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < jsonStr.length; i += 1) {
+    const ch = jsonStr[i];
+
+    if (escaped) {
+      out += ch;
+      escaped = false;
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    if (ch === '\\') {
+      out += ch;
+      escaped = true;
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      out += ch;
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    if (inString) {
+      if (ch === '\n') {
+        out += '\\n';
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (ch === '\r') {
+        out += '\\r';
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (ch === '\t') {
+        out += '\\t';
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+    }
+
+    out += ch;
+  }
+
+  return out;
+}
+
 function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): MdastNode[] {
   const { alwaysThrow = false, compatibilityMode = false, safeMode = false } = options;
 
@@ -178,10 +232,15 @@ function parseMagicBlock(raw: string, options: ParseMagicBlockOptions = {}): Mda
   try {
     json = JSON.parse(jsonStr);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Invalid Magic Block JSON:', err);
-    if (alwaysThrow) throw new Error('Invalid Magic Block JSON');
-    return [];
+    const sanitized = sanitizeMagicBlockJson(jsonStr);
+    try {
+      json = JSON.parse(sanitized);
+    } catch (retryErr) {
+      // eslint-disable-next-line no-console
+      console.error('Invalid Magic Block JSON:', retryErr);
+      if (alwaysThrow) throw new Error('Invalid Magic Block JSON');
+      return [];
+    }
   }
 
   if (Object.keys(json).length < 1) return [];
