@@ -1,4 +1,6 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
+import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxExpression } from 'micromark-extension-mdx-expression';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
@@ -11,15 +13,27 @@ import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBloc
 
 interface Opts {
   mdx?: boolean;
+  mdxish?: boolean;
 }
 
 /**
  * Removes Markdown and MDX comments.
  */
-async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
+async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
   const { replaced, blocks } = extractMagicBlocks(doc);
 
-  const processor = unified()
+  const processor = unified();
+
+  // we still require these two extensions because:
+  // 1. we can rely on remarkMdx to parse MDXish
+  // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
+  if (mdxish) {
+    processor
+      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()]);
+  }
+
+  processor
     .use(remarkParse)
     .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
@@ -43,8 +57,16 @@ async function stripComments(doc: string, { mdx }: Opts = {}): Promise<string> {
               // Preserve tight sibling code blocks without adding extra newlines between them.
               // Our markdown renderer uses this to group these code blocks into a tabbed interface.
               (left, right) => {
-                // 0 = no newline between blocks
-                return left.type === 'code' && right.type === 'code' ? 0 : undefined;
+                if (left.type === 'code' && right.type === 'code') {
+                  const isTight =
+                    left.position &&
+                    right.position &&
+                    right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
+                  
+                  // 0 = no newline between blocks
+                  return isTight ? 0 : undefined;
+                }
+                return undefined;
               },
             ],
           },
