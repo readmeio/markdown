@@ -53,6 +53,179 @@ function isTypeChar(code: Code): boolean {
 }
 
 /**
+ * Tracks JSON string parsing state for proper handling of brackets inside strings.
+ */
+interface JsonParserState {
+  escapeNext: boolean;
+  inString: boolean;
+}
+
+/**
+ * Creates the opening marker state machine: [block:
+ * Returns the first state function to start parsing.
+ */
+function createOpeningMarkerParser(effects: Effects, nok: State, onComplete: State): State {
+  const expectB = (code: Code): State | undefined => {
+    if (code !== codes.lowercaseB) return nok(code);
+    effects.consume(code);
+    return expectL;
+  };
+
+  const expectL = (code: Code): State | undefined => {
+    if (code !== codes.lowercaseL) return nok(code);
+    effects.consume(code);
+    return expectO;
+  };
+
+  const expectO = (code: Code): State | undefined => {
+    if (code !== codes.lowercaseO) return nok(code);
+    effects.consume(code);
+    return expectC;
+  };
+
+  const expectC = (code: Code): State | undefined => {
+    if (code !== codes.lowercaseC) return nok(code);
+    effects.consume(code);
+    return expectK;
+  };
+
+  const expectK = (code: Code): State | undefined => {
+    if (code !== codes.lowercaseK) return nok(code);
+    effects.consume(code);
+    return expectColon;
+  };
+
+  const expectColon = (code: Code): State | undefined => {
+    if (code !== codes.colon) return nok(code);
+    effects.consume(code);
+    effects.exit('magicBlockMarkerStart');
+    effects.enter('magicBlockType');
+    return onComplete;
+  };
+
+  return expectB;
+}
+
+/**
+ * Creates the type capture state machine.
+ * Captures type characters until ] and validates against known types.
+ */
+function createTypeCaptureParser(
+  effects: Effects,
+  nok: State,
+  onComplete: State,
+  blockTypeRef: { value: string },
+): { first: State; remaining: State } {
+  const captureTypeFirst = (code: Code): State | undefined => {
+    // Reject empty type name [block:]
+    if (code === codes.rightSquareBracket) {
+      return nok(code);
+    }
+
+    if (isTypeChar(code)) {
+      blockTypeRef.value += String.fromCharCode(code as number);
+      effects.consume(code);
+      return captureType;
+    }
+
+    return nok(code);
+  };
+
+  const captureType = (code: Code): State | undefined => {
+    if (code === codes.rightSquareBracket) {
+      if (!KNOWN_BLOCK_TYPES.has(blockTypeRef.value)) {
+        return nok(code);
+      }
+      effects.exit('magicBlockType');
+      effects.enter('magicBlockMarkerTypeEnd');
+      effects.consume(code);
+      effects.exit('magicBlockMarkerTypeEnd');
+      return onComplete;
+    }
+
+    if (isTypeChar(code)) {
+      blockTypeRef.value += String.fromCharCode(code as number);
+      effects.consume(code);
+      return captureType;
+    }
+
+    return nok(code);
+  };
+
+  return { first: captureTypeFirst, remaining: captureType };
+}
+
+/**
+ * Creates the closing marker state machine: /block]
+ * Handles partial matches by calling onMismatch to fall back to data capture.
+ */
+function createClosingMarkerParser(
+  effects: Effects,
+  onSuccess: State,
+  onMismatch: (code: Code) => State | undefined,
+  onEof: State,
+  jsonState?: JsonParserState,
+): { expectSlash: State } {
+  const handleMismatch = (code: Code): State | undefined => {
+    if (jsonState && code === codes.quotationMark) {
+      jsonState.inString = true;
+    }
+    return onMismatch(code);
+  };
+
+  const expectSlash = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.slash) return handleMismatch(code);
+    effects.consume(code);
+    return expectB;
+  };
+
+  const expectB = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.lowercaseB) return handleMismatch(code);
+    effects.consume(code);
+    return expectL;
+  };
+
+  const expectL = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.lowercaseL) return handleMismatch(code);
+    effects.consume(code);
+    return expectO;
+  };
+
+  const expectO = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.lowercaseO) return handleMismatch(code);
+    effects.consume(code);
+    return expectC;
+  };
+
+  const expectC = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.lowercaseC) return handleMismatch(code);
+    effects.consume(code);
+    return expectK;
+  };
+
+  const expectK = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.lowercaseK) return handleMismatch(code);
+    effects.consume(code);
+    return expectBracket;
+  };
+
+  const expectBracket = (code: Code): State | undefined => {
+    if (code === null) return onEof(code);
+    if (code !== codes.rightSquareBracket) return handleMismatch(code);
+    effects.consume(code);
+    return onSuccess;
+  };
+
+  return { expectSlash };
+}
+
+/**
  * Partial construct for checking non-lazy continuation.
  * This is used by the flow tokenizer to check if we can continue
  * parsing on the next line.
@@ -129,10 +302,13 @@ export function magicBlock(): Extension {
  */
 function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   // State for tracking JSON content
-  let inString = false;
-  let escapeNext = false;
-  let blockType = '';
+  const jsonState: JsonParserState = { escapeNext: false, inString: false };
+  const blockTypeRef = { value: '' };
   let seenOpenBrace = false;
+
+  // Create shared parsers for opening marker and type capture
+  const typeParser = createTypeCaptureParser(effects, nok, beforeData, blockTypeRef);
+  const openingMarkerParser = createOpeningMarkerParser(effects, nok, typeParser.first);
 
   return start;
 
@@ -142,85 +318,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     effects.enter('magicBlock');
     effects.enter('magicBlockMarkerStart');
     effects.consume(code);
-    return expectB;
-  }
-
-  function expectB(code: Code): State | undefined {
-    if (code !== codes.lowercaseB) return nok(code);
-    effects.consume(code);
-    return expectL;
-  }
-
-  function expectL(code: Code): State | undefined {
-    if (code !== codes.lowercaseL) return nok(code);
-    effects.consume(code);
-    return expectO;
-  }
-
-  function expectO(code: Code): State | undefined {
-    if (code !== codes.lowercaseO) return nok(code);
-    effects.consume(code);
-    return expectC;
-  }
-
-  function expectC(code: Code): State | undefined {
-    if (code !== codes.lowercaseC) return nok(code);
-    effects.consume(code);
-    return expectK;
-  }
-
-  function expectK(code: Code): State | undefined {
-    if (code !== codes.lowercaseK) return nok(code);
-    effects.consume(code);
-    return expectColon;
-  }
-
-  function expectColon(code: Code): State | undefined {
-    if (code !== codes.colon) return nok(code);
-    effects.consume(code);
-    effects.exit('magicBlockMarkerStart');
-    effects.enter('magicBlockType');
-    return captureTypeFirst;
-  }
-
-  /**
-   * First character of the type name must have at least one valid character.
-   * Rejects [block:] (empty type name) as malformed syntax.
-   */
-  function captureTypeFirst(code: Code): State | undefined {
-    if (code === codes.rightSquareBracket) {
-      return nok(code);
-    }
-
-    if (isTypeChar(code)) {
-      blockType += String.fromCharCode(code as number);
-      effects.consume(code);
-      return captureType;
-    }
-
-    return nok(code);
-  }
-
-  function captureType(code: Code): State | undefined {
-    if (code === codes.rightSquareBracket) {
-      if (!KNOWN_BLOCK_TYPES.has(blockType)) {
-        return nok(code);
-      }
-      effects.exit('magicBlockType');
-      effects.enter('magicBlockMarkerTypeEnd');
-      effects.consume(code);
-      effects.exit('magicBlockMarkerTypeEnd');
-      // Don't enter magicBlockData yet - wait to see if we have content
-      return beforeData;
-    }
-
-    if (isTypeChar(code)) {
-      blockType += String.fromCharCode(code as number);
-      effects.consume(code);
-      return captureType;
-    }
-
-    return nok(code);
+    return openingMarkerParser;
   }
 
   /**
@@ -357,27 +455,27 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
       return effects.check(nonLazyContinuation, continuationOk, after)(code);
     }
 
-    if (escapeNext) {
-      escapeNext = false;
+    if (jsonState.escapeNext) {
+      jsonState.escapeNext = false;
       effects.consume(code);
       return captureData;
     }
 
-    if (inString) {
+    if (jsonState.inString) {
       if (code === codes.backslash) {
-        escapeNext = true;
+        jsonState.escapeNext = true;
         effects.consume(code);
         return captureData;
       }
       if (code === codes.quotationMark) {
-        inString = false;
+        jsonState.inString = false;
       }
       effects.consume(code);
       return captureData;
     }
 
     if (code === codes.quotationMark) {
-      inString = true;
+      jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -458,7 +556,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     // The [ was consumed by the marker, so we need to conceptually "have it" in our data
     // But since we already consumed it into the marker, we need a different approach
     // Re-classify: consume this character as data and continue
-    if (code === codes.quotationMark) inString = true;
+    if (code === codes.quotationMark) jsonState.inString = true;
     effects.consume(code);
     return captureData;
   }
@@ -479,7 +577,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.slash) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -496,7 +594,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.lowercaseB) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -513,7 +611,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.lowercaseL) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -530,7 +628,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.lowercaseO) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -547,7 +645,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.lowercaseC) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -564,7 +662,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.lowercaseK) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -581,7 +679,7 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
     if (code !== codes.rightSquareBracket) {
       effects.exit('magicBlockMarkerEnd');
       effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
+      if (code === codes.quotationMark) jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -668,10 +766,43 @@ function tokenizeMagicBlockFlow(this: TokenizeContext, effects: Effects, ok: Sta
  */
 function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   // State for tracking JSON content
-  let inString = false;
-  let escapeNext = false;
-  let blockType = '';
+  const jsonState: JsonParserState = { escapeNext: false, inString: false };
+  const blockTypeRef = { value: '' };
   let seenOpenBrace = false;
+
+  // Create shared parsers for opening marker and type capture
+  const typeParser = createTypeCaptureParser(effects, nok, beforeData, blockTypeRef);
+  const openingMarkerParser = createOpeningMarkerParser(effects, nok, typeParser.first);
+
+  // Success handler for closing marker - exits tokens and returns ok
+  const closingSuccess = (code: Code): State | undefined => {
+    effects.exit('magicBlockMarkerEnd');
+    effects.exit('magicBlock');
+    return ok(code);
+  };
+
+  // Mismatch handler - falls back to data capture
+  const closingMismatch = (code: Code): State | undefined => {
+    effects.exit('magicBlockMarkerEnd');
+    effects.enter('magicBlockData');
+    if (code === codes.quotationMark) jsonState.inString = true;
+    effects.consume(code);
+    return captureData;
+  };
+
+  // EOF handler
+  const closingEof = (_code: Code): State | undefined => nok(_code);
+
+  // Create closing marker parsers
+  const closingFromBeforeData = createClosingMarkerParser(
+    effects,
+    closingSuccess,
+    closingMismatch,
+    closingEof,
+    jsonState,
+  );
+
+  const closingFromData = createClosingMarkerParser(effects, closingSuccess, closingMismatch, closingEof, jsonState);
 
   return start;
 
@@ -681,85 +812,7 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     effects.enter('magicBlock');
     effects.enter('magicBlockMarkerStart');
     effects.consume(code);
-    return expectB;
-  }
-
-  function expectB(code: Code): State | undefined {
-    if (code !== codes.lowercaseB) return nok(code);
-    effects.consume(code);
-    return expectL;
-  }
-
-  function expectL(code: Code): State | undefined {
-    if (code !== codes.lowercaseL) return nok(code);
-    effects.consume(code);
-    return expectO;
-  }
-
-  function expectO(code: Code): State | undefined {
-    if (code !== codes.lowercaseO) return nok(code);
-    effects.consume(code);
-    return expectC;
-  }
-
-  function expectC(code: Code): State | undefined {
-    if (code !== codes.lowercaseC) return nok(code);
-    effects.consume(code);
-    return expectK;
-  }
-
-  function expectK(code: Code): State | undefined {
-    if (code !== codes.lowercaseK) return nok(code);
-    effects.consume(code);
-    return expectColon;
-  }
-
-  function expectColon(code: Code): State | undefined {
-    if (code !== codes.colon) return nok(code);
-    effects.consume(code);
-    effects.exit('magicBlockMarkerStart');
-    effects.enter('magicBlockType');
-    return captureTypeFirst;
-  }
-
-  /**
-   * First character of the type name must have at least one valid character.
-   * Rejects [block:] (empty type name) as malformed syntax.
-   */
-  function captureTypeFirst(code: Code): State | undefined {
-    if (code === codes.rightSquareBracket) {
-      return nok(code);
-    }
-
-    if (isTypeChar(code)) {
-      blockType += String.fromCharCode(code as number);
-      effects.consume(code);
-      return captureType;
-    }
-
-    return nok(code);
-  }
-
-  function captureType(code: Code): State | undefined {
-    if (code === codes.rightSquareBracket) {
-      if (!KNOWN_BLOCK_TYPES.has(blockType)) {
-        return nok(code);
-      }
-      effects.exit('magicBlockType');
-      effects.enter('magicBlockMarkerTypeEnd');
-      effects.consume(code);
-      effects.exit('magicBlockMarkerTypeEnd');
-      // Don't enter magicBlockData yet - wait to see if we have content
-      return beforeData;
-    }
-
-    if (isTypeChar(code)) {
-      blockType += String.fromCharCode(code as number);
-      effects.consume(code);
-      return captureType;
-    }
-
-    return nok(code);
+    return openingMarkerParser;
   }
 
   /**
@@ -784,7 +837,7 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     if (code === codes.leftSquareBracket) {
       effects.enter('magicBlockMarkerEnd');
       effects.consume(code);
-      return expectSlashFromBeforeData;
+      return closingFromBeforeData.expectSlash;
     }
 
     // If we've already seen the opening brace, just continue capturing data
@@ -870,106 +923,6 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
     return nok(code);
   }
 
-  /**
-   * Check for slash in closing marker when coming from beforeData.
-   */
-  function expectSlashFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-
-    if (code === codes.slash) {
-      effects.consume(code);
-      return expectClosingBFromBeforeData;
-    }
-
-    // Not a closing marker - this is data content
-    effects.exit('magicBlockMarkerEnd');
-    effects.enter('magicBlockData');
-    if (code === codes.quotationMark) inString = true;
-    effects.consume(code);
-    return captureData;
-  }
-
-  function expectClosingBFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseB) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingLFromBeforeData;
-  }
-
-  function expectClosingLFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseL) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingOFromBeforeData;
-  }
-
-  function expectClosingOFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseO) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingCFromBeforeData;
-  }
-
-  function expectClosingCFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseC) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingKFromBeforeData;
-  }
-
-  function expectClosingKFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseK) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingBracketFromBeforeData;
-  }
-
-  function expectClosingBracketFromBeforeData(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.rightSquareBracket) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-
-    effects.consume(code);
-    effects.exit('magicBlockMarkerEnd');
-    effects.exit('magicBlock');
-    return ok;
-  }
-
   function captureData(code: Code): State | undefined {
     // Fail on EOF - magic block must be closed
     if (code === null) {
@@ -987,27 +940,27 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
       return beforeData; // Go back to beforeData to handle potential empty lines
     }
 
-    if (escapeNext) {
-      escapeNext = false;
+    if (jsonState.escapeNext) {
+      jsonState.escapeNext = false;
       effects.consume(code);
       return captureData;
     }
 
-    if (inString) {
+    if (jsonState.inString) {
       if (code === codes.backslash) {
-        escapeNext = true;
+        jsonState.escapeNext = true;
         effects.consume(code);
         return captureData;
       }
       if (code === codes.quotationMark) {
-        inString = false;
+        jsonState.inString = false;
       }
       effects.consume(code);
       return captureData;
     }
 
     if (code === codes.quotationMark) {
-      inString = true;
+      jsonState.inString = true;
       effects.consume(code);
       return captureData;
     }
@@ -1016,108 +969,11 @@ function tokenizeMagicBlockText(this: TokenizeContext, effects: Effects, ok: Sta
       effects.exit('magicBlockData');
       effects.enter('magicBlockMarkerEnd');
       effects.consume(code);
-      return expectSlashText;
+      return closingFromData.expectSlash;
     }
 
     effects.consume(code);
     return captureData;
-  }
-
-  function expectSlashText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.slash) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      // Handle quote to maintain string state
-      if (code === codes.quotationMark) {
-        inString = true;
-      }
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingBText;
-  }
-
-  function expectClosingBText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseB) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingLText;
-  }
-
-  function expectClosingLText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseL) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingOText;
-  }
-
-  function expectClosingOText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseO) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingCText;
-  }
-
-  function expectClosingCText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseC) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingKText;
-  }
-
-  function expectClosingKText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.lowercaseK) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-    effects.consume(code);
-    return expectClosingBracketText;
-  }
-
-  function expectClosingBracketText(code: Code): State | undefined {
-    if (code === null) return nok(code);
-    if (code !== codes.rightSquareBracket) {
-      effects.exit('magicBlockMarkerEnd');
-      effects.enter('magicBlockData');
-      if (code === codes.quotationMark) inString = true;
-      effects.consume(code);
-      return captureData;
-    }
-
-    effects.consume(code);
-    effects.exit('magicBlockMarkerEnd');
-    effects.exit('magicBlock');
-    return ok;
   }
 }
 
