@@ -67,8 +67,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   // Step 3: Evaluate JSX expressions in attributes
   const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
   // Step 4: Replace snake_case component names with parser-safe placeholders
-  // (e.g., <Snake_case /> → <MDXishSnakeCase0 /> which will be restored after parsing)
-  // Only transforms tags that exist in the components list to avoid transforming code examples
   const { content: parserReadyContent, mapping: snakeCaseMapping } = processSnakeCaseComponent(
     contentAfterJSXEvaluation,
     { knownComponents }
