@@ -9,7 +9,8 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
-import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
+import { magicBlockFromMarkdown, magicBlockToMarkdown } from './mdast-util/magic-block';
+import { magicBlock } from './micromark/magic-block';
 
 interface Opts {
   mdx?: boolean;
@@ -20,9 +21,10 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
-  const { replaced, blocks } = extractMagicBlocks(doc);
-
-  const processor = unified();
+  const processor = unified()
+    .data('micromarkExtensions', [magicBlock()])
+    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
+    .data('toMarkdownExtensions', [magicBlockToMarkdown()]);
 
   // we still require these two extensions because:
   // 1. we can rely on remarkMdx to parse MDXish
@@ -72,11 +74,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
           },
     );
 
-  const file = await processor.process(replaced);
-  const stringified = String(file).trim();
-
-  const restored = restoreMagicBlocks(stringified, blocks);
-  return restored;
+  const file = await processor.process(doc);
+  return String(file).trim();
 }
 
 export default stripComments;

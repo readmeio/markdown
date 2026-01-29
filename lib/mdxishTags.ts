@@ -6,15 +6,16 @@ import { visit } from 'unist-util-visit';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import { isMDXElement } from '../processor/utils';
 
-
-import { extractMagicBlocks } from './utils/extractMagicBlocks';
+import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { magicBlock } from './micromark/magic-block';
 
 const tags = (doc: string) => {
-  const { replaced: sanitizedDoc } = extractMagicBlocks(doc);
-
   const set = new Set<string>();
-  const processor = remark().use(mdxishComponentBlocks);
-  const tree = processor.parse(sanitizedDoc);
+  const processor = remark()
+    .data('micromarkExtensions', [magicBlock()])
+    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
+    .use(mdxishComponentBlocks);
+  const tree = processor.parse(doc);
 
   visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (node.name?.match(/^[A-Z]/)) {

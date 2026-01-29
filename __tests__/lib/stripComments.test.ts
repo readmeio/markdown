@@ -211,6 +211,21 @@ Last line`;
 Last line`);
   });
 
+  it('preserves magic blocks inside markdown lists', async () => {
+    const input = `- Item one with a magic block:
+  [block:callout]
+  {
+    "type": "info",
+    "body": "This callout is inside a list item"
+  }
+  [/block]
+- Item two
+- Item three with inline magic block [block:image]{ "images": [{ "image": ["test.png"] }]}[/block]`;
+
+    const output = await stripComments(input);
+    expect(output).toMatchSnapshot();
+  });
+
   it('allows leading/trailing spaces between bold/italic markers', async () => {
     const input = `
 single line with **bold ** text and \\*literal\\* asterisks.
