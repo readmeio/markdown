@@ -1,5 +1,6 @@
+import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
 import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Image, Node, Parent, RootContent } from 'mdast';
+import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -7,52 +8,6 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { getAttrs } from '../../utils';
-
-/**
- * Magic block image node structure (from magicBlockTransformer)
- */
-interface MagicBlockImage extends Image {
-  data?: {
-    hProperties?: {
-      align?: string;
-      border?: string;
-      width?: string;
-    };
-  };
-}
-
-/**
- * Magic block embed node structure (from magicBlockTransformer)
- */
-interface MagicBlockEmbed extends Node {
-  children?: RootContent[];
-  data?: {
-    hName?: string;
-    hProperties?: {
-      favicon?: string;
-      href?: string;
-      html?: string;
-      image?: string;
-      provider?: string;
-      providerName?: string;
-      providerUrl?: string;
-      title?: string;
-      url?: string;
-    };
-  };
-  type: 'embed';
-}
-
-/**
- * Figure node that may contain an image (from magicBlockTransformer with caption)
- */
-interface FigureNode extends Node {
-  children: RootContent[];
-  data?: {
-    hName?: string;
-  };
-  type: 'figure';
-}
 
 interface ImageAttrs {
   align?: string;
@@ -314,7 +269,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
   });
 
   // Transform images inside figure nodes (magic blocks with captions)
-  const isFigure = (node: Node): node is FigureNode => node.type === 'figure';
+  const isFigure = (node: Node): node is MagicBlockFigure => node.type === 'figure';
   visit(tree, isFigure, node => {
     // Find and transform the image child
     node.children = node.children.map(child => {
