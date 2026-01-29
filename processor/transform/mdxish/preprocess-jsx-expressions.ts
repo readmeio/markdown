@@ -130,18 +130,6 @@ function extractBalancedBraces(content: string, start: number): { content: strin
   return { content: content.slice(start, pos - 1), end: pos };
 }
 
-function restoreInlineCode(content: string, protectedCode: ProtectedCode) {
-  return content.replace(/___INLINE_CODE_(\d+)___/g, (_m, idx: string) => {
-    return protectedCode.inlineCode[parseInt(idx, 10)];
-  });
-}
-
-function restoreCodeBlocks(content: string, protectedCode: ProtectedCode) {
-  return content.replace(/___CODE_BLOCK_(\d+)___/g, (_m, idx: string) => {
-    return protectedCode.codeBlocks[parseInt(idx, 10)];
-  });
-}
-
 /**
  * Escapes unbalanced braces in content to prevent MDX expression parsing errors.
  * Handles: already-escaped braces, string literals inside expressions, nested balanced braces.
