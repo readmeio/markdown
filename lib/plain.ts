@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import type { ExpressionStatement, Identifier, MemberExpression, SimpleLiteral } from 'estree';
 import type { Nodes, Parents } from 'hast';
+import type { MdxTextExpressionHast } from 'mdast-util-mdx-expression';
 
 import { fromHtml } from 'hast-util-from-html';
 
@@ -13,6 +15,39 @@ interface Options {
 }
 
 const STRIP_TAGS = ['script', 'style'];
+
+/**
+ * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
+ * Uses ESTree AST inspection, matching the approach in processor/transform/variables.ts
+ *
+ * @see https://github.com/syntax-tree/mdast-util-mdx-expression - MdxTextExpressionHast type
+ * @see https://github.com/estree/estree/blob/master/es5.md - ESTree spec for expression types
+ */
+function extractMdxVariableKey(node: MdxTextExpressionHast): string | undefined {
+  const estree = node.data?.estree;
+  if (!estree || estree.type !== 'Program' || estree.body.length === 0) return undefined;
+
+  const statement = estree.body[0];
+  if (statement.type !== 'ExpressionStatement') return undefined;
+
+  const expr = (statement as ExpressionStatement).expression;
+  if (expr.type !== 'MemberExpression') return undefined;
+
+  const memberExpr = expr as MemberExpression;
+  const obj = memberExpr.object;
+  if (obj.type !== 'Identifier' || (obj as Identifier).name !== 'user') return undefined;
+
+  const prop = memberExpr.property;
+  if (prop.type === 'Identifier') {
+    return (prop as Identifier).name;
+  }
+  if (prop.type === 'Literal') {
+    const val = (prop as SimpleLiteral).value;
+    return typeof val === 'string' ? val : undefined;
+  }
+
+  return undefined;
+}
 
 function one(node: Nodes, opts: Options) {
   if (node.type === 'comment') return '';
@@ -39,6 +74,8 @@ function one(node: Nodes, opts: Options) {
 
         return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
       }
+      // 'variable' (lowercase) comes from mdxish() after rehypeRaw normalizes HTML tag names
+      case 'variable':
       case 'Variable': {
         const key = node.properties.name.toString();
         const val = 'variables' in opts && opts.variables[key];
@@ -59,6 +96,14 @@ function one(node: Nodes, opts: Options) {
       }
       default:
         break;
+    }
+  }
+
+  // Handle MDX expressions like {user.name}
+  if (node.type === 'mdxTextExpression') {
+    const key = extractMdxVariableKey(node as MdxTextExpressionHast);
+    if (key) {
+      return ('variables' in opts && opts.variables[key]) || key;
     }
   }
 

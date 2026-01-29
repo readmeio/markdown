@@ -111,4 +111,23 @@ describe('toc transformer', () => {
     expect(secondHeading.tagName).toBe('h2');
     expect(secondHeading.properties?.id).toBe('callout-heading');
   });
+
+  it('resolves variables in TOC headings', () => {
+    const md = `# Quickstart {user.version}
+
+## Setup {user.apiKey}
+`;
+    const variables = {
+      user: { version: 'v2.5.0', apiKey: 'prod_abc123' },
+      defaults: [],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md), { variables });
+
+    render(<Toc />);
+
+    // Check that variables are resolved in TOC links
+    expect(screen.findByText('Quickstart v2.5.0')).toBeDefined();
+    expect(screen.findByText('Setup prod_abc123')).toBeDefined();
+  });
 });

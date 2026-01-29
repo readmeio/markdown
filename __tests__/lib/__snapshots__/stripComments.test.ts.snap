@@ -64,6 +64,19 @@ More text.
 Last text"
 `;
 
+exports[`removeComments > removes both HTML and JSX comments with mdxish option 1`] = `
+"# Title
+
+Some text.
+
+More text.
+
+\`{/* Comment in code element should NOT be removed */}\`
+\`<!-- Code block HTML comment should NOT be removed -->\`
+
+Last text"
+`;
+
 exports[`removeComments > supports a magic block as the first line of the document 1`] = `
 "[block:html]
 {
