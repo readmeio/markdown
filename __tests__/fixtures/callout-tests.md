@@ -61,3 +61,27 @@ With Markdown support.
 > Description Only
 
 > ❔ Title Only _with italics_
+
+> 📘 Image with Center Alignment in Callout
+>
+> <Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="center" width="200" />
+
+> 📘 Image with Left Alignment in Callout
+>
+> <Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="left" width="100" />
+>
+> This text should wrap around the left-aligned image inside the callout.
+
+<Callout theme="info" icon="fa-duotone fa-solid fa-face-awesome">
+### MDX Callout with Center Image
+
+<Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="center" width="200" />
+</Callout>
+
+<Callout theme="info" icon="fa-duotone fa-solid fa-face-awesome">
+### MDX Callout with Left Image
+
+<Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="left" width="100" />
+
+This text should wrap around the left-aligned image inside the MDX callout.
+</Callout>

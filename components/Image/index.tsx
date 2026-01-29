@@ -3,7 +3,8 @@ import * as React from 'react';
 interface ImageProps {
   align?: string;
   alt?: string;
-  border?: boolean;
+  // MDXish passes JSX expression values as strings (e.g., border={false} becomes "false")
+  border?: boolean | string;
   caption?: string;
   children?: [React.ReactElement];
   className?: string;
@@ -18,7 +19,7 @@ const Image = (Props: ImageProps) => {
   const {
     align = '',
     alt = '',
-    border = false,
+    border: borderProp = false,
     caption,
     className = '',
     height = 'auto',
@@ -28,6 +29,9 @@ const Image = (Props: ImageProps) => {
     lazy = true,
     children,
   } = Props;
+
+  // Normalize border: MDXish passes {false} as the string "false", not a boolean
+  const border = borderProp === true || borderProp === 'true';
 
   const [lightbox, setLightbox] = React.useState(false);
 
