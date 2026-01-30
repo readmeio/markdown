@@ -15,6 +15,8 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import compilers from '../processor/compile';
+import mdxExpressionCompiler from '../processor/compile/mdx-expression';
+import mdxJsxCompiler from '../processor/compile/mdx-jsx';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -87,7 +89,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
-    .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
+    // .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text (can't rely on remarkMdx)
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
@@ -104,13 +106,36 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
 }
 
 /**
+ * Plugin to add MDX JSX handlers for mdxishMdastToMd only.
+ * These handlers are isolated to this function and don't affect other processors.
+ */
+function mdxishCompilers() {
+  const data = this.data();
+  const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
+
+  const handlers = {
+    mdxFlowExpression: mdxExpressionCompiler,
+    mdxJsxFlowElement: mdxJsxCompiler,
+    mdxJsxTextElement: mdxJsxCompiler,
+    mdxTextExpression: mdxExpressionCompiler,
+  };
+
+  toMarkdownExtensions.push({ extensions: [{ handlers }] });
+}
+
+/**
  * Converts an Mdast to a Markdown string.
  */
 export function mdxishMdastToMd(mdast: MdastRoot) {
-  const md = unified().use(remarkGfm).use(compilers).use(remarkStringify, {
-    bullet: '-',
-    emphasis: '_',
-  }).stringify(mdast);
+  const md = unified()
+    .use(remarkGfm)
+    .use(compilers)
+    .use(mdxishCompilers)
+    .use(remarkStringify, {
+      bullet: '-',
+      emphasis: '_',
+    })
+    .stringify(mdast);
   return md;
 }
 

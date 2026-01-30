@@ -90,4 +90,81 @@ describe('mdxishAstProcessor', () => {
       ],
     });
   });
+
+  describe('JSX comments', () => {
+    it('should parse inline JSX comments as mdxTextExpression nodes', () => {
+      const md = 'Hello {/* inline comment */} world';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
+      const ast = processor.parse(parserReadyContent);
+
+      // @ts-expect-error - custom matcher
+      expect(ast).toStrictEqualExceptPosition({
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              {
+                type: 'text',
+                value: 'Hello ',
+              },
+              {
+                type: 'mdxTextExpression',
+                value: '/* inline comment */',
+              },
+              {
+                type: 'text',
+                value: ' world',
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should parse block-level JSX comments as mdxFlowExpression nodes', () => {
+      const md = '{/* block comment */}';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
+      const ast = processor.parse(parserReadyContent);
+
+      // @ts-expect-error - custom matcher
+      expect(ast).toStrictEqualExceptPosition({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxFlowExpression',
+            value: '/* block comment */',
+          },
+        ],
+      });
+    });
+
+    it('should preserve JSX comments after running transformers', () => {
+      const md = `# Heading
+
+{/* This is a block comment */}
+
+Some text with {/* inline */} comment.`;
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
+      const parsedAst = processor.parse(parserReadyContent);
+      const ast = processor.runSync(parsedAst) as Root;
+
+      // Find the mdxFlowExpression node (block comment)
+      const blockComment = ast.children.find(node => node.type === 'mdxFlowExpression');
+      expect(blockComment).toBeDefined();
+      // @ts-expect-error - mdxFlowExpression has value property
+      expect(blockComment?.value).toBe('/* This is a block comment */');
+
+      // Find the paragraph with inline comment
+      const paragraph = ast.children.find(
+        node => node.type === 'paragraph' && 'children' in node && node.children.some(child => child.type === 'mdxTextExpression')
+      );
+      expect(paragraph).toBeDefined();
+
+      // @ts-expect-error - paragraph has children
+      const inlineComment = paragraph?.children.find(child => child.type === 'mdxTextExpression');
+      expect(inlineComment).toBeDefined();
+      expect(inlineComment?.value).toBe('/* inline */');
+    });
+  });
 });
