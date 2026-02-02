@@ -1223,6 +1223,222 @@ describe('normalize-malformed-md-syntax', () => {
     });
   });
 
+  describe('intraword italic', () => {
+    describe('underscore syntax', () => {
+      it('should italicize intraword _word_ pattern', () => {
+        const md = 'The fail_back_ process completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The fail' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'back' }] },
+          { type: 'text', value: ' process completed.' },
+        ]);
+      });
+
+      it('should handle intraword _word_ in parentheses', () => {
+        const md = 'The process (fail_over_) completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The process (fail' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'over' }] },
+          { type: 'text', value: ') completed.' },
+        ]);
+      });
+
+      it('should handle multiple intraword _word_ patterns', () => {
+        const md = 'Both fail_over_ and fail_back_ are supported.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const emphasisNodes = paragraph.children.filter((c): c is Emphasis => c.type === 'emphasis');
+
+        expect(emphasisNodes).toHaveLength(2);
+        expect(emphasisNodes[0]?.children[0]).toStrictEqual({ type: 'text', value: 'over' });
+        expect(emphasisNodes[1]?.children[0]).toStrictEqual({ type: 'text', value: 'back' });
+      });
+
+      it('should handle intraword _word_ at end of sentence', () => {
+        const md = 'Use fail_back_.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'Use fail' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'back' }] },
+          { type: 'text', value: '.' },
+        ]);
+      });
+
+      it('should NOT match when followed by word character', () => {
+        const md = 'The some_thing_else variable.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+        expect(emphasis).toBeUndefined();
+      });
+    });
+
+    describe('asterisk syntax', () => {
+      it('should italicize intraword *word* pattern', () => {
+        const md = 'The fail*back* process completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The fail' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'back' }] },
+          { type: 'text', value: ' process completed.' },
+        ]);
+      });
+
+      it('should handle intraword *word* in parentheses', () => {
+        const md = 'The process (fail*over*) completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The process (fail' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'over' }] },
+          { type: 'text', value: ') completed.' },
+        ]);
+      });
+
+      it('should handle intraword *word* followed by word character', () => {
+        const md = 'The some*thing*else variable.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+        expect(emphasis).toBeDefined();
+        expect(emphasis?.children[0]).toStrictEqual({ type: 'text', value: 'thing' });
+      });
+    });
+  });
+
+  describe('intraword bold', () => {
+    describe('underscore syntax', () => {
+      it('should bold intraword __word__ pattern', () => {
+        const md = 'The fail__back__ process completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The fail' },
+          { type: 'strong', children: [{ type: 'text', value: 'back' }] },
+          { type: 'text', value: ' process completed.' },
+        ]);
+      });
+
+      it('should handle intraword __word__ in parentheses', () => {
+        const md = 'The process (fail__over__) completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The process (fail' },
+          { type: 'strong', children: [{ type: 'text', value: 'over' }] },
+          { type: 'text', value: ') completed.' },
+        ]);
+      });
+
+      it('should handle multiple intraword __word__ patterns', () => {
+        const md = 'Both fail__over__ and fail__back__ are supported.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const strongNodes = paragraph.children.filter((c): c is Strong => c.type === 'strong');
+
+        expect(strongNodes).toHaveLength(2);
+        expect(strongNodes[0]?.children[0]).toStrictEqual({ type: 'text', value: 'over' });
+        expect(strongNodes[1]?.children[0]).toStrictEqual({ type: 'text', value: 'back' });
+      });
+
+      it('should NOT match when followed by word character', () => {
+        const md = 'The some__thing__else variable.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+        expect(strong).toBeUndefined();
+      });
+    });
+
+    describe('asterisk syntax', () => {
+      it('should bold intraword **word** pattern', () => {
+        const md = 'The fail**back** process completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The fail' },
+          { type: 'strong', children: [{ type: 'text', value: 'back' }] },
+          { type: 'text', value: ' process completed.' },
+        ]);
+      });
+
+      it('should handle intraword **word** in parentheses', () => {
+        const md = 'The process (fail**over**) completed.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        expect(paragraph.children).toStrictEqual([
+          { type: 'text', value: 'The process (fail' },
+          { type: 'strong', children: [{ type: 'text', value: 'over' }] },
+          { type: 'text', value: ') completed.' },
+        ]);
+      });
+
+      it('should handle intraword **word** followed by word character', () => {
+        const md = 'The some**thing**else variable.';
+        const tree = processor.parse(md);
+        processor.runSync(tree);
+        removePosition(tree, { force: true });
+
+        const paragraph = tree.children[0] as Paragraph;
+        const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+        expect(strong).toBeDefined();
+        expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'thing' });
+      });
+    });
+  });
+
   describe('multi-node emphasis (spanning inline elements like links)', () => {
     it('should handle malformed bold containing a link', () => {
       const md = '**A user issues the [shutdown command](https://example.com) ** in the shell';

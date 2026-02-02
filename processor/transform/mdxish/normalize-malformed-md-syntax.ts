@@ -32,6 +32,19 @@ const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*
 // Pattern for _ italic _
 const underscoreItalicRegex = /([^_\s]+)?\s*(_)(?!_)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
 
+// CommonMark ignores intraword underscores or asteriks, but we want to italicize/bold the inner part
+// Pattern for intraword _word_ in words like hello_world_
+const intrawordUnderscoreItalicRegex = /(\w)_(?!_)([a-zA-Z0-9]+)_(?![\w_])/g;
+
+// Pattern for intraword __word__ in words like hello__world__
+const intrawordUnderscoreBoldRegex = /(\w)__([a-zA-Z0-9]+)__(?![\w_])/g;
+
+// Pattern for intraword *word* in words like hello*world*
+const intrawordAsteriskItalicRegex = /(\w)\*(?!\*)([a-zA-Z0-9]+)\*(?![\w*])/g;
+
+// Pattern for intraword **word** in words like hello**world**
+const intrawordAsteriskBoldRegex = /(\w)\*\*([a-zA-Z0-9]+)\*\*(?![\w*])/g;
+
 /**
  * Finds opening emphasis marker in a text value.
  * Returns marker info if found, null otherwise.
@@ -217,6 +230,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     interface MatchInfo {
       isBold: boolean;
+      isIntraword?: boolean;
       marker: string;
       match: RegExpMatchArray;
     }
@@ -234,6 +248,18 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     });
     [...text.matchAll(underscoreItalicRegex)].forEach(match => {
       allMatches.push({ isBold: false, marker: '_', match });
+    });
+    [...text.matchAll(intrawordUnderscoreItalicRegex)].forEach(match => {
+      allMatches.push({ isBold: false, isIntraword: true, marker: '_', match });
+    });
+    [...text.matchAll(intrawordUnderscoreBoldRegex)].forEach(match => {
+      allMatches.push({ isBold: true, isIntraword: true, marker: '__', match });
+    });
+    [...text.matchAll(intrawordAsteriskItalicRegex)].forEach(match => {
+      allMatches.push({ isBold: false, isIntraword: true, marker: '*', match });
+    });
+    [...text.matchAll(intrawordAsteriskBoldRegex)].forEach(match => {
+      allMatches.push({ isBold: true, isIntraword: true, marker: '**', match });
     });
 
     if (allMatches.length === 0) return undefined;
@@ -256,9 +282,34 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     const parts: (Emphasis | Strong | Text)[] = [];
     let lastIndex = 0;
 
-    filteredMatches.forEach(({ isBold, marker, match }) => {
+    filteredMatches.forEach(({ isBold, isIntraword, marker, match }) => {
       const matchIndex = match.index ?? 0;
       const fullMatch = match[0];
+
+      if (isIntraword) {
+        // handles cases like hello_world_ where we only want to italicize 'world'
+        const charBefore = match[1] || ''; // e.g., "l" in "hello_world_"
+        const content = match[2]; // e.g., "world"
+
+        const combinedBefore = text.slice(lastIndex, matchIndex) + charBefore;
+        if (combinedBefore) {
+          parts.push({ type: 'text', value: combinedBefore } satisfies Text);
+        }
+        if (isBold) {
+          parts.push({
+            type: 'strong',
+            children: [{ type: 'text', value: content } satisfies Text],
+          } satisfies Strong);
+        } else {
+          parts.push({
+            type: 'emphasis',
+            children: [{ type: 'text', value: content } satisfies Text],
+          } satisfies Emphasis);
+        }
+
+        lastIndex = matchIndex + fullMatch.length;
+        return;
+      }
 
       if (matchIndex > lastIndex) {
         const beforeText = text.slice(lastIndex, matchIndex);
