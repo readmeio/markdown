@@ -189,6 +189,86 @@ ${JSON.stringify(
       expect((lastParagraph.children[0] as Element).tagName).toBe('a');
       expect((lastParagraph.children[0] as Element).properties.href).toBe('doc:an-introduction-to-webhooks-v3-1');
     });
+
+    it('should normalize malformed bold syntax in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Issue',
+      'h-1': 'Best practice',
+      '0-0': 'Marking a parameter as required',
+      '0-1':
+        'To make a body parameter mandatory, expand the **Would you like to define the JSON/XML body format? **menu.',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+      expect(element.tagName).toBe('table');
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell1 = row.children[1] as Element;
+
+      // The malformed bold **text ** should be normalized to a <strong> element
+      const strongElement = cell1.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'strong',
+      ) as Element;
+
+      expect(strongElement).toBeDefined();
+      expect(strongElement.tagName).toBe('strong');
+    });
+
+    it('should normalize malformed italic syntax in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Column',
+      '0-0': 'This has *malformed italic *text inside.',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      // Find the table element
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell = row.children[0] as Element;
+
+      // The malformed italic *text * should be normalized to an <em> element
+      const emElement = cell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'em',
+      ) as Element;
+
+      expect(emElement).toBeDefined();
+      expect(emElement.tagName).toBe('em');
+    });
   });
 
   describe('recipe block', () => {

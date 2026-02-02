@@ -16,6 +16,8 @@ import { visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../utils';
 
+import normalizeEmphasisAST from './normalize-malformed-md-syntax';
+
 /**
  * Matches legacy magic block syntax: [block:TYPE]...JSON...[/block]
  * Group 1: block type (e.g., "image", "code", "callout")
@@ -132,7 +134,7 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
 /** Parses markdown and html to markdown nodes */
-const contentParser = unified().use(remarkParse).use(remarkGfm);
+const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
 // Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
 const parseTableCell = (text: string): MdastNode[] => {
