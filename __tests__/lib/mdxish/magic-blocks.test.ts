@@ -269,6 +269,48 @@ ${JSON.stringify(
       expect(emElement).toBeDefined();
       expect(emElement.tagName).toBe('em');
     });
+
+    it('should normalize malformed bold containing a link in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Description',
+      '0-0': '**A user issues the [shutdown command](https://example.com) ** in the shell',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell = row.children[0] as Element;
+
+      const strongElement = cell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'strong',
+      ) as Element;
+
+      expect(strongElement).toBeDefined();
+      expect(strongElement.tagName).toBe('strong');
+
+      const linkElement = strongElement.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'a',
+      ) as Element;
+
+      expect(linkElement).toBeDefined();
+    });
   });
 
   describe('recipe block', () => {

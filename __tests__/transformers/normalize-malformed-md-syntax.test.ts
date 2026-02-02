@@ -1222,4 +1222,191 @@ describe('normalize-malformed-md-syntax', () => {
       });
     });
   });
+
+  describe('multi-node emphasis (spanning inline elements like links)', () => {
+    it('should handle malformed bold containing a link', () => {
+      const md = '**A user issues the [shutdown command](https://example.com) ** in the shell';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+      expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'A user issues the ' });
+      expect((strong?.children[1] as { type: string }).type).toBe('link');
+    });
+
+    it('should handle malformed italic containing a link', () => {
+      const md = '*Click the [button](https://example.com) * to continue';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+      expect(emphasis).toBeDefined();
+      expect(emphasis?.children.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should handle malformed bold containing inline code', () => {
+      const md = '**Use the `shutdown` command ** to power off';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      const inlineCode = strong?.children.find(c => (c as { type: string }).type === 'inlineCode');
+      expect(inlineCode).toBeDefined();
+    });
+
+    it('should preserve text after closing marker', () => {
+      const md = '**Bold with [link](url) ** followed by text';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const lastChild = paragraph.children[paragraph.children.length - 1] as Text;
+      expect(lastChild.type).toBe('text');
+      expect(lastChild.value).toContain('followed by text');
+    });
+  });
+
+  describe('multi-node emphasis recursion termination', () => {
+    it('should terminate when opening marker exists but no closing marker is found', () => {
+      const md = '**orphan opening with [link](url) but no closing';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const firstChild = paragraph.children[0] as Text;
+      expect(firstChild.type).toBe('text');
+      expect(firstChild.value).toContain('**');
+    });
+
+    it('should terminate when multiple opening markers exist but none have closing markers', () => {
+      const md = '**first orphan and **second orphan with [link](url) no closing';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      expect(paragraph.type).toBe('paragraph');
+    });
+
+    it('should detect closing marker at start of text node (no space before **)', () => {
+      const md = '**open with [link](url)**no-space-closing';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+      expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'open with ' });
+      expect((strong?.children[1] as { type: string }).type).toBe('link');
+
+      const textAfter = paragraph.children.find(
+        (c): c is Text => c.type === 'text' && c.value.includes('no-space-closing'),
+      );
+      expect(textAfter).toBeDefined();
+    });
+
+    it('should detect closing marker when text node is just "**"', () => {
+      const md = '**bold with [link](url)**';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should process first valid pattern and continue checking for more', () => {
+      const md = '**first [link1](url1) ** then **second [link2](url2) **';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strongNodes = paragraph.children.filter((c): c is Strong => c.type === 'strong');
+      expect(strongNodes.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should process valid patterns and skip orphan markers without infinite loop', () => {
+      const md = '**valid [link](url) ** and then orphan ** without closing';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strongNodes = paragraph.children.filter((c): c is Strong => c.type === 'strong');
+      expect(strongNodes.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should NOT detect opening marker when text starts with space before **', () => {
+      const md = ' **not an opening because of leading space [link](url) **';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      expect(paragraph.type).toBe('paragraph');
+    });
+
+    it('should NOT match when only closing marker exists without opening', () => {
+      const md = 'Just text with [link](url) ** orphan closing';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      expect(paragraph.type).toBe('paragraph');
+    });
+
+    it('should process multi-node patterns inside blockquotes', () => {
+      const md = '> **bold [link](url) ** inside blockquote';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const blockquote = tree.children[0] as Blockquote;
+      expect(blockquote.type).toBe('blockquote');
+      const paragraph = blockquote.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+      expect(strong).toBeDefined();
+    });
+
+    it('should handle patterns with many inline elements between markers', () => {
+      const md = '**start [link1](url1) middle [link2](url2) more [link3](url3) end **';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(5);
+    });
+  });
 });
