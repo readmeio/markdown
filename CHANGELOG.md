@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 12.2.0
+### ✨ New & Improved
+
+* **demo app:** add an MDXish option ([#1306](https://github.com/readmeio/markdown/issues/1306)) ([be94916](https://github.com/readmeio/markdown/commit/be94916a4bc800467860ac77236f59438ff7f442))
+* add MDXish option for `stripComments` ([#1308](https://github.com/readmeio/markdown/issues/1308)) ([dd23d5f](https://github.com/readmeio/markdown/commit/dd23d5f41286f9375f986623e62d9e0325a2851d))
+
+### 🛠 Fixes & Updates
+
+* **sanitizeComments:** dont collapse all white space between code blocks ([#1310](https://github.com/readmeio/markdown/issues/1310)) ([45da2dd](https://github.com/readmeio/markdown/commit/45da2dd825242972bd93069646e07e8db9e4fa9c))
+* resolve variables in TOC headings for MDX and MDXish ([#1292](https://github.com/readmeio/markdown/issues/1292)) ([cbccd0a](https://github.com/readmeio/markdown/commit/cbccd0ac9c08bb7349ae4034cf78ec1996743149))
+
 ## Version 12.1.1
 ### 🛠 Fixes & Updates
 
