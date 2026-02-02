@@ -1,7 +1,15 @@
-import type { Emphasis, Parent, Root, Strong, Text } from 'mdast';
+import type { Emphasis, Parent, PhrasingContent, Root, Strong, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { SKIP, visit } from 'unist-util-visit';
+
+// Marker patterns for multi-node emphasis detection
+const MARKER_PATTERNS = [
+  { isBold: true, marker: '**' },
+  { isBold: true, marker: '__' },
+  { isBold: false, marker: '*' },
+  { isBold: false, marker: '_' },
+] as const;
 
 // Patterns to detect for bold (** and __) and italic (* and _) syntax:
 // Bold: ** text**, **text **, word** text**, ** text **
@@ -23,6 +31,166 @@ const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*
 
 // Pattern for _ italic _
 const underscoreItalicRegex = /([^_\s]+)?\s*(_)(?!_)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
+
+/**
+ * Finds opening emphasis marker in a text value.
+ * Returns marker info if found, null otherwise.
+ */
+function findOpeningMarker(text: string): {
+  isBold: boolean;
+  marker: string;
+  textAfter: string;
+  textBefore: string;
+} | null {
+  const results = MARKER_PATTERNS.map(({ isBold, marker }) => {
+    if (marker === '*' && text.startsWith('**')) return null;
+    if (marker === '_' && text.startsWith('__')) return null;
+
+    if (text.startsWith(marker) && text.length > marker.length) {
+      return { isBold, marker, textAfter: text.slice(marker.length), textBefore: '' };
+    }
+
+    const idx = text.indexOf(marker);
+    if (idx > 0 && !/\s/.test(text[idx - 1])) {
+      if (marker === '*' && text.slice(idx).startsWith('**')) return null;
+      if (marker === '_' && text.slice(idx).startsWith('__')) return null;
+
+      const after = text.slice(idx + marker.length);
+      if (after.length > 0) {
+        return { isBold, marker, textAfter: after, textBefore: text.slice(0, idx) };
+      }
+    }
+    return null;
+  });
+
+  return results.find(r => r !== null) ?? null;
+}
+
+/**
+ * Finds the end/closing marker in a text node for multi-node emphasis.
+ */
+function findEndMarker(text: string, marker: string): { textAfter: string; textBefore: string } | null {
+  const spacePattern = ` ${marker}`;
+  const spaceIdx = text.indexOf(spacePattern);
+  if (spaceIdx >= 0) {
+    if (marker === '*' && text.slice(spaceIdx + 1).startsWith('**')) return null;
+    if (marker === '_' && text.slice(spaceIdx + 1).startsWith('__')) return null;
+
+    return {
+      textAfter: text.slice(spaceIdx + spacePattern.length),
+      textBefore: text.slice(0, spaceIdx),
+    };
+  }
+
+  if (text.startsWith(marker)) {
+    if (marker === '*' && text.startsWith('**')) return null;
+    if (marker === '_' && text.startsWith('__')) return null;
+
+    return {
+      textAfter: text.slice(marker.length),
+      textBefore: '',
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Find and transform one multi-node emphasis pair in the container.
+ * Returns true if a pair was found and transformed, false otherwise.
+ */
+function processOneEmphasisPair(container: Parent): boolean {
+  let openingIdx = -1;
+  let opening: NonNullable<ReturnType<typeof findOpeningMarker>> | null = null;
+
+  container.children.some((child, idx) => {
+    if (child.type !== 'text') return false;
+    const found = findOpeningMarker((child as Text).value);
+    if (found) {
+      openingIdx = idx;
+      opening = found;
+      return true;
+    }
+    return false;
+  });
+
+  if (!opening || openingIdx < 0) return false;
+
+  let closingIdx = -1;
+  let closing: NonNullable<ReturnType<typeof findEndMarker>> | null = null;
+
+  container.children.slice(openingIdx + 1).some((child, relativeIdx) => {
+    if (child.type !== 'text') return false;
+    const found = findEndMarker((child as Text).value, opening!.marker);
+    if (found) {
+      closingIdx = openingIdx + 1 + relativeIdx;
+      closing = found;
+      return true;
+    }
+    return false;
+  });
+
+  if (!closing || closingIdx < 0) return false;
+
+  const newNodes: PhrasingContent[] = [];
+
+  if (opening.textBefore) {
+    newNodes.push({ type: 'text', value: `${opening.textBefore} ` } as Text);
+  }
+
+  const emphasisChildren: PhrasingContent[] = [];
+
+  const openingText = opening.textAfter.replace(/^\s+/, '');
+  if (openingText) {
+    emphasisChildren.push({ type: 'text', value: openingText } as Text);
+  }
+
+  container.children.slice(openingIdx + 1, closingIdx).forEach(child => {
+    emphasisChildren.push(child as PhrasingContent);
+  });
+
+  const closingText = closing.textBefore.replace(/\s+$/, '');
+  if (closingText) {
+    emphasisChildren.push({ type: 'text', value: closingText } as Text);
+  }
+
+  if (emphasisChildren.length > 0) {
+    const emphasisNode = opening.isBold
+      ? ({ type: 'strong', children: emphasisChildren } as Strong)
+      : ({ type: 'emphasis', children: emphasisChildren } as Emphasis);
+    newNodes.push(emphasisNode);
+  }
+
+  if (closing.textAfter) {
+    newNodes.push({ type: 'text', value: closing.textAfter } as Text);
+  }
+
+  const deleteCount = closingIdx - openingIdx + 1;
+  container.children.splice(openingIdx, deleteCount, ...(newNodes as typeof container.children));
+
+  return true;
+}
+
+/**
+ * Handle malformed emphasis that spans multiple AST nodes.
+ * E.g., "**bold [link](url)**" where markers are in different text nodes.
+ */
+function visitMultiNodeEmphasis(tree: Root): void {
+  const containerTypes = ['paragraph', 'heading', 'tableCell', 'listItem', 'blockquote'];
+
+  visit(tree, node => {
+    if (!containerTypes.includes(node.type)) return;
+    if (!('children' in node) || !Array.isArray(node.children)) return;
+
+    const container = node as Parent;
+    const processNext = (): void => {
+      if (processOneEmphasisPair(container)) {
+        processNext();
+      }
+    };
+    processNext();
+  });
+}
 
 /**
  * A remark plugin that normalizes malformed bold and italic markers in text nodes.
@@ -88,7 +256,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     const parts: (Emphasis | Strong | Text)[] = [];
     let lastIndex = 0;
 
-    filteredMatches.forEach(({ match, marker, isBold }) => {
+    filteredMatches.forEach(({ isBold, marker, match }) => {
       const matchIndex = match.index ?? 0;
       const fullMatch = match[0];
 
@@ -157,6 +325,9 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     return undefined;
   });
+
+  // Handle malformed emphasis spanning multiple nodes (e.g., **text [link](url) **)
+  visitMultiNodeEmphasis(tree);
 
   return tree;
 };
