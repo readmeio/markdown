@@ -108,43 +108,58 @@ function findEndMarker(text: string, marker: string): { textAfter: string; textB
   return null;
 }
 
-/**
- * Find and transform one multi-node emphasis pair in the container.
- * Returns true if a pair was found and transformed, false otherwise.
- */
-function processOneEmphasisPair(container: Parent): boolean {
-  let openingIdx = -1;
-  let opening: NonNullable<ReturnType<typeof findOpeningMarker>> | null = null;
+type OpeningMarkerInfo = NonNullable<ReturnType<typeof findOpeningMarker>>;
+type ClosingMarkerInfo = NonNullable<ReturnType<typeof findEndMarker>>;
 
-  container.children.some((child, idx) => {
+interface MarkerPair {
+  closing: ClosingMarkerInfo;
+  closingIdx: number;
+  opening: OpeningMarkerInfo;
+  openingIdx: number;
+}
+
+/**
+ * Scan children for an opening emphasis marker in a text node.
+ */
+function findOpeningInChildren(children: Parent['children']) {
+  let result: { idx: number; opening: NonNullable<ReturnType<typeof findOpeningMarker>> } | null = null;
+
+  children.some((child, idx) => {
     if (child.type !== 'text') return false;
     const found = findOpeningMarker((child as Text).value);
     if (found) {
-      openingIdx = idx;
-      opening = found;
+      result = { idx, opening: found };
       return true;
     }
     return false;
   });
 
-  if (!opening || openingIdx < 0) return false;
+  return result;
+}
 
-  let closingIdx = -1;
-  let closing: NonNullable<ReturnType<typeof findEndMarker>> | null = null;
+/**
+ * Scan children (after openingIdx) for a closing emphasis marker.
+ */
+function findClosingInChildren(children: Parent['children'], openingIdx: number, marker: string) {
+  let result: { closing: NonNullable<ReturnType<typeof findEndMarker>>; closingIdx: number } | null = null;
 
-  container.children.slice(openingIdx + 1).some((child, relativeIdx) => {
+  children.slice(openingIdx + 1).some((child, relativeIdx) => {
     if (child.type !== 'text') return false;
-    const found = findEndMarker((child as Text).value, opening!.marker);
+    const found = findEndMarker((child as Text).value, marker);
     if (found) {
-      closingIdx = openingIdx + 1 + relativeIdx;
-      closing = found;
+      result = { closingIdx: openingIdx + 1 + relativeIdx, closing: found };
       return true;
     }
     return false;
   });
 
-  if (!closing || closingIdx < 0) return false;
+  return result;
+}
 
+/**
+ * Build the replacement nodes for a matched emphasis pair.
+ */
+function buildReplacementNodes(container: Parent, { opening, openingIdx, closing, closingIdx }: MarkerPair) {
   const newNodes: PhrasingContent[] = [];
 
   if (opening.textBefore) {
@@ -178,6 +193,26 @@ function processOneEmphasisPair(container: Parent): boolean {
     newNodes.push({ type: 'text', value: closing.textAfter } as Text);
   }
 
+  return newNodes;
+}
+
+/**
+ * Find and transform one multi-node emphasis pair in the container.
+ * Returns true if a pair was found and transformed, false otherwise.
+ */
+function processOneEmphasisPair(container: Parent) {
+  const openingResult = findOpeningInChildren(container.children);
+  if (!openingResult) return false;
+
+  const { idx: openingIdx, opening } = openingResult;
+
+  const closingResult = findClosingInChildren(container.children, openingIdx, opening.marker);
+  if (!closingResult) return false;
+
+  const { closingIdx, closing } = closingResult;
+
+  const newNodes = buildReplacementNodes(container, { opening, openingIdx, closing, closingIdx });
+
   const deleteCount = closingIdx - openingIdx + 1;
   container.children.splice(openingIdx, deleteCount, ...(newNodes as typeof container.children));
 
@@ -188,7 +223,7 @@ function processOneEmphasisPair(container: Parent): boolean {
  * Handle malformed emphasis that spans multiple AST nodes.
  * E.g., "**bold [link](url)**" where markers are in different text nodes.
  */
-function visitMultiNodeEmphasis(tree: Root): void {
+function visitMultiNodeEmphasis(tree: Root) {
   const containerTypes = ['paragraph', 'heading', 'tableCell', 'listItem', 'blockquote'];
 
   visit(tree, node => {
@@ -196,7 +231,7 @@ function visitMultiNodeEmphasis(tree: Root): void {
     if (!('children' in node) || !Array.isArray(node.children)) return;
 
     const container = node as Parent;
-    const processNext = (): void => {
+    const processNext = () => {
       if (processOneEmphasisPair(container)) {
         processNext();
       }
