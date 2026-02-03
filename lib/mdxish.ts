@@ -14,7 +14,7 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
-import compilers from '../processor/compile';
+import { mdxishCompilers } from '../processor/compile';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -111,7 +111,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
  * Converts an Mdast to a Markdown string.
  */
 export function mdxishMdastToMd(mdast: MdastRoot) {
-  const md = unified().use(remarkGfm).use(compilers).use(remarkStringify, {
+  const md = unified().use(remarkGfm).use(mdxishCompilers).use(remarkStringify, {
     bullet: '-',
     emphasis: '_',
   }).stringify(mdast);
