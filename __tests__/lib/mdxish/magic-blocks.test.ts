@@ -1,5 +1,7 @@
 import type { Element, Text } from 'hast';
 
+import { toHtml } from 'hast-util-to-html';
+
 import { mdxish } from '../../../lib';
 
 describe('mdxish magic blocks', () => {
@@ -377,6 +379,37 @@ ${JSON.stringify(
       expect(lastParagraph.tagName).toBe('p');
       expect((lastParagraph.children[0] as Element).tagName).toBe('a');
       expect((lastParagraph.children[0] as Element).properties.href).toBe('doc:an-introduction-to-webhooks-v3-1');
+    });
+
+    describe('cell preprocessing', () => {
+      const createBlock = (cell: string): string =>
+        `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'k', '0-1': cell }, cols: 2, rows: 1 })}\n[/block]`;
+
+      const getCellHtml = (input: string): string => {
+        const html = toHtml(mdxish(createBlock(input)));
+        const match = html.match(/<tbody>.*?<tr>.*?<td[^>]*>.*?<\/td><td[^>]*>(.*?)<\/td>/s);
+        return match ? match[1] : '';
+      };
+
+      it.each([
+        ['\\|', '|', 'pipe escape'],
+        ['yes\\|no', 'yes|no', 'pipe in text'],
+        ['<placeholder>', 'placeholder', 'invalid tag escaped'],
+        ['<ul><li>x</li></ul>', '<ul>', 'valid tags preserved'],
+        ['`<lang>`', 'lang', 'code span content preserved'],
+        ['`URL=<host>`', 'host', 'angle brackets in code'],
+        ['<ul><li>_em_</li></ul>', '<em>', 'emphasis in HTML'],
+        ['<ul><li>`code`</li></ul>', '<code>', 'code in HTML'],
+        ['_\\<x>_', '<em>', 'backslash + emphasis'],
+        ['snake_case', 'snake_case', 'underscore in word preserved'],
+      ])('%s contains %s (%s)', (input, expected) => {
+        expect(getCellHtml(input)).toContain(expected);
+      });
+
+      it('escapes \\< to HTML entity', () => {
+        const html = getCellHtml('\\<foo\\>');
+        expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);
+      });
     });
   });
 
