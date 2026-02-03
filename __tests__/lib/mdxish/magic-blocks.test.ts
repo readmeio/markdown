@@ -235,6 +235,58 @@ ${JSON.stringify(
       expect((cell1.children[0] as Element).tagName).toBe('em');
     });
 
+    it('should render backticks as code inside HTML elements with newlines', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Name',
+      'h-1': 'Description',
+      '0-0': '`foo`',
+      '0-1':
+        'Options: <ul>  \n  \n  <li>`bar`. First option.</li><li>`baz`. Second option.</li>\n</ul> Use `qux` for default.',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const descriptionCell = row.children[1] as Element;
+
+      const findCodeElements = (node: Element): Element[] => {
+        const codes: Element[] = [];
+        if (node.tagName === 'code') codes.push(node);
+        if (node.children) {
+          node.children.forEach(child => {
+            if (child.type === 'element') {
+              codes.push(...findCodeElements(child as Element));
+            }
+          });
+        }
+        return codes;
+      };
+
+      const codeElements = findCodeElements(descriptionCell);
+      const codeTexts = codeElements.map(el => (el.children[0] as { value: string })?.value);
+
+      expect(codeTexts).toContain('bar');
+      expect(codeTexts).toContain('baz');
+      expect(codeTexts).toContain('qux');
+    });
+
     it('should preserve multiple paragraphs with links in table cells', () => {
       const md = `
 [block:parameters]

@@ -71,9 +71,23 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
+/**
+ * Normalize HTML content by collapsing newlines into spaces.
+ * This prevents CommonMark from treating HTML with newlines as "raw HTML blocks" where markdown
+ * syntax inside (like backticks for code) is not processed.
+ *
+ * @see https://spec.commonmark.org/0.31.2/#html-blocks (condition 6 & 7 about blank lines)
+ */
+const normalizeHtmlWhitespace = (text: string): string => {
+  if (!/<[a-zA-Z]/.test(text)) return text;
+  return text.replace(/\s*\n\s*/g, ' ');
+};
+
+// Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  const normalizedText = normalizeHtmlWhitespace(text);
+  const tree = contentParser.runSync(contentParser.parse(normalizedText)) as MdastRoot;
 
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
