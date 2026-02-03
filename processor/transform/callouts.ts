@@ -78,7 +78,41 @@ const processBlockquote = (
   const [match, icon] = startText.match(regex) || [];
 
   if (icon && match) {
-    const heading = startText.slice(match.length);
+    let didSplit = false;
+    let bodyChildren: Paragraph['children'] | null = null;
+
+    if (firstParagraph.children && firstParagraph.children.length > 0) {
+      for (let i = 0; i < firstParagraph.children.length; i += 1) {
+        const child = firstParagraph.children[i];
+        // eslint-disable-next-line no-continue
+        if (child.type !== 'text' || typeof child.value !== 'string') continue;
+        const newlineIndex = child.value.indexOf('\n');
+        // eslint-disable-next-line no-continue
+        if (newlineIndex === -1) continue;
+
+        const before = child.value.slice(0, newlineIndex);
+        const after = child.value.slice(newlineIndex + 1);
+        const headingChildren = firstParagraph.children.slice(0, i);
+
+        if (before.length > 0 || headingChildren.length === 0) {
+          headingChildren.push({ type: 'text', value: before });
+        }
+
+        bodyChildren = [];
+        if (after.length > 0) {
+          bodyChildren.push({ type: 'text', value: after });
+        }
+        bodyChildren.push(...firstParagraph.children.slice(i + 1));
+
+        firstParagraph.children = headingChildren;
+        didSplit = true;
+        break;
+      }
+    }
+
+    const heading = plain(firstParagraph as unknown as Parameters<typeof plain>[0])
+      .toString()
+      .slice(match.length);
     const empty = !heading.length && firstParagraph.children.length === 1;
     const theme = themes[icon] || 'default';
 
@@ -87,13 +121,21 @@ const processBlockquote = (
       firstChild.value = firstChild.value.slice(match.length);
     }
 
-    if (heading) {
+    if (heading || didSplit) {
       node.children[0] = wrapHeading(node);
       // @note: We add to the offset/column the length of the unicode
       // character that was stripped off, so that the start position of the
       // heading/text matches where it actually starts.
       node.children[0].position.start.offset += match.length;
       node.children[0].position.start.column += match.length;
+    }
+
+    if (didSplit && bodyChildren && bodyChildren.length > 0) {
+      const paragraphNode: Paragraph = {
+        type: 'paragraph',
+        children: bodyChildren,
+      };
+      node.children.splice(1, 0, paragraphNode);
     }
 
     Object.assign(node, {
