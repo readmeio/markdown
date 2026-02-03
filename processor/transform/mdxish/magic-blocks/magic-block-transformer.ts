@@ -23,6 +23,7 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import htmlTags from 'html-tags';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
@@ -72,6 +73,21 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
 /**
+ * Escape angle brackets that look like invalid/unknown HTML tags.
+ * This prevents remark-parse from treating things like `<your-account>` as HTML elements.
+ * Valid HTML tags (like <ul>, <li>, <strong>, etc.) are preserved.
+ */
+const escapeInvalidHtmlTags = (text: string): string => {
+  return text.replace(/<(\/?)([\w-]+)([^>]*)>/g, (match, slash, tagName, rest) => {
+    const lowerTag = tagName.toLowerCase();
+    if (htmlTags.includes(lowerTag)) {
+      return match; // Keep valid HTML tags
+    }
+    return `&lt;${slash}${tagName}${rest}>`;
+  });
+};
+
+/**
  * Normalize HTML content by collapsing newlines into spaces.
  * This prevents CommonMark from treating HTML with newlines as "raw HTML blocks" where markdown
  * syntax inside (like backticks for code) is not processed.
@@ -83,10 +99,51 @@ const normalizeHtmlWhitespace = (text: string): string => {
   return text.replace(/\s*\n\s*/g, ' ');
 };
 
+/**
+ * Process backslash escapes in markdown.
+ * In markdown, \< and \> are escaped angle brackets that should render as literal < and >.
+ * We convert them to HTML entities so they're preserved through parsing.
+ */
+const processBackslashEscapes = (text: string): string => {
+  return text.replace(/\\([<>])/g, (_, char) => (char === '<' ? '&lt;' : '&gt;'));
+};
+
+/**
+ * Process markdown inline syntax within text that will be inside HTML elements.
+ * CommonMark doesn't process markdown inside HTML blocks, so we need to convert
+ * markdown syntax to HTML before parsing.
+ */
+const processMarkdownInHtml = (text: string): string => {
+  if (!/<[a-zA-Z]/.test(text)) return text;
+
+  let result = text;
+
+  // Process inline code: `code`
+  result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Process strong: **text** or __text__ (must be before emphasis)
+  result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+  // Process emphasis: *text* or _text_
+  result = result.replace(/(?<![a-zA-Z0-9])\*([^*]+)\*(?![a-zA-Z0-9])/g, '<em>$1</em>');
+  result = result.replace(/(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])/g, '<em>$1</em>');
+
+  return result;
+};
+
 // Table cells may contain html or markdown content, so we need to parse it accordingly instead of keeping it as raw text
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const normalizedText = normalizeHtmlWhitespace(text);
+  // Order matters:
+  // 1. Process backslash escapes first (\< becomes &lt;) - this handles markdown escape syntax
+  // 2. Escape invalid HTML tags (like <your-account>) so they become &lt;your-account&gt;
+  // 3. Process markdown syntax inside HTML content (emphasis, code)
+  // 4. Normalize whitespace to prevent HTML block mode
+  const backslashProcessed = processBackslashEscapes(text);
+  const escapedText = escapeInvalidHtmlTags(backslashProcessed);
+  const markdownProcessed = processMarkdownInHtml(escapedText);
+  const normalizedText = normalizeHtmlWhitespace(markdownProcessed);
   const tree = contentParser.runSync(contentParser.parse(normalizedText)) as MdastRoot;
 
   if (tree.children.length > 1) {

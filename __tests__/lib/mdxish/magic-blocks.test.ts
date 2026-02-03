@@ -1,4 +1,4 @@
-import type { Element } from 'hast';
+import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
 
@@ -285,6 +285,56 @@ ${JSON.stringify(
       expect(codeTexts).toContain('bar');
       expect(codeTexts).toContain('baz');
       expect(codeTexts).toContain('qux');
+    });
+
+    it('should escape invalid HTML tags and process markdown emphasis inside HTML elements', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Name',
+      'h-1': 'Value',
+      '0-0': 'foo',
+      '0-1': '<ul>\n<li>_\\<placeholder>_.example.com</li>\n</ul>',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const table = ast.children.find(
+        (child): child is Element => child.type === 'element' && child.tagName === 'table',
+      );
+      expect(table).toBeDefined();
+
+      const tbody = table!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const valueCell = row.children[1] as Element;
+
+      const findText = (node: Element | Text): string[] => {
+        if ('value' in node) return [node.value as string];
+        if ('children' in node) {
+          return (node.children as (Element | Text)[]).flatMap(child => findText(child));
+        }
+        return [];
+      };
+
+      const allText = findText(valueCell).join(' ');
+      expect(allText).toContain('placeholder');
+
+      const findEm = (node: Element | Text): boolean => {
+        if (node.type === 'element' && (node as Element).tagName === 'em') return true;
+        if ('children' in node) {
+          return (node.children as (Element | Text)[]).some(child => findEm(child));
+        }
+        return false;
+      };
+      expect(findEm(valueCell)).toBe(true);
     });
 
     it('should preserve multiple paragraphs with links in table cells', () => {
