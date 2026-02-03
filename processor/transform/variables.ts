@@ -1,4 +1,5 @@
 import type { Variable } from '../../types';
+import type { Expression } from 'estree';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
@@ -6,28 +7,54 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
+/**
+ * Checks if an expression is a hyphenated user variable (e.g., `user.X-API-Key`).
+ * Estree parses `user.X-API-Key` as subtraction: `user.X - API - Key`, creating a BinaryExpression.
+ */
+function isHyphenatedUserVariable(expr: Expression): boolean {
+  // Must be a BinaryExpression with subtraction operator
+  if (expr.type !== 'BinaryExpression' || expr.operator !== '-') return false;
+
+  // Check right side is an Identifier
+  if (expr.right.type !== 'Identifier') return false;
+
+  return true;
+}
+
 const variables =
   ({ asMdx } = { asMdx: true }): Transform =>
   tree => {
     visit(tree, (node, index, parent) => {
       if (!['mdxFlowExpression', 'mdxTextExpression'].includes(node.type) || !('value' in node)) return;
 
-      // @ts-expect-error - estree is not defined on our mdx types?!
-      if (node.data.estree.type !== 'Program') return;
-      // @ts-expect-error - estree is not defined on our mdx types?!
-      const [expression] = node.data.estree.body;
-      if (
-        !expression ||
-        expression.type !== 'ExpressionStatement' ||
-        expression.expression.object?.name !== 'user' ||
-        !['Literal', 'Identifier'].includes(expression.expression.property?.type)
-      )
-        return;
+      let name: string | undefined;
 
-      const name =
-        expression.expression.property.type === 'Identifier'
-          ? expression.expression.property.name
-          : expression.expression.property.value;
+      // @ts-expect-error - estree is not defined on our mdx types
+      if (node.data?.estree?.type !== 'Program') return;
+      // @ts-expect-error - estree is not defined on our mdx types
+      const [expression] = node.data.estree.body;
+      if (!expression || expression.type !== 'ExpressionStatement') return;
+
+      const expr = expression.expression;
+
+      if (
+        expr.type === 'MemberExpression' &&
+        expr.object?.name === 'user' &&
+        ['Literal', 'Identifier'].includes(expr.property?.type)
+      ) {
+        // Standard case: `user.name` or `user['name']`
+        name = expr.property.type === 'Identifier' ? expr.property.name : expr.property.value;
+      } else if (isHyphenatedUserVariable(expr)) {
+        // Hyphenated variable: `user.X-API-Key` parsed as `user.X - API - Key`
+        // Extract the full variable name from node.value
+        const value = node.value;
+        const match = value.match(/^user\.([a-zA-Z_][a-zA-Z0-9_-]*)$/);
+        if (match) {
+          name = match[1];
+        }
+      }
+
+      if (!name) return;
 
       const variable = asMdx
         ? ({

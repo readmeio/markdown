@@ -34,4 +34,13 @@ export const Hello = () => <p>{user.name}</p>;
 
     expect(screen.getByText('Owlbert')).toBeVisible();
   });
+
+  it('renders a hyphenated variable using bracket notation', () => {
+    const md = '{user["X-API-Key"]}';
+    const Content = execute(md, {}, { variables: { user: { 'X-API-Key': 'secret-key-123' } } });
+
+    render(<Content />);
+
+    expect(screen.getByText('secret-key-123')).toBeVisible();
+  });
 });
