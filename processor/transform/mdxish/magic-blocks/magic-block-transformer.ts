@@ -72,9 +72,9 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
-/** Collapse newlines in HTML to prevent raw HTML block mode */
+/** Convert newlines to <br> in HTML to preserve line breaks while preventing raw HTML block mode */
 const normalizeHtmlWhitespace = (text: string): string =>
-  /<[a-zA-Z]/.test(text) ? text.replace(/\s*\n\s*/g, ' ') : text;
+  /<[a-zA-Z]/.test(text) ? text.replace(/\n/g, '<br>') : text;
 
 /** Process \|, \<, \> backslash escapes */
 const processBackslashEscapes = (text: string): string =>
