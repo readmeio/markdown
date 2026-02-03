@@ -1,3 +1,5 @@
+import type { Processor } from 'unified';
+
 import { NodeTypes } from '../../enums';
 
 import callout from './callout';
@@ -9,7 +11,7 @@ import htmlBlock from './html-block';
 import plain from './plain';
 import variable from './variable';
 
-function compilers(this: { data: () => { toMarkdownExtensions?: object[] } }, mdxish = false) {
+function compilers(this: Processor, mdxish = false) {
   const data = this.data();
 
   const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
@@ -35,7 +37,7 @@ function compilers(this: { data: () => { toMarkdownExtensions?: object[] } }, md
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
 }
 
-export function mdxishCompilers(this: { data: () => { toMarkdownExtensions?: object[] } }) {
+export function mdxishCompilers(this: Processor) {
   return compilers.call(this, true);
 }
 
