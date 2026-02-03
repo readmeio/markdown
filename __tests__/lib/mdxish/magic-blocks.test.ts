@@ -402,6 +402,9 @@ ${JSON.stringify(
         ['<ul><li>`code`</li></ul>', '<code>', 'code in HTML'],
         ['_\\<x>_', '<em>', 'backslash + emphasis'],
         ['snake_case', 'snake_case', 'underscore in word preserved'],
+        ['<ol><li>[link](doc:page)</li></ol>', '<a href', 'links in HTML'],
+        ['<ol><li>item</li></ol>See [link](doc:page)', '<a href="doc:page">', 'links after HTML'],
+        ['[link](doc:page)<ol><li>item</li></ol>', '<a href="doc:page">', 'links before HTML'],
       ])('%s contains %s (%s)', (input, expected) => {
         expect(getCellHtml(input)).toContain(expected);
       });

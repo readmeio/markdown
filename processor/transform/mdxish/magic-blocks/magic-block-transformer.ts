@@ -73,8 +73,7 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
 /** Convert newlines to <br> in HTML to preserve line breaks while preventing raw HTML block mode */
-const normalizeHtmlWhitespace = (text: string): string =>
-  /<[a-zA-Z]/.test(text) ? text.replace(/\n/g, '<br>') : text;
+const normalizeHtmlWhitespace = (text: string): string => (/<[a-zA-Z]/.test(text) ? text.replace(/\n/g, '<br>') : text);
 
 /** Process \|, \<, \> backslash escapes */
 const processBackslashEscapes = (text: string): string =>
@@ -88,14 +87,24 @@ const escapeInvalidHtmlTags = (text: string): string =>
 
 /**
  * Process markdown syntax inside HTML elements where CommonMark won't process it.
- * Order: code spans first (with escaped brackets), then invalid tags, then emphasis.
+ * Converts code spans, links, and emphasis to HTML so they survive the HTML block.
  */
 const processMarkdownInHtml = (text: string): string => {
-  if (!/<[a-zA-Z]/.test(text)) return text;
+  // Only process if there are HTML tags (excluding code spans)
+  if (!/<[a-zA-Z]/.test(text.replace(/`[^`]+`/g, ''))) return text;
 
   let result = text;
+
+  // Code spans (escape angle brackets inside)
   result = result.replace(/`([^`]+)`/g, (_, c) => `<code>${c.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>`);
+
+  // Invalid HTML tags
   result = escapeInvalidHtmlTags(result);
+
+  // Links
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+  // Strong/emphasis
   result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
   result = result.replace(/(?<![a-zA-Z0-9])\*([^*]+)\*(?![a-zA-Z0-9])/g, '<em>$1</em>');
