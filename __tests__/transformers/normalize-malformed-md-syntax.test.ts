@@ -1455,8 +1455,36 @@ describe('normalize-malformed-md-syntax', () => {
       expect((strong?.children[1] as { type: string }).type).toBe('link');
     });
 
+    it('should handle malformed bold (underscore) containing a link', () => {
+      const md = '__A user issues the [shutdown command](https://example.com) __ in the shell';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+      expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'A user issues the ' });
+      expect((strong?.children[1] as { type: string }).type).toBe('link');
+    });
+
     it('should handle malformed italic containing a link', () => {
       const md = '*Click the [button](https://example.com) * to continue';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
+
+      expect(emphasis).toBeDefined();
+      expect(emphasis?.children.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should handle malformed italic (underscore) containing a link', () => {
+      const md = '_Click the [button](https://example.com) _ to continue';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -1482,8 +1510,34 @@ describe('normalize-malformed-md-syntax', () => {
       expect(inlineCode).toBeDefined();
     });
 
+    it('should handle malformed bold (underscore) containing inline code', () => {
+      const md = '__Use the `shutdown` command __ to power off';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      const inlineCode = strong?.children.find(c => (c as { type: string }).type === 'inlineCode');
+      expect(inlineCode).toBeDefined();
+    });
+
     it('should preserve text after closing marker', () => {
       const md = '**Bold with [link](url) ** followed by text';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const lastChild = paragraph.children[paragraph.children.length - 1] as Text;
+      expect(lastChild.type).toBe('text');
+      expect(lastChild.value).toContain('followed by text');
+    });
+
+    it('should preserve text after closing marker (underscore)', () => {
+      const md = '__Bold with [link](url) __ followed by text';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -1507,6 +1561,19 @@ describe('normalize-malformed-md-syntax', () => {
       const firstChild = paragraph.children[0] as Text;
       expect(firstChild.type).toBe('text');
       expect(firstChild.value).toContain('**');
+    });
+
+    it('should terminate when opening marker (underscore) exists but no closing marker is found', () => {
+      const md = '__orphan opening with [link](url) but no closing';
+      const tree = processor.parse(md);
+
+      expect(() => processor.runSync(tree)).not.toThrow();
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const firstChild = paragraph.children[0] as Text;
+      expect(firstChild.type).toBe('text');
+      expect(firstChild.value).toContain('__');
     });
 
     it('should terminate when multiple opening markers exist but none have closing markers', () => {
@@ -1540,8 +1607,41 @@ describe('normalize-malformed-md-syntax', () => {
       expect(textAfter).toBeDefined();
     });
 
+    it('should detect closing marker at start of text node (no space before __)', () => {
+      const md = '__open with [link](url)__no-space-closing';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+      expect(strong?.children[0]).toStrictEqual({ type: 'text', value: 'open with ' });
+      expect((strong?.children[1] as { type: string }).type).toBe('link');
+
+      const textAfter = paragraph.children.find(
+        (c): c is Text => c.type === 'text' && c.value.includes('no-space-closing'),
+      );
+      expect(textAfter).toBeDefined();
+    });
+
     it('should detect closing marker when text node is just "**"', () => {
       const md = '**bold with [link](url)**';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+
+      expect(strong).toBeDefined();
+      expect(strong?.children.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should detect closing marker when text node is just "__"', () => {
+      const md = '__bold with [link](url)__';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
