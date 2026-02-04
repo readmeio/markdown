@@ -45,6 +45,8 @@
     "mdast-util-phrasing": "^4.1.0",
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-mdx-expression": "^3.0.1",
+    "micromark-util-character": "^2.1.1",
+    "micromark-util-symbol": "^2.0.1",
     "path-browserify": "^1.0.1",
     "postcss": "^8.5.1",
     "postcss-prefix-selector": "^2.1.0",
