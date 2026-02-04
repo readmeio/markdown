@@ -39,7 +39,7 @@ import {
   EMPTY_RECIPE_PLACEHOLDER,
 } from './placeholder';
 
-import normalizeEmphasisAST from './normalize-malformed-md-syntax';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set.
