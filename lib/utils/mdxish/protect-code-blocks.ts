@@ -53,7 +53,7 @@ export function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
   }
   protectedContent += remaining;
 
-  protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
+  protectedContent = protectedContent.replace(/`([^`\n]+)`/g, match => {
     const index = inlineCode.length;
     inlineCode.push(match);
     return `___INLINE_CODE_${index}___`;
