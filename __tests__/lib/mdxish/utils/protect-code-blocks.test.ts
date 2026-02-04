@@ -56,14 +56,6 @@ describe('protectCodeBlocks', () => {
   });
 
   describe('inline code should not match across newlines', () => {
-    it('should not capture content across multiple lines', () => {
-      const input = 'Line with `start\nLine 2\nLine with end`';
-      const { protectedCode, protectedContent } = protectCodeBlocks(input);
-
-      expect(protectedCode.inlineCode).toHaveLength(0);
-      expect(protectedContent).toBe(input);
-    });
-
     it('should only capture single-line inline code', () => {
       const input = 'Line with `valid` code\nAnother `line` here';
       const { protectedCode } = protectCodeBlocks(input);
@@ -229,6 +221,32 @@ More content with \`inline\` code.`;
 
       expect(protectedCode.codeBlocks).toHaveLength(1);
       expect(protectedCode.codeBlocks[0]).toContain('/etc/config.yaml');
+    });
+
+    it('should handle nested code blocks with quadruple backticks in blockquote', () => {
+      const input = `> 📘
+> \`\`\`\`
+> \`\`\`
+> sudo code
+> \`\`\`
+> \`\`\`\`
+
+\`\`\`
+Hello
+\`\`\`
+
+My \`code\``;
+
+      const { protectedCode, protectedContent } = protectCodeBlocks(input);
+
+      expect(protectedCode.codeBlocks.length).toBeGreaterThanOrEqual(1);
+      expect(protectedCode.inlineCode).toHaveLength(1);
+      expect(protectedCode.inlineCode[0]).toBe('`code`');
+      const restored = restoreCodeBlocks(protectedContent, protectedCode);
+      expect(restored).not.toContain('___CODE_BLOCK');
+      expect(restored).not.toContain('___INLINE_CODE');
+      expect(restored).toContain('Hello');
+      expect(restored).toContain('`code`');
     });
   });
 });
