@@ -231,12 +231,10 @@ function visitMultiNodeEmphasis(tree: Root) {
     if (!('children' in node) || !Array.isArray(node.children)) return;
 
     const container = node as Parent;
-    const processNext = () => {
-      if (processOneEmphasisPair(container)) {
-        processNext();
-      }
-    };
-    processNext();
+    let foundPair = true;
+    while (foundPair) {
+      foundPair = processOneEmphasisPair(container);
+    }
   });
 }
 
