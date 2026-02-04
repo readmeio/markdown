@@ -29,6 +29,7 @@ import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../../utils';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
   EMPTY_IMAGE_PLACEHOLDER,
@@ -38,8 +39,6 @@ import {
   EMPTY_TABLE_PLACEHOLDER,
   EMPTY_RECIPE_PLACEHOLDER,
 } from './placeholder';
-
-import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set.
