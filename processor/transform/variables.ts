@@ -12,10 +12,8 @@ import { NodeTypes } from '../../enums';
  * Estree parses `user.X-API-Key` as subtraction: `user.X - API - Key`, creating a BinaryExpression.
  */
 function isHyphenatedUserVariable(expr: Expression): boolean {
-  // Must be a BinaryExpression with subtraction operator
   if (expr.type !== 'BinaryExpression' || expr.operator !== '-') return false;
 
-  // Check right side is an Identifier
   if (expr.right.type !== 'Identifier') return false;
 
   return true;
@@ -48,7 +46,7 @@ const variables =
         // Hyphenated variable: `user.X-API-Key` parsed as `user.X - API - Key`
         // Extract the full variable name from node.value
         const value = node.value;
-        const match = value.match(/^user\.([a-zA-Z_][a-zA-Z0-9_-]*)$/);
+        const match = value.match(/^user\.([\w-]*)$/);
         if (match) {
           name = match[1];
         }
