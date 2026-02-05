@@ -38,7 +38,7 @@ describe('Parse RDMD Callouts', () => {
 
     it('allows trailing spaces after the icon', () => {
       const text = `
-> 🛑
+> 🛑 
 > Compact headings must be followed by two line breaks before the following block.`;
 
       const tree = mdast(text);
