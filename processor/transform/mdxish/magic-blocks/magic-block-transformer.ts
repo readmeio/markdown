@@ -19,16 +19,20 @@ import type {
   MagicBlockTransformerOptions,
 } from './types';
 import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
+import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import htmlTags from 'html-tags';
+import rehypeParse from 'rehype-parse';
+import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
+import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 
 import {
@@ -70,57 +74,76 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
+/** Markdown parser */
 const contentParser = unified().use(remarkParse).use(remarkGfm);
 
-/** Convert newlines to <br> in HTML to preserve line breaks while preventing raw HTML block mode */
-const normalizeHtmlWhitespace = (text: string): string => (/<[a-zA-Z]/.test(text) ? text.replace(/\n/g, '<br>') : text);
+/** Markdown to HTML processor (mdast → hast → HTML string) */
+const markdownToHtml = unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeStringify);
+
+/** HTML parser (HTML string → hast) */
+const htmlParser = unified().use(rehypeParse, { fragment: true });
+
+/** HTML stringifier (hast → HTML string) */
+const htmlStringifier = unified().use(rehypeStringify);
 
 /** Process \|, \<, \> backslash escapes */
 const processBackslashEscapes = (text: string): string =>
   text.replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
 
-/** Escape invalid HTML tags, preserving valid ones */
-const escapeInvalidHtmlTags = (text: string): string =>
-  text.replace(/<(\/?)([\w-]+)([^>]*)>/g, (m, slash, tag, rest) =>
-    htmlTags.includes(tag.toLowerCase()) ? m : `&lt;${slash}${tag}${rest}>`,
+const escapeInvalidTags = (str: string): string =>
+  str.replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>/g, (match, tag, rest) =>
+    STANDARD_HTML_TAGS.has(tag.replace(/^\//, '').toLowerCase()) ? match : `&lt;${tag}${rest}&gt;`,
   );
 
 /**
- * Process markdown syntax inside HTML elements where CommonMark won't process it.
- * Converts code spans, links, and emphasis to HTML so they survive the HTML block.
+ * Process markdown within HTML string.
+ * 1. Parse HTML to HAST
+ * 2. Find text nodes, parse as markdown, convert to HAST
+ * 3. Stringify back to HTML
  */
-const processMarkdownInHtml = (text: string): string => {
-  // Only process if there are HTML tags (excluding code spans)
-  if (!/<[a-zA-Z]/.test(text.replace(/`[^`]+`/g, ''))) return text;
+const processMarkdownInHtmlString = (html: string): string => {
+  const hast = htmlParser.parse(escapeInvalidTags(html)) as HastRoot;
 
-  let result = text;
+  const textToHast = (text: string): HastRoot['children'] => {
+    if (!text.trim()) return [{ type: 'text', value: text }];
 
-  // Code spans (escape angle brackets inside)
-  result = result.replace(/`([^`]+)`/g, (_, c) => `<code>${c.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>`);
+    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
+    return parsed.children.flatMap(n =>
+      n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
+    );
+  };
 
-  // Invalid HTML tags
-  result = escapeInvalidHtmlTags(result);
+  const processChildren = (children: HastRoot['children']): HastRoot['children'] =>
+    children.flatMap(child => (child.type === 'text' ? textToHast((child as HastText).value) : [child]));
 
-  // Links
-  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  hast.children = processChildren(hast.children);
+  visit(hast, 'element', (node: HastElement) => {
+    node.children = processChildren(node.children) as ElementContent[];
+  });
 
-  // Strong/emphasis
-  result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
-  result = result.replace(/(?<![a-zA-Z0-9])\*([^*]+)\*(?![a-zA-Z0-9])/g, '<em>$1</em>');
-  result = result.replace(/(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])/g, '<em>$1</em>');
-  return result;
+  return htmlStringifier.stringify(hast);
+};
+
+/**
+ * Visit all html nodes in MDAST and process markdown within them.
+ */
+const processMarkdownInHtmlNodes = (tree: MdastRoot): void => {
+  visit(tree, 'html', (node: { type: 'html'; value: string }) => {
+    node.value = processMarkdownInHtmlString(node.value.replace(/\n/g, '<br>'));
+  });
 };
 
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
- * We preprocess to handle backslash escapes, invalid HTML tags, and markdown-in-HTML.
+ * We parse first, then visit html nodes and process their text content.
  */
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const processed = normalizeHtmlWhitespace(processMarkdownInHtml(processBackslashEscapes(text)));
+
+  const processed = processBackslashEscapes(text);
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
+  processMarkdownInHtmlNodes(tree);
 
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
