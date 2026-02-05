@@ -259,6 +259,10 @@
     color: #6a737d;
     display: block;
     padding: 0 1em;
+
+    &:has(img, figure, .Image) {
+      display: flow-root;
+    }
   }
 
   blockquote > :first-child {
