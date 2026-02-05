@@ -29,6 +29,7 @@ import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { toAttributes } from '../../../utils';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
   EMPTY_IMAGE_PLACEHOLDER,
@@ -69,7 +70,8 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
-const contentParser = unified().use(remarkParse).use(remarkGfm);
+/** Parses markdown and html to markdown nodes */
+const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
