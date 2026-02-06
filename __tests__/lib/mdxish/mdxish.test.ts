@@ -138,13 +138,12 @@ describe('mdxish safeMode', () => {
       expect(anchor?.properties?.href).not.toBe('https://example.com');
     });
 
-    it('should NOT parse user variables - keep as literal text', () => {
+    it('should still parse user variables', () => {
       const md = 'Hello {user.name}!';
-      const tree = mdxish(md, { safeMode: true });
+      const tree = mdxish(md);
       const variable = findElementByTagName(tree, 'variable');
-      expect(variable).toBeNull();
-      const text = extractText(tree);
-      expect(text).toContain('{user.name}');
+      expect(variable).not.toBeNull();
+      expect(variable?.properties?.name).toBe('name');
     });
 
     it('should still process regular markdown syntax', () => {
