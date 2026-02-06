@@ -1,7 +1,25 @@
-import type { Root } from 'hast';
+import type { Element, Root, RootContent } from 'hast';
 
-import { mdxish } from '../../../lib/mdxish';
+import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
+
+type HastNode = Root | RootContent;
+
+/**
+ * Recursively finds an element with the specified tagName in a HAST tree.
+ */
+function findElementByTagName(node: HastNode, tagName: string): Element | null {
+  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
+    return node;
+  }
+  if ('children' in node && Array.isArray(node.children)) {
+    return node.children.reduce<Element | null>((found, child) => {
+      if (found) return found;
+      return findElementByTagName(child, tagName);
+    }, null);
+  }
+  return null;
+}
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -75,6 +93,89 @@ Hello** Wrong Bold**`;
 
       const strongTexts = getStrongTexts(tree);
       expect(strongTexts.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+});
+
+describe('mdxish safeMode', () => {
+  describe('with safeMode: false (default)', () => {
+    it('should evaluate inline expressions', () => {
+      const md = 'Result: {5 * 10}';
+      const tree = mdxish(md, { jsxContext: {} });
+      const text = extractText(tree);
+      expect(text).toContain('50');
+    });
+
+    it('should evaluate attribute expressions', () => {
+      const md = '<a href={baseUrl}>Link</a>';
+      const tree = mdxish(md, { jsxContext: { baseUrl: 'https://example.com' } });
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor?.properties?.href).toBe('https://example.com');
+    });
+
+    it('should parse user variables', () => {
+      const md = 'Hello {user.name}!';
+      const tree = mdxish(md);
+      const variable = findElementByTagName(tree, 'variable');
+      expect(variable).not.toBeNull();
+      expect(variable?.properties?.name).toBe('name');
+    });
+  });
+
+  describe('with safeMode: true', () => {
+    it('should NOT evaluate inline expressions - keep as literal text', () => {
+      const md = 'Result: {5 * 10}';
+      const tree = mdxish(md, { safeMode: true });
+      const text = extractText(tree);
+      expect(text).toContain('{5 * 10}');
+      expect(text).not.toContain('50');
+    });
+
+    it('should NOT evaluate attribute expressions', () => {
+      const md = '<a href={baseUrl}>Link</a>';
+      const tree = mdxish(md, { safeMode: true, jsxContext: { baseUrl: 'https://example.com' } });
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor?.properties?.href).not.toBe('https://example.com');
+    });
+
+    it('should still parse user variables', () => {
+      const md = 'Hello {user.name}!';
+      const tree = mdxish(md);
+      const variable = findElementByTagName(tree, 'variable');
+      expect(variable).not.toBeNull();
+      expect(variable?.properties?.name).toBe('name');
+    });
+
+    it('should still process regular markdown syntax', () => {
+      const md = '# Heading\n\n**bold** and _italic_';
+      const tree = mdxish(md, { safeMode: true });
+      const text = extractText(tree);
+      expect(text).toContain('Heading');
+      expect(text).toContain('bold');
+      expect(text).toContain('italic');
+    });
+
+    it('should still process custom components', () => {
+      const md = '<Callout>Important message</Callout>';
+      expect(() => mdxish(md, { safeMode: true })).not.toThrow();
+    });
+  });
+
+  describe('mdxishAstProcessor with safeMode', () => {
+    it('should not include mdxExpression extensions in safeMode', () => {
+      const md = 'Test {expression}';
+      const { processor } = mdxishAstProcessor(md, { safeMode: true });
+      const mdast = processor.parse(md);
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(false);
+    });
+
+    it('should include mdxExpression extensions without safeMode', () => {
+      const md = 'Test {expression}';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { safeMode: false });
+      const mdast = processor.parse(parserReadyContent);
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(true);
     });
   });
 });
