@@ -136,6 +136,8 @@ const processBlockquote = (
   const startText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
   const [match, icon] = startText.match(regex) || [];
 
+  const firstParagraphOriginalEnd = firstParagraph.position.end;
+
   if (icon && match) {
     // Handle cases where heading and body are on the same line separated by a newline.
     // Example: "> ⚠️ **Bold heading**\nBody text here"
@@ -168,8 +170,8 @@ const processBlockquote = (
         type: 'paragraph',
         children: bodyChildren,
         position: {
-          start: node.children[0].position.end, // After the first paragraph
-          end: bodyChildren[bodyChildren.length - 1].position.end,
+          start: node.children[0].position.end,
+          end: firstParagraphOriginalEnd,
         },
       });
     }
