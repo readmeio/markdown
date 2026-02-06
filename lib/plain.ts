@@ -62,9 +62,7 @@ function one(node: Nodes, opts: Options) {
     if (STRIP_TAGS.includes(node.tagName)) return '';
 
     switch (node.tagName) {
-      // mdxish preserves the original JSX tag name HTMLBlock while hast() normalizes it to html-block
-      case 'html-block':
-      case 'HTMLBlock': {
+      case 'html-block': {
         if (!node.properties.html) return '';
         return all(fromHtml(node.properties.html.toString()), opts);
       }
