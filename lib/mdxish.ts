@@ -56,7 +56,6 @@ export interface MdxishOpts {
    * - JSX attribute expression evaluation (e.g., `href={baseUrl}`)
    * - MDX expression parsing (e.g., `{1 + 1}`)
    * - Expression node evaluation
-   * - User variable parsing (e.g., `{user.name}`)
    *
    * Expressions will remain as literal text in the output.
    */
@@ -127,7 +126,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(safeMode ? undefined : variablesTextTransformer) // Parse {user.*} patterns from text
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
