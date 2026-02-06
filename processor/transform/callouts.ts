@@ -154,7 +154,7 @@ const processBlockquote = (
     const empty = !headingText.length && firstParagraph.children.length === 1;
     const theme = themes[icon] || 'default';
 
-    // Convert the first paragraph to a heading if it has content or was split
+    // Convert the first paragraph (first children of node) to a heading if it has content or was split
     if (headingText || didSplit) {
       node.children[0] = wrapHeading(node);
       // Adjust position to account for the stripped icon prefix
@@ -167,6 +167,10 @@ const processBlockquote = (
       node.children.splice(1, 0, {
         type: 'paragraph',
         children: bodyChildren,
+        position: {
+          start: node.children[0].position.end, // After the first paragraph
+          end: bodyChildren[bodyChildren.length - 1].position.end,
+        },
       });
     }
 
