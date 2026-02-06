@@ -34,6 +34,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
   EMPTY_IMAGE_PLACEHOLDER,
@@ -75,7 +76,7 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
 /** Markdown parser */
-const contentParser = unified().use(remarkParse).use(remarkGfm);
+const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
 const markdownToHtml = unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeStringify);

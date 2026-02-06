@@ -1,3 +1,6 @@
+import type { Callout } from '../../types';
+import type { Heading, Paragraph } from 'mdast';
+
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
@@ -243,6 +246,25 @@ describe('callouts transformer', () => {
     const tree = mdast(md);
 
     expect(tree.children[0].data.hProperties).toHaveProperty('theme', 'okay');
+  });
+
+  it('can parse a callout with only 2 blockquotes, and not make the second blockquote content a heading', () => {
+    const md = `> 📘
+> As an Admin, you need the **IDM: Users - Admin Access** permission included`;
+    const tree = mdast(md);
+
+    // The body content should be a paragraph and not under a heading node
+    expect(tree.children[0]).toHaveProperty('type', 'rdme-callout');
+    const calloutNodeChildren = (tree.children[0] as Callout).children;
+    expect(calloutNodeChildren).toHaveLength(2);
+
+    // There should be empty text under the heading node
+    expect(calloutNodeChildren[0].type).toBe('heading');
+    expect((calloutNodeChildren[0] as Heading).children).toHaveLength(1);
+    expect((calloutNodeChildren[0] as Heading).children[0]).toHaveProperty('value', '');
+
+    // Body paragraph should have the text content
+    expect(calloutNodeChildren[1].type).toBe('paragraph');
   });
 
   describe('non-callout blockquotes', () => {

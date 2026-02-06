@@ -46,6 +46,65 @@ const isCalloutStructure = (node: Blockquote): boolean => {
   return firstTextChild?.type === 'text';
 };
 
+/**
+ * Finds the first text node containing a newline in a paragraph's children.
+ * Returns the index and the newline position within that text node.
+ */
+const findNewlineInParagraph = (paragraph: Paragraph): { index: number; newlineIndex: number } | null => {
+  for (let i = 0; i < paragraph.children.length; i += 1) {
+    const child = paragraph.children[i];
+    if (child.type === 'text' && typeof child.value === 'string') {
+      const newlineIndex = child.value.indexOf('\n');
+      if (newlineIndex !== -1) {
+        return { index: i, newlineIndex };
+      }
+    }
+  }
+  return null;
+};
+
+/**
+ * Splits a paragraph at the first newline, separating heading content (before \n)
+ * from body content (after \n). Mutates the paragraph to contain only heading children.
+ */
+const splitParagraphAtNewline = (paragraph: Paragraph): Paragraph['children'] | null => {
+  const splitPoint = findNewlineInParagraph(paragraph);
+  if (!splitPoint) return null;
+
+  const { index, newlineIndex } = splitPoint;
+  const originalChildren = paragraph.children;
+  const textNode = originalChildren[index] as Text;
+  const beforeNewline = textNode.value.slice(0, newlineIndex);
+  const afterNewline = textNode.value.slice(newlineIndex + 1);
+
+  // Split paragraph: heading = children[0..index-1] + text before newline
+  const headingChildren = originalChildren.slice(0, index);
+  if (beforeNewline.length > 0 || headingChildren.length === 0) {
+    headingChildren.push({ type: 'text', value: beforeNewline });
+  }
+  paragraph.children = headingChildren;
+
+  // Body = text after newline + remaining children from original array
+  const bodyChildren: Paragraph['children'] = [];
+  if (afterNewline.length > 0) {
+    bodyChildren.push({ type: 'text', value: afterNewline });
+  }
+  bodyChildren.push(...originalChildren.slice(index + 1));
+
+  return bodyChildren.length > 0 ? bodyChildren : null;
+};
+
+/**
+ * Removes the icon/match prefix from the first text node in a paragraph.
+ * This is needed to clean up the raw AST after we've extracted the icon.
+ */
+const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
+  const firstTextNode = findFirst(paragraph);
+  if (firstTextNode && 'value' in firstTextNode && typeof firstTextNode.value === 'string') {
+    firstTextNode.value = firstTextNode.value.slice(prefixLength);
+  }
+};
+
 const processBlockquote = (
   node: Blockquote,
   index: number | undefined,
@@ -77,23 +136,44 @@ const processBlockquote = (
   const startText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
   const [match, icon] = startText.match(regex) || [];
 
+  const firstParagraphOriginalEnd = firstParagraph.position.end;
+
   if (icon && match) {
-    const heading = startText.slice(match.length);
-    const empty = !heading.length && firstParagraph.children.length === 1;
+    // Handle cases where heading and body are on the same line separated by a newline.
+    // Example: "> ⚠️ **Bold heading**\nBody text here"
+    const bodyChildren = splitParagraphAtNewline(firstParagraph);
+    const didSplit = bodyChildren !== null;
+
+    // Extract heading text after removing the icon prefix.
+    // Use `plain()` to handle complex markdown structures (bold, inline code, etc.)
+    const headingText = plain(firstParagraph as unknown as Parameters<typeof plain>[0])
+      .toString()
+      .slice(match.length);
+
+    // Clean up the raw AST by removing the icon prefix from the first text node
+    removeIconPrefix(firstParagraph, match.length);
+
+    const empty = !headingText.length && firstParagraph.children.length === 1;
     const theme = themes[icon] || 'default';
 
-    const firstChild = findFirst(node.children[0]);
-    if (firstChild && 'value' in firstChild && typeof firstChild.value === 'string') {
-      firstChild.value = firstChild.value.slice(match.length);
-    }
-
-    if (heading) {
+    // Convert the first paragraph (first children of node) to a heading if it has content or was split
+    if (headingText || didSplit) {
       node.children[0] = wrapHeading(node);
-      // @note: We add to the offset/column the length of the unicode
-      // character that was stripped off, so that the start position of the
-      // heading/text matches where it actually starts.
+      // Adjust position to account for the stripped icon prefix
       node.children[0].position.start.offset += match.length;
       node.children[0].position.start.column += match.length;
+    }
+
+    // Insert body content as a separate paragraph after the heading
+    if (bodyChildren) {
+      node.children.splice(1, 0, {
+        type: 'paragraph',
+        children: bodyChildren,
+        position: {
+          start: node.children[0].position.end,
+          end: firstParagraphOriginalEnd,
+        },
+      });
     }
 
     Object.assign(node, {

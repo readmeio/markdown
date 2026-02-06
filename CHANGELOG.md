@@ -1,6 +1,46 @@
 Changelog
 ===
 
+## Version 13.0.0
+### ⚠ BREAKING CHANGES
+
+* **magic-blocks:** paragraphs.
+
+</details>  
+
+## 🧬 QA & Testing
+> [!IMPORTANT]
+As creating micromark extensions is new in this repo, I reckon we need
+to extensively test beforehand before pushing this. Here are some
+testing files I used
+
+[test-mdx-expressions.md](https://github.com/user-attachments/files/24859879/test-mdx-expressions.md)
+
+[magic-blocks-comprehensive.md](https://github.com/user-attachments/files/24859881/magic-blocks-comprehensive.md)
+
+
+- [Broken on production][prod].
+- [Working in this PR app][demo].
+
+
+[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
+[prod]: https://SUBDOMAIN.readme.io
+[icn]:
+https://user-images.githubusercontent.com/886627/160426047-1bee9488-305a-4145-bb2b-09d8b757d38a.svg
+
+### ✨ New & Improved
+
+* add a readme-variable node compiler to `mdxishMdastToMd` ([#1317](https://github.com/readmeio/markdown/issues/1317)) ([eaaf77f](https://github.com/readmeio/markdown/commit/eaaf77f208c3cfb43c38b52c3dff0384632e23a0))
+* **magic-blocks:** create a micromark tokenizer for magic blocks ([#1301](https://github.com/readmeio/markdown/issues/1301)) ([17c5625](https://github.com/readmeio/markdown/commit/17c562504f2dff849f3afcfad961172cac8234d9))
+* support parsing and compiling jsx block syntax to the correct node type ([#1311](https://github.com/readmeio/markdown/issues/1311)) ([c83a819](https://github.com/readmeio/markdown/commit/c83a81906988d179780a33fbc85218174a22f7eb))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** code samples inside code block with underscores do not render correctly ([#1305](https://github.com/readmeio/markdown/issues/1305)) ([6f1d38b](https://github.com/readmeio/markdown/commit/6f1d38b1acb036f467ab4b852d772f463ae74e85))
+* glossary tooltip does not cause horizontal overflow ([#1307](https://github.com/readmeio/markdown/issues/1307)) ([fe012f3](https://github.com/readmeio/markdown/commit/fe012f3170c9bc76f57fbfdcfc889a7010303537))
+* image alignment in callout/blockquote, Image component for MDXish ([#1313](https://github.com/readmeio/markdown/issues/1313)) ([434252e](https://github.com/readmeio/markdown/commit/434252eb7853b7fa5cecc99bc1c1fcce24afc5d0))
+* **mdxish:** prevent stray backtick from making everything into a codeblock ([#1322](https://github.com/readmeio/markdown/issues/1322)) ([946eac3](https://github.com/readmeio/markdown/commit/946eac3bcba765c72866b5864bd50af7852d1bc4))
+
 ## Version 12.2.0
 ### ✨ New & Improved
 

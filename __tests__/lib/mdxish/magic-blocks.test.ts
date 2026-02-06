@@ -414,6 +414,88 @@ ${JSON.stringify(
         expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);
       });
     });
+
+    it('should normalize malformed emphasis syntax in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Syntax Type',
+      'h-1': 'Content',
+      '0-0': 'Asterisk bold',
+      '0-1': 'To make a body parameter optional, expand the **Huh what? **menu.',
+      '1-0': 'Asterisk italic',
+      '1-1': 'This has *malformed italic *text inside.',
+      '2-0': 'Asterisk bold with link',
+      '2-1': '**A customer issues the [restart command](https://example.com) ** in the shell',
+      '3-0': 'Underscore bold',
+      '3-1': 'Expand the __Whoa, who? __menu.',
+      '4-0': 'Underscore italic',
+      '4-1': 'This has _malformed italic _text inside.',
+    },
+    cols: 2,
+    rows: 5,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+      expect(element.tagName).toBe('table');
+
+      const tbody = element.children[1] as Element;
+
+      const row0 = tbody.children[0] as Element;
+      const asteriskBoldCell = row0.children[1] as Element;
+      const asteriskStrong = asteriskBoldCell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'strong',
+      ) as Element;
+      expect(asteriskStrong).toBeDefined();
+      expect(asteriskStrong.tagName).toBe('strong');
+
+      const row1 = tbody.children[1] as Element;
+      const asteriskItalicCell = row1.children[1] as Element;
+      const asteriskEm = asteriskItalicCell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'em',
+      ) as Element;
+      expect(asteriskEm).toBeDefined();
+      expect(asteriskEm.tagName).toBe('em');
+
+      const row2 = tbody.children[2] as Element;
+      const linkCell = row2.children[1] as Element;
+      const strongWithLink = linkCell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'strong',
+      ) as Element;
+      expect(strongWithLink).toBeDefined();
+      expect(strongWithLink.tagName).toBe('strong');
+      const linkElement = strongWithLink.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'a',
+      ) as Element;
+      expect(linkElement).toBeDefined();
+
+      const row3 = tbody.children[3] as Element;
+      const underscoreBoldCell = row3.children[1] as Element;
+      const underscoreStrong = underscoreBoldCell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'strong',
+      ) as Element;
+      expect(underscoreStrong).toBeDefined();
+      expect(underscoreStrong.tagName).toBe('strong');
+
+      const row4 = tbody.children[4] as Element;
+      const underscoreItalicCell = row4.children[1] as Element;
+      const underscoreEm = underscoreItalicCell.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'em',
+      ) as Element;
+      expect(underscoreEm).toBeDefined();
+      expect(underscoreEm.tagName).toBe('em');
+    });
   });
 
   describe('recipe block', () => {

@@ -1,5 +1,6 @@
 import type { Root as MdastRoot, RootContent } from 'mdast';
 
+import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib/mdxish';
 
 describe('mdxishMdastToMd', () => {
@@ -80,5 +81,64 @@ describe('mdxishMdastToMd', () => {
 
     const result = mdxishMdastToMd(mdast);
     expect(result).toBe('');
+  });
+
+  it('should convert readme-variable nodes back to {user.<name>} syntax', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'text', value: 'Hello ' },
+            {
+              type: NodeTypes.variable,
+              data: {
+                hName: 'Variable',
+                hProperties: { name: 'name' },
+              },
+              value: '{user.name}',
+            },
+            { type: 'text', value: '!' },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('Hello {user.name}!\n');
+  });
+
+  it('should handle multiple variable nodes in the same paragraph', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.variable,
+              data: {
+                hName: 'Variable',
+                hProperties: { name: 'name' },
+              },
+              value: '{user.name}',
+            },
+            { type: 'text', value: ' - ' },
+            {
+              type: NodeTypes.variable,
+              data: {
+                hName: 'Variable',
+                hProperties: { name: 'email' },
+              },
+              value: '{user.email}',
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('{user.name} - {user.email}\n');
   });
 });
