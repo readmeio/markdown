@@ -71,7 +71,7 @@ describe('mdxish html-block compiler', () => {
     // Find HTMLBlock within the callout
     const htmlBlock = findHTMLBlock(callout);
     expect(htmlBlock).toBeDefined();
-    expect(htmlBlock?.tagName).toBe('HTMLBlock');
+    expect(htmlBlock?.tagName).toBe('html-block');
   });
 
   it('compiles html blocks preserving newlines', () => {
@@ -95,7 +95,7 @@ const foo = () => {
     expect(paragraph.type).toBe('element');
     const htmlBlock = findHTMLBlock(paragraph);
     expect(htmlBlock).toBeDefined();
-    expect(htmlBlock?.tagName).toBe('HTMLBlock');
+    expect(htmlBlock?.tagName).toBe('html-block');
   });
 
   it('adds newlines for readability', () => {
@@ -107,7 +107,7 @@ const foo = () => {
     expect(paragraph.type).toBe('element');
     const htmlBlock = findHTMLBlock(paragraph);
     expect(htmlBlock).toBeDefined();
-    expect(htmlBlock?.tagName).toBe('HTMLBlock');
+    expect(htmlBlock?.tagName).toBe('html-block');
   });
 
   it('unescapes backticks in HTML content', () => {
@@ -119,7 +119,7 @@ const foo = () => {
     expect(paragraph.type).toBe('element');
     const htmlBlock = findHTMLBlock(paragraph);
     expect(htmlBlock).toBeDefined();
-    expect(htmlBlock?.tagName).toBe('HTMLBlock');
+    expect(htmlBlock?.tagName).toBe('html-block');
 
     // Verify that escaped backticks \` are unescaped to ` in the HTML
     const htmlProp = htmlBlock?.properties?.html as string;

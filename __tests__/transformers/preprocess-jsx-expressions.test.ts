@@ -179,8 +179,8 @@ describe('preprocessJSXExpressions', () => {
         const content = '<HTMLBlock>{`unclosed } { unclosed `}</HTMLBlock>';
         const tree = mdxish(content);
 
-        const htmlBlock = findElementByTagName(tree, 'HTMLBlock');
-        expect(htmlBlock?.tagName).toBe('HTMLBlock');
+        const htmlBlock = findElementByTagName(tree, 'html-block');
+        expect(htmlBlock?.tagName).toBe('html-block');
 
         const htmlProp = htmlBlock?.properties?.html as string;
         expect(htmlProp).toContain('unclosed } { unclosed ');
