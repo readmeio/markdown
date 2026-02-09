@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 13.1.0
+### ✨ New & Improved
+
+* correctly parse more malformed syntaxes ([#1316](https://github.com/readmeio/markdown/issues/1316)) ([87330c0](https://github.com/readmeio/markdown/commit/87330c05912f600bff82a8a668eb6f8973ae8ce7)), closes [#1279](https://github.com/readmeio/markdown/issues/1279)
+* **mdxish:** create mdxish safe mode ([#1323](https://github.com/readmeio/markdown/issues/1323)) ([2ef8816](https://github.com/readmeio/markdown/commit/2ef8816642d39897741f3450ee7df96132670ee2))
+
+### 🛠 Fixes & Updates
+
+* callout body using 2 blockquotes rendered as heading ([#1321](https://github.com/readmeio/markdown/issues/1321)) ([8b6fe88](https://github.com/readmeio/markdown/commit/8b6fe889f090d6e062f38b3c7f91103999ba3e13))
+* extend plain to accept htmlblock from mdxish ([#1314](https://github.com/readmeio/markdown/issues/1314)) ([638e639](https://github.com/readmeio/markdown/commit/638e639ca7a6cdeb23502cc4f00f38646c58373f))
+
 ## Version 13.0.0
 ### ⚠ BREAKING CHANGES
 
