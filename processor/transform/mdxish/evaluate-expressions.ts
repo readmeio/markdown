@@ -43,7 +43,7 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
           position: node.position,
         });
       } catch (_error) {
-        // if evaluation fails, leave the expression as-is (fallback to text)
+        // If evaluation fails, leave the expression as-is (fallback to text)
         // we still need to manually escape escaped characters because the expression
         // parser treats the contents as code instead of text, skipping the backslash escapes
         const processed = expression.replace(/\\([!-/:-@[-`{-~])/g, '$1');

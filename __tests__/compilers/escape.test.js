@@ -1,13 +1,15 @@
 import { mdast, mdx, mdxish } from '../../index';
 
-const getTextContent = hast => {
-  const texts = [];
-  const walk = node => {
-    if (node.value !== undefined) texts.push(node.value);
-    if (node.children) node.children.forEach(walk);
-  };
-  walk(hast);
-  return texts.join('');
+const findTag = (node, tag) => {
+  if (node.tagName === tag) return node;
+  if (!node.children) return null;
+
+  let result = null;
+  node.children.some(child => {
+    result = findTag(child, tag);
+    return result;
+  });
+  return result;
 };
 
 describe('escape compiler', () => {
@@ -32,17 +34,17 @@ describe('mdxish escape compiler', () => {
   });
 
   it('consumes backslash for escaped angle brackets', () => {
-    const text = getTextContent(mdxish('\\<foo\\>'));
+    const hast = mdxish('\\<foo\\>');
+    const paragraph = hast.children[0];
 
-    expect(text).toContain('<foo>');
-    expect(text).not.toContain('\\');
+    expect(paragraph.children[0].value).toBe('<foo>');
   });
 
   it('consumes backslash for escaped angle brackets inside a failed MDX expression', () => {
-    const text = getTextContent(mdxish('{"\\<foo>"}'));
+    const hast = mdxish('{"\\<foo>"}');
+    const paragraph = hast.children[0];
 
-    expect(text).toContain('<foo>');
-    expect(text).not.toContain('\\<');
+    expect(paragraph.children[0].value).toBe('<foo>');
   });
 
   it('consumes backslash in a table cell with a failed MDX expression', () => {
@@ -50,9 +52,11 @@ describe('mdxish escape compiler', () => {
 | --- | --- |
 | **\\-g '\\[{"role" : "\\<primary/secondary>"},{...}]'** | description |`;
 
-    const text = getTextContent(mdxish(md));
+    const hast = mdxish(md);
+    const tbody = findTag(hast, 'tbody');
+    const tr = findTag(tbody, 'tr');
+    const td = tr.children.find(c => c.tagName === 'td');
 
-    expect(text).toContain('<primary/secondary>');
-    expect(text).not.toContain('\\<');
+    expect(td.children[0].children[0].value).toBe('-g \'[{"role" : "<primary/secondary>"},{...}]\'');
   });
 });
