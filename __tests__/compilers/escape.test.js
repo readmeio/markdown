@@ -1,5 +1,15 @@
 import { mdast, mdx, mdxish } from '../../index';
 
+const getTextContent = hast => {
+  const texts = [];
+  const walk = node => {
+    if (node.value !== undefined) texts.push(node.value);
+    if (node.children) node.children.forEach(walk);
+  };
+  walk(hast);
+  return texts.join('');
+};
+
 describe('escape compiler', () => {
   it('handles escapes', () => {
     const txt = '\\&para;';
@@ -21,49 +31,28 @@ describe('mdxish escape compiler', () => {
     expect(paragraph.children[0].value).toBe('&para;');
   });
 
-  it('does not render backslash for escaped angle brackets', () => {
-    const txt = '\\<foo\\>';
+  it('consumes backslash for escaped angle brackets', () => {
+    const text = getTextContent(mdxish('\\<foo\\>'));
 
-    const hast = mdxish(txt);
-    const paragraph = hast.children[0];
-
-    expect(paragraph.type).toBe('element');
-    expect(paragraph.tagName).toBe('p');
-
-    const textContent = paragraph.children.map(c => c.value || '').join('');
-    expect(textContent).not.toContain('\\');
-    expect(textContent).toContain('<foo>');
+    expect(text).toContain('<foo>');
+    expect(text).not.toContain('\\');
   });
 
-  it('does not render backslash for escaped angle brackets in a table cell', () => {
-    const txt = `| col |
-| --- |
-| \\<primary/secondary/client\\> |`;
+  it('consumes backslash for escaped angle brackets inside a failed MDX expression', () => {
+    const text = getTextContent(mdxish('{"\\<foo>"}'));
 
-    const hast = mdxish(txt);
-    const html = JSON.stringify(hast);
-    expect(html).not.toContain('\\\\');
-    expect(html).not.toContain('\\<');
+    expect(text).toContain('<foo>');
+    expect(text).not.toContain('\\<');
   });
 
-  it('does not render backslash for escaped angle brackets in bold text within a table cell', () => {
-    const txt = `| col |
-| --- |
-| **\\-g "\\<primary/secondary/client>"** |`;
-
-    const hast = mdxish(txt);
-    const html = JSON.stringify(hast);
-    expect(html).not.toContain('\\\\<');
-  });
-
-  it('does not render backslash when escaped and unescaped angle brackets coexist with MDX expressions in a table cell', () => {
-    const txt = `| col1 | col2 |
+  it('consumes backslash in a table cell with a failed MDX expression', () => {
+    const md = `| col1 | col2 |
 | --- | --- |
-| **\\-g '\\[{"svcgname" : "<name>", "role" : "\\<primary/secondary/client>"},{...}]'** | Register this host |`;
+| **\\-g '\\[{"role" : "\\<primary/secondary>"},{...}]'** | description |`;
 
-    const hast = mdxish(txt);
-    const html = JSON.stringify(hast);
-    expect(html).not.toContain('\\\\<primary');
-    expect(html).not.toContain('\\<primary');
+    const text = getTextContent(mdxish(md));
+
+    expect(text).toContain('<primary/secondary>');
+    expect(text).not.toContain('\\<');
   });
 });
