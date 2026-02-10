@@ -80,6 +80,9 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const ensureHardBreaks = (text: string): string =>
   text.replace(/^\n+/, match => '<br>'.repeat(match.length)).replace(/(?<! {2})\n/g, '  \n');
 
+/** Preprocesses magic block body content before parsing. */
+const preprocessBody = (text: string): string => ensureHardBreaks(text);
+
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
@@ -265,7 +268,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(ensureHardBreaks(calloutJson.body || ''));
+        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''));
         children.push(...bodyBlocks);
       }
 
@@ -304,9 +307,7 @@ function transformMagicBlock(
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
-          children: sparseData[y]?.[x]
-            ? tokenizeCell(ensureHardBreaks(sparseData[y][x]))
-            : [{ type: 'text', value: '' }],
+          children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
         })),
         type: 'tableRow',
