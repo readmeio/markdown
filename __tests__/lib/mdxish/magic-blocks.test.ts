@@ -430,7 +430,7 @@ ${JSON.stringify(
 
     it('should not wrap code-tabs in paragraph tags', () => {
       const md = `Some text before
-  
+
   [block:code]
   {
     "codes": [
@@ -445,7 +445,7 @@ ${JSON.stringify(
     ]
   }
   [/block]
-  
+
   Some text after`;
 
       const ast = mdxish(md);
@@ -836,6 +836,44 @@ ${JSON.stringify(
 
       const nestedItems = nestedOl?.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
       expect(nestedItems?.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should lift callout out of paragraph when it follows a list item with a nested item after', () => {
+      const md = `- Item one
+
+- Item two
+[block:callout]
+{
+  "type": "info",
+  "body": "Callout body text"
+}
+[/block]
+  - nested item
+
+1. Open the security configuration.`;
+
+      const ast = mdxish(md);
+
+      const uls = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      const ols = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ol');
+      expect(uls).toHaveLength(1);
+      expect(ols).toHaveLength(1);
+
+      const listItems = uls[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      const secondLi = listItems[1];
+      expect(secondLi).toBeDefined();
+
+      const calloutInLi = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
+      expect(calloutInLi).toBeDefined();
+
+      const paragraphs = secondLi.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      paragraphs.forEach(p => {
+        const hasCallout = JSON.stringify(p).includes('"tagName":"Callout"');
+        expect(hasCallout).toBe(false);
+      });
+
+      const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(nestedUl).toBeDefined();
     });
   });
 
