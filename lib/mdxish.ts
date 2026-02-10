@@ -39,6 +39,7 @@ import {
   preserveBooleanProperties,
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
+import splitNewlines from '../processor/transform/mdxish/split-newlines';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -178,6 +179,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
+    .use(splitNewlines) // Split text nodes on literal newlines for soft-break rendering
     .use(rehypeSlug)
     .use(rehypeMdxishComponents, {
       components,
