@@ -16,7 +16,7 @@ function findElementByTagName(node: Element | Root, tagName: string): Element | 
 }
 
 describe('preprocessJSXExpressions', () => {
-  describe('Step 3: Evaluate attribute expressions', () => {
+  describe('Step 2: Evaluate attribute expressions', () => {
     it('should evaluate expressions in the attributes', () => {
       const content = '<div style={{ height: 1+1 + "px" }}>Link</div>';
       const result = preprocessJSXExpressions(content);
@@ -92,7 +92,7 @@ describe('preprocessJSXExpressions', () => {
     });
   });
 
-  describe('Step 4: Escape unbalanced braces', () => {
+  describe('Step 3: Escape unbalanced braces', () => {
     it('should not modify balanced braces', () => {
       const content = 'Hello {name}, your balance is {amount}';
       const result = preprocessJSXExpressions(content);
