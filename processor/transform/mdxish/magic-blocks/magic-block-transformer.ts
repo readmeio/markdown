@@ -70,6 +70,15 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
+/**
+ * Ensures bare newlines in magic block content become markdown hard breaks.
+ * In spirit of parity with legacy, we need this to ensure \n characters are treated the same
+ * In legacy, all \n in table cells were treated as hard line breaks.
+ * remark-parse now requires two trailing spaces before \n to be a hard break.
+ * This normalizes `word\n` to `word  \n` so remark-parse creates proper break nodes.
+ */
+const ensureHardBreaks = (text: string): string => text.replace(/(?<! {2})\n/g, '  \n');
+
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
@@ -255,7 +264,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(calloutJson.body || '');
+        const bodyBlocks = parseBlock(ensureHardBreaks(calloutJson.body || ''));
         children.push(...bodyBlocks);
       }
 
@@ -294,7 +303,9 @@ function transformMagicBlock(
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
-          children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
+          children: sparseData[y]?.[x]
+            ? tokenizeCell(ensureHardBreaks(sparseData[y][x]))
+            : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
         })),
         type: 'tableRow',

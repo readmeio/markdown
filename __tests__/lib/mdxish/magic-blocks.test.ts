@@ -277,6 +277,43 @@ ${JSON.stringify(
       expect((lastParagraph.children[0] as Element).properties.href).toBe('doc:an-introduction-to-webhooks-v3-1');
     });
 
+    it('should parse bare newlines (without trailing spaces) as line breaks in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Option',
+      'h-1': 'Description',
+      '0-0': '`format`',
+      '0-1':
+        'Sets the output format.\n&#8226; **JSON** returns structured data.\n&#8226; **XML** returns markup.\n&#8226; **CSV** returns flat rows.',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(element).toBeDefined();
+
+      const tbody = element!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const descriptionCell = row.children[1] as Element;
+
+      const cellContent = JSON.stringify(descriptionCell);
+      expect(cellContent).toContain('JSON');
+      expect(cellContent).toContain('XML');
+      expect(cellContent).toContain('CSV');
+
+      const hasBr = JSON.stringify(descriptionCell).includes('"tagName":"br"');
+      expect(hasBr).toBe(true);
+    });
+
     it('should normalize malformed emphasis syntax in table cells', () => {
       const md = `[block:parameters]
 ${JSON.stringify(
