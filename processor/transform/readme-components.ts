@@ -220,7 +220,15 @@ const coerceJsxToMd =
         position: node.position,
       };
 
-      parent.children[index] = mdNode;
+      // Wrap in a paragraph if at root level. Links are phrasing content and
+      // root children must all be the same category (per mdast spec). Mixing
+      // phrasing with flow content (headings, paragraphs, etc.) causes mdx()
+      // to collapse blank lines in the document.
+      if (parent.type === 'root') {
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
     } else if (node.name in types) {
       const hProperties = getAttrs<Properties>(node);
 
