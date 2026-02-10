@@ -26,7 +26,6 @@ D
     const tree = mdxish(md);
     expect(tree.children).toHaveLength(3);
 
-
     const firstParagraph = tree.children[0] as Element;
     expect(firstParagraph.children).toHaveLength(3);
     expect((firstParagraph.children[1] as Element).tagName).toBe('br');
