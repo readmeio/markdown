@@ -314,6 +314,38 @@ ${JSON.stringify(
       expect(hasBr).toBe(true);
     });
 
+    it('should parse leading newlines as line breaks in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Key',
+      'h-1': 'Value',
+      '0-0': 'status',
+      '0-1': '\nActive',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(element).toBeDefined();
+
+      const tbody = element!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const valueCell = row.children[1] as Element;
+
+      const cellContent = JSON.stringify(valueCell);
+      expect(cellContent).toContain('"tagName":"br"');
+      expect(cellContent).toContain('Active');
+    });
+
     it('should parse bare newlines in multi-row tables with complex cell content', () => {
       const md = `[block:parameters]
 ${JSON.stringify(

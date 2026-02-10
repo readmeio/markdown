@@ -77,7 +77,8 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
  * remark-parse now requires two trailing spaces before \n to be a hard break.
  * This normalizes `word\n` to `word  \n` so remark-parse creates proper break nodes.
  */
-const ensureHardBreaks = (text: string): string => text.replace(/(?<! {2})\n/g, '  \n');
+const ensureHardBreaks = (text: string): string =>
+  text.replace(/^\n+/, match => '<br>'.repeat(match.length)).replace(/(?<! {2})\n/g, '  \n');
 
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
