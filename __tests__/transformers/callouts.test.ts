@@ -1,5 +1,5 @@
 import type { Callout } from '../../types';
-import type { Heading, Paragraph } from 'mdast';
+import type { Heading } from 'mdast';
 
 import { removePosition } from 'unist-util-remove-position';
 
