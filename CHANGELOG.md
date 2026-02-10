@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 13.1.1
+### 🛠 Fixes & Updates
+
+* active tab color ([#1326](https://github.com/readmeio/markdown/issues/1326)) ([d53af3f](https://github.com/readmeio/markdown/commit/d53af3f66196961397c4ae8efaca9316d74ad2b6))
+* export `componentTagPattern` ([#1327](https://github.com/readmeio/markdown/issues/1327)) ([436be4f](https://github.com/readmeio/markdown/commit/436be4f01a3bdfa47ee17b7f49caa5fed77d0abd))
+
 ## Version 13.1.0
 ### ✨ New & Improved
 
