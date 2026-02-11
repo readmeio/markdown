@@ -426,7 +426,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
     }[] = [];
 
     visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
-      const parent = ancestors[ancestors.length - 1];
+      const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
       const index = parent.children.indexOf(node);
       if (index === -1) return;
 
@@ -437,6 +437,9 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         options,
       ) as unknown as RootContent[];
       if (!children.length) {
+        // `visitParents` doesn't support [Action, Index] returns like `visit` does;
+        // a bare return after splicing is sufficient since `visitParents` walks by
+        // tree structure rather than index.
         parent.children.splice(index, 1);
         return;
       }
@@ -451,7 +454,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         });
 
         replacements.push({
-          container: ancestors[ancestors.length - 2] || tree,
+          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           parent,
           blockNodes,
           inlineNodes,
