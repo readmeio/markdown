@@ -875,6 +875,81 @@ ${JSON.stringify(
       const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
       expect(nestedUl).toBeDefined();
     });
+
+    it('should lift html block out of paragraph when it follows a list item with a nested item after', () => {
+      const md = `- Item one
+
+- Item two
+[block:html]
+{
+  "html": "<div><strong>Important</strong></div>"
+}
+[/block]
+  - nested item
+
+1. Next section.`;
+
+      const ast = mdxish(md);
+
+      const uls = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(uls).toHaveLength(1);
+
+      const listItems = uls[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      const secondLi = listItems[1];
+      expect(secondLi).toBeDefined();
+
+      const hasHtmlBlock = JSON.stringify(secondLi).includes('"tagName":"html-block"');
+      expect(hasHtmlBlock).toBe(true);
+
+      const paragraphs = secondLi.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      paragraphs.forEach(p => {
+        const hasHtmlBlockInP = JSON.stringify(p).includes('"tagName":"html-block"');
+        expect(hasHtmlBlockInP).toBe(false);
+      });
+
+      const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(nestedUl).toBeDefined();
+    });
+
+    it('should lift code block out of paragraph when it follows a list item with a nested item after', () => {
+      const md = `- Item one
+
+- Item two
+[block:code]
+{
+  "codes": [
+    {
+      "code": "echo 'hello'",
+      "language": "bash"
+    }
+  ]
+}
+[/block]
+  - nested item
+
+1. Next section.`;
+
+      const ast = mdxish(md);
+
+      const uls = ast.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(uls).toHaveLength(1);
+
+      const listItems = uls[0].children.filter((c): c is Element => c.type === 'element' && c.tagName === 'li');
+      const secondLi = listItems[1];
+      expect(secondLi).toBeDefined();
+
+      const hasCodeTabs = JSON.stringify(secondLi).includes('"tagName":"CodeTabs"');
+      expect(hasCodeTabs).toBe(true);
+
+      const paragraphs = secondLi.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      paragraphs.forEach(p => {
+        const hasCodeTabsInP = JSON.stringify(p).includes('"tagName":"CodeTabs"');
+        expect(hasCodeTabsInP).toBe(false);
+      });
+
+      const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+      expect(nestedUl).toBeDefined();
+    });
   });
 
   describe('malformed JSON handling', () => {
