@@ -79,7 +79,9 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
 
 /** Preprocesses magic block body content before parsing. */
-const preprocessBody = (text: string): string => ensureLeadingBreaks(text);
+const preprocessBody = (text: string): string => {
+  return ensureLeadingBreaks(text);
+};
 
 /** Parses markdown and html to markdown nodes */
 const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
