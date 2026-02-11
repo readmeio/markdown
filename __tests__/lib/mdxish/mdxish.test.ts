@@ -1,5 +1,7 @@
 import type { Element, Root, RootContent } from 'hast';
 
+import { visit } from 'unist-util-visit';
+
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
 
@@ -19,6 +21,19 @@ function findElementByTagName(node: HastNode, tagName: string): Element | null {
     }, null);
   }
   return null;
+}
+
+/**
+ * Finds all heading elements in a HAST tree and returns their tagName and id.
+ */
+function findAllHeadings(tree: Root): { id: string; tagName: string }[] {
+  const headings: { id: string; tagName: string }[] = [];
+  visit(tree, 'element', (node: Element) => {
+    if (/^h[1-6]$/.test(node.tagName) && node.properties?.id) {
+      headings.push({ id: String(node.properties.id), tagName: node.tagName });
+    }
+  });
+  return headings;
 }
 
 describe('mdxish should render', () => {
@@ -176,6 +191,96 @@ describe('mdxish safeMode', () => {
       const mdast = processor.parse(parserReadyContent);
       const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
       expect(hasMdxExpression).toBe(true);
+    });
+  });
+});
+
+describe('heading slugs', () => {
+  it('should generate slugs from variable names, not resolved values', () => {
+    const md = '## Hello {user.name}';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(1);
+    expect(headings[0].id).toBe('hello-username');
+  });
+
+  it('should generate correct slugs for plain headings', () => {
+    const md = '## Plain heading';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(1);
+    expect(headings[0].id).toBe('plain-heading');
+  });
+
+  it('should handle multiple headings with variables', () => {
+    const md = '## Hello {user.name}\n\n## Goodbye {user.email}';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(2);
+    expect(headings[0].id).toBe('hello-username');
+    expect(headings[1].id).toBe('goodbye-useremail');
+  });
+
+  it('should deduplicate heading slugs', () => {
+    const md = '## Hello {user.name}\n\n## Hello {user.name}';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(2);
+    expect(headings[0].id).toBe('hello-username');
+    expect(headings[1].id).toBe('hello-username-1');
+  });
+
+  it('should handle mixed plain and variable headings', () => {
+    const md = '## Introduction\n\n## Welcome {user.name}\n\n## Summary';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(3);
+    expect(headings[0].id).toBe('introduction');
+    expect(headings[1].id).toBe('welcome-username');
+    expect(headings[2].id).toBe('summary');
+  });
+
+  it('should handle headings with only a variable', () => {
+    const md = '## {user.name}';
+    const tree = mdxish(md);
+    const headings = findAllHeadings(tree);
+    expect(headings).toHaveLength(1);
+    expect(headings[0].id).toBe('username');
+  });
+
+  describe('sourceHeadingTexts', () => {
+    it('should use provided texts for slugs instead of rendered content', () => {
+      const content = '## Hello World';
+      const tree = mdxish(content, { sourceHeadingTexts: ['Hello {user.name}'] });
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('hello-username');
+    });
+
+    it('should use source text for legacy variable headings', () => {
+      const content = '## Setup some-value';
+      const tree = mdxish(content, { sourceHeadingTexts: ['Setup <<MY_VAR>>'] });
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('setup-my_var');
+    });
+
+    it('should handle multiple headings with sourceHeadingTexts', () => {
+      const content = '## Hello World\n\n## Setup some-value';
+      const tree = mdxish(content, { sourceHeadingTexts: ['Hello {user.name}', 'Setup <<MY_VAR>>'] });
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].id).toBe('hello-username');
+      expect(headings[1].id).toBe('setup-my_var');
+    });
+
+    it('should deduplicate slugs from source texts', () => {
+      const content = '## Hello World\n\n## Hello World';
+      const tree = mdxish(content, { sourceHeadingTexts: ['Hello {user.name}', 'Hello {user.name}'] });
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].id).toBe('hello-username');
+      expect(headings[1].id).toBe('hello-username-1');
     });
   });
 });

@@ -6,7 +6,6 @@ import type { Extension } from 'micromark-util-types';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
-import rehypeSlug from 'rehype-slug';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -29,6 +28,7 @@ import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-componen
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
+import mdxishSlug from '../processor/transform/mdxish/mdxish-slug';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
@@ -60,6 +60,12 @@ export interface MdxishOpts {
    * Expressions will remain as literal text in the output.
    */
   safeMode?: boolean;
+  /**
+   * Pre-extracted heading texts from the raw markdown source (before variable
+   * resolution). When provided, heading IDs are based on these texts instead
+   * of the rendered content, keeping slugs stable regardless of variable values.
+   */
+  sourceHeadingTexts?: string[];
   useTailwind?: boolean;
 }
 
@@ -163,7 +169,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {} } = opts;
+  const { components: userComponents = {}, sourceHeadingTexts } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -178,7 +184,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
-    .use(rehypeSlug)
+    .use(mdxishSlug, { sourceHeadingTexts })
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
