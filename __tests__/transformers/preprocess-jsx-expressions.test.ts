@@ -187,6 +187,28 @@ describe('preprocessJSXExpressions', () => {
       });
     });
 
+    it('should escape unclosed braces in content with emojis', () => {
+      // Regression test: emojis are multi-byte Unicode that used to break position tracking
+      const content = '📘 test {';
+      const result = preprocessJSXExpressions(content);
+      expect(result).toBe('📘 test \\{');
+    });
+
+    it('should escape unclosed braces in blockquote with emoji', () => {
+      const content = '> 📘 test {';
+      const result = preprocessJSXExpressions(content);
+      expect(result).toBe('> 📘 test \\{');
+    });
+
+    it('should escape unclosed braces in multi-line callout with emoji', () => {
+      const content = `> 📘 Title
+>
+> test {`;
+      const result = preprocessJSXExpressions(content);
+      expect(result).toContain('\\{');
+      expect(() => mdxish(result)).not.toThrow();
+    });
+
     it('should handle string literals inside expressions', () => {
       // The closing brace inside the string should not close the expression
       const content = '{"}"}';

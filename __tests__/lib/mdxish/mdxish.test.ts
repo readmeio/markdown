@@ -34,6 +34,24 @@ describe('mdxish should render', () => {
       const md2 = 'This is an api: /param1/{param2 that has a unclosed curly brace';
       expect(() => mdxish(md2)).not.toThrow();
     });
+
+    it('should render unclosed curly braces in callouts with emojis', () => {
+      // Regression test for bug where emojis prevented brace escaping
+      const md = `> 📘 Note
+>
+> Content with unclosed brace: {`;
+      expect(() => mdxish(md)).not.toThrow();
+      
+      // Also test the exact bug report case
+      const bugReportCase = `test
+
+> 📘 Enter an optional title
+>
+> test
+>
+> test {`;
+      expect(() => mdxish(bugReportCase)).not.toThrow();
+    });
   });
 
   it('should render content in new lines', () => {
