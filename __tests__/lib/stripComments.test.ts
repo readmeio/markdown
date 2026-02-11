@@ -167,7 +167,6 @@ Thing
       const output = await stripComments(input);
       expect(output).toBe(input.trim());
     });
-
   });
 
   it('supports a magic block as the first line of the document', async () => {
@@ -255,6 +254,17 @@ end
 
 \\*literal\\*
 end"`);
+  });
+
+  it('preserves magic blocks with mdxish flag', async () => {
+    const input = `[block:html]
+{
+  "html": "<div>Hello</div>"
+}
+[/block]`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toMatchSnapshot();
   });
 
   // TODO: enable this test after fixing the heading parsing issue
