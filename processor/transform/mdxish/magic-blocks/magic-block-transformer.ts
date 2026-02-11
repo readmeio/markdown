@@ -23,6 +23,7 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
@@ -71,20 +72,17 @@ const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
 /**
- * Ensures bare newlines in magic block content become markdown hard breaks.
- * In spirit of parity with legacy, we need this to ensure \n characters are treated the same
- * In legacy, all \n in table cells were treated as hard line breaks.
- * remark-parse now requires two trailing spaces before \n to be a hard break.
- * This normalizes `word\n` to `word  \n` so remark-parse creates proper break nodes.
+ * Converts leading newlines in magic block content to `<br>` tags.
+ * Leading newlines are stripped by remark-parse before they become soft break nodes,
+ * so remark-breaks cannot handle them. We convert them to HTML `<br>` tags instead.
  */
-const ensureHardBreaks = (text: string): string =>
-  text.replace(/^\n+/, match => '<br>'.repeat(match.length)).replace(/(?<! {2})\n/g, '  \n');
+const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
 
 /** Preprocesses magic block body content before parsing. */
-const preprocessBody = (text: string): string => ensureHardBreaks(text);
+const preprocessBody = (text: string): string => ensureLeadingBreaks(text);
 
 /** Parses markdown and html to markdown nodes */
-const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
+const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
 
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];

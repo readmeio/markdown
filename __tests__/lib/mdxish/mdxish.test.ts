@@ -97,6 +97,41 @@ Hello** Wrong Bold**`;
   });
 });
 
+describe('mdxish hard breaks', () => {
+  it('should treat bare newlines as hard breaks in paragraphs', () => {
+    const md = 'line one\nline two\nline three';
+    const tree = mdxish(md);
+
+    const paragraph = tree.children.find((c): c is Element => c.type === 'element' && c.tagName === 'p');
+    expect(paragraph).toBeDefined();
+
+    const hasBr = JSON.stringify(paragraph).includes('"tagName":"br"');
+    expect(hasBr).toBe(true);
+  });
+
+  it('should treat bare newlines as hard breaks in list items', () => {
+    const md = '- item one\nstill item one\n- item two';
+    const tree = mdxish(md);
+
+    const list = tree.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
+    expect(list).toBeDefined();
+
+    const hasBr = JSON.stringify(list).includes('"tagName":"br"');
+    expect(hasBr).toBe(true);
+  });
+
+  it('should treat bare newlines as hard breaks in blockquotes', () => {
+    const md = '> line one\n> line two';
+    const tree = mdxish(md);
+
+    const blockquote = tree.children.find((c): c is Element => c.type === 'element' && c.tagName === 'blockquote');
+    expect(blockquote).toBeDefined();
+
+    const hasBr = JSON.stringify(blockquote).includes('"tagName":"br"');
+    expect(hasBr).toBe(true);
+  });
+});
+
 describe('mdxish safeMode', () => {
   describe('with safeMode: false (default)', () => {
     it('should evaluate inline expressions', () => {
