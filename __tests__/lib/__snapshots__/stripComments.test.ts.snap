@@ -22,14 +22,6 @@ exports[`removeComments > preserves magic blocks inside markdown lists 1`] = `
 * Item three with inline magic block [block:image]{ "images": [{ "image": ["test.png"] }]}[/block]"
 `;
 
-exports[`removeComments > preserves magic blocks with mdxish flag 1`] = `
-"[block:html]
-{
-  "html": "<div>Hello</div>"
-}
-[/block]"
-`;
-
 exports[`removeComments > removes HTML comments 1`] = `
 "Hello
 
