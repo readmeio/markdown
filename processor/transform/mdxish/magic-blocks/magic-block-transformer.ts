@@ -91,19 +91,39 @@ const htmlStringifier = unified().use(rehypeStringify);
 const processBackslashEscapes = (text: string): string =>
   text.replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
 
+/** Matches HTML tags (open, close, self-closing) with optional attributes. */
+const HTML_TAG_RE = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g;
+
 const escapeInvalidTags = (str: string): string =>
-  str.replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g, (match, tag, rest) =>
-    STANDARD_HTML_TAGS.has(tag.replace(/^\//, '').toLowerCase()) ? match : `&lt;${tag}${rest}&gt;`,
-  );
+  str.replace(HTML_TAG_RE, (match, tag, rest) => {
+    const tagName = tag.replace(/^\//, '');
+    if (STANDARD_HTML_TAGS.has(tagName.toLowerCase())) return match;
+    // Preserve PascalCase tags (custom components like <Glossary>) for the main pipeline
+    if (/^[A-Z]/.test(tagName)) return match;
+    return `&lt;${tag}${rest}&gt;`;
+  });
 
 /**
  * Process markdown within HTML string.
  * 1. Parse HTML to HAST
  * 2. Find text nodes, parse as markdown, convert to HAST
  * 3. Stringify back to HTML
+ *
+ * PascalCase component tags (e.g. `<Glossary>`) are temporarily replaced with
+ * placeholders before HTML parsing so `rehype-parse` doesn't mangle them
+ * (it treats unknown tags as void elements, stripping their children).
  */
 const processMarkdownInHtmlString = (html: string): string => {
-  const hast = htmlParser.parse(escapeInvalidTags(html)) as HastRoot;
+  const placeholders: [string, string][] = [];
+  let counter = 0;
+  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
+    if (!/^<\/?[A-Z]/.test(match)) return match;
+    const id = `<!--PC${(counter += 1)}-->`;
+    placeholders.push([id, match]);
+    return id;
+  });
+
+  const hast = htmlParser.parse(safened) as HastRoot;
 
   const textToHast = (text: string): HastRoot['children'] => {
     if (!text.trim()) return [{ type: 'text', value: text }];
@@ -122,7 +142,7 @@ const processMarkdownInHtmlString = (html: string): string => {
     node.children = processChildren(node.children) as ElementContent[];
   });
 
-  return htmlStringifier.stringify(hast);
+  return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
 };
 
 /**

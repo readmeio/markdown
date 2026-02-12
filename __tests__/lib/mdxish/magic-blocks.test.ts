@@ -406,6 +406,13 @@ ${JSON.stringify(
         ['<ol><li>item</li></ol>See [link](doc:page)', '<a href="doc:page">', 'links after HTML'],
         ['[link](doc:page)<ol><li>item</li></ol>', '<a href="doc:page">', 'links before HTML'],
         ['<div title="a>b">text</div>', 'a>b', 'gt inside quoted attribute preserved'],
+        ['<Glossary>parliament</Glossary>', '<Glossary>parliament</Glossary>', 'PascalCase component tags preserved'],
+        ['<Anchor>link text</Anchor>', '<Anchor>link text</Anchor>', 'Anchor component tag preserved'],
+        [
+          '<ul><li><Glossary>term</Glossary></li></ul>',
+          '<Glossary>term</Glossary>',
+          'PascalCase tags inside HTML preserved',
+        ],
       ])('%s contains %s (%s)', (input, expected) => {
         expect(getCellHtml(input)).toContain(expected);
       });
