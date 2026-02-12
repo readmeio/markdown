@@ -26,6 +26,11 @@ const types = {
   TutorialTile: NodeTypes.recipe, // coerce to recipe for backwards compatibility
 };
 
+// Node types that are phrasing (inline) content per the mdast spec. Phrasing
+// content at the document root violates the spec and causes mdx() to collapse
+// blank lines, so these must be wrapped in a paragraph when at root level.
+const phrasingTypes = new Set<string>([NodeTypes.variable]);
+
 enum TableNames {
   td = 'td',
   th = 'th',
@@ -242,7 +247,12 @@ const coerceJsxToMd =
         position: node.position,
       };
 
-      parent.children[index] = mdNode;
+      if (parent.type === 'root' && phrasingTypes.has(types[node.name])) {
+        // @ts-expect-error mdNode is typed as BlockContent but is actually phrasing content
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
     }
   };
 
