@@ -511,6 +511,125 @@ ${JSON.stringify(
       expect(html).toContain('bar baz');
     });
 
+    it('should parse bare newlines (without trailing spaces) as line breaks in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Option',
+      'h-1': 'Description',
+      '0-0': '`format`',
+      '0-1':
+        'Sets the output format.\n&#8226; **JSON** returns structured data.\n&#8226; **XML** returns markup.\n&#8226; **CSV** returns flat rows.',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(element).toBeDefined();
+
+      const tbody = element!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const descriptionCell = row.children[1] as Element;
+
+      const cellContent = JSON.stringify(descriptionCell);
+      expect(cellContent).toContain('JSON');
+      expect(cellContent).toContain('XML');
+      expect(cellContent).toContain('CSV');
+
+      const hasBr = JSON.stringify(descriptionCell).includes('"tagName":"br"');
+      expect(hasBr).toBe(true);
+    });
+
+    it('should parse leading newlines as line breaks in table cells', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Key',
+      'h-1': 'Value',
+      '0-0': 'status',
+      '0-1': '\nActive',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(element).toBeDefined();
+
+      const tbody = element!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const valueCell = row.children[1] as Element;
+
+      const cellContent = JSON.stringify(valueCell);
+      expect(cellContent).toContain('"tagName":"br"');
+      expect(cellContent).toContain('Active');
+    });
+
+    it('should parse bare newlines in multi-row tables with complex cell content', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'When...',
+      'h-1': 'Then...',
+      '0-0': 'When option A is selected,',
+      '1-0': 'When option B is selected,',
+      '2-0': 'When option C is selected,',
+      '0-1': 'enter the value in the **Input** field.\n\nFor example: `items/page/1`',
+      '1-1':
+        'configure these fields:\n   a. In the **Label** field, enter a name.\n&nbsp;&nbsp;&nbsp;For example: `color` or `size`.\n   b. In the **Amount** field, enter a number.\n&nbsp;&nbsp;&nbsp;For example: `5`. When combining multiple values, the result may look like:\n- `color=red; size=5`\n- `type=large, color=blue`',
+      '2-1':
+        'configure these fields:\n   a. In the **Key** field, enter the lookup key.\n&nbsp;&nbsp;&nbsp;For example: `region`\n   b. In the **Value** field, enter the lookup value.\n&nbsp;&nbsp;&nbsp;For example: `us-east` (the full path could look like: `http://example.com/api/?region=us-east`)',
+    },
+    cols: 2,
+    rows: 3,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(element).toBeDefined();
+
+      const tbody = element!.children[1] as Element;
+      expect(tbody.children).toHaveLength(3);
+
+      const firstRow = tbody.children[0] as Element;
+      const firstActionCell = firstRow.children[1] as Element;
+      expect(firstActionCell.children.length).toBeGreaterThan(1);
+
+      const secondRow = tbody.children[1] as Element;
+      const secondActionCell = secondRow.children[1] as Element;
+      const secondCellContent = JSON.stringify(secondActionCell);
+      expect(secondCellContent).toContain('"tagName":"br"');
+      expect(secondCellContent).toContain('Label');
+      expect(secondCellContent).toContain('Amount');
+
+      const thirdRow = tbody.children[2] as Element;
+      const thirdActionCell = thirdRow.children[1] as Element;
+      const thirdCellContent = JSON.stringify(thirdActionCell);
+      expect(thirdCellContent).toContain('"tagName":"br"');
+      expect(thirdCellContent).toContain('Key');
+    });
+
     it('should normalize malformed emphasis syntax in table cells', () => {
       const md = `[block:parameters]
 ${JSON.stringify(

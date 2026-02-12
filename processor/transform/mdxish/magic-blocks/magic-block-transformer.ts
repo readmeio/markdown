@@ -27,6 +27,7 @@ import type { Plugin } from 'unified';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -83,8 +84,20 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
+/**
+ * Converts leading newlines in magic block content to `<br>` tags.
+ * Leading newlines are stripped by remark-parse before they become soft break nodes,
+ * so remark-breaks cannot handle them. We convert them to HTML `<br>` tags instead.
+ */
+const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
+
+/** Preprocesses magic block body content before parsing. */
+const preprocessBody = (text: string): string => {
+  return ensureLeadingBreaks(text);
+};
+
 /** Markdown parser */
-const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
+const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
 const markdownToHtml = unified()
@@ -388,7 +401,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(calloutJson.body || '');
+        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''));
         children.push(...bodyBlocks);
       }
 
@@ -427,7 +440,7 @@ function transformMagicBlock(
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
-          children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
+          children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
         })),
         type: 'tableRow',

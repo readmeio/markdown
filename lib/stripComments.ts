@@ -21,19 +21,21 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
-  const processor = unified()
-    .data('micromarkExtensions', [magicBlock()])
-    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
-    .data('toMarkdownExtensions', [magicBlockToMarkdown()]);
+  const micromarkExtensions = [magicBlock()];
+  const fromMarkdownExtensions = [magicBlockFromMarkdown()];
 
   // we still require these two extensions because:
-  // 1. we can rely on remarkMdx to parse MDXish
+  // 1. we cant rely on remarkMdx to parse MDXish
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   if (mdxish) {
-    processor
-      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()]);
+    micromarkExtensions.push(mdxExpression({ allowEmpty: true }));
+    fromMarkdownExtensions.push(mdxExpressionFromMarkdown());
   }
+
+  const processor = unified()
+    .data('micromarkExtensions', micromarkExtensions)
+    .data('fromMarkdownExtensions', fromMarkdownExtensions)
+    .data('toMarkdownExtensions', [magicBlockToMarkdown()]);
 
   processor
     .use(remarkParse)
