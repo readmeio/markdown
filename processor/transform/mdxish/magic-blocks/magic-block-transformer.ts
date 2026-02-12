@@ -153,21 +153,15 @@ const processMarkdownInHtmlString = (html: string): string => {
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
-  // Strip leading whitespace (prevents indented code blocks) and remove
-  // blank lines next to HTML tags (prevents CommonMark from splitting HTML blocks).
-  const trimmedLines = processBackslashEscapes(text)
-    .split('\n')
-    .map(line => line.trimStart());
-  const processed = trimmedLines
-    .filter((line, i) => {
-      if (line) return true;
-      // Keep blank lines between non-HTML lines (paragraph breaks)
-      // Drop blank lines adjacent to HTML tag lines
-      const prev = i > 0 ? trimmedLines[i - 1] : '';
-      const next = i < trimmedLines.length - 1 ? trimmedLines[i + 1] : '';
-      return !/<\/?[a-zA-Z]/.test(prev) && !/<\/?[a-zA-Z]/.test(next);
-    })
-    .join('\n');
+  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
+  // CommonMark doesn't split them on blank lines.
+  // Then strip leading whitespace to prevent indented code blocks.
+  const escaped = processBackslashEscapes(text);
+  const normalized = escaped.replace(/<([a-zA-Z][a-zA-Z0-9-]*)[\s>][\s\S]*?<\/\1>/g, match =>
+    match.replace(/[^\S\n]*\n[^\S\n]*/g, '<br>'),
+  );
+  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown syntax inside HTML nodes (e.g. _emphasis_ within <li>)

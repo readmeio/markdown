@@ -417,10 +417,36 @@ ${JSON.stringify(
         expect(getCellHtml(input)).toContain(expected);
       });
 
+      it('converts newlines inside HTML blocks to <br> for spacing', () => {
+        const input = '<ul>\n<li>first</li>\n    text  \n  \n<li>second</li>\n</ul>';
+        const html = getCellHtml(input);
+
+        expect(html).toContain('<li>');
+        expect(html).toContain('first');
+        expect(html).toContain('second');
+        expect(html).toContain('<br><br>');
+      });
+
       it('escapes \\< to HTML entity', () => {
         const html = getCellHtml('\\<foo\\>');
         expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);
       });
+    });
+
+    it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {
+      const cellContent = 'First paragraph\n\nSecond paragraph';
+      const md = `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'a', '0-1': cellContent }, cols: 2, rows: 1 })}\n[/block]`;
+      const ast = mdxish(md);
+
+      const table = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(table).toBeDefined();
+
+      const tbody = table!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell = row.children[1] as Element;
+
+      const paragraphs = cell.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(2);
     });
 
     it('should not treat leading spaces in cell content as indented code blocks', () => {
