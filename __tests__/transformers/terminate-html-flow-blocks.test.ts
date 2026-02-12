@@ -167,4 +167,14 @@ Next line`;
 
     expect(elapsed).toBeLessThan(100);
   });
+
+  it('does not catastrophically backtrack on repeated self-closing tags', () => {
+    const input = `${'<a/>'.repeat(500)}`;
+
+    const start = performance.now();
+    terminateHtmlFlowBlocks(input);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+  });
 });

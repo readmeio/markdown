@@ -1,4 +1,4 @@
-const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^>]*\/?>|<\/[a-z][^>]*>)+\s*$/;
+const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 /**
  * Preprocessor to terminate HTML flow blocks.
