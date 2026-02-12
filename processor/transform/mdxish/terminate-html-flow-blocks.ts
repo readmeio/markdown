@@ -1,3 +1,5 @@
+import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
+
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
@@ -19,9 +21,13 @@ const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/
  * Only targets non-indented lines with lowercase tag names. Uppercase tags
  * (e.g., `<Table>`, `<MyComponent>`) are JSX custom components and don't
  * trigger CommonMark HTML blocks, so they are left untouched.
+ *
+ * Lines inside fenced code blocks are skipped entirely.
  */
 export function terminateHtmlFlowBlocks(content: string): string {
-  const lines = content.split('\n');
+  const { protectedContent, protectedCode } = protectCodeBlocks(content);
+
+  const lines = protectedContent.split('\n');
   const result: string[] = [];
 
   for (let i = 0; i < lines.length; i += 1) {
@@ -36,5 +42,5 @@ export function terminateHtmlFlowBlocks(content: string): string {
     }
   }
 
-  return result.join('\n');
+  return restoreCodeBlocks(result.join('\n'), protectedCode);
 }

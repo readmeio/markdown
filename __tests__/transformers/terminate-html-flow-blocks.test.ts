@@ -197,4 +197,26 @@ Next line`;
 
     expect(elapsed).toBeLessThan(100);
   });
+
+  it('does not modify HTML inside fenced code blocks but still terminates HTML outside them', () => {
+    const input = `\`\`\`html
+<div></div>
+\`\`\`
+<section></section>
+Some text
+\`\`\`
+<p></p>
+\`\`\``;
+
+    const result = terminateHtmlFlowBlocks(input);
+    expect(result).toBe(`\`\`\`html
+<div></div>
+\`\`\`
+<section></section>
+
+Some text
+\`\`\`
+<p></p>
+\`\`\``);
+  });
 });
