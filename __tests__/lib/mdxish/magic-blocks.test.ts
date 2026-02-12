@@ -405,6 +405,7 @@ ${JSON.stringify(
         ['<ol><li>[link](doc:page)</li></ol>', '<a href', 'links in HTML'],
         ['<ol><li>item</li></ol>See [link](doc:page)', '<a href="doc:page">', 'links after HTML'],
         ['[link](doc:page)<ol><li>item</li></ol>', '<a href="doc:page">', 'links before HTML'],
+        ['<div title="a>b">text</div>', 'a>b', 'gt inside quoted attribute preserved'],
       ])('%s contains %s (%s)', (input, expected) => {
         expect(getCellHtml(input)).toContain(expected);
       });
@@ -568,7 +569,7 @@ ${JSON.stringify(
 
     it('should not wrap code-tabs in paragraph tags', () => {
       const md = `Some text before
-  
+
   [block:code]
   {
     "codes": [
@@ -583,7 +584,7 @@ ${JSON.stringify(
     ]
   }
   [/block]
-  
+
   Some text after`;
 
       const ast = mdxish(md);

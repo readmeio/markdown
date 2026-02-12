@@ -92,7 +92,7 @@ const processBackslashEscapes = (text: string): string =>
   text.replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
 
 const escapeInvalidTags = (str: string): string =>
-  str.replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>/g, (match, tag, rest) =>
+  str.replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g, (match, tag, rest) =>
     STANDARD_HTML_TAGS.has(tag.replace(/^\//, '').toLowerCase()) ? match : `&lt;${tag}${rest}&gt;`,
   );
 
