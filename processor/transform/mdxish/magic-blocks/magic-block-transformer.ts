@@ -163,8 +163,8 @@ const parseTableCell = (text: string): MdastNode[] => {
       if (line) return true;
       // Keep blank lines between non-HTML lines (paragraph breaks)
       // Drop blank lines adjacent to HTML tag lines
-      const prev = trimmedLines[i - 1] ?? '';
-      const next = trimmedLines[i + 1] ?? '';
+      const prev = i > 0 ? trimmedLines[i - 1] : '';
+      const next = i < trimmedLines.length - 1 ? trimmedLines[i + 1] : '';
       return !/<\/?[a-zA-Z]/.test(prev) && !/<\/?[a-zA-Z]/.test(next);
     })
     .join('\n');
