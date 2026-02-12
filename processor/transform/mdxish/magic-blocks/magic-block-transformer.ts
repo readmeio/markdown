@@ -19,19 +19,32 @@ import type {
   MagicBlockTransformerOptions,
 } from './types';
 import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
+import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { htmlBlockNames } from 'micromark-util-html-tag-name';
+import rehypeParse from 'rehype-parse';
+import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
+import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import {
+  CLOSE_BLOCK_TAG_BOUNDARY_RE,
+  COMPLETE_HTML_ELEMENT_RE,
+  HTML_ELEMENT_BLOCK_RE,
+  HTML_TAG_RE,
+  NEWLINE_WITH_WHITESPACE_RE,
+} from './patterns';
 import {
   EMPTY_IMAGE_PLACEHOLDER,
   EMPTY_EMBED_PLACEHOLDER,
@@ -83,12 +96,132 @@ const preprocessBody = (text: string): string => {
   return ensureLeadingBreaks(text);
 };
 
-/** Parses markdown and html to markdown nodes */
+/** Markdown parser */
 const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
 
+/** Markdown to HTML processor (mdast → hast → HTML string) */
+const markdownToHtml = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(normalizeEmphasisAST)
+  .use(remarkRehype)
+  .use(rehypeStringify);
+
+/** HTML parser (HTML string → hast) */
+const htmlParser = unified().use(rehypeParse, { fragment: true });
+
+/** HTML stringifier (hast → HTML string) */
+const htmlStringifier = unified().use(rehypeStringify);
+
+/** Process \|, \<, \> backslash escapes. Only < is entity-escaped; > is left literal to avoid double-encoding by rehype. */
+const processBackslashEscapes = (text: string): string =>
+  text.replace(/\\<([^>]*)>/g, '&lt;$1>').replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '>' : c));
+
+/** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
+const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
+
+const escapeInvalidTags = (str: string): string =>
+  str.replace(HTML_TAG_RE, (match, tag, rest) => {
+    const tagName = tag.replace(/^\//, '');
+    if (STANDARD_HTML_TAGS.has(tagName.toLowerCase())) return match;
+    // Preserve PascalCase tags (custom components like <Glossary>) for the main pipeline
+    if (/^[A-Z]/.test(tagName)) return match;
+    return `&lt;${tag}${rest}&gt;`;
+  });
+
+/**
+ * Process markdown within HTML string.
+ * 1. Parse HTML to HAST
+ * 2. Find text nodes, parse as markdown, convert to HAST
+ * 3. Stringify back to HTML
+ *
+ * PascalCase component tags (e.g. `<Glossary>`) are temporarily replaced with
+ * placeholders before HTML parsing so `rehype-parse` doesn't mangle them
+ * (it treats unknown tags as void elements, stripping their children).
+ */
+const processMarkdownInHtmlString = (html: string): string => {
+  const placeholders: [string, string][] = [];
+  let counter = 0;
+  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
+    if (!/^<\/?[A-Z]/.test(match)) return match;
+    const id = `<!--PC${(counter += 1)}-->`;
+    placeholders.push([id, match]);
+    return id;
+  });
+
+  const hast = htmlParser.parse(safened) as HastRoot;
+
+  const textToHast = (text: string): HastRoot['children'] => {
+    if (!text.trim()) return [{ type: 'text', value: text }];
+
+    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
+    const nodes = parsed.children.flatMap(n =>
+      n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
+    );
+
+    const leading = text.match(/^\s+/)?.[0];
+    const trailing = text.match(/\s+$/)?.[0];
+    if (leading) nodes.unshift({ type: 'text', value: leading });
+    if (trailing) nodes.push({ type: 'text', value: trailing });
+
+    return nodes;
+  };
+
+  const processChildren = (children: HastRoot['children']): HastRoot['children'] =>
+    children.flatMap(child => (child.type === 'text' ? textToHast((child as HastText).value) : [child]));
+
+  hast.children = processChildren(hast.children);
+  visit(hast, 'element', (node: HastElement) => {
+    node.children = processChildren(node.children) as ElementContent[];
+  });
+
+  return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
+};
+
+/**
+ * Separate a closing block-level tag from the content that follows it.
+ *
+ * Each \n in the original text becomes a <br> tag to preserve spacing, then a
+ * blank line (\n\n) is appended so CommonMark ends the HTML block and parses
+ * the following content as markdown.
+ */
+const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: string, nextLineChar?: string) => {
+  if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
+
+  const newlineCount = (match.match(/\n/g) ?? []).length;
+  const breaks = '<br>'.repeat(newlineCount);
+
+  return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
+};
+
+/**
+ * CommonMark doesn't process markdown inside HTML blocks -
+ * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
+ * We parse first, then visit html nodes and process their text content.
+ */
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+
+  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
+  // CommonMark doesn't split them on blank lines.
+  // Then strip leading whitespace to prevent indented code blocks.
+  const escaped = processBackslashEscapes(text);
+  const normalized = escaped
+    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
+  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  const processed = trimmedLines.join('\n');
+  const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
+
+  // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
+  // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
+  visit(tree, 'html', (node: { type: 'html'; value: string }) => {
+    if (COMPLETE_HTML_ELEMENT_RE.test(node.value)) {
+      node.value = processMarkdownInHtmlString(node.value);
+    } else {
+      node.value = escapeInvalidTags(node.value);
+    }
+  });
 
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];

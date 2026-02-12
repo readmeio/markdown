@@ -1,4 +1,6 @@
-import type { Element } from 'hast';
+import type { Element, Text } from 'hast';
+
+import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
 
@@ -235,6 +237,108 @@ ${JSON.stringify(
       expect((cell1.children[0] as Element).tagName).toBe('em');
     });
 
+    it('should render backticks as code inside HTML elements with newlines', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Name',
+      'h-1': 'Description',
+      '0-0': '`foo`',
+      '0-1':
+        'Options: <ul>  \n  \n  <li>`bar`. First option.</li><li>`baz`. Second option.</li>\n</ul> Use `qux` for default.',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const element = ast.children.find(
+        child => child.type === 'element' && (child as Element).tagName === 'table',
+      ) as Element;
+
+      expect(element).toBeDefined();
+
+      const tbody = element.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const descriptionCell = row.children[1] as Element;
+
+      const findCodeElements = (node: Element): Element[] => {
+        const codes: Element[] = [];
+        if (node.tagName === 'code') codes.push(node);
+        if (node.children) {
+          node.children.forEach(child => {
+            if (child.type === 'element') {
+              codes.push(...findCodeElements(child as Element));
+            }
+          });
+        }
+        return codes;
+      };
+
+      const codeElements = findCodeElements(descriptionCell);
+      const codeTexts = codeElements.map(el => (el.children[0] as { value: string })?.value);
+
+      expect(codeTexts).toContain('bar');
+      expect(codeTexts).toContain('baz');
+      expect(codeTexts).toContain('qux');
+    });
+
+    it('should escape invalid HTML tags and process markdown emphasis inside HTML elements', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Name',
+      'h-1': 'Value',
+      '0-0': 'foo',
+      '0-1': '<ul>\n<li>_\\<placeholder>_.example.com</li>\n</ul>',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const table = ast.children.find(
+        (child): child is Element => child.type === 'element' && child.tagName === 'table',
+      );
+      expect(table).toBeDefined();
+
+      const tbody = table!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const valueCell = row.children[1] as Element;
+
+      const findText = (node: Element | Text): string[] => {
+        if ('value' in node) return [node.value as string];
+        if ('children' in node) {
+          return (node.children as (Element | Text)[]).flatMap(child => findText(child));
+        }
+        return [];
+      };
+
+      const allText = findText(valueCell).join(' ');
+      expect(allText).toContain('placeholder');
+
+      const findEm = (node: Element | Text): boolean => {
+        if (node.type === 'element' && (node as Element).tagName === 'em') return true;
+        if ('children' in node) {
+          return (node.children as (Element | Text)[]).some(child => findEm(child));
+        }
+        return false;
+      };
+      expect(findEm(valueCell)).toBe(true);
+    });
+
     it('should preserve multiple paragraphs with links in table cells', () => {
       const md = `
 [block:parameters]
@@ -275,6 +379,136 @@ ${JSON.stringify(
       expect(lastParagraph.tagName).toBe('p');
       expect((lastParagraph.children[0] as Element).tagName).toBe('a');
       expect((lastParagraph.children[0] as Element).properties.href).toBe('doc:an-introduction-to-webhooks-v3-1');
+    });
+
+    describe('cell preprocessing', () => {
+      const createBlock = (cell: string): string =>
+        `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'k', '0-1': cell }, cols: 2, rows: 1 })}\n[/block]`;
+
+      const getCellHtml = (input: string): string => {
+        const html = toHtml(mdxish(createBlock(input)));
+        const match = html.match(/<tbody>.*?<tr>.*?<td[^>]*>.*?<\/td><td[^>]*>(.*?)<\/td>/s);
+        return match ? match[1] : '';
+      };
+
+      it.each([
+        ['\\|', '|', 'pipe escape'],
+        ['yes\\|no', 'yes|no', 'pipe in text'],
+        ['<placeholder>', 'placeholder', 'invalid tag escaped'],
+        ['<ul><li>x</li></ul>', '<ul>', 'valid tags preserved'],
+        ['`<lang>`', 'lang', 'code span content preserved'],
+        ['`URL=<host>`', 'host', 'angle brackets in code'],
+        ['<ul><li>_em_</li></ul>', '<em>', 'emphasis in HTML'],
+        ['<ul><li>`code`</li></ul>', '<code>', 'code in HTML'],
+        ['_\\<x>_', '<em>', 'backslash + emphasis'],
+        ['snake_case', 'snake_case', 'underscore in word preserved'],
+        ['<ol><li>[link](doc:page)</li></ol>', '<a href', 'links in HTML'],
+        ['<ol><li>item</li></ol>See [link](doc:page)', '<a href="doc:page">', 'links after HTML'],
+        ['[link](doc:page)<ol><li>item</li></ol>', '<a href="doc:page">', 'links before HTML'],
+        ['<div title="a>b">text</div>', 'a>b', 'gt inside quoted attribute preserved'],
+        ['<Glossary>parliament</Glossary>', '<Glossary>parliament</Glossary>', 'PascalCase component tags preserved'],
+        ['<Anchor>link text</Anchor>', '<Anchor>link text</Anchor>', 'Anchor component tag preserved'],
+        [
+          '<ul><li><Glossary>term</Glossary></li></ul>',
+          '<Glossary>term</Glossary>',
+          'PascalCase tags inside HTML preserved',
+        ],
+        ['https://<i>\\<server></i>/api/login', '/api/login', 'inline close tag does not split trailing path'],
+      ])('%s contains %s (%s)', (input, expected) => {
+        expect(getCellHtml(input)).toContain(expected);
+      });
+
+      it('converts newlines inside HTML blocks to <br> for spacing', () => {
+        const input = '<ul>\n<li>first</li>\n    text  \n  \n<li>second</li>\n</ul>';
+        const html = getCellHtml(input);
+
+        expect(html).toContain('<li>');
+        expect(html).toContain('first');
+        expect(html).toContain('second');
+        expect(html).toContain('<br><br>');
+      });
+
+      it.each([
+        ['\\n\\n', '<ul>\n<li>foo</li>\n</ul>\n\nNext.', '</ul><br><br>', 'converts to <br><br>'],
+        ['\\n', '<ul>\n<li>foo</li>\n</ul>\nNext.', '</ul><br>', 'converts to <br>'],
+      ])('after closing block tag with %s: %s', (_, input, expected) => {
+        expect(getCellHtml(input)).toContain(expected);
+      });
+
+      it('escapes \\< to HTML entity', () => {
+        const html = getCellHtml('\\<foo\\>');
+        expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);
+      });
+
+      it('preserves <i> tags wrapping backslash-escaped content', () => {
+        const html = getCellHtml('<i>\\<my_host></i>');
+        expect(html).toContain('<i>');
+        expect(html).toContain('</i>');
+      });
+
+      it('preserves <i> tags in complex cell with newlines and backslash escapes', () => {
+        const input =
+          'https\\://<i>\\<my_host></i>/api/login  \n  \nwhere <i>\\<my_host></i> is the FQDN of your server.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<i>');
+        expect(cellHtml).not.toContain('<i></i>');
+      });
+
+      it('separates text after closing HTML tag into its own paragraph', () => {
+        const input = '<ul>\n<li>Item one.\n<li>Item two.\n</li></ul> See [link](doc:page).  \n  \nNext paragraph.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('</a>');
+        expect(cellHtml).toContain('</a>.');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+      });
+
+      it('separates text immediately after closing HTML tags with no whitespace', () => {
+        const input =
+          '<ol><li>Verify your configuration is correct.</ol></li>To resolve this issue, add the item to a custom list.  \n  \nFor more information, see [Add a list](doc:add-list) and [Manage settings](doc:manage-settings).';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('To resolve');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('href="doc:add-list"');
+      });
+
+      it('separates text on the next line after a closing HTML tag into its own paragraph', () => {
+        const input =
+          '<ol><li>Check the activity report. For more information, see [Activity summary](doc:activity-summary).\n<li>If no data is logged, verify that the server forwards requests correctly.</li> </ol>\nYou can also configure the client to send requests directly.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('You can also configure');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {
+      const cellContent = 'First paragraph\n\nSecond paragraph';
+      const md = `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'a', '0-1': cellContent }, cols: 2, rows: 1 })}\n[/block]`;
+      const ast = mdxish(md);
+
+      const table = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(table).toBeDefined();
+
+      const tbody = table!.children[1] as Element;
+      const row = tbody.children[0] as Element;
+      const cell = row.children[1] as Element;
+
+      const paragraphs = cell.children.filter(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(paragraphs).toHaveLength(2);
+    });
+
+    it('should not treat leading spaces in cell content as indented code blocks', () => {
+      const cellContent = '<ul>\n<li>foo</li>\n     bar baz\n  \n<li>qux</li>\n</ul>';
+      const md = `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'a', '0-1': cellContent }, cols: 2, rows: 1 })}\n[/block]`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).not.toContain('<pre><code>');
+      expect(html).toContain('bar baz');
     });
 
     it('should parse bare newlines (without trailing spaces) as line breaks in table cells', () => {
