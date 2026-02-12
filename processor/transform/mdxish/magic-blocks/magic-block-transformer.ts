@@ -38,6 +38,13 @@ import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
+  CLOSE_BLOCK_TAG_BOUNDARY_RE,
+  COMPLETE_HTML_ELEMENT_RE,
+  HTML_ELEMENT_BLOCK_RE,
+  HTML_TAG_RE,
+  NEWLINE_WITH_WHITESPACE_RE,
+} from './patterns';
+import {
   EMPTY_IMAGE_PLACEHOLDER,
   EMPTY_EMBED_PLACEHOLDER,
   EMPTY_CODE_PLACEHOLDER,
@@ -94,23 +101,8 @@ const processBackslashEscapes = (text: string): string =>
     .replace(/\\<([^>]*)>/g, '&lt;$1&gt;')
     .replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
 
-/** Matches HTML tags (open, close, self-closing) with optional attributes. */
-const HTML_TAG_RE = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g;
-
-/** Matches an HTML element from its opening tag to the matching closing tag. */
-const HTML_ELEMENT_BLOCK_RE = /<([a-zA-Z][a-zA-Z0-9-]*)[\s>][\s\S]*?<\/\1>/g;
-
-/** Matches a newline with surrounding horizontal whitespace. */
-const NEWLINE_WITH_WHITESPACE_RE = /[^\S\n]*\n[^\S\n]*/g;
-
 /** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
 const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
-
-/** Matches a closing block-level tag followed by non-tag text or by a newline then non-blank content. */
-const CLOSE_BLOCK_TAG_BOUNDARY_RE = /<\/([a-zA-Z][a-zA-Z0-9-]*)>\s*(?:(?!<)(\S)|\n([^\n]))/g;
-
-/** Tests whether a string contains a complete HTML element (open + close tag). */
-const COMPLETE_HTML_ELEMENT_RE = /<[a-zA-Z][^>]*>[\s\S]*<\/[a-zA-Z]/;
 
 const escapeInvalidTags = (str: string): string =>
   str.replace(HTML_TAG_RE, (match, tag, rest) => {
