@@ -416,6 +416,15 @@ ${JSON.stringify(
       });
     });
 
+    it('should not treat leading spaces in cell content as indented code blocks', () => {
+      const cellContent = '<ul>\n<li>foo</li>\n     bar baz\n  \n<li>qux</li>\n</ul>';
+      const md = `[block:parameters]\n${JSON.stringify({ data: { 'h-0': 'K', 'h-1': 'V', '0-0': 'a', '0-1': cellContent }, cols: 2, rows: 1 })}\n[/block]`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).not.toContain('<pre><code>');
+      expect(html).toContain('bar baz');
+    });
+
     it('should normalize malformed emphasis syntax in table cells', () => {
       const md = `[block:parameters]
 ${JSON.stringify(

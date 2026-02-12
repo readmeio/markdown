@@ -126,15 +126,6 @@ const processMarkdownInHtmlString = (html: string): string => {
 };
 
 /**
- * Visit all html nodes in MDAST and process markdown within them.
- */
-const processMarkdownInHtmlNodes = (tree: MdastRoot): void => {
-  visit(tree, 'html', (node: { type: 'html'; value: string }) => {
-    node.value = processMarkdownInHtmlString(node.value.replace(/\n/g, '<br>'));
-  });
-};
-
-/**
  * CommonMark doesn't process markdown inside HTML blocks -
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
@@ -142,9 +133,27 @@ const processMarkdownInHtmlNodes = (tree: MdastRoot): void => {
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
-  const processed = processBackslashEscapes(text);
+  // Strip leading whitespace (prevents indented code blocks) and remove
+  // blank lines next to HTML tags (prevents CommonMark from splitting HTML blocks).
+  const trimmedLines = processBackslashEscapes(text)
+    .split('\n')
+    .map(line => line.trimStart());
+  const processed = trimmedLines
+    .filter((line, i) => {
+      if (line) return true;
+      // Keep blank lines between non-HTML lines (paragraph breaks)
+      // Drop blank lines adjacent to HTML tag lines
+      const prev = trimmedLines[i - 1] ?? '';
+      const next = trimmedLines[i + 1] ?? '';
+      return !/<\/?[a-zA-Z]/.test(prev) && !/<\/?[a-zA-Z]/.test(next);
+    })
+    .join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
-  processMarkdownInHtmlNodes(tree);
+
+  // Process markdown syntax inside HTML nodes (e.g. _emphasis_ within <li>)
+  visit(tree, 'html', (node: { type: 'html'; value: string }) => {
+    node.value = processMarkdownInHtmlString(node.value);
+  });
 
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
