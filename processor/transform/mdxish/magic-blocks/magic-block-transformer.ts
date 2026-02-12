@@ -19,18 +19,32 @@ import type {
   MagicBlockTransformerOptions,
 } from './types';
 import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
+import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { htmlBlockNames } from 'micromark-util-html-tag-name';
+import rehypeParse from 'rehype-parse';
+import rehypeStringify from 'rehype-stringify';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { SKIP, visit } from 'unist-util-visit';
+import { visitParents } from 'unist-util-visit-parents';
 
+import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import {
+  CLOSE_BLOCK_TAG_BOUNDARY_RE,
+  COMPLETE_HTML_ELEMENT_RE,
+  HTML_ELEMENT_BLOCK_RE,
+  HTML_TAG_RE,
+  NEWLINE_WITH_WHITESPACE_RE,
+} from './patterns';
 import {
   EMPTY_IMAGE_PLACEHOLDER,
   EMPTY_EMBED_PLACEHOLDER,
@@ -70,12 +84,144 @@ const imgWidthBySize = new Proxy(imgSizeValues, {
 const textToInline = (text: string): MdastNode[] => [{ type: 'text', value: text }];
 const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(text), type: 'paragraph' }];
 
-/** Parses markdown and html to markdown nodes */
-const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
+/**
+ * Converts leading newlines in magic block content to `<br>` tags.
+ * Leading newlines are stripped by remark-parse before they become soft break nodes,
+ * so remark-breaks cannot handle them. We convert them to HTML `<br>` tags instead.
+ */
+const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
 
+/** Preprocesses magic block body content before parsing. */
+const preprocessBody = (text: string): string => {
+  return ensureLeadingBreaks(text);
+};
+
+/** Markdown parser */
+const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
+
+/** Markdown to HTML processor (mdast → hast → HTML string) */
+const markdownToHtml = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(normalizeEmphasisAST)
+  .use(remarkRehype)
+  .use(rehypeStringify);
+
+/** HTML parser (HTML string → hast) */
+const htmlParser = unified().use(rehypeParse, { fragment: true });
+
+/** HTML stringifier (hast → HTML string) */
+const htmlStringifier = unified().use(rehypeStringify);
+
+/** Process \|, \<, \> backslash escapes. Only < is entity-escaped; > is left literal to avoid double-encoding by rehype. */
+const processBackslashEscapes = (text: string): string =>
+  text.replace(/\\<([^>]*)>/g, '&lt;$1>').replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '>' : c));
+
+/** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
+const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
+
+const escapeInvalidTags = (str: string): string =>
+  str.replace(HTML_TAG_RE, (match, tag, rest) => {
+    const tagName = tag.replace(/^\//, '');
+    if (STANDARD_HTML_TAGS.has(tagName.toLowerCase())) return match;
+    // Preserve PascalCase tags (custom components like <Glossary>) for the main pipeline
+    if (/^[A-Z]/.test(tagName)) return match;
+    return `&lt;${tag}${rest}&gt;`;
+  });
+
+/**
+ * Process markdown within HTML string.
+ * 1. Parse HTML to HAST
+ * 2. Find text nodes, parse as markdown, convert to HAST
+ * 3. Stringify back to HTML
+ *
+ * PascalCase component tags (e.g. `<Glossary>`) are temporarily replaced with
+ * placeholders before HTML parsing so `rehype-parse` doesn't mangle them
+ * (it treats unknown tags as void elements, stripping their children).
+ */
+const processMarkdownInHtmlString = (html: string): string => {
+  const placeholders: [string, string][] = [];
+  let counter = 0;
+  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
+    if (!/^<\/?[A-Z]/.test(match)) return match;
+    const id = `<!--PC${(counter += 1)}-->`;
+    placeholders.push([id, match]);
+    return id;
+  });
+
+  const hast = htmlParser.parse(safened) as HastRoot;
+
+  const textToHast = (text: string): HastRoot['children'] => {
+    if (!text.trim()) return [{ type: 'text', value: text }];
+
+    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
+    const nodes = parsed.children.flatMap(n =>
+      n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
+    );
+
+    const leading = text.match(/^\s+/)?.[0];
+    const trailing = text.match(/\s+$/)?.[0];
+    if (leading) nodes.unshift({ type: 'text', value: leading });
+    if (trailing) nodes.push({ type: 'text', value: trailing });
+
+    return nodes;
+  };
+
+  const processChildren = (children: HastRoot['children']): HastRoot['children'] =>
+    children.flatMap(child => (child.type === 'text' ? textToHast((child as HastText).value) : [child]));
+
+  hast.children = processChildren(hast.children);
+  visit(hast, 'element', (node: HastElement) => {
+    node.children = processChildren(node.children) as ElementContent[];
+  });
+
+  return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
+};
+
+/**
+ * Separate a closing block-level tag from the content that follows it.
+ *
+ * Each \n in the original text becomes a <br> tag to preserve spacing, then a
+ * blank line (\n\n) is appended so CommonMark ends the HTML block and parses
+ * the following content as markdown.
+ */
+const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: string, nextLineChar?: string) => {
+  if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
+
+  const newlineCount = (match.match(/\n/g) ?? []).length;
+  const breaks = '<br>'.repeat(newlineCount);
+
+  return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
+};
+
+/**
+ * CommonMark doesn't process markdown inside HTML blocks -
+ * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
+ * We parse first, then visit html nodes and process their text content.
+ */
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
-  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+
+  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
+  // CommonMark doesn't split them on blank lines.
+  // Then strip leading whitespace to prevent indented code blocks.
+  const escaped = processBackslashEscapes(text);
+  const normalized = escaped
+    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
+  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  const processed = trimmedLines.join('\n');
+  const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
+
+  // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
+  // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
+  visit(tree, 'html', (node: { type: 'html'; value: string }) => {
+    if (COMPLETE_HTML_ELEMENT_RE.test(node.value)) {
+      node.value = processMarkdownInHtmlString(node.value);
+    } else {
+      node.value = escapeInvalidTags(node.value);
+    }
+  });
 
   if (tree.children.length > 1) {
     return tree.children as MdastNode[];
@@ -255,7 +401,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(calloutJson.body || '');
+        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''));
         children.push(...bodyBlocks);
       }
 
@@ -294,7 +440,7 @@ function transformMagicBlock(
       const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
-          children: sparseData[y]?.[x] ? tokenizeCell(sparseData[y][x]) : [{ type: 'text', value: '' }],
+          children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
           type: y === 0 ? 'tableHead' : 'tableCell',
         })),
         type: 'tableRow',
@@ -420,12 +566,15 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       after: RootContent[];
       before: RootContent[];
       blockNodes: RootContent[];
+      container: Parent;
       inlineNodes: RootContent[];
       parent: Parent;
     }[] = [];
 
-    visit(tree, 'magicBlock', (node: MagicBlockNode, index: number | undefined, parent: Parent | undefined) => {
-      if (!parent || index === undefined) return undefined;
+    visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
+      const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
+      const index = parent.children.indexOf(node);
+      if (index === -1) return;
 
       const children = transformMagicBlock(
         node.blockType,
@@ -434,9 +583,11 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         options,
       ) as unknown as RootContent[];
       if (!children.length) {
-        // Remove the node if transformation returns nothing
+        // `visitParents` doesn't support [Action, Index] returns like `visit` does;
+        // a bare return after splicing is sufficient since `visitParents` walks by
+        // tree structure rather than index.
         parent.children.splice(index, 1);
-        return [SKIP, index];
+        return;
       }
 
       // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
@@ -444,67 +595,47 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         const blockNodes: RootContent[] = [];
         const inlineNodes: RootContent[] = [];
 
-        // Separate block and inline nodes
         children.forEach(child => {
-          if (isBlockNode(child)) {
-            blockNodes.push(child);
-          } else {
-            inlineNodes.push(child);
-          }
+          (isBlockNode(child) ? blockNodes : inlineNodes).push(child);
         });
 
-        const before = parent.children.slice(0, index);
-        const after = parent.children.slice(index + 1);
-
         replacements.push({
+          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           parent,
           blockNodes,
           inlineNodes,
-          before,
-          after,
+          before: parent.children.slice(0, index) as RootContent[],
+          after: parent.children.slice(index + 1) as RootContent[],
         });
       } else {
-        // Normal case: just replace the inlineCode with the children
         parent.children.splice(index, 1, ...children);
       }
-      return undefined;
     });
 
     // Second pass: apply replacements that require lifting block nodes out of paragraphs
     // Process in reverse order to maintain correct indices
     for (let i = replacements.length - 1; i >= 0; i -= 1) {
-      const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
+      const { after, before, blockNodes, container, inlineNodes, parent } = replacements[i];
+      const containerChildren = container.children as RootContent[];
+      const paraIndex = containerChildren.indexOf(parent as RootContent);
 
-      // Find the paragraph's position in the root
-      const rootChildren = tree.children;
-      const paraIndex = rootChildren.findIndex(child => child === parent);
       if (paraIndex === -1) {
-        // Paragraph not found in root - fall back to normal replacement
-        // This shouldn't happen normally, but handle it gracefully
-        // Reconstruct the original index from before.length
-        const originalIndex = before.length;
-        parent.children.splice(originalIndex, 1, ...blockNodes, ...inlineNodes);
+        parent.children.splice(before.length, 1, ...blockNodes, ...inlineNodes);
         // eslint-disable-next-line no-continue
         continue;
       }
 
-      // Update or remove the paragraph
       if (inlineNodes.length > 0) {
-        // Keep paragraph with inline nodes
         parent.children = [...before, ...inlineNodes, ...after];
-        // Insert block nodes after the paragraph
         if (blockNodes.length > 0) {
-          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
         }
       } else if (before.length === 0 && after.length === 0) {
-        // Remove empty paragraph and replace with block nodes
-        rootChildren.splice(paraIndex, 1, ...blockNodes);
+        containerChildren.splice(paraIndex, 1, ...blockNodes);
       } else {
-        // Keep paragraph with remaining content
         parent.children = [...before, ...after];
-        // Insert block nodes after the paragraph
         if (blockNodes.length > 0) {
-          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
         }
       }
     }
