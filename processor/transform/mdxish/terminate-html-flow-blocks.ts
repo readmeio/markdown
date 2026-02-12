@@ -1,5 +1,7 @@
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
+const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
+
 /**
  * Preprocessor to terminate HTML flow blocks.
  *
@@ -25,7 +27,11 @@ export function terminateHtmlFlowBlocks(content: string): string {
   for (let i = 0; i < lines.length; i += 1) {
     result.push(lines[i]);
 
-    if (i < lines.length - 1 && STANDALONE_HTML_LINE_REGEX.test(lines[i]) && lines[i + 1].trim().length > 0) {
+    if (
+      i < lines.length - 1 &&
+      (STANDALONE_HTML_LINE_REGEX.test(lines[i]) || HTML_LINE_WITH_CONTENT_REGEX.test(lines[i])) &&
+      lines[i + 1].trim().length > 0
+    ) {
       result.push('');
     }
   }

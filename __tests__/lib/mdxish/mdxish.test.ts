@@ -290,6 +290,21 @@ console.log('hello');
     expect(img).not.toBeNull();
   });
 
+  it('should not swallow a magic block callout after an HTML block with text content', () => {
+    const md = `<div><p>Inner text</p></div>Outer text
+[block:callout]
+{
+  "type": "success",
+  "body": "This callout should render."
+}
+[/block]`;
+
+    const ast = mdxish(md);
+    const callout = findElementByTagName(ast, 'Callout');
+    expect(callout).not.toBeNull();
+    expect(callout!.properties.theme).toBe('okay');
+  });
+
   it('should not swallow content after multiple HTML tags', () => {
     const md = `<div></div>
 <section></section>
