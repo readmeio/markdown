@@ -428,6 +428,13 @@ ${JSON.stringify(
         expect(html).toContain('<br><br>');
       });
 
+      it.each([
+        ['\\n\\n', '<ul>\n<li>foo</li>\n</ul>\n\nNext.', '</ul><br><br>', 'converts to <br><br>'],
+        ['\\n', '<ul>\n<li>foo</li>\n</ul>\nNext.', '</ul><br>', 'converts to <br>'],
+      ])('after closing block tag with %s: %s', (_, input, expected) => {
+        expect(getCellHtml(input)).toContain(expected);
+      });
+
       it('escapes \\< to HTML entity', () => {
         const html = getCellHtml('\\<foo\\>');
         expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);

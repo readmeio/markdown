@@ -87,7 +87,12 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 const contentParser = unified().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
-const markdownToHtml = unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeStringify);
+const markdownToHtml = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(normalizeEmphasisAST)
+  .use(remarkRehype)
+  .use(rehypeStringify);
 
 /** HTML parser (HTML string → hast) */
 const htmlParser = unified().use(rehypeParse, { fragment: true });
@@ -139,9 +144,16 @@ const processMarkdownInHtmlString = (html: string): string => {
     if (!text.trim()) return [{ type: 'text', value: text }];
 
     const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
-    return parsed.children.flatMap(n =>
+    const nodes = parsed.children.flatMap(n =>
       n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
     );
+
+    const leading = text.match(/^\s+/)?.[0];
+    const trailing = text.match(/\s+$/)?.[0];
+    if (leading) nodes.unshift({ type: 'text', value: leading });
+    if (trailing) nodes.push({ type: 'text', value: trailing });
+
+    return nodes;
   };
 
   const processChildren = (children: HastRoot['children']): HastRoot['children'] =>
@@ -153,6 +165,22 @@ const processMarkdownInHtmlString = (html: string): string => {
   });
 
   return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
+};
+
+/**
+ * Separate a closing block-level tag from the content that follows it.
+ *
+ * Each \n in the original text becomes a <br> tag to preserve spacing, then a
+ * blank line (\n\n) is appended so CommonMark ends the HTML block and parses
+ * the following content as markdown.
+ */
+const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: string, nextLineChar?: string) => {
+  if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
+
+  const newlineCount = (match.match(/\n/g) ?? []).length;
+  const breaks = '<br>'.repeat(newlineCount);
+
+  return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
 /**
@@ -169,11 +197,7 @@ const parseTableCell = (text: string): MdastNode[] => {
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
-    // Insert a blank line after closing block-level tags so CommonMark doesn't
-    // swallow subsequent text into the HTML block (type 6 blocks only end on blank lines).
-    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, (match, tag, inlineChar, nextLineChar) =>
-      BLOCK_LEVEL_TAGS.has(tag.toLowerCase()) ? `</${tag}>\n\n${inlineChar || nextLineChar}` : match,
-    );
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
   const trimmedLines = normalized.split('\n').map(line => line.trimStart());
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
