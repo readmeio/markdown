@@ -67,7 +67,8 @@ export interface MdxishOpts {
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 /**
- * Preprocessing pipeline: transforms raw markdown content to be parser-ready.
+ * Preprocessing pipeline: applies string-level transformations to work around
+ * CommonMark/remark limitations and reach parity with legacy (rdmd) rendering.
  *
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
