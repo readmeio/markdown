@@ -157,4 +157,14 @@ Next line`;
     expect(elapsed).toBeLessThan(100);
     expect(result).toContain('\n\nNext line');
   });
+
+  it('does not catastrophically backtrack on tag names with many hyphens', () => {
+    const input = `<a${'-'.repeat(1000)}`;
+
+    const start = performance.now();
+    terminateHtmlFlowBlocks(input);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+  });
 });
