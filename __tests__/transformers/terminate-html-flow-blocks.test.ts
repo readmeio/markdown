@@ -123,4 +123,38 @@ Next content`;
 
 Next content`);
   });
+
+  it('does not catastrophically backtrack on tags with many spaces', () => {
+    const input = `<a${' '.repeat(1000)}>
+Next line`;
+
+    const start = performance.now();
+    const result = terminateHtmlFlowBlocks(input);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+    expect(result).toContain('\n\nNext line');
+  });
+
+  it('does not catastrophically backtrack on malformed tags with spaces', () => {
+    const input = `<a${' '.repeat(1000)}`;
+
+    const start = performance.now();
+    terminateHtmlFlowBlocks(input);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+  });
+
+  it('does not catastrophically backtrack on repeated tags with spaces', () => {
+    const input = `${'<a >'.repeat(200)}
+Next line`;
+
+    const start = performance.now();
+    const result = terminateHtmlFlowBlocks(input);
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(100);
+    expect(result).toContain('\n\nNext line');
+  });
 });
