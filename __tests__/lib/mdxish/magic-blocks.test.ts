@@ -431,6 +431,20 @@ ${JSON.stringify(
         const html = getCellHtml('\\<foo\\>');
         expect(html.includes('&lt;') || html.includes('&#x3C;')).toBe(true);
       });
+
+      it('preserves <i> tags wrapping backslash-escaped content', () => {
+        const html = getCellHtml('<i>\\<my_host></i>');
+        expect(html).toContain('<i>');
+        expect(html).toContain('</i>');
+      });
+
+      it('preserves <i> tags in complex cell with newlines and backslash escapes', () => {
+        const input =
+          'https\\://<i>\\<my_host></i>/api/login  \n  \nwhere <i>\\<my_host></i> is the FQDN of your server.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<i>');
+        expect(cellHtml).not.toContain('<i></i>');
+      });
     });
 
     it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {

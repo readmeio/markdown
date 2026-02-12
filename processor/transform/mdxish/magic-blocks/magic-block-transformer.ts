@@ -87,9 +87,11 @@ const htmlParser = unified().use(rehypeParse, { fragment: true });
 /** HTML stringifier (hast → HTML string) */
 const htmlStringifier = unified().use(rehypeStringify);
 
-/** Process \|, \<, \> backslash escapes */
+/** Process \|, \<, \> backslash escapes. Also escapes the matching > in \<...> pairs. */
 const processBackslashEscapes = (text: string): string =>
-  text.replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
+  text
+    .replace(/\\<([^>]*)>/g, '&lt;$1&gt;')
+    .replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
 
 /** Matches HTML tags (open, close, self-closing) with optional attributes. */
 const HTML_TAG_RE = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g;
@@ -164,9 +166,14 @@ const parseTableCell = (text: string): MdastNode[] => {
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
-  // Process markdown syntax inside HTML nodes (e.g. _emphasis_ within <li>)
+  // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
+  // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
   visit(tree, 'html', (node: { type: 'html'; value: string }) => {
-    node.value = processMarkdownInHtmlString(node.value);
+    if (/<[a-zA-Z][^>]*>[\s\S]*<\/[a-zA-Z]/.test(node.value)) {
+      node.value = processMarkdownInHtmlString(node.value);
+    } else {
+      node.value = escapeInvalidTags(node.value);
+    }
   });
 
   if (tree.children.length > 1) {
