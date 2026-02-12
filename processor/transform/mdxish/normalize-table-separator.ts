@@ -32,7 +32,7 @@
 
 // Match a line that looks like a table separator row
 // This regex captures the whole line if it contains only pipe-separated cells with dashes/colons
-const TABLE_SEPARATOR_LINE_REGEX = /^(\|[:\s-]+)+\|?\s*$/;
+const TABLE_SEPARATOR_LINE_REGEX = /^\|[\s:-]+(?:\|[\s:-]+)*\|?\s*$/;
 
 // Match malformed left-alignment: `|: ` or `|:` followed by dashes
 // Captures: group 1 = pipe, group 2 = spaces after colon, group 3 = dashes
