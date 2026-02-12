@@ -179,3 +179,124 @@ describe('mdxish safeMode', () => {
     });
   });
 });
+
+describe('HTML flow block termination', () => {
+  it('should not swallow a heading after an HTML block', () => {
+    const md = `<div><p></p></div>
+# My Heading`;
+
+    const ast = mdxish(md);
+    const heading = findElementByTagName(ast, 'h1');
+    expect(heading).not.toBeNull();
+  });
+
+  it('should not swallow a paragraph after an HTML block', () => {
+    const md = `<div></div>
+This is a paragraph.`;
+
+    const ast = mdxish(md);
+    const paragraph = findElementByTagName(ast, 'p');
+    expect(paragraph).not.toBeNull();
+    expect(JSON.stringify(paragraph)).toContain('This is a paragraph.');
+  });
+
+  it('should not swallow a blockquote after an HTML block', () => {
+    const md = `<div></div>
+> This is a blockquote`;
+
+    const ast = mdxish(md);
+    const blockquote = findElementByTagName(ast, 'blockquote');
+    expect(blockquote).not.toBeNull();
+  });
+
+  it('should not swallow a list after an HTML block', () => {
+    const md = `<div></div>
+- Item one
+- Item two`;
+
+    const ast = mdxish(md);
+    const ul = findElementByTagName(ast, 'ul');
+    expect(ul).not.toBeNull();
+  });
+
+  it('should not swallow an ordered list after an HTML block', () => {
+    const md = `<div></div>
+1. First
+2. Second`;
+
+    const ast = mdxish(md);
+    const ol = findElementByTagName(ast, 'ol');
+    expect(ol).not.toBeNull();
+  });
+
+  it('should not swallow a code fence after an HTML block', () => {
+    const md = `<div></div>
+\`\`\`js
+console.log('hello');
+\`\`\``;
+
+    const ast = mdxish(md);
+    const code = findElementByTagName(ast, 'code');
+    expect(code).not.toBeNull();
+  });
+
+  it('should not swallow a thematic break after an HTML block', () => {
+    const md = `<div></div>
+---`;
+
+    const ast = mdxish(md);
+    const hr = findElementByTagName(ast, 'hr');
+    expect(hr).not.toBeNull();
+  });
+
+  it('should not swallow a magic block callout after an HTML block', () => {
+    const md = `<div><p></p></div>
+[block:callout]
+{
+  "type": "success",
+  "body": "This should render."
+}
+[/block]`;
+
+    const ast = mdxish(md);
+    const callout = findElementByTagName(ast, 'Callout');
+    expect(callout).not.toBeNull();
+    expect(callout!.properties.theme).toBe('okay');
+  });
+
+  it('should not swallow a magic block code after an HTML block', () => {
+    const md = `<div></div>
+[block:code]
+{
+  "codes": [{"code": "echo hello", "language": "bash"}]
+}
+[/block]`;
+
+    const ast = mdxish(md);
+    const codeTabs = findElementByTagName(ast, 'CodeTabs');
+    expect(codeTabs).not.toBeNull();
+  });
+
+  it('should not swallow a magic block image after an HTML block', () => {
+    const md = `<div></div>
+[block:image]
+{
+  "images": [{"image": ["https://example.com/img.png", null, "Alt"]}]
+}
+[/block]`;
+
+    const ast = mdxish(md);
+    const img = findElementByTagName(ast, 'img');
+    expect(img).not.toBeNull();
+  });
+
+  it('should not swallow content after multiple HTML tags', () => {
+    const md = `<div></div>
+<section></section>
+# Still a heading`;
+
+    const ast = mdxish(md);
+    const heading = findElementByTagName(ast, 'h1');
+    expect(heading).not.toBeNull();
+  });
+});
