@@ -100,11 +100,9 @@ const htmlParser = unified().use(rehypeParse, { fragment: true });
 /** HTML stringifier (hast → HTML string) */
 const htmlStringifier = unified().use(rehypeStringify);
 
-/** Process \|, \<, \> backslash escapes. Also escapes the matching > in \<...> pairs. */
+/** Process \|, \<, \> backslash escapes. Only < is entity-escaped; > is left literal to avoid double-encoding by rehype. */
 const processBackslashEscapes = (text: string): string =>
-  text
-    .replace(/\\<([^>]*)>/g, '&lt;$1&gt;')
-    .replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '&gt;' : c));
+  text.replace(/\\<([^>]*)>/g, '&lt;$1>').replace(/\\([<>|])/g, (_, c) => (c === '<' ? '&lt;' : c === '>' ? '>' : c));
 
 /** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
 const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
