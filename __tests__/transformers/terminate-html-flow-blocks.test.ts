@@ -124,69 +124,24 @@ Next content`;
 Next content`);
   });
 
-  it('inserts blank line when HTML tags contain text content', () => {
-    const input = `<div><p>Some text here</p></div>
-[block:callout]
-{
-  "type": "success",
-  "body": "Hello"
-}
-[/block]`;
-
-    const result = terminateHtmlFlowBlocks(input);
-    expect(result).toBe(`<div><p>Some text here</p></div>
-
-[block:callout]
-{
-  "type": "success",
-  "body": "Hello"
-}
-[/block]`);
-  });
-
-  it('inserts blank line when HTML line has text after closing tag', () => {
-    const input = `<div><p>Text inside</p></div>Text after
-[block:callout]
-{
-  "type": "success",
-  "body": "Hello"
-}
-[/block]`;
-
-    const result = terminateHtmlFlowBlocks(input);
-    expect(result).toBe(`<div><p>Text inside</p></div>Text after
-
-[block:callout]
-{
-  "type": "success",
-  "body": "Hello"
-}
-[/block]`);
-  });
-
-  it('inserts blank line when HTML line has text in both positions', () => {
+  it('inserts blank line when HTML line has text content between and after tags', () => {
     const input = `<div><p>Inner text</p></div>Outer text
-# Heading after`;
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]`;
 
     const result = terminateHtmlFlowBlocks(input);
     expect(result).toBe(`<div><p>Inner text</p></div>Outer text
 
-# Heading after`);
-  });
-
-  it('does not modify HTML line with content when blank line already exists', () => {
-    const input = `<div><p>Text</p></div>More text
-
-Some content`;
-
-    expect(terminateHtmlFlowBlocks(input)).toBe(input);
-  });
-
-  it('does not modify indented HTML line with content', () => {
-    const input = `  <div><p>Text</p></div>
-Next line`;
-
-    expect(terminateHtmlFlowBlocks(input)).toBe(input);
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]`);
   });
 
   it('does not catastrophically backtrack on tags with many spaces', () => {

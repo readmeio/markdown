@@ -687,6 +687,9 @@ ${JSON.stringify(
       const callout = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
       expect(callout).toBeDefined();
       expect(callout!.properties.theme).toBe('okay');
+
+      const lastChild = ast.children[ast.children.length - 1] as Element;
+      expect(lastChild.tagName).toBe('Callout');
     });
 
     it('should render callout after a self-closing HTML tag without a blank line', () => {
@@ -703,6 +706,9 @@ ${JSON.stringify(
       const callout = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
       expect(callout).toBeDefined();
       expect(callout!.properties.theme).toBe('info');
+
+      const lastChild = ast.children[ast.children.length - 1] as Element;
+      expect(lastChild.tagName).toBe('Callout');
     });
   });
 

@@ -303,6 +303,9 @@ console.log('hello');
     const callout = findElementByTagName(ast, 'Callout');
     expect(callout).not.toBeNull();
     expect(callout!.properties.theme).toBe('okay');
+
+    const lastChild = ast.children[ast.children.length - 1] as Element;
+    expect((lastChild as Element).tagName).toBe('Callout');
   });
 
   it('should not swallow content after multiple HTML tags', () => {
