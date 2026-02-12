@@ -35,7 +35,7 @@ describe('mdxish should render', () => {
       expect(() => mdxish(md2)).not.toThrow();
     });
 
-    it('should render unclosed curly braces in callouts with emojis', () => {
+    it('should render unclosed curly braces in content with emojis', () => {
       // Regression test for bug where emojis prevented brace escaping
       const md = `> 📘 Note
 >
