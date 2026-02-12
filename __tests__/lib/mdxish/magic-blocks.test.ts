@@ -413,6 +413,7 @@ ${JSON.stringify(
           '<Glossary>term</Glossary>',
           'PascalCase tags inside HTML preserved',
         ],
+        ['https://<i>\\<server></i>/api/login', '/api/login', 'inline close tag does not split trailing path'],
       ])('%s contains %s (%s)', (input, expected) => {
         expect(getCellHtml(input)).toContain(expected);
       });
@@ -444,6 +445,37 @@ ${JSON.stringify(
         const cellHtml = getCellHtml(input);
         expect(cellHtml).toContain('<i>');
         expect(cellHtml).not.toContain('<i></i>');
+      });
+
+      it('separates text after closing HTML tag into its own paragraph', () => {
+        const input = '<ul>\n<li>Item one.\n<li>Item two.\n</li></ul> See [link](doc:page).  \n  \nNext paragraph.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('</a>');
+        expect(cellHtml).toContain('</a>.');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+      });
+
+      it('separates text immediately after closing HTML tags with no whitespace', () => {
+        const input =
+          '<ol><li>Verify your configuration is correct.</ol></li>To resolve this issue, add the item to a custom list.  \n  \nFor more information, see [Add a list](doc:add-list) and [Manage settings](doc:manage-settings).';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('To resolve');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('href="doc:add-list"');
+      });
+
+      it('separates text on the next line after a closing HTML tag into its own paragraph', () => {
+        const input =
+          '<ol><li>Check the activity report. For more information, see [Activity summary](doc:activity-summary).\n<li>If no data is logged, verify that the server forwards requests correctly.</li> </ol>\nYou can also configure the client to send requests directly.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('<a');
+        expect(cellHtml).toContain('You can also configure');
+        const paragraphs = cellHtml.match(/<p>/g);
+        expect(paragraphs?.length).toBeGreaterThanOrEqual(1);
       });
     });
 

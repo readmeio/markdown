@@ -24,6 +24,7 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
 import remarkGfm from 'remark-gfm';
@@ -96,6 +97,21 @@ const processBackslashEscapes = (text: string): string =>
 /** Matches HTML tags (open, close, self-closing) with optional attributes. */
 const HTML_TAG_RE = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)>/g;
 
+/** Matches an HTML element from its opening tag to the matching closing tag. */
+const HTML_ELEMENT_BLOCK_RE = /<([a-zA-Z][a-zA-Z0-9-]*)[\s>][\s\S]*?<\/\1>/g;
+
+/** Matches a newline with surrounding horizontal whitespace. */
+const NEWLINE_WITH_WHITESPACE_RE = /[^\S\n]*\n[^\S\n]*/g;
+
+/** Block-level HTML tags that trigger CommonMark type 6 HTML blocks (condition 6). */
+const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
+
+/** Matches a closing block-level tag followed by non-tag text or by a newline then non-blank content. */
+const CLOSE_BLOCK_TAG_BOUNDARY_RE = /<\/([a-zA-Z][a-zA-Z0-9-]*)>\s*(?:(?!<)(\S)|\n([^\n]))/g;
+
+/** Tests whether a string contains a complete HTML element (open + close tag). */
+const COMPLETE_HTML_ELEMENT_RE = /<[a-zA-Z][^>]*>[\s\S]*<\/[a-zA-Z]/;
+
 const escapeInvalidTags = (str: string): string =>
   str.replace(HTML_TAG_RE, (match, tag, rest) => {
     const tagName = tag.replace(/^\//, '');
@@ -159,9 +175,13 @@ const parseTableCell = (text: string): MdastNode[] => {
   // CommonMark doesn't split them on blank lines.
   // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
-  const normalized = escaped.replace(/<([a-zA-Z][a-zA-Z0-9-]*)[\s>][\s\S]*?<\/\1>/g, match =>
-    match.replace(/[^\S\n]*\n[^\S\n]*/g, '<br>'),
-  );
+  const normalized = escaped
+    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+    // Insert a blank line after closing block-level tags so CommonMark doesn't
+    // swallow subsequent text into the HTML block (type 6 blocks only end on blank lines).
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, (match, tag, inlineChar, nextLineChar) =>
+      BLOCK_LEVEL_TAGS.has(tag.toLowerCase()) ? `</${tag}>\n\n${inlineChar || nextLineChar}` : match,
+    );
   const trimmedLines = normalized.split('\n').map(line => line.trimStart());
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
@@ -169,7 +189,7 @@ const parseTableCell = (text: string): MdastNode[] => {
   // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
   // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
   visit(tree, 'html', (node: { type: 'html'; value: string }) => {
-    if (/<[a-zA-Z][^>]*>[\s\S]*<\/[a-zA-Z]/.test(node.value)) {
+    if (COMPLETE_HTML_ELEMENT_RE.test(node.value)) {
       node.value = processMarkdownInHtmlString(node.value);
     } else {
       node.value = escapeInvalidTags(node.value);
