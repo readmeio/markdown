@@ -79,7 +79,7 @@ export function evaluateExpression(expression: string, context: JSXContext) {
  */
 function protectHTMLBlockContent(content: string): string {
   return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`([^`\\]*(?:\\.[^`\\]*)*)`\s*\}(<\/HTMLBlock>)/g,
+    /(<HTMLBlock[^>]*>)\{\s*`([^`\\]{0,10000}(?:\\.[^`\\]{0,10000}){0,100})`\s*\}(<\/HTMLBlock>)/g,
     (_match, openTag: string, templateContent: string, closeTag: string) => {
       const encoded = base64Encode(templateContent);
       return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
