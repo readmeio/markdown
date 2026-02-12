@@ -50,13 +50,29 @@ export interface MdxishOpts {
   components?: CustomComponents;
   jsxContext?: JSXContext;
   newEditorTypes?: boolean;
+  /**
+   * When enabled, the pipeline ignores all expression syntax `{...}`.
+   * This disables:
+   * - JSX attribute expression evaluation (e.g., `href={baseUrl}`)
+   * - MDX expression parsing (e.g., `{1 + 1}`)
+   * - Expression node evaluation
+   *
+   * Expressions will remain as literal text in the output.
+   */
+  safeMode?: boolean;
   useTailwind?: boolean;
 }
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const { components: userComponents = {}, jsxContext = {}, newEditorTypes = false, useTailwind } = opts;
+  const {
+    components: userComponents = {},
+    jsxContext = {},
+    newEditorTypes = false,
+    safeMode = false,
+    useTailwind,
+  } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -70,7 +86,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   // Step 1: Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
   const contentAfterTableNormalization = normalizeTableSeparator(mdContent);
   // Step 2: Evaluate JSX expressions in attributes
-  const contentAfterJSXEvaluation = preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
+  const contentAfterJSXEvaluation = safeMode
+    ? contentAfterTableNormalization
+    : preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
   // Step 3: Replace snake_case component names with parser-safe placeholders
   const { content: parserReadyContent, mapping: snakeCaseMapping } = processSnakeCaseComponent(
     contentAfterJSXEvaluation,
@@ -91,8 +109,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', [magicBlock(), mdxExprTextOnly])
-    .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()])
+    .data('micromarkExtensions', safeMode ? [magicBlock()] : [magicBlock(), mdxExprTextOnly])
+    .data(
+      'fromMarkdownExtensions',
+      safeMode ? [magicBlockFromMarkdown()] : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()],
+    )
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
@@ -104,8 +125,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
-    .use(evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(variablesTextTransformer) // Parse {user.*} patterns from text (can't rely on remarkMdx)
+    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
