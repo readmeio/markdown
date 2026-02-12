@@ -32,7 +32,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { SKIP, visit } from 'unist-util-visit';
+import { visitParents } from 'unist-util-visit-parents';
 
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
@@ -566,12 +566,15 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       after: RootContent[];
       before: RootContent[];
       blockNodes: RootContent[];
+      container: Parent;
       inlineNodes: RootContent[];
       parent: Parent;
     }[] = [];
 
-    visit(tree, 'magicBlock', (node: MagicBlockNode, index: number | undefined, parent: Parent | undefined) => {
-      if (!parent || index === undefined) return undefined;
+    visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
+      const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
+      const index = parent.children.indexOf(node);
+      if (index === -1) return;
 
       const children = transformMagicBlock(
         node.blockType,
@@ -580,9 +583,11 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         options,
       ) as unknown as RootContent[];
       if (!children.length) {
-        // Remove the node if transformation returns nothing
+        // `visitParents` doesn't support [Action, Index] returns like `visit` does;
+        // a bare return after splicing is sufficient since `visitParents` walks by
+        // tree structure rather than index.
         parent.children.splice(index, 1);
-        return [SKIP, index];
+        return;
       }
 
       // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
@@ -590,67 +595,47 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         const blockNodes: RootContent[] = [];
         const inlineNodes: RootContent[] = [];
 
-        // Separate block and inline nodes
         children.forEach(child => {
-          if (isBlockNode(child)) {
-            blockNodes.push(child);
-          } else {
-            inlineNodes.push(child);
-          }
+          (isBlockNode(child) ? blockNodes : inlineNodes).push(child);
         });
 
-        const before = parent.children.slice(0, index);
-        const after = parent.children.slice(index + 1);
-
         replacements.push({
+          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           parent,
           blockNodes,
           inlineNodes,
-          before,
-          after,
+          before: parent.children.slice(0, index) as RootContent[],
+          after: parent.children.slice(index + 1) as RootContent[],
         });
       } else {
-        // Normal case: just replace the inlineCode with the children
         parent.children.splice(index, 1, ...children);
       }
-      return undefined;
     });
 
     // Second pass: apply replacements that require lifting block nodes out of paragraphs
     // Process in reverse order to maintain correct indices
     for (let i = replacements.length - 1; i >= 0; i -= 1) {
-      const { after, before, blockNodes, inlineNodes, parent } = replacements[i];
+      const { after, before, blockNodes, container, inlineNodes, parent } = replacements[i];
+      const containerChildren = container.children as RootContent[];
+      const paraIndex = containerChildren.indexOf(parent as RootContent);
 
-      // Find the paragraph's position in the root
-      const rootChildren = tree.children;
-      const paraIndex = rootChildren.findIndex(child => child === parent);
       if (paraIndex === -1) {
-        // Paragraph not found in root - fall back to normal replacement
-        // This shouldn't happen normally, but handle it gracefully
-        // Reconstruct the original index from before.length
-        const originalIndex = before.length;
-        parent.children.splice(originalIndex, 1, ...blockNodes, ...inlineNodes);
+        parent.children.splice(before.length, 1, ...blockNodes, ...inlineNodes);
         // eslint-disable-next-line no-continue
         continue;
       }
 
-      // Update or remove the paragraph
       if (inlineNodes.length > 0) {
-        // Keep paragraph with inline nodes
         parent.children = [...before, ...inlineNodes, ...after];
-        // Insert block nodes after the paragraph
         if (blockNodes.length > 0) {
-          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
         }
       } else if (before.length === 0 && after.length === 0) {
-        // Remove empty paragraph and replace with block nodes
-        rootChildren.splice(paraIndex, 1, ...blockNodes);
+        containerChildren.splice(paraIndex, 1, ...blockNodes);
       } else {
-        // Keep paragraph with remaining content
         parent.children = [...before, ...after];
-        // Insert block nodes after the paragraph
         if (blockNodes.length > 0) {
-          rootChildren.splice(paraIndex + 1, 0, ...blockNodes);
+          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
         }
       }
     }
