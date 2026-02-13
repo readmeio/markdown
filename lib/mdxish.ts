@@ -136,10 +136,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
         ? [magicBlockFromMarkdown(), variableFromMarkdown()]
         : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), variableFromMarkdown()],
     )
-    .use(() => (tree: MdastRoot) => {
-      console.log('tree:', JSON.stringify(tree, null, 2));
-      return tree;
-    })
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
