@@ -16,6 +16,7 @@ import type {
 } from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXModule } from 'mdx/types';
+import type { Position } from 'unist';
 
 type Callout = Omit<Blockquote, 'children' | 'type'> & {
   children: BlockContent[];
@@ -157,6 +158,7 @@ interface Glossary extends Node {
     hName: 'Glossary';
     hProperties: { term: string };
   };
+  position?: Position;
   type: NodeTypes.glossary;
 }
 
