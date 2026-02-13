@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 13.1.2
+### 🛠 Fixes & Updates
+
+* **magic blocks:** ensure newline characters processed as hard breaks ([#1329](https://github.com/readmeio/markdown/issues/1329)) ([bb37d62](https://github.com/readmeio/markdown/commit/bb37d627dd91765d48be22b085c3027a0e7b1ea0))
+* fix callout magic blocks when rendered directly below a list item ([#1331](https://github.com/readmeio/markdown/issues/1331)) ([de2b82a](https://github.com/readmeio/markdown/commit/de2b82acb58d1115f1c75a30f878a9b35d8ea9c1))
+* fix rendering content in table magic blocks ([#1318](https://github.com/readmeio/markdown/issues/1318)) ([0ea1cfc](https://github.com/readmeio/markdown/commit/0ea1cfc33c07c45d5e17a38d5f84b132a4cb61db))
+* preserve recipe top level attributes in mdast ([#1324](https://github.com/readmeio/markdown/issues/1324)) ([98f466b](https://github.com/readmeio/markdown/commit/98f466b825a562b90af9a8d65aa00117731df08b))
+* **stripComments:** properly pass in the micromark extensions ([#1335](https://github.com/readmeio/markdown/issues/1335)) ([7ec9d46](https://github.com/readmeio/markdown/commit/7ec9d46cb027efb4ca868f917185f7c948026443))
+* **mdxish:** properly terminate html blocks ([#1336](https://github.com/readmeio/markdown/issues/1336)) ([d221861](https://github.com/readmeio/markdown/commit/d2218617a233463c82cce5d2be63175446058279))
+
 ## Version 13.1.1
 ### 🛠 Fixes & Updates
 
