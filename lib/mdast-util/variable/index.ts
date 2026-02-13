@@ -39,25 +39,6 @@ function exitReadmeVariable(this: CompileContext, token: Parameters<Handle>[0]):
       : ctx?.value ?? '';
   const trimmed = raw.trim();
 
-  if (trimmed.startsWith('glossary:')) {
-    const term = trimmed.slice('glossary:'.length).trim();
-
-    this.enter(
-      {
-        type: NodeTypes.variable,
-        data: {
-          hName: 'Variable',
-          hProperties: { name: trimmed },
-        },
-        value: `<<${term}>>`,
-      } as Variable,
-      token,
-    );
-    this.exit(token);
-    contextMap.delete(token);
-    return;
-  }
-
   this.enter(
     {
       type: NodeTypes.variable,
