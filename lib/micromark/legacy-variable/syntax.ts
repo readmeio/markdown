@@ -6,10 +6,10 @@ import { codes } from 'micromark-util-symbol';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
-    readmeVariable: 'readmeVariable';
-    readmeVariableMarkerEnd: 'readmeVariableMarkerEnd';
-    readmeVariableMarkerStart: 'readmeVariableMarkerStart';
-    readmeVariableValue: 'readmeVariableValue';
+    legacyVariable: 'legacyVariable';
+    legacyVariableMarkerEnd: 'legacyVariableMarkerEnd';
+    legacyVariableMarkerStart: 'legacyVariableMarkerStart';
+    legacyVariableValue: 'legacyVariableValue';
   }
 }
 
@@ -22,8 +22,8 @@ function isAllowedValueChar(code: Code): boolean {
   );
 }
 
-const readmeVariableConstruct: Construct = {
-  name: 'readmeVariable',
+const legacyVariableConstruct: Construct = {
+  name: 'legacyVariable',
   tokenize,
 };
 
@@ -33,8 +33,8 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
   const start = (code: Code): State | undefined => {
     if (code !== codes.lessThan) return nok(code);
 
-    effects.enter('readmeVariable');
-    effects.enter('readmeVariableMarkerStart');
+    effects.enter('legacyVariable');
+    effects.enter('legacyVariableMarkerStart');
     effects.consume(code); // <
     return open2;
   };
@@ -42,16 +42,16 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
   const open2 = (code: Code): State | undefined => {
     if (code !== codes.lessThan) return nok(code);
     effects.consume(code); // <<
-    effects.exit('readmeVariableMarkerStart');
-    effects.enter('readmeVariableValue');
+    effects.exit('legacyVariableMarkerStart');
+    effects.enter('legacyVariableValue');
     return value;
   };
 
   const value = (code: Code): State | undefined => {
     if (code === codes.greaterThan) {
       if (!hasValue) return nok(code);
-      effects.exit('readmeVariableValue');
-      effects.enter('readmeVariableMarkerEnd');
+      effects.exit('legacyVariableValue');
+      effects.enter('legacyVariableMarkerEnd');
       effects.consume(code); // >
       return close2;
     }
@@ -66,16 +66,16 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
   const close2 = (code: Code): State | undefined => {
     if (code !== codes.greaterThan) return nok(code);
     effects.consume(code); // >>
-    effects.exit('readmeVariableMarkerEnd');
-    effects.exit('readmeVariable');
+    effects.exit('legacyVariableMarkerEnd');
+    effects.exit('legacyVariable');
     return ok;
   };
 
   return start;
 }
 
-export function variable(): Extension {
+export function legacyVariable(): Extension {
   return {
-    text: { [codes.lessThan]: readmeVariableConstruct },
+    text: { [codes.lessThan]: legacyVariableConstruct },
   };
 }

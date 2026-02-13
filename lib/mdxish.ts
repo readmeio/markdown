@@ -44,10 +44,10 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
-import { variableFromMarkdown } from './mdast-util/variable';
+import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
-import { variable } from './micromark/variable';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
@@ -129,12 +129,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock(), variable()] : [magicBlock(), mdxExprTextOnly, variable()])
+    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), variableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), variableFromMarkdown()],
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)

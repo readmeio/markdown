@@ -9,28 +9,28 @@ interface Context {
 
 const contextMap = new WeakMap<Token, Context>();
 
-function findReadmeVariableToken(this: CompileContext): Token | undefined {
+function findlegacyVariableToken(this: CompileContext): Token | undefined {
   const events = this.tokenStack;
   for (let i = events.length - 1; i >= 0; i -= 1) {
     const token = events[i][0];
-    if (token.type === 'readmeVariable') return token;
+    if (token.type === 'legacyVariable') return token;
   }
   return undefined;
 }
 
-function enterReadmeVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
+function enterlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
   contextMap.set(token, { value: '' });
 }
 
-function exitReadmeVariableValue(this: CompileContext, token: Parameters<Handle>[0]): void {
-  const readmeToken = findReadmeVariableToken.call(this);
+function exitlegacyVariableValue(this: CompileContext, token: Parameters<Handle>[0]): void {
+  const readmeToken = findlegacyVariableToken.call(this);
   if (!readmeToken) return;
 
   const ctx = contextMap.get(readmeToken);
   if (ctx) ctx.value += this.sliceSerialize(token);
 }
 
-function exitReadmeVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
+function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
   const serialized = this.sliceSerialize(token);
   const raw =
@@ -55,14 +55,14 @@ function exitReadmeVariable(this: CompileContext, token: Parameters<Handle>[0]):
   contextMap.delete(token);
 }
 
-export function variableFromMarkdown(): FromMarkdownExtension {
+export function legacyVariableFromMarkdown(): FromMarkdownExtension {
   return {
     enter: {
-      readmeVariable: enterReadmeVariable,
+      legacyVariable: enterlegacyVariable,
     },
     exit: {
-      readmeVariableValue: exitReadmeVariableValue,
-      readmeVariable: exitReadmeVariable,
+      legacyVariableValue: exitlegacyVariableValue,
+      legacyVariable: exitlegacyVariable,
     },
   };
 }

@@ -139,7 +139,6 @@ describe('legacy variables resolution', () => {
     it('should resolve double escaped <<variable>>', () => {
       const md = '\\\\<<name>>';
       const tree = mdxish(md);
-      console.log('tree:', JSON.stringify(tree, null, 2));
 
       // Should still resolve the variable
       const parent = tree.children[0] as Element;
