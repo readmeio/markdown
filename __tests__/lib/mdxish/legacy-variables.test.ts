@@ -1,3 +1,4 @@
+import type { CustomComponents } from '../../../types';
 import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
@@ -191,60 +192,68 @@ describe('legacy variables resolution', () => {
     });
 
     it('should parse <<variable>> inside JSX component children', () => {
-      const md = '<Component>Hello <<name>></Component>';
-      const tree = mdxish(md);
+      const TestComponent = {} as CustomComponents[string];
+      const md = '<TestComponent>Hello <<name>></TestComponent>';
+      const tree = mdxish(md, { components: { TestComponent } });
 
-      // Should parse <<name>> as variable inside component
-      const component = tree.children[0] as Element;
-      const variableNode = component.children[1] as Element;
-      expect(variableNode.tagName).toBe('variable');
-      expect(variableNode.properties.name).toBe('name');
+      const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
+      expect(variableNode).not.toBeNull();
     });
 
-    it('should parse <<variable>> inside callout blocks', () => {
+    it('should parse <<variable>> inside callout magic blocks', () => {
       const md = `
 [block:callout]
 {
   "type": "info",
   "body": "My name is <<name>>!"
 }
-[/block]
-      `;
+[/block]`;
       const tree = mdxish(md);
 
       const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
       expect(variableNode).not.toBeNull();
     });
 
-    it('should parse <<variable>> inside image blocks', () => {
-      const md = `
-[block:image]
+    it('should parse <<variable>> inside image magic blocks', () => {
+      const md = `[block:image]
 {
-  "image": "https://example.com/image.png",
-  "caption": "My name is <<name>>!"
+"images": [
+  {
+    "image": [
+      "https://files.readme.io/327e65d-image.png",
+      null,
+      "Alt text"
+    ],
+    "caption": "This is a picture named <<name>>!"
+  }
+]
 }
-[/block]
-      `;
+[/block]`;
       const tree = mdxish(md);
 
       const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
       expect(variableNode).not.toBeNull();
     });
 
-    it('should parse <<variable>> inside parameters blocks', () => {
-      const md = `
-[block:parameters]
+    it('should parse <<variable>> inside parameters magic blocks', () => {
+      const md = `[block:parameters]
 {
   "data": {"h-0": "Header", "0-0": "My name is <<name>>!"},
   "cols": 1,
   "rows": 1
 }
-[/block]
-      `;
+[/block]`;
       const tree = mdxish(md);
 
-      const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
-      expect(variableNode).not.toBeNull();
+      // Tables generate multiple children nodes so go through all children
+      let foundVariable = false;
+      tree.children.forEach(child => {
+        if (child.type === 'element' && child.tagName === 'table') {
+          const variableNode = findElementByTagName(child as Element, 'variable');
+          foundVariable = foundVariable || variableNode !== null;
+        }
+      });
+      expect(foundVariable).toBe(true);
     });
   });
 

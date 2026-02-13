@@ -38,6 +38,8 @@ import { visitParents } from 'unist-util-visit-parents';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
+import { variableFromMarkdown } from '../../../../lib/mdast-util/variable';
+import { variable } from '../../../../lib/micromark/variable';
 
 import {
   CLOSE_BLOCK_TAG_BOUNDARY_RE,
@@ -98,10 +100,18 @@ const preprocessBody = (text: string): string => {
 };
 
 /** Markdown parser */
-const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
+const contentParser = unified()
+  .data('micromarkExtensions', [variable()])
+  .data('fromMarkdownExtensions', [variableFromMarkdown()])
+  .use(remarkParse)
+  .use(remarkBreaks)
+  .use(remarkGfm)
+  .use(normalizeEmphasisAST);
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
 const markdownToHtml = unified()
+  .data('micromarkExtensions', [variable()])
+  .data('fromMarkdownExtensions', [variableFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm)
   .use(normalizeEmphasisAST)

@@ -5,6 +5,9 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { variableFromMarkdown } from '../../../lib/mdast-util/variable';
+import { variable } from '../../../lib/micromark/variable';
+
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
@@ -24,7 +27,10 @@ const MAX_LOOKAHEAD = 30;
  */
 const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
 
-const inlineMdProcessor = unified().use(remarkParse);
+const inlineMdProcessor = unified()
+  .data('micromarkExtensions', [variable()])
+  .data('fromMarkdownExtensions', [variableFromMarkdown()])
+  .use(remarkParse);
 
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
