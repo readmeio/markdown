@@ -9,6 +9,7 @@ function isHeading(node: Element) {
 
 function textContent(node: ElementContent): string {
   if (node.type === 'text') return node.value;
+  // Process variable nodes by using their variable name for the id generation
   if (node.type === 'element' && node.tagName === 'variable' && node.properties?.name) {
     if (node.properties.isLegacy) {
       return node.properties.name as string;
@@ -20,9 +21,9 @@ function textContent(node: ElementContent): string {
 }
 
 /**
- * Rehype plugin that adds constructs ids for headings
- * Id's are needed to construct slug anchor links & Table of Contents later on
- * Uses variable names for the id if available
+ * Rehype plugin that constructs ids for headings
+ * Id's are used to construct slug anchor links & Table of Contents during rendering
+ * Use the text / nodes that make up the heading to generate the id
  */
 const generateSlugForHeadings = () => (tree: Root) => {
   const slugger = new GithubSlugger();
