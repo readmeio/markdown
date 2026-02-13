@@ -45,7 +45,9 @@ import variablesTextTransformer from '../processor/transform/mdxish/variables-te
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { variableFromMarkdown } from './mdast-util/variable';
 import { magicBlock } from './micromark/magic-block';
+import { variable } from './micromark/variable';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
@@ -127,11 +129,17 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock()] : [magicBlock(), mdxExprTextOnly])
+    .data('micromarkExtensions', safeMode ? [magicBlock(), variable()] : [magicBlock(), mdxExprTextOnly, variable()])
     .data(
       'fromMarkdownExtensions',
-      safeMode ? [magicBlockFromMarkdown()] : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()],
+      safeMode
+        ? [magicBlockFromMarkdown(), variableFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), variableFromMarkdown()],
     )
+    .use(() => (tree: MdastRoot) => {
+      console.log('tree:', JSON.stringify(tree, null, 2));
+      return tree;
+    })
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
