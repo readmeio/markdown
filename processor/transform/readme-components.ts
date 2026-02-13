@@ -3,7 +3,7 @@ import type { Properties } from 'hast';
 import type { BlockContent, Code, Link, Node, Parents, PhrasingContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
+import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Recipe, Tableau } from 'types';
 
 import { visit, SKIP } from 'unist-util-visit';
 
@@ -220,6 +220,20 @@ const coerceJsxToMd =
         position: node.position,
       };
 
+      parent.children[index] = mdNode;
+    } else if (node.name === 'Recipe' || node.name === 'TutorialTile') {
+      const hProperties = getAttrs<Properties>(node);
+
+      const mdNode = {
+        ...hProperties,
+        type: types[node.name],
+        data: {
+          hName: node.name,
+          ...(Object.keys(hProperties).length && { hProperties }),
+        },
+        position: node.position,
+      } as Recipe;
+      
       parent.children[index] = mdNode;
     } else if (node.name in types) {
       const hProperties = getAttrs<Properties>(node);
