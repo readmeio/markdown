@@ -84,7 +84,7 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
       type: NodeTypes.variable,
       data: {
         hName: 'Variable',
-        hProperties: { name: variableName.trim() },
+        hProperties: { name: variableName.trim(), isLegacy: true },
       },
       value: `<<${variableName}>>`,
     } as Variable,
