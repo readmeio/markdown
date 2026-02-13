@@ -167,7 +167,6 @@ Thing
       const output = await stripComments(input);
       expect(output).toBe(input.trim());
     });
-
   });
 
   it('supports a magic block as the first line of the document', async () => {
@@ -255,6 +254,53 @@ end
 
 \\*literal\\*
 end"`);
+  });
+
+  it.each([
+    {
+      type: 'html',
+      json: '{ "html": "<div>Hello</div>" }',
+    },
+    {
+      type: 'code',
+      json: '{ "codes": [{ "code": "console.log(1)", "language": "js" }] }',
+    },
+    {
+      type: 'api-header',
+      json: '{ "title": "My Endpoint", "level": 2 }',
+    },
+    {
+      type: 'image',
+      json: '{ "images": [{ "image": ["https://example.com/img.png", "", ""] }] }',
+    },
+    {
+      type: 'callout',
+      json: '{ "type": "info", "title": "Note", "body": "Hello" }',
+    },
+    {
+      type: 'parameters',
+      json: '{ "cols": 2, "rows": 1, "data": { "h-0": "Name", "h-1": "Type", "0-0": "id", "0-1": "string" } }',
+    },
+    {
+      type: 'table',
+      json: '{ "cols": 1, "rows": 1, "data": { "h-0": "Key", "0-0": "val" } }',
+    },
+    {
+      type: 'embed',
+      json: '{ "url": "https://example.com", "title": "Example" }',
+    },
+    {
+      type: 'recipe',
+      json: '{ "slug": "my-recipe", "title": "My Recipe" }',
+    },
+    {
+      type: 'tutorial-tile',
+      json: '{ "slug": "my-tutorial", "title": "My Tutorial" }',
+    },
+  ])('preserves [block:$type] magic blocks with mdxish flag', async ({ type, json }) => {
+    const input = `[block:${type}]\n${json}\n[/block]`;
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
   });
 
   // TODO: enable this test after fixing the heading parsing issue

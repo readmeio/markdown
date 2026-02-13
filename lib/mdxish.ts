@@ -6,6 +6,7 @@ import type { Extension } from 'micromark-util-types';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -39,6 +40,7 @@ import {
   preserveBooleanProperties,
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
+import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -71,6 +73,29 @@ export interface MdxishOpts {
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
 
+/**
+ * Preprocessing pipeline: applies string-level transformations to work around
+ * CommonMark/remark limitations and reach parity with legacy (rdmd) rendering.
+ *
+ * Runs a series of string-level transformations before micromark/remark parsing:
+ * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
+ * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
+ * 3. Evaluate JSX expressions in attributes (unless safeMode)
+ * 4. Replace snake_case component names with parser-safe placeholders
+ */
+function preprocessContent(
+  content: string,
+  opts: { jsxContext: JSXContext; knownComponents: Set<string>; safeMode: boolean },
+) {
+  const { safeMode, jsxContext, knownComponents } = opts;
+
+  let result = normalizeTableSeparator(content);
+  result = terminateHtmlFlowBlocks(result);
+  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
+
+  return processSnakeCaseComponent(result, { knownComponents });
+}
+
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const {
     components: userComponents = {},
@@ -88,18 +113,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   // Build set of known component names for snake_case filtering
   const knownComponents = new Set(Object.keys(components));
 
-  // Preprocessing pipeline: Transform content to be parser-ready
-  // Step 1: Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
-  const contentAfterTableNormalization = normalizeTableSeparator(mdContent);
-  // Step 2: Evaluate JSX expressions in attributes
-  const contentAfterJSXEvaluation = safeMode
-    ? contentAfterTableNormalization
-    : preprocessJSXExpressions(contentAfterTableNormalization, jsxContext);
-  // Step 3: Replace snake_case component names with parser-safe placeholders
-  const { content: parserReadyContent, mapping: snakeCaseMapping } = processSnakeCaseComponent(
-    contentAfterJSXEvaluation,
-    { knownComponents },
-  );
+  const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, {
+    safeMode,
+    jsxContext,
+    knownComponents,
+  });
 
   // Create string map for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
@@ -179,6 +197,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(mdContent, opts);
 
   processor
+    .use(remarkBreaks)
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
