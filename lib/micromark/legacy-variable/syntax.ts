@@ -4,6 +4,9 @@ import type { Code, Construct, Effects, Extension, State, TokenizeContext } from
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes } from 'micromark-util-symbol';
 
+// Micromark tokenizer for legacy <<variable>> syntax. It emits low-level tokens only;
+// mdast-util/legacy-variable consumes those tokens to build Variable/Glossary nodes.
+
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
     legacyVariable: 'legacyVariable';
