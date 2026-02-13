@@ -96,7 +96,7 @@ const Doc = () => {
 
     if (mdxish) {
       setError(() => null);
-      setContent(mdx.renderMdxish(mdx.mdxish(doc)));
+      setContent(mdx.renderMdxish(mdx.mdxish(doc), { terms, variables }));
     } else if (legacy) {
       setLegacyContent(rdmd.react(doc));
     } else {
