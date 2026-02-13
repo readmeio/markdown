@@ -58,6 +58,7 @@ const Doc = () => {
   const ci = searchParams.has('ci');
   const legacy = searchParams.has('legacy');
   const mdxish = searchParams.has('mdxish');
+  const stripComments = searchParams.has('stripComments');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
@@ -74,7 +75,27 @@ const Doc = () => {
   const [legacyContent, setLegacyContent] = useState<React.ReactNode>(null);
 
   useEffect(() => {
-    const render = async () => {
+    const sanitize = async () => {
+      console.log('sanitize()', { stripComments });
+      if (!stripComments) return doc;
+      let sanitized = doc;
+      try {
+        sanitized = await mdx.stripComments(doc, {
+          mdx: !(legacy || mdxish),
+          mdxish,
+        });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+      console.log({
+        before: doc,
+        after: sanitized,
+      })
+      return sanitized;
+    };
+
+    const renderRMDX = async () => {
       const opts = {
         lazyImages,
         safeMode,
@@ -82,9 +103,17 @@ const Doc = () => {
       };
 
       try {
-        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
-        const content = await mdx.run(code, { components: executedComponents, terms, variables });
-
+        const sanitized = await sanitize();
+        const code = await mdx.compile(sanitized, {
+          ...opts,
+          components: componentsByExport,
+          useTailwind: true,
+        });
+        const content = await mdx.run(code, {
+          components: executedComponents,
+          terms,
+          variables,
+        });
         setError(() => null);
         setContent(() => content);
       } catch (e) {
@@ -94,15 +123,33 @@ const Doc = () => {
       }
     };
 
+    const renderXish = async () => {
+      try {
+        const sanitized = await sanitize();
+        const tree = mdx.mdxish(sanitized);
+        const vdom = mdx.renderMdxish(tree, { terms, variables });
+        setError(() => null);
+        setContent(vdom);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        setError(() => e.message);
+      }
+    };
+
+    const renderRDMD = async () => {
+      const sanitized = await sanitize();
+      setLegacyContent(rdmd.react(sanitized));
+    };
+
     if (mdxish) {
-      setError(() => null);
-      setContent(mdx.renderMdxish(mdx.mdxish(doc), { terms, variables }));
+      renderXish();
     } else if (legacy) {
-      setLegacyContent(rdmd.react(doc));
+      renderRDMD();
     } else {
-      render();
+      renderRMDX();
     }
-  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish]);
+  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish, stripComments]);
 
   useEffect(() => {
     if (error) setError(null);
