@@ -315,4 +315,28 @@ describe('legacy variables resolution', () => {
       expect(variableNode).toBeNull();
     });
   });
+
+  describe('glossary variables', () => {
+    it('should resolve a glossary variable to a glossary component', () => {
+      const md = '<<glossary:parliament>>';
+      const tree = mdxish(md);
+
+      expect((tree.children[0] as Element).children).toHaveLength(1);
+      const parent = tree.children[0] as Element;
+      const glossaryNode = parent.children[0] as Element;
+      expect(glossaryNode.tagName).toBe('Glossary');
+      expect(glossaryNode.properties.term).toBe('parliament');
+    });
+
+    it('should resolve a glossary variable with spaces', () => {
+      const md = '<<glossary:parliament of the United Kingdom>>';
+      const tree = mdxish(md);
+
+      expect((tree.children[0] as Element).children).toHaveLength(1);
+      const parent = tree.children[0] as Element;
+      const glossaryNode = parent.children[0] as Element;
+      expect(glossaryNode.tagName).toBe('Glossary');
+      expect(glossaryNode.properties.term).toBe('parliament of the United Kingdom');
+    });
+  });
 });
