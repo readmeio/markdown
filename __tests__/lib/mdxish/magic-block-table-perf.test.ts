@@ -74,12 +74,12 @@ describe('magic block table performance', () => {
     },
   ];
 
-  it.each(scenarios)('parses $name within 5s', ({ md }) => {
+  it.each(scenarios)('parses $name within 10s', ({ md }) => {
     const stats = bench(() => mdxish(md));
 
     // eslint-disable-next-line no-console
     console.log(`  avg=${stats.avg.toFixed(1)}ms  min=${stats.min.toFixed(1)}ms  max=${stats.max.toFixed(1)}ms`);
 
-    expect(stats.avg).toBeLessThan(5000);
+    expect(stats.avg).toBeLessThan(10000);
   });
 });

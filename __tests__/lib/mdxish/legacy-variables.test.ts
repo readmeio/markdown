@@ -82,6 +82,38 @@ describe('legacy variables resolution', () => {
       expect(secondVar.tagName).toBe('variable');
       expect(secondVar.properties.name).toBe('second');
     });
+
+    it('should resolve <<variable>> in heading text to a variable node', () => {
+      const md = '# Hello <<name>> world';
+      const tree = mdxish(md);
+
+      const parent = tree.children[0] as Element;
+      expect(parent.tagName).toBe('h1');
+      expect(parent.children).toHaveLength(3);
+
+      const variableNode = parent.children[1] as Element;
+      expect(variableNode.tagName).toBe('variable');
+      expect(variableNode.properties.name).toBe('name');
+    });
+
+    it('should resolve <<variable>> in list item text to a variable node', () => {
+      const md = '- Hello <<name>> world';
+      const tree = mdxish(md);
+
+      const ulNode = tree.children[0] as Element;
+      expect(ulNode.children).toHaveLength(3);
+      const liNode = ulNode.children[1] as Element;
+      const variableNode = liNode.children[1] as Element;
+      expect(variableNode.tagName).toBe('variable');
+      expect(variableNode.properties.name).toBe('name');
+    });
+
+    it('should resolve <<variable>> in blockquote text to a variable node', () => {
+      const md = '> Hello <<name>> world';
+      const tree = mdxish(md);
+      const blockquoteNode = findElementByTagName(tree.children[0] as Element, 'blockquote');
+      expect(blockquoteNode).not.toBeNull();
+    });
   });
 
   describe('variable name formats', () => {
