@@ -198,6 +198,21 @@ Next line`;
     expect(elapsed).toBeLessThan(100);
   });
 
+  it('does not insert blank line after opening tag of a multi-line HTML block', () => {
+    const input = `eqfqefqe
+
+<div>
+        <a class="glossary-letter" href="#a">A</a> |
+        <a class="glossary-letter" href="#b">B</a> |
+        <a class="glossary-letter" href="#c">C</a> |
+        <a class="glossary-letter" href="#d">D</a> |
+        <a class="glossary-letter" href="#e">E</a> |
+        <a class="glossary-letter" href="#w">W</a>
+</div>`;
+
+    expect(terminateHtmlFlowBlocks(input)).toBe(input);
+  });
+
   it('does not modify HTML inside fenced code blocks but still terminates HTML outside them', () => {
     const input = `\`\`\`html
 <div></div>
