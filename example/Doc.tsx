@@ -76,7 +76,6 @@ const Doc = () => {
 
   useEffect(() => {
     const sanitize = async () => {
-      console.log('sanitize()', { stripComments });
       if (!stripComments) return doc;
       let sanitized = doc;
       try {
@@ -88,10 +87,6 @@ const Doc = () => {
         // eslint-disable-next-line no-console
         console.error(e);
       }
-      console.log({
-        before: doc,
-        after: sanitized,
-      })
       return sanitized;
     };
 
