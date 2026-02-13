@@ -32,6 +32,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';

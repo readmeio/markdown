@@ -1025,6 +1025,44 @@ ${JSON.stringify(
         expect(calloutElement.properties.type).toBe(expectedTheme);
       });
     });
+
+    it('should render callout after an HTML tag without a blank line', () => {
+      const md = `<div><p></p></div>
+[block:callout]
+{
+  "type": "success",
+  "body": "Consider repeating this process."
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const callout = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
+      expect(callout).toBeDefined();
+      expect(callout!.properties.theme).toBe('okay');
+
+      const lastChild = ast.children[ast.children.length - 1] as Element;
+      expect(lastChild.tagName).toBe('Callout');
+    });
+
+    it('should render callout after a self-closing HTML tag without a blank line', () => {
+      const md = `<br />
+[block:callout]
+{
+  "type": "info",
+  "body": "This should render."
+}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const callout = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'Callout');
+      expect(callout).toBeDefined();
+      expect(callout!.properties.theme).toBe('info');
+
+      const lastChild = ast.children[ast.children.length - 1] as Element;
+      expect(lastChild.tagName).toBe('Callout');
+    });
   });
 
   describe('magic blocks in lists', () => {
