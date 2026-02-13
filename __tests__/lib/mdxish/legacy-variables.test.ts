@@ -129,9 +129,17 @@ describe('legacy variables resolution', () => {
       expect((parent.children[2] as Text).value).toBe('>');
     });
 
-    it('should resolve double escaped <<variable>>: \\<<name>>', () => {
+    it('should not resolve variable if the first < is escaped', () => {
       const md = '\\<<name>>';
       const tree = mdxish(md);
+
+      expect(findElementByTagName(tree.children[0] as Element, 'variable')).toBeNull();
+    });
+
+    it('should resolve double escaped <<variable>>', () => {
+      const md = '\\\\<<name>>';
+      const tree = mdxish(md);
+      console.log('tree:', JSON.stringify(tree, null, 2));
 
       // Should still resolve the variable
       const parent = tree.children[0] as Element;

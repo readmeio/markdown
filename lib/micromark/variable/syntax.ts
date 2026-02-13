@@ -33,10 +33,6 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
   const start = (code: Code): State | undefined => {
     if (code !== codes.lessThan) return nok(code);
 
-    // Ignore escaped \<<...>>
-    const prev = this.previous as Code | null | undefined;
-    if (prev === codes.backslash) return nok(code);
-
     effects.enter('readmeVariable');
     effects.enter('readmeVariableMarkerStart');
     effects.consume(code); // <
