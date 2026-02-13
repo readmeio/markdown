@@ -1,5 +1,6 @@
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
 import type { Variable } from 'types';
+import type { Position } from 'unist';
 
 import { NodeTypes } from '../../../enums';
 
@@ -39,6 +40,38 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
       : ctx?.value ?? '';
   const trimmed = raw.trim();
 
+  const nodePosition: Position = {
+    start: {
+      offset: token.start.offset,
+      line: token.start.line,
+      column: token.start.column,
+    },
+    end: {
+      offset: token.end.offset,
+      line: token.end.line,
+      column: token.end.column,
+    },
+  };
+
+  if (trimmed.startsWith('glossary:')) {
+    const term = trimmed.slice('glossary:'.length).trim();
+    this.enter(
+      {
+        type: NodeTypes.glossary,
+        data: {
+          hName: 'Glossary',
+          hProperties: { term },
+        },
+        children: [{ type: 'text', value: term }],
+        position: nodePosition,
+      },
+      token,
+    );
+    this.exit(token);
+    contextMap.delete(token);
+    return;
+  }
+
   this.enter(
     {
       type: NodeTypes.variable,
@@ -46,6 +79,7 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
         hName: 'Variable',
         hProperties: { name: trimmed },
       },
+      position: nodePosition,
       value: `<<${raw}>>`,
     } as Variable,
     token,
