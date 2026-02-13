@@ -60,8 +60,8 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
     },
   };
 
-  if (trimmed.startsWith('glossary:')) {
-    const term = trimmed.slice('glossary:'.length).trim();
+  if (variableName.startsWith('glossary:')) {
+    const term = variableName.slice('glossary:'.length).trim();
     this.enter(
       {
         type: NodeTypes.glossary,
