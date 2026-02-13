@@ -1,4 +1,3 @@
-import type { Text } from 'mdast';
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
 import type { Variable } from 'types';
 
@@ -45,13 +44,13 @@ function exitReadmeVariable(this: CompileContext, token: Parameters<Handle>[0]):
 
     this.enter(
       {
-        type: NodeTypes.glossary,
+        type: NodeTypes.variable,
         data: {
-          hName: 'Glossary',
-          hProperties: { term },
+          hName: 'Variable',
+          hProperties: { name: trimmed },
         },
-        children: [{ type: 'text', value: term } as Text],
-      },
+        value: `<<${term}>>`,
+      } as Variable,
       token,
     );
     this.exit(token);
