@@ -13,7 +13,7 @@ function textContent(node: ElementContent): string {
     if (node.properties.isLegacy) {
       return node.properties.name as string;
     }
-    return `{user.${node.properties.name}}`;
+    return `user.${node.properties.name}`;
   }
   if ('children' in node) return node.children.map(textContent).join('');
   return '';
