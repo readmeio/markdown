@@ -26,6 +26,11 @@ const types = {
   TutorialTile: NodeTypes.recipe, // coerce to recipe for backwards compatibility
 };
 
+// Node types that are phrasing (inline) content per the mdast spec. Phrasing
+// content at the document root violates the spec and causes mdx() to collapse
+// blank lines, so these must be wrapped in a paragraph when at root level.
+const phrasingTypes = new Set<string>([NodeTypes.variable]);
+
 enum TableNames {
   td = 'td',
   th = 'th',
@@ -220,7 +225,15 @@ const coerceJsxToMd =
         position: node.position,
       };
 
-      parent.children[index] = mdNode;
+      // Wrap in a paragraph if at root level. Links are phrasing content and
+      // root children must all be the same category (per mdast spec). Mixing
+      // phrasing with flow content (headings, paragraphs, etc.) causes mdx()
+      // to collapse blank lines in the document.
+      if (parent.type === 'root') {
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
     } else if (node.name === 'Recipe' || node.name === 'TutorialTile') {
       const hProperties = getAttrs<Properties>(node);
 
@@ -248,7 +261,12 @@ const coerceJsxToMd =
         position: node.position,
       };
 
-      parent.children[index] = mdNode;
+      if (parent.type === 'root' && phrasingTypes.has(types[node.name])) {
+        // @ts-expect-error mdNode is typed as BlockContent but is actually phrasing content
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
     }
   };
 
