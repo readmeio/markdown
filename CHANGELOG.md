@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 13.1.3
+### 🛠 Fixes & Updates
+
+* **dev env:** add `stripComments` option ([#1342](https://github.com/readmeio/markdown/issues/1342)) ([721e028](https://github.com/readmeio/markdown/commit/721e0281edc15a24f95b7e460002bc8576281e27))
+* **dev env:** pass glossary terms and variables to mdxish renderer ([#1341](https://github.com/readmeio/markdown/issues/1341)) ([62654b1](https://github.com/readmeio/markdown/commit/62654b1080ef311f5315f5a9edfabfec91116157))
+* wrap empty Anchor in paragraph to prevent content loss ([#1330](https://github.com/readmeio/markdown/issues/1330)) ([8f431d4](https://github.com/readmeio/markdown/commit/8f431d47e1f1a1cdb83440e6516896b665115dca))
+
 ## Version 13.1.2
 ### 🛠 Fixes & Updates
 
