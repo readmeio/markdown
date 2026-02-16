@@ -8,6 +8,7 @@ export function replaceLegacyVariablesInText(text: string): string {
     if (unescaped !== match) return unescaped;
 
     const name = String(capture || '').trim();
+    if (name.startsWith('glossary:')) return name.toUpperCase();
     return `{user.${name}}`;
   });
 }

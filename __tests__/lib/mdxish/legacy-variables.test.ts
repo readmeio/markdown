@@ -401,5 +401,30 @@ describe('legacy variables resolution', () => {
       expect(glossaryNode.tagName).toBe('Glossary');
       expect(glossaryNode.properties.term).toBe('parliament of the United Kingdom');
     });
+
+    // Legacy behaviours
+    // Legacy glossary variables aren't really resolved as variables but just capitalized
+    it('should not resolve legacy glossary variables inside code blocks but just capitalize them', () => {
+      const md = '```\n<<glossary:parliament>>\n```';
+      const tree = mdxish(md);
+
+      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+      expect(codeNode?.properties.value).toBe('GLOSSARY:PARLIAMENT');
+      expect((codeNode?.children[0] as Text).value).toContain('GLOSSARY:PARLIAMENT');
+    });
+
+    it('should not resolve legacy glossary variables inside code magic blocks but just capitalize them', () => {
+      const md = `[block:code]
+{
+  "codes": [{"code": "My name is <<glossary:parliament>>!"}]
+}
+[/block]
+      `;
+      const tree = mdxish(md);
+
+      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+      expect(codeNode?.properties.value).toBe('My name is GLOSSARY:PARLIAMENT!');
+      expect((codeNode?.children[0] as Text).value).toContain('GLOSSARY:PARLIAMENT');
+    });
   });
 });
