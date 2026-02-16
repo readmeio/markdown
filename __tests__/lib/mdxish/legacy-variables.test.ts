@@ -319,7 +319,7 @@ describe('legacy variables resolution', () => {
     });
 
     it('should transform legacy variables inside inline code to {user.<<variable>>}', () => {
-      const md = '`{user.name}`';
+      const md = '`<<name>>`';
       const tree = mdxish(md);
 
       const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
