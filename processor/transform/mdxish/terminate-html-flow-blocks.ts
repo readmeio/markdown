@@ -15,14 +15,14 @@ const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/
  * @link https://spec.commonmark.org/0.29/#html-blocks
  *
  * This preprocessor inserts a blank line after standalone HTML lines when the
- * next line is non-blank, ensuring micromark's HTML flow tokenizer terminates
- * and subsequent content is parsed independently.
+ * next line is non-blank and not an HTML construct (because they still might be part of the HTML flow),
+ * ensuring micromark's HTML flow tokenizer terminates and subsequent content is parsed independently.
  *
- * Only targets non-indented lines with lowercase tag names. Uppercase tags
+ * Conditions:
+ * 1. Only targets non-indented lines with lowercase tag names. Uppercase tags
  * (e.g., `<Table>`, `<MyComponent>`) are JSX custom components and don't
  * trigger CommonMark HTML blocks, so they are left untouched.
- *
- * Lines inside fenced code blocks are skipped entirely.
+ * 2. Lines inside protected blocks (e.g., code blocks) should be left untouched.
  */
 export function terminateHtmlFlowBlocks(content: string): string {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
@@ -33,11 +33,14 @@ export function terminateHtmlFlowBlocks(content: string): string {
   for (let i = 0; i < lines.length; i += 1) {
     result.push(lines[i]);
 
-    if (
-      i < lines.length - 1 &&
-      (STANDALONE_HTML_LINE_REGEX.test(lines[i]) || HTML_LINE_WITH_CONTENT_REGEX.test(lines[i])) &&
-      lines[i + 1].trim().length > 0
-    ) {
+    if (i >= lines.length - 1 || lines[i + 1].trim().length === 0 || lines[i + 1].startsWith(' ')) {
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    const isCurrentLineHtml = STANDALONE_HTML_LINE_REGEX.test(lines[i]) || HTML_LINE_WITH_CONTENT_REGEX.test(lines[i]);
+    const isNextLineHtml = STANDALONE_HTML_LINE_REGEX.test(lines[i + 1]) || HTML_LINE_WITH_CONTENT_REGEX.test(lines[i + 1]);
+    if (isCurrentLineHtml && !isNextLineHtml) {
       result.push('');
     }
   }

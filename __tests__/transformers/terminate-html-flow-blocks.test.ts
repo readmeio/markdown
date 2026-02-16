@@ -22,6 +22,30 @@ describe('terminateHtmlFlowBlocks', () => {
 [/block]`);
     });
 
+    it('inserts blank line after opening HTML tag when the next line is not an HTML construct and inside an HTML tree', () => {
+      const input = `<div>
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]
+</div>
+      `;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]
+</div>
+      `);
+    })
+
     it('inserts blank line between self-closing HTML tag and following content', () => {
       const input = `<br />
 Some text after`;
@@ -67,51 +91,61 @@ Some paragraph text here.`);
 
     it('handles HTML with attributes', () => {
       const input = `<div class="wrapper">
-  Next content`;
+Next content`;
 
       const result = terminateHtmlFlowBlocks(input);
       expect(result).toBe(`<div class="wrapper">
-  Next content`);
+
+Next content`);
     });
 
     it('inserts blank line when HTML line has text content between and after tags', () => {
       const input = `<div><p>Inner text</p></div>Outer text
-  [block:callout]
-  {
-    "type": "success",
-    "body": "Hello"
-  }
-  [/block]`;
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]`;
 
       const result = terminateHtmlFlowBlocks(input);
       expect(result).toBe(`<div><p>Inner text</p></div>Outer text
 
-  [block:callout]
-  {
-    "type": "success",
-    "body": "Hello"
-  }
-  [/block]`);
+[block:callout]
+{
+  "type": "success",
+  "body": "Hello"
+}
+[/block]`);
     });
   });
 
   describe('when it should not insert a blank line', () => {
-    it('does not modify content when blank line already exists', () => {
+    it('does not modify content when blank line already exists after a closed HTML tag', () => {
       const input = `<div></div>
 
-  Some text`;
+Some text`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not add a blank line after an opening that that already has a blank line after it', () => {
+      const input = `<div>
+
+Hello
+</div>`;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
     it('does not modify lines that do not end with an HTML tag', () => {
       const input = `Some text
-  [block:callout]
-  {
-    "type": "info",
-    "body": "Test"
-  }
-  [/block]`;
+[block:callout]
+{
+  "type": "info",
+  "body": "Test"
+}
+[/block]`;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
@@ -122,34 +156,70 @@ Some paragraph text here.`);
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
-    it('does not modify indented HTML lines (JSX children)', () => {
+    it('does not modify indented non-HTML lines after an HTML tag', () => {
+      const input = `<div>
+  indented line
+      with some text after
+
+      should be left alone
+<div>
+  nested divs should be left alone too
+</div>
+</div>
+      `;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not modify non-indented HTML lines inside a JSX component', () => {
       const input = `<Table>
-    <thead>
-      <tr>
-        <th>Header</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Cell</td>
-      </tr>
-    </tbody>
-  </Table>`;
+
+<thead>
+  <tr>
+    <th>Header</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Cell</td>
+  </tr>
+</tbody>
+
+</Table>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not modify indented HTML lines', () => {
+      const input = `<table>
+<thead>
+  <tr>
+    <th>Header</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Cell</td>
+  </tr>
+</tbody>
+</table>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not modify unindented HTML lines inside a JSX component', () => {
+      const input = `<div>
+<a href="#">Link 1</a>
+<a href="#">Link 2</a>
+</div>
+      `;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
     it('does not modify indented closing tags inside components', () => {
       const input = `  </th>
-    <td>next cell</td>`;
-
-      expect(terminateHtmlFlowBlocks(input)).toBe(input);
-    });
-
-    it('does not add space to the next line after an opening tag', () => {
-      const input = `<div>
-  hello
-  </div>`;
+  <td>next cell</td>`;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
@@ -224,6 +294,19 @@ Next line`;
 
     it('does not catastrophically backtrack on repeated self-closing tags', () => {
       const input = `${'<a/>'.repeat(500)}`;
+
+      const start = performance.now();
+      terminateHtmlFlowBlocks(input);
+      const elapsed = performance.now() - start;
+
+      expect(elapsed).toBeLessThan(100);
+    });
+
+    it('does not catastrophically backtrack HTML that has many unindented lines', () => {
+      const input = `<div>
+${'<div>\nhello\n</div>\n'.repeat(1000)}
+</div>
+`;
 
       const start = performance.now();
       terminateHtmlFlowBlocks(input);
