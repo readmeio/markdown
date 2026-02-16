@@ -306,35 +306,37 @@ describe('legacy variables resolution', () => {
       expect(variableNode).not.toBeNull();
     });
 
-    it('should convert legacy variables inside code magic blocks to {user.*}', () => {
-      const md = `[block:code]
-{
-  "codes": [{"code": "My name is <<name>>!"}]
-}
-[/block]`;
-      const tree = mdxish(md);
-      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-      expect(codeNode?.properties.value).toBe('My name is {user.name}!');
-      expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
-    });
+    describe('code blocks', () => {
+      it('should convert legacy variables inside code magic blocks to {user.*}', () => {
+        const md = `[block:code]
+  {
+    "codes": [{"code": "My name is <<name>>!"}]
+  }
+  [/block]`;
+        const tree = mdxish(md);
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.properties.value).toBe('My name is {user.name}!');
+        expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
+      });
 
-    it('should transform legacy variables inside inline code to {user.<<variable>>}', () => {
-      const md = '`<<name>>`';
-      const tree = mdxish(md);
+      it('should transform legacy variables inside inline code to {user.<<variable>>}', () => {
+        const md = '`<<name>>`';
+        const tree = mdxish(md);
 
-      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-      expect(codeNode?.children).toHaveLength(1);
-      expect((codeNode?.children[0] as Text).value).toBe('{user.name}');
-    });
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.children).toHaveLength(1);
+        expect((codeNode?.children[0] as Text).value).toBe('{user.name}');
+      });
 
-    it('should parse <<variable>> inside code block', () => {
-      const md = '```\n<<name>>\n```';
-      const tree = mdxish(md);
+      it('should parse <<variable>> inside code block', () => {
+        const md = '```\n<<name>>\n```';
+        const tree = mdxish(md);
 
-      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-      expect(codeNode?.properties.value).toBe('{user.name}');
-      expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
-    });
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.properties.value).toBe('{user.name}');
+        expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
+      });
+    })
   });
 
   describe('protected blocks', () => {

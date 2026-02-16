@@ -39,7 +39,7 @@ import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-va
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
-import { replaceLegacyVariablesInText } from '../../legacy-variables-in-code';
+import { convertLegacyVariables } from '../../legacy-variables-in-code';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
@@ -299,7 +299,7 @@ function transformMagicBlock(
 
       const preprocessCodeContent = (code: string) => {
         let processed = code.trim();
-        processed = replaceLegacyVariablesInText(processed);
+        processed = convertLegacyVariables(processed);
         return processed;
       };
 

@@ -2,7 +2,9 @@ import { VARIABLE_REGEXP } from '@readme/variable';
 
 const legacyVariableRegex = new RegExp(VARIABLE_REGEXP, 'giu');
 
-export function replaceLegacyVariablesInText(text: string): string {
+// Converts legacy <<variable>> syntax to {user.*} syntax
+// Note: Glossary terms inside code blocks cannot get resolved (doesn't make sense)
+export function convertLegacyVariables(text: string): string {
   return text.replace(legacyVariableRegex, (match, capture) => {
     const unescaped = match.replace(/^\\<</, '<<').replace(/\\>>$/, '>>');
     if (unescaped !== match) return unescaped;
@@ -17,65 +19,102 @@ function isLineStart(text: string, index: number): boolean {
   return index === 0 || text[index - 1] === '\n';
 }
 
+function findClosingFence(text: string, start: number): number {
+  let scan = start;
+  while (scan < text.length) {
+    const lineEnd = text.indexOf('\n', scan);
+    const lineStart = lineEnd === -1 ? scan : lineEnd + 1;
+    if (isLineStart(text, lineStart) && text.startsWith('```', lineStart)) {
+      return lineStart;
+    }
+    if (lineEnd === -1) break;
+    scan = lineStart;
+  }
+  return -1;
+}
+
+function processFencedCodeBlock(
+  content: string,
+  start: number,
+): { nextIndex: number; output: string } | null {
+  const fenceLineEnd = content.indexOf('\n', start);
+  if (fenceLineEnd === -1) {
+    return { nextIndex: content.length, output: content.slice(start) };
+  }
+
+  const fenceLine = content.slice(start, fenceLineEnd + 1);
+  const codeStart = fenceLineEnd + 1;
+  const close = findClosingFence(content, codeStart);
+
+  if (close === -1) {
+    return {
+      nextIndex: content.length,
+      output: fenceLine + convertLegacyVariables(content.slice(codeStart)),
+    };
+  }
+
+  const codeContent = convertLegacyVariables(content.slice(codeStart, close));
+  const closeLineEnd = content.indexOf('\n', close);
+  const closeLine =
+    closeLineEnd === -1
+      ? content.slice(close)
+      : content.slice(close, closeLineEnd + 1);
+
+  return {
+    nextIndex: closeLineEnd === -1 ? content.length : closeLineEnd + 1,
+    output: fenceLine + codeContent + closeLine,
+  };
+}
+
+function processInlineCode(
+  content: string,
+  start: number,
+): { nextIndex: number; output: string } | null {
+  const end = content.indexOf('`', start + 1);
+  if (end === -1) {
+    return { nextIndex: content.length, output: content.slice(start) };
+  }
+
+  const codeContent = convertLegacyVariables(content.slice(start + 1, end));
+  return { nextIndex: end + 1, output: `\`${codeContent}\`` };
+}
+
+/**
+ * Replaces legacy <<variable>> syntax inside code blocks and inline code with {user.*} syntax.
+ *
+ * We do a manual string pass because the legacy <<var>> micromark tokenizer
+ * cannot run inside code spans or fenced code blocks. That means variables in
+ * code would otherwise remain literal text and never reach the Variable node
+ * runtime. We normalize them to `{user.*}` here so later stages can resolve
+ * them (syntax highlighter for code, variablesTextTransformer for normal text).
+ */
 export function replaceLegacyVariablesInCode(content: string): string {
   let i = 0;
   let out = '';
 
   while (i < content.length) {
     if (isLineStart(content, i) && content.startsWith('```', i)) {
-      const fenceLineEnd = content.indexOf('\n', i);
-      if (fenceLineEnd === -1) {
-        out += content.slice(i);
-        break;
+      const result = processFencedCodeBlock(content, i);
+      if (result) {
+        out += result.output;
+        i = result.nextIndex;
+      } else {
+        out += content[i];
+        i += 1;
       }
-
-      out += content.slice(i, fenceLineEnd + 1);
-      i = fenceLineEnd + 1;
-
-      let close = -1;
-      let scan = i;
-      while (scan < content.length) {
-        const lineEnd = content.indexOf('\n', scan);
-        const lineStart = lineEnd === -1 ? scan : lineEnd + 1;
-        if (isLineStart(content, lineStart) && content.startsWith('```', lineStart)) {
-          close = lineStart;
-          break;
-        }
-        if (lineEnd === -1) break;
-        scan = lineStart;
+    } else if (content[i] === '`') {
+      const result = processInlineCode(content, i);
+      if (result) {
+        out += result.output;
+        i = result.nextIndex;
+      } else {
+        out += content[i];
+        i += 1;
       }
-
-      if (close === -1) {
-      out += replaceLegacyVariablesInText(content.slice(i));
-        break;
-      }
-
-      out += replaceLegacyVariablesInText(content.slice(i, close));
-      const closeLineEnd = content.indexOf('\n', close);
-      if (closeLineEnd === -1) {
-        out += content.slice(close);
-        break;
-      }
-      out += content.slice(close, closeLineEnd + 1);
-      i = closeLineEnd + 1;
-      // eslint-disable-next-line no-continue
-      continue;
+    } else {
+      out += content[i];
+      i += 1;
     }
-
-    if (content[i] === '`') {
-      const end = content.indexOf('`', i + 1);
-      if (end === -1) {
-        out += content.slice(i);
-        break;
-      }
-      out += `\`${replaceLegacyVariablesInText(content.slice(i + 1, end))}\``;
-      i = end + 1;
-      // eslint-disable-next-line no-continue
-      continue;
-    }
-
-    out += content[i];
-    i += 1;
   }
 
   return out;
