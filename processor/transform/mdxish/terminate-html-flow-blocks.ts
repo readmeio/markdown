@@ -33,7 +33,7 @@ export function terminateHtmlFlowBlocks(content: string): string {
   for (let i = 0; i < lines.length; i += 1) {
     result.push(lines[i]);
 
-    if (i >= lines.length - 1 || lines[i + 1].trim().length === 0 || lines[i + 1].startsWith(' ')) {
+    if (i >= lines.length - 1 || lines[i + 1].trim().length === 0 || lines[i + 1].startsWith(' ') || lines[i + 1].startsWith('\t')) {
       // eslint-disable-next-line no-continue
       continue;
     }

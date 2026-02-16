@@ -156,6 +156,14 @@ Hello
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
+    it('does not insert blank line if next line starts with a tab', () => {
+      const input = `<div>
+\tTabbed line
+</div>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
     it('does not modify indented non-HTML lines after an HTML tag', () => {
       const input = `<div>
   indented line
