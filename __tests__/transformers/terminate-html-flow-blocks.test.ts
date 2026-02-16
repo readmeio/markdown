@@ -44,7 +44,7 @@ describe('terminateHtmlFlowBlocks', () => {
 [/block]
 </div>
       `);
-    })
+    });
 
     it('inserts blank line between self-closing HTML tag and following content', () => {
       const input = `<br />
@@ -129,7 +129,7 @@ Some text`;
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
-    it('does not add a blank line after an opening that that already has a blank line after it', () => {
+    it('does not add a blank line after an opening tag that already has a blank line after it', () => {
       const input = `<div>
 
 Hello
@@ -254,7 +254,7 @@ Some text
 <p></p>
 \`\`\``);
     });
-  })
+  });
 
   describe('performance tests', () => {
     it('does not catastrophically backtrack on tags with many spaces', () => {
@@ -323,5 +323,5 @@ ${'<div>\nhello\n</div>\n'.repeat(1000)}
 
       expect(elapsed).toBeLessThan(100);
     });
-  })
+  });
 });
