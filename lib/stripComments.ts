@@ -9,8 +9,7 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
-import { magicBlockFromMarkdown, magicBlockToMarkdown } from './mdast-util/magic-block';
-import { magicBlock } from './micromark/magic-block';
+import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
   mdx?: boolean;
@@ -21,21 +20,18 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
-  const micromarkExtensions = [magicBlock()];
-  const fromMarkdownExtensions = [magicBlockFromMarkdown()];
+  const { replaced, blocks } = extractMagicBlocks(doc);
+
+  const processor = unified();
 
   // we still require these two extensions because:
-  // 1. we cant rely on remarkMdx to parse MDXish
+  // 1. we can rely on remarkMdx to parse MDXish
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   if (mdxish) {
-    micromarkExtensions.push(mdxExpression({ allowEmpty: true }));
-    fromMarkdownExtensions.push(mdxExpressionFromMarkdown());
+    processor
+      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()]);
   }
-
-  const processor = unified()
-    .data('micromarkExtensions', micromarkExtensions)
-    .data('fromMarkdownExtensions', fromMarkdownExtensions)
-    .data('toMarkdownExtensions', [magicBlockToMarkdown()]);
 
   processor
     .use(remarkParse)
@@ -66,7 +62,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
                     left.position &&
                     right.position &&
                     right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
-                  
+
                   // 0 = no newline between blocks
                   return isTight ? 0 : undefined;
                 }
@@ -76,8 +72,11 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
           },
     );
 
-  const file = await processor.process(doc);
-  return String(file).trim();
+  const file = await processor.process(replaced);
+  const stringified = String(file).trim();
+
+  const restored = restoreMagicBlocks(stringified, blocks);
+  return restored;
 }
 
 export default stripComments;
