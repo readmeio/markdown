@@ -42,7 +42,7 @@ describe('mdxish should render', () => {
 >
 > Content with unclosed brace: {`;
       expect(() => mdxish(md)).not.toThrow();
-      
+
       // Also test the exact bug report case
       const bugReportCase = `test
 
@@ -327,6 +327,22 @@ console.log('hello');
     expect((lastChild as Element).tagName).toBe('Callout');
   });
 
+  it('should not swallow unindented magic block content wrapped in an HTML tag', () => {
+    const md = `<div>
+[block:callout]
+{
+  "type": "success",
+  "body": "This should render."
+}
+[/block]
+</div>
+`;
+
+    const ast = mdxish(md);
+    const callout = findElementByTagName(ast, 'Callout');
+    expect(callout).not.toBeNull();
+  });
+
   it('should not swallow content after multiple HTML tags', () => {
     const md = `<div></div>
 <section></section>
@@ -335,6 +351,18 @@ console.log('hello');
     const ast = mdxish(md);
     const heading = findElementByTagName(ast, 'h1');
     expect(heading).not.toBeNull();
+  });
+
+  it('should not transform 4 indented line content after the opening tag as a code block', () => {
+    // Regression test for: https://linear.app/readme-io/issue/RM-15306/html-being-treated-as-code-blocks-regression
+    const md = `<div>
+        hello
+</div>
+`;
+
+    const ast = mdxish(md);
+    const code = findElementByTagName(ast, 'code');
+    expect(code).toBeNull();
   });
 });
 

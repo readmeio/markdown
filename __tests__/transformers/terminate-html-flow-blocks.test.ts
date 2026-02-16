@@ -190,6 +190,15 @@ Hello
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
+    it('does not modify the children of a JSX component', () => {
+      const input = `<ExampleComponent>
+hello
+there
+</ExampleComponent>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
     it('does not modify indented HTML lines', () => {
       const input = `<table>
 <thead>
