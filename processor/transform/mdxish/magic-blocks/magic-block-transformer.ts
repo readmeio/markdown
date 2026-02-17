@@ -39,7 +39,6 @@ import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-va
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
-import { convertLegacyVariables } from '../../legacy-variables-in-code';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
@@ -297,19 +296,13 @@ function transformMagicBlock(
         return [wrapPinnedBlocks(EMPTY_CODE_PLACEHOLDER satisfies MdastNode, data)];
       }
 
-      const preprocessCodeContent = (code: string) => {
-        let processed = code.trim();
-        processed = convertLegacyVariables(processed);
-        return processed;
-      };
-
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
         lang: obj.language,
         meta: obj.name || null,
         type: 'code',
-        value: preprocessCodeContent(obj.code),
+        value: obj.code.trim(),
       }));
 
       // Single code block without a tab name (meta or language) renders as a plain code block

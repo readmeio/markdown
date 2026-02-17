@@ -305,47 +305,6 @@ describe('legacy variables resolution', () => {
       const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
       expect(variableNode).not.toBeNull();
     });
-
-    describe('code blocks', () => {
-      it('should convert legacy variables inside code magic blocks to {user.*}', () => {
-        const md = `[block:code]
-  {
-    "codes": [{"code": "My name is <<name>>!"}]
-  }
-  [/block]`;
-        const tree = mdxish(md);
-        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-        expect(codeNode?.properties.value).toBe('My name is {user.name}!');
-        expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
-      });
-
-      it('should transform legacy variables inside inline code to {user.<<variable>>}', () => {
-        const md = '`<<name>>`';
-        const tree = mdxish(md);
-
-        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-        expect(codeNode?.children).toHaveLength(1);
-        expect((codeNode?.children[0] as Text).value).toBe('{user.name}');
-      });
-
-      it('should parse <<variable>> inside code block', () => {
-        const md = '```\n<<name>>\n```';
-        const tree = mdxish(md);
-
-        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-        expect(codeNode?.properties.value).toBe('{user.name}');
-        expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
-      });
-
-      it('should convert <<variable>> with spaces to use bracket notation', () => {
-        const md = '```\n<<user name>>\n```';
-        const tree = mdxish(md);
-
-        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-        expect(codeNode?.properties.value).toBe('{user["user name"]}');
-        expect((codeNode?.children[0] as Text).value).toContain('{user["user name"]}');
-      });
-    })
   });
 
   describe('protected blocks', () => {
@@ -385,6 +344,7 @@ describe('legacy variables resolution', () => {
       `;
       const tree = mdxish(md);
 
+      // These variables will get resolved in the Code copmonent during rendering
       const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
       expect(variableNode).toBeNull();
     });
@@ -411,31 +371,6 @@ describe('legacy variables resolution', () => {
       const glossaryNode = parent.children[0] as Element;
       expect(glossaryNode.tagName).toBe('Glossary');
       expect(glossaryNode.properties.term).toBe('parliament of the United Kingdom');
-    });
-
-    // Legacy behaviours
-    // Legacy glossary variables aren't really resolved as variables but just capitalized
-    it('should not resolve legacy glossary variables inside code blocks but just capitalize them', () => {
-      const md = '```\n<<glossary:parliament>>\n```';
-      const tree = mdxish(md);
-
-      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-      expect(codeNode?.properties.value).toBe('GLOSSARY:PARLIAMENT');
-      expect((codeNode?.children[0] as Text).value).toContain('GLOSSARY:PARLIAMENT');
-    });
-
-    it('should not resolve legacy glossary variables inside code magic blocks but just capitalize them', () => {
-      const md = `[block:code]
-{
-  "codes": [{"code": "My name is <<glossary:parliament>>!"}]
-}
-[/block]
-      `;
-      const tree = mdxish(md);
-
-      const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
-      expect(codeNode?.properties.value).toBe('My name is GLOSSARY:PARLIAMENT!');
-      expect((codeNode?.children[0] as Text).value).toContain('GLOSSARY:PARLIAMENT');
     });
   });
 });
