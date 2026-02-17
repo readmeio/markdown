@@ -133,8 +133,18 @@ const Doc = () => {
     };
 
     const renderRDMD = async () => {
+      const opts = {
+        lazyImages,
+        safeMode,
+        copyButtons,
+      };
       const sanitized = await sanitize();
-      setLegacyContent(rdmd.react(sanitized));
+      const { VariablesContext, GlossaryContext } = rdmd.utils;
+      setLegacyContent(
+        <VariablesContext.Provider value={variables}>
+          <GlossaryContext.Provider value={terms}>{rdmd.react(sanitized, opts)}</GlossaryContext.Provider>
+        </VariablesContext.Provider>,
+      );
     };
 
     if (mdxish) {
