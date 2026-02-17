@@ -36,10 +36,10 @@ import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
+import { convertLegacyVariables } from '../../../../lib/micromark/legacy-variable/convert';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
-import { convertLegacyVariables } from '../../legacy-variables-in-code';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {

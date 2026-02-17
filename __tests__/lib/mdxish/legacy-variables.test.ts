@@ -336,7 +336,31 @@ describe('legacy variables resolution', () => {
         expect(codeNode?.properties.value).toBe('{user.name}');
         expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
       });
-    })
+
+      it('should convert legacy variable names with spaces inside inline code to bracket notation', () => {
+        const md = '`<<user name>>`';
+        const tree = mdxish(md);
+
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect((codeNode?.children[0] as Text).value).toBe('{user["user name"]}');
+      });
+
+      it('should keep malformed legacy variables unchanged inside code blocks', () => {
+        const md = '```\n<<name>\n```';
+        const tree = mdxish(md);
+
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.properties.value).toBe('<<name>');
+      });
+
+      it('should unescape escaped legacy variable markers inside code blocks', () => {
+        const md = '```\n\\<<name>>\n```';
+        const tree = mdxish(md);
+
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.properties.value).toBe('<<name>>');
+      });
+    });
   });
 
   describe('protected blocks', () => {

@@ -24,8 +24,8 @@ import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
-import { replaceLegacyVariablesInCode } from '../processor/transform/legacy-variables-in-code';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
+import legacyVariablesCodeTransformer from '../processor/transform/mdxish/legacy-variables-code';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
@@ -88,7 +88,6 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
-  result = replaceLegacyVariablesInCode(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
@@ -151,6 +150,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text
+    .use(legacyVariablesCodeTransformer) // Convert <<...>> inside code/inlineCode node values
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
