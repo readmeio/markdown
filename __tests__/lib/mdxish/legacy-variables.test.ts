@@ -336,6 +336,15 @@ describe('legacy variables resolution', () => {
         expect(codeNode?.properties.value).toBe('{user.name}');
         expect((codeNode?.children[0] as Text).value).toContain('{user.name}');
       });
+
+      it('should convert <<variable>> with spaces to use bracket notation', () => {
+        const md = '```\n<<user name>>\n```';
+        const tree = mdxish(md);
+
+        const codeNode = findElementByTagName(tree.children[0] as Element, 'code');
+        expect(codeNode?.properties.value).toBe('{user["user name"]}');
+        expect((codeNode?.children[0] as Text).value).toContain('{user["user name"]}');
+      });
     })
   });
 

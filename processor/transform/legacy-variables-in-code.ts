@@ -3,15 +3,19 @@ import { VARIABLE_REGEXP } from '@readme/variable';
 const legacyVariableRegex = new RegExp(VARIABLE_REGEXP, 'giu');
 
 // Converts legacy <<variable>> syntax to {user.*} syntax
-// Note: Glossary terms inside code blocks cannot get resolved (doesn't make sense)
 export function convertLegacyVariables(text: string): string {
   return text.replace(legacyVariableRegex, (match, capture) => {
     const unescaped = match.replace(/^\\<</, '<<').replace(/\\>>$/, '>>');
     if (unescaped !== match) return unescaped;
 
+    // Note: Glossary terms inside code blocks doesn't get resolved (legacy behaviour)
     const name = String(capture || '').trim();
     if (name.startsWith('glossary:')) return name.toUpperCase();
-    return `{user.${name}}`;
+
+    // Taken from readme-to-mdx.ts
+    const validIdentifier = name.match(/^(\p{Letter}|[$_])(\p{Letter}|[$_0-9])*$/u);
+    const value = validIdentifier ? `user.${name}` : `user[${JSON.stringify(name)}]`;
+    return `{${value}}`;
   });
 }
 
