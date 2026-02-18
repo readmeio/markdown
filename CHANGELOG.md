@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 13.1.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** builtin tabs component rendering ([#1346](https://github.com/readmeio/markdown/issues/1346)) ([7bd6c41](https://github.com/readmeio/markdown/commit/7bd6c416f7d54801224aad219d4bf157fda81af9))
+* force release ([0352bd0](https://github.com/readmeio/markdown/commit/0352bd0e77763aeb0b8228ba22877e47b69085e0))
+* **mdxish:** Unclosed curly brace and callout fail to render on MDXish ([#1333](https://github.com/readmeio/markdown/issues/1333)) ([dbca5fa](https://github.com/readmeio/markdown/commit/dbca5fa9ca302179f18f5fce8873cb9c4791ca6d))
+
 ## Version 13.1.3
 ### 🛠 Fixes & Updates
 
