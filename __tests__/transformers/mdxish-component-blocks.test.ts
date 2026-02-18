@@ -289,5 +289,52 @@ More content here
         expect(mdxNodes).toHaveLength(0);
       });
     });
+
+    describe('Case 3: embedded closing tag with trailing content', () => {
+      it('should preserve content after the closing tag in an HTML sibling', () => {
+        const markdown = `<Outer>
+
+<Inner>first</Inner>
+
+</Outer>
+<Another>second</Another>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const names = mdxNodes.map(n => (n as { name?: string }).name);
+        expect(names).toContain('Outer');
+        expect(names).toContain('Inner');
+        expect(names).toContain('Another');
+      });
+
+      it('should correctly handle repeated same-name components without blank line separation', () => {
+        const markdown = `<Wrapper>
+
+first content
+
+</Wrapper>
+<Wrapper>second content</Wrapper>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const wrapperNodes = mdxNodes.filter(n => (n as { name?: string }).name === 'Wrapper');
+        expect(wrapperNodes).toHaveLength(2);
+      });
+
+      it('should process a component opening tag found after a closing tag in the same HTML sibling', () => {
+        const markdown = `<First>
+
+hello
+
+</First>
+<Second />`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const names = mdxNodes.map(n => (n as { name?: string }).name);
+        expect(names).toContain('First');
+        expect(names).toContain('Second');
+      });
+    });
   });
 });
