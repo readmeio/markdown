@@ -303,6 +303,13 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('preserves non-comment MDX expressions in mdxish mode', async () => {
+    const input = `Foo {user.email} bar {user.name} baz.`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+  });
+
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests
