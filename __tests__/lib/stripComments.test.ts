@@ -346,21 +346,27 @@ end"`);
     });
 
     it.each([
+      // position
+      ['at doc start/end', '<!-- top -->\nA\n\n<!-- bottom -->', undefined, 'A'],
+      ['mid-paragraph', 'A\n<!-- c -->\nB', undefined, 'A\n\nB'],
+      // block structures
       ['blockquote', '> Text\n> <!-- c -->\n> More', undefined, '> Text\n>\n> More'],
       ['nested blockquote', '> Outer\n> > Inner <!-- c -->\n> > More', undefined, '> Outer\n>\n> > Inner&#x20;\n> > More'],
       ['ordered list trailing space', '1. A <!-- c -->\n2. B', undefined, '1. A&#x20;\n2. B'],
       ['unordered list trailing space', '- A <!-- c -->\n- B', undefined, '* A&#x20;\n* B'],
       ['between list items', '- Item 1\n<!-- c -->\n- Item 2', undefined, '* Item 1\n\n- Item 2'],
       ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2 |\n| :- | :- |\n|  | data |'],
+      // inline formatting
       ['adjacent to bold/italic', '**b**<!-- c -->*i*<!-- c --> x', undefined, '**b***i* x'],
       ['adjacent to link/image', '[a](u)<!-- c -->![b](v)', undefined, '[a](u)![b](v)'],
+      // comment content edge cases
       ['dashes inside', 'X <!-- a -- b --> Y', undefined, 'X  Y'],
       ['HTML in comment', 'X\n<!-- <div>hidden</div> -->\nY', undefined, 'X\n\nY'],
-      ['at doc start/end', '<!-- top -->\nA\n\n<!-- bottom -->', undefined, 'A'],
-      ['mid-paragraph', 'A\n<!-- c -->\nB', undefined, 'A\n\nB'],
+      // mdxish
       ['JSX adjacent (mdxish)', 'A{/* c */}B', { mdxish: true }, 'AB'],
       ['JSX trailing (mdxish)', 'X{/* c */}', { mdxish: true }, 'X'],
       ['JSX multiline special chars (mdxish)', 'A\n\n{/*\n  < > & { } [ ] \\\\\n*/}\n\nB', { mdxish: true }, 'A\n\nB'],
+      // mdx
       ['MDX nested braces', 'A\n\n{/* {x} */}\n\nB', { mdx: true }, 'A\n\nB'],
       ['MDX multiple inline', 'A {/* a */}{/* b */} B', { mdx: true }, 'A  B'],
       ['MDX JSDoc block', 'A\n\n{/**\n * @param {string} x\n */}\n\nB', { mdx: true }, 'A\n\nB'],
@@ -370,16 +376,19 @@ end"`);
     });
 
     it.each([
+      // code blocks
       ['fenced code block', '```html\n<!-- stay -->\n```', undefined],
       ['fenced code (mdxish)', '```jsx\n{/* stay */}\n```', { mdxish: true }],
       ['inline code', 'Use `<!-- c -->` syntax', undefined],
       ['inline code (mdxish)', 'Use `{/* c */}` syntax', { mdxish: true }],
+      // non-comment expressions
       ['dot notation (mdxish)', '{user.email}', { mdxish: true }],
       ['bracket access (mdxish)', '{data.items[0].name}', { mdxish: true }],
       ['ternary (mdx)', '{isAdmin ? "yes" : "no"}', { mdx: true }],
       ['method call (mdx)', '{items.map(i => i.name)}', { mdx: true }],
       ['empty expression (mdxish)', '{  }', { mdxish: true }],
       ['non-comment expression (mdx)', 'Hello {name} world', { mdx: true }],
+      // magic blocks
       ['magic block with comment in JSON', '[block:html]\n{\n  "html": "<!-- preserved -->"\n}\n[/block]', undefined],
     ])('should preserve %s', async (_name, input, opts) => {
       const output = await stripComments(input, opts);
