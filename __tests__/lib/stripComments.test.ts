@@ -304,7 +304,7 @@ end"`);
   });
 
   it('preserves non-comment MDX expressions in mdxish mode', async () => {
-    const input = `Foo {user.email} bar {user.name} baz.`;
+    const input = 'Foo {user.email} bar {user.name} baz.';
 
     const output = await stripComments(input, { mdxish: true });
     expect(output).toBe(input);
@@ -326,5 +326,112 @@ end"`);
 
       # Black"
     `);
+  });
+
+  describe('strip comments edge cases', () => {
+    it.each([
+      ['empty string', '', undefined, ''],
+      ['whitespace-only', '   \n\n  \n   ', undefined, ''],
+      ['HTML comment-only doc', '<!-- only a comment -->', undefined, ''],
+      ['MDX comment-only doc', '{/* only a comment */}', { mdx: true }, ''],
+      ['JSX comment-only doc (mdxish)', '{/* only a comment */}', { mdxish: true }, ''],
+      ['plain text unchanged', 'Just some plain text.', undefined, 'Just some plain text.'],
+      ['consecutive HTML', 'A\n\n<!-- 1 -->\n<!-- 2 -->\n\nB', undefined, 'A\n\nB'],
+      ['consecutive JSX (mdxish)', 'A\n\n{/* 1 */}\n{/* 2 */}\n\nB', { mdxish: true }, 'A\n\nB'],
+      ['interleaved HTML+JSX (mdxish)', 'A\n<!-- h -->\n{/* j */}\nB', { mdxish: true }, 'A\n\nB'],
+      ['back-to-back inline', 'Hi <!--a--><!--b--><!--c--> world', undefined, 'Hi  world'],
+    ])('%s', async (_name, input, opts, expected) => {
+      const output = await stripComments(input, opts);
+      expect(output).toBe(expected);
+    });
+
+    it.each([
+      ['blockquote', '> Text\n> <!-- c -->\n> More', undefined, '> Text\n>\n> More'],
+      ['nested blockquote', '> Outer\n> > Inner <!-- c -->\n> > More', undefined, '> Outer\n>\n> > Inner&#x20;\n> > More'],
+      ['ordered list trailing space', '1. A <!-- c -->\n2. B', undefined, '1. A&#x20;\n2. B'],
+      ['unordered list trailing space', '- A <!-- c -->\n- B', undefined, '* A&#x20;\n* B'],
+      ['between list items', '- Item 1\n<!-- c -->\n- Item 2', undefined, '* Item 1\n\n- Item 2'],
+      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2 |\n| :- | :- |\n|  | data |'],
+      ['adjacent to bold/italic', '**b**<!-- c -->*i*<!-- c --> x', undefined, '**b***i* x'],
+      ['adjacent to link/image', '[a](u)<!-- c -->![b](v)', undefined, '[a](u)![b](v)'],
+      ['dashes inside', 'X <!-- a -- b --> Y', undefined, 'X  Y'],
+      ['HTML in comment', 'X\n<!-- <div>hidden</div> -->\nY', undefined, 'X\n\nY'],
+      ['at doc start/end', '<!-- top -->\nA\n\n<!-- bottom -->', undefined, 'A'],
+      ['mid-paragraph', 'A\n<!-- c -->\nB', undefined, 'A\n\nB'],
+      ['JSX adjacent (mdxish)', 'A{/* c */}B', { mdxish: true }, 'AB'],
+      ['JSX trailing (mdxish)', 'X{/* c */}', { mdxish: true }, 'X'],
+      ['JSX multiline special chars (mdxish)', 'A\n\n{/*\n  < > & { } [ ] \\\\\n*/}\n\nB', { mdxish: true }, 'A\n\nB'],
+      ['MDX nested braces', 'A\n\n{/* {x} */}\n\nB', { mdx: true }, 'A\n\nB'],
+      ['MDX multiple inline', 'A {/* a */}{/* b */} B', { mdx: true }, 'A  B'],
+      ['MDX JSDoc block', 'A\n\n{/**\n * @param {string} x\n */}\n\nB', { mdx: true }, 'A\n\nB'],
+    ])('strips: %s', async (_name, input, opts, expected) => {
+      const output = await stripComments(input, opts);
+      expect(output).toBe(expected);
+    });
+
+    it.each([
+      ['fenced code block', '```html\n<!-- stay -->\n```', undefined],
+      ['fenced code (mdxish)', '```jsx\n{/* stay */}\n```', { mdxish: true }],
+      ['inline code', 'Use `<!-- c -->` syntax', undefined],
+      ['inline code (mdxish)', 'Use `{/* c */}` syntax', { mdxish: true }],
+      ['dot notation (mdxish)', '{user.email}', { mdxish: true }],
+      ['bracket access (mdxish)', '{data.items[0].name}', { mdxish: true }],
+      ['ternary (mdx)', '{isAdmin ? "yes" : "no"}', { mdx: true }],
+      ['method call (mdx)', '{items.map(i => i.name)}', { mdx: true }],
+      ['empty expression (mdxish)', '{  }', { mdxish: true }],
+      ['non-comment expression (mdx)', 'Hello {name} world', { mdx: true }],
+      ['magic block with comment in JSON', '[block:html]\n{\n  "html": "<!-- preserved -->"\n}\n[/block]', undefined],
+    ])('preserves: %s', async (_name, input, opts) => {
+      const output = await stripComments(input, opts);
+      expect(output).toBe(input);
+    });
+
+    it.each([
+      ['JSX kept without options', 'Text {/* not removed */} end', undefined, 'not removed'],
+      ['HTML stripped, JSX kept', '<!-- gone -->\n{/* kept */}\nText', undefined, 'kept'],
+    ])('no-option defaults: %s', async (_name, input, opts, shouldContain) => {
+      const output = await stripComments(input, opts);
+      expect(output).toContain(shouldContain);
+    });
+
+    it.each([
+      ['self-closing + HTML comment', '<Foo />\n<!-- c -->\nEnd', undefined, '<Foo />\n\nEnd'],
+      ['self-closing (mdxish)', '<Foo />\n<!-- c -->\nEnd', { mdxish: true }, '<Foo />\n\nEnd'],
+      ['with children (mdx)', '<Callout>\n{/* c */}\nHi\n</Callout>', { mdx: true }, '<Callout>\n  Hi\n</Callout>'],
+      ['with props (mdx)', '<Img src="x" />\n{/* c */}\nEnd', { mdx: true }, '<Img src="x" />\n\nEnd'],
+    ])('custom components: %s', async (_name, input, opts, expected) => {
+      const output = await stripComments(input, opts);
+      expect(output).toBe(expected);
+    });
+
+    it.each([
+      ['comment + magic block child', '- Item <!-- c -->\n  [block:html]\n  {\n    "html": "<p>hi</p>"\n  }\n  [/block]'],
+      ['comment between magic blocks', '[block:html]\n{\n  "html": "<a>A</a>"\n}\n[/block]\n<!-- c -->\n[block:code]\n{\n  "codes": [{"code": "1", "language": "js"}]\n}\n[/block]'],
+      ['comment between raw HTML', '<div>A</div>\n<!-- c -->\n<div>B</div>'],
+    ])('strips comments, preserves adjacent blocks: %s', async (_name, input) => {
+      const output = await stripComments(input);
+      expect(output).not.toContain('<!--');
+    });
+
+    it('handles a full mdxish page', async () => {
+      const input = '{/* JSX */}\n<!-- HTML -->\n# Title\n{user.name}\n<!-- c -->\n<Foo />\n- Step\n  [block:callout]\n  {\n    "type": "info",\n    "body": "x"\n  }\n  [/block]\n<<glossary:auth>>';
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('{user.name}');
+      expect(output).toContain('<Foo />');
+      expect(output).toContain('[block:callout]');
+      expect(output).toContain('<<glossary:auth>>');
+      expect(output).not.toContain('{/* JSX */}');
+      expect(output).not.toContain('<!-- HTML -->');
+      expect(output).not.toContain('<!-- c -->');
+    });
+
+    it('handles mdx nested components with comments', async () => {
+      const input = '<Steps>\n  {/* c */}\n  <Step>First</Step>\n  {/* c */}\n  <Step>Second</Step>\n</Steps>\n\n{/** deprecated */}\n\n<Tabs>\n  <Tab title="JS">\n    ```js\n    // {/* stays */}\n    ```\n  </Tab>\n</Tabs>';
+      const output = await stripComments(input, { mdx: true });
+      expect(output).toContain('<Steps>');
+      expect(output).toContain('{/* stays */}');
+      expect(output).not.toContain('{/* c */}');
+      expect(output).not.toContain('deprecated');
+    });
   });
 });
