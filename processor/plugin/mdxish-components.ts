@@ -97,7 +97,7 @@ function isActualHtmlTag(tagName: string, originalExcerpt: string): boolean {
 }
 
 /** Parse and replace text children with processed markdown */
-function parseTextChildren(node: Element, processMarkdown: (content: string) => Root): void {
+function parseTextChildren(node: Element, processMarkdown: (content: string) => Root, components: CustomComponents): void {
   if (!node.children?.length) return;
 
   // First pass: Recursively process text children as they may contain stringified markdown / mdx content
@@ -113,6 +113,30 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
     }
 
     return children;
+  });
+
+  // Unwrap <p> elements whose meaningful children are ALL components.
+  // The markdown parser wraps inline content in <p> tags, but when that content
+  // is actually component children (e.g., <Tab> inside <Tabs>), the wrapper
+  // should be removed so components appear as direct children.
+  // Only unwrap when every non-whitespace, non-br child is a known component
+  // to avoid breaking paragraphs with mixed content (text + inline HTML like <code>).
+  node.children = node.children.flatMap(child => {
+    if (child.type !== 'element' || child.tagName !== 'p') return [child];
+
+    const meaningfulChildren = child.children.filter(gc => {
+      if (gc.type === 'text' && !gc.value.trim()) return false;
+      if (gc.type === 'element' && gc.tagName === 'br') return false;
+      return true;
+    });
+
+    const allComponents = meaningfulChildren.length > 0 && meaningfulChildren.every(
+      gc => gc.type === 'element' && getComponentName(gc.tagName, components),
+    );
+
+    if (!allComponents) return [child];
+
+    return meaningfulChildren;
   });
 
   // Post-processing: remove whitespace-only text nodes if all siblings are components
@@ -172,7 +196,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown);
+      parseTextChildren(node, processMarkdown, components);
     });
 
     // Remove unknown components in reverse order to preserve indices
