@@ -1,5 +1,55 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`removeComments > HTML comment edge cases > preserves HTML comments inside indented code blocks 1`] = `
+"Paragraph before
+
+\`\`\`
+<!-- indented code block comment -->
+const x = 1;
+\`\`\`
+
+Paragraph after"
+`;
+
+exports[`removeComments > complex real-world scenarios > handles a document with comments in every type of block 1`] = `
+"# Heading&#x20;
+
+Paragraph  text.
+
+> Quote&#x20;
+
+* List item&#x20;
+
+| H1 | H2 |
+| :- | :- |
+|  | data |
+
+\`\`\`
+<!-- preserved in code block -->
+\`\`\`
+
+\`<!-- preserved in inline code -->\`
+
+[block:html]
+{
+  "html": "<!-- preserved in magic block -->"
+}
+[/block]
+
+End"
+`;
+
+exports[`removeComments > complex real-world scenarios > handles a mixed mdxish document with comments throughout 1`] = `
+"# Title
+
+Some text  and  here.
+
+\`{/* preserved in code */}\`
+\`<!-- preserved in code -->\`
+
+End"
+`;
+
 exports[`removeComments > preserves magic block indentation 1`] = `
 "* foo
 * foo
@@ -90,6 +140,155 @@ More text.
 \`<!-- Code block HTML comment should NOT be removed -->\`
 
 Last text"
+`;
+
+exports[`removeComments > strip comments edge cases > magic blocks in complex structures: after blockquote 1`] = `
+"> Quote
+
+[block:code]
+{
+  "codes": [{"code": "x = 1", "language": "py"}]
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > magic blocks in complex structures: after heading 1`] = `
+"# Title
+
+[block:callout]
+{
+  "type": "warning",
+  "body": "Caution"
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > magic blocks in complex structures: consecutive 1`] = `
+"[block:html]
+{
+  "html": "<div>A</div>"
+}
+[/block]
+
+[block:html]
+{
+  "html": "<div>B</div>"
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > magic blocks in complex structures: in a nested list 1`] = `
+"* Outer
+  * Inner
+
+[block:html]
+    {
+      "html": "<b>deep</b>"
+    }
+    [/block]
+
+* Another"
+`;
+
+exports[`removeComments > strip comments edge cases > magic blocks in complex structures: under a list item 1`] = `
+"* Item
+
+[block:callout]
+  {
+    "type": "info",
+    "body": "nested"
+  }
+  [/block]
+
+* Next"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves indented code block comments 1`] = `
+"Paragraph
+
+\`\`\`
+<!-- indented -->
+const x = 1;
+\`\`\`
+
+After"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves magic blocks in complex structures: consecutive magic blocks 1`] = `
+"[block:html]
+{
+  "html": "<div>A</div>"
+}
+[/block]
+
+[block:html]
+{
+  "html": "<div>B</div>"
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves magic blocks in complex structures: magic block after blockquote 1`] = `
+"> Quote
+
+[block:code]
+{
+  "codes": [{"code": "x = 1", "language": "py"}]
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves magic blocks in complex structures: magic block after heading 1`] = `
+"# Title
+
+[block:callout]
+{
+  "type": "warning",
+  "body": "Caution"
+}
+[/block]"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves magic blocks in complex structures: magic block directly under a list item 1`] = `
+"* Item
+
+[block:callout]
+  {
+    "type": "info",
+    "body": "nested"
+  }
+  [/block]
+
+* Next"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves magic blocks in complex structures: magic block in nested list 1`] = `
+"* Outer
+  * Inner
+
+[block:html]
+    {
+      "html": "<b>deep</b>"
+    }
+    [/block]
+
+* Another"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves raw HTML elements: br tag 1`] = `"<br />"`;
+
+exports[`removeComments > strip comments edge cases > preserves raw HTML elements: div with content 1`] = `
+"<div>
+  <p>Hello</p>
+</div>"
+`;
+
+exports[`removeComments > strip comments edge cases > preserves raw HTML elements: style attribute 1`] = `"<p style="background-color: salmon">fish content</p>"`;
+
+exports[`removeComments > strip comments edge cases > preserves raw HTML elements: style tag 1`] = `
+"<style>
+  * { background: olive; }
+</style>"
 `;
 
 exports[`removeComments > supports a magic block as the first line of the document 1`] = `
