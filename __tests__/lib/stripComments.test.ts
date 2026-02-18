@@ -330,16 +330,16 @@ end"`);
 
   describe('strip comments edge cases', () => {
     it.each([
-      ['empty string', '', undefined, ''],
-      ['whitespace-only', '   \n\n  \n   ', undefined, ''],
-      ['HTML comment-only doc', '<!-- only a comment -->', undefined, ''],
-      ['MDX comment-only doc', '{/* only a comment */}', { mdx: true }, ''],
-      ['JSX comment-only doc (mdxish)', '{/* only a comment */}', { mdxish: true }, ''],
-      ['plain text unchanged', 'Just some plain text.', undefined, 'Just some plain text.'],
-      ['consecutive HTML', 'A\n\n<!-- 1 -->\n<!-- 2 -->\n\nB', undefined, 'A\n\nB'],
-      ['consecutive JSX (mdxish)', 'A\n\n{/* 1 */}\n{/* 2 */}\n\nB', { mdxish: true }, 'A\n\nB'],
-      ['interleaved HTML+JSX (mdxish)', 'A\n<!-- h -->\n{/* j */}\nB', { mdxish: true }, 'A\n\nB'],
-      ['back-to-back inline', 'Hi <!--a--><!--b--><!--c--> world', undefined, 'Hi  world'],
+      ['should return empty for empty string', '', undefined, ''],
+      ['should return empty for whitespace-only', '   \n\n  \n   ', undefined, ''],
+      ['should strip HTML comment-only doc', '<!-- only a comment -->', undefined, ''],
+      ['should strip MDX comment-only doc', '{/* only a comment */}', { mdx: true }, ''],
+      ['should strip JSX comment-only doc (mdxish)', '{/* only a comment */}', { mdxish: true }, ''],
+      ['should preserve plain text unchanged', 'Just some plain text.', undefined, 'Just some plain text.'],
+      ['should strip consecutive HTML comments', 'A\n\n<!-- 1 -->\n<!-- 2 -->\n\nB', undefined, 'A\n\nB'],
+      ['should strip consecutive JSX comments (mdxish)', 'A\n\n{/* 1 */}\n{/* 2 */}\n\nB', { mdxish: true }, 'A\n\nB'],
+      ['should strip interleaved HTML+JSX (mdxish)', 'A\n<!-- h -->\n{/* j */}\nB', { mdxish: true }, 'A\n\nB'],
+      ['should strip back-to-back inline comments', 'Hi <!--a--><!--b--><!--c--> world', undefined, 'Hi  world'],
     ])('%s', async (_name, input, opts, expected) => {
       const output = await stripComments(input, opts);
       expect(output).toBe(expected);
@@ -364,7 +364,7 @@ end"`);
       ['MDX nested braces', 'A\n\n{/* {x} */}\n\nB', { mdx: true }, 'A\n\nB'],
       ['MDX multiple inline', 'A {/* a */}{/* b */} B', { mdx: true }, 'A  B'],
       ['MDX JSDoc block', 'A\n\n{/**\n * @param {string} x\n */}\n\nB', { mdx: true }, 'A\n\nB'],
-    ])('strips: %s', async (_name, input, opts, expected) => {
+    ])('should strip in %s', async (_name, input, opts, expected) => {
       const output = await stripComments(input, opts);
       expect(output).toBe(expected);
     });
@@ -381,15 +381,15 @@ end"`);
       ['empty expression (mdxish)', '{  }', { mdxish: true }],
       ['non-comment expression (mdx)', 'Hello {name} world', { mdx: true }],
       ['magic block with comment in JSON', '[block:html]\n{\n  "html": "<!-- preserved -->"\n}\n[/block]', undefined],
-    ])('preserves: %s', async (_name, input, opts) => {
+    ])('should preserve %s', async (_name, input, opts) => {
       const output = await stripComments(input, opts);
       expect(output).toBe(input);
     });
 
     it.each([
-      ['JSX kept without options', 'Text {/* not removed */} end', undefined, 'not removed'],
-      ['HTML stripped, JSX kept', '<!-- gone -->\n{/* kept */}\nText', undefined, 'kept'],
-    ])('no-option defaults: %s', async (_name, input, opts, shouldContain) => {
+      ['preserving JSX without options', 'Text {/* not removed */} end', undefined, 'not removed'],
+      ['stripping HTML but preserving JSX without options', '<!-- gone -->\n{/* kept */}\nText', undefined, 'kept'],
+    ])('should default to %s', async (_name, input, opts, shouldContain) => {
       const output = await stripComments(input, opts);
       expect(output).toContain(shouldContain);
     });
@@ -399,7 +399,7 @@ end"`);
       ['self-closing (mdxish)', '<Foo />\n<!-- c -->\nEnd', { mdxish: true }, '<Foo />\n\nEnd'],
       ['with children (mdx)', '<Callout>\n{/* c */}\nHi\n</Callout>', { mdx: true }, '<Callout>\n  Hi\n</Callout>'],
       ['with props (mdx)', '<Img src="x" />\n{/* c */}\nEnd', { mdx: true }, '<Img src="x" />\n\nEnd'],
-    ])('custom components: %s', async (_name, input, opts, expected) => {
+    ])('should strip comments around custom components: %s', async (_name, input, opts, expected) => {
       const output = await stripComments(input, opts);
       expect(output).toBe(expected);
     });
@@ -408,12 +408,12 @@ end"`);
       ['comment + magic block child', '- Item <!-- c -->\n  [block:html]\n  {\n    "html": "<p>hi</p>"\n  }\n  [/block]'],
       ['comment between magic blocks', '[block:html]\n{\n  "html": "<a>A</a>"\n}\n[/block]\n<!-- c -->\n[block:code]\n{\n  "codes": [{"code": "1", "language": "js"}]\n}\n[/block]'],
       ['comment between raw HTML', '<div>A</div>\n<!-- c -->\n<div>B</div>'],
-    ])('strips comments, preserves adjacent blocks: %s', async (_name, input) => {
+    ])('should strip comments but preserve adjacent blocks: %s', async (_name, input) => {
       const output = await stripComments(input);
       expect(output).not.toContain('<!--');
     });
 
-    it('handles a full mdxish page', async () => {
+    it('should strip all comments in a full mdxish page', async () => {
       const input = '{/* JSX */}\n<!-- HTML -->\n# Title\n{user.name}\n<!-- c -->\n<Foo />\n- Step\n  [block:callout]\n  {\n    "type": "info",\n    "body": "x"\n  }\n  [/block]\n<<glossary:auth>>';
       const output = await stripComments(input, { mdxish: true });
       expect(output).toContain('{user.name}');
@@ -425,7 +425,7 @@ end"`);
       expect(output).not.toContain('<!-- c -->');
     });
 
-    it('handles mdx nested components with comments', async () => {
+    it('should strip comments inside mdx nested components', async () => {
       const input = '<Steps>\n  {/* c */}\n  <Step>First</Step>\n  {/* c */}\n  <Step>Second</Step>\n</Steps>\n\n{/** deprecated */}\n\n<Tabs>\n  <Tab title="JS">\n    ```js\n    // {/* stays */}\n    ```\n  </Tab>\n</Tabs>';
       const output = await stripComments(input, { mdx: true });
       expect(output).toContain('<Steps>');
