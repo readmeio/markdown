@@ -102,7 +102,42 @@ describe('Tabs renderer', () => {
   });
 
   describe('given Tabs with raw HTML content inside Tab children', () => {
-    const md = `
+    const mdCases = [
+      [
+        'compact indentation',
+        `
+<Tabs>
+<Tab title="Certificate authentication">
+<ol>
+<li>
+Sign into <strong>app.beyondtrust.io</strong>.<br>
+The <strong>Home</strong> page displays.
+</li>
+<li>
+Select <strong>Active Directory Settings</strong>.
+</li>
+<li>
+Click the <strong>Microsoft Entra ID</strong> tab.
+</li>
+</ol>
+</Tab>
+<Tab title="Client-secret authentication">
+<ol>
+<li>
+In the <a href="https://portal.azure.com/">Azure portal</a>,
+add a client secret.
+</li>
+<li>
+Copy the client secret to the <strong>Client Secret</strong> box.
+</li>
+</ol>
+</Tab>
+</Tabs>
+`,
+      ],
+      [
+        'more nested indentation',
+        `
 <Tabs>
   <Tab title="Certificate authentication">
 <ol>
@@ -130,14 +165,17 @@ describe('Tabs renderer', () => {
 </ol>
   </Tab>
 </Tabs>
-`;
-    const mod = renderMdxish(mdxish(md));
+`,
+      ],
+    ] as const;
 
-    it('should not error when rendering', () => {
+    it.each(mdCases)('should not error when rendering (%s)', (_name, md) => {
+      const mod = renderMdxish(mdxish(md));
       expect(() => render(<mod.default />)).not.toThrow();
     });
 
-    it('should render both tab buttons', () => {
+    it.each(mdCases)('should render both tab buttons (%s)', (_name, md) => {
+      const mod = renderMdxish(mdxish(md));
       const { container } = render(<mod.default />);
       const buttons = container.querySelectorAll('button');
       expect(buttons).toHaveLength(2);
@@ -145,7 +183,7 @@ describe('Tabs renderer', () => {
       expect(buttons[1]).toHaveTextContent('Client-secret authentication');
     });
 
-    it('should produce two Tab children in the HAST tree', () => {
+    it.each(mdCases)('should produce two Tab children in the HAST tree (%s)', (_name, md) => {
       const tree = mdxish(md);
       const tabsNode = tree.children[0] as Element;
       expect(tabsNode.tagName).toBe('Tabs');

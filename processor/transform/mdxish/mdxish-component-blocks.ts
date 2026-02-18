@@ -126,12 +126,12 @@ const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
 interface ScanResult {
   /** Index of the sibling containing the closing tag */
   closingIndex: number;
+  /** Content after the closing tag that should be re-inserted as a sibling */
+  contentAfterClose?: string;
   /** Additional children parsed from the closing sibling (content before closing tag in HTML blocks) */
   extraClosingChildren: MdxJsxFlowElement['children'];
   /** For paragraph siblings, the paragraph with closing tag stripped */
   strippedParagraph?: Paragraph;
-  /** Content after the closing tag that should be re-inserted as a sibling */
-  contentAfterClose?: string;
 }
 
 /**
