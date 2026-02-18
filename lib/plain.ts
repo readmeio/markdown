@@ -11,9 +11,11 @@ import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
  */
 
 interface Options {
-  /** When true, outputs variables using `{user.key}` syntax instead of resolving
+  /**
+   * When true, outputs variables using `{user.key}` syntax instead of resolving
    * to values or bare key names. Used by search indexing so the frontend can
-   * interpolate variables at display time. */
+   * interpolate variables at display time.
+   */
   preserveVariableSyntax?: boolean;
   variables?: Record<string, string>;
 }

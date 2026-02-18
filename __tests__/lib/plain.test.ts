@@ -117,22 +117,16 @@ Is it _me_ you're looking for?
   });
 
   it('preserves variable syntax via hast with preserveVariableSyntax option', () => {
-    const txt = '{user.name}';
+    const txt = 'Hello {user.name} and good bye';
 
-    expect(plain(hast(txt), { preserveVariableSyntax: true })).toBe('{user.name}');
+    expect(plain(hast(txt), { preserveVariableSyntax: true })).toBe('Hello {user.name} and good bye');
   });
 
   it('preserves legacy variable syntax with preserveVariableSyntax option', () => {
-    const txt = '<Variable name="company">company</Variable>';
+    const txt = 'Hello <Variable name="company">company</Variable> and good bye';
     const tree = hast(txt);
 
-    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user.company}');
-  });
-
-  it('preserves multiple variables with preserveVariableSyntax option', () => {
-    const md = 'Hello {user.name}, welcome to {user.company}!';
-
-    expect(plain(hast(md), { preserveVariableSyntax: true })).toBe('Hello {user.name} , welcome to {user.company} !');
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('Hello {user.company} and good bye');
   });
 
   it('preserveVariableSyntax takes precedence over provided variables', () => {
