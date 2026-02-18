@@ -44,7 +44,7 @@ export function terminateHtmlFlowBlocks(content: string) {
     }
 
     const isCurrentLineHtml = isLineHtml(lines[i]);
-    const isNextLineHtml = STANDALONE_HTML_LINE_REGEX.test(lines[i + 1]) || HTML_LINE_WITH_CONTENT_REGEX.test(lines[i + 1]);
+    const isNextLineHtml = isLineHtml(lines[i + 1]);
     if (isCurrentLineHtml && !isNextLineHtml) {
       result.push('');
     }
