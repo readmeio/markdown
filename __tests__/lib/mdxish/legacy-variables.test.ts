@@ -239,6 +239,35 @@ describe('legacy variables resolution', () => {
       expect(variableNode).not.toBeNull();
     });
 
+    it('should parse <<variable>> inside a readme components such as <Callout>', () => {
+      const md = `
+<Callout theme="warning">
+My name is not <<name>>!
+</Callout>
+      `;
+      const tree = mdxish(md);
+
+      const variableNode = findElementByTagName(tree.children[0] as Element, 'variable');
+      expect(variableNode).not.toBeNull();
+    });
+
+    it('should parse <<variable>> inside a readme components such as <Tabs>', () => {
+      const md = `
+<Tabs>
+  <Tab title="First Tab">My name is <<name>>!</Tab>
+  <Tab title="Second Tab">My name is not <<name>>!</Tab>
+</Tabs>
+      `;
+      const tree = mdxish(md);
+
+      expect((tree.children[0] as Element).children).toHaveLength(2);
+      const firstTabParent = (tree.children[0] as Element).children[0] as Element;
+      const secondTabParent = (tree.children[0] as Element).children[1] as Element;
+
+      expect(findElementByTagName(firstTabParent, 'variable')).not.toBeNull();
+      expect(findElementByTagName(secondTabParent, 'variable')).not.toBeNull();
+    });
+
     it('should parse <<variable>> inside callout magic blocks', () => {
       const md = `
 [block:callout]
