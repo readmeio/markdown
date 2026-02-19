@@ -49,15 +49,20 @@ const variablesCodeTransformer: Plugin<[Options?]> = ({ variables }: Options = {
   if (Object.keys(resolvedVariables).length === 0) return tree;
 
   visit(tree, 'inlineCode', (node: InlineCode) => {
-    console.log('inlineCode:', JSON.stringify(node, null, 2));
     if (!node.value) return;
     node.value = resolveCodeVariables(node.value, resolvedVariables);
   });
 
   visit(tree, 'code', (node: Code) => {
-    console.log('code:', JSON.stringify(node, null, 2));
     if (!node.value) return;
-    node.value = resolveCodeVariables(node.value, resolvedVariables);
+    const nextValue = resolveCodeVariables(node.value, resolvedVariables);
+    node.value = nextValue;
+
+    // Keep code-tabs/readme-components hProperties in sync with node.value
+    // because renderers read `value` from hProperties.
+    if (node.data?.hProperties && typeof node.data.hProperties === 'object') {
+      node.data.hProperties.value = nextValue;
+    }
   });
 
   return tree;
