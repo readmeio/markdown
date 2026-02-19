@@ -244,7 +244,13 @@ const parseTableCell = (text: string): MdastNode[] => {
 };
 
 const parseBlock = (text: string): MdastNode[] => {
-  if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
+  if (!text.trim()) return textToBlock('');
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  return tree.children as MdastNode[];
+};
+
+const parseInline = (text: string): MdastNode[] => {
+  if (!text.trim()) return textToInline(text);
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
@@ -289,6 +295,7 @@ function transformMagicBlock(
       if (!codeJson.codes || !Array.isArray(codeJson.codes)) {
         return [wrapPinnedBlocks(EMPTY_CODE_PLACEHOLDER satisfies MdastNode, data)];
       }
+
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
@@ -315,7 +322,7 @@ function transformMagicBlock(
       return [
         wrapPinnedBlocks(
           {
-            children: 'title' in headerJson ? textToInline(headerJson.title || '') : [],
+            children: 'title' in headerJson ? parseInline(headerJson.title || '') : [],
             depth,
             type: 'heading',
           },
