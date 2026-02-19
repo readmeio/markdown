@@ -220,16 +220,10 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
-  // Strip redundant emphasis markers early so remark-parse doesn't choke on them.
-  // processMarkdownInHtmlString also calls this, but only for complete HTML elements
-  // in `html` nodes — standalone `<strong>**text</strong>` may be split by remark
-  // before reaching that path.
-  const cleaned = stripRedundantEmphasisMarkers(text);
-
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
   // Then strip leading whitespace to prevent indented code blocks.
-  const escaped = processBackslashEscapes(cleaned);
+  const escaped = processBackslashEscapes(text);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
