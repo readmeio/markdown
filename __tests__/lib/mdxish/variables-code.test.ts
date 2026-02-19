@@ -27,47 +27,66 @@ function getCodeText(tree: Root): string {
 }
 
 describe('mdxish variables-code transformer', () => {
-  it('resolves legacy <<var>> in inline code', () => {
-    const tree = mdxish('Use `Bearer <<apiKey>>` token', {
-      variables: {
-        user: { apiKey: 'abc123' },
-        defaults: [],
-      },
-    });
-
+  it.each([
+    {
+      name: 'legacy variable',
+      variable: '<<apiKey>>',
+    },
+    {
+      name: 'MDX variable',
+      variable: '{user.apiKey}',
+    },
+  ])('resolves $name in inline code', ({ variable }) => {
+    const md = `Use \`Bearer ${variable}\` token`;
+    const variables = { user: { apiKey: 'abc123' }, defaults: [] };
+    const tree = mdxish(md, { variables });
     expect(getCodeText(tree)).toBe('Bearer abc123');
   });
 
-  it('resolves legacy <<var>> in code blocks', () => {
-    const tree = mdxish(
-      `\`\`\`js
-const name = 'Bearer <<apiKey>>';
-\`\`\``,
-      {
-        variables: { user: { apiKey: 'abc123' }, defaults: [] },
-      },
-    );
-
-    expect(getCodeText(tree)).toContain('Bearer abc123');
+  it.each([
+    {
+      name: 'legacy variable',
+      variable: '<<apiKey>>',
+    },
+    {
+      name: 'MDX variable',
+      variable: '{user.apiKey}',
+    },
+  ])('resolves $name in code blocks', ({ variable }) => {
+    const md = `\`\`\`js
+const name = 'Bearer ${variable}';
+\`\`\``;
+    const variables = { user: { apiKey: 'abc123' }, defaults: [] };
+    const tree = mdxish(md, { variables });
+    expect(getCodeText(tree)).toContain("const name = 'Bearer abc123';");
   });
 
-  it('resolves {user.var} in code blocks', () => {
-    const tree = mdxish(
-      `\`\`\`js
-const name = '{user.name}';
-\`\`\``,
-      {
-        variables: {
-          user: { name: 'Owlbert' },
-          defaults: [],
-        },
-      },
-    );
-
-    expect(getCodeText(tree)).toContain("const name = 'Owlbert';");
+  it.each([
+    {
+      name: 'legacy variable',
+      variable: '<<apiKey>>',
+    },
+    {
+      name: 'MDX variable',
+      variable: '{user.apiKey}',
+    },
+  ])('resolves $name in code magic blocks', ({ variable }) => {
+    const md = `[block:code]
+{
+  "codes": [
+    {
+      "code": "const name = 'Bearer ${variable}';",
+      "language": "js"
+    }
+  ]
+}
+[/block]`;
+    const variables = { user: { apiKey: 'abc123' }, defaults: [] };
+    const tree = mdxish(md, { variables });
+    expect(getCodeText(tree)).toContain("const name = 'Bearer abc123';");
   });
 
-  it('falls back to defaults in code nodes', () => {
+  it('resolves both legacy and MDX variables in code blocks', () => {
     const tree = mdxish(
       `\`\`\`txt
 <<region>> {user.region}
@@ -83,7 +102,7 @@ const name = '{user.name}';
     expect(getCodeText(tree)).toContain('us-east-1 us-east-1');
   });
 
-  it('does not replace glossary and missing variables', () => {
+  it('capitalises legacy glossary and missing variables', () => {
     const tree = mdxish('`<<glossary:term>> <<missing>> {user.missing}`', {
       variables: {
         user: {},
@@ -91,6 +110,6 @@ const name = '{user.name}';
       },
     });
 
-    expect(getCodeText(tree)).toBe('<<glossary:term>> <<missing>> {user.missing}');
+    expect(getCodeText(tree)).toBe('GLOSSARY:TERM MISSING USER.MISSING');
   });
 });

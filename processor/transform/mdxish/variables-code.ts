@@ -28,9 +28,9 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
       if (match.startsWith('\\<<') || match.endsWith('\\>>')) return match;
 
       const name = variableName.trim();
-      if (name.startsWith('glossary:')) return match;
+      if (name.startsWith('glossary:')) return name.toUpperCase();
 
-      return resolvedVariables[name] ?? match;
+      return name in resolvedVariables ? resolvedVariables[name] : name.toUpperCase();
     },
   );
 
@@ -38,15 +38,16 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
     MDX_VARIABLE_REGEX,
     (match: string, escapedPrefix: string, variableName: string, escapedSuffix: string): string => {
       if (escapedPrefix || escapedSuffix) return match;
-      return resolvedVariables[variableName] ?? match;
+      if (variableName in resolvedVariables) return resolvedVariables[variableName];
+      // Extract the full variable path from the match (e.g., "user.missing" from "{user.missing}")
+      const fullPath = match.slice(1, -1);
+      return fullPath.toUpperCase();
     },
   );
 }
 
 const variablesCodeTransformer: Plugin<[Options?]> = ({ variables }: Options = {}) => tree => {
   const resolvedVariables = flattenVariables(variables);
-
-  if (Object.keys(resolvedVariables).length === 0) return tree;
 
   visit(tree, 'inlineCode', (node: InlineCode) => {
     if (!node.value) return;
