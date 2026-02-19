@@ -1,4 +1,4 @@
-import type { Emphasis, Parent, PhrasingContent, Root, Strong, Text } from 'mdast';
+import type { Emphasis, Html, Parent, PhrasingContent, Root, Strong, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { SKIP, visit } from 'unist-util-visit';
@@ -241,6 +241,86 @@ function visitMultiNodeEmphasis(tree: Root) {
 }
 
 /**
+ * Strip redundant markdown emphasis markers (`**`, `*`, `__`, `_`) that sit
+ * adjacent to matching HTML emphasis tags in a raw HTML string.
+ * Legacy content often has patterns like `<strong>**text</strong>**`.
+ */
+const stripRedundantEmphasisMarkers = (html: string): string =>
+  html
+    .replace(/(<(?:strong|b)>)\s*\*\*/g, '$1')
+    .replace(/\*\*\s*(<\/(?:strong|b)>)/g, '$1')
+    .replace(/(<\/(?:strong|b)>)\s*\*\*/g, '$1')
+    .replace(/\*\*\s*(<(?:strong|b)>)/g, '$1')
+    .replace(/(<(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
+    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<\/(?:em|i)>)/g, '$1')
+    .replace(/(<\/(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
+    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<(?:em|i)>)/g, '$1');
+
+const BOLD_HTML_TAG_RE = /^<\/?\s*(?:strong|b)\s*>$/i;
+const ITALIC_HTML_TAG_RE = /^<\/?\s*(?:em|i)\s*>$/i;
+
+/**
+ * Strip redundant emphasis markers from the AST. Handles two cases:
+ * 1. Block-level HTML (single `html` node containing full markup) — string-level regex
+ * 2. Inline HTML (separate `html`/`text` sibling nodes) — adjacency-based stripping
+ */
+function stripRedundantEmphasisNodes(tree: Root) {
+  visit(tree, 'html', (node: Html) => {
+    node.value = stripRedundantEmphasisMarkers(node.value);
+  });
+
+  visit(tree, (node, _index, parent) => {
+    if (!parent || !('children' in parent) || !Array.isArray(parent.children)) return;
+
+    const children = parent.children as (Html | PhrasingContent | Text)[];
+    let changed = true;
+
+    while (changed) {
+      changed = false;
+      for (let i = 0; i < children.length; i += 1) {
+        const child = children[i];
+        // eslint-disable-next-line no-continue
+        if (child.type !== 'text') continue;
+
+        const text = (child as Text).value;
+
+        const prev = i > 0 ? children[i - 1] : null;
+        const next = i < children.length - 1 ? children[i + 1] : null;
+        const prevIsHtml = prev?.type === 'html';
+        const nextIsHtml = next?.type === 'html';
+        const prevValue = prevIsHtml ? (prev as Html).value : '';
+        const nextValue = nextIsHtml ? (next as Html).value : '';
+
+        let newText = text;
+
+        if (prevIsHtml && BOLD_HTML_TAG_RE.test(prevValue)) {
+          newText = newText.replace(/^\s*\*\*\s*/, '');
+        }
+        if (prevIsHtml && ITALIC_HTML_TAG_RE.test(prevValue)) {
+          newText = newText.replace(/^\s*(?:\*(?!\*)|_(?!_))\s*/, '');
+        }
+        if (nextIsHtml && BOLD_HTML_TAG_RE.test(nextValue)) {
+          newText = newText.replace(/\s*\*\*\s*$/, '');
+        }
+        if (nextIsHtml && ITALIC_HTML_TAG_RE.test(nextValue)) {
+          newText = newText.replace(/\s*(?:\*(?!\*)|_(?!_))\s*$/, '');
+        }
+
+        if (newText !== text) {
+          if (newText === '') {
+            children.splice(i, 1);
+            i -= 1;
+          } else {
+            (child as Text).value = newText;
+          }
+          changed = true;
+        }
+      }
+    }
+  });
+}
+
+/**
  * A remark plugin that normalizes malformed bold and italic markers in text nodes.
  * Detects patterns like `** bold**`, `Hello** Wrong Bold**`, `__ bold__`, `Hello__ Wrong Bold__`,
  * `* italic*`, `Hello* Wrong Italic*`, `_ italic_`, or `Hello_ Wrong Italic_`
@@ -411,6 +491,9 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     return undefined;
   });
+
+  // Strip redundant emphasis markers adjacent to HTML emphasis tags (e.g., <strong>**text</strong>**)
+  stripRedundantEmphasisNodes(tree);
 
   // Handle malformed emphasis spanning multiple nodes (e.g., **text [link](url) **)
   visitMultiNodeEmphasis(tree);

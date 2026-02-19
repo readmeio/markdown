@@ -907,4 +907,122 @@ describe('normalize-malformed-md-syntax', () => {
       expect(strong?.children.length).toBeGreaterThanOrEqual(5);
     });
   });
+
+  describe('redundant emphasis markers adjacent to HTML tags', () => {
+    it('should strip ** after </strong>', () => {
+      const md = '<strong>Profiles</strong>**';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toContain('**');
+      });
+    });
+
+    it('should strip ** before <strong>', () => {
+      const md = '**<strong>iOS Settings</strong>';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toContain('**');
+      });
+    });
+
+    it('should strip ** after <strong> (inside tag)', () => {
+      const md = '<strong>**iOS Settings</strong>';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toContain('**');
+      });
+    });
+
+    it('should strip ** with spaces around HTML tags', () => {
+      const md = '<strong>** iOS Settings</strong> <strong>Certificate Trust Settings</strong> **';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toContain('**');
+      });
+    });
+
+    it('should handle the full legacy pattern from user content', () => {
+      const md = 'Verifies under <strong>**iOS Settings</strong> <strong>General</strong>  <strong>Profiles</strong>**.';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toContain('**');
+      });
+    });
+
+    it('should strip * adjacent to <em> tags', () => {
+      const md = '<em>*italic text</em>*';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toMatch(/(?<!\*)\*(?!\*)/);
+      });
+    });
+
+    it('should strip _ adjacent to <em> tags', () => {
+      const md = '<em>_italic text</em>_';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const textNodes = paragraph.children.filter((c): c is Text => c.type === 'text');
+      textNodes.forEach(t => {
+        expect(t.value).not.toMatch(/(?<!\w)_(?!\w)/);
+      });
+    });
+
+    it('should not strip markers that are not adjacent to matching HTML tags', () => {
+      const md = '**bold text** is here';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      const paragraph = tree.children[0] as Paragraph;
+      const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
+      expect(strong).toBeDefined();
+    });
+
+    it('should strip ** inside block-level HTML nodes', () => {
+      const md =
+        '<ol><li>Verifies under <strong>**iOS Settings</strong> <strong>General</strong>  <strong>Profiles</strong>**.\n<li>Navigates to <strong>** iOS Settings</strong>   <strong> General</strong> <strong>About</strong> <strong>Certificate Trust Settings</strong> ** and enables.</ol>';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+
+      const htmlNode = tree.children[0];
+      expect(htmlNode.type).toBe('html');
+      expect((htmlNode as { value: string }).value).not.toContain('**');
+      expect((htmlNode as { value: string }).value).toContain('<strong>iOS Settings</strong>');
+      expect((htmlNode as { value: string }).value).toContain('<strong>Profiles</strong>');
+      expect((htmlNode as { value: string }).value).toContain('<strong>Certificate Trust Settings</strong>');
+    });
+  });
 });

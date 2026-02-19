@@ -140,27 +140,10 @@ const escapeInvalidTags = (str: string): string =>
  * placeholders before HTML parsing so `rehype-parse` doesn't mangle them
  * (it treats unknown tags as void elements, stripping their children).
  */
-/**
- * Strip markdown emphasis markers (`**`, `*`, `__`, `_`) that are redundant
- * because they sit adjacent to matching HTML emphasis tags (`<strong>`, `<em>`, etc.).
- * Legacy Mongo content often has patterns like `<strong>**text</strong>**`.
- */
-const stripRedundantEmphasisMarkers = (html: string): string =>
-  html
-    .replace(/(<(?:strong|b)>)\s*\*\*/g, '$1')
-    .replace(/\*\*\s*(<\/(?:strong|b)>)/g, '$1')
-    .replace(/(<\/(?:strong|b)>)\s*\*\*/g, '$1')
-    .replace(/\*\*\s*(<(?:strong|b)>)/g, '$1')
-    .replace(/(<(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
-    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<\/(?:em|i)>)/g, '$1')
-    .replace(/(<\/(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
-    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<(?:em|i)>)/g, '$1');
-
 const processMarkdownInHtmlString = (html: string): string => {
   const placeholders: [string, string][] = [];
   let counter = 0;
-  const cleaned = stripRedundantEmphasisMarkers(html);
-  const safened = escapeInvalidTags(cleaned).replace(HTML_TAG_RE, match => {
+  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
     if (!/^<\/?[A-Z]/.test(match)) return match;
     const id = `<!--PC${(counter += 1)}-->`;
     placeholders.push([id, match]);
