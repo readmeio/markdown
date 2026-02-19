@@ -484,6 +484,21 @@ ${JSON.stringify(
         const paragraphs = cellHtml.match(/<p>/g);
         expect(paragraphs?.length).toBeGreaterThanOrEqual(1);
       });
+
+      it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
+        const input =
+          'Note the following: <ul><li>A **Live** status means the domain is externally accessible (HTTP request passes)</li><li>A **Not Live** status means the domain is not exposed and cannot be reached from the internet (HTTP request fails)</li></ul>';
+        const cellHtml = getCellHtml(input);
+        // Should render as actual list elements, not literal <ul><li> text
+        expect(cellHtml).toContain('<ul>');
+        expect(cellHtml).toContain('<li>');
+        expect(cellHtml).toContain('Live');
+        expect(cellHtml).toContain('Not Live');
+        expect(cellHtml).toContain('<strong>');
+        // Should NOT show raw HTML tags as literal text
+        expect(cellHtml).not.toMatch(/Note the following: &lt;ul&gt;/);
+        expect(cellHtml).not.toMatch(/Note the following: <ul><li>/);
+      });
     });
 
     it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {

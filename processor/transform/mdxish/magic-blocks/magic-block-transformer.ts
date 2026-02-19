@@ -38,6 +38,7 @@ import { visitParents } from 'unist-util-visit-parents';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
+import rehypeFixStrayListPunctuation from '../rehype-fix-stray-list-punctuation';
 
 import {
   CLOSE_BLOCK_TAG_BOUNDARY_RE,
@@ -112,7 +113,7 @@ const markdownToHtml = unified()
 const htmlParser = unified().use(rehypeParse, { fragment: true });
 
 /** HTML stringifier (hast → HTML string) */
-const htmlStringifier = unified().use(rehypeStringify);
+const htmlStringifier = unified().use(rehypeFixStrayListPunctuation).use(rehypeStringify);
 
 /** Process \|, \<, \> backslash escapes. Only < is entity-escaped; > is left literal to avoid double-encoding by rehype. */
 const processBackslashEscapes = (text: string): string =>
@@ -185,14 +186,48 @@ const processMarkdownInHtmlString = (html: string): string => {
  * Each \n in the original text becomes a <br> tag to preserve spacing, then a
  * blank line (\n\n) is appended so CommonMark ends the HTML block and parses
  * the following content as markdown.
+ *
+ * When the match contains no newlines (the \s* in CLOSE_BLOCK_TAG_BOUNDARY_RE
+ * consumed none) the closing tag and the following character are on the same
+ * logical line. In that case we check whether the line itself starts with an
+ * HTML tag: if it does, the element was at line-start and CommonMark would have
+ * opened an HTML block that needs terminating; if it does not, the element is
+ * inline (mid-sentence) and no separator is needed.
  */
-const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: string, nextLineChar?: string) => {
+/**
+ * Ensure block-level HTML tags that appear inline (after text on the same line) are on their
+ * own line. CommonMark only parses HTML blocks when the opening tag is at line start, so
+ * "Note the following: <ul><li>...</li></ul>" would otherwise render the tags as literal text.
+ */
+const ensureBlockHtmlOnOwnLine = (text: string): string =>
+  text.replace(/([^\n])[ \t]*<([a-zA-Z][a-zA-Z0-9-]*)([\s>])/g, (match, before, tag, after) =>
+    BLOCK_LEVEL_TAGS.has(tag.toLowerCase()) ? `${before}\n<${tag}${after}` : match);
+
+const separateBlockTagFromContent = (
+  match: string,
+  tag: string,
+  inlineChar: string | undefined,
+  nextLineChar: string | undefined,
+  offset: number,
+  fullString: string,
+) => {
   if (!BLOCK_LEVEL_TAGS.has(tag.toLowerCase())) return match;
 
   const newlineCount = (match.match(/\n/g) ?? []).length;
-  const breaks = '<br>'.repeat(newlineCount);
 
-  return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
+  if (newlineCount === 0) {
+    // No newlines consumed by \s* — content is on the same line as </tag>.
+    // Only add the separator when the enclosing line starts with an HTML tag,
+    // meaning the element was block-level at line-start (CommonMark HTML block).
+    // When the line starts with plain text the element is inline; skip separator.
+    const lineStart = fullString.lastIndexOf('\n', offset - 1) + 1;
+    const beforeTag = fullString.slice(lineStart, offset);
+    const lineStartsWithHtml = /^\s*<[a-zA-Z]/.test(beforeTag);
+    if (!lineStartsWithHtml) return match;
+  }
+
+  const breaks = '<br>'.repeat(newlineCount);
+  return `</${tag}>${breaks}\n\n${inlineChar ?? nextLineChar}`;
 };
 
 /**
@@ -203,11 +238,14 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
+  // Ensure block-level HTML (e.g. <ul>, <ol>) that appears inline gets its own line so
+  // CommonMark parses it as an HTML block rather than literal text.
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
   // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
-  const normalized = escaped
+  const withBlockHtmlOnOwnLine = ensureBlockHtmlOnOwnLine(escaped);
+  const normalized = withBlockHtmlOnOwnLine
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
   const trimmedLines = normalized.split('\n').map(line => line.trimStart());
