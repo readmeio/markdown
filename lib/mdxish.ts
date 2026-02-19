@@ -44,7 +44,9 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
@@ -127,10 +129,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock()] : [magicBlock(), mdxExprTextOnly])
+    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
     .data(
       'fromMarkdownExtensions',
-      safeMode ? [magicBlockFromMarkdown()] : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()],
+      safeMode
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)

@@ -16,6 +16,7 @@ import type {
 } from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXModule } from 'mdx/types';
+import type { Position } from 'unist';
 
 type Callout = Omit<Blockquote, 'children' | 'type'> & {
   children: BlockContent[];
@@ -151,6 +152,16 @@ interface Variable extends Node {
   value: string;
 }
 
+interface Glossary extends Node {
+  children: [{ type: 'text'; value: string }];
+  data: Data & {
+    hName: 'Glossary';
+    hProperties: { term: string };
+  };
+  position?: Position;
+  type: NodeTypes.glossary;
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
@@ -169,6 +180,7 @@ declare module 'mdast' {
   interface PhrasingContentMap {
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.glossary]: Glossary;
     [NodeTypes.variable]: Variable;
     [NodeTypes.plain]: Plain;
   }
@@ -180,6 +192,7 @@ declare module 'mdast' {
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;
+    [NodeTypes.glossary]: Glossary;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;

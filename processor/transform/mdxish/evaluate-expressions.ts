@@ -40,7 +40,7 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
         parent.children.splice(index, 1, {
           type: 'text',
           value: textValue,
-          position: node.position,
+          position: expressionNode.position,
         });
       } catch (_error) {
         // If evaluation fails, leave the expression as-is (fallback to text)
@@ -50,7 +50,7 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
         parent.children.splice(index, 1, {
           type: 'text',
           value: `{${processed}}`,
-          position: node.position,
+          position: expressionNode.position,
         });
       }
     });
