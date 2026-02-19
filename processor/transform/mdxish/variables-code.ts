@@ -12,6 +12,7 @@ interface Options {
 const LEGACY_VARIABLE_REGEX = new RegExp(VARIABLE_REGEXP, 'giu');
 const MDX_VARIABLE_REGEX = new RegExp(MDX_VARIABLE_REGEXP, 'giu');
 
+// Flatten variables into a single object for easy lookup
 function flattenVariables(variables?: Variables): Record<string, string> {
   if (!variables) return {};
 
@@ -27,6 +28,7 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
     (match: string, variableName: string): string => {
       if (match.startsWith('\\<<') || match.endsWith('\\>>')) return match;
 
+      // Legacy & MDX behavior: Glossary and missing variables are just capitalized
       const name = variableName.trim();
       if (name.startsWith('glossary:')) return name.toUpperCase();
 
@@ -46,7 +48,14 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
   );
 }
 
-const variablesCodeTransformer: Plugin<[Options?]> = ({ variables }: Options = {}) => tree => {
+/**
+ * A remark mdast plugin that resolves legacy variables <<...>> and MDX variables {user.*} inside code and inline code nodes
+ * to their values. Uses regexes from the readme variable to search for variables in the code string.
+ *
+ * Variables in code blocks and inline cannot be tokenized, and also we need to maintain the code string
+ * This enables engine side variable resolution which improves UX
+ */
+const variablesCodeResolver: Plugin<[Options?]> = ({ variables }: Options = {}) => tree => {
   const resolvedVariables = flattenVariables(variables);
 
   visit(tree, 'inlineCode', (node: InlineCode) => {
@@ -69,4 +78,4 @@ const variablesCodeTransformer: Plugin<[Options?]> = ({ variables }: Options = {
   return tree;
 };
 
-export default variablesCodeTransformer;
+export default variablesCodeResolver;

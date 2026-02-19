@@ -41,7 +41,7 @@ import {
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
-import variablesCodeTransformer from '../processor/transform/mdxish/variables-code';
+import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -101,7 +101,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     newEditorTypes = false,
     safeMode = false,
     useTailwind,
-    variables,
   } = opts;
 
   const components: CustomComponents = {
@@ -151,7 +150,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(variablesCodeTransformer, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(variablesTextTransformer) // Parse {user.*} patterns from text
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
@@ -189,7 +187,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {} } = opts;
+  const { components: userComponents = {}, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -200,6 +198,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(remarkBreaks)
+    .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
