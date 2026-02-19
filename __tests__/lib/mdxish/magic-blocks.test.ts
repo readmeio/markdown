@@ -201,6 +201,33 @@ ${JSON.stringify(
       expect((cell1.children[0] as Element).tagName).toBe('strong');
     });
 
+    it('should strip redundant emphasis markers adjacent to matching HTML emphasis tags', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Device Type',
+      'h-1': 'Steps',
+      '0-0': 'iOS devices',
+      '0-1': '<ol><li>Verifies under <strong>**iOS Settings</strong> <strong>General</strong> <strong>Profiles</strong>**.\n<li>Navigates to <strong>** iOS Settings</strong> <strong>About</strong> <strong>Certificate Trust Settings</strong> ** and enables.</ol></li>',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      const html = toHtml(ast);
+
+      expect(html).not.toContain('**');
+      expect(html).toContain('<strong>iOS Settings</strong>');
+      expect(html).toContain('<strong>Profiles</strong>');
+      expect(html).toContain('<strong>Certificate Trust Settings</strong>');
+    });
+
     it('should restore markdown content inside table cells', () => {
       const md = `[block:parameters]
 ${JSON.stringify(

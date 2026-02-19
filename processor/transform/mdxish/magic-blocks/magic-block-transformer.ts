@@ -140,10 +140,27 @@ const escapeInvalidTags = (str: string): string =>
  * placeholders before HTML parsing so `rehype-parse` doesn't mangle them
  * (it treats unknown tags as void elements, stripping their children).
  */
+/**
+ * Strip markdown emphasis markers (`**`, `*`, `__`, `_`) that are redundant
+ * because they sit adjacent to matching HTML emphasis tags (`<strong>`, `<em>`, etc.).
+ * Legacy Mongo content often has patterns like `<strong>**text</strong>**`.
+ */
+const stripRedundantEmphasisMarkers = (html: string): string =>
+  html
+    .replace(/(<(?:strong|b)>)\s*\*\*/g, '$1')
+    .replace(/\*\*\s*(<\/(?:strong|b)>)/g, '$1')
+    .replace(/(<\/(?:strong|b)>)\s*\*\*/g, '$1')
+    .replace(/\*\*\s*(<(?:strong|b)>)/g, '$1')
+    .replace(/(<(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
+    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<\/(?:em|i)>)/g, '$1')
+    .replace(/(<\/(?:em|i)>)\s*(?:\*(?!\*)|_(?!_))/g, '$1')
+    .replace(/(?:(?<!\*)\*|(?<!_)_)\s*(<(?:em|i)>)/g, '$1');
+
 const processMarkdownInHtmlString = (html: string): string => {
   const placeholders: [string, string][] = [];
   let counter = 0;
-  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
+  const cleaned = stripRedundantEmphasisMarkers(html);
+  const safened = escapeInvalidTags(cleaned).replace(HTML_TAG_RE, match => {
     if (!/^<\/?[A-Z]/.test(match)) return match;
     const id = `<!--PC${(counter += 1)}-->`;
     placeholders.push([id, match]);
@@ -203,10 +220,16 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
+  // Strip redundant emphasis markers early so remark-parse doesn't choke on them.
+  // processMarkdownInHtmlString also calls this, but only for complete HTML elements
+  // in `html` nodes — standalone `<strong>**text</strong>` may be split by remark
+  // before reaching that path.
+  const cleaned = stripRedundantEmphasisMarkers(text);
+
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
   // Then strip leading whitespace to prevent indented code blocks.
-  const escaped = processBackslashEscapes(text);
+  const escaped = processBackslashEscapes(cleaned);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
