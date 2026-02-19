@@ -1,71 +1,172 @@
 import type { Element, Root } from 'hast';
+import type { Heading } from 'mdast';
 
 import { visit } from 'unist-util-visit';
 
 import { mdxish } from '../../lib';
+import { mdastV6Wrapper } from '../helpers';
 
-function findAllHeadings(tree: Root): { id: string; tagName: string }[] {
-  const headings: { id: string; tagName: string }[] = [];
+function findAllHeadings(tree: Root): { id: string }[] {
+  const headings: { id: string; }[] = [];
   visit(tree, 'element', (node: Element) => {
     if (/^h[1-6]$/.test(node.tagName) && node.properties?.id) {
-      headings.push({ id: String(node.properties.id), tagName: node.tagName });
+      headings.push({ id: String(node.properties.id) });
+    }
+  });
+  return headings;
+}
+
+function findAllHeadingsInMdast(tree: Root): { id: string; }[] {
+  const headings: { id: string; }[] = [];
+  visit(tree, 'heading', (node: Heading) => {
+    if (node.data?.hProperties?.id) {
+      headings.push({ id: String(node.data.hProperties.id) });
     }
   });
   return headings;
 }
 
 describe('heading slugs', () => {
+  // Ensure mdxish slugs match legacy slugs for headings without variables
   describe('plain headings', () => {
-    it('should generate slugs from plain headings', () => {
+    it('with normal text should match legacy', () => {
       const md = '## Hello';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('hello');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
 
-    it('should handle headings with special characters and symbols', () => {
+    it('with special characters and symbols should match legacy', () => {
       const md = '## Hello World! @#$%^&*()';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('hello-world-');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
 
-    it('should handle headings with multiple spaces and punctuation', () => {
-      const md = '## Hello    World...   Test!!!';
+    it('with multiple spaces and punctuation should match legacy', () => {
+      const md = '##  Hello    World...   Test!!!   ';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('hello----world---test');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
 
-    it('should handle headings with unicode and emoji characters', () => {
+    it('with unicode and emoji characters should match legacy', () => {
       const md = '## Hello 🌍 World 你好';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('hello--world-你好');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
 
-    it('should handle headings with numbers and mixed case', () => {
+    it('with numbers and mixed case should match legacy', () => {
       const md = '## Version 2.0 Release Notes';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('version-20-release-notes');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
 
-    it('should handle headings with slashes and backslashes', () => {
+    it('with slashes and backslashes should match legacy', () => {
       const md = '## API /v1/users endpoint';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('api-v1users-endpoint');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
+    });
+
+    it('that has multiple headings of the same content should be incremented and match legacy', () => {
+      const md = '## Hello\n\n## Hello \n\n### Hello';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(3);
+      expect(headings[0].id).toBe('hello');
+      expect(headings[1].id).toBe('hello-1');
+      expect(headings[2].id).toBe('hello-2');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
+      expect(legacyHeadings[1].id).toBe(headings[1].id);
+      expect(legacyHeadings[2].id).toBe(headings[2].id);
+    });
+
+    it('with escaped characters should match legacy', () => {
+      const md = '## Hello\\tWorld';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('hellotworld');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
+    });
+
+    it('with markdown formatting inside headings should match legacy', () => {
+      const md = '## **Bold** and _italic_ text';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('bold-and-italic-text');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
+    });
+
+    it('with accented latin characters should match legacy', () => {
+      const md = '## Café Résumé';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('café-résumé');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
+    });
+
+    it('with non-latin scripts should match legacy', () => {
+      const md = '## Привет мир';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('привет-мир');
+
+      const legacyTree = mdastV6Wrapper(md) as Root;
+      const legacyHeadings = findAllHeadingsInMdast(legacyTree);
+      expect(legacyHeadings[0].id).toBe(headings[0].id);
     });
   });
 
-  describe('user variables', () => {
+  describe('MDX variables', () => {
     it('should generate slugs from variable names, not resolved values', () => {
       const md = '## Hello {user.name}';
       const tree = mdxish(md);
@@ -198,6 +299,16 @@ describe('heading slugs', () => {
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
       expect(headings[0].id).toBe('user-firstname');
+    });
+
+    it('should handle multiple same headings with legacy variables should be incremented and match legacy', () => {
+      const content = '## Hello <<name>>\n\n## Hello <<name>>\n\n### Hello <<name>>';
+      const tree = mdxish(content);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(3);
+      expect(headings[0].id).toBe('hello-name');
+      expect(headings[1].id).toBe('hello-name-1');
+      expect(headings[2].id).toBe('hello-name-2');
     });
   });
 });
