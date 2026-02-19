@@ -52,8 +52,8 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
  * A remark mdast plugin that resolves legacy variables <<...>> and MDX variables {user.*} inside code and inline code nodes
  * to their values. Uses regexes from the readme variable to search for variables in the code string.
  *
- * Variables in code blocks and inline cannot be tokenized, and also we need to maintain the code string
- * This enables engine side variable resolution which improves UX
+ * This is needed because variables in code blocks and inline cannot be tokenized, and also we need to maintain the code string
+ * in the code nodes. This enables engine side variable resolution which improves UX
  */
 const variablesCodeResolver: Plugin<[Options?]> = ({ variables }: Options = {}) => tree => {
   const resolvedVariables = flattenVariables(variables);
