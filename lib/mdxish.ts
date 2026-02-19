@@ -1,4 +1,4 @@
-import type { CustomComponents } from '../types';
+import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
@@ -41,6 +41,7 @@ import {
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
+import variablesCodeTransformer from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
@@ -65,6 +66,7 @@ export interface MdxishOpts {
    */
   safeMode?: boolean;
   useTailwind?: boolean;
+  variables?: Variables;
 }
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
@@ -99,6 +101,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     newEditorTypes = false,
     safeMode = false,
     useTailwind,
+    variables,
   } = opts;
 
   const components: CustomComponents = {
@@ -148,6 +151,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
+    .use(variablesCodeTransformer, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(variablesTextTransformer) // Parse {user.*} patterns from text
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);

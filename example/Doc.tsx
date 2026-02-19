@@ -137,7 +137,7 @@ const Doc = () => {
       try {
         const sanitized = await sanitize();
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized);
+        const tree = mdx.mdxish(sanitized, { variables });
         const vdom = mdx.renderMdxish(tree, { terms, variables });
         setError(() => null);
         setContent(vdom);
