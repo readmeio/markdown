@@ -72,7 +72,7 @@ Hello {user.name}!
     expect(screen.getByText('John Doe')).toBeInTheDocument();
   });
 
-  it('should NOT evaluate user variables inside backticks (inline code)', () => {
+  it('should evaluate user variables inside backticks (inline code)', () => {
     const mdx = `
 User Variables: **\`{user.name}\`** evaluates to {user.name}
     `;
@@ -84,17 +84,24 @@ User Variables: **\`{user.name}\`** evaluates to {user.name}
       defaults: [],
     };
 
-    const hast = rmdx.mdxish(mdx) as Root;
+    const hast = rmdx.mdxish(mdx, { variables }) as Root;
     expect(hast).toBeDefined();
 
     const { default: Content } = rmdx.renderMdxish(hast, { variables });
 
     render(React.createElement(Content));
 
-    // The {user.name} OUTSIDE backticks should be evaluated to "John Doe"
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    // Both {user.name} inside and outside backticks should be evaluated to "John Doe"
+    const johnDoeElements = screen.getAllByText('John Doe');
+    expect(johnDoeElements).toHaveLength(2);
 
-    // The {user.name} INSIDE backticks should remain as literal text
-    expect(screen.getByText('{user.name}')).toBeInTheDocument();
+    // Verify one is inside a code element (from backticks) and one is in a span (from outside backticks)
+    const codeElement = johnDoeElements.find(el => el.tagName === 'CODE');
+    const spanElement = johnDoeElements.find(el => el.tagName === 'SPAN');
+    expect(codeElement).toBeInTheDocument();
+    expect(spanElement).toBeInTheDocument();
+
+    // The literal {user.name} should not appear anywhere
+    expect(screen.queryByText('{user.name}')).not.toBeInTheDocument();
   });
 });
