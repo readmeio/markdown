@@ -206,10 +206,10 @@ ${JSON.stringify(
 ${JSON.stringify(
   {
     data: {
-      'h-0': 'Device Type',
-      'h-1': 'Steps',
-      '0-0': 'iOS devices',
-      '0-1': '<ol><li>Verifies under <strong>**iOS Settings</strong> <strong>General</strong> <strong>Profiles</strong>**.\n<li>Navigates to <strong>** iOS Settings</strong> <strong>About</strong> <strong>Certificate Trust Settings</strong> ** and enables.</ol></li>',
+      'h-0': 'Foo',
+      'h-1': 'Bar',
+      '0-0': 'baz',
+      '0-1': '<ol><li>check <strong>**foo</strong> <strong>bar</strong> <strong>baz</strong>**.\n<li>see <strong>** qux</strong> <strong>quux</strong> <strong>corge</strong> ** end.</ol></li>',
     },
     cols: 2,
     rows: 1,
@@ -223,9 +223,9 @@ ${JSON.stringify(
       const html = toHtml(ast);
 
       expect(html).not.toContain('**');
-      expect(html).toContain('<strong>iOS Settings</strong>');
-      expect(html).toContain('<strong>Profiles</strong>');
-      expect(html).toContain('<strong>Certificate Trust Settings</strong>');
+      expect(html).toContain('<strong>foo</strong>');
+      expect(html).toContain('<strong>baz</strong>');
+      expect(html).toContain('<strong>corge</strong>');
     });
 
     it('should restore markdown content inside table cells', () => {

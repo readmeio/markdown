@@ -910,7 +910,7 @@ describe('normalize-malformed-md-syntax', () => {
 
   describe('redundant emphasis markers adjacent to HTML tags', () => {
     it('should strip ** after </strong>', () => {
-      const md = '<strong>Profiles</strong>**';
+      const md = '<strong>foo</strong>**';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -923,7 +923,7 @@ describe('normalize-malformed-md-syntax', () => {
     });
 
     it('should strip ** before <strong>', () => {
-      const md = '**<strong>iOS Settings</strong>';
+      const md = '**<strong>foo</strong>';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -936,7 +936,7 @@ describe('normalize-malformed-md-syntax', () => {
     });
 
     it('should strip ** after <strong> (inside tag)', () => {
-      const md = '<strong>**iOS Settings</strong>';
+      const md = '<strong>**foo</strong>';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -949,7 +949,7 @@ describe('normalize-malformed-md-syntax', () => {
     });
 
     it('should strip ** with spaces around HTML tags', () => {
-      const md = '<strong>** iOS Settings</strong> <strong>Certificate Trust Settings</strong> **';
+      const md = '<strong>** foo</strong> <strong>bar</strong> **';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -961,8 +961,8 @@ describe('normalize-malformed-md-syntax', () => {
       });
     });
 
-    it('should handle the full legacy pattern from user content', () => {
-      const md = 'Verifies under <strong>**iOS Settings</strong> <strong>General</strong>  <strong>Profiles</strong>**.';
+    it('should handle multiple strong tags with scattered ** markers', () => {
+      const md = 'check <strong>**foo</strong> <strong>bar</strong>  <strong>baz</strong>**.';
       const tree = processor.parse(md);
       processor.runSync(tree);
       removePosition(tree, { force: true });
@@ -1013,16 +1013,16 @@ describe('normalize-malformed-md-syntax', () => {
 
     it('should strip ** inside block-level HTML nodes', () => {
       const md =
-        '<ol><li>Verifies under <strong>**iOS Settings</strong> <strong>General</strong>  <strong>Profiles</strong>**.\n<li>Navigates to <strong>** iOS Settings</strong>   <strong> General</strong> <strong>About</strong> <strong>Certificate Trust Settings</strong> ** and enables.</ol>';
+        '<ol><li>check <strong>**foo</strong> <strong>bar</strong>  <strong>baz</strong>**.\n<li>see <strong>** qux</strong>   <strong> quux</strong> <strong>corge</strong> <strong>grault</strong> ** end.</ol>';
       const tree = processor.parse(md);
       processor.runSync(tree);
 
       const htmlNode = tree.children[0];
       expect(htmlNode.type).toBe('html');
       expect((htmlNode as { value: string }).value).not.toContain('**');
-      expect((htmlNode as { value: string }).value).toContain('<strong>iOS Settings</strong>');
-      expect((htmlNode as { value: string }).value).toContain('<strong>Profiles</strong>');
-      expect((htmlNode as { value: string }).value).toContain('<strong>Certificate Trust Settings</strong>');
+      expect((htmlNode as { value: string }).value).toContain('<strong>foo</strong>');
+      expect((htmlNode as { value: string }).value).toContain('<strong>baz</strong>');
+      expect((htmlNode as { value: string }).value).toContain('<strong>grault</strong>');
     });
   });
 });
