@@ -179,19 +179,11 @@ const processMarkdownInHtmlString = (html: string): string => {
   return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
 };
 
-/**
- * Move trailing punctuation from after </ul> or </ol> into the last </li>.
- * Only absorbs when punctuation is at end-of-line or end-of-string,
- * so "</ul>. More text." is NOT affected.
- */
+/** Move trailing punctuation after </ul>/</ol> into the last </li> (only at EOL). */
 const absorbTrailingPunctuation = (text: string): string =>
   text.replace(/<\/li>(\s*<\/(?:ul|ol)>)[ \t]*([.,;:?!]+)[ \t]*(?=\n|$)/g, '$2</li>$1');
 
-/**
- * Block container tags that should start on their own line for CommonMark
- * HTML block recognition (condition 6). Excludes child tags like li, td, tr
- * which should stay inline with their parent to avoid extra whitespace.
- */
+/** Block container tags that need their own line for CommonMark HTML block recognition. */
 const BLOCK_CONTAINER_TAGS: ReadonlySet<string> = new Set([
   'ul',
   'ol',
@@ -215,24 +207,13 @@ const BLOCK_CONTAINER_TAGS: ReadonlySet<string> = new Set([
   'p',
 ]);
 
-/**
- * Ensure block-level container HTML tags that appear inline (after text on
- * the same line) start on their own line. CommonMark only recognizes HTML
- * blocks when the tag is at line start (condition 6). Only targets container
- * tags (ul, ol, div, etc.) — not child tags (li, td, tr) which stay inline
- * with their parent to preserve tight spacing.
- */
+/** Put inline block tags (e.g. <ul> after text) on their own line for CommonMark. */
 const ensureBlockHtmlOnOwnLine = (text: string): string =>
   text.replace(/([^\n])[ \t]*<([a-zA-Z][a-zA-Z0-9-]*)([\s>])/g, (match, before, tag, after) =>
     BLOCK_CONTAINER_TAGS.has(tag.toLowerCase()) ? `${before}\n<${tag}${after}` : match,
   );
 
-/**
- * Ensure closing </ul> and </ol> tags are followed by a blank line when
- * content follows on the next line. This handles cases where
- * CLOSE_BLOCK_TAG_BOUNDARY_RE fails to match (its \s* greedily consumes
- * the \n, leaving no branch able to match content starting with <).
- */
+/** Add blank line after </ul>/</ol> when content follows (fixes CLOSE_BLOCK_TAG_BOUNDARY_RE edge cases). */
 const ensureBlankLineAfterClosingList = (text: string): string =>
   text.replace(/<\/(ul|ol)>[ \t]*\n(?!\n)/g, '</$1>\n\n');
 
