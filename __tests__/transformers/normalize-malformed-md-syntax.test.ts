@@ -258,9 +258,7 @@ describe('normalize-malformed-md-syntax', () => {
 
       const paragraph = tree.children[0] as Paragraph;
       const strongNodes = paragraph.children.filter((c): c is Strong => c.type === 'strong');
-      const worldNode = strongNodes.find(
-        n => n.children[0]?.type === 'text' && n.children[0].value === 'World',
-      );
+      const worldNode = strongNodes.find(n => n.children[0]?.type === 'text' && n.children[0].value === 'World');
       expect(worldNode).toStrictEqual({ type: 'strong', children: [{ type: 'text', value: 'World' }] });
     });
   });
@@ -523,6 +521,33 @@ describe('normalize-malformed-md-syntax', () => {
       const paragraph = tree.children[0] as Paragraph;
       const emphasis = paragraph.children.find((c): c is Emphasis => c.type === 'emphasis');
       expect(emphasis).toStrictEqual({ type: 'emphasis', children: [{ type: 'text', value: 'some_snake_case' }] });
+    });
+
+    it('should handle underscore bold with double underscores in content', () => {
+      const md = '__hello__world __';
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [{ type: 'strong', children: [{ type: 'text', value: 'hello__world' }] }],
+      });
+    });
+
+    it.each([
+      ['_/clients/clear_whitelist _', '/clients/clear_whitelist'],
+      ['_some_text _', 'some_text'],
+      ['_a_b_c _', 'a_b_c'],
+    ])('should handle underscore italic with underscores in content (%s)', (md, expectedContent) => {
+      const tree = processor.parse(md);
+      processor.runSync(tree);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toStrictEqual({
+        type: 'paragraph',
+        children: [{ type: 'emphasis', children: [{ type: 'text', value: expectedContent }] }],
+      });
     });
 
     it('should handle malformed bold with word before and snake_case content', () => {
