@@ -1,4 +1,4 @@
-import type { CustomComponents } from '../types';
+import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
@@ -6,7 +6,6 @@ import type { Extension } from 'micromark-util-types';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
-import rehypeSlug from 'rehype-slug';
 import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -25,6 +24,7 @@ import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
+import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
@@ -41,10 +41,13 @@ import {
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
+import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
@@ -63,6 +66,7 @@ export interface MdxishOpts {
    */
   safeMode?: boolean;
   useTailwind?: boolean;
+  variables?: Variables;
 }
 
 const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
@@ -127,10 +131,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock()] : [magicBlock(), mdxExprTextOnly])
+    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
     .data(
       'fromMarkdownExtensions',
-      safeMode ? [magicBlockFromMarkdown()] : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown()],
+      safeMode
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
@@ -181,7 +187,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {} } = opts;
+  const { components: userComponents = {}, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -192,12 +198,13 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(remarkBreaks)
+    .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
-    .use(rehypeSlug)
+    .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (markdown: string) => mdxish(markdown, opts),

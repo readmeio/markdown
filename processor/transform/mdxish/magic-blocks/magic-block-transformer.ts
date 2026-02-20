@@ -35,6 +35,8 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
+import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
+import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
@@ -98,10 +100,18 @@ const preprocessBody = (text: string): string => {
 };
 
 /** Markdown parser */
-const contentParser = unified().use(remarkParse).use(remarkBreaks).use(remarkGfm).use(normalizeEmphasisAST);
+const contentParser = unified()
+  .data('micromarkExtensions', [legacyVariable()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .use(remarkParse)
+  .use(remarkBreaks)
+  .use(remarkGfm)
+  .use(normalizeEmphasisAST);
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
 const markdownToHtml = unified()
+  .data('micromarkExtensions', [legacyVariable()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm)
   .use(normalizeEmphasisAST)
@@ -234,7 +244,13 @@ const parseTableCell = (text: string): MdastNode[] => {
 };
 
 const parseBlock = (text: string): MdastNode[] => {
-  if (!text.trim()) return [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] as MdastNode[];
+  if (!text.trim()) return textToBlock('');
+  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  return tree.children as MdastNode[];
+};
+
+const parseInline = (text: string): MdastNode[] => {
+  if (!text.trim()) return textToInline(text);
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
@@ -279,6 +295,7 @@ function transformMagicBlock(
       if (!codeJson.codes || !Array.isArray(codeJson.codes)) {
         return [wrapPinnedBlocks(EMPTY_CODE_PLACEHOLDER satisfies MdastNode, data)];
       }
+
       const children = codeJson.codes.map(obj => ({
         className: 'tab-panel',
         data: { hName: 'code', hProperties: { lang: obj.language, meta: obj.name || null } },
@@ -305,7 +322,7 @@ function transformMagicBlock(
       return [
         wrapPinnedBlocks(
           {
-            children: 'title' in headerJson ? textToInline(headerJson.title || '') : [],
+            children: 'title' in headerJson ? parseInline(headerJson.title || '') : [],
             depth,
             type: 'heading',
           },

@@ -137,7 +137,7 @@ const Doc = () => {
       try {
         const sanitized = await sanitize();
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized);
+        const tree = mdx.mdxish(sanitized, { variables });
         const vdom = mdx.renderMdxish(tree, { terms, variables });
         setError(() => null);
         setContent(vdom);
@@ -149,9 +149,19 @@ const Doc = () => {
     };
 
     const renderRDMD = async () => {
+      const opts = {
+        lazyImages,
+        safeMode,
+        copyButtons,
+      };
       const sanitized = await sanitize();
       if (sanitized === null) return;
-      setLegacyContent(rdmd.react(sanitized));
+      const { VariablesContext, GlossaryContext } = rdmd.utils;
+      setLegacyContent(
+        <VariablesContext.Provider value={variables}>
+          <GlossaryContext.Provider value={terms}>{rdmd.react(sanitized, opts)}</GlossaryContext.Provider>
+        </VariablesContext.Provider>,
+      );
     };
 
     if (mdxish) {
