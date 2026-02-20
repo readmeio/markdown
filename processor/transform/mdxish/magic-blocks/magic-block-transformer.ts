@@ -180,6 +180,63 @@ const processMarkdownInHtmlString = (html: string): string => {
 };
 
 /**
+ * Move trailing punctuation from after </ul> or </ol> into the last </li>.
+ * Only absorbs when punctuation is at end-of-line or end-of-string,
+ * so "</ul>. More text." is NOT affected.
+ */
+const absorbTrailingPunctuation = (text: string): string =>
+  text.replace(/<\/li>(\s*<\/(?:ul|ol)>)[ \t]*([.,;:?!]+)[ \t]*(?=\n|$)/g, '$2</li>$1');
+
+/**
+ * Block container tags that should start on their own line for CommonMark
+ * HTML block recognition (condition 6). Excludes child tags like li, td, tr
+ * which should stay inline with their parent to avoid extra whitespace.
+ */
+const BLOCK_CONTAINER_TAGS: ReadonlySet<string> = new Set([
+  'ul',
+  'ol',
+  'dl',
+  'div',
+  'table',
+  'blockquote',
+  'details',
+  'section',
+  'article',
+  'figure',
+  'form',
+  'nav',
+  'aside',
+  'main',
+  'header',
+  'footer',
+  'fieldset',
+  'pre',
+  'hr',
+  'p',
+]);
+
+/**
+ * Ensure block-level container HTML tags that appear inline (after text on
+ * the same line) start on their own line. CommonMark only recognizes HTML
+ * blocks when the tag is at line start (condition 6). Only targets container
+ * tags (ul, ol, div, etc.) — not child tags (li, td, tr) which stay inline
+ * with their parent to preserve tight spacing.
+ */
+const ensureBlockHtmlOnOwnLine = (text: string): string =>
+  text.replace(/([^\n])[ \t]*<([a-zA-Z][a-zA-Z0-9-]*)([\s>])/g, (match, before, tag, after) =>
+    BLOCK_CONTAINER_TAGS.has(tag.toLowerCase()) ? `${before}\n<${tag}${after}` : match,
+  );
+
+/**
+ * Ensure closing </ul> and </ol> tags are followed by a blank line when
+ * content follows on the next line. This handles cases where
+ * CLOSE_BLOCK_TAG_BOUNDARY_RE fails to match (its \s* greedily consumes
+ * the \n, leaving no branch able to match content starting with <).
+ */
+const ensureBlankLineAfterClosingList = (text: string): string =>
+  text.replace(/<\/(ul|ol)>[ \t]*\n(?!\n)/g, '</$1>\n\n');
+
+/**
  * Separate a closing block-level tag from the content that follows it.
  *
  * Each \n in the original text becomes a <br> tag to preserve spacing, then a
@@ -203,14 +260,21 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
+  const escaped = processBackslashEscapes(text);
+  const withPunctuation = absorbTrailingPunctuation(escaped);
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
-  // Then strip leading whitespace to prevent indented code blocks.
-  const escaped = processBackslashEscapes(text);
-  const normalized = escaped
-    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
-    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  const htmlBrNormalized = withPunctuation.replace(HTML_ELEMENT_BLOCK_RE, match =>
+    match
+      .replace(NEWLINE_WITH_WHITESPACE_RE, '<br>')
+      // Remove <br> between list tags (structural whitespace, not content).
+      // e.g. </li><br><li> → </li><li> but text<br><br><li> is preserved.
+      .replace(/(<\/?(?:ul|ol|li)[^>]*>)(<br>)+(?=<)/g, '$1'),
+  );
+  const withBlockHtml = ensureBlockHtmlOnOwnLine(htmlBrNormalized);
+  const normalized = withBlockHtml.replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
+  const withBlankLines = ensureBlankLineAfterClosingList(normalized);
+  const trimmedLines = withBlankLines.split('\n').map(line => line.trimStart());
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
@@ -225,6 +289,18 @@ const parseTableCell = (text: string): MdastNode[] => {
   });
 
   if (tree.children.length > 1) {
+    const hasHtmlBlock = tree.children.some(n => n.type === 'html');
+    if (hasHtmlBlock) {
+      // Unwrap paragraphs that immediately precede an HTML block to prevent
+      // <p> margin-bottom from creating a gap above block-level elements.
+      return tree.children.flatMap((n, i) => {
+        const next = tree.children[i + 1];
+        if (n.type === 'paragraph' && 'children' in n && next?.type === 'html') {
+          return n.children as MdastNode[];
+        }
+        return [n as MdastNode];
+      });
+    }
     return tree.children as MdastNode[];
   }
 

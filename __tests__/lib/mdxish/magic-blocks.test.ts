@@ -484,6 +484,34 @@ ${JSON.stringify(
         const paragraphs = cellHtml.match(/<p>/g);
         expect(paragraphs?.length).toBeGreaterThanOrEqual(1);
       });
+
+      it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
+        const input =
+          'Note the following: <ul><li>A **Live** status means the domain is externally accessible (HTTP request passes)</li><li>A **Not Live** status means the domain is not exposed and cannot be reached from the internet (HTTP request fails)</li></ul>';
+        const cellHtml = getCellHtml(input);
+        // Should render as actual list elements, not literal <ul><li> text inside <p>
+        expect(cellHtml).toContain('<ul>');
+        expect(cellHtml).toContain('<li>');
+        expect(cellHtml).toContain('<strong>');
+        // Should NOT have <ul> inside a <p> (which causes extra padding)
+        expect(cellHtml).not.toMatch(/<p>[^<]*<ul>/);
+        // Text before <ul> should NOT be wrapped in <p> (would create margin gap)
+        expect(cellHtml).not.toMatch(/<p>Note the following:<\/p>/);
+      });
+
+      it('absorbs trailing punctuation after </ul> into last list item', () => {
+        const input = '<ul><li>Item one</li><li>Item two</li></ul>.';
+        const cellHtml = getCellHtml(input);
+        // Period should be inside the last <li>, not a separate paragraph
+        expect(cellHtml).not.toMatch(/<p>\.<\/p>/);
+        expect(cellHtml).toContain('Item two.');
+      });
+
+      it('does not absorb punctuation after </ul> when followed by more text on same line', () => {
+        const input = '<ul><li>Item</li></ul>. More text follows.';
+        const cellHtml = getCellHtml(input);
+        expect(cellHtml).toContain('More text follows.');
+      });
     });
 
     it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {
