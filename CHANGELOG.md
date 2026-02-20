@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 13.3.0
+### ✨ New & Improved
+
+* **mdxish:** add legacy variable tokenizer ([#1339](https://github.com/readmeio/markdown/issues/1339)) ([8e8b11b](https://github.com/readmeio/markdown/commit/8e8b11b5c92d40af7d6c61bb91e40f027614fd57))
+* add option to perserve variable syntax in plain text compiler ([#1345](https://github.com/readmeio/markdown/issues/1345)) ([5ab350e](https://github.com/readmeio/markdown/commit/5ab350e02be03e6c5485ce418429df7547399a31))
+* **mdxish:** resolve variables in code blocks ([#1350](https://github.com/readmeio/markdown/issues/1350)) ([a6460f8](https://github.com/readmeio/markdown/commit/a6460f8ef8e5eaa96feccb0073eaa198f8920c27))
+* **mdxish:** use variable name for heading slug generation ([#1340](https://github.com/readmeio/markdown/issues/1340)) ([61a97d3](https://github.com/readmeio/markdown/commit/61a97d33aa101dad1c9b0f7abb4b7042633d0e82))
+
 ## Version 13.2.0
 ### ✨ New & Improved
 
