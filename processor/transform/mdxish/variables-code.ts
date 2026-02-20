@@ -9,8 +9,8 @@ interface Options {
   variables?: Variables;
 }
 
-const LEGACY_VARIABLE_REGEX = new RegExp(VARIABLE_REGEXP, 'giu');
-const MDX_VARIABLE_REGEX = new RegExp(MDX_VARIABLE_REGEXP, 'giu');
+// Single combined regex so that resolved values from one pattern are never re-scanned by the other.
+const COMBINED_VARIABLE_REGEX = new RegExp(`${VARIABLE_REGEXP}|${MDX_VARIABLE_REGEXP}`, 'giu');
 
 // Flatten variables into a single object for easy lookup
 function flattenVariables(variables?: Variables): Record<string, string> {
@@ -18,30 +18,27 @@ function flattenVariables(variables?: Variables): Record<string, string> {
 
   return {
     ...Object.fromEntries((variables.defaults || []).map(d => [d.name, d.default])),
-    ...(variables.user),
+    ...variables.user,
   };
 }
 
 function resolveCodeVariables(value: string, resolvedVariables: Record<string, string>): string {
-  const withLegacyVars = value.replace(
-    LEGACY_VARIABLE_REGEX,
-    (match: string, variableName: string): string => {
-      if (match.startsWith('\\<<') || match.endsWith('\\>>')) return match;
+  return value.replace(
+    COMBINED_VARIABLE_REGEX,
+    (match: string, legacyName: string, mdxEscapePrefix: string, mdxVarName: string, mdxEscapeSuffix: string): string => {
+      // Legacy variable: <<...>>
+      if (legacyName !== undefined) {
+        if (match.startsWith('\\<<') || match.endsWith('\\>>')) return match;
 
-      // Legacy & MDX behavior: Glossary and missing variables are just capitalized
-      const name = variableName.trim();
-      if (name.startsWith('glossary:')) return name.toUpperCase();
+        const name = legacyName.trim();
+        if (name.startsWith('glossary:')) return name.toUpperCase();
 
-      return name in resolvedVariables ? resolvedVariables[name] : name.toUpperCase();
-    },
-  );
+        return name in resolvedVariables ? resolvedVariables[name] : name.toUpperCase();
+      }
 
-  return withLegacyVars.replace(
-    MDX_VARIABLE_REGEX,
-    (match: string, escapedPrefix: string, variableName: string, escapedSuffix: string): string => {
-      if (escapedPrefix || escapedSuffix) return match;
-      if (variableName in resolvedVariables) return resolvedVariables[variableName];
-      // Extract the full variable path from the match (e.g., "user.missing" from "{user.missing}")
+      // MDX variable: {user.*}
+      if (mdxEscapePrefix || mdxEscapeSuffix) return match;
+      if (mdxVarName in resolvedVariables) return resolvedVariables[mdxVarName];
       const fullPath = match.slice(1, -1);
       return fullPath.toUpperCase();
     },
@@ -53,7 +50,7 @@ function resolveCodeVariables(value: string, resolvedVariables: Record<string, s
  * to their values. Uses regexes from the readme variable to search for variables in the code string.
  *
  * This is needed because variables in code blocks and inline cannot be tokenized, and also we need to maintain the code string
- * in the code nodes. This enables engine side variable resolution which improves UX
+ * in the code nodes. This enables engine side variable resolution in codes which improves UX
  */
 const variablesCodeResolver: Plugin<[Options?]> = ({ variables }: Options = {}) => tree => {
   const resolvedVariables = flattenVariables(variables);

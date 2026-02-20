@@ -112,4 +112,26 @@ const name = 'Bearer ${variable}';
 
     expect(getCodeText(tree)).toBe('GLOSSARY:TERM MISSING USER.MISSING');
   });
+
+  it('resolves legacy variables with whitespace in the name', () => {
+    const tree = mdxish('`<<api key>>`', {
+      variables: {
+        user: {},
+        defaults: [{ name: 'api key', default: 'sk_live_123' }],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('sk_live_123');
+  });
+
+  it('does not double-resolve when a legacy variable value contains an MDX variable pattern', () => {
+    const tree = mdxish('`<<payload>>`', {
+      variables: {
+        user: { payload: '{user.secret}', secret: 'should-not-appear' },
+        defaults: [],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('{user.secret}');
+  });
 });
