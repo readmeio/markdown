@@ -33,7 +33,7 @@ export function processSnakeCaseComponent(
   const { knownComponents } = options;
 
   // Early exit if no potential snake_case components
-  if (!/[A-Z][A-Za-z0-9]{0,10000}_[A-Za-z0-9_]{1,10000}/.test(content)) {
+  if (!/[A-Z][A-Za-z0-9]{0,100}_[A-Za-z0-9_]{1,100}/.test(content)) {
     return { content, mapping: {} };
   }
 
