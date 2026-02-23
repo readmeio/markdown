@@ -154,6 +154,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
@@ -206,7 +207,6 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(variablesTextTransformer) // Parse {user.*} patterns from text (must run after evaluateExpressions)
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
