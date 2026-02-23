@@ -1,0 +1,135 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`convert variable tag > does not double-wrap Variable already inside a paragraph 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "position": {
+            "end": {
+              "column": 7,
+              "line": 1,
+              "offset": 6,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "text",
+          "value": "Hello ",
+        },
+        {
+          "children": [],
+          "data": {
+            "hName": "Variable",
+            "hProperties": {
+              "name": "username",
+            },
+          },
+          "position": {
+            "end": {
+              "column": 35,
+              "line": 1,
+              "offset": 34,
+            },
+            "start": {
+              "column": 7,
+              "line": 1,
+              "offset": 6,
+            },
+          },
+          "type": "readme-variable",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 35,
+          "line": 1,
+          "offset": 34,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 35,
+      "line": 1,
+      "offset": 34,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
+
+exports[`convert variable tag > wraps root-level Variable in a paragraph 1`] = `
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [],
+          "data": {
+            "hName": "Variable",
+            "hProperties": {
+              "name": "username",
+            },
+          },
+          "position": {
+            "end": {
+              "column": 29,
+              "line": 1,
+              "offset": 28,
+            },
+            "start": {
+              "column": 1,
+              "line": 1,
+              "offset": 0,
+            },
+          },
+          "type": "readme-variable",
+        },
+      ],
+      "position": {
+        "end": {
+          "column": 29,
+          "line": 1,
+          "offset": 28,
+        },
+        "start": {
+          "column": 1,
+          "line": 1,
+          "offset": 0,
+        },
+      },
+      "type": "paragraph",
+    },
+  ],
+  "position": {
+    "end": {
+      "column": 29,
+      "line": 1,
+      "offset": 28,
+    },
+    "start": {
+      "column": 1,
+      "line": 1,
+      "offset": 0,
+    },
+  },
+  "type": "root",
+}
+`;
