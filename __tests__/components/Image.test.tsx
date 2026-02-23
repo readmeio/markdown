@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import Image from '../../components/Image';
@@ -37,6 +37,31 @@ describe('Image', () => {
       const img = container.querySelector('img');
       expect(img).toBeInTheDocument();
       expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
+    });
+
+    it('opens and closes a lightbox via keyboard and click', () => {
+      const md =
+        '![Bro eats pizza and makes an OK gesture.](https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg "Pizza Face")';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const img = container.querySelectorAll('img')[0];
+      const box = container.querySelectorAll('.lightbox')[0];
+
+      fireEvent.click(img);
+      expect(box).toHaveClass('open');
+
+      fireEvent.keyDown(img, { key: 'Enter' });
+      expect(box).toHaveClass('open');
+
+      fireEvent.keyDown(img, { key: 'Escape' });
+      expect(box).not.toHaveClass('open');
+
+      fireEvent.keyDown(img, { key: ' ' });
+      expect(box).toHaveClass('open');
+
+      fireEvent.keyDown(img, { key: '.', metaKey: true });
+      expect(box).not.toHaveClass('open');
     });
   });
 

@@ -59,7 +59,17 @@ describe('Callout', () => {
       const { container } = render(<Content />);
 
       expect(container.querySelector('.callout-heading.empty')).toBeInTheDocument();
-      expect(container.textContent).toContain('Callout with no title.');
+      expect(container.innerHTML).toMatchInlineSnapshot(
+        `"<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p class="callout-heading empty"></p><p>Callout with no title.</p></blockquote>"`,
+      );
+    });
+
+    it('renders an error callout', () => {
+      const md = '> \u2757\uFE0F Error Callout\n>\n> Lorem ipsum dolor.';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.innerHTML).toMatchSnapshot();
     });
   });
 
