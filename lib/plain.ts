@@ -11,12 +11,6 @@ import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
  */
 
 interface Options {
-  /**
-   * When true, outputs variables using `{user.key}` syntax instead of resolving
-   * to values or bare key names. Used by search indexing so the frontend can
-   * interpolate variables at display time.
-   */
-  preserveVariableSyntax?: boolean;
   variables?: Record<string, string>;
 }
 
@@ -84,7 +78,6 @@ function one(node: Nodes, opts: Options) {
       case 'variable':
       case 'Variable': {
         const key = node.properties.name.toString();
-        if (opts.preserveVariableSyntax) return `{user.${key}}`;
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
       }
@@ -110,7 +103,6 @@ function one(node: Nodes, opts: Options) {
   if (node.type === 'mdxTextExpression') {
     const key = extractMdxVariableKey(node as MdxTextExpressionHast);
     if (key) {
-      if (opts.preserveVariableSyntax) return `{user.${key}}`;
       return ('variables' in opts && opts.variables[key]) || key;
     }
   }

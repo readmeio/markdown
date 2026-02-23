@@ -96,15 +96,6 @@ const Form = () => {
             />
           </div>
           <div>
-            <label htmlFor="strip-comments">Strip Comments</label>
-            <input
-              checked={searchParams.has('stripComments')}
-              id="strip-comments"
-              onChange={onCheck('stripComments')}
-              type="checkbox"
-            />
-          </div>
-          <div>
             <label htmlFor="lazy-images">Lazy Load Images</label>
             <input
               checked={searchParams.has('lazyImages')}

@@ -24,15 +24,13 @@ const asteriskBoldRegex =
   /([^*\s]+)?\s*(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for __ bold __
-const underscoreBoldRegex =
-  /([^_\s]+)?\s*(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n])+?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n])+?)(\s+)\2)(\S|$)?/g;
+const underscoreBoldRegex = /([^_\s]+)?\s*(__)(?:\s+((?:[^_\n]|_(?!_))+?)(\s*)\2|((?:[^_\n]|_(?!_))+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for * italic *
 const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for _ italic _
-const underscoreItalicRegex =
-  /([^_\s]+)?\s*(_)(?!_)(?:\s+((?:[^_\n]|_(?! ))+?)(\s*)\2|((?:[^_\n]|_(?! ))+?)(\s+)\2)(\S|$)?/g;
+const underscoreItalicRegex = /([^_\s]+)?\s*(_)(?!_)(?:\s+([^_\n]+?)(\s*)\2|([^_\n]+?)(\s+)\2)(\S|$)?/g;
 
 // CommonMark ignores intraword underscores or asteriks, but we want to italicize/bold the inner part
 // Pattern for intraword _word_ in words like hello_world_

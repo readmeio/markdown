@@ -140,11 +140,8 @@ function escapeUnbalancedBraces(content: string): string {
   let strDelim: string | null = null;
   let strEscaped = false;
 
-  // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
-  const chars = Array.from(content);
-
-  for (let i = 0; i < chars.length; i += 1) {
-    const ch = chars[i];
+  for (let i = 0; i < content.length; i += 1) {
+    const ch = content[i];
 
     // Track strings inside expressions to ignore braces within them
     if (opens.length > 0) {
@@ -165,7 +162,7 @@ function escapeUnbalancedBraces(content: string): string {
     // Skip already-escaped braces (count preceding backslashes)
     if (ch === '{' || ch === '}') {
       let bs = 0;
-      for (let j = i - 1; j >= 0 && chars[j] === '\\'; j -= 1) bs += 1;
+      for (let j = i - 1; j >= 0 && content[j] === '\\'; j -= 1) bs += 1;
       if (bs % 2 === 1) {
         // eslint-disable-next-line no-continue
         continue;
@@ -182,7 +179,7 @@ function escapeUnbalancedBraces(content: string): string {
   opens.forEach(pos => unbalanced.add(pos));
   if (unbalanced.size === 0) return content;
 
-  return chars
+  return Array.from(content)
     .map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch))
     .join('');
 }

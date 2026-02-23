@@ -9,10 +9,4 @@ describe('convert anchor tag', () => {
 
     expect(mdast(mdx)).toMatchSnapshot();
   });
-
-  it('wraps empty anchor in paragraph at root level', () => {
-    const mdx = '<Anchor href="https://readme.com"></Anchor>';
-
-    expect(mdast(mdx)).toMatchSnapshot();
-  });
 })
