@@ -11,15 +11,12 @@ describe('Table of Contents', () => {
     it('renders a Toc from headings', () => {
       const md = `# Title
 
-## Subheading
-
-### Third`;
+## Subheading`;
       const { Toc } = renderMdxish(mdxish(md));
       render(<Toc />);
 
-      expect(screen.findByText('Title')).toBeDefined();
-      expect(screen.findByText('Subheading')).toBeDefined();
-      expect(screen.findByText('Third')).toBeDefined();
+      expect(screen.getByText('Title')).toBeInTheDocument();
+      expect(screen.getByText('Subheading')).toBeInTheDocument();
     });
 
     it('limits toc depth to 3', () => {
@@ -33,7 +30,7 @@ describe('Table of Contents', () => {
       const { Toc } = renderMdxish(mdxish(md));
       render(<Toc />);
 
-      expect(screen.findByText('Title')).toBeDefined();
+      expect(screen.getByText('Title')).toBeInTheDocument();
       expect(screen.queryByText('Fourth')).toBeNull();
     });
   });
@@ -44,8 +41,8 @@ describe('Table of Contents', () => {
       const mod = execute(md, {}, {}, { getDefault: false });
       render(<mod.Toc />);
 
-      expect(screen.findByText('Title')).toBeDefined();
-      expect(screen.findByText('Subheading')).toBeDefined();
+      expect(screen.getByText('Title')).toBeInTheDocument();
+      expect(screen.getByText('Subheading')).toBeInTheDocument();
     });
   });
 

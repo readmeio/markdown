@@ -25,6 +25,7 @@ describe('Image', () => {
 
       const img = container.querySelector('img');
       expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute('alt', 'Pizza bro');
     });
   });
 
