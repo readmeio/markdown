@@ -64,6 +64,21 @@ function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
 }
 
 /**
+ * Extract text content from a single paragraph element.
+ * Converts `<br>` elements to newlines.
+ */
+function extractTextFromParagraph(pElement: Element): string {
+  if (!pElement.children) return '';
+  return pElement.children
+    .map(child => {
+      if (child.type === 'text') return child.value;
+      if (child.type === 'element' && child.tagName === 'br') return '\n';
+      return '';
+    })
+    .join('');
+}
+
+/**
  * Convert lowercase compound words to camelCase using known word boundaries.
  * e.g., "iconcolor" → "iconColor", "background-color" → "backgroundColor"
  */
@@ -110,7 +125,12 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
     // Restore newlines encoded by evaluateExpressions to survive remarkBreaks and rehypeRaw.
     // Preserve the text as-is instead of processing through markdown.
     if (child.value.includes(NEWLINE_MARKER)) {
-      return [{ type: 'text', value: child.value.replace(/___MDXISH_NL___/g, '\n') } as ElementContent];
+      try {
+        return [{ type: 'text', value: child.value.replaceAll(NEWLINE_MARKER, '\n') } as ElementContent];
+      } catch {
+        // Fallback: return original text if decoding fails (should not happen)
+        return [child];
+      }
     }
 
     const hast = processMarkdown(child.value.trim());
@@ -119,6 +139,15 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
     // For inline components, preserve plain text instead of wrapping in <p>
     if (INLINE_COMPONENT_TAGS.has(node.tagName.toLowerCase()) && isSingleParagraphTextNode(children)) {
       return [child];
+    }
+
+    // For custom components with single paragraph text children, extract the text
+    // and pass it as a raw text node. This ensures components like Terminal that
+    // expect string children (e.g., `children.trim()`) receive strings, not React elements.
+    if (isSingleParagraphTextNode(children)) {
+      const pElement = children[0] as Element;
+      const textContent = extractTextFromParagraph(pElement);
+      return [{ type: 'text', value: textContent } as ElementContent];
     }
 
     return children;
