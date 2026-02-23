@@ -6,6 +6,7 @@ import React from 'react';
 
 import CardsGrid, { Card } from '../../components/Cards';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Cards', () => {
   describe('mdxish', () => {
@@ -111,7 +112,25 @@ describe('Cards', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders Cards with Card children', () => {
+      const md = '<Cards><Card title="First">Content</Card><Card title="Second">More</Card></Cards>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.CardsGrid')).toBeInTheDocument();
+      const cards = container.querySelectorAll('.Card');
+      expect(cards).toHaveLength(2);
+    });
+
+    it('renders Card as an anchor when href is provided', () => {
+      const md = '<Cards><Card title="Link" href="https://example.com">Linked</Card></Cards>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const card = container.querySelector('a.Card');
+      expect(card).toBeInTheDocument();
+      expect(card).toHaveAttribute('href', 'https://example.com');
+    });
   });
 
   describe('render', () => {

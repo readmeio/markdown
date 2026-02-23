@@ -4,6 +4,7 @@ import React from 'react';
 
 import CreateHeading from '../../components/Heading';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Heading', () => {
   describe('mdxish', () => {
@@ -47,7 +48,24 @@ describe('Heading', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a heading from markdown', () => {
+      const md = '## My Heading';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('h2')).toBeInTheDocument();
+      expect(container.querySelector('.heading-text')).toHaveTextContent('My Heading');
+    });
+
+    it('renders an anchor link on headings', () => {
+      const md = '## Anchor Test';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const anchor = container.querySelector('a.heading-anchor-icon');
+      expect(anchor).toBeInTheDocument();
+      expect(anchor?.getAttribute('href')).toMatch(/^#/);
+    });
   });
 
   describe('render', () => {

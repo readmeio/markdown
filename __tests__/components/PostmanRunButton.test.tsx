@@ -6,6 +6,7 @@ import React from 'react';
 
 import PostmanRunButton from '../../components/PostmanRunButton';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('PostmanRunButton', () => {
   describe('mdxish', () => {
@@ -42,7 +43,14 @@ describe('PostmanRunButton', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a PostmanRunButton', () => {
+      const md = '<PostmanRunButton action="collection/fork" collectionId="123" collectionUrl="https://example.com" visibility="public" />';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.postman-run-button')).toBeInTheDocument();
+      expect(container.querySelector('.postman-run-button')).toHaveAttribute('data-postman-action', 'collection/fork');
+    });
   });
 
   describe('render', () => {

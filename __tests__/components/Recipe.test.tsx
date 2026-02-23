@@ -4,6 +4,7 @@ import React from 'react';
 
 import Recipe from '../../components/Recipe';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Recipe', () => {
   describe('mdxish', () => {
@@ -24,7 +25,14 @@ describe('Recipe', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders Recipe', () => {
+      const md = '<Recipe />';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const divs = container.querySelectorAll('div');
+      expect(divs.length).toBeGreaterThan(1);
+    });
   });
 
   describe('render', () => {

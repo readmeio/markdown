@@ -4,6 +4,7 @@ import React from 'react';
 
 import Image from '../../components/Image';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Image', () => {
   describe('mdxish', () => {
@@ -28,7 +29,15 @@ describe('Image', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a markdown image', () => {
+      const md = '![Alt text](https://example.com/image.jpg "Title")';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const img = container.querySelector('img');
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
+    });
   });
 
   describe('render', () => {

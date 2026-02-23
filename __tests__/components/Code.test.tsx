@@ -4,6 +4,7 @@ import React from 'react';
 
 import Code from '../../components/Code';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Code', () => {
   describe('mdxish', () => {
@@ -29,7 +30,14 @@ const x = 1;
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a fenced code block', () => {
+      const md = '```js\nconst x = 1;\n```';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('code')).toBeInTheDocument();
+      expect(container.textContent).toContain('const x = 1;');
+    });
   });
 
   describe('render', () => {

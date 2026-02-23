@@ -6,6 +6,7 @@ import React from 'react';
 
 import Columns, { Column } from '../../components/Columns';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Columns', () => {
   describe('mdxish', () => {
@@ -77,7 +78,17 @@ describe('Columns', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders Columns with Column children', () => {
+      const md = '<Columns><Column>Col 1</Column><Column>Col 2</Column></Columns>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.Columns')).toBeInTheDocument();
+      const cols = container.querySelectorAll('.Column');
+      expect(cols).toHaveLength(2);
+      expect(cols[0]).toHaveTextContent('Col 1');
+      expect(cols[1]).toHaveTextContent('Col 2');
+    });
   });
 
   describe('render', () => {

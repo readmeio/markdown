@@ -4,6 +4,7 @@ import React from 'react';
 
 import Table from '../../components/Table';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Table', () => {
   describe('mdxish', () => {
@@ -61,7 +62,16 @@ describe('Table', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a markdown table', () => {
+      const md = '| col1 | col2 |\n|---|---|\n| a | b |';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.rdmd-table')).toBeInTheDocument();
+      expect(container.querySelector('table')).toBeInTheDocument();
+      expect(container.querySelector('th')).toHaveTextContent('col1');
+      expect(container.querySelector('td')).toHaveTextContent('a');
+    });
   });
 
   describe('render', () => {

@@ -4,6 +4,7 @@ import React from 'react';
 
 import Accordion from '../../components/Accordion';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Accordion', () => {
   describe('mdxish', () => {
@@ -57,7 +58,24 @@ describe('Accordion', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders an accordion', () => {
+      const md = '<Accordion title="Title">Content</Accordion>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('details.Accordion')).toBeInTheDocument();
+      expect(container.querySelector('summary.Accordion-title')).toHaveTextContent('Title');
+      expect(container.querySelector('.Accordion-content')).toHaveTextContent('Content');
+    });
+
+    it('renders an accordion with icon props', () => {
+      const md = '<Accordion title="Settings" icon="fa-gear" iconColor="#FF0000">Settings content</Accordion>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('i.Accordion-icon')).toBeInTheDocument();
+      expect(container.querySelector('i.Accordion-icon')).toHaveStyle({ color: '#FF0000' });
+    });
   });
 
   describe('render', () => {

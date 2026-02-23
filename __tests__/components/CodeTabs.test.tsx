@@ -40,7 +40,7 @@ code2
   });
 
   describe('mdx', () => {
-    it.skip('render _all_ its children', () => {
+    it('render _all_ its children', () => {
       const md = `
 \`\`\`
 assert('theme', 'dark');

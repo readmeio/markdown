@@ -4,6 +4,7 @@ import React from 'react';
 
 import MCPIntro from '../../components/MCPIntro';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('MCPIntro', () => {
   describe('mdxish', () => {
@@ -30,7 +31,13 @@ describe('MCPIntro', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders MCPIntro', () => {
+      const md = '<MCPIntro url="https://example.com/mcp" />';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.MCPIntro')).toBeInTheDocument();
+    });
   });
 
   describe('render', () => {

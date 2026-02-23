@@ -4,6 +4,7 @@ import React from 'react';
 
 import Anchor from '../../components/Anchor';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Anchor', () => {
   describe('mdxish', () => {
@@ -30,7 +31,16 @@ describe('Anchor', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a markdown link', () => {
+      const md = '[Example](https://example.com)';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const link = container.querySelector('a');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'https://example.com');
+      expect(link).toHaveTextContent('Example');
+    });
   });
 
   describe('render', () => {

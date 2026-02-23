@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import TailwindRoot from '../../components/TailwindRoot';
+import { execute } from '../helpers';
 
 describe('TailwindRoot', () => {
   describe('mdxish', () => {
@@ -40,7 +41,14 @@ describe('TailwindRoot', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders TailwindRoot', () => {
+      const md = '<TailwindRoot flow={true}>Content</TailwindRoot>';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.readme-tailwind')).toBeInTheDocument();
+      expect(container.querySelector('.readme-tailwind')).toHaveTextContent('Content');
+    });
   });
 
   describe('render', () => {

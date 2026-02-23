@@ -4,6 +4,7 @@ import React from 'react';
 
 import Callout from '../../components/Callout';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Callout', () => {
   describe('mdxish', () => {
@@ -42,7 +43,24 @@ describe('Callout', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders a callout with emoji and title', () => {
+      const md = '> \u2757\uFE0F Error Callout\n>\n> Something went wrong.';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.callout')).toBeInTheDocument();
+      expect(container.textContent).toContain('Error Callout');
+      expect(container.textContent).toContain('Something went wrong.');
+    });
+
+    it('renders a callout with no title', () => {
+      const md = '> \uD83D\uDEA7\n>\n> Callout with no title.';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.callout-heading.empty')).toBeInTheDocument();
+      expect(container.textContent).toContain('Callout with no title.');
+    });
   });
 
   describe('render', () => {

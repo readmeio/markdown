@@ -6,6 +6,7 @@ import React from 'react';
 
 import Embed from '../../components/Embed';
 import { mdxish, renderMdxish } from '../../lib';
+import { execute } from '../helpers';
 
 describe('Embed', () => {
   describe('mdxish', () => {
@@ -74,7 +75,25 @@ describe('Embed', () => {
   });
 
   describe('mdx', () => {
-    it.todo('should render through the mdx pipeline');
+    it('renders an embed in link mode', () => {
+      const md = '<Embed url="https://example.com" title="Example" />';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.embed')).toBeInTheDocument();
+      const link = container.querySelector('a.embed-link');
+      expect(link).toHaveAttribute('href', 'https://example.com');
+    });
+
+    it('renders an embed in iframe mode', () => {
+      const md = '<Embed url="https://example.com" title="Example" iframe={true} height="550" />';
+      const Content = execute(md);
+      const { container } = render(<Content />);
+
+      const iframe = container.querySelector('iframe');
+      expect(iframe).toBeInTheDocument();
+      expect(iframe).toHaveAttribute('src', 'https://example.com');
+    });
   });
 
   describe('render', () => {
