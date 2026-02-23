@@ -19,10 +19,6 @@ describe('Columns', () => {
 `;
       const mod = renderMdxish(mdxish(md));
 
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
-
       it('should render a Columns wrapper with grid style', () => {
         const { container } = render(<mod.default />);
         const columns = container.querySelector('.Columns');

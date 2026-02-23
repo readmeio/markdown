@@ -16,10 +16,6 @@ describe('Embed', () => {
 `;
       const mod = renderMdxish(mdxish(md));
 
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
-
       it('should render an embed wrapper', () => {
         const { container } = render(<mod.default />);
         expect(container.querySelector('.embed')).toBeInTheDocument();
@@ -45,10 +41,6 @@ describe('Embed', () => {
 <Embed url="https://example.com" title="Example" iframe="true" />
 `;
       const mod = renderMdxish(mdxish(md));
-
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
 
       it('should render an iframe element', () => {
         const { container } = render(<mod.default />);

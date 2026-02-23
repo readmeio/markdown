@@ -19,10 +19,6 @@ describe('Cards', () => {
 `;
       const mod = renderMdxish(mdxish(md));
 
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
-
       it('should render a CardsGrid wrapper', () => {
         const { container } = render(<mod.default />);
         expect(container.querySelector('.CardsGrid')).toBeInTheDocument();

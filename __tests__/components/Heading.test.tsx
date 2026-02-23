@@ -18,10 +18,6 @@ describe('Heading', () => {
     ] as const)('given markdown "%s"', (md, tag, depth) => {
       const mod = renderMdxish(mdxish(md));
 
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
-
       it(`should render an ${tag} element`, () => {
         const { container } = render(<mod.default />);
         expect(container.querySelector(tag)).toBeInTheDocument();

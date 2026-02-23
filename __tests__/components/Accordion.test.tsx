@@ -14,10 +14,6 @@ describe('Accordion', () => {
 `;
       const mod = renderMdxish(mdxish(md));
 
-      it('should not error when rendering', () => {
-        expect(() => render(<mod.default />)).not.toThrow();
-      });
-
       it('should render a details element with Accordion class', () => {
         const { container } = render(<mod.default />);
         expect(container.querySelector('details.Accordion')).toBeInTheDocument();

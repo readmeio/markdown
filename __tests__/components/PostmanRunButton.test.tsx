@@ -15,10 +15,6 @@ describe('PostmanRunButton', () => {
 `;
     const mod = renderMdxish(mdxish(md));
 
-    it('should not error when rendering', () => {
-      expect(() => render(<mod.default />)).not.toThrow();
-    });
-
     it('should render a postman-run-button element', () => {
       const { container } = render(<mod.default />);
       expect(container.querySelector('.postman-run-button')).toBeInTheDocument();

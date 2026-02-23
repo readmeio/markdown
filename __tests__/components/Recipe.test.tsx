@@ -13,33 +13,26 @@ describe('Recipe', () => {
 `;
     const mod = renderMdxish(mdxish(md));
 
-    it('should not error when rendering', () => {
-      expect(() => render(<mod.default />)).not.toThrow();
-    });
-
-    it('should render skeleton placeholder divs', () => {
+    it('should render the skeleton structure', () => {
       const { container } = render(<mod.default />);
-      const divs = container.querySelectorAll('div');
-      expect(divs.length).toBeGreaterThan(1);
+      expect(container.querySelectorAll('div')).toHaveLength(6);
     });
   });
 
   describe('mdx', () => {
-    it('renders Recipe', () => {
+    it('renders Recipe skeleton', () => {
       const md = '<Recipe />';
       const Content = execute(md);
       const { container } = render(<Content />);
 
-      const divs = container.querySelectorAll('div');
-      expect(divs.length).toBeGreaterThan(1);
+      expect(container.querySelectorAll('div')).toHaveLength(6);
     });
   });
 
   describe('render', () => {
-    it('renders skeleton placeholder divs', () => {
+    it('renders the skeleton structure', () => {
       const { container } = render(<Recipe />);
-      const divs = container.querySelectorAll('div');
-      expect(divs.length).toBeGreaterThan(1);
+      expect(container.querySelectorAll('div')).toHaveLength(6);
     });
   });
 });
