@@ -1,26 +1,10 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Root, RootContent, Text } from 'hast';
+import type { Element, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
 
-type HastNode = Root | RootContent;
-
-/**
- * Recursively finds an element with the specified tagName in a HAST tree.
- */
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-  return null;
-}
+import { findElementByTagName } from './helpers';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
