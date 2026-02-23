@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import CardsGrid, { Card } from '../../components/Cards';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Cards', () => {
@@ -114,6 +115,55 @@ describe('Cards', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a CardsGrid wrapper', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card title="First">Content</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('.CardsGrid')).toBeInTheDocument();
+    });
+
+    it('renders Card children with titles', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card title="First">First</Card>
+          <Card title="Second">Second</Card>
+        </CardsGrid>,
+      );
+      const cards = container.querySelectorAll('.Card');
+      expect(cards).toHaveLength(2);
+      expect(container.querySelectorAll('.Card-title')[0]).toHaveTextContent('First');
+    });
+
+    it('renders Card as an anchor when href is provided', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card href="https://example.com" title="Link">Linked</Card>
+        </CardsGrid>,
+      );
+      const card = container.querySelector('a.Card');
+      expect(card).toHaveAttribute('href', 'https://example.com');
+      expect(container.querySelector('.Card-arrow')).toBeInTheDocument();
+    });
+
+    it('renders Card as a div when no href', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card title="Static">Static</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('div.Card')).toBeInTheDocument();
+    });
+
+    it('renders icon and badge props', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card badge="New" icon="fa-star" title="Featured">Content</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('.Card-icon')).toBeInTheDocument();
+      expect(container.querySelector('.Card-badge')).toHaveTextContent('New');
+    });
   });
 });

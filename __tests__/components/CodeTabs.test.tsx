@@ -1,6 +1,8 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Code from '../../components/Code';
+import CodeTabs from '../../components/CodeTabs';
 import { execute } from '../helpers';
 
 describe('CodeTabs', () => {
@@ -27,6 +29,34 @@ assert('theme', 'light');
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders the CodeTabs wrapper', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'console.log("hello");'}</Code></pre>
+        </CodeTabs>,
+      );
+      expect(container.querySelector('.CodeTabs')).toBeInTheDocument();
+    });
+
+    it('renders toolbar buttons for each tab', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'const a = 1;'}</Code></pre>
+          <pre><Code lang="py">{'a = 1'}</Code></pre>
+        </CodeTabs>,
+      );
+      const buttons = container.querySelectorAll('.CodeTabs-toolbar button');
+      expect(buttons).toHaveLength(2);
+    });
+
+    it('renders code content in CodeTabs-inner', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'const a = 1;'}</Code></pre>
+        </CodeTabs>,
+      );
+      expect(container.querySelector('.CodeTabs-inner')).toBeInTheDocument();
+      expect(container).toHaveTextContent('const a = 1;');
+    });
   });
 });

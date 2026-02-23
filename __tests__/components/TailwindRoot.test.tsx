@@ -44,6 +44,19 @@ describe('TailwindRoot', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a div when flow is true', () => {
+      const { container } = render(<TailwindRoot flow={true}>Block</TailwindRoot>);
+      expect(container.querySelector('div.readme-tailwind')).toBeInTheDocument();
+    });
+
+    it('renders a span when flow is false', () => {
+      const { container } = render(<TailwindRoot flow={false}>Inline</TailwindRoot>);
+      expect(container.querySelector('span.readme-tailwind')).toBeInTheDocument();
+    });
+
+    it('renders children', () => {
+      const { container } = render(<TailwindRoot flow={true}>Content</TailwindRoot>);
+      expect(container.querySelector('.readme-tailwind')).toHaveTextContent('Content');
+    });
   });
 });

@@ -70,7 +70,9 @@ describe('Table of Contents', () => {
       const toc = reactTOC(ast);
       const { container } = render(<VariablesContext.Provider value={variables}>{toc}</VariablesContext.Provider>);
 
-      expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(`Heading ${variables.user.test}`);
+      expect(container.querySelector('li > a[href]:not([href="#"])')).toHaveTextContent(
+        `Heading ${variables.user.test}`,
+      );
     });
 
     it.skip('includes glossary items', () => {

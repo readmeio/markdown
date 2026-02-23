@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Table from '../../components/Table';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Table', () => {
@@ -64,6 +65,17 @@ describe('Table', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders rdmd-table wrapper with table children', () => {
+      const { container } = render(
+        <Table align={['left', 'right']}>
+          <thead><tr><th>Name</th><th>Value</th></tr></thead>
+          <tbody><tr><td>foo</td><td>1</td></tr></tbody>
+        </Table>,
+      );
+      expect(container.querySelector('.rdmd-table')).toBeInTheDocument();
+      expect(container.querySelector('table')).toBeInTheDocument();
+      expect(container.querySelector('th')).toHaveTextContent('Name');
+      expect(container.querySelector('td')).toHaveTextContent('foo');
+    });
   });
 });

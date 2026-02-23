@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Recipe from '../../components/Recipe';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Recipe', () => {
@@ -27,6 +28,10 @@ describe('Recipe', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders skeleton placeholder divs', () => {
+      const { container } = render(<Recipe />);
+      const divs = container.querySelectorAll('div');
+      expect(divs.length).toBeGreaterThan(1);
+    });
   });
 });

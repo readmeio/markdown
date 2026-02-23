@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Columns, { Column } from '../../components/Columns';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Columns', () => {
@@ -80,6 +81,40 @@ describe('Columns', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a Columns wrapper with grid style', () => {
+      const { container } = render(
+        <Columns>
+          <Column>A</Column>
+          <Column>B</Column>
+        </Columns>,
+      );
+      const columns = container.querySelector('.Columns');
+      expect(columns).toBeInTheDocument();
+      expect(columns).toHaveStyle({ gridTemplateColumns: 'repeat(2, auto)' });
+    });
+
+    it('renders Column children', () => {
+      const { container } = render(
+        <Columns>
+          <Column>Col 1</Column>
+          <Column>Col 2</Column>
+        </Columns>,
+      );
+      const cols = container.querySelectorAll('.Column');
+      expect(cols).toHaveLength(2);
+      expect(cols[0]).toHaveTextContent('Col 1');
+      expect(cols[1]).toHaveTextContent('Col 2');
+    });
+
+    it('adjusts grid columns based on child count', () => {
+      const { container } = render(
+        <Columns>
+          <Column>A</Column>
+          <Column>B</Column>
+          <Column>C</Column>
+        </Columns>,
+      );
+      expect(container.querySelector('.Columns')).toHaveStyle({ gridTemplateColumns: 'repeat(3, auto)' });
+    });
   });
 });

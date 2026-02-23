@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Embed from '../../components/Embed';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Embed', () => {
@@ -77,6 +78,29 @@ describe('Embed', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders in link mode with title', () => {
+      const { container } = render(<Embed title="Example" url="https://example.com" />);
+      expect(container.querySelector('.embed')).toBeInTheDocument();
+      const link = container.querySelector('a.embed-link');
+      expect(link).toHaveAttribute('href', 'https://example.com');
+      expect(container.querySelector('.embed-title')).toHaveTextContent('Example');
+    });
+
+    it('renders in iframe mode', () => {
+      const { container } = render(<Embed iframe={true} title="Example" url="https://example.com" />);
+      const iframe = container.querySelector('iframe');
+      expect(iframe).toHaveAttribute('src', 'https://example.com');
+      expect(iframe).toHaveAttribute('title', 'Example');
+    });
+
+    it('renders html content when html prop is provided', () => {
+      const { container } = render(<Embed html="<b>Embedded</b>" title="Example" url="https://example.com" />);
+      expect(container.querySelector('.embed-media')).toBeInTheDocument();
+    });
+
+    it('derives provider from url', () => {
+      const { container } = render(<Embed title="Example" url="https://www.example.com/page" />);
+      expect(container.querySelector('.embed-provider')).toHaveTextContent('example.com');
+    });
   });
 });

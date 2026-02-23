@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import PostmanRunButton from '../../components/PostmanRunButton';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('PostmanRunButton', () => {
@@ -45,6 +46,22 @@ describe('PostmanRunButton', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a postman-run-button element', () => {
+      const { container } = render(
+        <PostmanRunButton action="collection/fork" collectionId="123" collectionUrl="https://example.com" visibility="public" />,
+      );
+      expect(container.querySelector('.postman-run-button')).toBeInTheDocument();
+    });
+
+    it('sets data attributes correctly', () => {
+      const { container } = render(
+        <PostmanRunButton action="collection/fork" collectionId="abc" collectionUrl="https://example.com" visibility="public" />,
+      );
+      const button = container.querySelector('.postman-run-button');
+      expect(button).toHaveAttribute('data-postman-action', 'collection/fork');
+      expect(button).toHaveAttribute('data-postman-var-1', 'abc');
+      expect(button).toHaveAttribute('data-postman-collection-url', 'https://example.com');
+      expect(button).toHaveAttribute('data-postman-visibility', 'public');
+    });
   });
 });

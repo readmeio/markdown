@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import MCPIntro from '../../components/MCPIntro';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('MCPIntro', () => {
@@ -33,6 +34,15 @@ describe('MCPIntro', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a MCPIntro container', () => {
+      const { container } = render(<MCPIntro />);
+      expect(container.querySelector('.MCPIntro')).toBeInTheDocument();
+    });
+
+    it('renders skeleton placeholder divs', () => {
+      const { container } = render(<MCPIntro />);
+      const divs = container.querySelector('.MCPIntro')?.querySelectorAll('div');
+      expect(divs!.length).toBeGreaterThan(1);
+    });
   });
 });

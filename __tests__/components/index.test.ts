@@ -1,6 +1,9 @@
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
+import Callout from '../../components/Callout';
+import Embed from '../../components/Embed';
+import Image from '../../components/Image';
 import { execute } from '../helpers';
 
 describe('Components', () => {
@@ -106,6 +109,25 @@ describe('Components', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('Callout', () => {
+      const { container } = render(
+        React.createElement(Callout, { icon: '❗️', theme: 'error', title: 'Error' }, 'Error content'),
+      );
+      expect(container.querySelector('.callout')).toBeTruthy();
+    });
+
+    it('Embed', () => {
+      const { container } = render(
+        React.createElement(Embed, { url: 'https://example.com', title: 'Example' }),
+      );
+      expect(container.querySelector('.embed')).toBeTruthy();
+    });
+
+    it('Image', () => {
+      const { container } = render(
+        React.createElement(Image, { src: 'https://example.com/img.jpg', align: 'center' }),
+      );
+      expect(container.querySelector('img')).toBeTruthy();
+    });
   });
 });

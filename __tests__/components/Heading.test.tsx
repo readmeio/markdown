@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import CreateHeading from '../../components/Heading';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Heading', () => {
@@ -50,6 +51,24 @@ describe('Heading', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it.each([1, 2, 3, 4, 5, 6] as const)('renders an h%i element', depth => {
+      const Heading = CreateHeading(depth);
+      const { container } = render(<Heading depth={depth} id="test" tag={`h${depth}`}>Title</Heading>);
+      expect(container.querySelector(`h${depth}.heading-${depth}`)).toBeInTheDocument();
+    });
+
+    it('renders heading text and anchor link', () => {
+      const Heading = CreateHeading(2);
+      const { container } = render(<Heading depth={2} id="my-heading" tag="h2">My Heading</Heading>);
+      expect(container.querySelector('.heading-text')).toHaveTextContent('My Heading');
+      const anchor = container.querySelector('a.heading-anchor-icon');
+      expect(anchor).toHaveAttribute('href', '#my-heading');
+    });
+
+    it('returns empty string when children is falsy', () => {
+      const Heading = CreateHeading(1);
+      const { container } = render(<Heading depth={1} id="empty" tag="h1">{null}</Heading>);
+      expect(container.querySelector('h1')).not.toBeInTheDocument();
+    });
   });
 });

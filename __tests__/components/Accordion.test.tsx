@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Accordion from '../../components/Accordion';
 import { mdxish, renderMdxish } from '../../lib';
 
 describe('Accordion', () => {
@@ -60,6 +61,27 @@ describe('Accordion', () => {
   });
 
   describe('render', () => {
-    it.todo('should render the component directly');
+    it('renders a details element with Accordion class', () => {
+      const { container } = render(<Accordion title="Title">Content</Accordion>);
+      expect(container.querySelector('details.Accordion')).toBeInTheDocument();
+    });
+
+    it('renders a summary with the title', () => {
+      const { container } = render(<Accordion title="Title">Content</Accordion>);
+      const summary = container.querySelector('summary.Accordion-title');
+      expect(summary).toHaveTextContent('Title');
+    });
+
+    it('renders children in Accordion-content', () => {
+      const { container } = render(<Accordion title="Title">Content</Accordion>);
+      expect(container.querySelector('.Accordion-content')).toHaveTextContent('Content');
+    });
+
+    it('renders an icon when icon prop is provided', () => {
+      const { container } = render(<Accordion icon="fa-gear" iconColor="#FF0000" title="Title">Content</Accordion>);
+      const icon = container.querySelector('i.Accordion-icon');
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveStyle({ color: '#FF0000' });
+    });
   });
 });
