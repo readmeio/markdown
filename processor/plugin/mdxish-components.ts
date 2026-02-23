@@ -6,6 +6,7 @@ import type { VFile } from 'vfile';
 import { visit } from 'unist-util-visit';
 
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
+import { NEWLINE_MARKER } from '../plugin/mdxish-handlers';
 import {
   CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,
@@ -56,7 +57,9 @@ function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
     nodes.length === 1 &&
     nodes[0].type === 'element' &&
     nodes[0].tagName === 'p' &&
-    nodes[0].children?.every(child => child.type === 'text')
+    nodes[0].children?.every(child =>
+      child.type === 'text' || (child.type === 'element' && child.tagName === 'br'),
+    )
   );
 }
 
@@ -103,6 +106,12 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
   // First pass: Recursively process text children as they may contain stringified markdown / mdx content
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
+
+    // Restore newlines encoded by evaluateExpressions to survive remarkBreaks and rehypeRaw.
+    // Preserve the text as-is instead of processing through markdown.
+    if (child.value.includes(NEWLINE_MARKER)) {
+      return [{ type: 'text', value: child.value.replace(/___MDXISH_NL___/g, '\n') } as ElementContent];
+    }
 
     const hast = processMarkdown(child.value.trim());
     const children = (hast.children ?? []).filter(isElementContentNode);

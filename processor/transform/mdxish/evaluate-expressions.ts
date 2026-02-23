@@ -4,6 +4,7 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
+import { NEWLINE_MARKER } from '../../plugin/mdxish-handlers';
 import { evaluateExpression, type JSXContext } from './preprocess-jsx-expressions';
 
 /**
@@ -33,7 +34,14 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
         } else if (typeof result === 'object') {
           textValue = JSON.stringify(result);
         } else {
-          textValue = String(result).replace(/\s+/g, ' ').trim();
+          textValue = String(result).trim();
+        }
+
+        // Encode newlines when inside JSX elements to prevent remarkBreaks from
+        // splitting the text into separate nodes. Markers are decoded later in parseTextChildren.
+        const isJsxParent = parent.type === 'mdxJsxFlowElement' || parent.type === 'mdxJsxTextElement';
+        if (isJsxParent && textValue.includes('\n')) {
+          textValue = textValue.replace(/\n/g, NEWLINE_MARKER);
         }
 
         // Replace expression node with text node since the expression is conceptually a text

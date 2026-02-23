@@ -644,4 +644,299 @@ Third {c} paragraph.`;
       expect(blockquote).toBeDefined();
     });
   });
+
+  describe('multiline template literal children in JSX components', () => {
+    it('should not throw a parse error for multiline template literal children', () => {
+      const md = `<Terminal>{\`
+  $ npx run command
+  This is the response
+\`}</Terminal>`;
+
+      expect(() => mdxish(md)).not.toThrow();
+    });
+
+    it('should preserve newlines in multiline template literal expression results', () => {
+      const md = `{\`line1\nline2\nline3\`}`;
+      const ast = mdxish(md);
+
+      const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
+      // remarkBreaks splits \n into separate text nodes with <br> elements between them
+      const allText = p.children
+        .filter(c => c.type === 'text')
+        .map(c => (c as Text).value)
+        .join('');
+
+      expect(allText).toContain('line1');
+      expect(allText).toContain('line2');
+      expect(allText).toContain('line3');
+    });
+
+    it('should pass the full multiline string to component children', () => {
+      const mockTerminalModule = {
+        default: () => null,
+        Toc: null,
+        toc: [],
+      };
+
+      const md = `<Terminal>{\`
+  $ npx run command
+  This is the response
+
+  $ inputs start with a dollar sign
+  outputs can be multiline
+\`}</Terminal>`;
+
+      const ast = mdxish(md, { components: { Terminal: mockTerminalModule as any } });
+
+      // Terminal is inside a <p> (from paragraph wrapping), search recursively
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const terminal = findElement(ast, 'Terminal');
+      expect(terminal).toBeDefined();
+
+      // Children should be a single text node with newlines preserved
+      const findText = (node: Element | Text): string => {
+        if (node.type === 'text') return (node as Text).value;
+        if ('children' in node) return (node as Element).children.map(c => findText(c as Element | Text)).join('');
+        return '';
+      };
+      const content = findText(terminal!);
+      expect(content).toContain('$ npx run command');
+      expect(content).toContain('This is the response');
+      expect(content).toContain('\n');
+    });
+
+    it('should preserve a single text child node for component expecting string children', () => {
+      const mockTerminalModule = {
+        default: () => null,
+        Toc: null,
+        toc: [],
+      };
+
+      const md = `<Terminal>{\`
+  $ echo hello
+  hello
+\`}</Terminal>`;
+
+      const ast = mdxish(md, { components: { Terminal: mockTerminalModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const terminal = findElement(ast, 'Terminal');
+      expect(terminal).toBeDefined();
+
+      // Should be a single text child, not multiple elements
+      expect(terminal!.children).toHaveLength(1);
+      expect(terminal!.children[0].type).toBe('text');
+
+      const textNode = terminal!.children[0] as Text;
+      expect(textNode.value).toContain('$ echo hello');
+      expect(textNode.value).toContain('hello');
+      expect(textNode.value).toContain('\n');
+    });
+
+    it('should preserve indentation in multiline template literal children', () => {
+      const mockModule = { default: () => null, Toc: null, toc: [] };
+
+      const md = `<CodeBlock>{\`
+  function hello() {
+    console.log("world");
+  }
+\`}</CodeBlock>`;
+
+      const ast = mdxish(md, { components: { CodeBlock: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const codeBlock = findElement(ast, 'CodeBlock');
+      expect(codeBlock).toBeDefined();
+
+      const textNode = codeBlock!.children[0] as Text;
+      expect(textNode.type).toBe('text');
+      // Leading/trailing whitespace is trimmed, but relative indentation is preserved
+      expect(textNode.value).toContain('function hello()');
+      expect(textNode.value).toContain('    console.log');
+    });
+
+    it('should handle empty lines in template literal children', () => {
+      const mockModule = { default: () => null, Toc: null, toc: [] };
+
+      const md = `<Terminal>{\`
+  $ first command
+  output
+
+  $ second command
+  more output
+\`}</Terminal>`;
+
+      const ast = mdxish(md, { components: { Terminal: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const terminal = findElement(ast, 'Terminal');
+      expect(terminal).toBeDefined();
+
+      const textNode = terminal!.children[0] as Text;
+      expect(textNode.type).toBe('text');
+      expect(textNode.value).toContain('$ first command');
+      expect(textNode.value).toContain('$ second command');
+      // Empty line should be preserved as double newline
+      expect(textNode.value).toMatch(/output\n\n/);
+    });
+
+    it('should handle template literal with only whitespace and newlines', () => {
+      const mockModule = { default: () => null, Toc: null, toc: [] };
+
+      const md = `<Spacer>{\`
+\`}</Spacer>`;
+
+      const ast = mdxish(md, { components: { Spacer: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const spacer = findElement(ast, 'Spacer');
+      expect(spacer).toBeDefined();
+    });
+
+    it('should not affect regular text children of components (non-expression)', () => {
+      const mockModule = {
+        default: () => null,
+        Toc: null,
+        toc: [],
+      };
+
+      const md = `<MyComponent>
+
+  This is regular markdown content.
+
+</MyComponent>`;
+
+      const ast = mdxish(md, { components: { MyComponent: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const comp = findElement(ast, 'MyComponent');
+      expect(comp).toBeDefined();
+      // Regular markdown text should be processed through markdown (wrapped in <p>)
+      const hasP = comp!.children.some(c => c.type === 'element' && (c as Element).tagName === 'p');
+      expect(hasP).toBe(true);
+    });
+
+    it('should handle component with both attributes and template literal children', () => {
+      const mockModule = { default: () => null, Toc: null, toc: [] };
+
+      const md = `<Terminal title="My Terminal">{\`
+  $ npm install
+  added 50 packages
+\`}</Terminal>`;
+
+      const ast = mdxish(md, { components: { Terminal: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const terminal = findElement(ast, 'Terminal');
+      expect(terminal).toBeDefined();
+      expect(terminal!.properties?.title).toBe('My Terminal');
+
+      const textNode = terminal!.children[0] as Text;
+      expect(textNode.type).toBe('text');
+      expect(textNode.value).toContain('$ npm install');
+      expect(textNode.value).toContain('added 50 packages');
+      expect(textNode.value).toContain('\n');
+    });
+
+    it('should handle special characters in template literal children', () => {
+      const mockModule = { default: () => null, Toc: null, toc: [] };
+
+      const md = `<Terminal>{\`
+  $ echo "hello world"
+  hello world
+  $ echo 'single quotes'
+  single quotes
+\`}</Terminal>`;
+
+      const ast = mdxish(md, { components: { Terminal: mockModule as any } });
+
+      const findElement = (node: any, tagName: string): Element | undefined => {
+        if (node.tagName === tagName) return node as Element;
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findElement(child, tagName);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+
+      const terminal = findElement(ast, 'Terminal');
+      expect(terminal).toBeDefined();
+
+      const textNode = terminal!.children[0] as Text;
+      expect(textNode.value).toContain('"hello world"');
+      expect(textNode.value).toContain("'single quotes'");
+    });
+  });
 });
