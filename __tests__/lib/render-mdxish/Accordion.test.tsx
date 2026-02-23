@@ -1,0 +1,55 @@
+import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
+import React from 'react';
+
+import { mdxish, renderMdxish } from '../../../lib';
+
+describe('Accordion renderer', () => {
+  describe('given a basic Accordion', () => {
+    const md = `
+<Accordion title="Title">Content</Accordion>
+`;
+    const mod = renderMdxish(mdxish(md));
+
+    it('should not error when rendering', () => {
+      expect(() => render(<mod.default />)).not.toThrow();
+    });
+
+    it('should render a details element with Accordion class', () => {
+      const { container } = render(<mod.default />);
+      expect(container.querySelector('details.Accordion')).toBeInTheDocument();
+    });
+
+    it('should render a summary with the title', () => {
+      const { container } = render(<mod.default />);
+      const summary = container.querySelector('summary.Accordion-title');
+      expect(summary).toBeInTheDocument();
+      expect(summary).toHaveTextContent('Title');
+    });
+
+    it('should render children in Accordion-content', () => {
+      const { container } = render(<mod.default />);
+      const content = container.querySelector('.Accordion-content');
+      expect(content).toBeInTheDocument();
+      expect(content).toHaveTextContent('Content');
+    });
+  });
+
+  describe('given an Accordion with icon props', () => {
+    const md = `
+<Accordion title="Settings" icon="fa-gear" iconColor="#FF0000">Settings content</Accordion>
+`;
+    const mod = renderMdxish(mdxish(md));
+
+    it('should render an icon element', () => {
+      const { container } = render(<mod.default />);
+      expect(container.querySelector('i.Accordion-icon')).toBeInTheDocument();
+    });
+
+    it('should apply the icon color style', () => {
+      const { container } = render(<mod.default />);
+      const icon = container.querySelector('i.Accordion-icon');
+      expect(icon).toHaveStyle({ color: '#FF0000' });
+    });
+  });
+});
