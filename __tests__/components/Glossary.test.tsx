@@ -4,11 +4,21 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('Glossary', () => {
-  it('renders a glossary item', () => {
-    const md = '<Glossary>parliament</Glossary>';
-    const Content = execute(md);
-    render(<Content />);
+  describe('mdxish', () => {
+    it.todo('should render through the mdxish pipeline');
+  });
 
-    expect(screen.getByText('parliament')).toBeVisible();
+  describe('mdx', () => {
+    it('renders a glossary item', () => {
+      const md = '<Glossary>parliament</Glossary>';
+      const Content = execute(md);
+      render(<Content />);
+
+      expect(screen.getByText('parliament')).toBeVisible();
+    });
+  });
+
+  describe('render', () => {
+    it.todo('should render the component directly');
   });
 });

@@ -18,30 +18,40 @@ vi.mock('@readme/syntax-highlighter', () => ({
   canonical: lang => lang,
 }));
 
-describe.skip('Code', () => {
-  it.skip('copies the variable interpolated code', () => {
-    const props = {
-      children: ['console.log("<<name>>");'],
-    };
-
-    const { container } = render(<Code {...codeProps} {...props} />);
-
-    expect(container).toHaveTextContent(/VARIABLE_SUBSTITUTED/);
-    fireEvent.click(screen.getByRole('button'));
-
-    expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
+describe('Code', () => {
+  describe('mdxish', () => {
+    it.todo('should render through the mdxish pipeline');
   });
 
-  it.skip('does not nest the button inside the code block', () => {
-    render(<Code {...codeProps}>{'console.log("hi");'}</Code>);
-    const btn = screen.getByRole('button');
-
-    expect(btn.parentNode?.nodeName.toLowerCase()).not.toBe('code');
+  describe('mdx', () => {
+    it.todo('should render through the mdx pipeline');
   });
 
-  it.skip('allows undefined children?!', () => {
-    const { container } = render(<Code />);
+  describe.skip('render', () => {
+    it.skip('copies the variable interpolated code', () => {
+      const props = {
+        children: ['console.log("<<name>>");'],
+      };
 
-    expect(container).toHaveTextContent('');
+      const { container } = render(<Code {...codeProps} {...props} />);
+
+      expect(container).toHaveTextContent(/VARIABLE_SUBSTITUTED/);
+      fireEvent.click(screen.getByRole('button'));
+
+      expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
+    });
+
+    it.skip('does not nest the button inside the code block', () => {
+      render(<Code {...codeProps}>{'console.log("hi");'}</Code>);
+      const btn = screen.getByRole('button');
+
+      expect(btn.parentNode?.nodeName.toLowerCase()).not.toBe('code');
+    });
+
+    it.skip('allows undefined children?!', () => {
+      const { container } = render(<Code />);
+
+      expect(container).toHaveTextContent('');
+    });
   });
 });

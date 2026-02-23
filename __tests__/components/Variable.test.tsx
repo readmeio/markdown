@@ -4,12 +4,22 @@ import React from 'react';
 import { execute } from '../helpers';
 
 describe('Variable', () => {
-  it('render a variable', () => {
-    const md = '<Variable variable="name" />';
-    const Content = execute(md);
+  describe('mdxish', () => {
+    it.todo('should render through the mdxish pipeline');
+  });
 
-    render(<Content />);
+  describe('mdx', () => {
+    it('render a variable', () => {
+      const md = '<Variable variable="name" />';
+      const Content = execute(md);
 
-    expect(screen.getByText('NAME')).toBeVisible();
+      render(<Content />);
+
+      expect(screen.getByText('NAME')).toBeVisible();
+    });
+  });
+
+  describe('render', () => {
+    it.todo('should render the component directly');
   });
 });

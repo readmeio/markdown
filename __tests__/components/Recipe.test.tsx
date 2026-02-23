@@ -25,4 +25,8 @@ describe('Recipe', () => {
   describe('mdx', () => {
     it.todo('should render through the mdx pipeline');
   });
+
+  describe('render', () => {
+    it.todo('should render the component directly');
+  });
 });

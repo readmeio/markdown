@@ -4,27 +4,37 @@ import React from 'react';
 import Callout from '../../components/Callout';
 
 describe('Callout', () => {
-  it('render _all_ its children', () => {
-    render(
-      <Callout icon="icon" theme="theme" title="Title">
-        <p>Title</p>
-        <p>First Paragraph</p>
-        <p>Second Paragraph</p>
-      </Callout>,
-    );
-
-    expect(screen.getByText('Second Paragraph')).toBeVisible();
+  describe('mdxish', () => {
+    it.todo('should render through the mdxish pipeline');
   });
 
-  it("doesn't render all its children if it's **empty**", () => {
-    render(
-      <Callout empty icon="icon" theme="theme">
-        <p>Title</p>
-        <p>First Paragraph</p>
-        <p>Second Paragraph</p>
-      </Callout>,
-    );
+  describe('mdx', () => {
+    it.todo('should render through the mdx pipeline');
+  });
 
-    expect(screen.queryByText('Title')).toBeNull();
+  describe('render', () => {
+    it('render _all_ its children', () => {
+      render(
+        <Callout icon="icon" theme="theme" title="Title">
+          <p>Title</p>
+          <p>First Paragraph</p>
+          <p>Second Paragraph</p>
+        </Callout>,
+      );
+
+      expect(screen.getByText('Second Paragraph')).toBeVisible();
+    });
+
+    it("doesn't render all its children if it's **empty**", () => {
+      render(
+        <Callout empty icon="icon" theme="theme">
+          <p>Title</p>
+          <p>First Paragraph</p>
+          <p>Second Paragraph</p>
+        </Callout>,
+      );
+
+      expect(screen.queryByText('Title')).toBeNull();
+    });
   });
 });
