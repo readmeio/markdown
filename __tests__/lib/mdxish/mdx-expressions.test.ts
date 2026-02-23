@@ -1,6 +1,6 @@
 import type { Element, Text } from 'hast';
 
-import { mdxish } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib';
 
 describe('mdxish MDX expressions', () => {
   describe('inline expressions', () => {

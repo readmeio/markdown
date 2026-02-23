@@ -1,7 +1,7 @@
 import type { CustomComponents } from '../../../types';
 import type { Element, Text } from 'hast';
 
-import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib';
 import { extractText } from '../../../processor/transform/extract-text';
 import { findElementByTagName } from '../../helpers';
 

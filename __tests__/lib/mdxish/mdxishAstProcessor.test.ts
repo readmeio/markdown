@@ -1,6 +1,6 @@
 import type { Root } from 'mdast';
 
-import { mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxishAstProcessor } from '../../../lib';
 
 describe('mdxishAstProcessor', () => {
   it('should return a unified processor and parser-ready content for simple text', () => {
