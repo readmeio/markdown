@@ -14,6 +14,7 @@ export { default as MCPIntro } from './MCPIntro';
 export { default as Table } from './Table';
 export { default as TableOfContents } from './TableOfContents';
 export { default as Tabs, Tab } from './Tabs';
+export { default as Terminal } from './Terminal';
 export { default as TailwindRoot } from './TailwindRoot';
 export { default as TailwindStyle } from './TailwindStyle';
 export { default as Recipe } from './Recipe';

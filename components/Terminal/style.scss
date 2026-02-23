@@ -1,0 +1,119 @@
+.rdmd-terminal {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+  font-family: ui-monospace, sfmono-regular, menlo, monaco, consolas, 'Liberation Mono', 'Courier New', monospace;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.rdmd-terminal-header {
+  align-items: center;
+  background-color: #2d2d2d;
+  display: flex;
+  padding: 0.75rem 1rem;
+  position: relative;
+}
+
+.rdmd-terminal-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rdmd-terminal-button {
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+
+  &_close {
+    background-color: #ff5f56;
+  }
+
+  &_minimize {
+    background-color: #ffbd2e;
+  }
+
+  &_maximize {
+    background-color: #27c93f;
+  }
+}
+
+.rdmd-terminal-title {
+  color: #999;
+  font-size: 0.75rem;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.rdmd-terminal-content {
+  padding: 1rem;
+}
+
+.rdmd-terminal-line {
+  align-items: flex-start;
+  display: flex;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  min-height: 1.5em;
+  position: relative;
+
+  &_empty {
+    height: 0.75em;
+  }
+
+  &_input {
+    &:hover .rdmd-terminal-copy {
+      opacity: 1;
+    }
+  }
+}
+
+.rdmd-terminal-prompt {
+  color: #6b7280;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.rdmd-terminal-text {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+
+  &_input {
+    color: #e5e5e5;
+  }
+
+  &_output {
+    color: #a5b4fc;
+  }
+}
+
+.rdmd-terminal-copy {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  opacity: 0;
+  padding: 0.25rem;
+  transition: color 0.15s ease, opacity 0.15s ease;
+
+  &:hover {
+    color: #fff;
+  }
+
+  &_copied {
+    color: #27c93f;
+    opacity: 1;
+
+    &:hover {
+      color: #27c93f;
+    }
+  }
+}
