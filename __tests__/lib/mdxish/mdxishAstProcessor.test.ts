@@ -90,4 +90,22 @@ describe('mdxishAstProcessor', () => {
       ],
     });
   });
+
+  describe('with safeMode', () => {
+    it('should not include mdxExpression extensions in safeMode', () => {
+      const md = 'Test {expression}';
+      const { processor } = mdxishAstProcessor(md, { safeMode: true });
+      const mdast = processor.parse(md);
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(false);
+    });
+
+    it('should include mdxExpression extensions without safeMode', () => {
+      const md = 'Test {expression}';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { safeMode: false });
+      const mdast = processor.parse(parserReadyContent);
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(true);
+    });
+  });
 });
