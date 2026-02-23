@@ -3,7 +3,7 @@ import type { CustomComponents } from '../../../types';
 import { describe, it, expect } from 'vitest';
 
 import { mix, mdxish } from '../../../lib';
-import { findElementsByTagName } from '../../lib/mdxish/helpers';
+import { findElementsByTagName } from '../../helpers';
 
 describe('rehypeMdxishComponents', () => {
   it('should remove non-existent custom components from the tree', () => {

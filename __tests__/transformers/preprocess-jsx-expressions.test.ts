@@ -1,19 +1,6 @@
-import type { Element, Root } from 'hast';
-
 import { mdxish } from '../../lib';
 import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
-
-// Helper function to find an element by tag name in a hast tree
-function findElementByTagName(node: Element | Root, tagName: string): Element | undefined {
-  if (node.type === 'element' && node.tagName === tagName) return node;
-  if (!('children' in node)) return undefined;
-
-  return node.children.reduce<Element | undefined>((found, child) => {
-    if (found) return found;
-    if (child.type !== 'element') return undefined;
-    return findElementByTagName(child, tagName);
-  }, undefined);
-}
+import { findElementByTagName } from '../helpers';
 
 describe('preprocessJSXExpressions', () => {
   describe('Step 3: Evaluate attribute expressions', () => {

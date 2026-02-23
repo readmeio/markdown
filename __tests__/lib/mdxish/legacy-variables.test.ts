@@ -2,8 +2,7 @@ import type { CustomComponents } from '../../../types';
 import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-import { findElementByTagName } from './helpers';
+import { findElementByTagName } from '../../helpers';
 
 describe('legacy variables resolution', () => {
   describe('basic resolution', () => {

@@ -1,8 +1,7 @@
 import type { Root, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-import { findElementByTagName } from './helpers';
+import { findElementByTagName } from '../../helpers';
 
 function getCodeText(tree: Root): string {
   const code = findElementByTagName(tree, 'code');

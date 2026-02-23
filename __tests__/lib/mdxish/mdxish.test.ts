@@ -3,8 +3,7 @@ import type { Element, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-
-import { findElementByTagName } from './helpers';
+import { findElementByTagName } from '../../helpers';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {

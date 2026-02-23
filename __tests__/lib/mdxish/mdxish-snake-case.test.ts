@@ -1,8 +1,7 @@
 import type { Element } from 'hast';
 
 import { mdxish } from '../../../lib/mdxish';
-
-import { makeComponents } from './helpers';
+import { makeComponents } from '../../helpers';
 
 describe('mdxish snake_case component integration', () => {
   describe('basic rendering', () => {

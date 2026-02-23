@@ -1,6 +1,5 @@
 import { mdxish } from '../../../lib';
-
-import { findElementsByTagName, stubModule } from './helpers';
+import { findElementsByTagName, stubModule } from '../../helpers';
 
 describe('mdxish tailwind transformer', () => {
   describe('when useTailwind is not set', () => {
