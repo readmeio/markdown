@@ -40,14 +40,17 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
         parent.children.splice(index, 1, {
           type: 'text',
           value: textValue,
-          position: node.position,
+          position: expressionNode.position,
         });
       } catch (_error) {
         // If evaluation fails, leave the expression as-is (fallback to text)
+        // we still need to manually escape escaped characters because the expression
+        // parser treats the contents as code instead of text, skipping the backslash escapes
+        const processed = expression.replace(/\\([!-/:-@[-`{-~])/g, '$1');
         parent.children.splice(index, 1, {
           type: 'text',
-          value: `{${expression}}`,
-          position: node.position,
+          value: `{${processed}}`,
+          position: expressionNode.position,
         });
       }
     });

@@ -1,5 +1,5 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxExpressionFromMarkdown, mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
@@ -9,8 +9,7 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
-import { magicBlockFromMarkdown, magicBlockToMarkdown } from './mdast-util/magic-block';
-import { magicBlock } from './micromark/magic-block';
+import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
   mdx?: boolean;
@@ -21,10 +20,9 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
-  const processor = unified()
-    .data('micromarkExtensions', [magicBlock()])
-    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
-    .data('toMarkdownExtensions', [magicBlockToMarkdown()]);
+  const { replaced, blocks } = extractMagicBlocks(doc);
+
+  const processor = unified();
 
   // we still require these two extensions because:
   // 1. we can rely on remarkMdx to parse MDXish
@@ -32,7 +30,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   if (mdxish) {
     processor
       .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()]);
+      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
+      .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 
   processor
@@ -61,10 +60,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
               (left, right) => {
                 if (left.type === 'code' && right.type === 'code') {
                   const isTight =
-                    left.position &&
-                    right.position &&
-                    right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
-                  
+                    left.position && right.position && right.position.start.line - left.position.end.line === 1; // Are the blocks on adjacent lines?
+
                   // 0 = no newline between blocks
                   return isTight ? 0 : undefined;
                 }
@@ -74,8 +71,11 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
           },
     );
 
-  const file = await processor.process(doc);
-  return String(file).trim();
+  const file = await processor.process(replaced);
+  const stringified = String(file).trim();
+
+  const restored = restoreMagicBlocks(stringified, blocks);
+  return restored;
 }
 
 export default stripComments;

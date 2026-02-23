@@ -58,6 +58,7 @@ const Doc = () => {
   const ci = searchParams.has('ci');
   const legacy = searchParams.has('legacy');
   const mdxish = searchParams.has('mdxish');
+  const stripComments = searchParams.has('stripComments');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
@@ -72,9 +73,38 @@ const Doc = () => {
   });
   const [error, setError] = useState<string>(null);
   const [legacyContent, setLegacyContent] = useState<React.ReactNode>(null);
+  const [strippedMarkdown, setStrippedMarkdown] = useState<string | null>(null);
+  const [stripError, setStripError] = useState<string | null>(null);
+  const [view, setView] = useState<'markdown' | 'rendered'>('rendered');
 
   useEffect(() => {
-    const render = async () => {
+    const sanitize = async () => {
+      if (!stripComments) {
+        setStrippedMarkdown(null);
+        setStripError(null);
+        return doc;
+      }
+      try {
+        const sanitized = await mdx.stripComments(doc, {
+          mdx: !(legacy || mdxish),
+          mdxish,
+        });
+        setStrippedMarkdown(sanitized);
+        setStripError(null);
+        return sanitized;
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        const message = e instanceof Error ? e.message : String(e);
+        setStripError(message);
+        setStrippedMarkdown(null);
+        setContent({ default: null, Toc: null });
+        setLegacyContent(null);
+        return null;
+      }
+    };
+
+    const renderRMDX = async () => {
       const opts = {
         lazyImages,
         safeMode,
@@ -82,9 +112,18 @@ const Doc = () => {
       };
 
       try {
-        const code = await mdx.compile(doc, { ...opts, components: componentsByExport, useTailwind: true });
-        const content = await mdx.run(code, { components: executedComponents, terms, variables });
-
+        const sanitized = await sanitize();
+        if (sanitized === null) return;
+        const code = await mdx.compile(sanitized, {
+          ...opts,
+          components: componentsByExport,
+          useTailwind: true,
+        });
+        const content = await mdx.run(code, {
+          components: executedComponents,
+          terms,
+          variables,
+        });
         setError(() => null);
         setContent(() => content);
       } catch (e) {
@@ -94,15 +133,45 @@ const Doc = () => {
       }
     };
 
+    const renderXish = async () => {
+      try {
+        const sanitized = await sanitize();
+        if (sanitized === null) return;
+        const tree = mdx.mdxish(sanitized, { variables });
+        const vdom = mdx.renderMdxish(tree, { terms, variables });
+        setError(() => null);
+        setContent(vdom);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        setError(() => e.message);
+      }
+    };
+
+    const renderRDMD = async () => {
+      const opts = {
+        lazyImages,
+        safeMode,
+        copyButtons,
+      };
+      const sanitized = await sanitize();
+      if (sanitized === null) return;
+      const { VariablesContext, GlossaryContext } = rdmd.utils;
+      setLegacyContent(
+        <VariablesContext.Provider value={variables}>
+          <GlossaryContext.Provider value={terms}>{rdmd.react(sanitized, opts)}</GlossaryContext.Provider>
+        </VariablesContext.Provider>,
+      );
+    };
+
     if (mdxish) {
-      setError(() => null);
-      setContent(mdx.renderMdxish(mdx.mdxish(doc)));
+      renderXish();
     } else if (legacy) {
-      setLegacyContent(rdmd.react(doc));
+      renderRDMD();
     } else {
-      render();
+      renderRMDX();
     }
-  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish]);
+  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish, stripComments]);
 
   useEffect(() => {
     if (error) setError(null);
@@ -112,18 +181,47 @@ const Doc = () => {
     <div className="rdmd-demo--display">
       <section id="hub-content">
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
-        <div id="content-container">
-          <RenderError error={error}>
-            <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-              <div className="markdown-body">{legacy ? legacyContent : Content ? <Content /> : null}</div>
-            </TailwindStyle>
-          </RenderError>
-          {Toc && (
-            <div className="content-toc">
-              <Toc />
+        {strippedMarkdown !== null && (
+          <div className="rdmd-demo--view-toggle">
+            <button
+              className={view === 'rendered' ? 'active' : ''}
+              onClick={() => setView('rendered')}
+              type="button"
+            >
+              Rendered
+            </button>
+            <button
+              className={view === 'markdown' ? 'active' : ''}
+              onClick={() => setView('markdown')}
+              type="button"
+            >
+              Markdown
+            </button>
+          </div>
+        )}
+        {stripError && (
+          <div className="rdmd-demo--strip-error">
+            <strong>stripComments error:</strong> {stripError}
+          </div>
+        )}
+        {view === 'markdown' && strippedMarkdown !== null ? (
+          <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
+        ) : (
+          <>
+            <div id="content-container">
+              <RenderError error={error}>
+                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
+                  <div className="markdown-body">{legacy ? legacyContent : Content ? <Content /> : null}</div>
+                </TailwindStyle>
+              </RenderError>
+              {Toc && (
+                <div className="content-toc">
+                  <Toc />
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </section>
     </div>
   );

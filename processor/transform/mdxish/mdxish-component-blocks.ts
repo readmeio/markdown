@@ -5,6 +5,9 @@ import type { Plugin } from 'unified';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
+import { legacyVariable } from '../../../lib/micromark/legacy-variable';
+
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
@@ -24,7 +27,10 @@ const MAX_LOOKAHEAD = 30;
  */
 const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
 
-const inlineMdProcessor = unified().use(remarkParse);
+const inlineMdProcessor = unified()
+  .data('micromarkExtensions', [legacyVariable()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .use(remarkParse);
 
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
@@ -126,6 +132,8 @@ const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
 interface ScanResult {
   /** Index of the sibling containing the closing tag */
   closingIndex: number;
+  /** Content after the closing tag that should be re-inserted as a sibling */
+  contentAfterClose?: string;
   /** Additional children parsed from the closing sibling (content before closing tag in HTML blocks) */
   extraClosingChildren: MdxJsxFlowElement['children'];
   /** For paragraph siblings, the paragraph with closing tag stripped */
@@ -158,13 +166,15 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
         return { closingIndex: i, extraClosingChildren: [] };
       }
 
-      // Embedded closing tag (closing tag at end of HTML block content)
+      // Embedded closing tag (closing tag within HTML block content)
       if (siblingValue.includes(closingTagStr)) {
-        const contentBeforeClose = siblingValue.substring(0, siblingValue.lastIndexOf(closingTagStr)).trim();
+        const closeTagPos = siblingValue.indexOf(closingTagStr);
+        const contentBeforeClose = siblingValue.substring(0, closeTagPos).trim();
+        const contentAfterClose = siblingValue.substring(closeTagPos + closingTagStr.length).trim();
         const extraChildren = contentBeforeClose
           ? (parseMdChildren(contentBeforeClose) as MdxJsxFlowElement['children'])
           : [];
-        return { closingIndex: i, extraClosingChildren: extraChildren };
+        return { closingIndex: i, extraClosingChildren: extraChildren, contentAfterClose: contentAfterClose || undefined };
       }
     }
 
@@ -321,7 +331,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     const scanResult = scanForClosingTag(parent, index, tag);
     if (!scanResult) return;
 
-    const { closingIndex, extraClosingChildren, strippedParagraph } = scanResult;
+    const { closingIndex, extraClosingChildren, strippedParagraph, contentAfterClose: remainingAfterClose } = scanResult;
     const extraChildren = contentAfterTag ? (parseMdChildren(contentAfterTag.trimStart()) as MdxJsxFlowElement['children']) : [];
 
     // Collect all intermediate siblings between opening tag and closing tag
@@ -346,6 +356,12 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // there might be new components to process
     if (componentNode.children.length > 0) {
       stack.push(componentNode as Parent);
+    }
+
+    // If the closing tag sibling had content after it (e.g., another component opening tag),
+    // re-insert it as a sibling so it can be processed in subsequent iterations
+    if (remainingAfterClose) {
+      parseSibling(stack, parent, index, remainingAfterClose);
     }
   };
 

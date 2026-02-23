@@ -3,7 +3,7 @@ import type { Properties } from 'hast';
 import type { BlockContent, Code, Link, Node, Parents, PhrasingContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Tableau } from 'types';
+import type { Callout, EmbedBlock, HTMLBlock, ImageBlock, Recipe, Tableau } from 'types';
 
 import { visit, SKIP } from 'unist-util-visit';
 
@@ -25,6 +25,11 @@ const types = {
   Recipe: NodeTypes.recipe,
   TutorialTile: NodeTypes.recipe, // coerce to recipe for backwards compatibility
 };
+
+// Node types that are phrasing (inline) content per the mdast spec. Phrasing
+// content at the document root violates the spec and causes mdx() to collapse
+// blank lines, so these must be wrapped in a paragraph when at root level.
+const phrasingTypes = new Set<string>([NodeTypes.variable]);
 
 enum TableNames {
   td = 'td',
@@ -220,6 +225,28 @@ const coerceJsxToMd =
         position: node.position,
       };
 
+      // Wrap in a paragraph if at root level. Links are phrasing content and
+      // root children must all be the same category (per mdast spec). Mixing
+      // phrasing with flow content (headings, paragraphs, etc.) causes mdx()
+      // to collapse blank lines in the document.
+      if (parent.type === 'root') {
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
+    } else if (node.name === 'Recipe' || node.name === 'TutorialTile') {
+      const hProperties = getAttrs<Properties>(node);
+
+      const mdNode = {
+        ...hProperties,
+        type: types[node.name],
+        data: {
+          hName: node.name,
+          ...(Object.keys(hProperties).length && { hProperties }),
+        },
+        position: node.position,
+      } as Recipe;
+      
       parent.children[index] = mdNode;
     } else if (node.name in types) {
       const hProperties = getAttrs<Properties>(node);
@@ -234,7 +261,12 @@ const coerceJsxToMd =
         position: node.position,
       };
 
-      parent.children[index] = mdNode;
+      if (parent.type === 'root' && phrasingTypes.has(types[node.name])) {
+        // @ts-expect-error mdNode is typed as BlockContent but is actually phrasing content
+        parent.children[index] = { type: 'paragraph', children: [mdNode], position: node.position };
+      } else {
+        parent.children[index] = mdNode;
+      }
     }
   };
 
