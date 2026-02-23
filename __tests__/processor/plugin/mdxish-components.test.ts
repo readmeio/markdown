@@ -1,7 +1,5 @@
 import type { CustomComponents } from '../../../types';
 
-import { describe, it, expect } from 'vitest';
-
 import { mix, mdxish } from '../../../lib';
 import { findElementsByTagName } from '../../helpers';
 
