@@ -248,9 +248,6 @@ const parseTableCell = (text: string): MdastNode[] => {
   const htmlBrNormalized = withPunctuation.replace(HTML_ELEMENT_BLOCK_RE, match =>
     match
       .replace(NEWLINE_WITH_WHITESPACE_RE, '<br>')
-      // Remove <br> between list tags (structural whitespace, not content).
-      // e.g. </li><br><li> → </li><li> but text<br><br><li> is preserved.
-      .replace(/(<\/?(?:ul|ol|li)[^>]*>)(<br>)+(?=<)/g, '$1'),
   );
   const withBlockHtml = ensureBlockHtmlOnOwnLine(htmlBrNormalized);
   const normalized = withBlockHtml.replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
