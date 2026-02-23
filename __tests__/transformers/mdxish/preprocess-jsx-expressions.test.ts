@@ -1,6 +1,6 @@
-import { mdxish } from '../../lib';
-import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
-import { findElementByTagName } from '../helpers';
+import { mdxish } from '../../../lib';
+import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
+import { findElementByTagName } from '../../helpers';
 
 describe('preprocessJSXExpressions', () => {
   describe('Step 3: Evaluate attribute expressions', () => {

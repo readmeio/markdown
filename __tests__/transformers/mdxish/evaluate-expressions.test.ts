@@ -1,4 +1,4 @@
-import { mix } from '../../lib';
+import { mix } from '../../../lib';
 
 describe('evaluateExpressions', () => {
   it('should evaluate numeric operations', () => {
