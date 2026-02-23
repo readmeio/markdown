@@ -1,24 +1,40 @@
-import { render } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import TableOfContents from '../../components/TableOfContents';
-import { utils, reactProcessor, reactTOC } from '../../index';
-
-const { GlossaryContext, VariablesContext } = utils;
-const variables = {
-  defaults: [{ test: 'Default Value' }],
-  user: { test: 'User Override' },
-};
-const glossaryTerms = [
-  {
-    term: 'demo',
-    definition: 'a thing that breaks on presentation',
-  },
-];
+import { mdxish, renderMdxish } from '../../lib';
 
 describe('Table of Contents', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders a Toc from headings', () => {
+      const md = `# Title
+
+## Subheading
+
+### Third`;
+      const { Toc } = renderMdxish(mdxish(md));
+      render(<Toc />);
+
+      expect(screen.findByText('Title')).toBeDefined();
+      expect(screen.findByText('Subheading')).toBeDefined();
+      expect(screen.findByText('Third')).toBeDefined();
+    });
+
+    it('limits toc depth to 3', () => {
+      const md = `# Title
+
+## Sub
+
+### Third
+
+#### Fourth`;
+      const { Toc } = renderMdxish(mdxish(md));
+      render(<Toc />);
+
+      expect(screen.findByText('Title')).toBeDefined();
+      expect(screen.queryByText('Fourth')).toBeNull();
+    });
   });
 
   describe('mdx', () => {

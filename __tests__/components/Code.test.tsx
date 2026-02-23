@@ -1,11 +1,31 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
 import Code from '../../components/Code';
+import { mdxish, renderMdxish } from '../../lib';
 
 describe('Code', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders a fenced code block', () => {
+      const md = `\`\`\`js
+const x = 1;
+\`\`\``;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('code')).toBeInTheDocument();
+      expect(container.textContent).toContain('const x = 1;');
+    });
+
+    it('renders inline code', () => {
+      const md = 'Use `console.log()` to debug';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('code')).toBeInTheDocument();
+      expect(container.textContent).toContain('console.log()');
+    });
   });
 
   describe('mdx', () => {

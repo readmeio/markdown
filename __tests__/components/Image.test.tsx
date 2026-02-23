@@ -1,11 +1,30 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import Image from '../../components/Image';
+import { mdxish, renderMdxish } from '../../lib';
 
 describe('Image', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders a markdown image', () => {
+      const md = '![Alt text](https://example.com/image.jpg "Title")';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const img = container.querySelector('img');
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute('src', 'https://example.com/image.jpg');
+    });
+
+    it('renders a markdown image with alt text', () => {
+      const md = '![Pizza bro](https://example.com/pizza.jpg)';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const img = container.querySelector('img');
+      expect(img).toBeInTheDocument();
+    });
   });
 
   describe('mdx', () => {

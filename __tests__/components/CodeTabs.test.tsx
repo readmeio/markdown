@@ -1,13 +1,42 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
 import Code from '../../components/Code';
 import CodeTabs from '../../components/CodeTabs';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('CodeTabs', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('combines consecutive code blocks into CodeTabs', () => {
+      const md = `\`\`\`js
+const a = 1;
+\`\`\`
+\`\`\`py
+a = 1
+\`\`\``;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('.CodeTabs')).toBeInTheDocument();
+      expect(container.textContent).toContain('const a = 1;');
+      expect(container.textContent).toContain('a = 1');
+    });
+
+    it('renders toolbar buttons with language names', () => {
+      const md = `\`\`\`javascript
+code1
+\`\`\`
+\`\`\`python
+code2
+\`\`\``;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+    });
   });
 
   describe('mdx', () => {

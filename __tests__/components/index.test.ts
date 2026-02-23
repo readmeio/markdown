@@ -4,11 +4,27 @@ import React from 'react';
 import Callout from '../../components/Callout';
 import Embed from '../../components/Embed';
 import Image from '../../components/Image';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('Components', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('Callout', () => {
+      const md = '> 📘 Info\n>\n> Info content';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(React.createElement(mod.default));
+
+      expect(container.querySelector('.callout')).toBeTruthy();
+      expect(container.textContent).toContain('Info content');
+    });
+
+    it('Image', () => {
+      const md = '![alt](https://example.com/img.jpg)';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(React.createElement(mod.default));
+
+      expect(container.querySelector('img')).toBeTruthy();
+    });
   });
 
   describe('mdx', () => {

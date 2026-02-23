@@ -1,12 +1,20 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { Glossary } from '../../components/Glossary';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('Glossary', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders a glossary item without errors', () => {
+      const md = 'The term <Glossary>exogenous</Glossary> should render.';
+      const mod = renderMdxish(mdxish(md));
+      render(<mod.default />);
+
+      expect(screen.getByText('exogenous')).toBeVisible();
+    });
   });
 
   describe('mdx', () => {

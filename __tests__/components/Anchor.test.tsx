@@ -1,11 +1,32 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 import Anchor from '../../components/Anchor';
+import { mdxish, renderMdxish } from '../../lib';
 
 describe('Anchor', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders a markdown link', () => {
+      const md = '[Example](https://example.com)';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const link = container.querySelector('a');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'https://example.com');
+      expect(link).toHaveTextContent('Example');
+    });
+
+    it('renders an autolink', () => {
+      const md = '<https://example.com>';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const link = container.querySelector('a');
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', 'https://example.com');
+    });
   });
 
   describe('mdx', () => {

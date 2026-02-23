@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
@@ -5,11 +6,29 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { vi } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('HTML Block', () => {
   describe('mdxish', () => {
-    it.todo('should render through the mdxish pipeline');
+    it('renders an HTML block from markdown', () => {
+      const md = `<div class="custom-block">
+<p>Hello from HTML</p>
+</div>`;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('.custom-block')).toBeInTheDocument();
+      expect(container.textContent).toContain('Hello from HTML');
+    });
+
+    it('renders a simple HTML element', () => {
+      const md = '<hr />';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('hr')).toBeInTheDocument();
+    });
   });
 
   describe('mdx', () => {
