@@ -1,4 +1,4 @@
-import { mdast } from '../../../lib';
+import { mdast } from '../../../../lib';
 
 describe('convert variable tag', () => {
   it('wraps root-level Variable in a paragraph', () => {

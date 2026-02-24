@@ -1,4 +1,4 @@
-import { mdast, mdx } from '../../index';
+import { mdast, mdx } from '../../../index';
 
 describe('mdast html block parsing', () => {
   it('parses an html block into mdxJsxTextElement', () => {

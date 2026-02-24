@@ -1,5 +1,5 @@
 
-import { mdast } from '../../../lib';
+import { mdast } from '../../../../lib';
 
 describe('convert anchor tag', () => {
     it('converts anchor tag to link node', () => {

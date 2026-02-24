@@ -1,4 +1,4 @@
-import { hast, mdxish, plain } from '../../index';
+import { hast, mdxish, plain } from '../../../index';
 
 describe('plain compiler', () => {
   it('returns plain text of markdown components', () => {

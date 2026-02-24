@@ -1,4 +1,4 @@
-import { mdast } from '../../../lib';
+import { mdast } from '../../../../lib';
 
 // @ts-expect-error - these are being imported as strings
 import esmMdx from './esm/in.mdx?raw';

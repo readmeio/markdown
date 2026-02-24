@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { execute } from '../helpers';
+import { execute } from '../../helpers';
 
 describe('run', () => {
   it('resolves user variables in TOC headings', () => {

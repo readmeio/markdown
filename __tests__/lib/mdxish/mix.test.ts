@@ -1,4 +1,4 @@
-import { mix } from '../../lib';
+import { mix } from '../../../lib';
 
 describe('mix', () => {
   it('renders markdown as HTML', () => {
