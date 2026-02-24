@@ -1,5 +1,12 @@
 import { mdast, mdx } from '../../index';
 
+describe('mdast html block parsing', () => {
+  it('parses an html block into mdxJsxTextElement', () => {
+    const tree = mdast('<div>Some block html</div>');
+    expect(tree).toMatchSnapshot();
+  });
+});
+
 describe('mdx serialization', () => {
   it('should not add indentation to JSX comment content when serializing', () => {
     const md = `

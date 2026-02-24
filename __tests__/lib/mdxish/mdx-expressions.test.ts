@@ -1,8 +1,6 @@
 import type { Element, Text } from 'hast';
 
-import { describe, it, expect } from 'vitest';
-
-import { mdxish } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib';
 
 describe('mdxish MDX expressions', () => {
   describe('inline expressions', () => {
@@ -410,9 +408,7 @@ Result: {result}`;
       const ast = mdxish(md, { jsxContext: { value: 'middle' } });
 
       // Should have parsed the magic block correctly
-      const codeTabs = ast.children.find(
-        c => (c as Element).tagName === 'CodeTabs',
-      ) as Element;
+      const codeTabs = ast.children.find(c => (c as Element).tagName === 'CodeTabs') as Element;
       expect(codeTabs).toBeDefined();
     });
   });

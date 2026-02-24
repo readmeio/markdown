@@ -1,9 +1,7 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Root, RootContent } from 'hast';
-
-import { describe, it, expect } from 'vitest';
 
 import { mix, mdxish } from '../../../lib';
+import { findElementsByTagName } from '../../helpers';
 
 describe('rehypeMdxishComponents', () => {
   it('should remove non-existent custom components from the tree', () => {
@@ -94,26 +92,6 @@ hello
  * Fix: Changed regex from case-insensitive ('gi') to case-sensitive ('g')
  */
 describe('smartCamelCase (prop normalization)', () => {
-  // Helper to find elements by tagName in HAST tree
-  function findElementsByTagName(tree: Root | RootContent, tagName: string): Element[] {
-    const elements: Element[] = [];
-
-    if ('type' in tree && tree.type === 'element') {
-      const elem = tree as Element;
-      if (elem.tagName.toLowerCase() === tagName.toLowerCase()) {
-        elements.push(elem);
-      }
-    }
-
-    if ('children' in tree && Array.isArray(tree.children)) {
-      tree.children.forEach(child => {
-        elements.push(...findElementsByTagName(child as RootContent, tagName));
-      });
-    }
-
-    return elements;
-  }
-
   it('should preserve iconColor prop casing', () => {
     const TestComponent = {} as CustomComponents[string];
     const markdown = '<TestComponent iconColor="blue-500" />';

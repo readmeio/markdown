@@ -9,6 +9,13 @@ describe('gemoji compiler', () => {
     expect(mdx(mdast(markdown)).trimEnd()).toStrictEqual(markdown);
   });
 
+  it('should compile :smiley: back to a shortcode', () => {
+    expect(mdx(mdast(':smiley:'))).toMatchInlineSnapshot(`
+      ":smiley:
+      "
+    `);
+  });
+
   it('should compile owlmoji back to a shortcode', () => {
     const markdown = ':owlbert:';
 
@@ -23,6 +30,17 @@ describe('gemoji compiler', () => {
 });
 
 describe('mdxish gemoji compiler', () => {
+  it('should convert :smiley: to emoji character', () => {
+    const hast = mdxish(':smiley:');
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    expect(paragraph.tagName).toBe('p');
+    const textNode = paragraph.children[0];
+    expect(textNode.type).toBe('text');
+    expect('value' in textNode && textNode.value).toBe('😃');
+  });
+
   it('should convert gemojis to emoji nodes', () => {
     const markdown = 'This is a gemoji :joy:.';
 

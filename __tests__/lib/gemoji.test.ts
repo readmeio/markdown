@@ -1,4 +1,4 @@
-import { mix } from '../../../lib';
+import { mix } from '../../lib';
 
 describe('gemoji transformer', () => {
   it('should transform shortcodes back to emojis', () => {

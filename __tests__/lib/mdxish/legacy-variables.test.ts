@@ -2,22 +2,7 @@ import type { CustomComponents } from '../../../types';
 import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-function findElementByTagName(tree: Element, tagName: string): Element | null {
-  if (tree.tagName === tagName) {
-    return tree;
-  }
-  // Recursively search children
-  let result: Element | null = null;
-  tree.children.some(child => {
-    if ('tagName' in child) {
-      result = findElementByTagName(child as Element, tagName);
-      return result !== null;
-    }
-    return false;
-  });
-  return result;
-}
+import { findElementByTagName } from '../../helpers';
 
 describe('legacy variables resolution', () => {
   describe('basic resolution', () => {

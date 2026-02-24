@@ -1,11 +1,47 @@
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import Code from '../../components/Code';
+import CodeTabs from '../../components/CodeTabs';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('CodeTabs', () => {
-  it.skip('render _all_ its children', () => {
-    const md = `
+  describe('mdxish', () => {
+    it('combines consecutive code blocks into CodeTabs', () => {
+      const md = `\`\`\`js
+const a = 1;
+\`\`\`
+\`\`\`py
+a = 1
+\`\`\``;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('.CodeTabs')).toBeInTheDocument();
+      expect(container.textContent).toContain('const a = 1;');
+      expect(container.textContent).toContain('a = 1');
+    });
+
+    it('renders toolbar buttons with language names', () => {
+      const md = `\`\`\`javascript
+code1
+\`\`\`
+\`\`\`python
+code2
+\`\`\``;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+    });
+  });
+
+  describe('mdx', () => {
+    it('render _all_ its children', () => {
+      const md = `
 \`\`\`
 assert('theme', 'dark');
 \`\`\`
@@ -13,10 +49,43 @@ assert('theme', 'dark');
 assert('theme', 'light');
 \`\`\`
     `;
-    const Component = execute(md);
-    const { container } = render(<Component />);
+      const Component = execute(md);
+      const { container } = render(<Component />);
 
-    expect(container).toHaveTextContent("assert('theme', 'dark')");
-    expect(container).toHaveTextContent("assert('theme', 'light')");
+      expect(container).toHaveTextContent("assert('theme', 'dark')");
+      expect(container).toHaveTextContent("assert('theme', 'light')");
+    });
+  });
+
+  describe('render', () => {
+    it('renders the CodeTabs wrapper', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'console.log("hello");'}</Code></pre>
+        </CodeTabs>,
+      );
+      expect(container.querySelector('.CodeTabs')).toBeInTheDocument();
+    });
+
+    it('renders toolbar buttons for each tab', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'const a = 1;'}</Code></pre>
+          <pre><Code lang="py">{'a = 1'}</Code></pre>
+        </CodeTabs>,
+      );
+      const buttons = container.querySelectorAll('.CodeTabs-toolbar button');
+      expect(buttons).toHaveLength(2);
+    });
+
+    it('renders code content in CodeTabs-inner', () => {
+      const { container } = render(
+        <CodeTabs>
+          <pre><Code lang="js">{'const a = 1;'}</Code></pre>
+        </CodeTabs>,
+      );
+      expect(container.querySelector('.CodeTabs-inner')).toBeInTheDocument();
+      expect(container).toHaveTextContent('const a = 1;');
+    });
   });
 });
