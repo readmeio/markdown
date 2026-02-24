@@ -179,39 +179,8 @@ const processMarkdownInHtmlString = (html: string): string => {
   return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
 };
 
-/** Block container tags that need their own line for CommonMark HTML block recognition. */
-const BLOCK_CONTAINER_TAGS: ReadonlySet<string> = new Set([
-  'ul',
-  'ol',
-  'dl',
-  'div',
-  'table',
-  'blockquote',
-  'details',
-  'section',
-  'article',
-  'figure',
-  'form',
-  'nav',
-  'aside',
-  'main',
-  'header',
-  'footer',
-  'fieldset',
-  'pre',
-  'hr',
-  'p',
-]);
 
-/** Put inline block tags (e.g. <ul> after text) on their own line for CommonMark. */
-const ensureBlockHtmlOnOwnLine = (text: string): string =>
-  text.replace(/([^\n])[ \t]*<([a-zA-Z][a-zA-Z0-9-]*)([\s>])/g, (match, before, tag, after) =>
-    BLOCK_CONTAINER_TAGS.has(tag.toLowerCase()) ? `${before}\n<${tag}${after}` : match,
-  );
 
-/** Add blank line after </ul>/</ol> when content follows (fixes CLOSE_BLOCK_TAG_BOUNDARY_RE edge cases). */
-const ensureBlankLineAfterClosingList = (text: string): string =>
-  text.replace(/<\/(ul|ol)>[ \t]*\n(?!\n)/g, '</$1>\n\n');
 
 /**
  * Separate a closing block-level tag from the content that follows it.
@@ -237,17 +206,12 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
-  const escaped = processBackslashEscapes(text);
-  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
-  // CommonMark doesn't split them on blank lines.
-  const htmlBrNormalized = escaped.replace(HTML_ELEMENT_BLOCK_RE, match =>
-    match
-      .replace(NEWLINE_WITH_WHITESPACE_RE, '<br>')
-  );
-  const withBlockHtml = ensureBlockHtmlOnOwnLine(htmlBrNormalized);
-  const normalized = withBlockHtml.replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const withBlankLines = ensureBlankLineAfterClosingList(normalized);
-  const trimmedLines = withBlankLines.split('\n').map(line => line.trimStart());
+ // Then strip leading whitespace to prevent indented code blocks.
+ const escaped = processBackslashEscapes(text);
+ const normalized = escaped
+   .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+   .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
+ const trimmedLines = normalized.split('\n').map(line => line.trimStart());
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
