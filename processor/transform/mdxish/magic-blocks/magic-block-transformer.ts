@@ -262,18 +262,6 @@ const parseTableCell = (text: string): MdastNode[] => {
   });
 
   if (tree.children.length > 1) {
-    const hasHtmlBlock = tree.children.some(n => n.type === 'html');
-    if (hasHtmlBlock) {
-      // Unwrap paragraphs that immediately precede an HTML block to prevent
-      // <p> margin-bottom from creating a gap above block-level elements.
-      return tree.children.flatMap((n, i) => {
-        const next = tree.children[i + 1];
-        if (n.type === 'paragraph' && 'children' in n && next?.type === 'html') {
-          return n.children as MdastNode[];
-        }
-        return [n as MdastNode];
-      });
-    }
     return tree.children as MdastNode[];
   }
 

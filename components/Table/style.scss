@@ -41,8 +41,14 @@
       vertical-align: middle;
       border: 1px solid var(--table-edges, #{$edges});
       padding: 6px 13px;
-      > :first-child, > :only-child { margin-top:    0 !important }
-      > :last-child, > :only-child  { margin-bottom: 0 !important }
+
+      // Remove margins from block elements to prevent gaps
+      > p { margin-bottom: 0 }
+      > ul,
+      > ol { margin-top: 0; margin-bottom: 0 }
+      > blockquote { margin-top: 0; margin-bottom: 0 }
+      > pre { margin-top: 0; margin-bottom: 0 }
+      > dl { margin-top: 0; margin-bottom: 0 }
     }
 
     &:not(.plain) tr:nth-child(2n) {
