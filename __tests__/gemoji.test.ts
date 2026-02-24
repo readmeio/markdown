@@ -1,4 +1,4 @@
-import { mix } from '../../lib';
+import { mix } from '../lib';
 
 describe('gemoji transformer', () => {
   it('should transform shortcodes back to emojis', () => {
@@ -13,6 +13,5 @@ describe('gemoji transformer', () => {
 <p>😃</p>
 <p><img src="/public/img/emojis/owlbert.png" alt=":owlbert:" title=":owlbert:" class="emoji" align="absmiddle" height="20" width="20"></p>"
     `);
-
   });
 });
