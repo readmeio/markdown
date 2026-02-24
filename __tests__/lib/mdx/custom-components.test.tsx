@@ -1,10 +1,10 @@
-import type { RMDXModule } from '../../types';
+import type { RMDXModule } from '../../../types';
 
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { compile, run } from '../../lib';
-import { execute } from '../helpers';
+import { compile, run } from '../../../lib';
+import { execute } from '../../helpers';
 
 describe('Custom Components', () => {
   let Example;

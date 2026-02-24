@@ -1,12 +1,12 @@
-import type { RMDXModule } from '../../types';
+import type { RMDXModule } from '../../../types';
 import type { MDXProps } from 'mdx/types';
 
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { compile, mdxish, run } from '../../lib';
-import renderMdxish from '../../lib/renderMdxish';
+import { compile, mdxish, run } from '../../../lib';
+import renderMdxish from '../../../lib/renderMdxish';
 
 describe('renderMdxish', () => {
   it('renders simple HTML content', () => {

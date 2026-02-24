@@ -1,4 +1,4 @@
-import { exports } from '../../../lib';
+import { exports } from '../../../../lib';
 
 import multipleExportsMdx from './input/multipleExports.mdx?raw';
 import singleExportMdx from './input/singleExport.mdx?raw';

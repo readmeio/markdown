@@ -1,4 +1,4 @@
-import { compile } from '../../index';
+import { compile } from '../../../index';
 
 describe('compile', () => {
   describe("{ format: 'md' }", () => {
