@@ -179,9 +179,6 @@ const processMarkdownInHtmlString = (html: string): string => {
   return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
 };
 
-
-
-
 /**
  * Separate a closing block-level tag from the content that follows it.
  *
@@ -206,12 +203,14 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
 const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
- // Then strip leading whitespace to prevent indented code blocks.
- const escaped = processBackslashEscapes(text);
- const normalized = escaped
-   .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
-   .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
- const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
+  // CommonMark doesn't split them on blank lines.
+  // Then strip leading whitespace to prevent indented code blocks.
+  const escaped = processBackslashEscapes(text);
+  const normalized = escaped
+    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+    .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
+  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
