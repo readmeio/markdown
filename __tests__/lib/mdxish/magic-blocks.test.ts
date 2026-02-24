@@ -498,20 +498,6 @@ ${JSON.stringify(
         // Text before <ul> should NOT be wrapped in <p> (would create margin gap)
         expect(cellHtml).not.toMatch(/<p>Note the following:<\/p>/);
       });
-
-      it('absorbs trailing punctuation after </ul> into last list item', () => {
-        const input = '<ul><li>Item one</li><li>Item two</li></ul>.';
-        const cellHtml = getCellHtml(input);
-        // Period should be inside the last <li>, not a separate paragraph
-        expect(cellHtml).not.toMatch(/<p>\.<\/p>/);
-        expect(cellHtml).toContain('Item two.');
-      });
-
-      it('does not absorb punctuation after </ul> when followed by more text on same line', () => {
-        const input = '<ul><li>Item</li></ul>. More text follows.';
-        const cellHtml = getCellHtml(input);
-        expect(cellHtml).toContain('More text follows.');
-      });
     });
 
     it('should preserve blank lines between non-HTML lines as paragraph breaks', () => {

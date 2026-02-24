@@ -179,10 +179,6 @@ const processMarkdownInHtmlString = (html: string): string => {
   return placeholders.reduce((res, [id, original]) => res.replace(id, original), htmlStringifier.stringify(hast));
 };
 
-/** Move trailing punctuation after </ul>/</ol> into the last </li> (only at EOL). */
-const absorbTrailingPunctuation = (text: string): string =>
-  text.replace(/<\/li>(\s*<\/(?:ul|ol)>)[ \t]*([.,;:?!]+)[ \t]*(?=\n|$)/g, '$2</li>$1');
-
 /** Block container tags that need their own line for CommonMark HTML block recognition. */
 const BLOCK_CONTAINER_TAGS: ReadonlySet<string> = new Set([
   'ul',
@@ -242,10 +238,9 @@ const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
   const escaped = processBackslashEscapes(text);
-  const withPunctuation = absorbTrailingPunctuation(escaped);
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
-  const htmlBrNormalized = withPunctuation.replace(HTML_ELEMENT_BLOCK_RE, match =>
+  const htmlBrNormalized = escaped.replace(HTML_ELEMENT_BLOCK_RE, match =>
     match
       .replace(NEWLINE_WITH_WHITESPACE_RE, '<br>')
   );
