@@ -5,7 +5,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import Embed from '../../components/Embed';
-import { mdxish, renderMdxish } from '../../lib';
+import { mdast, mdx, mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('Embed', () => {
@@ -48,6 +48,19 @@ describe('Embed', () => {
         expect(iframe).toBeInTheDocument();
         expect(iframe).toHaveAttribute('src', 'https://example.com');
         expect(iframe).toHaveAttribute('title', 'Example');
+      });
+    });
+
+    describe('given an @embed link', () => {
+      it('should convert an @embed link to an embed HAST node', () => {
+        const txt = '[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@embed")';
+        const hast = mdxish(txt);
+        const embed = hast.children[0] as Element;
+
+        expect(embed.type).toBe('element');
+        expect(embed.tagName).toBe('embed');
+        expect(embed.properties.url).toBe('https://nyti.me/s/gzoa2xb2v3');
+        expect(embed.properties.title).toBe('Embedded meta links.');
       });
     });
 
@@ -113,6 +126,13 @@ describe('Embed', () => {
       const { container } = render(<Content />);
 
       expect(container.innerHTML).toMatchSnapshot();
+    });
+
+    it('renders an @embed link as an embed', () => {
+      const txt = '[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@embed")';
+      const ast = mdast(txt);
+      const out = mdx(ast);
+      expect(out).toMatchSnapshot();
     });
 
     it('renders an rdmd embed link', () => {

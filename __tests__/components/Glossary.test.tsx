@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { Glossary } from '../../components/Glossary';
@@ -45,6 +45,30 @@ describe('Glossary', () => {
       const { container } = render(<Glossary terms={terms}>unknown</Glossary>);
       expect(container.querySelector('.GlossaryItem-trigger')).not.toBeInTheDocument();
       expect(screen.getByText('unknown')).toBeInTheDocument();
+    });
+
+    it('shows tooltip with definition on hover', () => {
+      const terms = [{ term: 'acme', definition: 'This is a definition' }];
+      const { container } = render(<Glossary terms={terms}>acme</Glossary>);
+
+      const trigger = container.querySelector('.GlossaryItem-trigger');
+      expect(trigger).toHaveTextContent('acme');
+      fireEvent.mouseEnter(trigger!);
+      expect(screen.getByText('This is a definition', { exact: false })).toHaveTextContent(
+        'acme - This is a definition',
+      );
+    });
+
+    it('matches terms case-insensitively and shows tooltip', () => {
+      const terms = [{ term: 'aCme', definition: 'This is a definition' }];
+      const { container } = render(<Glossary terms={terms}>acme</Glossary>);
+
+      const trigger = container.querySelector('.GlossaryItem-trigger');
+      expect(trigger).toHaveTextContent('acme');
+      fireEvent.mouseEnter(trigger!);
+      expect(screen.getByText('This is a definition', { exact: false })).toHaveTextContent(
+        'aCme - This is a definition',
+      );
     });
   });
 });

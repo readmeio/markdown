@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Parse html block > parses an html block 1`] = `
+exports[`mdast html block parsing > parses an html block into mdxJsxTextElement 1`] = `
 {
   "children": [
     {
@@ -12,13 +12,13 @@ exports[`Parse html block > parses an html block 1`] = `
               "position": {
                 "end": {
                   "column": 21,
-                  "line": 2,
-                  "offset": 21,
+                  "line": 1,
+                  "offset": 20,
                 },
                 "start": {
                   "column": 6,
-                  "line": 2,
-                  "offset": 6,
+                  "line": 1,
+                  "offset": 5,
                 },
               },
               "type": "text",
@@ -29,13 +29,13 @@ exports[`Parse html block > parses an html block 1`] = `
           "position": {
             "end": {
               "column": 27,
-              "line": 2,
-              "offset": 27,
+              "line": 1,
+              "offset": 26,
             },
             "start": {
               "column": 1,
-              "line": 2,
-              "offset": 1,
+              "line": 1,
+              "offset": 0,
             },
           },
           "type": "mdxJsxTextElement",
@@ -44,13 +44,13 @@ exports[`Parse html block > parses an html block 1`] = `
       "position": {
         "end": {
           "column": 27,
-          "line": 2,
-          "offset": 27,
+          "line": 1,
+          "offset": 26,
         },
         "start": {
           "column": 1,
-          "line": 2,
-          "offset": 1,
+          "line": 1,
+          "offset": 0,
         },
       },
       "type": "paragraph",
@@ -58,9 +58,9 @@ exports[`Parse html block > parses an html block 1`] = `
   ],
   "position": {
     "end": {
-      "column": 5,
-      "line": 3,
-      "offset": 32,
+      "column": 27,
+      "line": 1,
+      "offset": 26,
     },
     "start": {
       "column": 1,
