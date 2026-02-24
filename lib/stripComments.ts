@@ -26,7 +26,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
 
   const processor = unified();
 
-  // gfmTaskListItem is required to retain checkboxes in task lists & not escape them
+  // gfmTaskListItem is required to retain checkboxes in task lists & not
   const micromarkExtensions = [gfmTaskListItem()];
   const fromMarkdownExtensions = [gfmTaskListItemFromMarkdown()];
   const toMarkdownExtensions = [gfmTaskListItemToMarkdown()];

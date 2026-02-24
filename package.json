@@ -46,6 +46,7 @@
     "mdast-util-mdx-expression": "2.0.0",
     "mdast-util-phrasing": "^4.1.0",
     "mdast-util-to-markdown": "^2.1.2",
+    "micromark-extension-gfm-task-list-item": "^2.1.0",
     "micromark-extension-mdx-expression": "^3.0.1",
     "micromark-util-character": "^2.1.1",
     "micromark-util-html-tag-name": "^2.0.1",
