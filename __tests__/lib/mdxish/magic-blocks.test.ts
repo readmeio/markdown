@@ -495,8 +495,9 @@ ${JSON.stringify(
         expect(cellHtml).toContain('<strong>');
         // Should NOT have <ul> inside a <p> (which causes extra padding)
         expect(cellHtml).not.toMatch(/<p>[^<]*<ul>/);
-        // Text before <ul> should NOT be wrapped in <p> (would create margin gap)
-        expect(cellHtml).not.toMatch(/<p>Note the following:<\/p>/);
+        // Text before <ul> is wrapped in <p>, but margin gaps are handled by CSS
+        // in components/Table/style.scss (p { margin-bottom: 0 } inside td/th)
+        expect(cellHtml).toMatch(/<p>Note the following:<\/p>/);
       });
     });
 
