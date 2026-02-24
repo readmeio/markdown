@@ -1,5 +1,7 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
+import { gfmTaskListItemFromMarkdown, gfmTaskListItemToMarkdown } from 'mdast-util-gfm-task-list-item';
 import { mdxExpressionFromMarkdown, mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
+import { gfmTaskListItem } from 'micromark-extension-gfm-task-list-item';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
@@ -24,15 +26,24 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
 
   const processor = unified();
 
+  // gfmTaskListItem is required to retain checkboxes in task lists & not escape them
+  const micromarkExtensions = [gfmTaskListItem()];
+  const fromMarkdownExtensions = [gfmTaskListItemFromMarkdown()];
+  const toMarkdownExtensions = [gfmTaskListItemToMarkdown()];
+
   // we still require these two extensions because:
   // 1. we can rely on remarkMdx to parse MDXish
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   if (mdxish) {
-    processor
-      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
-      .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
+    micromarkExtensions.push(mdxExpression({ allowEmpty: true }));
+    fromMarkdownExtensions.push(mdxExpressionFromMarkdown());
+    toMarkdownExtensions.push(mdxExpressionToMarkdown());
   }
+
+  processor
+    .data('micromarkExtensions', micromarkExtensions)
+    .data('fromMarkdownExtensions', fromMarkdownExtensions)
+    .data('toMarkdownExtensions', toMarkdownExtensions);
 
   processor
     .use(remarkParse)

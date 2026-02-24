@@ -442,5 +442,29 @@ end"`);
       expect(output).not.toContain('{/* c */}');
       expect(output).not.toContain('deprecated');
     });
+
+    describe.each([
+      ['legacy', undefined],
+      ['mdx', { mdx: true }],
+      ['mdxish', { mdxish: true }],
+    ])('checkbox behavior for %s', (_description, options) => {
+      it('should not escape checkboxes', async () => {
+        const input = '- [ ] Checkbox with text';
+        const output = await stripComments(input, options);
+        expect(output).toContain('[ ] Checkbox with text');
+      });
+
+      it('should not escape ticked checkboxes', async () => {
+        const input = '- [x] Ticked checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toContain('[x] Ticked checkbox');
+      });
+
+      it('should retain escaped checkboxes', async () => {
+        const input = '- \\[ ] Checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toContain('\\[ ] Checkbox');
+      });
+    });
   });
 });
