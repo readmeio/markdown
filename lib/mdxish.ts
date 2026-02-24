@@ -17,6 +17,7 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
+import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -196,6 +197,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
+    .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(rehypeSlug)
     .use(rehypeMdxishComponents, {
