@@ -237,7 +237,7 @@
         transition-delay: 0.4s;
       }
 
-      &:not(:hover) button.rdmd-code-copy:not(.rdmd-code-copy_copied) {
+      &:not(:hover) button.rdmd-code-copy:not(.rdmd-code-copy_copied):not(:focus) {
         opacity: 0 !important;
       }
     }
