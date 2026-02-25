@@ -62,7 +62,7 @@ export const rehypeFlattenTableCellParagraphs = (): Transformer<Root, Root> => {
         // Look at next non-whitespace sibling
         let nextIndex = i + 1;
         while (nextIndex < children.length && isWhitespaceText(children[nextIndex])) {
-          nextIndex++;
+          nextIndex += 1;
         }
         const nextIsList = nextIndex < children.length && isElementWithTag(children[nextIndex], LIST_ELEMENTS);
 
