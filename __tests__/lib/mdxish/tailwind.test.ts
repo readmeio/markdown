@@ -1,37 +1,5 @@
-import type { Element, Root } from 'hast';
-import type { MDXProps } from 'mdx/types';
-
-import React from 'react';
-
 import { mdxish } from '../../../lib';
-import { type RMDXModule } from '../../../types';
-
-/**
- * Helper to find all elements with a specific tag name in the HAST tree.
- */
-const findElementsByTagName = (node: Element | Root, tagName: string): Element[] => {
-  const results: Element[] = [];
-
-  if (node.type === 'element' && node.tagName === tagName) {
-    results.push(node);
-  }
-
-  if ('children' in node && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      if (child.type === 'element') {
-        results.push(...findElementsByTagName(child, tagName));
-      }
-    });
-  }
-
-  return results;
-};
-
-const stubModule = (component: React.FC<MDXProps>): RMDXModule => ({
-  default: component as RMDXModule['default'],
-  Toc: null,
-  toc: [],
-});
+import { findElementsByTagName, stubModule } from '../../helpers';
 
 describe('mdxish tailwind transformer', () => {
   describe('when useTailwind is not set', () => {
@@ -69,11 +37,8 @@ describe('mdxish tailwind transformer', () => {
 
     describe('passed-in custom components', () => {
       it('should wrap custom component with TailwindRoot', () => {
-        const CustomButton: React.FC<MDXProps> = props =>
-          React.createElement('button', { className: 'custom-btn' }, props.children as React.ReactNode);
-
         const components = {
-          CustomButton: stubModule(CustomButton),
+          CustomButton: stubModule,
         };
 
         const md = '<CustomButton>Click me</CustomButton>';

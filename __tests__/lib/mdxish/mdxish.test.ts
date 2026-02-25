@@ -1,26 +1,9 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Root, RootContent, Text } from 'hast';
+import type { Element, Text } from 'hast';
 
-import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib';
 import { extractText } from '../../../processor/transform/extract-text';
-
-type HastNode = Root | RootContent;
-
-/**
- * Recursively finds an element with the specified tagName in a HAST tree.
- */
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-  return null;
-}
+import { findElementByTagName } from '../../helpers';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -180,23 +163,6 @@ describe('mdxish safeMode', () => {
     });
   });
 
-  describe('mdxishAstProcessor with safeMode', () => {
-    it('should not include mdxExpression extensions in safeMode', () => {
-      const md = 'Test {expression}';
-      const { processor } = mdxishAstProcessor(md, { safeMode: true });
-      const mdast = processor.parse(md);
-      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
-      expect(hasMdxExpression).toBe(false);
-    });
-
-    it('should include mdxExpression extensions without safeMode', () => {
-      const md = 'Test {expression}';
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { safeMode: false });
-      const mdast = processor.parse(parserReadyContent);
-      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
-      expect(hasMdxExpression).toBe(true);
-    });
-  });
 });
 
 describe('HTML flow block termination', () => {

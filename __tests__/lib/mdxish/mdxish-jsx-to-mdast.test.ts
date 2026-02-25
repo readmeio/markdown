@@ -2,7 +2,7 @@ import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Root } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
-import { mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxishAstProcessor } from '../../../lib';
 
 describe('mdxish-jsx-to-mdast transformer', () => {
   describe('with newEditorTypes enabled', () => {
