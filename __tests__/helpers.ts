@@ -69,7 +69,7 @@ export const silenceConsole =
     }
   };
 
-/** Compiles and runs a markdown string through the full pipeline. Returns the default export (React component) unless `getDefault` is false, in which case the full module is returned. */
+/** Compiles and runs a markdown string through the full mdx pipeline. Returns the default export (React component) unless `getDefault` is false, in which case the full module is returned. */
 export const execute = (doc: string, compileOpts = {}, runOpts = {}, { getDefault = true } = {}) => {
   const code = compile(doc, compileOpts);
   const mod = run(code, runOpts);
