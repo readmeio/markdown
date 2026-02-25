@@ -88,7 +88,7 @@ function preprocessContent(
   const { safeMode, jsxContext, knownComponents } = opts;
 
   // Normalize `&nbsp` (without semicolons) to `&nbsp;` so remarkParse recognizes them as character references.
-  // CommonMark requires the trailing semicolon, but HTML5 is lenient — authored content often omits it.
+  // CommonMark requires the trailing semicolon, but HTML5 is lenient
   // Skip fenced code blocks and inline code spans so literal `&nbsp` in code is preserved.
   let result = content.replace(
     /(```[\s\S]*?```|~~~[\s\S]*?~~~|``[^`\n]*``|`[^`\n]+`)|&nbsp(?!;)/g,
