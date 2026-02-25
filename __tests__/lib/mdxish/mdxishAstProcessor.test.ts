@@ -3,6 +3,24 @@ import type { Root } from 'mdast';
 import { mdxishAstProcessor } from '../../../lib/mdxish';
 
 describe('mdxishAstProcessor', () => {
+  describe('deferred processing (handled by mdxish rendering pipeline)', () => {
+    it('should NOT remove JSX comments', () => {
+      const md = 'Hello {/* this is a comment */} world';
+      const { parserReadyContent } = mdxishAstProcessor(md);
+      // JSX comments should still be present - removal happens in mdxish()
+      expect(parserReadyContent).toContain('{/* this is a comment */}');
+    });
+
+    it('should NOT evaluate MDX expressions', () => {
+      const md = 'Result: {5 * 10}';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { jsxContext: {} });
+      const mdast = processor.parse(parserReadyContent);
+      // The mdast should still have mdxTextExpression nodes - evaluation happens in mdxish()
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(true);
+    });
+  });
+
   it('should return a unified processor and parser-ready content for simple text', () => {
     const md = 'Rafe is **cool**!';
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
