@@ -630,6 +630,37 @@ ${JSON.stringify(
       expect(thirdCellContent).toContain('Key');
     });
 
+    it('should convert &nbsp without semicolons to non-breaking spaces', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Limit&nbsp&nbsp&nbsppadded',
+      'h-1': 'Hello World',
+      '0-0': '`Goodbye`',
+      '0-1': '67',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const table = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(table).toBeDefined();
+
+      const thead = table!.children[0] as Element;
+      const headerRow = thead.children[0] as Element;
+      const firstHeader = headerRow.children[0] as Element;
+      const headerText = JSON.stringify(firstHeader);
+      expect(headerText).not.toContain('&nbsp');
+      expect(headerText).toContain('Limit');
+    });
+
     it('should normalize malformed emphasis syntax in table cells', () => {
       const md = `[block:parameters]
 ${JSON.stringify(

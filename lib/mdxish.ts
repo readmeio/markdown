@@ -87,7 +87,14 @@ function preprocessContent(
 ) {
   const { safeMode, jsxContext, knownComponents } = opts;
 
-  let result = normalizeTableSeparator(content);
+  // Normalize `&nbsp` (without semicolons) to `&nbsp;` so remarkParse recognizes them as character references.
+  // CommonMark requires the trailing semicolon, but HTML5 is lenient — authored content often omits it.
+  // Skip fenced code blocks and inline code spans so literal `&nbsp` in code is preserved.
+  let result = content.replace(
+    /(```[\s\S]*?```|~~~[\s\S]*?~~~|``[^`\n]*``|`[^`\n]+`)|&nbsp(?!;)/g,
+    (match, code) => code ?? '&nbsp;',
+  );
+  result = normalizeTableSeparator(result);
   result = terminateHtmlFlowBlocks(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
@@ -131,7 +138,10 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
+    .data(
+      'micromarkExtensions',
+      safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()],
+    )
     .data(
       'fromMarkdownExtensions',
       safeMode

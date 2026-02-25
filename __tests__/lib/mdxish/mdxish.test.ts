@@ -492,6 +492,43 @@ b
     });
   });
 
+  describe('&nbsp without semicolons', () => {
+    it.each([
+      { name: 'single &nbsp in body text', input: 'Hello&nbspWorld', expected: 'Hello\u00a0World' },
+      { name: 'multiple consecutive &nbsp', input: 'A&nbsp&nbsp&nbspB', expected: 'A\u00a0\u00a0\u00a0B' },
+      { name: '&nbsp; with semicolon (no double-convert)', input: 'Hello&nbsp;World', expected: 'Hello\u00a0World' },
+    ])('converts $name to non-breaking spaces', ({ input, expected }) => {
+      const tree = mdxish(input);
+
+      const paragraph = tree.children[0] as Element;
+      expect((paragraph.children[0] as Text).value).toBe(expected);
+    });
+
+    it.each([
+      { name: 'single-backtick inline code', input: 'Use `&nbsp` in HTML' },
+      { name: 'double-backtick inline code', input: 'Use ``&nbsp`` in HTML' },
+      { name: 'backtick-fenced code block', input: '```\n&nbsp\n```' },
+      { name: 'tilde-fenced code block', input: '~~~\n&nbsp\n~~~' },
+    ])('preserves &nbsp inside $name', ({ input }) => {
+      const json = JSON.stringify(mdxish(input));
+      expect(json).toContain('&nbsp');
+      expect(json).not.toContain('&nbsp;');
+    });
+
+    it('converts body text &nbsp while preserving code &nbsp in the same document', () => {
+      const tree = mdxish('Text&nbsphere and `&nbsp` in code');
+
+      const paragraph = tree.children[0] as Element;
+      const textNode = paragraph.children[0] as Text;
+      expect(textNode.value).toContain('\u00a0');
+
+      const codeElement = paragraph.children.find(
+        (c): c is Element => c.type === 'element' && c.tagName === 'code',
+      );
+      expect((codeElement!.children[0] as Text).value).toBe('&nbsp');
+    });
+  });
+
   describe('edge cases', () => {
     it('renders double newlines as separate paragraphs', () => {
       const md = 'Line 1\n\nLine 2';
