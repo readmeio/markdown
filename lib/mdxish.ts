@@ -49,6 +49,7 @@ import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
+import { nbsp, nbspFromMarkdown } from './micromark/nbsp';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
@@ -87,14 +88,7 @@ function preprocessContent(
 ) {
   const { safeMode, jsxContext, knownComponents } = opts;
 
-  // Normalize `&nbsp` (without semicolons) to `&nbsp;` so remarkParse recognizes them as character references.
-  // CommonMark requires the trailing semicolon, but HTML5 is lenient
-  // Skip fenced code blocks and inline code spans so literal `&nbsp` in code is preserved.
-  let result = content.replace(
-    /(```[\s\S]*?```|~~~[\s\S]*?~~~|``[^`\n]*``|`[^`\n]+`)|&nbsp(?!;)/g,
-    (match, code) => code ?? '&nbsp;',
-  );
-  result = normalizeTableSeparator(result);
+  let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
@@ -140,13 +134,15 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const processor = unified()
     .data(
       'micromarkExtensions',
-      safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()],
+      safeMode
+        ? [magicBlock(), legacyVariable(), nbsp()]
+        : [magicBlock(), mdxExprTextOnly, legacyVariable(), nbsp()],
     )
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown(), nbspFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), nbspFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
