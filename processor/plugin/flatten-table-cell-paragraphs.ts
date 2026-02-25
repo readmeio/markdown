@@ -39,38 +39,37 @@ export const rehypeFlattenTableCellParagraphs = (): Transformer<Root, Root> => {
       const children = node.children;
       const newChildren: ElementContent[] = [];
 
-      for (let i = 0; i < children.length; i++) {
+      for (let i = 0; i < children.length; i += 1) {
         const child = children[i];
 
         // If not a paragraph, keep as-is
         if (child.type !== 'element' || child.tagName !== 'p') {
           newChildren.push(child);
-          continue;
-        }
-
-        // Check if this paragraph is adjacent to a list
-        // Look at previous non-whitespace sibling
-        let prevIndex = i - 1;
-        while (prevIndex >= 0 && isWhitespaceText(children[prevIndex])) {
-          prevIndex--;
-        }
-        const prevIsNewChild = newChildren.length > 0 && newChildren[newChildren.length - 1];
-        const prevIsList =
-          (prevIndex >= 0 && isElementWithTag(children[prevIndex], LIST_ELEMENTS)) ||
-          (prevIsNewChild && prevIsNewChild.type === 'element' && LIST_ELEMENTS.has(prevIsNewChild.tagName));
-
-        // Look at next non-whitespace sibling
-        let nextIndex = i + 1;
-        while (nextIndex < children.length && isWhitespaceText(children[nextIndex])) {
-          nextIndex += 1;
-        }
-        const nextIsList = nextIndex < children.length && isElementWithTag(children[nextIndex], LIST_ELEMENTS);
-
-        // If adjacent to a list, flatten the paragraph
-        if (prevIsList || nextIsList) {
-          newChildren.push(...child.children);
         } else {
-          newChildren.push(child);
+          // Check if this paragraph is adjacent to a list
+          // Look at previous non-whitespace sibling
+          let prevIndex = i - 1;
+          while (prevIndex >= 0 && isWhitespaceText(children[prevIndex])) {
+            prevIndex -= 1;
+          }
+          const prevIsNewChild = newChildren.length > 0 && newChildren[newChildren.length - 1];
+          const prevIsList =
+            (prevIndex >= 0 && isElementWithTag(children[prevIndex], LIST_ELEMENTS)) ||
+            (prevIsNewChild && prevIsNewChild.type === 'element' && LIST_ELEMENTS.has(prevIsNewChild.tagName));
+
+          // Look at next non-whitespace sibling
+          let nextIndex = i + 1;
+          while (nextIndex < children.length && isWhitespaceText(children[nextIndex])) {
+            nextIndex += 1;
+          }
+          const nextIsList = nextIndex < children.length && isElementWithTag(children[nextIndex], LIST_ELEMENTS);
+
+          // If adjacent to a list, flatten the paragraph
+          if (prevIsList || nextIsList) {
+            newChildren.push(...child.children);
+          } else {
+            newChildren.push(child);
+          }
         }
       }
 
