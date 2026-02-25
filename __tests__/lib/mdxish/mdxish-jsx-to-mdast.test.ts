@@ -1,5 +1,5 @@
 import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Root } from 'mdast';
+import type { Link, Paragraph, Root } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishAstProcessor } from '../../../lib/mdxish';
@@ -101,6 +101,66 @@ This is a warning message.
           title: 'Video',
           providerName: 'YouTube',
         });
+      });
+    });
+
+    describe('Anchor component', () => {
+      it('should transform <Anchor> to a link node', () => {
+        const md = 'Start by <Anchor href="https://readme.com">ReadMe</Anchor> today.';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe('paragraph');
+
+        const para = ast.children[0] as Paragraph;
+        const linkNode = para.children.find(c => c.type === 'link') as Link;
+        expect(linkNode).toBeDefined();
+        expect(linkNode.url).toBe('https://readme.com');
+        expect(linkNode.children[0]).toMatchObject({ type: 'text', value: 'ReadMe' });
+      });
+
+      it('should preserve target="_blank" on the link node', () => {
+        const md = '<Anchor label="**Guides**" target="_blank" href="https://docs.readme.com">Guides</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const linkNode = para.children.find(c => c.type === 'link') as Link & { target?: string };
+        expect(linkNode).toBeDefined();
+        expect(linkNode.url).toBe('https://docs.readme.com');
+        expect(linkNode.target).toBe('_blank');
+        expect(linkNode.children[0]).toMatchObject({ type: 'text', value: 'Guides' });
+      });
+
+      it('should omit target when not provided', () => {
+        const md = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const linkNode = para.children.find(c => c.type === 'link') as Link & { target?: string };
+        expect(linkNode).toBeDefined();
+        expect(linkNode.url).toBe('https://readme.com');
+        expect(linkNode.target).toBeUndefined();
+      });
+
+      it('should preserve title attribute', () => {
+        const md = '<Anchor href="https://readme.com" title="Home">ReadMe</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const linkNode = para.children.find(c => c.type === 'link') as Link;
+        expect(linkNode.title).toBe('Home');
+      });
+
+      it('should handle empty Anchor children', () => {
+        const md = '<Anchor href="https://readme.com"></Anchor>';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        const para = ast.children[0] as Paragraph;
+        const linkNode = para.children.find(c => c.type === 'link') as Link;
+        expect(linkNode).toBeDefined();
+        expect(linkNode.url).toBe('https://readme.com');
+        expect(linkNode.children).toHaveLength(0);
       });
     });
 
@@ -330,6 +390,19 @@ Some callout content
 
       expect(ast.children).toHaveLength(1);
       expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+    });
+
+    it('should leave Anchor as raw html nodes (rendering path unaffected)', () => {
+      const md = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+      const ast = processWithoutNewTypes(md);
+
+      // Anchor is excluded from mdxishComponentBlocks so it stays as raw html nodes
+      // inside the paragraph — no mdxJsxFlowElement is created
+      expect(ast.children[0].type).toBe('paragraph');
+      const para = ast.children[0] as Paragraph;
+      const htmlNodes = para.children.filter(c => c.type === 'html');
+      expect(htmlNodes.length).toBeGreaterThan(0);
+      expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
     });
   });
 });
