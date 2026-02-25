@@ -314,6 +314,29 @@ body {
     word-wrap: break-word;
   }
 
+  .rdmd-demo--compare {
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+  }
+
+  .rdmd-demo--compare-panel {
+    border: 1px solid var(--color-edge);
+    border-radius: 4px;
+    padding: 1em;
+  }
+
+  .rdmd-demo--compare-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-dull);
+    border-bottom: 1px solid var(--color-edge);
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+  }
+
   .error {
     background-color: #f99;
     color: black;

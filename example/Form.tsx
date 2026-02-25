@@ -16,6 +16,12 @@ const Form = () => {
     setSearchParams(params => {
       if (checked) {
         params.set(param, 'true');
+        if (param === 'compare') {
+          params.delete('legacy');
+          params.delete('mdxish');
+        } else if (param === 'legacy' || param === 'mdxish') {
+          params.delete('compare');
+        }
       } else {
         params.delete(param);
       }
@@ -129,6 +135,10 @@ const Form = () => {
           <div>
             <label htmlFor="mdxish">Use MDXish</label>
             <input checked={searchParams.has('mdxish')} id="mdxish" onChange={onCheck('mdxish')} type="checkbox" />
+          </div>
+          <div>
+            <label htmlFor="compare">MDXish vs Legacy</label>
+            <input checked={searchParams.has('compare')} id="compare" onChange={onCheck('compare')} type="checkbox" />
           </div>
         </fieldset>
         <textarea name="demo-editor" onChange={onChange} value={doc} />

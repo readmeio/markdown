@@ -56,6 +56,7 @@ const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
   const ci = searchParams.has('ci');
+  const compare = searchParams.has('compare');
   const legacy = searchParams.has('legacy');
   const mdxish = searchParams.has('mdxish');
   const stripComments = searchParams.has('stripComments');
@@ -164,14 +165,60 @@ const Doc = () => {
       );
     };
 
-    if (mdxish) {
+    const renderCompare = async () => {
+      const opts = { lazyImages, safeMode, copyButtons };
+
+      let input = doc;
+      if (stripComments) {
+        try {
+          const sanitized = await mdx.stripComments(doc, { mdx: false, mdxish: true });
+          setStrippedMarkdown(sanitized);
+          setStripError(null);
+          input = sanitized;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
+          const message = e instanceof Error ? e.message : String(e);
+          setStripError(message);
+          setStrippedMarkdown(null);
+          setContent({ default: null, Toc: null });
+          setLegacyContent(null);
+          return;
+        }
+      } else {
+        setStrippedMarkdown(null);
+        setStripError(null);
+      }
+
+      try {
+        const tree = mdx.mdxish(input, { variables });
+        const vdom = mdx.renderMdxish(tree, { terms, variables });
+        setError(() => null);
+        setContent(vdom);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+        setError(() => e.message);
+      }
+
+      const { VariablesContext, GlossaryContext } = rdmd.utils;
+      setLegacyContent(
+        <VariablesContext.Provider value={variables}>
+          <GlossaryContext.Provider value={terms}>{rdmd.react(input, opts)}</GlossaryContext.Provider>
+        </VariablesContext.Provider>,
+      );
+    };
+
+    if (compare) {
+      renderCompare();
+    } else if (mdxish) {
       renderXish();
     } else if (legacy) {
       renderRDMD();
     } else {
       renderRMDX();
     }
-  }, [doc, lazyImages, safeMode, copyButtons, legacy, mdxish, stripComments]);
+  }, [doc, lazyImages, safeMode, copyButtons, compare, legacy, mdxish, stripComments]);
 
   useEffect(() => {
     if (error) setError(null);
@@ -206,6 +253,25 @@ const Doc = () => {
         )}
         {view === 'markdown' && strippedMarkdown !== null ? (
           <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
+        ) : compare ? (
+          <div className="rdmd-demo--compare">
+            <div className="rdmd-demo--compare-panel">
+              <div className="rdmd-demo--compare-label">Legacy (RDMD)</div>
+              <RenderError>
+                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
+                  <div className="markdown-body">{legacyContent}</div>
+                </TailwindStyle>
+              </RenderError>
+            </div>
+            <div className="rdmd-demo--compare-panel">
+              <div className="rdmd-demo--compare-label">MDXish</div>
+              <RenderError error={error}>
+                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
+                  <div className="markdown-body">{Content ? <Content /> : null}</div>
+                </TailwindStyle>
+              </RenderError>
+            </div>
+          </div>
         ) : (
           <>
             <div id="content-container">
