@@ -1,6 +1,6 @@
 import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
 import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Html, Link, Node, Parent, PhrasingContent, RootContent } from 'mdast';
+import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -8,8 +8,6 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { getAttrs } from '../../utils';
-
-import { parseAttributes } from './mdxish-component-blocks';
 
 interface ImageAttrs {
   align?: string;
@@ -50,28 +48,6 @@ interface RecipeAttrs {
   slug?: string;
   title?: string;
 }
-
-// Matches any PascalCase inline component opening tag. Groups: (name, attrs).
-const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][a-zA-Z]*)(\s[^>]*)?>$/;
-
-type InlineComponentTransformer = (attrs: Record<string, string>, children: PhrasingContent[]) => PhrasingContent;
-
-const transformAnchor: InlineComponentTransformer = (attrs, children) => {
-  const linkNode: Link & { target?: string } = {
-    type: 'link',
-    url: attrs.href ?? '',
-    title: attrs.title ?? null,
-    children,
-    ...(attrs.target && { target: attrs.target }),
-  };
-  return linkNode as unknown as PhrasingContent;
-};
-
-// To add a new inline component: add it to EXCLUDED_TAGS in mdxish-component-blocks.ts
-// and register a transformer here.
-const INLINE_COMPONENT_MAP: Record<string, InlineComponentTransformer> = {
-  Anchor: transformAnchor,
-};
 
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
@@ -244,48 +220,9 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
 
 /**
  * Transform mdxJsxFlowElement nodes and magic block nodes into proper MDAST node types.
- *
- * This transformer runs after mdxishComponentBlocks and converts:
- * - JSX component elements (Image, Callout, Embed, Recipe) into their corresponding MDAST types
- * - Magic block image nodes (type: 'image') into image-block
- * - Magic block embed nodes (type: 'embed') into embed-block
- * - Figure nodes containing images (from magic blocks with captions) - transforms the inner image
- *
- * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
+ * Runs after mdxishComponentBlocks; controlled by the `newEditorTypes` flag.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
-  // Inline components: detect opening tag, collect children, splice with transformed node.
-  visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return;
-
-    const match = node.value?.match(INLINE_COMPONENT_OPEN_RE);
-    if (!match) return;
-
-    const [, name, attrStr] = match;
-    const transformer = INLINE_COMPONENT_MAP[name];
-    if (!transformer) return;
-
-    const attrMap = parseAttributes(attrStr ?? '').reduce(
-      (acc, attr) => {
-        if ('name' in attr && typeof attr.value === 'string') acc[attr.name] = attr.value;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
-
-    let closeIdx = index + 1;
-    while (closeIdx < parent.children.length) {
-      const sib = parent.children[closeIdx] as { type: string; value?: string };
-      if (sib.type === 'html' && sib.value === `</${name}>`) break;
-      closeIdx += 1;
-    }
-    if (closeIdx >= parent.children.length) return;
-
-    const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
-    const newNode = transformer(attrMap, children);
-    (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
-  });
-
   // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;

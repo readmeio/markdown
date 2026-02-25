@@ -28,6 +28,7 @@ import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
+import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
@@ -148,7 +149,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
-    .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
+    .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
+    .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
