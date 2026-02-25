@@ -42,10 +42,10 @@ export function findElementsByTagName(node: Root | RootContent, tagName: string)
 
 /** A minimal stub satisfying the RMDXModule interface. Use when tests need a component module without real rendering. */
 export const stubModule = {
-  default: () => null,
+  default: () => null as unknown as React.JSX.Element,
   Toc: null,
   toc: [],
-} as unknown as RMDXModule;
+} satisfies RMDXModule;
 
 /** Builds a component map from a list of names, each mapped to `stubModule`. Use to mock the components option in compile/run. */
 export const makeComponents = (...names: string[]) =>
