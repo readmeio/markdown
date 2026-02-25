@@ -153,6 +153,10 @@
     }
   }
 
+  .callout-icon + * {
+    color: var(--Callout-title);
+  }
+
   .callout-icon + .heading.heading {
     margin-top: 0;
   }

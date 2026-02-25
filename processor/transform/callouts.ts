@@ -2,13 +2,17 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
-import { visit } from 'unist-util-visit';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import plain from '../../lib/plain';
 
 import { extractText } from './extract-text';
+
+const titleParser = unified().use(remarkParse);
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -105,11 +109,7 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   }
 };
 
-const processBlockquote = (
-  node: Blockquote,
-  index: number | undefined,
-  parent: Parent | undefined,
-) => {
+const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
     // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
@@ -144,24 +144,39 @@ const processBlockquote = (
     const bodyChildren = splitParagraphAtNewline(firstParagraph);
     const didSplit = bodyChildren !== null;
 
-    // Extract heading text after removing the icon prefix.
-    // Use `plain()` to handle complex markdown structures (bold, inline code, etc.)
-    const headingText = plain(firstParagraph as unknown as Parameters<typeof plain>[0])
-      .toString()
-      .slice(match.length);
-
-    // Clean up the raw AST by removing the icon prefix from the first text node
     removeIconPrefix(firstParagraph, match.length);
 
-    const empty = !headingText.length && firstParagraph.children.length === 1;
+    const firstText = findFirst(firstParagraph) as Text | null;
+    const rawValue = firstText?.value ?? '';
+    const hasContent = rawValue.trim().length > 0 || firstParagraph.children.length > 1;
+    const empty = !hasContent;
     const theme = themes[icon] || 'default';
 
-    // Convert the first paragraph (first children of node) to a heading if it has content or was split
-    if (headingText || didSplit) {
-      node.children[0] = wrapHeading(node);
-      // Adjust position to account for the stripped icon prefix
-      node.children[0].position.start.offset += match.length;
-      node.children[0].position.start.column += match.length;
+    if (hasContent || didSplit) {
+      const headingMatch = rawValue.match(/^(#{1,6})\s*/);
+
+      // Headings are handled via AST manipulation instead of plain() + re-parse,
+      // because plain() strips inline formatting (bold, italic, etc.)
+      if (headingMatch) {
+        firstText!.value = rawValue.slice(headingMatch[0].length);
+        const heading = wrapHeading(node);
+        heading.depth = headingMatch[1].length as Heading['depth'];
+        node.children[0] = heading;
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
+      } else {
+        const headingText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
+        const parsedTitle = titleParser.parse(headingText);
+        const parsedFirstChild = parsedTitle.children[0];
+
+        if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
+          node.children.splice(0, 1, ...(parsedTitle.children as Blockquote['children']));
+        } else {
+          node.children[0] = wrapHeading(node);
+          node.children[0].position.start.offset += match.length;
+          node.children[0].position.start.column += match.length;
+        }
+      }
     }
 
     // Insert body content as a separate paragraph after the heading
@@ -194,6 +209,11 @@ const calloutTransformer = () => {
   return (tree: Root) => {
     visit(tree, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
       processBlockquote(node, index, parent);
+      // Skip visiting children after converting to callout to prevent re-processing
+      // parsed block-level title content (e.g., blockquotes from "> Quote" titles).
+      if ((node as unknown as { type: string }).type === NodeTypes.callout) {
+        return SKIP;
+      }
     });
   };
 };
