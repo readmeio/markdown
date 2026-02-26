@@ -155,8 +155,8 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
     if (hasContent || didSplit) {
       const headingMatch = rawValue.match(/^(#{1,6})\s*/);
 
-      // Headings are handled via AST manipulation instead of plain() + re-parse,
-      // because plain() strips inline formatting (bold, italic, etc.)
+      // # heading syntax is handled via direct AST manipulation so we can
+      // set the depth while preserving the original inline children (bold, etc.)
       if (headingMatch) {
         firstText!.value = rawValue.slice(headingMatch[0].length);
         const heading = wrapHeading(node);
@@ -169,7 +169,12 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         const parsedTitle = titleParser.parse(headingText);
         const parsedFirstChild = parsedTitle.children[0];
 
+        // Block-level syntax ("> quote", "- list") produces non-paragraph nodes;
+        // inline text parses as a paragraph and falls through to wrapHeading().
         if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
+          visit(parsedTitle, (n: Node) => {
+            delete n.position;
+          });
           node.children.splice(0, 1, ...(parsedTitle.children as Blockquote['children']));
         } else {
           node.children[0] = wrapHeading(node);
@@ -214,6 +219,7 @@ const calloutTransformer = () => {
       if ((node as unknown as { type: string }).type === NodeTypes.callout) {
         return SKIP;
       }
+      return undefined;
     });
   };
 };
