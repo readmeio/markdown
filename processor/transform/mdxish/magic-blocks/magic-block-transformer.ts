@@ -113,10 +113,9 @@ const contentParser = unified()
 /**
  * Markdown to HTML processor (mdast → hast → HTML string).
  *
- * Uses only strikethrough from GFM instead of the full remarkGfm bundle.
- * The full bundle includes gfm-autolink-literal which causes deep
- * subtokenize recursion for URLs, overflowing browser call stacks when
- * combined with the nested parser layers in processMarkdownInHtmlString.
+ * Uses only strikethrough from GFM instead of the full remarkGfm bundle
+ * since we've had a case where it was causing a stack overflow when parsing HTML blocks containing URLs
+ * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
   .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
