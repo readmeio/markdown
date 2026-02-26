@@ -33,9 +33,6 @@ const INLINE_COMPONENT_MAP: Record<string, InlineComponentTransformer> = {
  * Inline components are excluded from mdxishComponentBlocks (which only handles block-level
  * elements), so they remain as scattered html/text/html sibling nodes inside a paragraph.
  * This plugin merges them into a single typed MDAST node.
- *
- * Only runs in the editor path (newEditorTypes=true). The rendering path leaves them as
- * raw html nodes for rehypeRaw to process.
  */
 const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {

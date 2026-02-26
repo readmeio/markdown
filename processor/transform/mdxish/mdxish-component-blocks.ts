@@ -17,9 +17,14 @@ const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^'
  */
 const MAX_LOOKAHEAD = 30;
 
-// Inline components (Glossary, Anchor) must stay as raw html — promoting them to a
-// block-level mdxJsxFlowElement breaks inline rendering inside paragraphs.
-// New inline components should also be added to INLINE_COMPONENT_MAP in mdxish-inline-components.ts.
+/**
+ * Tags that have dedicated transformers and should NOT be handled by this plugin.
+ * These components either have special parsing requirements that the generic component
+ * block transformer cannot handle correctly, or are inline components that we don't
+ * want to convert to mdxJsxFlowElement which is a block level element.
+ *
+ * Glossary and Anchor are inline components.
+ */
 const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
 
 const inlineMdProcessor = unified()
