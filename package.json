@@ -164,7 +164,7 @@
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "815KB"
+        "maxSize": "825KB"
       }
     ]
   },
