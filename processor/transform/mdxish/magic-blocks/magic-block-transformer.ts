@@ -22,12 +22,12 @@ import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/type
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { HtmlExtension } from 'micromark-util-types';
 import type { Plugin } from 'unified';
 
 import { micromark } from 'micromark';
 import { gfmStrikethrough, gfmStrikethroughHtml } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
-import type { HtmlExtension } from 'micromark-util-types';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
@@ -115,36 +115,33 @@ const contentParser = unified()
  * `<Variable>` / `<Glossary>` component tags, matching the output that
  * the previous mdast-util + remarkRehype pipeline produced.
  */
-const legacyVariableHtml = (): HtmlExtension => ({
-  enter: {
-    legacyVariable() {
-      // @ts-expect-error — adding transient state to the compile context
-      this._legacyVarValue = '';
+const legacyVariableHtml = (): HtmlExtension => {
+  let value = '';
+
+  return {
+    enter: {
+      legacyVariableValue() {
+        this.buffer();
+      },
     },
-    legacyVariableValue() {
-      this.buffer();
+    exit: {
+      legacyVariableValue() {
+        value = this.resume();
+      },
+      legacyVariable() {
+        if (value.startsWith('glossary:')) {
+          const term = value.slice('glossary:'.length).trim();
+          this.tag(`<Glossary term="${term}">`);
+          this.raw(term);
+          this.tag('</Glossary>');
+        } else {
+          this.tag(`<Variable name="${value.trim()}" isLegacy>`);
+          this.tag('</Variable>');
+        }
+      },
     },
-  },
-  exit: {
-    legacyVariableValue() {
-      // @ts-expect-error — reading transient state
-      this._legacyVarValue = this.resume();
-    },
-    legacyVariable() {
-      // @ts-expect-error — reading transient state
-      const raw: string = this._legacyVarValue;
-      if (raw.startsWith('glossary:')) {
-        const term = raw.slice('glossary:'.length).trim();
-        this.tag(`<Glossary term="${term}">`);
-        this.raw(term);
-        this.tag('</Glossary>');
-      } else {
-        this.tag(`<Variable name="${raw.trim()}" isLegacy>`);
-        this.tag('</Variable>');
-      }
-    },
-  },
-});
+  };
+};
 
 /**
  * Lightweight inline markdown → HTML converter.
@@ -157,7 +154,6 @@ const legacyVariableHtml = (): HtmlExtension => ({
  * - Core CommonMark (emphasis, bold, code spans, links, images)
  * - GFM strikethrough (`~~text~~`)
  * - Legacy variables (`<<var>>`)
- * - Omits GFM autolink-literal (the cause of deep recursion for URLs)
  */
 const inlineMarkdownToHtml = (text: string): string =>
   micromark(text, {
