@@ -281,5 +281,92 @@ describe('preprocessJSXExpressions', () => {
 
       expect(result).toBe(content);
     });
+
+    describe('paragraph-spanning expressions (blank lines)', () => {
+      it('should escape braces when separated by blank line', () => {
+        // A blank line causes markdown to split content into separate paragraphs
+        // which would cause MDX expression parsing to fail
+        const content = '{\n\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('\\{\n\n\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should escape braces with whitespace-only blank line', () => {
+        const content = '{\n   \n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('\\{\n   \n\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should escape braces with tab blank line', () => {
+        const content = '{\n\t\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('\\{\n\t\n\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should not escape braces with content but no blank line', () => {
+        // Single newlines don't create paragraph boundaries
+        const content = '{\nsome content\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('should escape braces in text with surrounding content', () => {
+        const content = 'Hello {\n\n} World';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('Hello \\{\n\n\\} World');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should escape nested braces when outer has blank line', () => {
+        const content = '{\n{\n\n}\n}';
+        const result = preprocessJSXExpressions(content);
+
+        // Both the outer and inner braces should be escaped
+        expect(result).toContain('\\{');
+        expect(result).toContain('\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should not escape braces inside string literals even with blank lines', () => {
+        // The blank line is inside a string literal, so it shouldn't trigger escaping
+        const content = '{"some\n\nstring"}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('should handle multiple separate expressions with blank lines', () => {
+        const content = '{\n\n} text {\n\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('\\{\n\n\\} text \\{\n\n\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should handle mixed unbalanced and paragraph-spanning braces', () => {
+        // First { is unbalanced, second pair spans paragraph
+        const content = 'unclosed { then {\n\n} end';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('unclosed \\{ then \\{\n\n\\} end');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should handle paragraph-spanning with emoji content', () => {
+        const content = '📘 {\n\n} 🎉';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('📘 \\{\n\n\\} 🎉');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+    });
   });
 });
