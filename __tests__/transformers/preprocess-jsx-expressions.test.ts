@@ -1,6 +1,4 @@
-import type { Element, Root, Text } from 'hast';
-
-import { visit } from 'unist-util-visit';
+import type { Element, Root } from 'hast';
 
 import { mdxish } from '../../lib';
 import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
@@ -188,7 +186,7 @@ describe('preprocessJSXExpressions', () => {
         expect(htmlProp).toContain('unclosed } { unclosed ');
       });
 
-      it('html <code> elements with unbalanced braces should not show backslash', () => {
+      it('html code elements', () => {
         const content = [
           '<table><thead><tr><th>foo</th><th>bar</th></tr></thead>',
           '<tbody>',
@@ -196,21 +194,9 @@ describe('preprocessJSXExpressions', () => {
           '<tr><td><code>{foo}/{bar)</code></td><td><code>baz</code></td></tr>',
           '</tbody></table>',
         ].join('\n');
+        const result = preprocessJSXExpressions(content);
 
-        const tree = mdxish(content);
-
-        const codeTexts: string[] = [];
-        visit(tree, 'element', (node: Element) => {
-          if (node.tagName !== 'code') return;
-          node.children
-            .filter((child): child is Text => child.type === 'text')
-            .forEach(child => codeTexts.push(child.value));
-        });
-
-        expect(codeTexts.some(t => t.includes('{bar)'))).toBe(true);
-        codeTexts.forEach(text => {
-          expect(text).not.toContain('\\{');
-        });
+        expect(result).toBe(content);
       });
     });
 

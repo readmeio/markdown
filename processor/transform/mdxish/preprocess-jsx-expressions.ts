@@ -135,13 +135,21 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * Handles: already-escaped braces, string literals inside expressions, nested balanced braces.
  */
 function escapeUnbalancedBraces(content: string): string {
+  // Skip HTML <code> elements — their content should never be escaped
+  const htmlCodeBlocks: string[] = [];
+  const safe = content.replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/gi, match => {
+    const idx = htmlCodeBlocks.length;
+    htmlCodeBlocks.push(match);
+    return `___HTML_CODE_${idx}___`;
+  });
+
   const opens: number[] = [];
   const unbalanced = new Set<number>();
   let strDelim: string | null = null;
   let strEscaped = false;
 
   // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
-  const chars = Array.from(content);
+  const chars = Array.from(safe);
 
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i];
@@ -180,11 +188,16 @@ function escapeUnbalancedBraces(content: string): string {
   }
 
   opens.forEach(pos => unbalanced.add(pos));
-  if (unbalanced.size === 0) return content;
 
-  return chars
-    .map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch))
-    .join('');
+  let result = unbalanced.size === 0
+    ? safe
+    : chars.map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch)).join('');
+
+  if (htmlCodeBlocks.length > 0) {
+    result = result.replace(/___HTML_CODE_(\d+)___/g, (_m, idx) => htmlCodeBlocks[parseInt(idx, 10)]);
+  }
+
+  return result;
 }
 
 /**

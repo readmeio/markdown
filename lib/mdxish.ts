@@ -23,7 +23,6 @@ import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
-import cleanEscapedBracesInCode from '../processor/transform/mdxish/clean-escaped-braces-in-code';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -204,7 +203,6 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
-    .use(cleanEscapedBracesInCode)
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {
