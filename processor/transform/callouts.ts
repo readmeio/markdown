@@ -175,7 +175,10 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
           visit(parsedTitle, (n: Node) => {
             delete n.position;
           });
-          node.children.splice(0, 1, ...(parsedTitle.children as Blockquote['children']));
+          const heading = wrapHeading(node);
+          heading.children = parsedTitle.children as Heading['children'];
+          delete heading.position;
+          node.children[0] = heading;
         } else {
           node.children[0] = wrapHeading(node);
           node.children[0].position.start.offset += match.length;

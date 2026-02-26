@@ -93,6 +93,10 @@
     border-color: var(--border);
     border-width: 3px;
     padding: 0 0 0 0.8em;
+
+    &:is(h3 *, .callout-heading *) {
+      color: inherit;
+    }
   }
 
   h3, // for compatibility with old callouts

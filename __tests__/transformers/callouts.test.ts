@@ -326,8 +326,14 @@ describe('callouts transformer', () => {
         {
           "children": [
             {
-              "children": [],
-              "type": "blockquote",
+              "children": [
+                {
+                  "children": [],
+                  "type": "blockquote",
+                },
+              ],
+              "depth": 3,
+              "type": "heading",
             },
             {
               "children": [
@@ -364,14 +370,20 @@ describe('callouts transformer', () => {
                 {
                   "children": [
                     {
-                      "type": "text",
-                      "value": "helo",
+                      "children": [
+                        {
+                          "type": "text",
+                          "value": "helo",
+                        },
+                      ],
+                      "type": "paragraph",
                     },
                   ],
-                  "type": "paragraph",
+                  "type": "blockquote",
                 },
               ],
-              "type": "blockquote",
+              "depth": 3,
+              "type": "heading",
             },
             {
               "children": [
@@ -406,16 +418,22 @@ describe('callouts transformer', () => {
             {
               "children": [
                 {
-                  "checked": null,
-                  "children": [],
+                  "children": [
+                    {
+                      "checked": null,
+                      "children": [],
+                      "spread": false,
+                      "type": "listItem",
+                    },
+                  ],
+                  "ordered": false,
                   "spread": false,
-                  "type": "listItem",
+                  "start": null,
+                  "type": "list",
                 },
               ],
-              "ordered": false,
-              "spread": false,
-              "start": null,
-              "type": "list",
+              "depth": 3,
+              "type": "heading",
             },
             {
               "children": [
