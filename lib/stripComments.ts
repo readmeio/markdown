@@ -1,6 +1,7 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { mdxExpressionFromMarkdown, mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
@@ -39,6 +40,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
     .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
+    .use(remarkGfm)
     .use(
       remarkStringify,
       mdx

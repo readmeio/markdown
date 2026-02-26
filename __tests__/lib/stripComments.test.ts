@@ -355,7 +355,7 @@ end"`);
       ['ordered list trailing space', '1. A <!-- c -->\n2. B', undefined, '1. A&#x20;\n2. B'],
       ['unordered list trailing space', '- A <!-- c -->\n- B', undefined, '* A&#x20;\n* B'],
       ['between list items', '- Item 1\n<!-- c -->\n- Item 2', undefined, '* Item 1\n\n- Item 2'],
-      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2 |\n| :- | :- |\n|  | data |'],
+      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2   |\n| :- | :--- |\n|    | data |'],
       // inline formatting
       ['adjacent to bold/italic', '**b**<!-- c -->*i*<!-- c --> x', undefined, '**b***i* x'],
       ['adjacent to link/image', '[a](u)<!-- c -->![b](v)', undefined, '[a](u)![b](v)'],
@@ -441,6 +441,30 @@ end"`);
       expect(output).toContain('{/* stays */}');
       expect(output).not.toContain('{/* c */}');
       expect(output).not.toContain('deprecated');
+    });
+
+    describe.each([
+      ['legacy', undefined],
+      ['mdx', { mdx: true }],
+      ['mdxish', { mdxish: true }],
+    ])('checkbox behavior for %s', (_description, options) => {
+      it('should not escape checkboxes', async () => {
+        const input = '- [ ] Checkbox with text';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* [ ] Checkbox with text');
+      });
+
+      it('should not escape ticked checkboxes', async () => {
+        const input = '- [x] Ticked checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* [x] Ticked checkbox');
+      });
+
+      it('should retain escaped checkboxes', async () => {
+        const input = '- \\[ ] Checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* \\[ ] Checkbox');
+      });
     });
   });
 });
