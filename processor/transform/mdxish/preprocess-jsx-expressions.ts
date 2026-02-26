@@ -189,6 +189,8 @@ function escapeUnbalancedBraces(content: string): string {
 
   opens.forEach(pos => unbalanced.add(pos));
 
+  // If there are no unbalanced braces, return content as-is;
+  // otherwise, escape each unbalanced `{` or `}` so MDX doesn't treat them as expressions.
   let result = unbalanced.size === 0
     ? safe
     : chars.map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch)).join('');
