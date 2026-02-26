@@ -24,13 +24,15 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { micromark } from 'micromark';
+import { gfmStrikethrough, gfmStrikethroughHtml } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
+import type { HtmlExtension } from 'micromark-util-types';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
@@ -108,15 +110,61 @@ const contentParser = unified()
   .use(remarkGfm)
   .use(normalizeEmphasisAST);
 
-/** Markdown to HTML processor (mdast → hast → HTML string) */
-const markdownToHtml = unified()
-  .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(normalizeEmphasisAST)
-  .use(remarkRehype)
-  .use(rehypeStringify);
+/**
+ * Micromark HTML extension that compiles legacy `<<variable>>` tokens to
+ * `<Variable>` / `<Glossary>` component tags, matching the output that
+ * the previous mdast-util + remarkRehype pipeline produced.
+ */
+const legacyVariableHtml = (): HtmlExtension => ({
+  enter: {
+    legacyVariable() {
+      // @ts-expect-error — adding transient state to the compile context
+      this._legacyVarValue = '';
+    },
+    legacyVariableValue() {
+      this.buffer();
+    },
+  },
+  exit: {
+    legacyVariableValue() {
+      // @ts-expect-error — reading transient state
+      this._legacyVarValue = this.resume();
+    },
+    legacyVariable() {
+      // @ts-expect-error — reading transient state
+      const raw: string = this._legacyVarValue;
+      if (raw.startsWith('glossary:')) {
+        const term = raw.slice('glossary:'.length).trim();
+        this.tag(`<Glossary term="${term}">`);
+        this.raw(term);
+        this.tag('</Glossary>');
+      } else {
+        this.tag(`<Variable name="${raw.trim()}" isLegacy>`);
+        this.tag('</Variable>');
+      }
+    },
+  },
+});
+
+/**
+ * Lightweight inline markdown → HTML converter.
+ *
+ * Uses `micromark` directly instead of the full unified/remark/rehype pipeline
+ * to keep call stack depth shallow. This avoids stack overflows in browsers
+ * when called from the deeply nested `processMarkdownInHtmlString` context.
+ *
+ * Configured with only the extensions needed for inline text:
+ * - Core CommonMark (emphasis, bold, code spans, links, images)
+ * - GFM strikethrough (`~~text~~`)
+ * - Legacy variables (`<<var>>`)
+ * - Omits GFM autolink-literal (the cause of deep recursion for URLs)
+ */
+const inlineMarkdownToHtml = (text: string): string =>
+  micromark(text, {
+    allowDangerousProtocol: true,
+    extensions: [gfmStrikethrough(), legacyVariable()],
+    htmlExtensions: [gfmStrikethroughHtml(), legacyVariableHtml()],
+  });
 
 /** HTML parser (HTML string → hast) */
 const htmlParser = unified().use(rehypeParse, { fragment: true });
@@ -165,7 +213,8 @@ const processMarkdownInHtmlString = (html: string): string => {
   const textToHast = (text: string): HastRoot['children'] => {
     if (!text.trim()) return [{ type: 'text', value: text }];
 
-    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
+    const htmlString = inlineMarkdownToHtml(escapeInvalidTags(text));
+    const parsed = htmlParser.parse(htmlString) as HastRoot;
     const nodes = parsed.children.flatMap(n =>
       n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
     );
