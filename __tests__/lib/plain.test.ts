@@ -156,6 +156,13 @@ Is it _me_ you're looking for?
     expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user.this_is_a_var} and <<var-too>>');
   });
 
+  it('uses bracket notation for non-identifier keys with preserveVariableSyntax via hast', () => {
+    const txt = '{user["var-here"]}';
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user["var-here"]}');
+  });
+
   it('preserves variables inside structured content with preserveVariableSyntax option', () => {
     const txt = `
 > 📘 Welcome

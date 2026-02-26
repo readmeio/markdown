@@ -23,6 +23,14 @@ interface Options {
 
 const STRIP_TAGS = ['script', 'style'];
 
+/** Valid JS identifier: starts with $, _, or a letter; followed by $, _, letters, digits, etc. */
+const JS_IDENTIFIER_RE = /^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\u200C\u200D]*$/u;
+
+/** Format a variable key as MDX syntax, using bracket notation for non-identifier keys (e.g. hyphens). */
+function toMdxVariableSyntax(key: string): string {
+  return JS_IDENTIFIER_RE.test(key) ? `{user.${key}}` : `{user["${key}"]}`;
+}
+
 /**
  * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
  * Uses ESTree AST inspection, matching the approach in processor/transform/variables.ts
@@ -86,7 +94,7 @@ function one(node: Nodes, opts: Options) {
       case 'Variable': {
         const key = node.properties.name.toString();
         if (opts.preserveVariableSyntax) {
-          return node.properties.isLegacy ? `<<${key}>>` : `{user.${key}}`;
+          return node.properties.isLegacy ? `<<${key}>>` : toMdxVariableSyntax(key);
         }
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
@@ -113,7 +121,7 @@ function one(node: Nodes, opts: Options) {
   if (node.type === 'mdxTextExpression') {
     const key = extractMdxVariableKey(node as MdxTextExpressionHast);
     if (key) {
-      if (opts.preserveVariableSyntax) return `{user.${key}}`;
+      if (opts.preserveVariableSyntax) return toMdxVariableSyntax(key);
       return ('variables' in opts && opts.variables[key]) || key;
     }
   }
