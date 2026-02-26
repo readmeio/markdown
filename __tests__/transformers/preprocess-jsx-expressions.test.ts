@@ -198,6 +198,13 @@ describe('preprocessJSXExpressions', () => {
 
         expect(result).toBe(content);
       });
+
+      it('html elements with unbalanced braces', () => {
+        const content = '<div>{foo </div>';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
     });
 
     it('should escape unclosed braces in content with emojis', () => {

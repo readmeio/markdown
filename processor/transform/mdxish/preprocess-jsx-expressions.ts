@@ -135,12 +135,13 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * Handles: already-escaped braces, string literals inside expressions, nested balanced braces.
  */
 function escapeUnbalancedBraces(content: string): string {
-  // Skip HTML <code> elements — their content should never be escaped
-  const htmlCodeBlocks: string[] = [];
-  const safe = content.replace(/<code(?:\s[^>]*)?>[\s\S]*?<\/code>/gi, match => {
-    const idx = htmlCodeBlocks.length;
-    htmlCodeBlocks.push(match);
-    return `___HTML_CODE_${idx}___`;
+  // Skip HTML elements — their content should never be escaped because
+  // rehypeRaw parses them into hast elements, making `\` literal text in output
+  const htmlElements: string[] = [];
+  const safe = content.replace(/<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g, match => {
+    const idx = htmlElements.length;
+    htmlElements.push(match);
+    return `___HTML_ELEM_${idx}___`;
   });
 
   const opens: number[] = [];
@@ -195,8 +196,8 @@ function escapeUnbalancedBraces(content: string): string {
     ? safe
     : chars.map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch)).join('');
 
-  if (htmlCodeBlocks.length > 0) {
-    result = result.replace(/___HTML_CODE_(\d+)___/g, (_m, idx) => htmlCodeBlocks[parseInt(idx, 10)]);
+  if (htmlElements.length > 0) {
+    result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
   }
 
   return result;
