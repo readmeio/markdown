@@ -61,10 +61,11 @@ const Doc = () => {
   const showRmdx = searchParams.has('rmdx');
 
   type PipelineKey = 'legacy' | 'mdxish' | 'rmdx';
-  const activePipelines: PipelineKey[] = [];
-  if (showRmdx) activePipelines.push('rmdx');
-  if (legacy) activePipelines.push('legacy');
-  if (mdxish) activePipelines.push('mdxish');
+  const selectedPipelines: PipelineKey[] = [];
+  if (showRmdx) selectedPipelines.push('rmdx');
+  if (legacy) selectedPipelines.push('legacy');
+  if (mdxish) selectedPipelines.push('mdxish');
+  const activePipelines = selectedPipelines.length > 0 ? selectedPipelines : (['rmdx'] as PipelineKey[]);
   const stripComments = searchParams.has('stripComments');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
@@ -167,7 +168,7 @@ const Doc = () => {
       }
     };
 
-    if (showRmdx) renderRMDX();
+    if (showRmdx || (!legacy && !mdxish)) renderRMDX();
     if (mdxish) renderXish();
     if (legacy) renderRDMD();
   }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments]);
@@ -246,15 +247,6 @@ const Doc = () => {
         )}
         {view === 'markdown' && strippedMarkdown !== null ? (
           <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
-        ) : activePipelines.length === 0 ? (
-          <p className="rdmd-demo--empty">Please select a rendering pipeline...</p>
-        ) : activePipelines.length === 1 ? (
-          <div id="content-container">
-            {renderPanel(activePipelines[0])}
-            {activePipelines[0] === 'rmdx' && rmdxResult.Toc && (
-              <div className="content-toc"><rmdxResult.Toc /></div>
-            )}
-          </div>
         ) : (
           <div className="rdmd-demo--panels">
             {activePipelines.map(p => (
