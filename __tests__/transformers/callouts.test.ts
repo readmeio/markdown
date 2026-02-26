@@ -1,5 +1,5 @@
 import type { Callout } from '../../types';
-import type { Heading, Paragraph } from 'mdast';
+import type { Heading } from 'mdast';
 
 import { removePosition } from 'unist-util-remove-position';
 
@@ -265,6 +265,228 @@ describe('callouts transformer', () => {
 
     // Body paragraph should have the text content
     expect(calloutNodeChildren[1].type).toBe('paragraph');
+  });
+
+  describe('block-level title content', () => {
+    it('parses a heading with italic in the title', () => {
+      const md = '> 📘 # _Foo_\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "",
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Foo",
+                    },
+                  ],
+                  "type": "emphasis",
+                },
+              ],
+              "depth": 1,
+              "type": "heading",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
+
+    it('parses a blockquote marker as the title', () => {
+      const md = '> 📘 >\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [],
+              "type": "blockquote",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
+
+    it('parses a blockquote with text as the title', () => {
+      const md = '> 📘 > helo\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "helo",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "blockquote",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
+
+    it('parses a dash as the title into a list', () => {
+      const md = '> 📘 -\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "checked": null,
+                  "children": [],
+                  "spread": false,
+                  "type": "listItem",
+                },
+              ],
+              "ordered": false,
+              "spread": false,
+              "start": null,
+              "type": "list",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
+
+    it('parses bold text as a heading title', () => {
+      const md = '> 📘 **bolf**\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "",
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "bolf",
+                    },
+                  ],
+                  "type": "strong",
+                },
+              ],
+              "depth": 3,
+              "type": "heading",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
   });
 
   describe('non-callout blockquotes', () => {
