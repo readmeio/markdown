@@ -14,8 +14,10 @@ interface Options {
   /**
    * When true, preserves variable syntax instead of resolving to values or bare
    * key names. Legacy variables (from `<<key>>` syntax) output as `<<key>>`,
-   * while MDX variables output as `{user.key}`. Used by search indexing so the
-   * frontend can interpolate variables at display time with their respective regexes.
+   * MDX variables output as `{user.key}` for valid identifiers or
+   * `{user["key"]}` for non-identifier keys (e.g. hyphens). Used by search
+   * indexing so the frontend can interpolate variables at display time with
+   * their respective regexes.
    */
   preserveVariableSyntax?: boolean;
   variables?: Record<string, string>;
