@@ -22,17 +22,17 @@ import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/type
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
-import type { HtmlExtension } from 'micromark-util-types';
 import type { Plugin } from 'unified';
 
-import { micromark } from 'micromark';
-import { gfmStrikethrough, gfmStrikethroughHtml } from 'micromark-extension-gfm-strikethrough';
+import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
+import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
@@ -111,56 +111,20 @@ const contentParser = unified()
   .use(normalizeEmphasisAST);
 
 /**
- * Micromark HTML extension that compiles legacy `<<variable>>` tokens to
- * `<Variable>` / `<Glossary>` component tags, matching the output that
- * the previous mdast-util + remarkRehype pipeline produced.
- */
-const legacyVariableHtml = (): HtmlExtension => {
-  let value = '';
-
-  return {
-    enter: {
-      legacyVariableValue() {
-        this.buffer();
-      },
-    },
-    exit: {
-      legacyVariableValue() {
-        value = this.resume();
-      },
-      legacyVariable() {
-        if (value.startsWith('glossary:')) {
-          const term = value.slice('glossary:'.length).trim();
-          this.tag(`<Glossary term="${term}">`);
-          this.raw(term);
-          this.tag('</Glossary>');
-        } else {
-          this.tag(`<Variable name="${value.trim()}" isLegacy>`);
-          this.tag('</Variable>');
-        }
-      },
-    },
-  };
-};
-
-/**
- * Lightweight inline markdown → HTML converter.
+ * Markdown to HTML processor (mdast → hast → HTML string).
  *
- * Uses `micromark` directly instead of the full unified/remark/rehype pipeline
- * to keep call stack depth shallow. This avoids stack overflows in browsers
- * when called from the deeply nested `processMarkdownInHtmlString` context.
- *
- * Configured with only the extensions needed for inline text:
- * - Core CommonMark (emphasis, bold, code spans, links, images)
- * - GFM strikethrough (`~~text~~`)
- * - Legacy variables (`<<var>>`)
+ * Uses only strikethrough from GFM instead of the full remarkGfm bundle.
+ * The full bundle includes gfm-autolink-literal which causes deep
+ * subtokenize recursion for URLs, overflowing browser call stacks when
+ * combined with the nested parser layers in processMarkdownInHtmlString.
  */
-const inlineMarkdownToHtml = (text: string): string =>
-  micromark(text, {
-    allowDangerousProtocol: true,
-    extensions: [gfmStrikethrough(), legacyVariable()],
-    htmlExtensions: [gfmStrikethroughHtml(), legacyVariableHtml()],
-  });
+const markdownToHtml = unified()
+  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown()])
+  .use(remarkParse)
+  .use(normalizeEmphasisAST)
+  .use(remarkRehype)
+  .use(rehypeStringify);
 
 /** HTML parser (HTML string → hast) */
 const htmlParser = unified().use(rehypeParse, { fragment: true });
@@ -209,8 +173,7 @@ const processMarkdownInHtmlString = (html: string): string => {
   const textToHast = (text: string): HastRoot['children'] => {
     if (!text.trim()) return [{ type: 'text', value: text }];
 
-    const htmlString = inlineMarkdownToHtml(escapeInvalidTags(text));
-    const parsed = htmlParser.parse(htmlString) as HastRoot;
+    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
     const nodes = parsed.children.flatMap(n =>
       n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
     );
