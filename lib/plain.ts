@@ -12,9 +12,10 @@ import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
 
 interface Options {
   /**
-   * When true, outputs variables using `{user.key}` syntax instead of resolving
-   * to values or bare key names. Used by search indexing so the frontend can
-   * interpolate variables at display time.
+   * When true, preserves variable syntax instead of resolving to values or bare
+   * key names. Legacy variables (from `<<key>>` syntax) output as `<<key>>`,
+   * while MDX variables output as `{user.key}`. Used by search indexing so the
+   * frontend can interpolate variables at display time with their respective regexes.
    */
   preserveVariableSyntax?: boolean;
   variables?: Record<string, string>;
@@ -84,7 +85,9 @@ function one(node: Nodes, opts: Options) {
       case 'variable':
       case 'Variable': {
         const key = node.properties.name.toString();
-        if (opts.preserveVariableSyntax) return `{user.${key}}`;
+        if (opts.preserveVariableSyntax) {
+          return node.properties.isLegacy ? `<<${key}>>` : `{user.${key}}`;
+        }
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
       }
