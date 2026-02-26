@@ -16,12 +16,6 @@ const Form = () => {
     setSearchParams(params => {
       if (checked) {
         params.set(param, 'true');
-        if (param === 'compare') {
-          params.delete('legacy');
-          params.delete('mdxish');
-        } else if (param === 'legacy' || param === 'mdxish') {
-          params.delete('compare');
-        }
       } else {
         params.delete(param);
       }
@@ -128,17 +122,35 @@ const Form = () => {
               type="checkbox"
             />
           </div>
+        </fieldset>
+        <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
+          <legend>Pipeline</legend>
           <div>
-            <label htmlFor="legacy">Use RDMD (legacy)</label>
-            <input checked={searchParams.has('legacy')} id="legacy" onChange={onCheck('legacy')} type="checkbox" />
+            <label htmlFor="pipeline-rmdx">RMDX</label>
+            <input
+              checked={searchParams.has('rmdx')}
+              id="pipeline-rmdx"
+              onChange={onCheck('rmdx')}
+              type="checkbox"
+            />
           </div>
           <div>
-            <label htmlFor="mdxish">Use MDXish</label>
-            <input checked={searchParams.has('mdxish')} id="mdxish" onChange={onCheck('mdxish')} type="checkbox" />
+            <label htmlFor="pipeline-legacy">RDMD (legacy)</label>
+            <input
+              checked={searchParams.has('legacy')}
+              id="pipeline-legacy"
+              onChange={onCheck('legacy')}
+              type="checkbox"
+            />
           </div>
           <div>
-            <label htmlFor="compare">MDXish vs Legacy</label>
-            <input checked={searchParams.has('compare')} id="compare" onChange={onCheck('compare')} type="checkbox" />
+            <label htmlFor="pipeline-mdxish">MDXish</label>
+            <input
+              checked={searchParams.has('mdxish')}
+              id="pipeline-mdxish"
+              onChange={onCheck('mdxish')}
+              type="checkbox"
+            />
           </div>
         </fieldset>
         <textarea name="demo-editor" onChange={onChange} value={doc} />

@@ -56,9 +56,15 @@ const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
   const ci = searchParams.has('ci');
-  const compare = searchParams.has('compare');
   const legacy = searchParams.has('legacy');
   const mdxish = searchParams.has('mdxish');
+  const showRmdx = searchParams.has('rmdx');
+
+  type PipelineKey = 'legacy' | 'mdxish' | 'rmdx';
+  const activePipelines: PipelineKey[] = [];
+  if (showRmdx) activePipelines.push('rmdx');
+  if (legacy) activePipelines.push('legacy');
+  if (mdxish) activePipelines.push('mdxish');
   const stripComments = searchParams.has('stripComments');
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
@@ -68,18 +74,18 @@ const Doc = () => {
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
 
-  const [{ default: Content, Toc }, setContent] = useState<Pick<RMDXModule, 'default' | 'Toc'>>({
-    default: null,
-    Toc: null,
-  });
-  const [error, setError] = useState<string>(null);
+  const [rmdxResult, setRmdxResult] = useState<Pick<RMDXModule, 'default' | 'Toc'>>({ default: null, Toc: null });
+  const [rmdxError, setRmdxError] = useState<string | null>(null);
+  const [mdxishResult, setMdxishResult] = useState<Pick<RMDXModule, 'default' | 'Toc'>>({ default: null, Toc: null });
+  const [mdxishError, setMdxishError] = useState<string | null>(null);
   const [legacyContent, setLegacyContent] = useState<React.ReactNode>(null);
+  const [legacyError, setLegacyError] = useState<string | null>(null);
   const [strippedMarkdown, setStrippedMarkdown] = useState<string | null>(null);
   const [stripError, setStripError] = useState<string | null>(null);
   const [view, setView] = useState<'markdown' | 'rendered'>('rendered');
 
   useEffect(() => {
-    const sanitize = async () => {
+    const sanitize = async (mode: PipelineKey) => {
       if (!stripComments) {
         setStrippedMarkdown(null);
         setStripError(null);
@@ -87,8 +93,8 @@ const Doc = () => {
       }
       try {
         const sanitized = await mdx.stripComments(doc, {
-          mdx: !(legacy || mdxish),
-          mdxish,
+          mdx: mode === 'rmdx',
+          mdxish: mode === 'mdxish',
         });
         setStrippedMarkdown(sanitized);
         setStripError(null);
@@ -99,21 +105,14 @@ const Doc = () => {
         const message = e instanceof Error ? e.message : String(e);
         setStripError(message);
         setStrippedMarkdown(null);
-        setContent({ default: null, Toc: null });
-        setLegacyContent(null);
         return null;
       }
     };
 
     const renderRMDX = async () => {
-      const opts = {
-        lazyImages,
-        safeMode,
-        copyButtons,
-      };
-
+      const opts = { lazyImages, safeMode, copyButtons };
       try {
-        const sanitized = await sanitize();
+        const sanitized = await sanitize('rmdx');
         if (sanitized === null) return;
         const code = await mdx.compile(sanitized, {
           ...opts,
@@ -125,104 +124,98 @@ const Doc = () => {
           terms,
           variables,
         });
-        setError(() => null);
-        setContent(() => content);
+        setRmdxError(null);
+        setRmdxResult(content);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
-        setError(() => e.message);
+        setRmdxError(e.message);
       }
     };
 
     const renderXish = async () => {
       try {
-        const sanitized = await sanitize();
+        const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
         const tree = mdx.mdxish(sanitized, { variables });
         const vdom = mdx.renderMdxish(tree, { terms, variables });
-        setError(() => null);
-        setContent(vdom);
+        setMdxishError(null);
+        setMdxishResult(vdom);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
-        setError(() => e.message);
+        setMdxishError(e.message);
       }
     };
 
     const renderRDMD = async () => {
-      const opts = {
-        lazyImages,
-        safeMode,
-        copyButtons,
-      };
-      const sanitized = await sanitize();
-      if (sanitized === null) return;
-      const { VariablesContext, GlossaryContext } = rdmd.utils;
-      setLegacyContent(
-        <VariablesContext.Provider value={variables}>
-          <GlossaryContext.Provider value={terms}>{rdmd.react(sanitized, opts)}</GlossaryContext.Provider>
-        </VariablesContext.Provider>,
-      );
-    };
-
-    const renderCompare = async () => {
       const opts = { lazyImages, safeMode, copyButtons };
-
-      let input = doc;
-      if (stripComments) {
-        try {
-          const sanitized = await mdx.stripComments(doc, { mdx: false, mdxish: true });
-          setStrippedMarkdown(sanitized);
-          setStripError(null);
-          input = sanitized;
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error(e);
-          const message = e instanceof Error ? e.message : String(e);
-          setStripError(message);
-          setStrippedMarkdown(null);
-          setContent({ default: null, Toc: null });
-          setLegacyContent(null);
-          return;
-        }
-      } else {
-        setStrippedMarkdown(null);
-        setStripError(null);
-      }
-
       try {
-        const tree = mdx.mdxish(input, { variables });
-        const vdom = mdx.renderMdxish(tree, { terms, variables });
-        setError(() => null);
-        setContent(vdom);
+        const sanitized = await sanitize('legacy');
+        if (sanitized === null) return;
+        const { VariablesContext, GlossaryContext } = rdmd.utils;
+        setLegacyError(null);
+        setLegacyContent(
+          <VariablesContext.Provider value={variables}>
+            <GlossaryContext.Provider value={terms}>{rdmd.react(sanitized, opts)}</GlossaryContext.Provider>
+          </VariablesContext.Provider>,
+        );
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
-        setError(() => e.message);
+        setLegacyError(e.message);
       }
-
-      const { VariablesContext, GlossaryContext } = rdmd.utils;
-      setLegacyContent(
-        <VariablesContext.Provider value={variables}>
-          <GlossaryContext.Provider value={terms}>{rdmd.react(input, opts)}</GlossaryContext.Provider>
-        </VariablesContext.Provider>,
-      );
     };
 
-    if (compare) {
-      renderCompare();
-    } else if (mdxish) {
-      renderXish();
-    } else if (legacy) {
-      renderRDMD();
-    } else {
-      renderRMDX();
-    }
-  }, [doc, lazyImages, safeMode, copyButtons, compare, legacy, mdxish, stripComments]);
+    if (showRmdx) renderRMDX();
+    if (mdxish) renderXish();
+    if (legacy) renderRDMD();
+  }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments]);
 
-  useEffect(() => {
-    if (error) setError(null);
-  }, [error]);
+
+  const darkMode = darkModeDataAttribute ? 'data-theme' : null;
+
+  const renderPanel = (pipeline: PipelineKey) => {
+    const error = pipeline === 'rmdx' ? rmdxError : pipeline === 'mdxish' ? mdxishError : legacyError;
+
+    const content = (() => {
+      switch (pipeline) {
+        case 'rmdx': {
+          const { default: RmdxContent } = rmdxResult;
+          return RmdxContent ? <RmdxContent /> : null;
+        }
+        case 'mdxish': {
+          const { default: MdxishContent } = mdxishResult;
+          return MdxishContent ? <MdxishContent /> : null;
+        }
+        case 'legacy':
+          return legacyContent;
+        default:
+          return null;
+      }
+    })();
+
+    return (
+      <>
+        {error && (
+          <div className="rdmd-demo--strip-error">
+            <strong>Render error:</strong> {error}
+          </div>
+        )}
+        <RenderError>
+          <TailwindStyle darkModeDataAttribute={darkMode}>
+            <div className="markdown-body">{content}</div>
+          </TailwindStyle>
+        </RenderError>
+      </>
+    );
+  };
+
+  const pipelineLabels: Record<PipelineKey, string> = {
+    rmdx: 'RMDX',
+    legacy: 'RDMD (legacy)',
+    mdxish: 'MDXish',
+  };
 
   return (
     <div className="rdmd-demo--display">
@@ -253,40 +246,24 @@ const Doc = () => {
         )}
         {view === 'markdown' && strippedMarkdown !== null ? (
           <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
-        ) : compare ? (
-          <div className="rdmd-demo--compare">
-            <div className="rdmd-demo--compare-panel">
-              <div className="rdmd-demo--compare-label">Legacy (RDMD)</div>
-              <RenderError>
-                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-                  <div className="markdown-body">{legacyContent}</div>
-                </TailwindStyle>
-              </RenderError>
-            </div>
-            <div className="rdmd-demo--compare-panel">
-              <div className="rdmd-demo--compare-label">MDXish</div>
-              <RenderError error={error}>
-                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-                  <div className="markdown-body">{Content ? <Content /> : null}</div>
-                </TailwindStyle>
-              </RenderError>
-            </div>
+        ) : activePipelines.length === 0 ? (
+          <p className="rdmd-demo--empty">Please select a rendering pipeline...</p>
+        ) : activePipelines.length === 1 ? (
+          <div id="content-container">
+            {renderPanel(activePipelines[0])}
+            {activePipelines[0] === 'rmdx' && rmdxResult.Toc && (
+              <div className="content-toc"><rmdxResult.Toc /></div>
+            )}
           </div>
         ) : (
-          <>
-            <div id="content-container">
-              <RenderError error={error}>
-                <TailwindStyle darkModeDataAttribute={darkModeDataAttribute ? 'data-theme' : null}>
-                  <div className="markdown-body">{legacy ? legacyContent : Content ? <Content /> : null}</div>
-                </TailwindStyle>
-              </RenderError>
-              {Toc && (
-                <div className="content-toc">
-                  <Toc />
-                </div>
-              )}
-            </div>
-          </>
+          <div className="rdmd-demo--panels">
+            {activePipelines.map(p => (
+              <div key={p} className="rdmd-demo--panel">
+                <div className="rdmd-demo--panel-label">{pipelineLabels[p]}</div>
+                {renderPanel(p)}
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </div>
