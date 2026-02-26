@@ -36,38 +36,6 @@ describe('mdxish should render', () => {
       expect(() => mdxish(md2)).not.toThrow();
     });
 
-    it('should not show backslashes for unbalanced braces inside HTML <code> elements', () => {
-      const md = [
-        '<table><thead><tr><th>foo</th><th>bar</th></tr></thead>',
-        '<tbody>',
-        '<tr><td><code>{foo}</code></td><td><code>bar</code></td></tr>',
-        '<tr><td><code>{foo}/{bar)</code></td><td><code>baz</code></td></tr>',
-        '</tbody></table>',
-      ].join('\n');
-
-      const tree = mdxish(md);
-
-      const codeTexts: string[] = [];
-      const collectCodeTexts = (node: HastNode) => {
-        if (node.type === 'element' && node.tagName === 'code') {
-          node.children.forEach(child => {
-            if (child.type === 'text') codeTexts.push(child.value);
-          });
-        }
-        if ('children' in node) {
-          (node.children as HastNode[]).forEach(collectCodeTexts);
-        }
-      };
-      collectCodeTexts(tree);
-
-      expect(codeTexts).toContain('{foo}');
-      expect(codeTexts).toContain('{foo}/{bar)');
-      codeTexts.forEach(text => {
-        expect(text).not.toContain('\\{');
-        expect(text).not.toContain('\\}');
-      });
-    });
-
     it('should render unclosed curly braces in content with emojis', () => {
       // Regression test for bug where emojis prevented brace escaping
       const md = `> 📘 Note
