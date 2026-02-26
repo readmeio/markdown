@@ -172,6 +172,7 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         // Block-level syntax ("> quote", "- list") produces non-paragraph nodes;
         // inline text parses as a paragraph and falls through to wrapHeading().
         if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
+          // Strip positions from re-parsed nodes since they're relative to the heading text, not the original source
           visit(parsedTitle, (n: Node) => {
             delete n.position;
           });
