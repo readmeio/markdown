@@ -47,9 +47,9 @@ import tailwindTransformer from '../processor/transform/tailwind';
 
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { htmlEntity, htmlEntityFromMarkdown } from './micromark/html-entity';
 import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
-import { nbsp, nbspFromMarkdown } from './micromark/nbsp';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 
 export interface MdxishOpts {
@@ -135,14 +135,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [magicBlock(), legacyVariable(), nbsp()]
-        : [magicBlock(), mdxExprTextOnly, legacyVariable(), nbsp()],
+        ? [magicBlock(), legacyVariable(), htmlEntity()]
+        : [magicBlock(), mdxExprTextOnly, legacyVariable(), htmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown(), nbspFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), nbspFromMarkdown()],
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown(), htmlEntityFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), htmlEntityFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)

@@ -36,8 +36,8 @@ import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
+import { htmlEntity, htmlEntityFromMarkdown } from '../../../../lib/micromark/html-entity';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { nbsp, nbspFromMarkdown } from '../../../../lib/micromark/nbsp';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
@@ -102,8 +102,8 @@ const preprocessBody = (text: string): string => {
 
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [legacyVariable(), nbsp()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), nbspFromMarkdown()])
+  .data('micromarkExtensions', [legacyVariable(), htmlEntity()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), htmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkBreaks)
   .use(remarkGfm)
@@ -111,8 +111,8 @@ const contentParser = unified()
 
 /** Markdown to HTML processor (mdast → hast → HTML string) */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [legacyVariable(), nbsp()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), nbspFromMarkdown()])
+  .data('micromarkExtensions', [legacyVariable(), htmlEntity()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), htmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm)
   .use(normalizeEmphasisAST)
