@@ -9,27 +9,22 @@ import { parseAttributes } from './mdxish-component-blocks';
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][a-zA-Z]*)(\s[^>]*)?>$/;
 
-type InlineComponentTransformer = (attrs: Record<string, string>, children: PhrasingContent[]) => PhrasingContent;
+// To add a new inline component: add it to both EXCLUDED_TAGS in mdxish-component-blocks.ts
+// and to this set.
+const INLINE_COMPONENTS = new Set(['Anchor']);
 
-const transformAnchor: InlineComponentTransformer = (attrs, children) => {
-  const anchorNode: MdxJsxTextElement = {
+function toMdxJsxTextElement(name: string, attrs: Record<string, string>, children: PhrasingContent[]): MdxJsxTextElement {
+  return {
     type: 'mdxJsxTextElement',
-    name: 'Anchor',
-    attributes: Object.entries(attrs).map(([name, value]) => ({
+    name,
+    attributes: Object.entries(attrs).map(([attrName, value]) => ({
       type: 'mdxJsxAttribute',
-      name,
+      name: attrName,
       value,
     })),
     children,
   };
-  return anchorNode as unknown as PhrasingContent;
-};
-
-// To add a new inline component: add it to EXCLUDED_TAGS in mdxish-component-blocks.ts
-// and register a transformer here.
-const INLINE_COMPONENT_MAP: Record<string, InlineComponentTransformer> = {
-  Anchor: transformAnchor,
-};
+}
 
 /**
  * Transforms inline html component nodes (e.g. <Anchor>) into proper MDAST phrasing content.
@@ -46,8 +41,7 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
     if (!match) return;
 
     const [, name, attrStr] = match;
-    const transformer = INLINE_COMPONENT_MAP[name];
-    if (!transformer) return;
+    if (!INLINE_COMPONENTS.has(name)) return;
 
     const attrMap = parseAttributes(attrStr ?? '').reduce(
       (acc, attr) => {
@@ -66,7 +60,7 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
     if (closeIdx >= parent.children.length) return;
 
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
-    const newNode = transformer(attrMap, children);
+    const newNode = toMdxJsxTextElement(name, attrMap, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
   });
 };
