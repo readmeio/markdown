@@ -12,15 +12,26 @@ import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
 
 interface Options {
   /**
-   * When true, outputs variables using `{user.key}` syntax instead of resolving
-   * to values or bare key names. Used by search indexing so the frontend can
-   * interpolate variables at display time.
+   * When true, preserves variable syntax instead of resolving to values or bare
+   * key names. Legacy variables (from `<<key>>` syntax) output as `<<key>>`,
+   * MDX variables output as `{user.key}` for valid identifiers or
+   * `{user["key"]}` for non-identifier keys (e.g. hyphens). Used by search
+   * indexing so the frontend can interpolate variables at display time with
+   * their respective regexes.
    */
   preserveVariableSyntax?: boolean;
   variables?: Record<string, string>;
 }
 
 const STRIP_TAGS = ['script', 'style'];
+
+/** Valid JS identifier: starts with $, _, or a letter; followed by $, _, letters, digits, etc. */
+const JS_IDENTIFIER_RE = /^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\u200C\u200D]*$/u;
+
+/** Format a variable key as MDX syntax, using bracket notation for non-identifier keys (e.g. hyphens). */
+function toMdxVariableSyntax(key: string): string {
+  return JS_IDENTIFIER_RE.test(key) ? `{user.${key}}` : `{user["${key}"]}`;
+}
 
 /**
  * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
@@ -84,7 +95,9 @@ function one(node: Nodes, opts: Options) {
       case 'variable':
       case 'Variable': {
         const key = node.properties.name.toString();
-        if (opts.preserveVariableSyntax) return `{user.${key}}`;
+        if (opts.preserveVariableSyntax) {
+          return node.properties.isLegacy ? `<<${key}>>` : toMdxVariableSyntax(key);
+        }
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
       }
@@ -110,7 +123,7 @@ function one(node: Nodes, opts: Options) {
   if (node.type === 'mdxTextExpression') {
     const key = extractMdxVariableKey(node as MdxTextExpressionHast);
     if (key) {
-      if (opts.preserveVariableSyntax) return `{user.${key}}`;
+      if (opts.preserveVariableSyntax) return toMdxVariableSyntax(key);
       return ('variables' in opts && opts.variables[key]) || key;
     }
   }
