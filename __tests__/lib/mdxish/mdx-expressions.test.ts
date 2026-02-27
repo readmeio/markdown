@@ -16,28 +16,6 @@ describe('mdxish MDX expressions', () => {
       expect(text.value).toContain('2');
     });
 
-    it('should evaluate variable from context inline', () => {
-      const md = 'Hello {user.name}!';
-      const ast = mdxish(md, { jsxContext: { user: { name: 'Alice' } } });
-
-      const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
-      const text = p.children.find(c => c.type === 'text') as Text;
-
-      expect(text.value).toBe('Hello Alice!');
-    });
-
-    it('should handle multiple expressions in one line', () => {
-      const md = '{user.firstName} {user.lastName} is {user.age} years old.';
-      const ast = mdxish(md, {
-        jsxContext: { user: { firstName: 'John', lastName: 'Doe', age: 30 } },
-      });
-
-      const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
-      const text = p.children.find(c => c.type === 'text') as Text;
-
-      expect(text.value).toBe('John Doe is 30 years old.');
-    });
-
     it('should handle expression at start of line', () => {
       const md = '{greeting} world!';
       const ast = mdxish(md, { jsxContext: { greeting: 'Hello' } });

@@ -34,7 +34,11 @@ import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
-import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
+import {
+  preprocessJSXExpressions,
+  removeJSXComments,
+  type JSXContext,
+} from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
   preserveBooleanProperties,
@@ -51,6 +55,7 @@ import { htmlEntity, htmlEntityFromMarkdown } from './micromark/html-entity';
 import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
+import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
 export interface MdxishOpts {
   components?: CustomComponents;
@@ -155,8 +160,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
-    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(variablesTextTransformer) // Parse {user.*} patterns from text
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
@@ -193,16 +197,22 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, variables } = opts;
+  const { components: userComponents = {}, jsxContext = {}, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
     ...userComponents,
   };
 
-  const { processor, parserReadyContent } = mdxishAstProcessor(mdContent, opts);
+  // Remove JSX comments before processing (protect code blocks first)
+  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
+  const withoutComments = removeJSXComments(protectedContent);
+  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
+
+  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
+    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
