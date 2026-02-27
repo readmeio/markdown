@@ -159,11 +159,11 @@ const escapeInvalidTags = (str: string): string =>
 const processMarkdownInHtmlString = (html: string): string => {
   let htmlContent = html;
 
-  // Replace legacy variable syntax like <<name>> with placeholders so the inner
+  // Replace all occurrences of legacy variable syntax like <<name>> with placeholders so the inner
   // <name> doesn't get parsed as an HTML tag and the tokenizer can parse it
   const legacyVars: Record<string, string> = {};
   let legacyCounter = 0;
-  htmlContent = htmlContent.replace(new RegExp(VARIABLE_REGEXP), match => {
+  htmlContent = htmlContent.replace(new RegExp(VARIABLE_REGEXP, 'g'), match => {
     const id = `RDMX_LEGACY_VAR_${(legacyCounter += 1)}_TOKEN`;
     legacyVars[id] = match;
     return id;
