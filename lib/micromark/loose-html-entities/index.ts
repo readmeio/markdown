@@ -5,4 +5,4 @@
  * its Unicode equivalent. Entities that already include the semicolon are left
  * for the standard parser to handle.
  */
-export { htmlEntity, htmlEntityFromMarkdown } from './syntax';
+export { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './syntax';
