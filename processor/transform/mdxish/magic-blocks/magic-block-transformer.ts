@@ -172,14 +172,14 @@ const processMarkdownInHtmlString = (html: string): string => {
   const placeholders: [string, string][] = [];
   let counter = 0;
   // Escape invalid html tags so they don't get parsed as HTML tags
-  htmlContent = escapeInvalidTags(htmlContent).replace(HTML_TAG_RE, match => {
+  const safened = escapeInvalidTags(htmlContent).replace(HTML_TAG_RE, match => {
     if (!/^<\/?[A-Z]/.test(match)) return match;
     const id = `<!--PC${(counter += 1)}-->`;
     placeholders.push([id, match]);
     return id;
   });
 
-  const hast = htmlParser.parse(htmlContent) as HastRoot;
+  const hast = htmlParser.parse(safened) as HastRoot;
 
   const textToHast = (text: string): HastRoot['children'] => {
     if (!text.trim()) return [{ type: 'text', value: text }];
