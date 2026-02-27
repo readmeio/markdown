@@ -316,55 +316,55 @@ My name is not <<name>>!
     describe('table magic blocks', () => {
       it('should parse <<variable>> inside table magic blocks', () => {
         const md = `[block:parameters]
-  {
-    "data": {"h-0": "Header <<name>>", "0-0": "My name is <<name>>!"},
-    "cols": 1,
-    "rows": 1
-  }
-  [/block]`;
+{
+  "data": {"h-0": "Header <<name>>", "0-0": "My name is <<name>>!"},
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
         const tree = mdxish(md);
         expect(countVariableNodes(tree)).toBe(2);
       });
 
       it('should parse <<variable>> inside table magic block cells wrapped in HTML blocks', () => {
         const md = `[block:parameters]
-  {
-    "data": {"h-0": "Header", "0-0": "<ul><li>My name is <<name>>!</li></ul>"},
-    "cols": 1,
-    "rows": 1
-  }
-  [/block]`;
+{
+  "data": {"h-0": "Header", "0-0": "<ul><li>My name is <<name>>!</li></ul>"},
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
         const tree = mdxish(md);
         expect(countVariableNodes(tree)).toBe(1);
       });
 
       it('should parse multiple <<variable>> in a table cell wrapped in HTML tags', () => {
         const md = `[block:parameters]
-  {
-    "data": {
-      "h-0": "Header <<name>> | This is not a variable: <name>",
-      "0-0": "<ol><li>[Network Traffic](doc:network-traffic).</li><li>My name is <<name>> and <<name>></li><li>Another variable <<name2>></li></ol>"
-    },
-    "cols": 1,
-    "rows": 1
-  }
-  [/block]`;
+{
+  "data": {
+    "h-0": "Header <<name>> | This is not a variable: <name>",
+    "0-0": "<ol><li>[Network Traffic](doc:network-traffic).</li><li>My name is <<name>> and <<name>></li><li>Another variable <<name2>></li></ol>"
+  },
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
         const tree = mdxish(md);
         expect(countVariableNodes(tree)).toBe(4);
       });
 
       it('should parse <<variable>> in a cell mixed with HTML tags', () => {
         const md = `[block:parameters]
-  {
-    "data": {"h-0": "Header", "0-0": "<ul><li>First item</li></ul> <<name>> <ul><li>Second item</li></ul>"},
-    "cols": 1,
-    "rows": 1
-  }
-  [/block]`;
+{
+  "data": {"h-0": "Header", "0-0": "<ul><li>First item</li></ul> <<name>> <ul><li>Second item</li></ul>"},
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
         const tree = mdxish(md);
         expect(countVariableNodes(tree)).toBe(1);
       });
-    })
+    });
 
     it('should parse <<variable>> inside api header magic blocks', () => {
       const md = `[block:api-header]

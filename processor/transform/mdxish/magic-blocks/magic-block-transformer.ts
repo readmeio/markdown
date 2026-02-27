@@ -136,7 +136,7 @@ const escapeInvalidTags = (str: string): string =>
   str.replace(HTML_TAG_RE, (match, tag, rest, offset, input) => {
     // Don't escape legacy variable syntax like <<var>> since we want to parse it
     // with the tokenizer and not want the <var> to get parsed as an HTML tag
-    const isLegacyVariable = (offset > 0 && input[offset - 1] === '<') &&  (offset < input.length - 1 && input[offset + match.length] === '>');
+    const isLegacyVariable = (offset > 0 && input[offset - 1] === '<') && (offset < input.length - 1 && input[offset + match.length] === '>');
     if (isLegacyVariable) return match;
 
     const tagName = tag.replace(/^\//, '');
