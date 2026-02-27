@@ -1,4 +1,5 @@
-import type { Html, Link, Node, Parent, PhrasingContent } from 'mdast';
+import type { Html, Node, Parent, PhrasingContent } from 'mdast';
+import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -11,14 +12,17 @@ const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][a-zA-Z]*)(\s[^>]*)?>$/;
 type InlineComponentTransformer = (attrs: Record<string, string>, children: PhrasingContent[]) => PhrasingContent;
 
 const transformAnchor: InlineComponentTransformer = (attrs, children) => {
-  const linkNode: Link & { target?: string } = {
-    type: 'link',
-    url: attrs.href ?? '',
-    title: attrs.title ?? null,
+  const anchorNode: MdxJsxTextElement = {
+    type: 'mdxJsxTextElement',
+    name: 'Anchor',
+    attributes: Object.entries(attrs).map(([name, value]) => ({
+      type: 'mdxJsxAttribute',
+      name,
+      value,
+    })),
     children,
-    ...(attrs.target && { target: attrs.target }),
   };
-  return linkNode as unknown as PhrasingContent;
+  return anchorNode as unknown as PhrasingContent;
 };
 
 // To add a new inline component: add it to EXCLUDED_TAGS in mdxish-component-blocks.ts
