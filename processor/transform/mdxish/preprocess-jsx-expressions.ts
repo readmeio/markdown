@@ -98,7 +98,7 @@ function protectHTMLBlockContent(content: string): string {
  * // Returns: 'Text  more text'
  * ```
  */
-function removeJSXComments(content: string): string {
+export function removeJSXComments(content: string): string {
   return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
 }
 
@@ -280,18 +280,15 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // Step 1: Protect code blocks and inline code
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
-  // Step 2: Remove JSX comments
-  processed = removeJSXComments(protectedContent);
-
-  // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
+  // Step 2: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   // For inline expressions, we use a library to parse the expression & evaluate it later
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(processed, context, protectedCode);
+  processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
 
-  // Step 4: Escape unbalanced braces to prevent MDX expression parsing errors
+  // Step 3: Escape unbalanced braces to prevent MDX expression parsing errors
   processed = escapeUnbalancedBraces(processed);
 
-  // Step 5: Restore protected code blocks
+  // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);
 
   return processed;
