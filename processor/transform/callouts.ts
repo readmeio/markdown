@@ -190,13 +190,18 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
 
     // Insert body content as a separate paragraph after the heading
     if (bodyChildren) {
+      const headingPosition = node.children[0].position;
       node.children.splice(1, 0, {
         type: 'paragraph',
         children: bodyChildren,
-        position: {
-          start: node.children[0].position.end,
-          end: firstParagraphOriginalEnd,
-        },
+        ...(headingPosition && firstParagraphOriginalEnd
+          ? {
+              position: {
+                start: headingPosition.end,
+                end: firstParagraphOriginalEnd,
+              },
+            }
+          : {}),
       });
     }
 
