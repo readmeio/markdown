@@ -1,5 +1,5 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Text } from 'hast';
+import type { Element, Root, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
 
@@ -17,6 +17,20 @@ function findElementByTagName(tree: Element, tagName: string): Element | null {
     return false;
   });
   return result;
+}
+
+// Util function to check if at least one legacy variable is parse
+// in a table magic block
+function foundVariableNodeInTableMagicBlock(tree: Root): boolean {
+  let foundVariable = false;
+  // Tables generate multiple children nodes so go through all children
+  tree.children.forEach(child => {
+    if (child.type === 'element' && child.tagName === 'table') {
+      const variableNode = findElementByTagName(child as Element, 'variable');
+      foundVariable = foundVariable || variableNode !== null;
+    }
+  });
+  return foundVariable;
 }
 
 describe('legacy variables resolution', () => {
@@ -303,26 +317,58 @@ My name is not <<name>>!
       expect(variableNode).not.toBeNull();
     });
 
-    it('should parse <<variable>> inside parameters magic blocks', () => {
-      const md = `[block:parameters]
-{
-  "data": {"h-0": "Header", "0-0": "My name is <<name>>!"},
-  "cols": 1,
-  "rows": 1
-}
-[/block]`;
-      const tree = mdxish(md);
-
-      // Tables generate multiple children nodes so go through all children
-      let foundVariable = false;
-      tree.children.forEach(child => {
-        if (child.type === 'element' && child.tagName === 'table') {
-          const variableNode = findElementByTagName(child as Element, 'variable');
-          foundVariable = foundVariable || variableNode !== null;
-        }
+    describe('table magic blocks', () => {
+      it('should parse <<variable>> inside table magic blocks', () => {
+        const md = `[block:parameters]
+  {
+    "data": {"h-0": "Header", "0-0": "My name is <<name>>!"},
+    "cols": 1,
+    "rows": 1
+  }
+  [/block]`;
+        const tree = mdxish(md);
+        expect(foundVariableNodeInTableMagicBlock(tree)).toBe(true);
       });
-      expect(foundVariable).toBe(true);
-    });
+
+      it('should parse <<variable>> inside table magic block cells wrapped in HTML blocks', () => {
+        const md = `[block:parameters]
+  {
+    "data": {"h-0": "Header", "0-0": "<ul><li>My name is <<name>>!</li></ul>"},
+    "cols": 1,
+    "rows": 1
+  }
+  [/block]`;
+        const tree = mdxish(md);
+        expect(foundVariableNodeInTableMagicBlock(tree)).toBe(true);
+      });
+
+      it('should parse <<variable>> after a closing block HTML tag in table cells', () => {
+        const md = `[block:parameters]
+  {
+    "data": {"h-0": "Header", "0-0": "<ul><li>First item</li></ul> <<name>>"},
+    "cols": 1,
+    "rows": 1
+  }
+  [/block]`;
+        const tree = mdxish(md);
+        expect(foundVariableNodeInTableMagicBlock(tree)).toBe(true);
+      });
+
+      it('should parse <<variable>> in multiline nested HTML table cell content', () => {
+        const md = `[block:parameters]
+  {
+    "data": {
+      "h-0": "Header",
+      "0-0": "<ul>\\n  <li><strong>First</strong></li>\\n  <li>My name is <<name>>!</li>\\n</ul>"
+    },
+    "cols": 1,
+    "rows": 1
+  }
+  [/block]`;
+        const tree = mdxish(md);
+        expect(foundVariableNodeInTableMagicBlock(tree)).toBe(true);
+      });
+    })
 
     it('should parse <<variable>> inside api header magic blocks', () => {
       const md = `[block:api-header]
