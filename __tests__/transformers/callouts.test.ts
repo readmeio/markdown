@@ -407,6 +407,20 @@ describe('callouts transformer', () => {
       `);
     });
 
+    it('does not convert a blockquote with emoji in the title into a nested callout', () => {
+      const md = '> 📘 > 🚧 emoji in title\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.data.hProperties.icon).toBe('📘');
+
+      const heading = callout.children[0] as Heading;
+      expect(heading.type).toBe('heading');
+      expect(heading.children[0]).toHaveProperty('type', 'blockquote');
+    });
+
     it('parses a dash as the title into a list', () => {
       const md = '> 📘 -\n>\n> Hello.';
       const tree = mdast(md);
@@ -504,6 +518,27 @@ describe('callouts transformer', () => {
           "type": "rdme-callout",
         }
       `);
+    });
+  });
+
+  describe('nested callouts', () => {
+    it('parses nested callouts inside a callout body', () => {
+      const md = `> 📘 Outer
+>
+> > 🚧 Inner
+> > Content`;
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const outer = tree.children[0] as Callout;
+      expect(outer.type).toBe('rdme-callout');
+      expect(outer.data.hProperties.icon).toBe('📘');
+
+      const inner = outer.children.find(c => (c as unknown as { type: string }).type === 'rdme-callout') as
+        | Callout
+        | undefined;
+      expect(inner).toBeDefined();
+      expect(inner!.data.hProperties.icon).toBe('🚧');
     });
   });
 

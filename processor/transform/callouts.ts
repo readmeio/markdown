@@ -220,16 +220,23 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
 };
 
 const calloutTransformer = () => {
-  return (tree: Root) => {
-    visit(tree, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
+  const processNode = (root: Node) => {
+    visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
       processBlockquote(node, index, parent);
-      // Skip visiting children after converting to callout to prevent re-processing
-      // parsed block-level title content (e.g., blockquotes from "> Quote" titles).
       if ((node as unknown as { type: string }).type === NodeTypes.callout) {
+        // SKIP prevents re-processing synthetic blockquotes in parsed title content
+        // (e.g., blockquotes from "> Quote" titles). Recursively process body children
+        // (index 1+, skipping the heading at 0) to handle nested callouts.
+        for (let i = 1; i < node.children.length; i += 1) {
+          processNode(node.children[i]);
+        }
         return SKIP;
       }
       return undefined;
     });
+  };
+  return (tree: Root) => {
+    processNode(tree);
   };
 };
 
