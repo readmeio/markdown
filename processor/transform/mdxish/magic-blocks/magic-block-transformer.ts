@@ -24,6 +24,8 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
+import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
@@ -108,12 +110,17 @@ const contentParser = unified()
   .use(remarkGfm)
   .use(normalizeEmphasisAST);
 
-/** Markdown to HTML processor (mdast → hast → HTML string) */
+/**
+ * Markdown to HTML processor (mdast → hast → HTML string).
+ *
+ * Uses only strikethrough from GFM instead of the full remarkGfm bundle
+ * since we've had a case where it was causing a stack overflow when parsing HTML blocks containing URLs
+ * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
+ */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown()])
   .use(remarkParse)
-  .use(remarkGfm)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
   .use(rehypeStringify);
