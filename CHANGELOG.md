@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 13.4.0
+### ✨ New & Improved
+
+* **mdxish:** preserve jsx expressions in ast processor ([#1332](https://github.com/readmeio/markdown/issues/1332)) ([7704aaa](https://github.com/readmeio/markdown/commit/7704aaa1bc2b6c9e930b53d72b36ab5966a714b2))
+
+### 🛠 Fixes & Updates
+
+* focus on code copy button ([#1352](https://github.com/readmeio/markdown/issues/1352)) ([6853be1](https://github.com/readmeio/markdown/commit/6853be19fdd3f0eace794d8bbc6f0286d093b195))
+* **stripComments:** not escape checkbox ([#1360](https://github.com/readmeio/markdown/issues/1360)) ([a4226c2](https://github.com/readmeio/markdown/commit/a4226c2252d869608290bee89584ff54b00f5dc5))
+* preserve legacy syntax for legacy variables ([#1365](https://github.com/readmeio/markdown/issues/1365)) ([d735a99](https://github.com/readmeio/markdown/commit/d735a99ccdcab866c6f087841d746504a922e8fc))
+
 ## Version 13.3.0
 ### ✨ New & Improved
 
