@@ -25,6 +25,8 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
+import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
+import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
@@ -109,12 +111,17 @@ const contentParser = unified()
   .use(remarkGfm)
   .use(normalizeEmphasisAST);
 
-/** Markdown to HTML processor (mdast → hast → HTML string) */
+/**
+ * Markdown to HTML processor (mdast → hast → HTML string).
+ *
+ * Uses only strikethrough from GFM instead of the full remarkGfm bundle
+ * since we've had a case where it was causing a stack overflow when parsing HTML blocks containing URLs
+ * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
+ */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown()])
   .use(remarkParse)
-  .use(remarkGfm)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
   .use(rehypeStringify);
@@ -136,7 +143,8 @@ const escapeInvalidTags = (str: string): string =>
   str.replace(HTML_TAG_RE, (match, tag, rest, offset, input) => {
     // Don't escape legacy variable syntax like <<var>> since we want to parse it
     // with the tokenizer and not want the <var> to get parsed as an HTML tag
-    const isLegacyVariable = (offset > 0 && input[offset - 1] === '<') && (offset < input.length - 1 && input[offset + match.length] === '>');
+    const isLegacyVariable =
+      offset > 0 && input[offset - 1] === '<' && offset < input.length - 1 && input[offset + match.length] === '>';
     if (isLegacyVariable) return match;
 
     const tagName = tag.replace(/^\//, '');
