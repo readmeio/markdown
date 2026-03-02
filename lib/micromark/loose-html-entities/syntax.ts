@@ -3,7 +3,7 @@ import type { CompileContext, Extension as FromMarkdownExtension, Handle } from 
 import type { Code, Construct, Effects, Extension, State, TokenizeContext } from 'micromark-util-types';
 
 import { decodeHTMLStrict } from 'entities';
-import { asciiAlphanumeric } from 'micromark-util-character';
+import { asciiAlphanumeric, asciiDigit, asciiHexDigit } from 'micromark-util-character';
 import { codes } from 'micromark-util-symbol';
 
 declare module 'micromark-util-types' {
@@ -33,14 +33,60 @@ function tokenizeLooseHtmlEntity(this: TokenizeContext, effects: Effects, ok: St
     if (code !== codes.ampersand) return nok(code);
     effects.enter('looseHtmlEntity');
     effects.consume(code);
-    return accumulate;
+    return afterAmpersand;
   };
 
-  const accumulate = (code: Code): State | undefined => {
+  const afterAmpersand = (code: Code): State | undefined => {
+    if (code === codes.numberSign) {
+      effects.consume(code);
+      return afterHash;
+    }
+
+    return accumulateNamed(code);
+  };
+
+  const afterHash = (code: Code): State | undefined => {
+    if (code === codes.lowercaseX || code === codes.uppercaseX) {
+      effects.consume(code);
+      return accumulateHex;
+    }
+
+    return accumulateDecimal(code);
+  };
+
+  const accumulateNamed = (code: Code): State | undefined => {
     if (asciiAlphanumeric(code) && length < MAX_ENTITY_LENGTH) {
       effects.consume(code);
       length += 1;
-      return accumulate;
+      return accumulateNamed;
+    }
+
+    if (length === 0) return nok(code);
+    if (code === codes.semicolon) return nok(code);
+
+    effects.exit('looseHtmlEntity');
+    return ok(code);
+  };
+
+  const accumulateDecimal = (code: Code): State | undefined => {
+    if (asciiDigit(code) && length < MAX_ENTITY_LENGTH) {
+      effects.consume(code);
+      length += 1;
+      return accumulateDecimal;
+    }
+
+    if (length === 0) return nok(code);
+    if (code === codes.semicolon) return nok(code);
+
+    effects.exit('looseHtmlEntity');
+    return ok(code);
+  };
+
+  const accumulateHex = (code: Code): State | undefined => {
+    if (asciiHexDigit(code) && length < MAX_ENTITY_LENGTH) {
+      effects.consume(code);
+      length += 1;
+      return accumulateHex;
     }
 
     if (length === 0) return nok(code);
@@ -57,14 +103,23 @@ function exitLooseHtmlEntity(this: CompileContext, token: Parameters<Handle>[0])
   const raw = this.sliceSerialize(token);
   const entityChars = raw.slice(1);
 
-  for (let len = entityChars.length; len >= 2; len -= 1) {
-    const candidate = entityChars.slice(0, len);
-    const decoded = resolveEntity(candidate);
+  if (entityChars.startsWith('#')) {
+    const decoded = resolveEntity(entityChars);
     if (decoded) {
-      const remainder = entityChars.slice(len);
-      this.enter({ type: 'text', value: decoded + remainder }, token);
+      this.enter({ type: 'text', value: decoded }, token);
       this.exit(token);
       return;
+    }
+  } else {
+    for (let len = entityChars.length; len >= 2; len -= 1) {
+      const candidate = entityChars.slice(0, len);
+      const decoded = resolveEntity(candidate);
+      if (decoded) {
+        const remainder = entityChars.slice(len);
+        this.enter({ type: 'text', value: decoded + remainder }, token);
+        this.exit(token);
+        return;
+      }
     }
   }
 
