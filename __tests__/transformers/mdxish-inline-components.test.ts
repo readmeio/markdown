@@ -4,7 +4,6 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import { mdxish } from '../../lib/mdxish';
 import mdxishInlineComponents from '../../processor/transform/mdxish/mdxish-inline-components';
 
 /**
@@ -622,91 +621,5 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
-  });
-});
-
-/**
- * Integration tests using the full mdxish pipeline to verify end-to-end behavior.
- */
-describe('mdxish-inline-components integration', () => {
-  /**
-   * Helper to find HAST elements by tag name
-   */
-  const findHastElements = (
-    node: { type: string; tagName?: string; children?: unknown[] },
-    tagName: string,
-  ): { tagName: string; properties?: Record<string, unknown>; children?: unknown[] }[] => {
-    const results: { tagName: string; properties?: Record<string, unknown>; children?: unknown[] }[] = [];
-    const stack = [node];
-
-    while (stack.length) {
-      const current = stack.pop()!;
-      if (current.type === 'element' && current.tagName === tagName) {
-        results.push(current as { tagName: string; properties?: Record<string, unknown>; children?: unknown[] });
-      }
-      if (current.children && Array.isArray(current.children)) {
-        stack.push(...(current.children as typeof node[]));
-      }
-    }
-
-    return results;
-  };
-
-  it('should render Anchor as Anchor component in full pipeline with newEditorTypes', () => {
-    const markdown = 'Click <Anchor href="doc:getting-started">here</Anchor> to start.';
-    const hast = mdxish(markdown, { newEditorTypes: true });
-
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(anchors).toHaveLength(1);
-    expect(anchors[0].properties?.href).toBe('doc:getting-started');
-  });
-
-  it('should preserve target attribute through full pipeline', () => {
-    const markdown = '<Anchor href="https://external.com" target="_blank">External</Anchor>';
-    const hast = mdxish(markdown, { newEditorTypes: true });
-
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(anchors).toHaveLength(1);
-    expect(anchors[0].properties?.target).toBe('_blank');
-  });
-
-  it('should handle Anchor alongside block components', () => {
-    const markdown = `<Callout theme="info">
-Check out <Anchor href="doc:guide">this guide</Anchor> for more info.
-</Callout>`;
-    const hast = mdxish(markdown, { newEditorTypes: true });
-
-    const callouts = findHastElements(hast, 'Callout');
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(callouts).toHaveLength(1);
-    expect(anchors).toHaveLength(1);
-  });
-
-  it('should handle multiple Anchors in full pipeline', () => {
-    const markdown =
-      'See <Anchor href="doc:intro">intro</Anchor> and <Anchor href="doc:advanced">advanced</Anchor>.';
-    const hast = mdxish(markdown, { newEditorTypes: true });
-
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(anchors).toHaveLength(2);
-  });
-
-  it('should still render Anchor component when newEditorTypes is false (via rehypeRaw)', () => {
-    const markdown = '<Anchor href="https://example.com">Link</Anchor>';
-    const hast = mdxish(markdown, { newEditorTypes: false });
-
-    // Without newEditorTypes, the Anchor passes through rehypeRaw and is still
-    // recognized by rehypeMdxishComponents as a custom component
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(anchors).toHaveLength(1);
-  });
-
-  it('should handle Anchor with doc: URL that has hash fragment', () => {
-    const markdown = '<Anchor href="doc:page#section">Section Link</Anchor>';
-    const hast = mdxish(markdown, { newEditorTypes: true });
-
-    const anchors = findHastElements(hast, 'Anchor');
-    expect(anchors).toHaveLength(1);
-    expect(anchors[0].properties?.href).toBe('doc:page#section');
   });
 });

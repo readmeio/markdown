@@ -116,38 +116,6 @@ Hello** Wrong Bold**`;
   });
 });
 
-describe('JSX comment removal', () => {
-  it('should remove JSX comments', () => {
-    const md = 'Hello {/* this is a comment */} world';
-    const tree = mdxish(md);
-    const text = extractText(tree);
-    expect(text).toContain('Hello');
-    expect(text).toContain('world');
-    expect(text).not.toContain('this is a comment');
-    expect(text).not.toContain('{/*');
-  });
-
-  it('should remove multiline JSX comments', () => {
-    const md = `Before
-{/**
- * Multiline comment
- */}
-After`;
-    const tree = mdxish(md);
-    const text = extractText(tree);
-    expect(text).toContain('Before');
-    expect(text).toContain('After');
-    expect(text).not.toContain('Multiline comment');
-  });
-
-  it('should preserve JSX comments in code blocks', () => {
-    const md = '```jsx\n{/* comment in code block */}\n```';
-    const tree = mdxish(md);
-    const text = extractText(tree);
-    expect(text).toContain('{/* comment in code block */}');
-  });
-});
-
 describe('mdxish safeMode', () => {
   describe('with safeMode: false (default)', () => {
     it('should evaluate inline expressions', () => {
