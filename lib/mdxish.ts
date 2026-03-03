@@ -194,22 +194,16 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, jsxContext = {}, safeMode = false, variables } = opts;
+  const { components: userComponents = {}, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
     ...userComponents,
   };
 
-  // Remove JSX comments before processing (protect code blocks first)
-  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
-  const withoutComments = removeJSXComments(protectedContent);
-  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
-
-  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
+  const { processor, parserReadyContent } = mdxishAstProcessor(mdContent, opts);
 
   processor
-    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
