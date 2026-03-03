@@ -141,4 +141,66 @@ describe('mdxishMdastToMd', () => {
     const result = mdxishMdastToMd(mdast);
     expect(result).toBe('{user.name} - {user.email}\n');
   });
+
+  it('should convert gfm checklist nodes list to * and retain checkbox that has no text after it', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'list',
+          ordered: false,
+          spread: false,
+          children: [
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'hi' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'there' }],
+                },
+              ],
+            },
+            // Normal bullet list item should not be affected
+            {
+              type: 'listItem',
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'normal' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('* [ ] hi\n* [ ]\n* [ ] there\n- normal\n');
+  });
 });
