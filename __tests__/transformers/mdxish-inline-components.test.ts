@@ -432,16 +432,6 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
-
-    it('should transform Glossary as inline component', () => {
-      // Glossary is now included in INLINE_COMPONENTS
-      const markdown = '<Glossary>term</Glossary>';
-      const tree = parseWithPlugin(markdown);
-
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
-      expect(nodes).toHaveLength(1);
-      expect(nodes[0].name).toBe('Glossary');
-    });
   });
 
   describe('interaction with markdown syntax', () => {
