@@ -1,7 +1,7 @@
 import type { Root as MdastRoot, RootContent } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
-import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib';
+import { mdxishMdastToMd } from '../../../lib';
 
 describe('mdxishMdastToMd', () => {
   it('should convert a simple paragraph', () => {

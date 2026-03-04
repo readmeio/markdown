@@ -5,7 +5,7 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
-const isEmbed = (node: Node): node is Embed => 'title' in node && node.title === '@embed';
+const isEmbed = (node: Node | undefined): node is Embed => Boolean(node && 'title' in node && node.title === '@embed');
 
 const embedTransformer = () => {
   return (tree: Node) => {
@@ -14,7 +14,7 @@ const embedTransformer = () => {
       if (!isEmbed(child)) return;
 
       const { url, title } = child;
-      const label = (child.children[0] as Text).value;
+      const label = (child.children[0] as Text | undefined)?.value ?? title;
 
       const newNode = {
         type: NodeTypes.embedBlock,

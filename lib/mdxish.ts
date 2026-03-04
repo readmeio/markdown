@@ -49,6 +49,7 @@ import variablesCodeResolver from '../processor/transform/mdxish/variables-code'
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { legacyVariable } from './micromark/legacy-variable';
@@ -140,8 +141,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
