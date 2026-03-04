@@ -37,6 +37,7 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
+import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
@@ -104,7 +105,7 @@ const preprocessBody = (text: string): string => {
 /** Markdown parser */
 const contentParser = unified()
   .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
   .use(remarkParse)
   .use(remarkBreaks)
   .use(remarkGfm)
@@ -119,7 +120,7 @@ const contentParser = unified()
  */
 const markdownToHtml = unified()
   .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
