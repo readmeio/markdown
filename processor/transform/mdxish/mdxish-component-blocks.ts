@@ -2,9 +2,11 @@ import type { Node, Parent, Paragraph, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 
@@ -29,8 +31,9 @@ const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
-  .use(remarkParse);
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
+  .use(remarkParse)
+  .use(remarkGfm);
 
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
