@@ -1,6 +1,5 @@
-import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Paragraph, Root } from 'mdast';
-import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishAstProcessor } from '../../../lib/mdxish';
@@ -106,15 +105,7 @@ This is a warning message.
     });
 
     describe('Anchor component', () => {
-      /**
-       * Helper to get attribute value from mdxJsxTextElement
-       */
-      const getAttr = (node: MdxJsxTextElement, name: string): string | null | undefined => {
-        const attr = node.attributes.find(a => a.type === 'mdxJsxAttribute' && a.name === name);
-        return attr && 'value' in attr ? (attr.value as string | null) : undefined;
-      };
-
-      it('should keep <Anchor> as mdxJsxTextElement node', () => {
+      it('should transform <Anchor> to readme-anchor node', () => {
         const md = 'Start by <Anchor href="https://readme.com">ReadMe</Anchor> today.';
         const ast = processWithNewTypes(md);
 
@@ -122,10 +113,9 @@ This is a warning message.
         expect(ast.children[0].type).toBe('paragraph');
 
         const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === 'mdxJsxTextElement') as MdxJsxTextElement;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
         expect(anchorNode).toBeDefined();
-        expect(anchorNode.name).toBe('Anchor');
-        expect(getAttr(anchorNode, 'href')).toBe('https://readme.com');
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
         expect(anchorNode.children[0]).toMatchObject({ type: 'text', value: 'ReadMe' });
       });
 
@@ -134,11 +124,10 @@ This is a warning message.
         const ast = processWithNewTypes(md);
 
         const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === 'mdxJsxTextElement') as MdxJsxTextElement;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
         expect(anchorNode).toBeDefined();
-        expect(anchorNode.name).toBe('Anchor');
-        expect(getAttr(anchorNode, 'href')).toBe('https://docs.readme.com');
-        expect(getAttr(anchorNode, 'target')).toBe('_blank');
+        expect(anchorNode.data?.hProperties?.href).toBe('https://docs.readme.com');
+        expect(anchorNode.data?.hProperties?.target).toBe('_blank');
         expect(anchorNode.children[0]).toMatchObject({ type: 'text', value: 'Guides' });
       });
 
@@ -147,10 +136,10 @@ This is a warning message.
         const ast = processWithNewTypes(md);
 
         const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === 'mdxJsxTextElement') as MdxJsxTextElement;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
         expect(anchorNode).toBeDefined();
-        expect(getAttr(anchorNode, 'href')).toBe('https://readme.com');
-        expect(getAttr(anchorNode, 'target')).toBeUndefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
+        expect(anchorNode.data?.hProperties?.target).toBeUndefined();
       });
 
       it('should preserve title attribute', () => {
@@ -158,8 +147,8 @@ This is a warning message.
         const ast = processWithNewTypes(md);
 
         const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === 'mdxJsxTextElement') as MdxJsxTextElement;
-        expect(getAttr(anchorNode, 'title')).toBe('Home');
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode.data?.hProperties?.title).toBe('Home');
       });
 
       it('should handle empty Anchor children', () => {
@@ -168,9 +157,9 @@ This is a warning message.
 
         expect(ast.children).toHaveLength(1);
         const para = ast.children[0] as Paragraph;
-        const anchorNode = para.children.find(c => c.type === 'mdxJsxTextElement') as MdxJsxTextElement;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
         expect(anchorNode).toBeDefined();
-        expect(getAttr(anchorNode, 'href')).toBe('https://readme.com');
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
         expect(anchorNode.children).toHaveLength(0);
       });
     });

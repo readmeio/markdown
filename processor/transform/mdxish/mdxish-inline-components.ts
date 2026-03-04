@@ -1,5 +1,5 @@
 import type { Html, Node, Parent, PhrasingContent } from 'mdast';
-import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
+import type { MdxJsxAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -7,21 +7,18 @@ import { visit } from 'unist-util-visit';
 import { parseAttributes } from './mdxish-component-blocks';
 
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
-const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][a-zA-Z]*)(\s[^>]*)?>$/;
+// Uses [A-Za-z0-9_]* to match block version in mdxish-component-blocks.ts
+const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
 
 // To add a new inline component: add it to both EXCLUDED_TAGS in mdxish-component-blocks.ts
 // and to this set.
 const INLINE_COMPONENTS = new Set(['Anchor']);
 
-function toMdxJsxTextElement(name: string, attrs: Record<string, string>, children: PhrasingContent[]): MdxJsxTextElement {
+function toMdxJsxTextElement(name: string, attributes: MdxJsxAttribute[], children: PhrasingContent[]): MdxJsxTextElement {
   return {
     type: 'mdxJsxTextElement',
     name,
-    attributes: Object.entries(attrs).map(([attrName, value]) => ({
-      type: 'mdxJsxAttribute',
-      name: attrName,
-      value,
-    })),
+    attributes,
     children,
   };
 }
@@ -43,24 +40,20 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
     const [, name, attrStr] = match;
     if (!INLINE_COMPONENTS.has(name)) return;
 
-    const attrMap = parseAttributes(attrStr ?? '').reduce(
-      (acc, attr) => {
-        if ('name' in attr && typeof attr.value === 'string') acc[attr.name] = attr.value;
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+    // Parse attributes directly - preserves all attribute types (strings, booleans, objects, arrays)
+    const attributes = parseAttributes(attrStr ?? '');
 
+    // Find closing tag with whitespace-tolerant matching
     let closeIdx = index + 1;
     while (closeIdx < parent.children.length) {
       const sib = parent.children[closeIdx] as { type: string; value?: string };
-      if (sib.type === 'html' && sib.value === `</${name}>`) break;
+      if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) break;
       closeIdx += 1;
     }
     if (closeIdx >= parent.children.length) return;
 
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
-    const newNode = toMdxJsxTextElement(name, attrMap, children);
+    const newNode = toMdxJsxTextElement(name, attributes, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
   });
 };
