@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 13.5.0
+### ✨ New & Improved
+
+* **mdxish:** add GFM checkbox compiler & parsing when there's whitespace ([#1368](https://github.com/readmeio/markdown/issues/1368)) ([5488cce](https://github.com/readmeio/markdown/commit/5488cce527dcf0b9e8b96354892feedb41bf56ca))
+* create a comparison view between mdxish and rdmd in demo app ([#1363](https://github.com/readmeio/markdown/issues/1363)) ([506e884](https://github.com/readmeio/markdown/commit/506e8849a3d855701b52fe363fef07374829961b))
+
+### 🛠 Fixes & Updates
+
+* dont show backslash in unbalanced braces ([#1358](https://github.com/readmeio/markdown/issues/1358)) ([ae0b52e](https://github.com/readmeio/markdown/commit/ae0b52e66a0084df49a53b4de4e3224bbba81cfe))
+* **mdxish:** inconsistent line break ([#1351](https://github.com/readmeio/markdown/issues/1351)) ([5398838](https://github.com/readmeio/markdown/commit/539883812492f2ef9c67d105a832de930ed6062e))
+* normalize `&nbsp` that does not have semicolons ([#1359](https://github.com/readmeio/markdown/issues/1359)) ([c816270](https://github.com/readmeio/markdown/commit/c81627043c7bb9c3c11e87eb9a770911179b7399))
+* **mdxish:** parse legacy variables in table magic blocks that's in html markdown ([#1367](https://github.com/readmeio/markdown/issues/1367)) ([2826a8e](https://github.com/readmeio/markdown/commit/2826a8e17d4cfab2e423293816c711e54530efd1))
+* **mdxish:** stop using remark gfm for parsing html in table cell magic blocks ([#1366](https://github.com/readmeio/markdown/issues/1366)) ([f50ca9c](https://github.com/readmeio/markdown/commit/f50ca9ceb56d90ed11969d4974d49b849c254875))
+
 ## Version 13.4.0
 ### ✨ New & Improved
 
