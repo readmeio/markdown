@@ -3,6 +3,10 @@ import type { Info, State } from 'mdast-util-to-markdown';
 
 import { defaultHandlers } from 'mdast-util-to-markdown';
 
+// Matches '*', '-', '+', '1.', '2.', '3.', etc. followed by a newline or 1-3 spaces
+// to be replaced with the marker and a space like `- [ ]`
+const listMarkerRegex = /^(?:[*+-]|\d+\.)(?:([\r\n]| {1,3})|$)/;
+
 /**
  * List-item serializer intended for checklist items
  * Uses the default listItem handler for formatting, then patches the output to inject the checkbox and preserve empty items
@@ -32,7 +36,7 @@ const listItem = (node: ListItem, parent?: List, state?: State, info?: Info) => 
   });
 
   // Patch and inject checkbox after the list marker token
-  value = value.replace(/^(?:[*+-]|\d+\.)(?:([\r\n]| {1,3})|$)/, (match, separator) => {
+  value = value.replace(listMarkerRegex, (match, separator) => {
     const marker = match.trim();
     const actualSeparator = separator || ' ';
     return `${marker}${actualSeparator}${checkbox}`;

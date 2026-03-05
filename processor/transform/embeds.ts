@@ -14,7 +14,7 @@ const embedTransformer = () => {
       if (!isEmbed(child)) return;
 
       const { url, title } = child;
-      const label = (child.children[0] as Text | undefined)?.value ?? title;
+      const label = (child.children[0] as Text | undefined)?.value;
 
       const newNode = {
         type: NodeTypes.embedBlock,
