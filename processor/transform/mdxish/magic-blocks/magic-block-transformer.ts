@@ -39,6 +39,7 @@ import { visitParents } from 'unist-util-visit-parents';
 
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
+import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
@@ -103,8 +104,8 @@ const preprocessBody = (text: string): string => {
 
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
+  .data('micromarkExtensions', [legacyVariable(), looseHtmlEntity()])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkBreaks)
   .use(remarkGfm)
@@ -118,8 +119,8 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown()])
+  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable(), looseHtmlEntity()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)

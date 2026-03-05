@@ -53,6 +53,7 @@ import tailwindTransformer from '../processor/transform/tailwind';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { legacyVariable } from './micromark/legacy-variable';
+import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
@@ -137,12 +138,17 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
+    .data(
+      'micromarkExtensions',
+      safeMode
+        ? [magicBlock(), legacyVariable(), looseHtmlEntity()]
+        : [magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+    )
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
+        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()]
+        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
