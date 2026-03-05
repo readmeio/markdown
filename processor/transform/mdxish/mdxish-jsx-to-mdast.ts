@@ -247,7 +247,14 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
 
 /**
  * Transform mdxJsxFlowElement nodes and magic block nodes into proper MDAST node types.
- * Runs after mdxishComponentBlocks; controlled by the `newEditorTypes` flag.
+  *
+ * This transformer runs after mdxishComponentBlocks and converts:
+ * - JSX component elements (Image, Callout, Embed, Recipe) into their corresponding MDAST types
+ * - Magic block image nodes (type: 'image') into image-block
+ * - Magic block embed nodes (type: 'embed') into embed-block
+ * - Figure nodes containing images (from magic blocks with captions) - transforms the inner image
+ *
+ * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
   // Block JSX components (Image, Callout, Embed, Recipe)
