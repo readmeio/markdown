@@ -24,6 +24,7 @@ import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { VARIABLE_REGEXP } from '@readme/variable';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
@@ -140,7 +141,13 @@ const processBackslashEscapes = (text: string): string =>
 const BLOCK_LEVEL_TAGS: ReadonlySet<string> = new Set(htmlBlockNames);
 
 const escapeInvalidTags = (str: string): string =>
-  str.replace(HTML_TAG_RE, (match, tag, rest) => {
+  str.replace(HTML_TAG_RE, (match, tag, rest, offset, input) => {
+    // Don't escape legacy variable syntax like <<var>> since we want to parse it
+    // with the tokenizer and not want the <var> to get parsed as an HTML tag
+    const isLegacyVariable =
+      offset > 0 && input[offset - 1] === '<' && offset < input.length - 1 && input[offset + match.length] === '>';
+    if (isLegacyVariable) return match;
+
     const tagName = tag.replace(/^\//, '');
     if (STANDARD_HTML_TAGS.has(tagName.toLowerCase())) return match;
     // Preserve PascalCase tags (custom components like <Glossary>) for the main pipeline
@@ -159,9 +166,22 @@ const escapeInvalidTags = (str: string): string =>
  * (it treats unknown tags as void elements, stripping their children).
  */
 const processMarkdownInHtmlString = (html: string): string => {
+  let htmlContent = html;
+
+  // Replace all occurrences of legacy variable syntax like <<name>> with placeholders so the inner
+  // <name> doesn't get parsed as an HTML tag and the tokenizer can parse it
+  const legacyVars: Record<string, string> = {};
+  let legacyCounter = 0;
+  htmlContent = htmlContent.replace(new RegExp(VARIABLE_REGEXP, 'g'), match => {
+    const id = `RDMX_LEGACY_VAR_${(legacyCounter += 1)}_TOKEN`;
+    legacyVars[id] = match;
+    return id;
+  });
+
   const placeholders: [string, string][] = [];
   let counter = 0;
-  const safened = escapeInvalidTags(html).replace(HTML_TAG_RE, match => {
+  // Escape invalid html tags so they don't get parsed as HTML tags
+  const safened = escapeInvalidTags(htmlContent).replace(HTML_TAG_RE, match => {
     if (!/^<\/?[A-Z]/.test(match)) return match;
     const id = `<!--PC${(counter += 1)}-->`;
     placeholders.push([id, match]);
@@ -173,7 +193,11 @@ const processMarkdownInHtmlString = (html: string): string => {
   const textToHast = (text: string): HastRoot['children'] => {
     if (!text.trim()) return [{ type: 'text', value: text }];
 
-    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(text))) as HastRoot;
+    // Restore legacy variables
+    const restoredText = Object.entries(legacyVars).reduce((res, [id, original]) => res.replace(id, original), text);
+
+    // Cell children might have html that needs to be parsed as markdown
+    const parsed = markdownToHtml.runSync(markdownToHtml.parse(escapeInvalidTags(restoredText))) as HastRoot;
     const nodes = parsed.children.flatMap(n =>
       n.type === 'element' && (n as HastElement).tagName === 'p' ? (n as HastElement).children : [n],
     );

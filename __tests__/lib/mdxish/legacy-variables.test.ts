@@ -1,5 +1,5 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Text } from 'hast';
+import type { Element, Root, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
 
@@ -17,6 +17,16 @@ function findElementByTagName(tree: Element, tagName: string): Element | null {
     return false;
   });
   return result;
+}
+
+// Count all variable nodes in the tree (recursively)
+function countVariableNodes(node: Element | Root): number {
+  const children = 'children' in node ? node.children : [];
+  const selfCount = node.type === 'element' && (node as Element).tagName === 'variable' ? 1 : 0;
+  const childCount = children
+    .filter((child): child is Element => child.type === 'element')
+    .reduce((sum, child) => sum + countVariableNodes(child), 0);
+  return selfCount + childCount;
 }
 
 describe('legacy variables resolution', () => {
@@ -303,25 +313,57 @@ My name is not <<name>>!
       expect(variableNode).not.toBeNull();
     });
 
-    it('should parse <<variable>> inside parameters magic blocks', () => {
-      const md = `[block:parameters]
+    describe('table magic blocks', () => {
+      it('should parse <<variable>> inside table magic blocks', () => {
+        const md = `[block:parameters]
 {
-  "data": {"h-0": "Header", "0-0": "My name is <<name>>!"},
+  "data": {"h-0": "Header <<name>>", "0-0": "My name is <<name>>!"},
   "cols": 1,
   "rows": 1
 }
 [/block]`;
-      const tree = mdxish(md);
-
-      // Tables generate multiple children nodes so go through all children
-      let foundVariable = false;
-      tree.children.forEach(child => {
-        if (child.type === 'element' && child.tagName === 'table') {
-          const variableNode = findElementByTagName(child as Element, 'variable');
-          foundVariable = foundVariable || variableNode !== null;
-        }
+        const tree = mdxish(md);
+        expect(countVariableNodes(tree)).toBe(2);
       });
-      expect(foundVariable).toBe(true);
+
+      it('should parse <<variable>> inside table magic block cells wrapped in HTML blocks', () => {
+        const md = `[block:parameters]
+{
+  "data": {"h-0": "Header", "0-0": "<ul><li>My name is <<name>>!</li></ul>"},
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
+        const tree = mdxish(md);
+        expect(countVariableNodes(tree)).toBe(1);
+      });
+
+      it('should parse multiple <<variable>> in a table cell wrapped in HTML tags', () => {
+        const md = `[block:parameters]
+{
+  "data": {
+    "h-0": "Header <<name>> | This is not a variable: <name>",
+    "0-0": "<ol><li>[Network Traffic](doc:network-traffic).</li><li>My name is <<name>> and <<name>></li><li>Another variable <<name2>></li></ol>"
+  },
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
+        const tree = mdxish(md);
+        expect(countVariableNodes(tree)).toBe(4);
+      });
+
+      it('should parse <<variable>> in a cell mixed with HTML tags', () => {
+        const md = `[block:parameters]
+{
+  "data": {"h-0": "Header", "0-0": "<ul><li>First item</li></ul> <<name>> <ul><li>Second item</li></ul>"},
+  "cols": 1,
+  "rows": 1
+}
+[/block]`;
+        const tree = mdxish(md);
+        expect(countVariableNodes(tree)).toBe(1);
+      });
     });
 
     it('should parse <<variable>> inside api header magic blocks', () => {
