@@ -471,67 +471,59 @@ describe('callouts transformer', () => {
       `);
     });
 
-    it('preserves a link in a blockquote title', () => {
-      const md = '> 👍 > [Hello](https://example.com)\n>\n> Body.';
-      const tree = mdast(md);
-      removePosition(tree, { force: true });
-
-      const callout = tree.children[0] as Callout;
-      expect(callout.type).toBe('rdme-callout');
-
-      const heading = callout.children[0] as Heading;
-      const blockquote = heading.children[0] as unknown as Blockquote;
-      expect(blockquote).toHaveProperty('type', 'blockquote');
-
-      const paragraph = blockquote.children[0] as Paragraph;
-      expect(paragraph.children[0]).toHaveProperty('type', 'link');
-      expect(paragraph.children[0]).toHaveProperty('url', 'https://example.com');
-    });
-
-    it('preserves bold and link in a blockquote title', () => {
-      const md = '> 📘 > **bold** [link](https://example.com)\n>\n> Body.';
-      const tree = mdast(md);
-      removePosition(tree, { force: true });
-
-      const callout = tree.children[0] as Callout;
-      const heading = callout.children[0] as Heading;
-      const blockquote = heading.children[0] as unknown as Blockquote;
-      expect(blockquote).toHaveProperty('type', 'blockquote');
-
-      const paragraph = blockquote.children[0] as Paragraph;
-      const types = paragraph.children.map(c => c.type);
-      expect(types).toContain('strong');
-      expect(types).toContain('link');
-    });
-
-    it('preserves italic in a blockquote title', () => {
-      const md = '> 📘 > _italic_ text\n>\n> Body.';
-      const tree = mdast(md);
-      removePosition(tree, { force: true });
-
-      const callout = tree.children[0] as Callout;
-      const heading = callout.children[0] as Heading;
-      const blockquote = heading.children[0] as unknown as Blockquote;
-      expect(blockquote).toHaveProperty('type', 'blockquote');
-
-      const paragraph = blockquote.children[0] as Paragraph;
-      expect(paragraph.children[0]).toHaveProperty('type', 'emphasis');
-    });
-
-    it('preserves a link in a list title', () => {
-      const md = '> 📘 - [list link](https://example.com)\n>\n> Body.';
+    it.each([
+      {
+        name: 'link in a blockquote title',
+        md: '> 👍 > [Hello](https://example.com)\n>\n> Body.',
+        blockType: 'blockquote',
+        expectedTypes: ['link'],
+      },
+      {
+        name: 'bold and link in a blockquote title',
+        md: '> 📘 > **bold** [link](https://example.com)\n>\n> Body.',
+        blockType: 'blockquote',
+        expectedTypes: ['strong', 'link'],
+      },
+      {
+        name: 'italic in a blockquote title',
+        md: '> 📘 > _italic_ text\n>\n> Body.',
+        blockType: 'blockquote',
+        expectedTypes: ['emphasis'],
+      },
+      {
+        name: 'link in a list title',
+        md: '> 📘 - [list link](https://example.com)\n>\n> Body.',
+        blockType: 'list',
+        expectedTypes: ['link'],
+      },
+      {
+        name: 'strikethrough (~~) in a blockquote title',
+        md: '> 👍 > ~~hello~~',
+        blockType: 'blockquote',
+        expectedTypes: ['delete'],
+      },
+      {
+        name: 'strikethrough (~) in a blockquote title',
+        md: '> 👍 > ~hello~',
+        blockType: 'blockquote',
+        expectedTypes: ['delete'],
+      },
+    ])('preserves $name', ({ md, blockType, expectedTypes }) => {
       const tree = mdast(md);
       removePosition(tree, { force: true });
 
       const callout = tree.children[0] as Callout;
       const heading = callout.children[0] as Heading;
-      const list = heading.children[0] as unknown as List;
-      expect(list).toHaveProperty('type', 'list');
+      const block = heading.children[0];
+      expect(block).toHaveProperty('type', blockType);
 
-      const listItem = list.children[0];
-      const paragraph = listItem.children[0] as Paragraph;
-      expect(paragraph.children[0]).toHaveProperty('type', 'link');
-      expect(paragraph.children[0]).toHaveProperty('url', 'https://example.com');
+      const paragraph =
+        blockType === 'list'
+          ? ((block as unknown as List).children[0].children[0] as Paragraph)
+          : ((block as unknown as Blockquote).children[0] as Paragraph);
+
+      const childTypes = paragraph.children.map(c => c.type);
+      expectedTypes.forEach(type => expect(childTypes).toContain(type));
     });
 
     it('parses bold text as a heading title', () => {

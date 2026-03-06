@@ -2,7 +2,9 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
+import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { toMarkdown } from 'mdast-util-to-markdown';
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
@@ -13,7 +15,7 @@ import plain from '../../lib/plain';
 
 import { extractText } from './extract-text';
 
-const titleParser = unified().use(remarkParse);
+const titleParser = unified().use(remarkParse).use(remarkGfm);
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -166,7 +168,9 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0].position.start.offset += match.length;
         node.children[0].position.start.column += match.length;
       } else {
-        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] })
+        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] }, {
+          extensions: [gfmStrikethroughToMarkdown()],
+        })
           .trim()
           .replace(/^\\(?=[>#+\-*])/, '');
         const parsedTitle = titleParser.parse(headingText);
