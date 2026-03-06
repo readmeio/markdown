@@ -2,6 +2,7 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
+import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
@@ -165,7 +166,9 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0].position.start.offset += match.length;
         node.children[0].position.start.column += match.length;
       } else {
-        const headingText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
+        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] })
+          .trim()
+          .replace(/^\\(?=[>#+\-*])/, '');
         const parsedTitle = titleParser.parse(headingText);
         const parsedFirstChild = parsedTitle.children[0];
 

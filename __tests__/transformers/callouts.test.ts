@@ -1,5 +1,5 @@
 import type { Callout } from '../../types';
-import type { Heading } from 'mdast';
+import type { Blockquote, Heading, List, Paragraph } from 'mdast';
 
 import { removePosition } from 'unist-util-remove-position';
 
@@ -469,6 +469,69 @@ describe('callouts transformer', () => {
           "type": "rdme-callout",
         }
       `);
+    });
+
+    it('preserves a link in a blockquote title', () => {
+      const md = '> 👍 > [Hello](https://example.com)\n>\n> Body.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+
+      const heading = callout.children[0] as Heading;
+      const blockquote = heading.children[0] as unknown as Blockquote;
+      expect(blockquote).toHaveProperty('type', 'blockquote');
+
+      const paragraph = blockquote.children[0] as Paragraph;
+      expect(paragraph.children[0]).toHaveProperty('type', 'link');
+      expect(paragraph.children[0]).toHaveProperty('url', 'https://example.com');
+    });
+
+    it('preserves bold and link in a blockquote title', () => {
+      const md = '> 📘 > **bold** [link](https://example.com)\n>\n> Body.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      const heading = callout.children[0] as Heading;
+      const blockquote = heading.children[0] as unknown as Blockquote;
+      expect(blockquote).toHaveProperty('type', 'blockquote');
+
+      const paragraph = blockquote.children[0] as Paragraph;
+      const types = paragraph.children.map(c => c.type);
+      expect(types).toContain('strong');
+      expect(types).toContain('link');
+    });
+
+    it('preserves italic in a blockquote title', () => {
+      const md = '> 📘 > _italic_ text\n>\n> Body.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      const heading = callout.children[0] as Heading;
+      const blockquote = heading.children[0] as unknown as Blockquote;
+      expect(blockquote).toHaveProperty('type', 'blockquote');
+
+      const paragraph = blockquote.children[0] as Paragraph;
+      expect(paragraph.children[0]).toHaveProperty('type', 'emphasis');
+    });
+
+    it('preserves a link in a list title', () => {
+      const md = '> 📘 - [list link](https://example.com)\n>\n> Body.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      const heading = callout.children[0] as Heading;
+      const list = heading.children[0] as unknown as List;
+      expect(list).toHaveProperty('type', 'list');
+
+      const listItem = list.children[0];
+      const paragraph = listItem.children[0] as Paragraph;
+      expect(paragraph.children[0]).toHaveProperty('type', 'link');
+      expect(paragraph.children[0]).toHaveProperty('url', 'https://example.com');
     });
 
     it('parses bold text as a heading title', () => {
