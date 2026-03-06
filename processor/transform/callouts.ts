@@ -2,13 +2,21 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
-import { visit } from 'unist-util-visit';
+import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import { toMarkdown } from 'mdast-util-to-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import plain from '../../lib/plain';
 
 import { extractText } from './extract-text';
+
+const titleParser = unified().use(remarkParse).use(remarkGfm);
+const toMarkdownExtensions = [gfmStrikethroughToMarkdown()];
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -105,11 +113,7 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   }
 };
 
-const processBlockquote = (
-  node: Blockquote,
-  index: number | undefined,
-  parent: Parent | undefined,
-) => {
+const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
     // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
@@ -144,35 +148,68 @@ const processBlockquote = (
     const bodyChildren = splitParagraphAtNewline(firstParagraph);
     const didSplit = bodyChildren !== null;
 
-    // Extract heading text after removing the icon prefix.
-    // Use `plain()` to handle complex markdown structures (bold, inline code, etc.)
-    const headingText = plain(firstParagraph as unknown as Parameters<typeof plain>[0])
-      .toString()
-      .slice(match.length);
-
-    // Clean up the raw AST by removing the icon prefix from the first text node
     removeIconPrefix(firstParagraph, match.length);
 
-    const empty = !headingText.length && firstParagraph.children.length === 1;
+    const firstText = findFirst(firstParagraph) as Text | null;
+    const rawValue = firstText?.value ?? '';
+    const hasContent = rawValue.trim().length > 0 || firstParagraph.children.length > 1;
+    const empty = !hasContent;
     const theme = themes[icon] || 'default';
 
-    // Convert the first paragraph (first children of node) to a heading if it has content or was split
-    if (headingText || didSplit) {
-      node.children[0] = wrapHeading(node);
-      // Adjust position to account for the stripped icon prefix
-      node.children[0].position.start.offset += match.length;
-      node.children[0].position.start.column += match.length;
+    if (hasContent || didSplit) {
+      const headingMatch = rawValue.match(/^(#{1,6})\s*/);
+
+      // # heading syntax is handled via direct AST manipulation so we can
+      // set the depth while preserving the original inline children (bold, etc.)
+      if (headingMatch) {
+        firstText!.value = rawValue.slice(headingMatch[0].length);
+        const heading = wrapHeading(node);
+        heading.depth = headingMatch[1].length as Heading['depth'];
+        node.children[0] = heading;
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
+      } else {
+        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] }, {
+          extensions: toMarkdownExtensions,
+        })
+          .trim()
+          .replace(/^\\(?=[>#+\-*])/, '');
+        const parsedTitle = titleParser.parse(headingText);
+        const parsedFirstChild = parsedTitle.children[0];
+
+        // Block-level syntax ("> quote", "- list") produces non-paragraph nodes;
+        // inline text parses as a paragraph and falls through to wrapHeading().
+        if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
+          // Strip positions from re-parsed nodes since they're relative to the heading text, not the original source
+          visit(parsedTitle, (n: Node) => {
+            delete n.position;
+          });
+          const heading = wrapHeading(node);
+          heading.children = parsedTitle.children as Heading['children'];
+          delete heading.position;
+          node.children[0] = heading;
+        } else {
+          node.children[0] = wrapHeading(node);
+          node.children[0].position.start.offset += match.length;
+          node.children[0].position.start.column += match.length;
+        }
+      }
     }
 
     // Insert body content as a separate paragraph after the heading
     if (bodyChildren) {
+      const headingPosition = node.children[0].position;
       node.children.splice(1, 0, {
         type: 'paragraph',
         children: bodyChildren,
-        position: {
-          start: node.children[0].position.end,
-          end: firstParagraphOriginalEnd,
-        },
+        ...(headingPosition && firstParagraphOriginalEnd
+          ? {
+              position: {
+                start: headingPosition.end,
+                end: firstParagraphOriginalEnd,
+              },
+            }
+          : {}),
       });
     }
 
@@ -191,10 +228,23 @@ const processBlockquote = (
 };
 
 const calloutTransformer = () => {
-  return (tree: Root) => {
-    visit(tree, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
+  const processNode = (root: Node) => {
+    visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
       processBlockquote(node, index, parent);
+      if ((node as unknown as { type: string }).type === NodeTypes.callout) {
+        // SKIP prevents re-processing synthetic blockquotes in parsed title content
+        // (e.g., blockquotes from "> Quote" titles). Recursively process body children
+        // (index 1+, skipping the heading at 0) to handle nested callouts.
+        for (let i = 1; i < node.children.length; i += 1) {
+          processNode(node.children[i]);
+        }
+        return SKIP;
+      }
+      return undefined;
     });
+  };
+  return (tree: Root) => {
+    processNode(tree);
   };
 };
 
