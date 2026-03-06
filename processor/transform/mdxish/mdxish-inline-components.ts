@@ -52,6 +52,9 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
     }
     if (closeIdx >= parent.children.length) return;
 
+    // Extract all nodes between opening tag (index) and closing tag (closeIdx).
+    // These are the inline component's children (e.g., text, emphasis, links).
+    // Example: "<Anchor>click **here**</Anchor>" → children = [text, strong]
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
     const newNode = toMdxJsxTextElement(name, attributes, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
