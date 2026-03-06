@@ -337,4 +337,39 @@ hello
       });
     });
   });
+
+  describe('Anchor component (inline, excluded)', () => {
+    it('should NOT convert <Anchor> to mdxJsxFlowElement', () => {
+      // Anchor is an inline component and must remain as raw html nodes so that
+      // the rendering path (rehypeRaw) can process it correctly inline in paragraphs.
+      const markdown = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+      const tree = parseWithPlugin(markdown);
+
+      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+    });
+
+    it('should leave <Anchor> as raw html nodes inside a paragraph', () => {
+      const markdown = 'Start by <Anchor href="https://readme.com" target="_blank">ReadMe</Anchor> today.';
+      const tree = parseWithPlugin(markdown);
+
+      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      // The opening and closing tags stay as html nodes inside the paragraph
+      const paragraphs = findNodesByType(tree, 'paragraph');
+      expect(paragraphs).toHaveLength(1);
+      const htmlNodes = paragraphs[0].children.filter((c: { type: string }) => c.type === 'html');
+      expect(htmlNodes.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should still process other PascalCase components in the same document', () => {
+      // Ensuring Anchor exclusion does not affect sibling components
+      const markdown = `<Image src="test.png" alt="Test" />
+
+Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
+    });
+  });
 });
