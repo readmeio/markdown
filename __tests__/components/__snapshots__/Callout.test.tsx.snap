@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Callout > mdx > renders an error callout 1`] = `"<blockquote class="callout callout_error" theme="❗️"><span class="callout-icon">❗️</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="error-callout"></div><div class="heading-text">Error Callout</div><a aria-label="Skip link to Error Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#error-callout"></a></h3><p>Lorem ipsum dolor.</p></blockquote>"`;

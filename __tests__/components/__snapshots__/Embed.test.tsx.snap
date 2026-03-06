@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Embed > mdx > renders an @embed link as an embed 1`] = `
+"[Embedded meta links.](https://nyti.me/s/gzoa2xb2v3 "@embed")
+"
+`;
+
+exports[`Embed > mdx > renders an embed with html content 1`] = `"<div class="embed embed_hasImg"><div class="embed-media"><iframe class="embedly-embed" src="//cdn.embedly.com/widgets/media.html?src=https://www.google.com/maps/embed/v1/place?center=37.829698%2C-122.258166&amp;key=AIzaSyD9HrlRuI1Ani0-MTZ7pvzxwxi4pgW0BCY&amp;zoom=16&amp;q=4126+Opal+St,+Oakland,+CA+94609&amp;display_name=Google+Maps&amp;url=https://www.google.com/maps/place/4126+Opal+St,+Oakland,+CA+94609/@37.829698,-122.258166,16z/data=!4m5!3m4!1s0x80857dfb145a04ff:0x96b17d967421636f!8m2!3d37.8296978!4d-122.2581661?hl=en&amp;image=http://maps-api-ssl.google.com/maps/api/staticmap?center=37.829698,-122.258166&amp;zoom=15&amp;size=250x250&amp;sensor=false&amp;key=02466f963b9b4bb8845a05b53d3235d7&amp;type=text/html&amp;schema=google" width="600" height="450" scrolling="no" title="Google Maps embed" frameborder="0" allow="autoplay; fullscreen" allowfullscreen="true"></iframe></div></div>"`;
+
+exports[`Embed > mdx > renders an embed with meta content 1`] = `"<div class="embed embed_hasImg"><a class="embed-link" href="https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html" rel="noopener noreferrer" target="_blank"><img alt="George W. Bush Calls for End to Pandemic Partisanship" class="embed-img" loading="lazy" src="https://static01.nyt.com/images/2020/05/02/world/02dc-virus-bush-2/merlin_171999921_e857a690-fb9b-462d-a20c-28c8161107c9-facebookJumbo.jpg"><div class="embed-body"><img alt="nytimes.com" height="14" src="https://www.nytimes.com/vi-assets/static-assets/favicon-4bf96cb6a1093748bf5b3c429accb9b4.ico" width="14"><small class="embed-provider">nytimes.com</small><div class="embed-title">George W. Bush Calls for End to Pandemic Partisanship</div></div></a></div>"`;
+
+exports[`Embed > mdx > renders an rdmd embed link 1`] = `"<div class="embed "><a class="embed-link" href="https://www.nytimes.com/2020/05/03/us/politics/george-w-bush-coronavirus-unity.html" rel="noopener noreferrer" target="_blank"><div class="embed-body"><small class="embed-provider">nytimes.com</small><div class="embed-title">rdmd</div></div></a></div>"`;

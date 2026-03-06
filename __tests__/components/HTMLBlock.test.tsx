@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
@@ -5,60 +6,86 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { vi } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
+import { mdxish, renderMdxish } from '../../lib';
 import { execute } from '../helpers';
 
 describe('HTML Block', () => {
-  beforeEach(() => {
-    global.mockFn = vi.fn();
+  describe('mdxish', () => {
+    it('renders an HTML block from markdown', () => {
+      const md = `<div class="custom-block">
+<p>Hello from HTML</p>
+</div>`;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('.custom-block')).toBeInTheDocument();
+      expect(container.textContent).toContain('Hello from HTML');
+    });
+
+    it('renders a simple HTML element', () => {
+      const md = '<hr />';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('hr')).toBeInTheDocument();
+    });
   });
 
-  afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
+  describe('mdx', () => {
+    it('renders the html in a `<pre>` tag if safeMode={true}', () => {
+      const md = '<HTMLBlock safeMode={true}>{`<button onload="alert(\'gotcha!\')"/>`}</HTMLBlock>';
+      const Component = execute(md);
+      expect(renderToStaticMarkup(<Component />)).toMatchInlineSnapshot(
+        '"<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>"',
+      );
+    });
   });
 
-  it('runs user scripts in compat mode', () => {
-    render(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
-    expect(global.mockFn).toHaveBeenCalledTimes(1);
-  });
+  describe('render', () => {
+    beforeEach(() => {
+      global.mockFn = vi.fn();
+    });
 
-  it("doesn't run user scripts by default", () => {
-    render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
-    expect(global.mockFn).toHaveBeenCalledTimes(0);
-  });
+    afterEach(() => {
+      cleanup();
+      vi.restoreAllMocks();
+    });
 
-  it("doesn't render user scripts by default", () => {
-    render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
-    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
-  });
+    it('runs user scripts in compat mode', () => {
+      render(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
+      expect(global.mockFn).toHaveBeenCalledTimes(1);
+    });
 
-  it("doesn't render user scripts with weird endings", () => {
-    render(<HTMLBlock>{"<script>mockFn()</script foo='bar'>"}</HTMLBlock>);
-    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
-  });
+    it("doesn't run user scripts by default", () => {
+      render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
+      expect(global.mockFn).toHaveBeenCalledTimes(0);
+    });
 
-  it("doesn't render user scripts with a malicious string", () => {
-    render(<HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>);
-    expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
-  });
+    it("doesn't render user scripts by default", () => {
+      render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
+      expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+    });
 
-  it("doesn't run scripts on the server (even in compat mode)", () => {
-    const html = `
+    it("doesn't render user scripts with weird endings", () => {
+      render(<HTMLBlock>{"<script>mockFn()</script foo='bar'>"}</HTMLBlock>);
+      expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+    });
+
+    it("doesn't render user scripts with a malicious string", () => {
+      render(<HTMLBlock>{'<scrip<script></script>t>mockFn()</s<script></script>cript>'}</HTMLBlock>);
+      expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
+    });
+
+    it("doesn't run scripts on the server (even in compat mode)", () => {
+      const html = `
     <h1>Hello World</h1>
     <script>mockFn()</script>
     `;
-    const elem = <HTMLBlock runScripts={true}>{html}</HTMLBlock>;
-    const view = renderToString(elem);
-    expect(elem.props.runScripts).toBe(true);
-    expect(view.indexOf('<script>')).toBeLessThan(0);
-    expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
-  });
-
-  it('renders the html in a `<pre>` tag if safeMode={true}', () => {
-    const md = '<HTMLBlock safeMode={true}>{`<button onload="alert(\'gotcha!\')"/>`}</HTMLBlock>';
-    const Component = execute(md);
-    expect(renderToStaticMarkup(<Component />)).toMatchInlineSnapshot(
-      '"<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>"',
-    );
+      const elem = <HTMLBlock runScripts={true}>{html}</HTMLBlock>;
+      const view = renderToString(elem);
+      expect(elem.props.runScripts).toBe(true);
+      expect(view.indexOf('<script>')).toBeLessThan(0);
+      expect(view.indexOf('<h1>')).toBeGreaterThanOrEqual(0);
+    });
   });
 });
