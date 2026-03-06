@@ -16,6 +16,7 @@ import plain from '../../lib/plain';
 import { extractText } from './extract-text';
 
 const titleParser = unified().use(remarkParse).use(remarkGfm);
+const toMarkdownExtensions = [gfmStrikethroughToMarkdown()];
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -169,7 +170,7 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0].position.start.column += match.length;
       } else {
         const headingText = toMarkdown({ type: 'root', children: [firstParagraph] }, {
-          extensions: [gfmStrikethroughToMarkdown()],
+          extensions: toMarkdownExtensions,
         })
           .trim()
           .replace(/^\\(?=[>#+\-*])/, '');
