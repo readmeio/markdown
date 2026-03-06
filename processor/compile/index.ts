@@ -8,6 +8,7 @@ import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
+import listItem from './list-item';
 import plain from './plain';
 import variable from './variable';
 
@@ -30,6 +31,7 @@ function compilers(this: Processor, mdxish = false) {
     figure: compatibility,
     html: compatibility,
     i: compatibility,
+    ...(mdxish && { listItem }),
     plain,
     yaml: compatibility,
   };

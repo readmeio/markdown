@@ -32,6 +32,7 @@
     "debug": "^4.3.4",
     "deepmerge": "^4.3.1",
     "emoji-regex": "^10.2.1",
+    "entities": "^4.5.0",
     "estree-util-value-to-estree": "^3.1.1",
     "gemoji": "^8.1.0",
     "github-slugger": "^2.0.0",
@@ -42,9 +43,11 @@
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
+    "mdast-util-gfm-strikethrough": "^2.0.0",
     "mdast-util-mdx-expression": "2.0.0",
     "mdast-util-phrasing": "^4.1.0",
     "mdast-util-to-markdown": "^2.1.2",
+    "micromark-extension-gfm-strikethrough": "^2.1.0",
     "micromark-extension-mdx-expression": "^3.0.1",
     "micromark-util-character": "^2.1.1",
     "micromark-util-html-tag-name": "^2.0.1",
@@ -163,7 +166,7 @@
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "810KB"
+        "maxSize": "825KB"
       }
     ]
   },

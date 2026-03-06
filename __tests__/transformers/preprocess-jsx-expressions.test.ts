@@ -185,6 +185,26 @@ describe('preprocessJSXExpressions', () => {
         const htmlProp = htmlBlock?.properties?.html as string;
         expect(htmlProp).toContain('unclosed } { unclosed ');
       });
+
+      it('html code elements', () => {
+        const content = [
+          '<table><thead><tr><th>foo</th><th>bar</th></tr></thead>',
+          '<tbody>',
+          '<tr><td><code>{foo}</code></td><td><code>bar</code></td></tr>',
+          '<tr><td><code>{foo}/{bar)</code></td><td><code>baz</code></td></tr>',
+          '</tbody></table>',
+        ].join('\n');
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('html elements with unbalanced braces', () => {
+        const content = '<div>{foo </div>';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
     });
 
     it('should escape unclosed braces in content with emojis', () => {
