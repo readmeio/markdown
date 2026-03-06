@@ -30,6 +30,7 @@ interface CalloutAttrs {
 
 interface EmbedAttrs {
   favicon?: string;
+  height?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
@@ -38,6 +39,7 @@ interface EmbedAttrs {
   title?: string;
   typeOfEmbed?: string;
   url?: string;
+  width?: string;
 }
 
 interface RecipeAttrs {
@@ -134,7 +136,8 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
 
 const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   const attrs = getAttrs<EmbedAttrs>(jsx);
-  const { favicon, html, iframe, image, providerName, providerUrl, title = '', url = '' } = attrs;
+  const { favicon, height, html, iframe, image, providerName, providerUrl, title = '', typeOfEmbed, url = '', width } =
+    attrs;
 
   return {
     type: NodeTypes.embedBlock,
@@ -146,11 +149,14 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
         title,
         url,
         ...(favicon && { favicon }),
+        ...(height && { height }),
         ...(html && { html }),
         ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
         ...(providerName && { providerName }),
         ...(providerUrl && { providerUrl }),
+        ...(typeOfEmbed && { typeOfEmbed }),
+        ...(width && { width }),
       },
     },
     position: jsx.position,
