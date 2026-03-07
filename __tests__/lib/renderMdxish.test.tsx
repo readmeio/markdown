@@ -74,8 +74,10 @@ This should be outside`;
     render(<mod.default />);
 
     const wrapper = screen.getByTestId('my-component');
-    expect(wrapper.querySelectorAll('p')).toHaveLength(1);
+    // Text is passed directly to components as a text node (not wrapped in <p>)
+    // This ensures components like Terminal that expect string children work correctly
     expect(screen.getByText('This is a component with a space in the content.')).toBeInTheDocument();
+    expect(wrapper).toContainElement(screen.getByText('This is a component with a space in the content.'));
     expect(screen.getByText('This should be outside')).toBeInTheDocument();
     expect(wrapper).not.toContainElement(screen.getByText('This should be outside'));
   });
