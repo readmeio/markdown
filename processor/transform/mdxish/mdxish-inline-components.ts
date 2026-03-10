@@ -4,13 +4,7 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-/**
- * Tags that should be handled as inline components rather than block-level components.
- * Exported so mdxish-component-blocks.ts can exclude them from block-level handling.
- */
-export const INLINE_COMPONENT_TAGS = new Set(['Anchor']);
-
-// Note: This import must come AFTER the export above to avoid circular dependency issues
+import { INLINE_COMPONENT_TAGS } from './constants';
 import { parseAttributes } from './mdxish-component-blocks';
 
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
