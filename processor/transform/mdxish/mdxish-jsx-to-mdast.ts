@@ -49,15 +49,8 @@ interface RecipeAttrs {
   title?: string;
 }
 
-interface AnchorAttrs {
-  href?: string;
-  label?: string;
-  target?: string;
-  title?: string;
-}
-
 const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
-  const attrs = getAttrs<AnchorAttrs>(jsx);
+  const attrs = getAttrs<Anchor['data']['hProperties']>(jsx);
   const { href = '', label, target, title } = attrs;
 
   return {

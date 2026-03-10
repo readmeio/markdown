@@ -4,15 +4,18 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
+/**
+ * Tags that should be handled as inline components rather than block-level components.
+ * Exported so mdxish-component-blocks.ts can exclude them from block-level handling.
+ */
+export const INLINE_COMPONENT_TAGS = new Set(['Anchor']);
+
+// Note: This import must come AFTER the export above to avoid circular dependency issues
 import { parseAttributes } from './mdxish-component-blocks';
 
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
 // Uses [A-Za-z0-9_]* to match block version in mdxish-component-blocks.ts
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
-
-// To add a new inline component: add it to both EXCLUDED_TAGS in mdxish-component-blocks.ts
-// and to this set.
-const INLINE_COMPONENTS = new Set(['Anchor']);
 
 function toMdxJsxTextElement(name: string, attributes: MdxJsxAttribute[], children: PhrasingContent[]): MdxJsxTextElement {
   return {
@@ -38,7 +41,7 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
     if (!match) return;
 
     const [, name, attrStr] = match;
-    if (!INLINE_COMPONENTS.has(name)) return;
+    if (!INLINE_COMPONENT_TAGS.has(name)) return;
 
     // Parse attributes directly - preserves all attribute types (strings, booleans, objects, arrays)
     const attributes = parseAttributes(attrStr ?? '');
