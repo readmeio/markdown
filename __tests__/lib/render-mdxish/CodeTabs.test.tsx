@@ -51,7 +51,6 @@ ${pythonCode}
     });
 
     it('should render code tabs when there is a slash r (CRLF) character between the backticks', () => {
-      console.log('running');
       const mdSlash = '```python\nprint("hello")\n```\r\n```javascript\nconsole.log("hello")\n```';
       const modSlash = renderMdxish(mdxish(mdSlash));
       const { container } = render(<modSlash.default />);
@@ -64,126 +63,147 @@ ${pythonCode}
       expect(buttons[0]).toHaveTextContent('Python');
       expect(buttons[1]).toHaveTextContent('JavaScript');
     });
+
+    it('should render code tabs even when there are spaces after the first code block', () => {
+      const mdSpace = '```python\nprint("hello")\n```   \n```javascript\nconsole.log("hello")\n```';
+      const modSpace = renderMdxish(mdxish(mdSpace));
+      const { container } = render(<modSpace.default />);
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
+    });
   });
 
-//   describe('given a mermaid diagram', () => {
-//     const mermaidCode = 'graph TD\nA[Start] --> B[Stop]';
+  describe('given a mermaid diagram', () => {
+    const mermaidCode = 'graph TD\nA[Start] --> B[Stop]';
 
-//     it('should render a single mermaid diagram', () => {
-//       const md = `
-// \`\`\`mermaid
-// ${mermaidCode}
-// \`\`\`
-//       `;
+    it('should render a single mermaid diagram', () => {
+      const md = `
+\`\`\`mermaid
+${mermaidCode}
+\`\`\`
+      `;
 
-//       const mdxishHast = mdxish(md);
-//       const mod = renderMdxish(mdxishHast);
-//       const { container } = render(<mod.default />);
+      const mdxishHast = mdxish(md);
+      const mod = renderMdxish(mdxishHast);
+      const { container } = render(<mod.default />);
 
-//       // The mermaid-render class is used to identify the mermaid diagrams elements for the
-//       // mermaid library to transform. See components/CodeTabs/index.tsx for context
-//       expect(container.querySelector('pre.mermaid-render')).toBeInTheDocument();
-//       expect(container.querySelector('div.CodeTabs')).not.toBeInTheDocument();
-//       expect(container.querySelector('pre.mermaid-render')?.textContent).toBe(mermaidCode);
+      // The mermaid-render class is used to identify the mermaid diagrams elements for the
+      // mermaid library to transform. See components/CodeTabs/index.tsx for context
+      expect(container.querySelector('pre.mermaid-render')).toBeInTheDocument();
+      expect(container.querySelector('div.CodeTabs')).not.toBeInTheDocument();
+      expect(container.querySelector('pre.mermaid-render')?.textContent).toBe(mermaidCode);
 
-//       // REGRESSION TEST: should render single mermaid diagram with old execute function
-//       const Component = execute(md, {}, {});
-//       const { container: mdxContainer } = render(<Component />);
+      // REGRESSION TEST: should render single mermaid diagram with old execute function
+      const Component = execute(md, {}, {});
+      const { container: mdxContainer } = render(<Component />);
 
-//       expect(mdxContainer.querySelector('pre.mermaid-render')).toBeInTheDocument();
-//       expect(mdxContainer.querySelector('div.CodeTabs')).not.toBeInTheDocument();
-//       expect(mdxContainer.querySelector('pre.mermaid-render')?.textContent).toBe(mermaidCode);
-//     });
+      expect(mdxContainer.querySelector('pre.mermaid-render')).toBeInTheDocument();
+      expect(mdxContainer.querySelector('div.CodeTabs')).not.toBeInTheDocument();
+      expect(mdxContainer.querySelector('pre.mermaid-render')?.textContent).toBe(mermaidCode);
+    });
 
-//     it('should render tabbed mermaid diagrams', () => {
-//       const md = `
-// \`\`\`mermaid
-// ${mermaidCode}
-// \`\`\`
-// \`\`\`mermaid
-// ${mermaidCode}
-// \`\`\`
-//       `;
-//       const mod = renderMdxish(mdxish(md));
-//       const { container } = render(<mod.default />);
-//       // Should still be tabbed
-//       expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
-//       expect(container.querySelectorAll('pre.mermaid-render')).toHaveLength(2);
+    it('should render tabbed mermaid diagrams', () => {
+      const md = `
+\`\`\`mermaid
+${mermaidCode}
+\`\`\`
+\`\`\`mermaid
+${mermaidCode}
+\`\`\`
+      `;
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      // Should still be tabbed
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.querySelectorAll('pre.mermaid-render')).toHaveLength(2);
 
-//       // REGRESSION TEST: should render tabbed mermaid diagrams with old execute function
-//       const Component = execute(md, {}, {});
-//       const { container: mdxContainer } = render(<Component />);
+      // REGRESSION TEST: should render tabbed mermaid diagrams with old execute function
+      const Component = execute(md, {}, {});
+      const { container: mdxContainer } = render(<Component />);
 
-//       expect(mdxContainer.querySelector('div.CodeTabs')).toBeInTheDocument();
-//       expect(mdxContainer.querySelectorAll('pre.mermaid-render')).toHaveLength(2);
-//     });
-//   });
+      expect(mdxContainer.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(mdxContainer.querySelectorAll('pre.mermaid-render')).toHaveLength(2);
+    });
+  });
 
-//   describe('given a code magic block', () => {
-//     it('should render a single code block with language and name as a code tabs block', () => {
-//       const md = `
-// [block:code]
-// {
-//   "codes": [
-//     {
-//       "code": "hello",
-//       "language": "text",
-//       "name": "Pre-Modification Certificate"
-//     }
-//   ]
-// }
-// [/block]
-//       `;
+  describe('given a code magic block', () => {
+    it('should render a single code block with language and name as a code tabs block', () => {
+      const md = `
+[block:code]
+{
+  "codes": [
+    {
+      "code": "hello",
+      "language": "text",
+      "name": "Pre-Modification Certificate"
+    }
+  ]
+}
+[/block]
+      `;
 
-//       const mod = renderMdxish(mdxish(md));
-//       const { container } = render(<mod.default />);
-
-//       expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
-//       expect(container.textContent).toContain('hello');
-//       expect(container.textContent).toContain('Pre-Modification Certificate');
-//     });
-
-//     it('should render multiple code blocks as a code tabs block', () => {
-//       const md = `
-// [block:code]
-// {
-//   "codes": [
-//     {
-//       "code": "console.log('hello')",
-//       "language": "javascript",
-//       "name": "JavaScript"
-//     },
-//     {
-//       "code": "print('hello')",
-//       "language": "python",
-//       "name": "Python"
-//     }
-//   ]
-// }
-// [/block]
-//       `;
-
-//       const mod = renderMdxish(mdxish(md));
-//       const { container } = render(<mod.default />);
-
-//       expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
-//       expect(container.textContent).toContain("console.log('hello')");
-//       expect(container.textContent).toContain("print('hello')");
-
-//       const buttons = container.querySelectorAll('button');
-//       expect(buttons).toHaveLength(2);
-//       expect(buttons[0]).toHaveTextContent('JavaScript');
-//       expect(buttons[1]).toHaveTextContent('Python');
-//     });
-//   });
-
-  describe('given non consecutive code blocks', () => {
-    it('should not combine 2 code blocks that are separated by more than an empty line', () => {
-      const md = '```python\nprint("hello")\n```\n\n```javascript\nconsole.log("hello")\n```';
       const mod = renderMdxish(mdxish(md));
       const { container } = render(<mod.default />);
 
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.textContent).toContain('hello');
+      expect(container.textContent).toContain('Pre-Modification Certificate');
+    });
+
+    it('should render multiple code blocks as a code tabs block', () => {
+      const md = `
+[block:code]
+{
+  "codes": [
+    {
+      "code": "console.log('hello')",
+      "language": "javascript",
+      "name": "JavaScript"
+    },
+    {
+      "code": "print('hello')",
+      "language": "python",
+      "name": "Python"
+    }
+  ]
+}
+[/block]
+      `;
+
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.textContent).toContain("console.log('hello')");
+      expect(container.textContent).toContain("print('hello')");
+
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveTextContent('JavaScript');
+      expect(buttons[1]).toHaveTextContent('Python');
+    });
+  });
+
+  describe('given non consecutive code blocks', () => {
+    it('should not combine 2 code blocks that are separated by 2 empty lines', () => {
+      const md = '```python\nprint("hello")\n```\n\n```javascript\nconsole.log("hello")\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
       expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(2);
+    });
+
+    it('should not combine 2 code blocks that are separated by 2 empty lines with \\r\\n', () => {
+      const md = '```python\r\nprint("hello")\n```\r\n\r\n```javascript\nconsole.log("hello")\r\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(2);
+    });
+
+    it('should not combine 2 code blocks that are separated by a new line and text before the code block', () => {
+      const md = '```python\nprint("hello")\n```\nhello```javascript\nconsole.log("hello")\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
     });
   });
 });
