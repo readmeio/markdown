@@ -49,8 +49,10 @@ import variablesCodeResolver from '../processor/transform/mdxish/variables-code'
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
@@ -136,12 +138,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
+    .data('micromarkExtensions', safeMode ? [jsxTable(), magicBlock(), legacyVariable()] : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable()])
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
+        ? [jsxTableFromMarkdown(), magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
+        : [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
