@@ -4,6 +4,8 @@
 
 ### Preprocessing
 
+> **See**: @lib/mdxish.ts#92-103
+
 `preprocessContent` is a string-level preprocessor that runs before the markdown is handed to remarkParse. It exists because several syntactic patterns in ReadMe's flavor of markdown would confuse or break the standard CommonMark/MDX parser if fed to it directly. By patching the raw string first, these issues are sidestepped.
 
 It applies four transforms in sequence:
@@ -42,6 +44,8 @@ These are all things that can't be handled as proper unified plugins (parser ext
 ```
 
 ### Processor
+
+> **See**: @lib/mdxish.ts#105-178
 
 The core Xish engine which parses Markdown and converts it to an MDAST object. This is the base processor used for both the editor and rendering flows.
 
@@ -87,6 +91,9 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
 ## `mdxish()`
 
 ### Preprocessing
+
+> **See**: @lib/mdxish.ts#209-212
+
 These three lines are a protect-strip-restore pattern that removes JSX comments (`{/* ... */}`) from the markdown before anything else processes it. Here's the step-by-step:
 
 1. `protectCodeBlocks(mdContent)`
@@ -128,6 +135,8 @@ mdContent (raw input)
 ```
 
 ### Processor
+
+> **See**: @lib/mdxish.ts#214-239
 
 ```
 | ................ process (parse + run only) ................. |
