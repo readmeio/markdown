@@ -132,15 +132,25 @@ function extractBalancedBraces(content: string, start: number): { content: strin
 
 /**
  * Escapes problematic braces in content to prevent MDX expression parsing errors.
- * Handles two cases in a single pass:
+ * Handles three cases:
  * 1. Unbalanced braces (e.g., `{foo` without closing `}`)
  * 2. Paragraph-spanning expressions (e.g., `{\n\n}` where blank line splits paragraphs)
+ * 3. Skips HTML elements to prevent backslashes appearing in output
  *
  */
 function escapeProblematicBraces(content: string): string {
+  // Skip HTML elements — their content should never be escaped because
+  // rehypeRaw parses them into hast elements, making `\` literal text in output
+  const htmlElements: string[] = [];
+  const safe = content.replace(/<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g, match => {
+    const idx = htmlElements.length;
+    htmlElements.push(match);
+    return `___HTML_ELEM_${idx}___`;
+  });
+
   const toEscape = new Set<number>();
   // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
-  const chars = Array.from(content);
+  const chars = Array.from(safe);
   let strDelim: string | null = null;
   let strEscaped = false;
   // Stack of open braces with their state
@@ -213,9 +223,18 @@ function escapeProblematicBraces(content: string): string {
   // Any remaining open braces are unbalanced
   openStack.forEach(entry => toEscape.add(entry.pos));
 
-  if (toEscape.size === 0) return content;
+  // If there are no problematic braces, return safe content as-is;
+  // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
+  let result = toEscape.size === 0
+    ? safe
+    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
 
-  return chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+  // Restore HTML elements
+  if (htmlElements.length > 0) {
+    result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
+  }
+
+  return result;
 }
 
 /**
