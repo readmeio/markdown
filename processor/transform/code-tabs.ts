@@ -29,7 +29,10 @@ const codeTabsTransformer =
         if (!isCode(sibling)) break;
 
         const olderSibling = parent.children[walker - 1];
-        if (olderSibling.position.end.offset + sibling.position.start.column !== sibling.position.start.offset) break;
+        const gap = sibling.position.start.offset - olderSibling.position.end.offset;
+        const lineDiff = sibling.position.start.line - olderSibling.position.end.line;
+        const isCRLF = gap === sibling.position.start.column + 1 && lineDiff === 1;
+        if (gap !== sibling.position.start.column && !isCRLF) break;
 
         children.push(sibling);
         // eslint-disable-next-line no-plusplus

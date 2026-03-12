@@ -49,6 +49,20 @@ ${pythonCode}
       expect(buttons[0]).toHaveTextContent('C++');
       expect(buttons[1]).toHaveTextContent('Python');
     });
+
+    it('should render code tabs when there is a slash t character between the backticks', () => {
+      const mdSlash = '```python\nprint("hello")\n```\n```javascript\nconsole.log("hello")\n```';
+      const modSlash = renderMdxish(mdxish(mdSlash));
+      const { container } = render(<modSlash.default />);
+
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
+
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveTextContent('Python');
+      expect(buttons[1]).toHaveTextContent('JavaScript');
+    });
   });
 
   describe('given a mermaid diagram', () => {
@@ -159,6 +173,16 @@ ${mermaidCode}
       expect(buttons).toHaveLength(2);
       expect(buttons[0]).toHaveTextContent('JavaScript');
       expect(buttons[1]).toHaveTextContent('Python');
+    });
+  });
+
+  describe('given non consecutive code blocks', () => {
+    it('should not combine 2 code blocks that are separated by more than an empty line', () => {
+      const md = '```python\nprint("hello")\n```\n\n```javascript\nconsole.log("hello")\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(2);
     });
   });
 });
