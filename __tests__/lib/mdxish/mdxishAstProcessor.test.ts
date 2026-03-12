@@ -108,4 +108,94 @@ describe('mdxishAstProcessor', () => {
       ],
     });
   });
+
+  it('should convert GFM checklist nodes and retain checkboxes that have no text after them', () => {
+    const md = `- [ ] hi
+- [ ] `;
+    const { processor, parserReadyContent } = mdxishAstProcessor(md);
+    const ast = processor.parse(parserReadyContent);
+
+    expect(md).toBe(parserReadyContent);
+    // @ts-expect-error - custom matcher
+    expect(ast).toStrictEqualExceptPosition({
+      type: 'root',
+      children: [
+        {
+          type: 'list',
+          ordered: false,
+          spread: false,
+          start: null,
+          children: [
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'hi' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('should only normalize empty checklist items when whitespace exists after ]', () => {
+    const md = `- [ ]
+- [ ] `;
+    const { processor, parserReadyContent } = mdxishAstProcessor(md);
+    const ast = processor.parse(parserReadyContent);
+
+    expect(md).toBe(parserReadyContent);
+    // @ts-expect-error - custom matcher
+    expect(ast).toStrictEqualExceptPosition({
+      type: 'root',
+      children: [
+        {
+          type: 'list',
+          ordered: false,
+          spread: false,
+          start: null,
+          children: [
+            {
+              type: 'listItem',
+              checked: null,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: '[ ]' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
 });

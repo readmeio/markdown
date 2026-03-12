@@ -102,6 +102,45 @@ This is a warning message.
           providerName: 'YouTube',
         });
       });
+
+      it('should preserve typeOfEmbed attribute', () => {
+        const md = '<Embed typeOfEmbed="youtube" url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />';
+        const ast = processWithNewTypes(md);
+
+        const embedNode = ast.children[0] as EmbedBlock;
+        expect(embedNode.data?.hProperties?.typeOfEmbed).toBe('youtube');
+        expect(embedNode.data?.hProperties?.url).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      });
+
+      it('should preserve height and width attributes', () => {
+        const md = '<Embed typeOfEmbed="iframe" url="https://example.com" height="400px" width="100%" />';
+        const ast = processWithNewTypes(md);
+
+        const embedNode = ast.children[0] as EmbedBlock;
+        expect(embedNode.data?.hProperties).toMatchObject({
+          typeOfEmbed: 'iframe',
+          url: 'https://example.com',
+          height: '400px',
+          width: '100%',
+        });
+      });
+
+      it('should preserve all embed types (github, pdf, jsfiddle)', () => {
+        const testCases = [
+          { type: 'github', url: 'https://gist.github.com/user/abc123' },
+          { type: 'pdf', url: 'https://example.com/doc.pdf' },
+          { type: 'jsfiddle', url: 'https://jsfiddle.net/user/abc123' },
+        ];
+
+        testCases.forEach(({ type, url }) => {
+          const md = `<Embed typeOfEmbed="${type}" url="${url}" />`;
+          const ast = processWithNewTypes(md);
+
+          const embedNode = ast.children[0] as EmbedBlock;
+          expect(embedNode.data?.hProperties?.typeOfEmbed).toBe(type);
+          expect(embedNode.data?.hProperties?.url).toBe(url);
+        });
+      });
     });
 
     describe('Recipe component', () => {
