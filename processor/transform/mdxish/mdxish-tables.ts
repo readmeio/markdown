@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import type { Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
@@ -7,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { visit, SKIP } from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement } from '../../utils';
 import { extractText } from '../extract-text';
@@ -153,55 +152,26 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
 /**
  * Converts JSX Table elements to markdown table nodes and re-parses markdown in cells.
  *
- * Since mdxish doesn't use remarkMdx, we manually parse cell contents through
- * remarkParse and remarkGfm to convert markdown to MDAST nodes.
+ * The jsxTable micromark tokenizer captures `<Table>...</Table>` as a single html node,
+ * preventing CommonMark HTML block type 6 from fragmenting it at blank lines. This
+ * transformer then re-parses the html node with remarkMdx to produce proper JSX AST nodes
+ * and converts them to MDAST table/tableRow/tableCell nodes.
  */
 const mdxishTables = (): Transform => tree => {
-  // First, handle MDX JSX elements (already converted by mdxishComponentBlocks)
-  visit(tree, isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement, index, parent: Parents) => {
-    if (node.name === 'Table') {
-      processTableNode(node, index, parent);
-      return SKIP;
-    }
-  });
-
-  // Also handle HTML and raw nodes that contain Table tags (in case mdxishComponentBlocks didn't convert them)
-  // This happens when the entire <Table>...</Table> block is in a single HTML node, which mdxishComponentBlocks
-  // doesn't handle (it only handles split nodes: opening tag, content paragraph, closing tag)
-  const handleTableInNode = (node: { type: string; value?: string }, index: number, parent: Parents) => {
+  visit(tree, 'html', (node, index, parent) => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
-    if (typeof node.value !== 'string') return;
-
-    if (!node.value.includes('<Table') || !node.value.includes('</Table>')) return;
+    if (!node.value.startsWith('<Table')) return;
 
     try {
-      // Parse the HTML content with remarkMdx and mdxishComponentBlocks to convert it to MDX JSX elements
-      // This creates a proper AST that we can then process
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
 
-      // Find the Table element in the parsed result and process it
       visit(parsed, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name === 'Table') {
-          // Process the table and replace the HTML node with a markdown table node
-          processTableNode(tableNode, index, parent);
+          processTableNode(tableNode, index, parent as Parents);
         }
       });
     } catch {
       // If parsing fails, leave the node as-is
-    }
-  };
-
-  // Handle HTML nodes (created by remark-parse for HTML blocks)
-  visit(tree, 'html', (node, index, parent) => {
-    if (typeof index === 'number' && parent && 'children' in parent) {
-      handleTableInNode(node, index, parent as Parents);
-    }
-  });
-
-  // Handle raw nodes (created by remark-parse for certain HTML structures)
-  visit(tree, 'raw', (node, index, parent) => {
-    if (typeof index === 'number' && parent && 'children' in parent) {
-      handleTableInNode(node, index, parent as Parents);
     }
   });
 
