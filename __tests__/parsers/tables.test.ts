@@ -150,6 +150,11 @@ describe('table parser', () => {
 
       const pres = hast.children.filter(c => c.tagName === 'pre');
       expect(pres).toHaveLength(0);
+
+      const bodyCells = findNodes(bodyRows[0], 'td');
+      const codeCell = bodyCells[1];
+      const codeBlocks = findNodes(codeCell, 'code');
+      expect(codeBlocks.length).toBeGreaterThan(0);
     });
   });
 
