@@ -343,7 +343,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // For paragraph siblings, include the paragraph's children (with closing tag stripped)
     // For HTML siblings, include any content parsed from before the closing tag
     const closingChildren = strippedParagraph
-      ? (strippedParagraph.children as MdxJsxFlowElement['children'])
+      ? (strippedParagraph.children.length > 0 ? [strippedParagraph] : [])
       : extraClosingChildren;
 
     const componentNode = createComponentNode({
