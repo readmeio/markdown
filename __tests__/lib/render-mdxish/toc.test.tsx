@@ -112,7 +112,7 @@ describe('toc transformer', () => {
     expect(secondHeading.properties?.id).toBe('callout-heading');
   });
 
-  it('resolves variables in TOC headings', () => {
+  it('resolves variables in labels', () => {
     const md = `# Quickstart {user.version}
 
 ## Setup {user.apiKey}
@@ -129,5 +129,65 @@ describe('toc transformer', () => {
     // Check that variables are resolved in TOC links
     expect(screen.findByText('Quickstart v2.5.0')).toBeDefined();
     expect(screen.findByText('Setup prod_abc123')).toBeDefined();
+  });
+
+  it('keeps adjacent legacy variable values and suffixes together', () => {
+    const md = '## <<CLOUD_VM>>s 2';
+    const variables = {
+      user: {},
+      defaults: [{ name: 'CLOUD_VM', default: 'Falcon' }],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md, { variables }), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Falcons 2')).toBeDefined();
+    expect(screen.queryByText('Falcon s 2')).toBeNull();
+  });
+
+  it('keeps adjacent MDX variable values and suffixes together', () => {
+    const md = '## {user.CLOUD_VM}s 2';
+    const variables = {
+      user: {},
+      defaults: [{ name: 'CLOUD_VM', default: 'Falcon' }],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md, { variables }), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Falcons 2')).toBeDefined();
+    expect(screen.queryByText('Falcon s 2')).toBeNull();
+  });
+
+  it('keeps adjacent link text and suffixes together', () => {
+    const md = '## [Link](https://example.com)s';
+    const { Toc } = renderMdxish(mdxish(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Links')).toBeDefined();
+    expect(screen.queryByText('Link s')).toBeNull();
+  });
+
+  it('keeps adjacent emphasis text and suffixes together', () => {
+    const md = '## *bold*s';
+    const { Toc } = renderMdxish(mdxish(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('bolds')).toBeDefined();
+    expect(screen.queryByText('bold s')).toBeNull();
+  });
+
+  it('preserves authored spaces around inline content', () => {
+    const md = '## [Link](https://example.com) space';
+    const { Toc } = renderMdxish(mdxish(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Link space')).toBeDefined();
+    expect(screen.queryByText('Linkspace')).toBeNull();
   });
 });
