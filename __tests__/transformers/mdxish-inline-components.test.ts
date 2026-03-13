@@ -535,7 +535,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
     });
 
     it('should handle Anchor with JavaScript URL (should preserve as-is)', () => {
-      // Security note: Anchor component should handle sanitization at render time
+      // JavaScript URLs are preserved as-is
       const markdown = '<Anchor href="javascript:void(0)">Click</Anchor>';
       const tree = parseWithPlugin(markdown);
 
