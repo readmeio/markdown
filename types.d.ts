@@ -7,6 +7,7 @@ import type {
   Parent,
   Blockquote,
   Node,
+  PhrasingContent,
   Root,
   Text,
   Table,
@@ -162,6 +163,21 @@ interface Glossary extends Node {
   type: NodeTypes.glossary;
 }
 
+interface Anchor extends Node {
+  children: PhrasingContent[];
+  data: Data & {
+    hName: 'Anchor';
+    hProperties: {
+      href: string;
+      label?: string;
+      target?: string;
+      title?: string;
+    };
+  };
+  position?: Position;
+  type: NodeTypes.anchor;
+}
+
 declare module 'mdast' {
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
@@ -178,6 +194,7 @@ declare module 'mdast' {
   }
 
   interface PhrasingContentMap {
+    [NodeTypes.anchor]: Anchor;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.glossary]: Glossary;
@@ -187,6 +204,7 @@ declare module 'mdast' {
 
   interface RootContentMap {
     Link: Embed | Link;
+    [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;

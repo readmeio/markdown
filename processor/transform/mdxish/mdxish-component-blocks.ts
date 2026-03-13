@@ -10,6 +10,8 @@ import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-tas
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 
+import { INLINE_COMPONENT_TAGS } from './constants';
+
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
@@ -24,10 +26,8 @@ const MAX_LOOKAHEAD = 30;
  * These components either have special parsing requirements that the generic component
  * block transformer cannot handle correctly, or are inline components that we don't
  * want to convert to mdxJsxFlowElement which is a block level element.
- *
- * Glossary and Anchor are inline components.
  */
-const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
+const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', ...INLINE_COMPONENT_TAGS]);
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [legacyVariable()])
