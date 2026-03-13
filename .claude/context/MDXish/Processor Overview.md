@@ -2,7 +2,7 @@
 
 ## `mdxishAstProcessor()`
 
-### Preprocessing
+### Preprocessing Step
 
 > **See**: @lib/mdxish.ts#92-103
 
@@ -45,7 +45,7 @@ It applies four transforms in sequence:
                     restoreSnakeCaseComponentNames  ◄── undo (4)
 ```
 
-### Processor
+### Processor Pipeline
 
 > **See**: @lib/mdxish.ts#105-178
 
@@ -92,7 +92,7 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
 
 ## `mdxish()`
 
-### Preprocessing
+### Preprocessing Step
 
 > **See**: @lib/mdxish.ts#209-212
 
@@ -139,7 +139,7 @@ mdContent (raw input)
          remarkParse → transformers → ...
 ```
 
-### Processor
+### Processor Pipeline
 
 > **See**: @lib/mdxish.ts#214-239
 
