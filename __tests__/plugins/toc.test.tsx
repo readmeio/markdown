@@ -212,10 +212,12 @@ export const toc = [
     `);
   });
 
-  it('keeps adjacent MDX variable values and suffixes together', () => {
-    const md = '## {user.mockVar}s 2';
+  it('resolves variables in labels', () => {
+    const md = `# Hello {user.name}!
+
+## Setup for {user.role}s`;
     const variables = {
-      user: { mockVar: 'Falcon' },
+      user: { name: 'John', role: 'admin' },
       defaults: [],
     };
 
@@ -223,28 +225,23 @@ export const toc = [
 
     render(<Toc />);
 
-    expect(screen.findByText('Falcons 2')).toBeDefined();
-    expect(screen.queryByText('Falcon s 2')).toBeNull();
+    expect(screen.findByText('Hello John!')).toBeDefined();
+    expect(screen.findByText('Setup for admins')).toBeDefined();
   });
 
-  it('keeps adjacent MDX link text and suffixes together', () => {
-    const md = '## [Link](https://example.com)s';
-    const { Toc } = run(compile(md));
+  it('keeps mixed inline phrasing together', () => {
+    const md = '## Hello {user.name}! N*ic*e [day](https://example.com)s';
+    const variables = {
+      user: { name: 'John' },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
 
     render(<Toc />);
 
-    expect(screen.findByText('Links')).toBeDefined();
-    expect(screen.queryByText('Link s')).toBeNull();
-  });
-
-  it('keeps adjacent MDX emphasis text and suffixes together', () => {
-    const md = '## *bold*s';
-    const { Toc } = run(compile(md));
-
-    render(<Toc />);
-
-    expect(screen.findByText('bolds')).toBeDefined();
-    expect(screen.queryByText('bold s')).toBeNull();
+    expect(screen.findByText('Hello John! Nice days')).toBeDefined();
+    expect(screen.queryByText('Hello John! N ic e day s')).toBeNull();
   });
 
   it('preserves authored spaces around adjacent MDX inline content', () => {
