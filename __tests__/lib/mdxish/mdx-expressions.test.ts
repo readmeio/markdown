@@ -412,6 +412,32 @@ Result: {result}`;
       expect(p).toBeDefined();
     });
 
+    it('should handle multiline empty expression (blank line between braces)', () => {
+      // This tests the case where { and } are separated by a blank line
+      // which would normally cause markdown to split into different paragraphs
+      const md = '{\n\n}';
+      const ast = mdxish(md);
+
+      // Should not throw, braces should be escaped and treated as literal text
+      expect(ast.children.length).toBeGreaterThan(0);
+    });
+
+    it('should handle expression with blank line in surrounding text', () => {
+      const md = 'Hello {\n\n} World';
+      const ast = mdxish(md);
+
+      // Should not throw
+      expect(ast.children.length).toBeGreaterThan(0);
+    });
+
+    it('should handle nested braces with blank lines', () => {
+      const md = '{\n{\n\n}\n}';
+      const ast = mdxish(md);
+
+      // Should not throw
+      expect(ast.children.length).toBeGreaterThan(0);
+    });
+
     it('should handle adjacent expressions', () => {
       const md = '{a}{b}{c}';
       const ast = mdxish(md, { jsxContext: { a: '1', b: '2', c: '3' } });
