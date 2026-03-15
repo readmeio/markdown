@@ -112,13 +112,13 @@ describe('toc transformer', () => {
     expect(secondHeading.properties?.id).toBe('callout-heading');
   });
 
-  it('resolves variables in TOC headings', () => {
-    const md = `# Quickstart {user.version}
+  it('resolves variables in labels', () => {
+    const md = `# Hello {user.name}!
 
-## Setup {user.apiKey}
+## Setup for {user.role}s
 `;
     const variables = {
-      user: { version: 'v2.5.0', apiKey: 'prod_abc123' },
+      user: { name: 'John', role: 'admin' },
       defaults: [],
     };
 
@@ -126,8 +126,47 @@ describe('toc transformer', () => {
 
     render(<Toc />);
 
-    // Check that variables are resolved in TOC links
-    expect(screen.findByText('Quickstart v2.5.0')).toBeDefined();
-    expect(screen.findByText('Setup prod_abc123')).toBeDefined();
+    expect(screen.findByText('Hello John!')).toBeDefined();
+    expect(screen.findByText('Setup for admins')).toBeDefined();
+  });
+
+  it('keeps adjacent legacy variable values and suffixes together', () => {
+    const md = '## Hello <<name>>! Nice';
+    const variables = {
+      user: {},
+      defaults: [{ name: 'name', default: 'John Cena' }],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md, { variables }), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Hello John Cena! Nice')).toBeDefined();
+    expect(screen.queryByText('Hello John Cena ! Nice')).toBeNull();
+  });
+
+  it('keeps mixed inline phrasing together', () => {
+    const md = '## Hello {user.name}! N*ic*e [day](https://example.com)s';
+    const variables = {
+      user: { name: 'John' },
+      defaults: [],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md, { variables }), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Hello John! Nice days')).toBeDefined();
+    expect(screen.queryByText('Hello John! N ic e day s')).toBeNull();
+  });
+
+  it('preserves authored spaces around inline content', () => {
+    const md = '## [Link](https://example.com) space';
+    const { Toc } = renderMdxish(mdxish(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Link space')).toBeDefined();
+    expect(screen.queryByText('Linkspace')).toBeNull();
   });
 });
