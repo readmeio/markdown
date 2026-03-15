@@ -59,6 +59,17 @@ export function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
     return `___INLINE_CODE_${index}___`;
   });
 
+  // Collapse multiline template literals in JSX expressions to single-line form.
+  // The micromark MDX text expression tokenizer exits on newlines, so `{`\nline\n`}`
+  // causes a parse error. Replacing actual newlines with \n escape sequences makes
+  // the expression single-line while preserving the evaluated string value.
+  // This runs after fenced blocks and inline code are protected, so their contents
+  // are not affected.
+  protectedContent = protectedContent.replace(/\{`((?:[^`\\]|\\.)*)`\}/g, (match, templateContent: string) => {
+    if (!/\n/.test(templateContent)) return match;
+    return `{\`${templateContent.replace(/\n/g, '\\n')}\`}`;
+  });
+
   return { protectedCode: { codeBlocks, inlineCode }, protectedContent };
 }
 
