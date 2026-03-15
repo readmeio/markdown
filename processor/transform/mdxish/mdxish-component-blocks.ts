@@ -340,10 +340,10 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // Collect all intermediate siblings between opening tag and closing tag
     const intermediateChildren = parent.children.slice(index + 1, closingIndex) as MdxJsxFlowElement['children'];
 
-    // For paragraph siblings, include the paragraph's children (with closing tag stripped)
-    // For HTML siblings, include any content parsed from before the closing tag
+// For paragraph siblings, include the full paragraph (with closing tag stripped)
+// For HTML siblings, include any content parsed from before the closing tag
     const closingChildren = strippedParagraph
-      ? (strippedParagraph.children as MdxJsxFlowElement['children'])
+      ? (strippedParagraph.children.length > 0 ? [strippedParagraph] : [])
       : extraClosingChildren;
 
     const componentNode = createComponentNode({
