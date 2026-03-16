@@ -103,11 +103,24 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
       return continuationStart(code);
     }
 
+    if (code === codes.backslash) {
+      effects.consume(code);
+      return escapedChar;
+    }
+
     if (code === codes.lessThan) {
       effects.consume(code);
       return closeSlash;
     }
 
+    effects.consume(code);
+    return body;
+  }
+
+  function escapedChar(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) {
+      return body(code);
+    }
     effects.consume(code);
     return body;
   }
@@ -205,6 +218,7 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
 }
 
 function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const self = this;
 
   return start;

@@ -1,4 +1,4 @@
-import type { Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
@@ -85,7 +85,7 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
   let tableHasFlowContent = false;
 
   // Re-parse text-only cells through markdown and detect flow content
-  visit(node, isTableCell, (cell: MdxJsxTableCell) => {
+  visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
     if (!isTextOnly(cell.children as unknown[])) return;
 
     const textContent = extractTextFromChildren(cell.children as unknown[]);
@@ -107,10 +107,39 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
     }
   });
 
-  if (tableHasFlowContent) {
-    // Cell content has block-level nodes (callouts, code blocks, etc.) — keep as JSX
-    // so remarkRehype can handle the flow content through mdxJsxElementHandler
-    (parent.children as (typeof parent.children[number] | MdxJsxFlowElement | MdxJsxTextElement)[])[index] = {
+  // mdast's table node always treats the first tableRow as <thead>, so we can't
+  // represent a header-less table in mdast without the first body row getting
+  // promoted. Keep as JSX instead so remarkRehype renders it correctly
+  let hasThead = false;
+  visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name === 'thead') hasThead = true;
+  });
+
+  if (tableHasFlowContent || !hasThead) {
+    // remarkMdx wraps inline elements in paragraph nodes (e.g. <td> on the
+    // same line as content becomes mdxJsxTextElement inside a paragraph).
+    // Unwrap these so <td>/<th> sit directly under <tr>, and strip
+    // whitespace-only text nodes to avoid rendering empty <p>/<br>.
+    const cleanChildren = (children: Node[]): Node[] =>
+      children
+        .flatMap(child => {
+          if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
+            return child.children as Node[];
+          }
+          return [child];
+        })
+        .filter(
+          child =>
+            !(child.type === 'text' && 'value' in child && typeof child.value === 'string' && !child.value.trim()),
+        );
+
+    visit(node as Node, isMDXElement, (el: MdxJsxFlowElement | MdxJsxTextElement) => {
+      if ('children' in el && Array.isArray(el.children)) {
+        el.children = cleanChildren(el.children as Node[]) as typeof el.children;
+      }
+    });
+
+    (parent.children as ((typeof parent.children)[number] | MdxJsxFlowElement | MdxJsxTextElement)[])[index] = {
       ...node,
       position,
     };
@@ -120,33 +149,33 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
   // All cells are phrasing-only — convert to markdown table
   const children: TableRow[] = [];
 
-  visit(node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+  visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead' || child.name === 'tbody') {
-      visit(child, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
-        if (row.name === 'tr' && row.type === 'mdxJsxFlowElement') {
-          const rowChildren: TableCell[] = [];
+      visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
+        if (row.name !== 'tr') return;
 
-          visit(row, isTableCell, ({ name, children: cellChildren, position: cellPosition }) => {
-            const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
-              if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-                return parsedNode.children;
-              }
-              return [parsedNode];
-            });
+        const rowChildren: TableCell[] = [];
 
-            rowChildren.push({
-              type: tableTypes[name],
-              children: parsedChildren,
-              position: cellPosition,
-            } as TableCell);
+        visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
+          const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
+            if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
+              return parsedNode.children;
+            }
+            return [parsedNode];
           });
 
-          children.push({
-            type: 'tableRow' as const,
-            children: rowChildren,
-            position: row.position,
-          });
-        }
+          rowChildren.push({
+            type: tableTypes[name],
+            children: parsedChildren,
+            position: cellPosition,
+          } as TableCell);
+        });
+
+        children.push({
+          type: 'tableRow' as const,
+          children: rowChildren,
+          position: row.position,
+        });
       });
     }
   });
@@ -180,14 +209,15 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables = (): Transform => tree => {
-  visit(tree, 'html', (node, index, parent) => {
+  visit(tree, 'html', (_node, index, parent) => {
+    const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table')) return;
 
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
 
-      visit(parsed, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
+      visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name === 'Table') {
           processTableNode(tableNode, index, parent as Parents);
         }

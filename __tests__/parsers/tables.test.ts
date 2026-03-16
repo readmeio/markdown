@@ -1,7 +1,16 @@
+import type { Element, Nodes } from 'hast';
+
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
 import { mdxish } from '../../lib/mdxish';
+
+const findNodes = (node: Nodes, tagName: string): Element[] => {
+  const results: Element[] = [];
+  if (node.type === 'element' && node.tagName === tagName) results.push(node);
+  if ('children' in node) node.children.forEach(c => results.push(...findNodes(c, tagName)));
+  return results;
+};
 
 describe('table parser', () => {
   describe('unescaping pipes', () => {
@@ -128,13 +137,6 @@ describe('table parser', () => {
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const findNodes = (node, tagName) => {
-        const results = [];
-        if (node.tagName === tagName) results.push(node);
-        if (node.children) node.children.forEach(c => results.push(...findNodes(c, tagName)));
-        return results;
-      };
-
       const tables = findNodes(hast, 'table');
       expect(tables).toHaveLength(1);
 
@@ -148,8 +150,8 @@ describe('table parser', () => {
       expect(headerRows).toHaveLength(1);
       expect(bodyRows).toHaveLength(3);
 
-      const pres = hast.children.filter(c => c.tagName === 'pre');
-      expect(pres).toHaveLength(0);
+      const topLevelPres = (hast as unknown as HastNode).children?.filter(c => c.tagName === 'pre') ?? [];
+      expect(topLevelPres).toHaveLength(0);
 
       const bodyCells = findNodes(bodyRows[0], 'td');
       const codeCell = bodyCells[1];
@@ -159,13 +161,6 @@ describe('table parser', () => {
   });
 
   describe('jsxTable tokenizer edge cases', () => {
-    const findNodes = (node, tagName) => {
-      const results: any[] = [];
-      if (node.tagName === tagName) results.push(node);
-      if (node.children) node.children.forEach((c: any) => results.push(...findNodes(c, tagName)));
-      return results;
-    };
-
     it('handles multiple blank lines, two tables, empty cells, and safeMode', () => {
       const doc = `<Table>
   <thead>
@@ -215,9 +210,90 @@ describe('table parser', () => {
       expect(findNodes(hast, 'table')).toHaveLength(0);
     });
 
+    it('does not break when cell contains escaped closing tag', () => {
+      const doc = `<Table>
+  <tbody>
+    <tr>
+      <td>Literal closing tag as text</td>
+      <td>\\</Table> should not be separated</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const bodyCells = findNodes(tables[0], 'td');
+      expect(bodyCells).toHaveLength(2);
+      const textNode = bodyCells[1].children[0];
+      expect(textNode.type === 'text' && textNode.value).toContain('</Table> should not be separated');
+    });
+
+    it('renders table when tr and th are on a single line', () => {
+      const doc = `<Table>
+  <thead>
+  <tr><th>A</th></tr>
+  </thead>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findNodes(tables[0], 'th');
+      expect(cells).toHaveLength(1);
+      const textNode = cells[0].children[0];
+      expect(textNode.type === 'text' && textNode.value).toBe('A');
+    });
+
+    it('keeps table as JSX when thead is missing so body rows are not promoted to header', () => {
+      const doc = `<Table>
+  <tbody>
+    <tr>
+      <td>body cell</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const thead = findNodes(tables[0], 'thead');
+      expect(thead).toHaveLength(0);
+
+      const bodyCells = findNodes(tables[0], 'td');
+      expect(bodyCells).toHaveLength(1);
+    });
+
+    it('renders table inside a blockquote', () => {
+      const doc = `> <Table>
+>   <tbody>
+>     <tr><td>quoted</td></tr>
+>   </tbody>
+> </Table>
+>
+> text after quote`;
+
+      const hast = mdxish(doc);
+      const blockquotes = findNodes(hast, 'blockquote');
+      expect(blockquotes).toHaveLength(1);
+
+      const tables = findNodes(blockquotes[0], 'table');
+      expect(tables).toHaveLength(1);
+
+      const bodyCells = findNodes(tables[0], 'td');
+      expect(bodyCells).toHaveLength(1);
+    });
+
     it('handles unclosed Table and Table with trailing content', () => {
       expect(() => mdxish('<Table>\n  <thead><tr><th>A</th></tr></thead>')).not.toThrow();
-      expect(() => mdxish('<Table>\n  <thead><tr><th>A</th></tr></thead>\n  <tbody><tr><td>1</td></tr></tbody>\n</Table> trailing')).not.toThrow();
+      expect(() =>
+        mdxish(
+          '<Table>\n  <thead><tr><th>A</th></tr></thead>\n  <tbody><tr><td>1</td></tr></tbody>\n</Table> trailing',
+        ),
+      ).not.toThrow();
     });
   });
 
