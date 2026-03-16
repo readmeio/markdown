@@ -131,10 +131,14 @@ function extractBalancedBraces(content: string, start: number): { content: strin
 }
 
 /**
- * Escapes unbalanced braces in content to prevent MDX expression parsing errors.
- * Handles: already-escaped braces, string literals inside expressions, nested balanced braces.
+ * Escapes problematic braces in content to prevent MDX expression parsing errors.
+ * Handles three cases:
+ * 1. Unbalanced braces (e.g., `{foo` without closing `}`)
+ * 2. Paragraph-spanning expressions (e.g., `{\n\n}` where blank line splits paragraphs)
+ * 3. Skips HTML elements to prevent backslashes appearing in output
+ *
  */
-function escapeUnbalancedBraces(content: string): string {
+function escapeProblematicBraces(content: string): string {
   // Skip HTML elements — their content should never be escaped because
   // rehypeRaw parses them into hast elements, making `\` literal text in output
   const htmlElements: string[] = [];
@@ -144,19 +148,21 @@ function escapeUnbalancedBraces(content: string): string {
     return `___HTML_ELEM_${idx}___`;
   });
 
-  const opens: number[] = [];
-  const unbalanced = new Set<number>();
-  let strDelim: string | null = null;
-  let strEscaped = false;
-
+  const toEscape = new Set<number>();
   // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
   const chars = Array.from(safe);
+  let strDelim: string | null = null;
+  let strEscaped = false;
+  // Stack of open braces with their state
+  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
+  // Track position of last newline (outside strings) to detect blank lines
+  let lastNewlinePos = -2; // -2 means no recent newline
 
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i];
 
-    // Track strings inside expressions to ignore braces within them
-    if (opens.length > 0) {
+    // Track string delimiters inside expressions to ignore braces within them
+    if (openStack.length > 0) {
       if (strDelim) {
         if (strEscaped) strEscaped = false;
         else if (ch === '\\') strEscaped = true;
@@ -168,6 +174,21 @@ function escapeUnbalancedBraces(content: string): string {
         strDelim = ch;
         // eslint-disable-next-line no-continue
         continue;
+      }
+
+      // Track newlines to detect blank lines (paragraph boundaries)
+      if (ch === '\n') {
+        // Check if this newline creates a blank line (only whitespace since last newline)
+        if (lastNewlinePos >= 0) {
+          const between = chars.slice(lastNewlinePos + 1, i).join('');
+          if (/^[ \t]*$/.test(between)) {
+            // This is a blank line - mark all open expressions as paragraph-spanning
+            openStack.forEach(entry => {
+              entry.hasBlankLine = true;
+            });
+          }
+        }
+        lastNewlinePos = i;
       }
     }
 
@@ -181,21 +202,34 @@ function escapeUnbalancedBraces(content: string): string {
       }
     }
 
-    if (ch === '{') opens.push(i);
-    else if (ch === '}') {
-      if (opens.length > 0) opens.pop();
-      else unbalanced.add(i);
+    if (ch === '{') {
+      openStack.push({ pos: i, hasBlankLine: false });
+      lastNewlinePos = -2; // Reset newline tracking for new expression
+    } else if (ch === '}') {
+      if (openStack.length > 0) {
+        const entry = openStack.pop()!;
+        // If expression spans paragraph boundary, escape both braces
+        if (entry.hasBlankLine) {
+          toEscape.add(entry.pos);
+          toEscape.add(i);
+        }
+      } else {
+        // Unbalanced closing brace (no matching open)
+        toEscape.add(i);
+      }
     }
   }
 
-  opens.forEach(pos => unbalanced.add(pos));
+  // Any remaining open braces are unbalanced
+  openStack.forEach(entry => toEscape.add(entry.pos));
 
-  // If there are no unbalanced braces, return content as-is;
-  // otherwise, escape each unbalanced `{` or `}` so MDX doesn't treat them as expressions.
-  let result = unbalanced.size === 0
+  // If there are no problematic braces, return safe content as-is;
+  // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
+  let result = toEscape.size === 0
     ? safe
-    : chars.map((ch, i) => (unbalanced.has(i) ? `\\${ch}` : ch)).join('');
+    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
 
+  // Restore HTML elements
   if (htmlElements.length > 0) {
     result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
   }
@@ -301,8 +335,9 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
   processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
 
-  // Step 3: Escape unbalanced braces to prevent MDX expression parsing errors
-  processed = escapeUnbalancedBraces(processed);
+  // Step 3: Escape problematic braces to prevent MDX expression parsing errors
+  // This handles both unbalanced braces and paragraph-spanning expressions in one pass
+  processed = escapeProblematicBraces(processed);
 
   // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);
