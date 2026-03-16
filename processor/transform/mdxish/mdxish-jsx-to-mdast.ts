@@ -18,6 +18,12 @@ function toImageAlign(value: string | undefined): ImageAlign | undefined {
   return undefined;
 }
 
+function toBool(value: boolean | string | undefined): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === 'boolean') return value;
+  return value !== '' && value !== 'false';
+}
+
 interface ImageAttrs {
   align?: string;
   alt?: string;
@@ -92,11 +98,11 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     src,
     title,
     ...(validAlign && { align: validAlign }),
-    ...(border !== undefined && { border: String(border) !== 'false' }),
+    ...(border !== undefined && { border: toBool(border) }),
     ...(caption && { caption }),
     ...(className && { className }),
     ...(height !== undefined && { height: String(height) }),
-    ...(lazy !== undefined && { lazy }),
+    ...(lazy !== undefined && { lazy: toBool(lazy) }),
     ...(sizing && { sizing }),
     ...(sizing && { width: sizing }),
   };
@@ -105,11 +111,11 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     type: NodeTypes.imageBlock,
     align: validAlign,
     alt,
-    border: border !== undefined ? String(border) !== 'false' : undefined,
+    border: toBool(border),
     caption,
     className,
     height: height !== undefined ? String(height) : undefined,
-    lazy,
+    lazy: toBool(lazy),
     sizing,
     src,
     title,
@@ -203,7 +209,7 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
     src: url,
     title,
     ...(validAlign && { align: validAlign }),
-    ...(border !== undefined && { border: String(border) !== 'false' }),
+    ...(border !== undefined && { border: toBool(border) }),
     ...(sizing && { sizing }),
     ...(sizing && { width: sizing }),
   };
@@ -212,7 +218,7 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
     type: NodeTypes.imageBlock,
     align: validAlign,
     alt,
-    border: border !== undefined ? String(border) !== 'false' : undefined,
+    border: toBool(border),
     sizing,
     src: url,
     title,
