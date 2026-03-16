@@ -110,7 +110,10 @@ const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: nu
   if (tableHasFlowContent) {
     // Cell content has block-level nodes (callouts, code blocks, etc.) — keep as JSX
     // so remarkRehype can handle the flow content through mdxJsxElementHandler
-    parent.children[index] = { ...node, position } as unknown as typeof parent.children[number];
+    (parent.children as (typeof parent.children[number] | MdxJsxFlowElement | MdxJsxTextElement)[])[index] = {
+      ...node,
+      position,
+    };
     return;
   }
 
