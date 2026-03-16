@@ -100,7 +100,7 @@ interface Plain extends Literal {
 interface ImageBlockAttrs {
   align?: string;
   alt: string;
-  border?: string;
+  border?: boolean;
   caption?: string;
   children?: RootContent[];
   className?: string;

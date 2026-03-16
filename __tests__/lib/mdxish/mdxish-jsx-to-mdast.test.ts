@@ -34,7 +34,7 @@ describe('mdxish-jsx-to-mdast transformer', () => {
           src: 'test.png',
           alt: 'Test',
           align: 'center',
-          border: 'true',
+          border: true,
           width: '300',
           height: '200',
         });
@@ -45,7 +45,26 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
-        expect(imageNode.data?.hProperties?.border).toBe('true');
+        expect(imageNode.data?.hProperties?.border).toBe(true);
+        expect(imageNode.border).toBe(true);
+      });
+
+      it('should normalize border="false" to boolean false', () => {
+        const md = '<Image src="test.png" alt="Test" border="false" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.border).toBe(false);
+        expect(imageNode.data?.hProperties?.border).toBe(false);
+      });
+
+      it('should leave border undefined when not specified', () => {
+        const md = '<Image src="test.png" alt="Test" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.border).toBeUndefined();
+        expect(imageNode.data?.hProperties?.border).toBeUndefined();
       });
     });
 
@@ -287,6 +306,56 @@ This is a warning message.
       expect(imageNode.align).toBe('center');
       expect(imageNode.data?.hName).toBe('img');
       expect(imageNode.data?.hProperties?.src).toBe('https://example.com/photo.jpg');
+    });
+
+    it('should normalize magic block image border to boolean', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "border": true
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.border).toBe(true);
+      expect(imageNode.data?.hProperties?.border).toBe(true);
+    });
+
+    it('should normalize border to boolean inside a figure (magic block image with caption)', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "caption": "A caption",
+      "border": true
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe('figure');
+
+      const figure = ast.children[0] as { children: ImageBlock[] };
+      const imageNode = figure.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageNode).toBeDefined();
+      expect(imageNode.border).toBe(true);
+      expect(imageNode.data?.hProperties?.border).toBe(true);
     });
 
     it('should handle mix of magic blocks and JSX components', () => {
