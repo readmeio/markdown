@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 13.6.0
+### ✨ New & Improved
+
+* correctly render block level elements in callout ([#1362](https://github.com/readmeio/markdown/issues/1362)) ([32040cb](https://github.com/readmeio/markdown/commit/32040cb618ad0a90c26df1f1699507fc4fa1c29e))
+
+### 🛠 Fixes & Updates
+
+* **mdxish-editor:** built in anchor component not deserializing to to a link in mdxish editor ([#1361](https://github.com/readmeio/markdown/issues/1361)) ([30e037d](https://github.com/readmeio/markdown/commit/30e037d6f763fc4fcc9ce2829ba339a82a50484a))
+* **mdxish:** callout end tag rendering ([#1373](https://github.com/readmeio/markdown/issues/1373)) ([cad7594](https://github.com/readmeio/markdown/commit/cad759433cbcdd9b1b779e130a9b1c449c1ca437))
+* **mdxish:** combine code tabs if separated by CLRF token \r\n ([#1372](https://github.com/readmeio/markdown/issues/1372)) ([2d8d267](https://github.com/readmeio/markdown/commit/2d8d26756965a3f0f146ccb1f43fd4a2a60eb87f))
+* **mdxish:** Curly braces on separate lines cause render failure on MDXish ([#1364](https://github.com/readmeio/markdown/issues/1364)) ([d85e106](https://github.com/readmeio/markdown/commit/d85e1066ab58a7ea51cdf23f9a0f8b9efcac9d62))
+* **mdxished:** Preserve embed type and dimensions when copy/pasting <Embed> blocks ([#1369](https://github.com/readmeio/markdown/issues/1369)) ([5af9623](https://github.com/readmeio/markdown/commit/5af9623013c5b7c628378a81d0b7e6d8902b9c23))
+
+### 📘 Tests & Docs
+
+* **xish:** add CLAUDE.md + processor flow overview docs ([#1370](https://github.com/readmeio/markdown/issues/1370)) ([b8d9e4c](https://github.com/readmeio/markdown/commit/b8d9e4cc7e8760236aca810f9376873cb0bb604a))
+
 ## Version 13.5.0
 ### ✨ New & Improved
 
