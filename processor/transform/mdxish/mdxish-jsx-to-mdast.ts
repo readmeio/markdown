@@ -227,7 +227,21 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
 const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
   const { data, position } = node;
   const hProps = data?.hProperties || {};
-  const { favicon, href, html, image, provider, providerName, providerUrl, title = '', typeOfEmbed, url = '' } = hProps;
+  const {
+    favicon,
+    height,
+    href,
+    html,
+    iframe,
+    image,
+    provider,
+    providerName,
+    providerUrl,
+    title = '',
+    typeOfEmbed,
+    url = '',
+    width,
+  } = hProps;
 
   // Use typeOfEmbed if available from magic block JSON, otherwise fallback to provider
   const embedType = typeOfEmbed || provider;
@@ -244,13 +258,16 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
         title,
         url,
         ...(favicon && { favicon }),
+        ...(height && { height }),
         ...(href && { href }),
         ...(html && { html }),
+        ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
         ...(embedType && { typeOfEmbed: embedType }),
         ...(providerName && { providerName }),
         ...(resolvedProviderUrl && { providerUrl: resolvedProviderUrl }),
-        ...(provider && {provider})
+        ...(provider && { provider }),
+        ...(width && { width }),
       },
     },
     position,
