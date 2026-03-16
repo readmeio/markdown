@@ -109,6 +109,7 @@ export interface MagicBlockEmbed {
       providerName?: string;
       providerUrl?: string;
       title?: string;
+      typeOfEmbed?: string;
       url?: string;
     };
   };

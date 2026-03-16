@@ -31,6 +31,7 @@ interface CalloutAttrs {
 interface EmbedAttrs {
   favicon?: string;
   height?: string;
+  href?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
@@ -129,8 +130,20 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
 
 const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   const attrs = getAttrs<EmbedAttrs>(jsx);
-  const { favicon, height, html, iframe, image, providerName, providerUrl, title = '', typeOfEmbed, url = '', width } =
-    attrs;
+  const {
+    favicon,
+    height,
+    href,
+    html,
+    iframe,
+    image,
+    providerName,
+    providerUrl,
+    title = '',
+    typeOfEmbed,
+    url = '',
+    width,
+  } = attrs;
 
   return {
     type: NodeTypes.embedBlock,
@@ -143,6 +156,7 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
         url,
         ...(favicon && { favicon }),
         ...(height && { height }),
+        ...(href && { href }),
         ...(html && { html }),
         ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
@@ -213,7 +227,12 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
 const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
   const { data, position } = node;
   const hProps = data?.hProperties || {};
-  const { favicon, html, image, providerName, providerUrl, title = '', url = '' } = hProps;
+  const { favicon, href, html, image, provider, providerName, providerUrl, title = '', typeOfEmbed, url = '' } = hProps;
+
+  // Use typeOfEmbed if available from magic block JSON, otherwise fallback to provider
+  const embedType = typeOfEmbed || provider;
+  // Map provider to providerUrl if providerUrl is not present
+  const resolvedProviderUrl = providerUrl || provider;
 
   return {
     type: NodeTypes.embedBlock,
@@ -225,10 +244,13 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
         title,
         url,
         ...(favicon && { favicon }),
+        ...(href && { href }),
         ...(html && { html }),
         ...(image && { image }),
+        ...(embedType && { typeOfEmbed: embedType }),
         ...(providerName && { providerName }),
-        ...(providerUrl && { providerUrl }),
+        ...(resolvedProviderUrl && { providerUrl: resolvedProviderUrl }),
+        ...(provider && {provider})
       },
     },
     position,
