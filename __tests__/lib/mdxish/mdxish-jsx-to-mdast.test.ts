@@ -35,9 +35,31 @@ describe('mdxish-jsx-to-mdast transformer', () => {
           alt: 'Test',
           align: 'center',
           border: true,
+          sizing: '300',
           width: '300',
           height: '200',
         });
+        expect(imageNode.align).toBe('center');
+        expect(imageNode.sizing).toBe('300');
+      });
+
+      it('should validate align to a known ImageAlign value', () => {
+        const md = '<Image src="test.png" alt="Test" align="invalid" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.align).toBeUndefined();
+        expect(imageNode.data?.hProperties?.align).toBeUndefined();
+      });
+
+      it('should map width to sizing on the node', () => {
+        const md = '<Image src="test.png" alt="Test" width="50%" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.sizing).toBe('50%');
+        expect(imageNode.width).toBe('50%');
+        expect(imageNode.data?.hProperties?.sizing).toBe('50%');
       });
 
       it('should handle boolean border attribute', () => {
@@ -306,6 +328,52 @@ This is a warning message.
       expect(imageNode.align).toBe('center');
       expect(imageNode.data?.hName).toBe('img');
       expect(imageNode.data?.hProperties?.src).toBe('https://example.com/photo.jpg');
+    });
+
+    it('should validate magic block image align to a known ImageAlign value', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "align": "center"
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.align).toBe('center');
+      expect(imageNode.data?.hProperties?.align).toBe('center');
+    });
+
+    it('should map magic block image width to sizing', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "sizing": "80"
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.sizing).toBe('80%');
+      expect(imageNode.width).toBe('80%');
+      expect(imageNode.data?.hProperties?.sizing).toBe('80%');
+      expect(imageNode.data?.hProperties?.width).toBe('80%');
     });
 
     it('should normalize magic block image border to boolean', () => {

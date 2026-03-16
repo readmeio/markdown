@@ -6,8 +6,17 @@ import type { Plugin } from 'unified';
 
 import { SKIP, visit } from 'unist-util-visit';
 
+import type { ImageAlign } from '../../../types';
+
 import { NodeTypes } from '../../../enums';
 import { getAttrs } from '../../utils';
+
+function toImageAlign(value: string | undefined): ImageAlign | undefined {
+  if (value === 'left' || value === 'center' || value === 'right') {
+    return value;
+  }
+  return undefined;
+}
 
 interface ImageAttrs {
   align?: string;
@@ -75,31 +84,36 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const { align, alt = '', border, caption, className, height, lazy, src = '', title = '', width } = attrs;
 
+  const validAlign = toImageAlign(align);
+  const sizing = width !== undefined ? String(width) : undefined;
+
   const hProperties: ImageBlock['data']['hProperties'] = {
     alt,
     src,
     title,
-    ...(align && { align }),
+    ...(validAlign && { align: validAlign }),
     ...(border !== undefined && { border: String(border) !== 'false' }),
     ...(caption && { caption }),
     ...(className && { className }),
     ...(height !== undefined && { height: String(height) }),
     ...(lazy !== undefined && { lazy }),
-    ...(width !== undefined && { width: String(width) }),
+    ...(sizing && { sizing }),
+    ...(sizing && { width: sizing }),
   };
 
   return {
     type: NodeTypes.imageBlock,
-    align,
+    align: validAlign,
     alt,
     border: border !== undefined ? String(border) !== 'false' : undefined,
     caption,
     className,
     height: height !== undefined ? String(height) : undefined,
     lazy,
+    sizing,
     src,
     title,
-    width: width !== undefined ? String(width) : undefined,
+    width: sizing,
     data: {
       hName: 'img',
       hProperties,
@@ -181,23 +195,28 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
   const hProps = data?.hProperties || {};
   const { align, border, width } = hProps;
 
+  const validAlign = toImageAlign(align);
+  const sizing = width || undefined;
+
   const hProperties: ImageBlock['data']['hProperties'] = {
     alt,
     src: url,
     title,
-    ...(align && { align }),
+    ...(validAlign && { align: validAlign }),
     ...(border !== undefined && { border: String(border) !== 'false' }),
-    ...(width && { width }),
+    ...(sizing && { sizing }),
+    ...(sizing && { width: sizing }),
   };
 
   return {
     type: NodeTypes.imageBlock,
-    align,
+    align: validAlign,
     alt,
     border: border !== undefined ? String(border) !== 'false' : undefined,
+    sizing,
     src: url,
     title,
-    width,
+    width: sizing,
     data: {
       hName: 'img',
       hProperties,
