@@ -398,7 +398,7 @@ This is a warning message.
       expect(imageNode.data?.hProperties?.border).toBe(true);
     });
 
-    it('should normalize border to boolean inside a figure (magic block image with caption)', () => {
+    it('should flatten figure (magic block image with caption) into image-block with caption', () => {
       const md = `[block:image]
 {
   "images": [
@@ -417,13 +417,13 @@ This is a warning message.
       const ast = processWithNewTypes(md);
 
       expect(ast.children).toHaveLength(1);
-      expect(ast.children[0].type).toBe('figure');
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
 
-      const figure = ast.children[0] as { children: ImageBlock[] };
-      const imageNode = figure.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
-      expect(imageNode).toBeDefined();
+      const imageNode = ast.children[0] as ImageBlock;
       expect(imageNode.border).toBe(true);
       expect(imageNode.data?.hProperties?.border).toBe(true);
+      expect(imageNode.caption).toBe('A caption');
+      expect(imageNode.data?.hProperties?.caption).toBe('A caption');
     });
 
     it('should handle mix of magic blocks and JSX components', () => {
