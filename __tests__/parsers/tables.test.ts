@@ -287,6 +287,46 @@ describe('table parser', () => {
       expect(bodyCells).toHaveLength(1);
     });
 
+    it('handles nested tables', () => {
+      const doc = `<Table>
+  <tbody>
+    <tr>
+      <td>
+        <Table>
+          <tbody>
+            <tr>
+              <td>Nested Table</td>
+            </tr>
+          </tbody>
+        </Table>
+      </td>
+      <td>Hi</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const allTables = findNodes(hast, 'table');
+      expect(allTables).toHaveLength(2);
+
+      const outerTable = allTables[0];
+      const outerRows = findNodes(outerTable, 'tr');
+      expect(outerRows.length).toBeGreaterThanOrEqual(1);
+
+      const outerRow = outerRows[0];
+      const outerTds = outerRow.children.filter(
+        (c): c is Element => c.type === 'element' && c.tagName === 'td',
+      );
+      expect(outerTds).toHaveLength(2);
+
+      const nestedTables = findNodes(outerTds[0], 'table');
+      expect(nestedTables).toHaveLength(1);
+
+      const innerCells = findNodes(nestedTables[0], 'td');
+      expect(innerCells).toHaveLength(1);
+      expect(innerCells[0].children[0]).toMatchObject({ type: 'text', value: 'Nested Table' });
+    });
+
     it('handles unclosed Table and Table with trailing content', () => {
       expect(() => mdxish('<Table>\n  <thead><tr><th>A</th></tr></thead>')).not.toThrow();
       expect(() =>
