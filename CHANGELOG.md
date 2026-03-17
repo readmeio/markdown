@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 13.6.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** parse <Table> as single token to prevent blank-line fragmentations ([#1371](https://github.com/readmeio/markdown/issues/1371)) ([ce73b7f](https://github.com/readmeio/markdown/commit/ce73b7f0db80ccfeaff367532c02c58d710a43a7))
+* **mdxish:** variables in callout titles causing it to crash ([#1378](https://github.com/readmeio/markdown/issues/1378)) ([4006247](https://github.com/readmeio/markdown/commit/40062471c8e51cda8379ff5733216c0d9e4db2e5)), closes [#1362](https://github.com/readmeio/markdown/issues/1362)
+
 ## Version 13.6.0
 ### ✨ New & Improved
 
