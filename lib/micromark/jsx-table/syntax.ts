@@ -45,6 +45,22 @@ const jsxTableConstruct: Construct = {
 function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
   let codeSpanOpenSize = 0;
   let codeSpanCloseSize = 0;
+  let depth = 1;
+
+  const TABLE_NAME: Code[] = [codes.uppercaseT, codes.lowercaseA, codes.lowercaseB, codes.lowercaseL, codes.lowercaseE];
+  const ABLE_SUFFIX: Code[] = TABLE_NAME.slice(1);
+
+  /** Build a state chain that matches a sequence of character codes. */
+  function matchChars(chars: Code[], onMatch: State, onFail: (code: Code) => State | undefined): State {
+    if (chars.length === 0) return onMatch;
+    return ((code: Code): State | undefined => {
+      if (code === chars[0]) {
+        effects.consume(code);
+        return matchChars(chars.slice(1), onMatch, onFail);
+      }
+      return onFail(code);
+    }) as State;
+  }
 
   return start;
 
@@ -53,37 +69,7 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
     effects.enter('jsxTable');
     effects.enter('jsxTableData');
     effects.consume(code);
-    return expectT;
-  }
-
-  function expectT(code: Code): State | undefined {
-    if (code !== codes.uppercaseT) return nok(code);
-    effects.consume(code);
-    return expectA;
-  }
-
-  function expectA(code: Code): State | undefined {
-    if (code !== codes.lowercaseA) return nok(code);
-    effects.consume(code);
-    return expectB;
-  }
-
-  function expectB(code: Code): State | undefined {
-    if (code !== codes.lowercaseB) return nok(code);
-    effects.consume(code);
-    return expectL;
-  }
-
-  function expectL(code: Code): State | undefined {
-    if (code !== codes.lowercaseL) return nok(code);
-    effects.consume(code);
-    return expectE;
-  }
-
-  function expectE(code: Code): State | undefined {
-    if (code !== codes.lowercaseE) return nok(code);
-    effects.consume(code);
-    return afterTagName;
+    return matchChars(TABLE_NAME, afterTagName, nok);
   }
 
   function afterTagName(code: Code): State | undefined {
@@ -166,55 +152,32 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
   function closeSlash(code: Code): State | undefined {
     if (code === codes.slash) {
       effects.consume(code);
-      return closeT;
+      return matchChars(TABLE_NAME, closeGt, body);
     }
-    return body(code);
-  }
-
-  function closeT(code: Code): State | undefined {
     if (code === codes.uppercaseT) {
       effects.consume(code);
-      return closeA;
+      return matchChars(ABLE_SUFFIX, openAfterTagName, body);
     }
     return body(code);
   }
 
-  function closeA(code: Code): State | undefined {
-    if (code === codes.lowercaseA) {
+  function openAfterTagName(code: Code): State | undefined {
+    if (code === codes.greaterThan || code === codes.slash || code === codes.space || code === codes.horizontalTab) {
+      depth += 1;
       effects.consume(code);
-      return closeB;
-    }
-    return body(code);
-  }
-
-  function closeB(code: Code): State | undefined {
-    if (code === codes.lowercaseB) {
-      effects.consume(code);
-      return closeL;
-    }
-    return body(code);
-  }
-
-  function closeL(code: Code): State | undefined {
-    if (code === codes.lowercaseL) {
-      effects.consume(code);
-      return closeE;
-    }
-    return body(code);
-  }
-
-  function closeE(code: Code): State | undefined {
-    if (code === codes.lowercaseE) {
-      effects.consume(code);
-      return closeGt;
+      return body;
     }
     return body(code);
   }
 
   function closeGt(code: Code): State | undefined {
     if (code === codes.greaterThan) {
+      depth -= 1;
       effects.consume(code);
-      return afterClose;
+      if (depth === 0) {
+        return afterClose;
+      }
+      return body;
     }
     return body(code);
   }

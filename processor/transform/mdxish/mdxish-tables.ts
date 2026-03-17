@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { visit } from 'unist-util-visit';
+import { EXIT, visit } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement } from '../../utils';
 import calloutTransformer from '../callouts';
@@ -220,6 +220,9 @@ const mdxishTables = (): Transform => tree => {
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name === 'Table') {
           processTableNode(tableNode, index, parent as Parents);
+          // Stop after the outermost Table so nested Tables don't overwrite parent.children[index]
+          // we let it get handled naturally
+          return EXIT;
         }
       });
     } catch {
