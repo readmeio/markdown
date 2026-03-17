@@ -10,6 +10,8 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
+import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
+import { jsxTable } from './micromark/jsx-table';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -30,8 +32,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
+      .data('micromarkExtensions', [jsxTable(), mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), mdxExpressionFromMarkdown()])
       .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 

@@ -8,7 +8,7 @@
  * @returns The concatenated text content
  */
 export const extractText = (node: { children?: unknown[]; type?: string; value?: unknown; alt?: unknown }): string => {
-  if (node.type === 'text' && typeof node.value === 'string') {
+  if ((node.type === 'text' || node.type === 'html') && typeof node.value === 'string') {
     return node.value;
   }
 

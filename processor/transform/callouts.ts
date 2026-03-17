@@ -3,6 +3,7 @@ import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -12,11 +13,20 @@ import { SKIP, visit } from 'unist-util-visit';
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import plain from '../../lib/plain';
+import variable from '../compile/variable';
 
 import { extractText } from './extract-text';
 
 const titleParser = unified().use(remarkParse).use(remarkGfm);
-const toMarkdownExtensions = [gfmStrikethroughToMarkdown()];
+// The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
+// natively understand
+const toMarkdownExtensions = [
+  gfmStrikethroughToMarkdown(),
+  // For mdx variable syntaxes (e.g., {user.name})
+  mdxExpressionToMarkdown(),
+  // Important: This is required and would crash the parser if there's no variable node handler
+  { handlers: { [NodeTypes.variable]: variable } },
+];
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
