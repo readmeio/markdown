@@ -129,6 +129,22 @@ const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
   if (closingIndex === -1) return { paragraph: node, found: false } as const;
 
   children.splice(closingIndex, 1);
+
+  // After removing the closing tag, trim trailing whitespace/newlines from the
+  // preceding text node. Remark parses "Hello\n</Callout>" as text("Hello\n") +
+  // html("</Callout>"), and the leftover \n would be converted to <br> in HAST.
+  if (closingIndex > 0) {
+    const prev = children[closingIndex - 1];
+    if (prev.type === 'text' && 'value' in prev) {
+      const trimmed = (prev as { value: string }).value.trimEnd();
+      if (trimmed) {
+        (prev as { value: string }).value = trimmed;
+      } else {
+        children.splice(closingIndex - 1, 1);
+      }
+    }
+  }
+
   return { paragraph: { ...node, children }, found: true } as const;
 };
 
