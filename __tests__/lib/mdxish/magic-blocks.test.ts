@@ -460,8 +460,10 @@ ${JSON.stringify(
         expect(cellHtml).toContain('<a');
         expect(cellHtml).toContain('</a>');
         expect(cellHtml).toContain('</a>.');
-        const paragraphs = cellHtml.match(/<p>/g);
-        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+        // Text adjacent to lists is flattened (no <p> wrapper) to prevent margin issues
+        // Text not adjacent to lists (e.g., "Next paragraph") may still be in <p>
+        expect(cellHtml).toContain('See <a');
+        expect(cellHtml).toContain('Next paragraph');
       });
 
       it('separates text immediately after closing HTML tags with no whitespace', () => {
@@ -469,8 +471,7 @@ ${JSON.stringify(
           '<ol><li>Verify your configuration is correct.</ol></li>To resolve this issue, add the item to a custom list.  \n  \nFor more information, see [Add a list](doc:add-list) and [Manage settings](doc:manage-settings).';
         const cellHtml = getCellHtml(input);
         expect(cellHtml).toContain('To resolve');
-        const paragraphs = cellHtml.match(/<p>/g);
-        expect(paragraphs?.length).toBeGreaterThanOrEqual(2);
+        // Text adjacent to lists is flattened (no <p> wrapper) to prevent margin issues
         expect(cellHtml).toContain('<a');
         expect(cellHtml).toContain('href="doc:add-list"');
       });
@@ -481,8 +482,22 @@ ${JSON.stringify(
         const cellHtml = getCellHtml(input);
         expect(cellHtml).toContain('<a');
         expect(cellHtml).toContain('You can also configure');
-        const paragraphs = cellHtml.match(/<p>/g);
-        expect(paragraphs?.length).toBeGreaterThanOrEqual(1);
+        // Text adjacent to lists is flattened (no <p> wrapper) to prevent margin issues
+      });
+
+      it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
+        const input =
+          'Note the following: <ul><li>A **Live** status means the domain is externally accessible (HTTP request passes)</li><li>A **Not Live** status means the domain is not exposed and cannot be reached from the internet (HTTP request fails)</li></ul>';
+        const cellHtml = getCellHtml(input);
+        // Should render as actual list elements, not literal <ul><li> text inside <p>
+        expect(cellHtml).toContain('<ul>');
+        expect(cellHtml).toContain('<li>');
+        expect(cellHtml).toContain('<strong>');
+        // Should NOT have <ul> inside a <p> (which causes extra padding)
+        expect(cellHtml).not.toMatch(/<p>[^<]*<ul>/);
+        // Text before <ul> is flattened (no <p> wrapper) to prevent margin issues
+        expect(cellHtml).toContain('Note the following:');
+        expect(cellHtml).not.toMatch(/<p>Note the following:<\/p>/);
       });
     });
 
@@ -628,6 +643,37 @@ ${JSON.stringify(
       const thirdCellContent = JSON.stringify(thirdActionCell);
       expect(thirdCellContent).toContain('"tagName":"br"');
       expect(thirdCellContent).toContain('Key');
+    });
+
+    it('should convert &nbsp without semicolons to non-breaking spaces', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Limit&nbsp&nbsp&nbsppadded',
+      'h-1': 'Hello World',
+      '0-0': '`Goodbye`',
+      '0-1': '67',
+    },
+    cols: 2,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+
+      const table = ast.children.find((c): c is Element => c.type === 'element' && c.tagName === 'table');
+      expect(table).toBeDefined();
+
+      const thead = table!.children[0] as Element;
+      const headerRow = thead.children[0] as Element;
+      const firstHeader = headerRow.children[0] as Element;
+      const headerText = JSON.stringify(firstHeader);
+      expect(headerText).not.toContain('&nbsp');
+      expect(headerText).toContain('Limit');
     });
 
     it('should normalize malformed emphasis syntax in table cells', () => {

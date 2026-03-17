@@ -2,11 +2,15 @@ import type { Node, Parent, Paragraph, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
+
+import { INLINE_COMPONENT_TAGS } from './constants';
 
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
@@ -22,15 +26,14 @@ const MAX_LOOKAHEAD = 30;
  * These components either have special parsing requirements that the generic component
  * block transformer cannot handle correctly, or are inline components that we don't
  * want to convert to mdxJsxFlowElement which is a block level element.
- *
- * Glossary and Anchor are inline components.
  */
-const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', 'Anchor']);
+const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', ...INLINE_COMPONENT_TAGS]);
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown()])
-  .use(remarkParse);
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
+  .use(remarkParse)
+  .use(remarkGfm);
 
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
@@ -337,10 +340,10 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // Collect all intermediate siblings between opening tag and closing tag
     const intermediateChildren = parent.children.slice(index + 1, closingIndex) as MdxJsxFlowElement['children'];
 
-    // For paragraph siblings, include the paragraph's children (with closing tag stripped)
-    // For HTML siblings, include any content parsed from before the closing tag
+// For paragraph siblings, include the full paragraph (with closing tag stripped)
+// For HTML siblings, include any content parsed from before the closing tag
     const closingChildren = strippedParagraph
-      ? (strippedParagraph.children as MdxJsxFlowElement['children'])
+      ? (strippedParagraph.children.length > 0 ? [strippedParagraph] : [])
       : extraClosingChildren;
 
     const componentNode = createComponentNode({

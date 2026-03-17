@@ -16,6 +16,7 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
+import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -28,13 +29,18 @@ import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
+import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
-import { preprocessJSXExpressions, type JSXContext } from '../processor/transform/mdxish/preprocess-jsx-expressions';
+import {
+  preprocessJSXExpressions,
+  removeJSXComments,
+  type JSXContext,
+} from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
   preserveBooleanProperties,
@@ -45,11 +51,16 @@ import variablesCodeResolver from '../processor/transform/mdxish/variables-code'
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
+import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
+import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
+import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
+import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
 export interface MdxishOpts {
   components?: CustomComponents;
@@ -131,12 +142,17 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   };
 
   const processor = unified()
-    .data('micromarkExtensions', safeMode ? [magicBlock(), legacyVariable()] : [magicBlock(), mdxExprTextOnly, legacyVariable()])
+    .data(
+      'micromarkExtensions',
+      safeMode
+        ? [jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
+        : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+    )
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [magicBlockFromMarkdown(), legacyVariableFromMarkdown()]
-        : [magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown()],
+        ? [jsxTableFromMarkdown(), magicBlockFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()]
+        : [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
@@ -148,9 +164,10 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
-    .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert JSX elements to MDAST types
+    .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
+    .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
-    .use(variablesTextTransformer) // Parse {user.*} patterns from text
+    .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
 
@@ -187,22 +204,29 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, variables } = opts;
+  const { components: userComponents = {}, jsxContext = {}, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
     ...userComponents,
   };
 
-  const { processor, parserReadyContent } = mdxishAstProcessor(mdContent, opts);
+  // Remove JSX comments before processing (protect code blocks first)
+  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
+  const withoutComments = removeJSXComments(protectedContent);
+  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
+
+  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
+    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
+    .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {

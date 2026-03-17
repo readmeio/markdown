@@ -1,6 +1,7 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { mdxExpressionFromMarkdown, mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
@@ -9,6 +10,8 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
+import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
+import { jsxTable } from './micromark/jsx-table';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -29,8 +32,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [mdxExpressionFromMarkdown()])
+      .data('micromarkExtensions', [jsxTable(), mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), mdxExpressionFromMarkdown()])
       .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 
@@ -39,6 +42,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
     .use(normalizeEmphasisAST)
     .use(mdx ? remarkMdx : undefined)
     .use(stripCommentsTransformer)
+    .use(remarkGfm)
     .use(
       remarkStringify,
       mdx

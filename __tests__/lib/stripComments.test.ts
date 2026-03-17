@@ -328,6 +328,60 @@ end"`);
     `);
   });
 
+  it('preserves jsx tables in mdxish mode', async () => {
+    const input = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>Field</th>
+
+      <th style={{ textAlign: "left" }}>Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>Name</td>
+
+      <td style={{ textAlign: "left" }}>A name field</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toContain('<Table');
+    expect(output).toContain('</Table>');
+    expect(output).toContain('Field');
+    expect(output).toContain('Description');
+    expect(output).toContain('Name');
+    expect(output).toContain('A name field');
+  });
+
+  it('strips comments inside jsx tables in mdxish mode', async () => {
+    const input = `<!-- top comment -->
+
+<Table>
+  <thead>
+    <tr>
+      <th>A</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>data</td>
+    </tr>
+  </tbody>
+</Table>
+
+<!-- bottom comment -->`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toContain('<Table>');
+    expect(output).toContain('data');
+    expect(output).not.toContain('<!-- top comment -->');
+    expect(output).not.toContain('<!-- bottom comment -->');
+  });
+
   describe('strip comments edge cases', () => {
     it.each([
       ['should return empty for empty string', '', undefined, ''],
@@ -355,7 +409,7 @@ end"`);
       ['ordered list trailing space', '1. A <!-- c -->\n2. B', undefined, '1. A&#x20;\n2. B'],
       ['unordered list trailing space', '- A <!-- c -->\n- B', undefined, '* A&#x20;\n* B'],
       ['between list items', '- Item 1\n<!-- c -->\n- Item 2', undefined, '* Item 1\n\n- Item 2'],
-      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2 |\n| :- | :- |\n|  | data |'],
+      ['table cells', '| H1 | H2 |\n| :- | :- |\n| <!-- c --> | data |', undefined, '| H1 | H2   |\n| :- | :--- |\n|    | data |'],
       // inline formatting
       ['adjacent to bold/italic', '**b**<!-- c -->*i*<!-- c --> x', undefined, '**b***i* x'],
       ['adjacent to link/image', '[a](u)<!-- c -->![b](v)', undefined, '[a](u)![b](v)'],
@@ -441,6 +495,30 @@ end"`);
       expect(output).toContain('{/* stays */}');
       expect(output).not.toContain('{/* c */}');
       expect(output).not.toContain('deprecated');
+    });
+
+    describe.each([
+      ['legacy', undefined],
+      ['mdx', { mdx: true }],
+      ['mdxish', { mdxish: true }],
+    ])('checkbox behavior for %s', (_description, options) => {
+      it('should not escape checkboxes', async () => {
+        const input = '- [ ] Checkbox with text';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* [ ] Checkbox with text');
+      });
+
+      it('should not escape ticked checkboxes', async () => {
+        const input = '- [x] Ticked checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* [x] Ticked checkbox');
+      });
+
+      it('should retain escaped checkboxes', async () => {
+        const input = '- \\[ ] Checkbox';
+        const output = await stripComments(input, options);
+        expect(output).toBe('* \\[ ] Checkbox');
+      });
     });
   });
 });

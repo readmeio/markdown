@@ -1,7 +1,7 @@
 import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
-import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Node, Parent, RootContent } from 'mdast';
-import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Node, Parent, PhrasingContent, RootContent } from 'mdast';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { SKIP, visit } from 'unist-util-visit';
@@ -30,6 +30,7 @@ interface CalloutAttrs {
 
 interface EmbedAttrs {
   favicon?: string;
+  height?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
@@ -38,6 +39,7 @@ interface EmbedAttrs {
   title?: string;
   typeOfEmbed?: string;
   url?: string;
+  width?: string;
 }
 
 interface RecipeAttrs {
@@ -48,6 +50,26 @@ interface RecipeAttrs {
   slug?: string;
   title?: string;
 }
+
+const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
+  const attrs = getAttrs<Anchor['data']['hProperties']>(jsx);
+  const { href = '', label, target, title } = attrs;
+
+  return {
+    type: NodeTypes.anchor,
+    children: jsx.children as PhrasingContent[],
+    data: {
+      hName: 'Anchor',
+      hProperties: {
+        href,
+        ...(label && { label }),
+        ...(target && { target }),
+        ...(title && { title }),
+      },
+    },
+    position: jsx.position,
+  };
+};
 
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
@@ -107,7 +129,8 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
 
 const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   const attrs = getAttrs<EmbedAttrs>(jsx);
-  const { favicon, html, iframe, image, providerName, providerUrl, title = '', url = '' } = attrs;
+  const { favicon, height, html, iframe, image, providerName, providerUrl, title = '', typeOfEmbed, url = '', width } =
+    attrs;
 
   return {
     type: NodeTypes.embedBlock,
@@ -119,11 +142,14 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
         title,
         url,
         ...(favicon && { favicon }),
+        ...(height && { height }),
         ...(html && { html }),
         ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
         ...(providerName && { providerName }),
         ...(providerUrl && { providerUrl }),
+        ...(typeOfEmbed && { typeOfEmbed }),
+        ...(width && { width }),
       },
     },
     position: jsx.position,
@@ -230,7 +256,7 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
-  // Transform JSX components (Image, Callout, Embed, Recipe)
+  // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
 
@@ -241,6 +267,16 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
 
     // Replace the JSX node with the MDAST node
     (parent.children as Node[])[index] = newNode;
+  });
+
+  // Inline JSX components (Anchor)
+  visit(tree, 'mdxJsxTextElement', (node: MdxJsxTextElement, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined || !node.name) return;
+
+    if (node.name === 'Anchor') {
+      const newNode = transformAnchor(node);
+      (parent.children as Node[])[index] = newNode;
+    }
   });
 
   // Transform magic block images (type: 'image') to image-block

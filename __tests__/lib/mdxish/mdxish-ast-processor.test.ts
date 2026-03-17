@@ -3,6 +3,24 @@ import type { Root } from 'mdast';
 import { mdxishAstProcessor } from '../../../lib';
 
 describe('mdxishAstProcessor', () => {
+  describe('deferred processing (handled by mdxish rendering pipeline)', () => {
+    it('should NOT remove JSX comments', () => {
+      const md = 'Hello {/* this is a comment */} world';
+      const { parserReadyContent } = mdxishAstProcessor(md);
+      // JSX comments should still be present - removal happens in mdxish()
+      expect(parserReadyContent).toContain('{/* this is a comment */}');
+    });
+
+    it('should NOT evaluate MDX expressions', () => {
+      const md = 'Result: {5 * 10}';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { jsxContext: {} });
+      const mdast = processor.parse(parserReadyContent);
+      // The mdast should still have mdxTextExpression nodes - evaluation happens in mdxish()
+      const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
+      expect(hasMdxExpression).toBe(true);
+    });
+  });
+
   it('should return a unified processor and parser-ready content for simple text', () => {
     const md = 'Rafe is **cool**!';
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
@@ -106,6 +124,96 @@ describe('mdxishAstProcessor', () => {
       const mdast = processor.parse(parserReadyContent);
       const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
       expect(hasMdxExpression).toBe(true);
+    });
+  });
+
+  it('should convert GFM checklist nodes and retain checkboxes that have no text after them', () => {
+    const md = `- [ ] hi
+- [ ] `;
+    const { processor, parserReadyContent } = mdxishAstProcessor(md);
+    const ast = processor.parse(parserReadyContent);
+
+    expect(md).toBe(parserReadyContent);
+    // @ts-expect-error - custom matcher
+    expect(ast).toStrictEqualExceptPosition({
+      type: 'root',
+      children: [
+        {
+          type: 'list',
+          ordered: false,
+          spread: false,
+          start: null,
+          children: [
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: 'hi' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('should only normalize empty checklist items when whitespace exists after ]', () => {
+    const md = `- [ ]
+- [ ] `;
+    const { processor, parserReadyContent } = mdxishAstProcessor(md);
+    const ast = processor.parse(parserReadyContent);
+
+    expect(md).toBe(parserReadyContent);
+    // @ts-expect-error - custom matcher
+    expect(ast).toStrictEqualExceptPosition({
+      type: 'root',
+      children: [
+        {
+          type: 'list',
+          ordered: false,
+          spread: false,
+          start: null,
+          children: [
+            {
+              type: 'listItem',
+              checked: null,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [{ type: 'text', value: '[ ]' }],
+                },
+              ],
+            },
+            {
+              type: 'listItem',
+              checked: false,
+              spread: false,
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
   });
 });

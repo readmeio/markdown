@@ -14,28 +14,6 @@ describe('mdxish MDX expressions', () => {
       expect(text.value).toContain('2');
     });
 
-    it('should evaluate variable from context inline', () => {
-      const md = 'Hello {user.name}!';
-      const ast = mdxish(md, { jsxContext: { user: { name: 'Alice' } } });
-
-      const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
-      const text = p.children.find(c => c.type === 'text') as Text;
-
-      expect(text.value).toBe('Hello Alice!');
-    });
-
-    it('should handle multiple expressions in one line', () => {
-      const md = '{user.firstName} {user.lastName} is {user.age} years old.';
-      const ast = mdxish(md, {
-        jsxContext: { user: { firstName: 'John', lastName: 'Doe', age: 30 } },
-      });
-
-      const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
-      const text = p.children.find(c => c.type === 'text') as Text;
-
-      expect(text.value).toBe('John Doe is 30 years old.');
-    });
-
     it('should handle expression at start of line', () => {
       const md = '{greeting} world!';
       const ast = mdxish(md, { jsxContext: { greeting: 'Hello' } });
@@ -428,6 +406,32 @@ Result: {result}`;
 
       const p = ast.children.find(c => (c as Element).tagName === 'p') as Element;
       expect(p).toBeDefined();
+    });
+
+    it('should handle multiline empty expression (blank line between braces)', () => {
+      // This tests the case where { and } are separated by a blank line
+      // which would normally cause markdown to split into different paragraphs
+      const md = '{\n\n}';
+      const ast = mdxish(md);
+
+      // Should not throw, braces should be escaped and treated as literal text
+      expect(ast.children.length).toBeGreaterThan(0);
+    });
+
+    it('should handle expression with blank line in surrounding text', () => {
+      const md = 'Hello {\n\n} World';
+      const ast = mdxish(md);
+
+      // Should not throw
+      expect(ast.children.length).toBeGreaterThan(0);
+    });
+
+    it('should handle nested braces with blank lines', () => {
+      const md = '{\n{\n\n}\n}';
+      const ast = mdxish(md);
+
+      // Should not throw
+      expect(ast.children.length).toBeGreaterThan(0);
     });
 
     it('should handle adjacent expressions', () => {

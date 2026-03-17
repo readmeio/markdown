@@ -49,6 +49,28 @@ ${pythonCode}
       expect(buttons[0]).toHaveTextContent('C++');
       expect(buttons[1]).toHaveTextContent('Python');
     });
+
+    it('should render code tabs when there is a slash r (CRLF) character between the backticks', () => {
+      const mdSlash = '```python\nprint("hello")\n```\r\n```javascript\nconsole.log("hello")\n```';
+      const modSlash = renderMdxish(mdxish(mdSlash));
+      const { container } = render(<modSlash.default />);
+
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
+
+      const buttons = container.querySelectorAll('button');
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveTextContent('Python');
+      expect(buttons[1]).toHaveTextContent('JavaScript');
+    });
+
+    it('should render code tabs even when there are spaces after the first code block', () => {
+      const mdSpace = '```python\nprint("hello")\n```   \n```javascript\nconsole.log("hello")\n```';
+      const modSpace = renderMdxish(mdxish(mdSpace));
+      const { container } = render(<modSpace.default />);
+      expect(container.querySelector('div.CodeTabs')).toBeInTheDocument();
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
+    });
   });
 
   describe('given a mermaid diagram', () => {
@@ -159,6 +181,29 @@ ${mermaidCode}
       expect(buttons).toHaveLength(2);
       expect(buttons[0]).toHaveTextContent('JavaScript');
       expect(buttons[1]).toHaveTextContent('Python');
+    });
+  });
+
+  describe('given non consecutive code blocks', () => {
+    it('should not combine 2 code blocks that are separated by 2 empty lines', () => {
+      const md = '```python\nprint("hello")\n```\n\n```javascript\nconsole.log("hello")\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(2);
+    });
+
+    it('should not combine 2 code blocks that are separated by 2 empty lines with \\r\\n', () => {
+      const md = '```python\r\nprint("hello")\n```\r\n\r\n```javascript\nconsole.log("hello")\r\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(2);
+    });
+
+    it('should not combine 2 code blocks that are separated by a new line and text before the code block', () => {
+      const md = '```python\nprint("hello")\n```\nhello```javascript\nconsole.log("hello")\n```';
+      const mod = renderMdxish(mdxish(md));
+      const { container } = render(<mod.default />);
+      expect(container.querySelectorAll('div.CodeTabs_initial')).toHaveLength(1);
     });
   });
 });

@@ -1,5 +1,5 @@
-import type { Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Root } from 'mdast';
+import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Paragraph, Root } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishAstProcessor } from '../../../lib';
@@ -101,6 +101,105 @@ This is a warning message.
           title: 'Video',
           providerName: 'YouTube',
         });
+      });
+
+      it('should preserve typeOfEmbed attribute', () => {
+        const md = '<Embed typeOfEmbed="youtube" url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />';
+        const ast = processWithNewTypes(md);
+
+        const embedNode = ast.children[0] as EmbedBlock;
+        expect(embedNode.data?.hProperties?.typeOfEmbed).toBe('youtube');
+        expect(embedNode.data?.hProperties?.url).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+      });
+
+      it('should preserve height and width attributes', () => {
+        const md = '<Embed typeOfEmbed="iframe" url="https://example.com" height="400px" width="100%" />';
+        const ast = processWithNewTypes(md);
+
+        const embedNode = ast.children[0] as EmbedBlock;
+        expect(embedNode.data?.hProperties).toMatchObject({
+          typeOfEmbed: 'iframe',
+          url: 'https://example.com',
+          height: '400px',
+          width: '100%',
+        });
+      });
+
+      it('should preserve all embed types (github, pdf, jsfiddle)', () => {
+        const testCases = [
+          { type: 'github', url: 'https://gist.github.com/user/abc123' },
+          { type: 'pdf', url: 'https://example.com/doc.pdf' },
+          { type: 'jsfiddle', url: 'https://jsfiddle.net/user/abc123' },
+        ];
+
+        testCases.forEach(({ type, url }) => {
+          const md = `<Embed typeOfEmbed="${type}" url="${url}" />`;
+          const ast = processWithNewTypes(md);
+
+          const embedNode = ast.children[0] as EmbedBlock;
+          expect(embedNode.data?.hProperties?.typeOfEmbed).toBe(type);
+          expect(embedNode.data?.hProperties?.url).toBe(url);
+        });
+      });
+    });
+
+    describe('Anchor component', () => {
+      it('should transform <Anchor> to readme-anchor node', () => {
+        const md = 'Start by <Anchor href="https://readme.com">ReadMe</Anchor> today.';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe('paragraph');
+
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode).toBeDefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
+        expect(anchorNode.children[0]).toMatchObject({ type: 'text', value: 'ReadMe' });
+      });
+
+      it('should preserve target="_blank" on the Anchor node', () => {
+        const md = '<Anchor label="**Guides**" target="_blank" href="https://docs.readme.com">Guides</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode).toBeDefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://docs.readme.com');
+        expect(anchorNode.data?.hProperties?.target).toBe('_blank');
+        expect(anchorNode.children[0]).toMatchObject({ type: 'text', value: 'Guides' });
+      });
+
+      it('should omit target when not provided', () => {
+        const md = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode).toBeDefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
+        expect(anchorNode.data?.hProperties?.target).toBeUndefined();
+      });
+
+      it('should preserve title attribute', () => {
+        const md = '<Anchor href="https://readme.com" title="Home">ReadMe</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode.data?.hProperties?.title).toBe('Home');
+      });
+
+      it('should handle empty Anchor children', () => {
+        const md = '<Anchor href="https://readme.com"></Anchor>';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode).toBeDefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
+        expect(anchorNode.children).toHaveLength(0);
       });
     });
 
@@ -330,6 +429,19 @@ Some callout content
 
       expect(ast.children).toHaveLength(1);
       expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+    });
+
+    it('should leave Anchor as raw html nodes (rendering path unaffected)', () => {
+      const md = '<Anchor href="https://readme.com">ReadMe</Anchor>';
+      const ast = processWithoutNewTypes(md);
+
+      // Anchor is excluded from mdxishComponentBlocks so it stays as raw html nodes
+      // inside the paragraph — no mdxJsxFlowElement is created
+      expect(ast.children[0].type).toBe('paragraph');
+      const para = ast.children[0] as Paragraph;
+      const htmlNodes = para.children.filter(c => c.type === 'html');
+      expect(htmlNodes.length).toBeGreaterThan(0);
+      expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
     });
   });
 });

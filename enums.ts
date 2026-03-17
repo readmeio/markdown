@@ -1,4 +1,5 @@
 export enum NodeTypes {
+  anchor = 'readme-anchor',
   callout = 'rdme-callout',
   codeTabs = 'code-tabs',
   embedBlock = 'embed-block',

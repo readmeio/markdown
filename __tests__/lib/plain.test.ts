@@ -142,6 +142,27 @@ Is it _me_ you're looking for?
     expect(plain(tree, { preserveVariableSyntax: true, variables: { company: 'ReadMe' } })).toBe('{user.company}');
   });
 
+  it('preserves legacy <<variable>> syntax with preserveVariableSyntax via mdxish', () => {
+    const txt = 'Hello <<var-too>> world';
+    const tree = mdxish(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('Hello <<var-too>> world');
+  });
+
+  it('preserves MDX and legacy syntax separately with preserveVariableSyntax via mdxish', () => {
+    const txt = '{user.this_is_a_var} and <<var-too>>';
+    const tree = mdxish(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user.this_is_a_var} and <<var-too>>');
+  });
+
+  it('uses bracket notation for non-identifier keys with preserveVariableSyntax via hast', () => {
+    const txt = '{user["var-here"]}';
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user["var-here"]}');
+  });
+
   it('preserves variables inside structured content with preserveVariableSyntax option', () => {
     const txt = `
 > 📘 Welcome
