@@ -15,6 +15,7 @@ const utils = {
 export {
   compile,
   exports,
+  FLOW_TYPES,
   hast,
   run,
   mdast,
