@@ -295,6 +295,45 @@ describe('table parser', () => {
         ),
       ).not.toThrow();
     });
+
+    it.each([
+      ['single backticks', '`</Table>`'],
+      ['double backticks', '``</Table>``'],
+      ['triple backticks', '```</Table>```'],
+    ])('does not treat </Table> inside %s as a closing tag', (_label, code) => {
+      const doc = `<Table>
+  <tbody>
+    <tr>
+      <td>Closing tag in code</td>
+      <td>This ${code} should be auto-escaped.</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findNodes(tables[0], 'td');
+      expect(cells).toHaveLength(2);
+    });
+
+    it('does not swallow content after an unclosed Table', () => {
+      const doc = `<Table>
+  <tbody>
+    <tr>
+      <td>Closing tag in code</td>
+    </tr>
+  </tbody>
+
+None of the following content will get rendered!`;
+
+      const hast = mdxish(doc);
+      const paragraphs = findNodes(hast, 'p');
+      const textContent = JSON.stringify(hast);
+      expect(textContent).toContain('None of the following content will get rendered!');
+      expect(paragraphs.length).toBeGreaterThan(0);
+    });
   });
 
   describe('jsx tables with images', () => {

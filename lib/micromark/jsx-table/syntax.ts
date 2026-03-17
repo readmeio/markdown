@@ -43,6 +43,9 @@ const jsxTableConstruct: Construct = {
 };
 
 function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
+  let codeSpanOpenSize = 0;
+  let codeSpanCloseSize = 0;
+
   return start;
 
   function start(code: Code): State | undefined {
@@ -92,10 +95,10 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
   }
 
   function body(code: Code): State | undefined {
+    // Reject unclosed <Table> so it falls back to normal HTML block parsing
+    // instead of swallowing all subsequent content to EOF
     if (code === null) {
-      effects.exit('jsxTableData');
-      effects.exit('jsxTable');
-      return ok(code);
+      return nok(code);
     }
 
     if (markdownLineEnding(code)) {
@@ -113,8 +116,43 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
       return closeSlash;
     }
 
+    // Skip over backtick code spans so `</Table>` in inline code isn't
+    // treated as the closing tag
+    if (code === codes.graveAccent) {
+      codeSpanOpenSize = 0;
+      return countOpenTicks(code);
+    }
+
     effects.consume(code);
     return body;
+  }
+
+  function countOpenTicks(code: Code): State | undefined {
+    if (code === codes.graveAccent) {
+      codeSpanOpenSize += 1;
+      effects.consume(code);
+      return countOpenTicks;
+    }
+    return inCodeSpan(code);
+  }
+
+  function inCodeSpan(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return body(code);
+    if (code === codes.graveAccent) {
+      codeSpanCloseSize = 0;
+      return countCloseTicks(code);
+    }
+    effects.consume(code);
+    return inCodeSpan;
+  }
+
+  function countCloseTicks(code: Code): State | undefined {
+    if (code === codes.graveAccent) {
+      codeSpanCloseSize += 1;
+      effects.consume(code);
+      return countCloseTicks;
+    }
+    return codeSpanCloseSize === codeSpanOpenSize ? body(code) : inCodeSpan(code);
   }
 
   function escapedChar(code: Code): State | undefined {
@@ -212,6 +250,10 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
   }
 
   function continuationAfter(code: Code): State | undefined {
+    // At EOF without </Table>, reject so content isn't swallowed
+    if (code === null) {
+      return nok(code);
+    }
     effects.exit('jsxTable');
     return ok(code);
   }
