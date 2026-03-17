@@ -243,11 +243,6 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
     width,
   } = hProps;
 
-  // Use typeOfEmbed if available from magic block JSON, otherwise fallback to provider
-  const embedType = typeOfEmbed || provider;
-  // Map provider to providerUrl if providerUrl is not present
-  const resolvedProviderUrl = providerUrl || provider;
-
   return {
     type: NodeTypes.embedBlock,
     title,
@@ -263,9 +258,9 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
         ...(html && { html }),
         ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
-        ...(embedType && { typeOfEmbed: embedType }),
+        ...(typeOfEmbed && { typeOfEmbed }),
         ...(providerName && { providerName }),
-        ...(resolvedProviderUrl && { providerUrl: resolvedProviderUrl }),
+        ...(providerUrl && { providerUrl }),
         ...(provider && { provider }),
         ...(width && { width }),
       },
