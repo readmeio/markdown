@@ -20,6 +20,13 @@ interface Options {
    * their respective regexes.
    */
   preserveVariableSyntax?: boolean;
+  /**
+   * Separator to use when joining sibling nodes.
+   * Defaults to a space for document-level plain text extraction.
+   * Use an empty string for inline-only contexts like TOC labels, where
+   * adjacent inline siblings should preserve authored adjacency.
+   */
+  separator?: string;
   variables?: Record<string, string>;
 }
 
@@ -138,13 +145,14 @@ function one(node: Nodes, opts: Options) {
 function all(node: Parents, opts: Options) {
   let index = -1;
   const result = [];
+  const separator = opts.separator ?? ' ';
 
   // eslint-disable-next-line no-plusplus
   while (++index < node?.children.length) {
     result[index] = one(node.children[index], opts);
   }
 
-  return result.join(' ').replaceAll(/\s+/g, ' ').trim();
+  return result.join(separator).replaceAll(/\s+/g, ' ').trim();
 }
 
 const plain = (node: Nodes, opts: Options = {}) => {
