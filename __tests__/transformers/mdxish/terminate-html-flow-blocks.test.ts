@@ -1,4 +1,4 @@
-import { terminateHtmlFlowBlocks } from '../../processor/transform/mdxish/terminate-html-flow-blocks';
+import { terminateHtmlFlowBlocks } from '../../../processor/transform/mdxish/terminate-html-flow-blocks';
 
 describe('terminateHtmlFlowBlocks', () => {
   describe('when it should insert a blank line', () => {

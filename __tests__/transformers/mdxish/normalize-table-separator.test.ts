@@ -1,4 +1,4 @@
-import { normalizeTableSeparator } from '../../processor/transform/mdxish/normalize-table-separator';
+import { normalizeTableSeparator } from '../../../processor/transform/mdxish/normalize-table-separator';
 
 describe('normalize-table-separator', () => {
   describe('malformed left alignment', () => {

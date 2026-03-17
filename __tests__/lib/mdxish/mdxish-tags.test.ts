@@ -1,4 +1,4 @@
-import { mdxishTags } from '../../lib';
+import { mdxishTags } from '../../../lib';
 
 describe('mdxishTags', () => {
   it('returns custom element names', () => {

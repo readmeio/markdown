@@ -1,19 +1,7 @@
 import type { Element } from 'hast';
 
-import { mdxish } from '../../../lib/mdxish';
-import { type RMDXModule } from '../../../types';
-
-const stubModule: RMDXModule = {
-  default: () => null,
-  Toc: null,
-  toc: [],
-};
-
-const makeComponents = (...names: string[]) =>
-  names.reduce<Record<string, RMDXModule>>((acc, name) => {
-    acc[name] = stubModule;
-    return acc;
-  }, {});
+import { mdxish } from '../../../lib';
+import { makeComponents } from '../../helpers';
 
 describe('mdxish snake_case component integration', () => {
   describe('basic rendering', () => {

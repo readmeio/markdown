@@ -3,7 +3,7 @@ import type { Parent, Root } from 'mdast';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishComponentBlocks, { parseAttributes } from '../../../processor/transform/mdxish/mdxish-component-blocks';
 
 /**
  * Helper to parse markdown and apply only the mdxishComponentBlocks plugin.

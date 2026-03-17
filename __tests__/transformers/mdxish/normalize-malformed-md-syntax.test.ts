@@ -17,7 +17,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { removePosition } from 'unist-util-remove-position';
 
-import normalizeEmphasisAST from '../../processor/transform/mdxish/normalize-malformed-md-syntax';
+import normalizeEmphasisAST from '../../../processor/transform/mdxish/normalize-malformed-md-syntax';
 
 const processor = remark().use(remarkParse).use(normalizeEmphasisAST);
 const processorWithGfm = remark().use(remarkParse).use(remarkGfm).use(normalizeEmphasisAST);

@@ -1,6 +1,4 @@
-import { describe, it, expect } from 'vitest';
-
-import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
+import { preprocessJSXExpressions } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('ReDoS Attack Vectors', () => {
   it('should handle basic attack pattern without hanging', () => {

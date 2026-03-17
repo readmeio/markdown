@@ -4,7 +4,7 @@
  * Validates that large tables with complex cell content
  * (markdown, HTML, variables) parse within reasonable time.
  */
-import { mdxish } from '../../../lib';
+import { mdxish } from '../../../../lib';
 
 function buildTableBlock(
   rows: number,

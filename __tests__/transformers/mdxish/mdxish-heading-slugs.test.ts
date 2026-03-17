@@ -3,8 +3,8 @@ import type { Heading } from 'mdast';
 
 import { visit } from 'unist-util-visit';
 
-import { mdxish } from '../../lib';
-import { mdastV6Wrapper } from '../helpers';
+import { mdxish } from '../../../lib';
+import { mdastV6Wrapper } from '../../helpers';
 
 function findAllHeadings(tree: Root): { id: string }[] {
   const headings: { id: string; }[] = [];
