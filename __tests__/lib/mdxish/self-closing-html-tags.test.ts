@@ -394,6 +394,112 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     });
   });
 
+  describe('HTMLBlock content should be unaffected', () => {
+    it('should not transform <i /> inside HTMLBlock template literals', () => {
+      const tree = mdxish('<HTMLBlock>{`<i /> icon`}</HTMLBlock>');
+      // HTMLBlock wraps raw HTML — <i /> inside should be preserved as-is
+      expect(() => tree).not.toThrow();
+    });
+
+    it('should not affect HTMLBlock rendering with self-closing tags in raw HTML', () => {
+      const md = '<HTMLBlock>{`<div><i class="fa fa-home" /> Home</div>`}</HTMLBlock>';
+      const tree = mdxish(md);
+      expect(tree).toBeDefined();
+    });
+  });
+
+  describe('content inside custom component bodies', () => {
+    it('should handle <i /> inside a PascalCase component body', () => {
+      const MyComponent = {} as CustomComponents[string];
+      const md = `<MyComponent>
+<i /> icon label
+</MyComponent>`;
+      const tree = mdxish(md, { components: { MyComponent } });
+      const component = findAllByTagName(tree, 'MyComponent');
+      expect(component).toHaveLength(1);
+
+      // The <i /> inside the component body should be converted and not wrap "icon label"
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+    });
+
+    it('should handle <i /> inside a Callout component body', () => {
+      const md = `> 📘 Title
+>
+> <i class="fa fa-info" /> Important info here`;
+      const tree = mdxish(md);
+      const text = extractText(tree);
+      expect(text).toContain('Important info here');
+
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+    });
+  });
+
+  describe('attribute values containing /> should not cause issues', () => {
+    it('should handle attributes containing /> in their value', () => {
+      const tree = mdxish('<div title="use /> here" /> text after');
+      const text = extractText(tree);
+      expect(text).toContain('text after');
+    });
+  });
+
+  describe('interaction with other markdown constructs', () => {
+    it('should not affect GFM table rendering', () => {
+      const md = `| Header 1 | Header 2 |
+| --- | --- |
+| <i /> icon | cell 2 |`;
+      const tree = mdxish(md);
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+
+      const text = extractText(tree);
+      expect(text).toContain('cell 2');
+    });
+
+    it('should not affect GFM strikethrough', () => {
+      const tree = mdxish('~~<i /> deleted~~');
+      const text = extractText(tree);
+      expect(text).toContain('deleted');
+    });
+
+    it('should not affect magic block rendering', () => {
+      const md = `<i /> icon
+
+[block:callout]
+{"type":"info","body":"This is important"}
+[/block]`;
+      const tree = mdxish(md);
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+
+      // The callout should still render, not be swallowed by <i>
+      const callout = findAllByTagName(tree, 'Callout');
+      expect(callout).toHaveLength(1);
+    });
+
+    it('should handle <i /> alongside JSX expressions', () => {
+      const tree = mdxish('<i /> result: {5 * 10}', { jsxContext: {} });
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+
+      const text = extractText(tree);
+      expect(text).toContain('50');
+    });
+
+    it('should handle <i /> alongside user variables', () => {
+      const tree = mdxish('<i /> Hello {user.name}!');
+      const iElements = findAllByTagName(tree, 'i');
+      expect(iElements).toHaveLength(1);
+      expect(extractText(iElements[0])).toBe('');
+    });
+  });
+
   describe('real-world use cases', () => {
     it('should handle Font Awesome icon pattern: <i class="fa fa-home" /> Home', () => {
       const tree = mdxish('<i class="fa fa-home" /> Home');

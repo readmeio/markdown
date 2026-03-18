@@ -30,11 +30,15 @@ const HTML_VOID_ELEMENTS = new Set([
  *  1 - tag name (lowercase letters, digits, hyphens)
  *  2 - attributes (everything between tag name and `/>`)
  *
+ * The attribute portion skips over quoted strings (`"..."` and `'...'`) so that
+ * a `/>` inside an attribute value (e.g. `title="use /> here"`) does not cause
+ * a premature match.
+ *
  * Only matches lowercase tag names to avoid interfering with PascalCase
  * JSX custom components (e.g. `<MyComponent />`), which are handled
  * separately by mdxish-component-blocks.
  */
-const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+[^>]*?)?)?\s*\/>/g;
+const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)?)?\s*\/>/g;
 
 /**
  * String-level preprocessor that converts self-closing non-void HTML tags

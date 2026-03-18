@@ -130,6 +130,23 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
       const input = '```html\n<i />\n```\n\n<i /> text';
       expect(closeSelfClosingHtmlTags(input)).toBe('```html\n<i />\n```\n\n<i></i> text');
     });
+
+    it('does not modify tags inside code blocks with language specifiers', () => {
+      const input = '```jsx\n<Component />\n<i />\n```';
+      expect(closeSelfClosingHtmlTags(input)).toBe(input);
+    });
+
+    it('handles multiple inline code spans on the same line', () => {
+      const input = 'Use `<i />` and `<b />` for styling';
+      expect(closeSelfClosingHtmlTags(input)).toBe(input);
+    });
+
+    it('does not modify tags inside multiple code blocks interspersed with content', () => {
+      const input = '```\n<i />\n```\n\n<b /> between\n\n```\n<span />\n```\n\n<em /> end';
+      expect(closeSelfClosingHtmlTags(input)).toBe(
+        '```\n<i />\n```\n\n<b></b> between\n\n```\n<span />\n```\n\n<em></em> end',
+      );
+    });
   });
 
   describe('does NOT modify tags with content (non-self-closing)', () => {
@@ -327,6 +344,68 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
     it('protects tags in code blocks with language specifiers', () => {
       const input = '```jsx\n<i />\n```';
       expect(closeSelfClosingHtmlTags(input)).toBe(input);
+    });
+  });
+
+  describe('attribute values containing />', () => {
+    it('does not break when attribute value contains />', () => {
+      expect(closeSelfClosingHtmlTags('<div title="use /> here" />')).toBe('<div title="use /> here"></div>');
+    });
+
+    it('handles single-quoted attribute value containing />', () => {
+      expect(closeSelfClosingHtmlTags("<div title='use /> here' />")).toBe("<div title='use /> here'></div>");
+    });
+
+    it('handles multiple attributes where one contains />', () => {
+      expect(closeSelfClosingHtmlTags('<div title="use /> here" class="test" />')).toBe(
+        '<div title="use /> here" class="test"></div>',
+      );
+    });
+
+    it('handles attribute value containing a self-closing tag pattern', () => {
+      expect(closeSelfClosingHtmlTags('<span data-tooltip="<i /> icon" />')).toBe(
+        '<span data-tooltip="<i /> icon"></span>',
+      );
+    });
+  });
+
+  describe('HTMLBlock template literal content', () => {
+    it('does not modify tags inside HTMLBlock template literals (protected as code)', () => {
+      const input = '<HTMLBlock>{`<i /> icon`}</HTMLBlock>';
+      expect(closeSelfClosingHtmlTags(input)).toBe(input);
+    });
+  });
+
+  describe('content inside custom component bodies', () => {
+    it('converts self-closing tags inside component children', () => {
+      const input = '<MyComponent>\n<i /> icon text\n</MyComponent>';
+      expect(closeSelfClosingHtmlTags(input)).toBe('<MyComponent>\n<i></i> icon text\n</MyComponent>');
+    });
+
+    it('converts self-closing tags inside nested components', () => {
+      const input = '<Wrapper>\n<Inner>\n<i /> label\n</Inner>\n</Wrapper>';
+      expect(closeSelfClosingHtmlTags(input)).toBe('<Wrapper>\n<Inner>\n<i></i> label\n</Inner>\n</Wrapper>');
+    });
+  });
+
+  describe('HTML comments', () => {
+    it('converts self-closing tags inside HTML comments (harmless, comments are stripped)', () => {
+      // HTML comments are not code-protected, so <i /> inside gets converted.
+      // This is harmless because comments are stripped during processing.
+      const input = '<!-- <i /> -->';
+      const result = closeSelfClosingHtmlTags(input);
+      expect(result).toBe('<!-- <i></i> -->');
+    });
+  });
+
+  describe('magic block JSON content', () => {
+    it('does not break magic block JSON that happens to contain tag-like patterns', () => {
+      const input = '[block:callout]\n{"type":"info","body":"Use <i /> for icons"}\n[/block]';
+      const result = closeSelfClosingHtmlTags(input);
+      // The <i /> inside JSON body is converted — this is fine because
+      // the magic block transformer handles the JSON before HTML parsing
+      expect(result).toContain('[block:callout]');
+      expect(result).toContain('[/block]');
     });
   });
 
