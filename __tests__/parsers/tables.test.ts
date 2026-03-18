@@ -376,6 +376,249 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('jsx tables with multi code tabs', () => {
+    it('groups consecutive code blocks in a cell into code-tabs', async () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Field
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Example
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Multi code tabs
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`javascript
+        const a = 1;
+        \`\`\`
+        \`\`\`python
+        a = 1
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const { mdxish: mdxishFn } = await import('../../lib/mdxish');
+      const hast = mdxishFn(doc);
+
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codeTabs = findNodes(hast, 'CodeTabs');
+      expect(codeTabs).toHaveLength(1);
+
+      const codeBlocks = findNodes(codeTabs[0], 'code');
+      expect(codeBlocks).toHaveLength(2);
+    });
+
+    it('groups three consecutive code blocks in a cell into a single code-tabs', async () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Field
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Example
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Three tabs
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`javascript
+        const a = 1;
+        \`\`\`
+        \`\`\`python
+        a = 1
+        \`\`\`
+        \`\`\`ruby
+        a = 1
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const { mdxish: mdxishFn } = await import('../../lib/mdxish');
+      const hast = mdxishFn(doc);
+
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codeTabs = findNodes(hast, 'CodeTabs');
+      expect(codeTabs).toHaveLength(1);
+
+      const codeBlocks = findNodes(codeTabs[0], 'code');
+      expect(codeBlocks).toHaveLength(3);
+    });
+
+    it('does not group a single code block into code-tabs when it has no lang or meta', async () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Field
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Example
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Single code block
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`
+        const a = 1;
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const { mdxish: mdxishFn } = await import('../../lib/mdxish');
+      const hast = mdxishFn(doc);
+
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codeTabs = findNodes(hast, 'CodeTabs');
+      expect(codeTabs).toHaveLength(0);
+
+      const codeBlocks = findNodes(tables[0], 'code');
+      expect(codeBlocks).toHaveLength(1);
+    });
+
+    it('wraps a single code block with lang into code-tabs', async () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Field
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Example
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Single with lang
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`javascript
+        const a = 1;
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const { mdxish: mdxishFn } = await import('../../lib/mdxish');
+      const hast = mdxishFn(doc);
+
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codeTabs = findNodes(hast, 'CodeTabs');
+      expect(codeTabs).toHaveLength(1);
+    });
+
+    it('handles code tabs in multiple cells across different rows', async () => {
+      const doc = `
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Field
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Example
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        First
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`javascript
+        const a = 1;
+        \`\`\`
+        \`\`\`python
+        a = 1
+        \`\`\`
+      </td>
+    </tr>
+
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Second
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        \`\`\`go
+        a := 1
+        \`\`\`
+        \`\`\`rust
+        let a = 1;
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>
+`;
+
+      const { mdxish: mdxishFn } = await import('../../lib/mdxish');
+      const hast = mdxishFn(doc);
+
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codeTabs = findNodes(hast, 'CodeTabs');
+      expect(codeTabs).toHaveLength(2);
+    });
+  });
+
   describe('jsx tables with images', () => {
     it('parses jsx tables with images in cells', () => {
       const doc = `
