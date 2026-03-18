@@ -98,6 +98,48 @@ describe('mdxish-component-blocks', () => {
           ],
         });
       });
+
+      it('should transform a multi-line self-closing tag', () => {
+        const markdown = `<Embed
+  typeOfEmbed="youtube"
+  url="https://example.com"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Embed',
+          attributes: [
+            { type: 'mdxJsxAttribute', name: 'typeOfEmbed', value: 'youtube' },
+            { type: 'mdxJsxAttribute', name: 'url', value: 'https://example.com' },
+          ],
+          children: [],
+        });
+      });
+
+      it('should transform a multi-line self-closing tag with many attributes', () => {
+        const markdown = `<Embed
+  typeOfEmbed="youtube"
+  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  html="%3Ciframe%3E"
+  href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  providerUrl="https://www.youtube.com/"
+  providerName="YouTube"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Embed',
+          children: [],
+        });
+        // Check that we got all 6 attributes
+        expect((mdxNodes[0] as { attributes: unknown[] }).attributes).toHaveLength(6);
+      });
     });
 
     describe('Case 2: Self-contained blocks', () => {
@@ -372,4 +414,6 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
     });
   });
+
 });
+

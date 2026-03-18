@@ -35,6 +35,7 @@ interface EmbedAttrs {
   html?: string;
   iframe?: boolean;
   image?: string;
+  provider?: string;
   providerName?: string;
   providerUrl?: string;
   title?: string;
@@ -139,6 +140,7 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
     image,
     providerName,
     providerUrl,
+    provider,
     title = '',
     typeOfEmbed,
     url = '',
@@ -162,6 +164,7 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
         ...(image && { image }),
         ...(providerName && { providerName }),
         ...(providerUrl && { providerUrl }),
+        ...(provider && { provider }),
         ...(typeOfEmbed && { typeOfEmbed }),
         ...(width && { width }),
       },

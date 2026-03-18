@@ -32,6 +32,7 @@ import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
+import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
@@ -158,6 +159,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(magicBlockTransformer)
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
+    .use(newEditorTypes  ? mdxishSelfClosingBlocks : undefined)
     .use(mdxishComponentBlocks)
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
