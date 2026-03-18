@@ -402,7 +402,7 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
     it('does not break magic block JSON that happens to contain tag-like patterns', () => {
       const input = '[block:callout]\n{"type":"info","body":"Use <i /> for icons"}\n[/block]';
       const result = closeSelfClosingHtmlTags(input);
-      // The <i /> inside JSON body is converted — this is fine because
+      // The <i /> inside JSON body is converted — this is intended because
       // the magic block transformer handles the JSON before HTML parsing
       expect(result).toContain('[block:callout]');
       expect(result).toContain('[/block]');
@@ -423,8 +423,8 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
     });
 
     it('icon followed by paragraph', () => {
-      const input = `<i class="fa fa-warning" />\n\nThis is a warning.`;
-      const expected = `<i class="fa fa-warning"></i>\n\nThis is a warning.`;
+      const input = '<i class="fa fa-warning" />\n\nThis is a warning.';
+      const expected = '<i class="fa fa-warning"></i>\n\nThis is a warning.';
       expect(closeSelfClosingHtmlTags(input)).toBe(expected);
     });
   });

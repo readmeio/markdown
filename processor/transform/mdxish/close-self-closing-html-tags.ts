@@ -62,7 +62,7 @@ const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']
  * closeSelfClosingHtmlTags('<MyComp />')          // '<MyComp />' (PascalCase, untouched)
  * closeSelfClosingHtmlTags('<i class="icon" />') // '<i class="icon"></i>'
  */
-export function closeSelfClosingHtmlTags(content: string): string {
+export function closeSelfClosingHtmlTags(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
 
   const result = protectedContent.replace(SELF_CLOSING_TAG_RE, (match, tagName: string, attrs: string) => {

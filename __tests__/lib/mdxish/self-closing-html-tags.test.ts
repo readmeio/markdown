@@ -100,9 +100,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 
       const iElements = findAllByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
-      // The <i> element should NOT contain a <p> child
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
-      // The <i> element should be empty
       expect(extractText(iElements[0])).toBe('');
 
       // "some text after" should appear in its own paragraph, not inside <i>
@@ -265,7 +263,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
       expect(elements).toHaveLength(1);
     });
 
-    it('should not affect <Table /> rendering', () => {
+    it('does not affect <Table /> rendering', () => {
       const tree = mdxish('<Table />\n\ntext after');
       const text = extractText(tree);
       expect(text).toContain('text after');
