@@ -47,6 +47,21 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const imageNode = ast.children[0] as ImageBlock;
         expect(imageNode.data?.hProperties?.border).toBe('true');
       });
+
+      it('should parse caption with markdown and HTML entities into children', () => {
+        const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.caption).toBe('With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used.');
+        expect(imageNode.children).toHaveLength(1);
+
+        const paragraph = imageNode.children[0] as Paragraph;
+        expect(paragraph.type).toBe('paragraph');
+        expect(paragraph.children[0]).toMatchObject({ type: 'text', value: 'With ' });
+        expect(paragraph.children[1]).toMatchObject({ type: 'strong' });
+        expect(paragraph.children[3]).toMatchObject({ type: 'inlineCode', value: 'default' });
+      });
     });
 
     describe('Callout component', () => {

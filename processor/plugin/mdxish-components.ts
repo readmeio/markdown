@@ -177,6 +177,15 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
+      // Parse Image caption as markdown so it renders formatted (bold, code,
+      // decoded entities) in the figcaption instead of as a raw string.
+      // rehypeRaw strips children from <img> (void element), so we must
+      // re-process the caption here, after rehypeRaw.
+      if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
+        const captionHast = processMarkdown(node.properties.caption as string);
+        node.children = (captionHast.children ?? []).filter(isElementContentNode);
+      }
+
       // Skip runtime components and standard HTML tags
       if (RUNTIME_COMPONENT_TAGS.has(node.tagName)) return;
 
