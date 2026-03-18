@@ -1,4 +1,4 @@
-import type { Node, Parent, Paragraph, RootContent } from 'mdast';
+import type { Node, Parent, Paragraph, RootContent, Text } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -135,10 +135,10 @@ const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
   // html("</Callout>"), and the leftover \n would be converted to <br> in HAST.
   if (closingIndex > 0) {
     const prev = children[closingIndex - 1];
-    if (prev.type === 'text' && 'value' in prev) {
-      const trimmed = (prev as { value: string }).value.trimEnd();
+    if (prev.type === 'text') {
+      const trimmed = (prev as Text).value.trimEnd();
       if (trimmed) {
-        (prev as { value: string }).value = trimmed;
+        (prev as Text).value = trimmed;
       } else {
         children.splice(closingIndex - 1, 1);
       }
