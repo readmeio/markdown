@@ -15,6 +15,8 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
@@ -34,6 +36,7 @@ import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast'
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
+import tablesToJsx from '../processor/transform/tables-to-jsx';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -185,16 +188,23 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
 /**
  * Converts an Mdast to a Markdown string.
  */
+function mdxJsxStringify(this: ReturnType<typeof unified>) {
+  const data = this.data();
+  const extensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
+  extensions.push({ extensions: [mdxJsxToMarkdown()] });
+}
+
 export function mdxishMdastToMd(mdast: MdastRoot) {
-  const md = unified()
+  const processor = unified()
     .use(remarkGfm)
+    .use(tablesToJsx)
     .use(mdxishCompilers)
+    .use(mdxJsxStringify)
     .use(remarkStringify, {
       bullet: '-',
       emphasis: '_',
-    })
-    .stringify(mdast);
-  return md;
+    });
+  return processor.stringify(processor.runSync(mdast));
 }
 
 /**

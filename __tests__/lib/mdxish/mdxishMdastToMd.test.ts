@@ -142,6 +142,130 @@ describe('mdxishMdastToMd', () => {
     expect(result).toBe('{user.name} - {user.email}\n');
   });
 
+  describe('tables with flow content', () => {
+    it('should serialize a table with newlines in cells to JSX <Table>', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: ['left', 'left'],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Field' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Description' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'orderby' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'code',
+                        lang: null,
+                        meta: null,
+                        value: '{\n  "field": "ID",\n  "type": "ASC"\n}',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('<Table');
+      expect(result).toContain('<thead>');
+      expect(result).toContain('<tbody>');
+      expect(result).toContain('<td');
+    });
+
+    it('should serialize a table with list content in cells to JSX <Table>', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: ['left', 'left'],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Name' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Items' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'groceries' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'list',
+                        ordered: false,
+                        spread: false,
+                        children: [
+                          { type: 'listItem', spread: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'apples' }] }] },
+                          { type: 'listItem', spread: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'bananas' }] }] },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('<Table');
+      expect(result).toContain('<thead>');
+      expect(result).toContain('<tbody>');
+    });
+
+    it('should keep phrasing-only tables as markdown tables', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: ['left', 'left'],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Name' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Age' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Alice' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '30' }] }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('| Name');
+      expect(result).not.toContain('<Table');
+    });
+  });
+
   it('should convert gfm checklist nodes and retain checkboxes that have no text after them', () => {
     const mdast: MdastRoot = {
       type: 'root',
