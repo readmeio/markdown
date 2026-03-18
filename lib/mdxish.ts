@@ -24,6 +24,7 @@ import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
+import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -100,6 +101,7 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
+  result = closeSelfClosingHtmlTags(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
