@@ -2,7 +2,7 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
-import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import { gfmToMarkdown } from 'mdast-util-gfm';
 import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
@@ -21,7 +21,7 @@ const titleParser = unified().use(remarkParse).use(remarkGfm);
 // The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
 // natively understand
 const toMarkdownExtensions = [
-  gfmStrikethroughToMarkdown(),
+  gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable node handler
