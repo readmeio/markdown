@@ -142,6 +142,142 @@ describe('mdxishMdastToMd', () => {
     expect(result).toBe('{user.name} - {user.email}\n');
   });
 
+  it('should convert readme-anchor nodes back to <Anchor> JSX syntax', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'text', value: 'Click ' },
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                },
+              },
+              children: [{ type: 'text', value: 'here' }],
+            },
+            { type: 'text', value: ' to open.' },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Anchor');
+    expect(result).toContain('target="_blank"');
+    expect(result).toContain('href="https://example.com"');
+    expect(result).toContain('>here</Anchor>');
+  });
+
+  it('should convert readme-anchor nodes with formatted content', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                },
+              },
+              children: [
+                {
+                  type: 'strong',
+                  children: [{ type: 'text', value: 'bold link' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Anchor');
+    expect(result).toContain('**bold link**');
+    expect(result).toContain('</Anchor>');
+  });
+
+  it('should convert readme-anchor nodes with all attributes', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                  title: 'Example Site',
+                  label: 'example',
+                },
+              },
+              children: [{ type: 'text', value: 'example' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Anchor');
+    expect(result).toContain('href="https://example.com"');
+    expect(result).toContain('target="_blank"');
+    expect(result).toContain('title="Example Site"');
+    expect(result).toContain('label="example"');
+  });
+
+  it('should handle multiple anchor nodes in the same paragraph', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: { href: 'https://one.com', target: '_blank' },
+              },
+              children: [{ type: 'text', value: 'one' }],
+            },
+            { type: 'text', value: ' and ' },
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: { href: 'https://two.com', target: '_blank' },
+              },
+              children: [{ type: 'text', value: 'two' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('href="https://one.com"');
+    expect(result).toContain('>one</Anchor>');
+    expect(result).toContain(' and ');
+    expect(result).toContain('href="https://two.com"');
+    expect(result).toContain('>two</Anchor>');
+  });
+
   it('should convert gfm checklist nodes and retain checkboxes that have no text after them', () => {
     const mdast: MdastRoot = {
       type: 'root',
