@@ -33,7 +33,7 @@ const tableNodeProcessor = unified()
   .use(remarkParse)
   .use(remarkMdx)
   .use(normalizeEmphasisAST)
-  .use([calloutTransformer, gemojiTransformer, codeTabsTransformer])
+  .use([[calloutTransformer, { isMdxish: true }], gemojiTransformer, codeTabsTransformer])
   .use(remarkGfm);
 
 /**
