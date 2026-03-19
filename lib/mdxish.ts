@@ -81,7 +81,12 @@ export interface MdxishOpts {
   variables?: Variables;
 }
 
-const defaultTransformers: PluggableList = [[calloutTransformer, { isMdxish: true }], codeTabsTransformer, gemojiTransformer, embedTransformer];
+const defaultTransformers: PluggableList = [
+  [calloutTransformer, { isMdxish: true }],
+  codeTabsTransformer,
+  gemojiTransformer,
+  embedTransformer,
+];
 
 /**
  * Preprocessing pipeline: applies string-level transformations to work around
@@ -152,8 +157,21 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [jsxTableFromMarkdown(), magicBlockFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()]
-        : [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()],
+        ? [
+            jsxTableFromMarkdown(),
+            magicBlockFromMarkdown(),
+            legacyVariableFromMarkdown(),
+            emptyTaskListItemFromMarkdown(),
+            looseHtmlEntityFromMarkdown(),
+          ]
+        : [
+            jsxTableFromMarkdown(),
+            magicBlockFromMarkdown(),
+            mdxExpressionFromMarkdown(),
+            legacyVariableFromMarkdown(),
+            emptyTaskListItemFromMarkdown(),
+            looseHtmlEntityFromMarkdown(),
+          ],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)

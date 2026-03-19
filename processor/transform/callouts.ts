@@ -123,7 +123,12 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   }
 };
 
-const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined, isMdxish = false) => {
+const processBlockquote = (
+  node: Blockquote,
+  index: number | undefined,
+  parent: Parent | undefined,
+  isMdxish = false,
+) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
     // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
