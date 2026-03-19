@@ -4,6 +4,7 @@ import type { Callout } from 'types';
 import emojiRegex from 'emoji-regex';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -24,6 +25,8 @@ const toMarkdownExtensions = [
   gfmStrikethroughToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
+  // For JSX elements parsed by remarkMdx (e.g., <div> in callout titles)
+  mdxJsxToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable node handler
   { handlers: { [NodeTypes.variable]: variable } },
 ];
@@ -179,9 +182,12 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0].position.start.offset += match.length;
         node.children[0].position.start.column += match.length;
       } else {
-        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] }, {
-          extensions: toMarkdownExtensions,
-        })
+        const headingText = toMarkdown(
+          { type: 'root', children: [firstParagraph] },
+          {
+            extensions: toMarkdownExtensions,
+          },
+        )
           .trim()
           .replace(/^\\(?=[>#+\-*])/, '');
         const parsedTitle = titleParser.parse(headingText);
