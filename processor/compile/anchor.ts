@@ -3,10 +3,10 @@ import type { Nodes } from 'mdast';
 
 import { toMarkdown } from 'mdast-util-to-markdown';
 
-import { formatProps } from '../utils';
+import { formatProps, getHProps } from '../utils';
 
 const anchor = (node: Anchor) => {
-  const { href, label, target, title } = node.data?.hProperties ?? {};
+  const { href, label, target, title } = getHProps<Anchor['data']['hProperties']>(node);
 
   const attrs = {
     ...(label && { label }),

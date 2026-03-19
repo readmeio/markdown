@@ -168,10 +168,7 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('<Anchor');
-    expect(result).toContain('target="_blank"');
-    expect(result).toContain('href="https://example.com"');
-    expect(result).toContain('>here</Anchor>');
+    expect(result).toBe('Click <Anchor target="_blank" href="https://example.com">here</Anchor> to open.\n');
   });
 
   it('should convert readme-anchor nodes with formatted content', () => {
@@ -203,9 +200,7 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('<Anchor');
-    expect(result).toContain('**bold link**');
-    expect(result).toContain('</Anchor>');
+    expect(result).toBe('<Anchor target="_blank" href="https://example.com">**bold link**</Anchor>\n');
   });
 
   it('should convert readme-anchor nodes with all attributes', () => {
@@ -234,11 +229,7 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('<Anchor');
-    expect(result).toContain('href="https://example.com"');
-    expect(result).toContain('target="_blank"');
-    expect(result).toContain('title="Example Site"');
-    expect(result).toContain('label="example"');
+    expect(result).toBe('<Anchor label="example" target="_blank" href="https://example.com" title="Example Site">example</Anchor>\n');
   });
 
   it('should handle multiple anchor nodes in the same paragraph', () => {
@@ -271,11 +262,7 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('href="https://one.com"');
-    expect(result).toContain('>one</Anchor>');
-    expect(result).toContain(' and ');
-    expect(result).toContain('href="https://two.com"');
-    expect(result).toContain('>two</Anchor>');
+    expect(result).toBe('<Anchor target="_blank" href="https://one.com">one</Anchor> and <Anchor target="_blank" href="https://two.com">two</Anchor>\n');
   });
 
   it('should convert gfm checklist nodes and retain checkboxes that have no text after them', () => {
