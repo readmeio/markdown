@@ -1,10 +1,18 @@
 import type { Callout } from '../../types';
 import type { Blockquote, Heading, List, Paragraph } from 'mdast';
 
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
 import calloutTransformer from '../../processor/transform/callouts';
+
+const mdxishMdast = (md: string) => {
+  const processor = unified().use(remarkParse).use(remarkGfm).use(calloutTransformer, { isMdxish: true });
+  return processor.runSync(processor.parse(md));
+};
 
 describe('callouts transformer', () => {
   it('can parse callouts', () => {
@@ -319,7 +327,7 @@ describe('callouts transformer', () => {
 
     it('parses a blockquote marker as the title', () => {
       const md = '> 📘 >\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       expect(tree.children[0]).toMatchInlineSnapshot(`
@@ -359,7 +367,7 @@ describe('callouts transformer', () => {
 
     it('parses a blockquote with text as the title', () => {
       const md = '> 📘 > helo\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       expect(tree.children[0]).toMatchInlineSnapshot(`
@@ -409,7 +417,7 @@ describe('callouts transformer', () => {
 
     it('does not convert a blockquote with emoji in the title into a nested callout', () => {
       const md = '> 📘 > 🚧 emoji in title\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       const callout = tree.children[0] as Callout;
@@ -423,7 +431,7 @@ describe('callouts transformer', () => {
 
     it('parses a dash as the title into a list', () => {
       const md = '> 📘 -\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       expect(tree.children[0]).toMatchInlineSnapshot(`
@@ -509,7 +517,7 @@ describe('callouts transformer', () => {
         expectedTypes: ['delete'],
       },
     ])('preserves $name', ({ md, blockType, expectedTypes }) => {
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       const callout = tree.children[0] as Callout;

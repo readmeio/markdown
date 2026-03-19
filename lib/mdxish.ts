@@ -2,6 +2,7 @@ import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
+import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
@@ -80,7 +81,7 @@ export interface MdxishOpts {
   variables?: Variables;
 }
 
-const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
+const defaultTransformers: PluggableList = [[calloutTransformer, { isMdxish: true }], codeTabsTransformer, gemojiTransformer, embedTransformer];
 
 /**
  * Preprocessing pipeline: applies string-level transformations to work around

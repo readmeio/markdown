@@ -4,7 +4,6 @@ import type { Callout } from 'types';
 import emojiRegex from 'emoji-regex';
 import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
 import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
-import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -25,8 +24,6 @@ const toMarkdownExtensions = [
   gfmStrikethroughToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
-  // For JSX elements parsed by remarkMdx (e.g., <div> in callout titles)
-  mdxJsxToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable node handler
   { handlers: { [NodeTypes.variable]: variable } },
 ];
@@ -126,7 +123,7 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   }
 };
 
-const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
+const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined, isMdxish = false) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
     // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
@@ -181,7 +178,11 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0] = heading;
         node.children[0].position.start.offset += match.length;
         node.children[0].position.start.column += match.length;
-      } else {
+      } else if (isMdxish) {
+        // Block-level title re-parsing is only needed for MDXish where HTML stays
+        // as raw nodes. In MDX, remarkMdx has already converted HTML to JSX AST
+        // nodes which toMarkdown can't serialize — and MDX doesn't need this
+        // block-level title handling anyway.
         const headingText = toMarkdown(
           { type: 'root', children: [firstParagraph] },
           {
@@ -209,6 +210,10 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
           node.children[0].position.start.offset += match.length;
           node.children[0].position.start.column += match.length;
         }
+      } else {
+        node.children[0] = wrapHeading(node);
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
       }
     }
 
@@ -243,10 +248,10 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
   }
 };
 
-const calloutTransformer = () => {
+const calloutTransformer = ({ isMdxish = false } = {}) => {
   const processNode = (root: Node) => {
     visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
-      processBlockquote(node, index, parent);
+      processBlockquote(node, index, parent, isMdxish);
       if ((node as unknown as { type: string }).type === NodeTypes.callout) {
         // SKIP prevents re-processing synthetic blockquotes in parsed title content
         // (e.g., blockquotes from "> Quote" titles). Recursively process body children
