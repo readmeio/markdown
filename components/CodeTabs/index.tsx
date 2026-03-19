@@ -71,6 +71,16 @@ const CodeTabs = (props: Props) => {
     if (typeof window !== 'undefined' && containAtLeastOneMermaid && isHydrated && mermaidRef.current) {
       queueMermaidNode(mermaidRef.current, theme);
     }
+
+    return () => {
+      // Clear the batch timer on unmount to prevent mermaid from running
+      // after the DOM is torn down
+      if (mermaidFlushTimer) {
+        clearTimeout(mermaidFlushTimer);
+        mermaidFlushTimer = null;
+        mermaidQueue = [];
+      }
+    };
   }, [containAtLeastOneMermaid, theme, isHydrated]);
 
   function handleClick({ target }, index: number) {
