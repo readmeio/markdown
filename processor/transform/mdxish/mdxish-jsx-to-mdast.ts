@@ -424,8 +424,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     node.src = (hProps.src as string) || node.src;
     hProps.src = node.src;
 
-    // Remove stray children array from imageTransformer
-    delete (node as unknown as Record<string, unknown>).children;
+    // Remove stray children array from imageTransformer, but preserve caption children
+    if (!caption) {
+      delete (node as unknown as Record<string, unknown>).children;
+    }
     delete hProps.children;
   });
 
