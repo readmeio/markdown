@@ -211,4 +211,46 @@ export const toc = [
       </ul></li></ul></nav>"
     `);
   });
+
+  it('resolves variables in labels', () => {
+    const md = `# Hello {user.name}!
+
+## Setup for {user.role}s`;
+    const variables = {
+      user: { name: 'John', role: 'admin' },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Hello John!')).toBeDefined();
+    expect(screen.findByText('Setup for admins')).toBeDefined();
+  });
+
+  it('keeps mixed inline phrasing together', () => {
+    const md = '## Hello {user.name}! N*ic*e [day](https://example.com)s';
+    const variables = {
+      user: { name: 'John' },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
+
+    render(<Toc />);
+
+    expect(screen.findByText('Hello John! Nice days')).toBeDefined();
+    expect(screen.queryByText('Hello John! N ic e day s')).toBeNull();
+  });
+
+  it('preserves authored spaces around adjacent MDX inline content', () => {
+    const md = '## [Link](https://example.com) s';
+    const { Toc } = run(compile(md));
+
+    render(<Toc />);
+
+    expect(screen.findByText('Link s')).toBeDefined();
+    expect(screen.queryByText('Links')).toBeNull();
+  });
 });

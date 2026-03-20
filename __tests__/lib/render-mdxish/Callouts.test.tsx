@@ -179,4 +179,38 @@ describe('Callouts', () => {
     expect(container.querySelector('blockquote ul')).toBeInTheDocument();
     expect(container.querySelectorAll('blockquote li')).toHaveLength(3);
   });
+
+  it('renders legacy <<>> variables in callout title without error', () => {
+    const md = `> 🚧 Hello <<name>>
+>
+> Test`;
+    const variables = {
+      user: { name: 'World' },
+      defaults: [],
+    };
+
+    const hast = mdxish(md, { variables });
+    const mod = renderMdxish(hast, { variables });
+    const { container } = render(<mod.default />);
+
+    expect(container.textContent).toContain('World');
+    expect(container.textContent).toContain('Test');
+  });
+
+  it('renders mdx {user.*} variables in callout title without error', () => {
+    const md = `> 🚧 Hello {user.name}
+>
+> Test`;
+    const variables = {
+      user: { name: 'World' },
+      defaults: [],
+    };
+
+    const hast = mdxish(md, { variables });
+    const mod = renderMdxish(hast, { variables });
+    const { container } = render(<mod.default />);
+
+    expect(container.textContent).toContain('World');
+    expect(container.textContent).toContain('Test');
+  });
 });

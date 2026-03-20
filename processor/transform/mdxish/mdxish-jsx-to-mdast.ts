@@ -7,6 +7,7 @@ import type { Plugin } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
+import { mdast } from '../../../lib';
 import { getAttrs } from '../../utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
@@ -121,6 +122,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: toBool(border),
     caption,
+    children: caption ? mdast(caption).children : [],
     className,
     height: height !== undefined ? String(height) : undefined,
     lazy: toBool(lazy),
