@@ -2,6 +2,8 @@ import type { Node, Parent, Paragraph } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
+import { visit } from 'unist-util-visit';
+
 import { parseAttributes } from './mdxish-component-blocks';
 
 /**
@@ -17,13 +19,10 @@ const selfClosingTagPattern = /^<([A-Z][A-Za-z0-9_]*)([\s\S]*?)\/>$/;
  * Try to convert a paragraph node containing a self-closing JSX component into an mdxJsxFlowElement.
  * Returns the new node if conversion succeeded, or null if the node doesn't match.
  */
-const tryConvertToMdxNode = (node: Node): (MdxJsxFlowElement & { data?: { raw?: string } }) | null => {
-  if (node.type !== 'paragraph') return null;
+const tryConvertToMdxNode = (node: Paragraph): (MdxJsxFlowElement) | null => {
+  if (node.children.length !== 1) return null;
 
-  const paragraph = node as Paragraph;
-  if (paragraph.children.length !== 1) return null;
-
-  const child = paragraph.children[0];
+  const child = node.children[0];
   if (child.type !== 'html') return null;
 
   const value = (child as { value?: string }).value?.trim();
@@ -40,8 +39,7 @@ const tryConvertToMdxNode = (node: Node): (MdxJsxFlowElement & { data?: { raw?: 
     name: tag,
     attributes: parseAttributes(attrString),
     children: [],
-    position: paragraph.position,
-    data: { raw: value },
+    position: node.position,
   };
 };
 
@@ -62,25 +60,13 @@ const tryConvertToMdxNode = (node: Node): (MdxJsxFlowElement & { data?: { raw?: 
  * ```
  */
 const mdxishSelfClosingBlocks: Plugin<[], Parent> = () => tree => {
-  const visit = (parent: Parent) => {
-    for (let i = 0; i < parent.children.length; i += 1) {
-      const node = parent.children[i];
-
-      // Recurse into children first
-      if ('children' in node && Array.isArray((node as Parent).children)) {
-        visit(node as Parent);
-      }
-
-      // Try to convert paragraph to mdxJsxFlowElement
-      const mdxNode = tryConvertToMdxNode(node);
-      if (mdxNode) {
-        (parent.children as Node[]).splice(i, 1, mdxNode);
-      }
+  visit(tree, 'paragraph', (node: Paragraph, index, parent) => {
+    if (index === undefined || !parent) return;
+    const mdxNode = tryConvertToMdxNode(node);
+    if (mdxNode) {
+      (parent.children as Node[]).splice(index, 1, mdxNode);
     }
-  };
-
-  visit(tree);
-  return tree;
+  });
 };
 
 export default mdxishSelfClosingBlocks;
