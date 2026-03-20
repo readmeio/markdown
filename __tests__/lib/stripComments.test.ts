@@ -328,6 +328,60 @@ end"`);
     `);
   });
 
+  it('preserves jsx tables in mdxish mode', async () => {
+    const input = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>Field</th>
+
+      <th style={{ textAlign: "left" }}>Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>Name</td>
+
+      <td style={{ textAlign: "left" }}>A name field</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toContain('<Table');
+    expect(output).toContain('</Table>');
+    expect(output).toContain('Field');
+    expect(output).toContain('Description');
+    expect(output).toContain('Name');
+    expect(output).toContain('A name field');
+  });
+
+  it('strips comments inside jsx tables in mdxish mode', async () => {
+    const input = `<!-- top comment -->
+
+<Table>
+  <thead>
+    <tr>
+      <th>A</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>data</td>
+    </tr>
+  </tbody>
+</Table>
+
+<!-- bottom comment -->`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toContain('<Table>');
+    expect(output).toContain('data');
+    expect(output).not.toContain('<!-- top comment -->');
+    expect(output).not.toContain('<!-- bottom comment -->');
+  });
+
   describe('strip comments edge cases', () => {
     it.each([
       ['should return empty for empty string', '', undefined, ''],

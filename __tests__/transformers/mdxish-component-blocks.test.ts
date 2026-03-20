@@ -292,6 +292,31 @@ Alert content here
         });
       });
 
+      it('should strip trailing newline from the last text node before the closing tag', () => {
+        const markdown = `<Callout icon="📘" theme="info">
+Hi
+
+Hello
+</Callout>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Callout',
+        });
+
+        // The last paragraph inside the Callout should contain "Hello" without a trailing newline
+        const calloutChildren = mdxNodes[0].children;
+        const lastParagraph = calloutChildren[calloutChildren.length - 1] as Parent;
+        expect(lastParagraph.type).toBe('paragraph');
+
+        const textNodes = lastParagraph.children.filter((c: { type: string }) => c.type === 'text');
+        const lastText = textNodes[textNodes.length - 1] as { value: string };
+        expect(lastText.value).toBe('Hello');
+      });
+
       it('should identify nested component that contains normal sibling content', () => {
         const markdown = `<MyComponent>
         <NestedComponent />

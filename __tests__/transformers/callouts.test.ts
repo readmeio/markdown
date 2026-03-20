@@ -1,10 +1,18 @@
 import type { Callout } from '../../types';
 import type { Blockquote, Heading, List, Paragraph } from 'mdast';
 
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
 import calloutTransformer from '../../processor/transform/callouts';
+
+const mdxishMdast = (md: string) => {
+  const processor = unified().use(remarkParse).use(remarkGfm).use(calloutTransformer, { isMdxish: true });
+  return processor.runSync(processor.parse(md));
+};
 
 describe('callouts transformer', () => {
   it('can parse callouts', () => {
@@ -322,6 +330,142 @@ describe('callouts transformer', () => {
       const tree = mdast(md);
       removePosition(tree, { force: true });
 
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
+    });
+
+    it('parses a blockquote with text as the title', () => {
+      const md = '> 📘 > helo\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
+    });
+
+    it('does not convert a blockquote with emoji in the title into a nested callout', () => {
+      const md = '> 📘 > 🚧 emoji in title\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.data.hProperties.icon).toBe('📘');
+      expect(callout.children[0].type).toBe('heading');
+    });
+
+    it('parses a dash as the title into a list', () => {
+      const md = '> 📘 -\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
+    });
+
+    it.each([
+      {
+        name: 'link in a blockquote title',
+        md: '> 👍 > [Hello](https://example.com)\n>\n> Body.',
+      },
+      {
+        name: 'bold and link in a blockquote title',
+        md: '> 📘 > **bold** [link](https://example.com)\n>\n> Body.',
+      },
+      {
+        name: 'italic in a blockquote title',
+        md: '> 📘 > _italic_ text\n>\n> Body.',
+      },
+      {
+        name: 'link in a list title',
+        md: '> 📘 - [list link](https://example.com)\n>\n> Body.',
+      },
+      {
+        name: 'strikethrough (~~) in a blockquote title',
+        md: '> 👍 > ~~hello~~',
+      },
+      {
+        name: 'strikethrough (~) in a blockquote title',
+        md: '> 👍 > ~hello~',
+      },
+    ])('wraps $name as a heading', ({ md }) => {
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
+    });
+
+    it('parses bold text as a heading title', () => {
+      const md = '> 📘 **bolf**\n>\n> Hello.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      expect(tree.children[0]).toMatchInlineSnapshot(`
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "",
+                },
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "bolf",
+                    },
+                  ],
+                  "type": "strong",
+                },
+              ],
+              "depth": 3,
+              "type": "heading",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Hello.",
+                },
+              ],
+              "type": "paragraph",
+            },
+          ],
+          "data": {
+            "hName": "Callout",
+            "hProperties": {
+              "icon": "📘",
+              "theme": "info",
+            },
+          },
+          "type": "rdme-callout",
+        }
+      `);
+    });
+
+    it('handles html elements in the title without crashing', () => {
+      const md = '> 📘 <span>html title</span>\n>\n> Body.';
+      const tree = mdast(md);
+      removePosition(tree, { force: true });
+
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
+    });
+  });
+
+  describe('block-level title content (mdxish)', () => {
+    it('parses a blockquote marker as the title', () => {
+      const md = '> 📘 >\n>\n> Hello.';
+      const tree = mdxishMdast(md);
+      removePosition(tree, { force: true });
+
       expect(tree.children[0]).toMatchInlineSnapshot(`
         {
           "children": [
@@ -359,7 +503,7 @@ describe('callouts transformer', () => {
 
     it('parses a blockquote with text as the title', () => {
       const md = '> 📘 > helo\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       expect(tree.children[0]).toMatchInlineSnapshot(`
@@ -409,7 +553,7 @@ describe('callouts transformer', () => {
 
     it('does not convert a blockquote with emoji in the title into a nested callout', () => {
       const md = '> 📘 > 🚧 emoji in title\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       const callout = tree.children[0] as Callout;
@@ -423,7 +567,7 @@ describe('callouts transformer', () => {
 
     it('parses a dash as the title into a list', () => {
       const md = '> 📘 -\n>\n> Hello.';
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       expect(tree.children[0]).toMatchInlineSnapshot(`
@@ -509,7 +653,7 @@ describe('callouts transformer', () => {
         expectedTypes: ['delete'],
       },
     ])('preserves $name', ({ md, blockType, expectedTypes }) => {
-      const tree = mdast(md);
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
       const callout = tree.children[0] as Callout;
@@ -526,53 +670,14 @@ describe('callouts transformer', () => {
       expectedTypes.forEach(type => expect(childTypes).toContain(type));
     });
 
-    it('parses bold text as a heading title', () => {
-      const md = '> 📘 **bolf**\n>\n> Hello.';
-      const tree = mdast(md);
+    it('handles html elements in the title', () => {
+      const md = '> 📘 <span>html title</span>\n>\n> Body.';
+      const tree = mdxishMdast(md);
       removePosition(tree, { force: true });
 
-      expect(tree.children[0]).toMatchInlineSnapshot(`
-        {
-          "children": [
-            {
-              "children": [
-                {
-                  "type": "text",
-                  "value": "",
-                },
-                {
-                  "children": [
-                    {
-                      "type": "text",
-                      "value": "bolf",
-                    },
-                  ],
-                  "type": "strong",
-                },
-              ],
-              "depth": 3,
-              "type": "heading",
-            },
-            {
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Hello.",
-                },
-              ],
-              "type": "paragraph",
-            },
-          ],
-          "data": {
-            "hName": "Callout",
-            "hProperties": {
-              "icon": "📘",
-              "theme": "info",
-            },
-          },
-          "type": "rdme-callout",
-        }
-      `);
+      const callout = tree.children[0] as Callout;
+      expect(callout.type).toBe('rdme-callout');
+      expect(callout.children[0].type).toBe('heading');
     });
   });
 

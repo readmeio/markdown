@@ -7,6 +7,7 @@ import type { Plugin } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
+import { mdast } from '../../../lib';
 import { getAttrs } from '../../utils';
 
 interface ImageAttrs {
@@ -96,6 +97,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: border !== undefined ? String(border) : undefined,
     caption,
+    children: caption ? mdast(caption).children : [],
     className,
     height: height !== undefined ? String(height) : undefined,
     lazy,
