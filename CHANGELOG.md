@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 13.6.3
+### 🛠 Fixes & Updates
+
+* **mdx:** issues with html in callout titles for mdx rendering ([#1384](https://github.com/readmeio/markdown/issues/1384)) ([4eba2fb](https://github.com/readmeio/markdown/commit/4eba2fbe3f3c0cde315dd6afcad47f074bfc0a88)), closes [#1362](https://github.com/readmeio/markdown/issues/1362)
+
 ## Version 13.6.2
 ### 🛠 Fixes & Updates
 
