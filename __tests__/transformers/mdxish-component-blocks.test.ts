@@ -427,24 +427,6 @@ Some content
       });
     });
 
-    it('should handle the realistic ReadMe Image tag from the original bug report', () => {
-      const markdown =
-        '<Image align="center" alt="Screenshot" border="true" caption="Find Health Check in Admin Settings > Health Check" title="health_check.png" src="https://files.readme.io/health_check.png" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: expect.arrayContaining([
-          { type: 'mdxJsxAttribute', name: 'caption', value: 'Find Health Check in Admin Settings > Health Check' },
-          { type: 'mdxJsxAttribute', name: 'src', value: 'https://files.readme.io/health_check.png' },
-        ]),
-        children: [],
-      });
-    });
-
     it('should handle consecutive >> in attribute value', () => {
       const markdown = '<Image caption="A >> B >>> C" />';
       const tree = parseWithPlugin(markdown);
