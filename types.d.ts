@@ -102,15 +102,18 @@ interface Plain extends Literal {
   type: NodeTypes.plain;
 }
 
+type ImageAlign = 'center' | 'left' | 'right';
+
 interface ImageBlockAttrs {
-  align?: string;
+  align?: ImageAlign;
   alt: string;
-  border?: string;
+  border?: boolean;
   caption?: string;
   children?: RootContent[];
   className?: string;
   height?: string;
   lazy?: boolean;
+  sizing?: string;
   src: string;
   title: string;
   width?: string;

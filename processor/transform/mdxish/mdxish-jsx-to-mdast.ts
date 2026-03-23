@@ -1,5 +1,5 @@
 import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
-import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Node, Parent, PhrasingContent, RootContent } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -9,6 +9,29 @@ import { SKIP, visit } from 'unist-util-visit';
 import { NodeTypes } from '../../../enums';
 import { mdast } from '../../../lib';
 import { getAttrs } from '../../utils';
+
+function toImageAlign(value: string | undefined): ImageAlign | undefined {
+  if (value === 'left' || value === 'center' || value === 'right') {
+    return value;
+  }
+  return undefined;
+}
+
+function toBool(value: boolean | string | undefined): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === 'boolean') return value;
+  return value !== '' && value !== 'false';
+}
+
+function extractText(nodes: RootContent[]): string {
+  return nodes
+    .map(n => {
+      if ('value' in n && typeof n.value === 'string') return n.value;
+      if ('children' in n) return extractText(n.children as RootContent[]);
+      return '';
+    })
+    .join('');
+}
 
 interface ImageAttrs {
   align?: string;
@@ -78,32 +101,37 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const { align, alt = '', border, caption, className, height, lazy, src = '', title = '', width } = attrs;
 
+  const validAlign = toImageAlign(align);
+  const sizing = width !== undefined ? String(width) : undefined;
+
   const hProperties: ImageBlock['data']['hProperties'] = {
     alt,
     src,
     title,
-    ...(align && { align }),
-    ...(border !== undefined && { border: String(border) }),
+    ...(validAlign && { align: validAlign }),
+    ...(border !== undefined && { border: toBool(border) }),
     ...(caption && { caption }),
     ...(className && { className }),
     ...(height !== undefined && { height: String(height) }),
-    ...(lazy !== undefined && { lazy }),
-    ...(width !== undefined && { width: String(width) }),
+    ...(lazy !== undefined && { lazy: toBool(lazy) }),
+    ...(sizing && { sizing }),
+    ...(sizing && { width: sizing }),
   };
 
   return {
     type: NodeTypes.imageBlock,
-    align,
+    align: validAlign,
     alt,
-    border: border !== undefined ? String(border) : undefined,
+    border: toBool(border),
     caption,
     children: caption ? mdast(caption).children : [],
     className,
     height: height !== undefined ? String(height) : undefined,
-    lazy,
+    lazy: toBool(lazy),
+    sizing,
     src,
     title,
-    width: width !== undefined ? String(width) : undefined,
+    width: sizing,
     data: {
       hName: 'img',
       hProperties,
@@ -200,23 +228,28 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
   const hProps = data?.hProperties || {};
   const { align, border, width } = hProps;
 
+  const validAlign = toImageAlign(align);
+  const sizing = width || undefined;
+
   const hProperties: ImageBlock['data']['hProperties'] = {
     alt,
     src: url,
     title,
-    ...(align && { align }),
-    ...(border && { border }),
-    ...(width && { width }),
+    ...(validAlign && { align: validAlign }),
+    ...(border !== undefined && { border: toBool(border) }),
+    ...(sizing && { sizing }),
+    ...(sizing && { width: sizing }),
   };
 
   return {
     type: NodeTypes.imageBlock,
-    align,
+    align: validAlign,
     alt,
-    border,
+    border: toBool(border),
+    sizing,
     src: url,
     title,
-    width,
+    width: sizing,
     data: {
       hName: 'img',
       hProperties,
@@ -290,7 +323,8 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  * - JSX component elements (Image, Callout, Embed, Recipe) into their corresponding MDAST types
  * - Magic block image nodes (type: 'image') into image-block
  * - Magic block embed nodes (type: 'embed') into embed-block
- * - Figure nodes containing images (from magic blocks with captions) - transforms the inner image
+ * - Figure nodes (magic blocks with captions) into flat image-block with caption string
+ * - Normalizes all image-block attrs (border, align, sizing, caption) to a consistent shape
  *
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
@@ -319,12 +353,9 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
   });
 
   // Transform magic block images (type: 'image') to image-block
-  // Note: Standard markdown images are wrapped in paragraphs and handled by imageTransformer
-  // Magic block images are direct children of root, so we handle them here
+  // Images inside paragraphs are standard markdown — handled by imageTransformer, normalized below
   visit(tree, 'image', (node: MagicBlockImage, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return SKIP;
-
-    // Skip images inside paragraphs (those are standard markdown images handled by imageTransformer)
     if (parent.type === 'paragraph') return SKIP;
 
     const newNode = transformMagicBlockImage(node);
@@ -343,16 +374,87 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     return SKIP;
   });
 
-  // Transform images inside figure nodes (magic blocks with captions)
+  // Flatten figure nodes (magic blocks with captions) into image-block nodes
   const isFigure = (node: Node): node is MagicBlockFigure => node.type === 'figure';
-  visit(tree, isFigure, node => {
-    // Find and transform the image child
-    node.children = node.children.map(child => {
-      if (child.type === 'image') {
-        return transformMagicBlockImage(child as MagicBlockImage);
+  visit(tree, isFigure, (node, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return;
+
+    const imageChild = node.children.find(
+      child => child.type === 'image' || (child.type as string) === NodeTypes.imageBlock,
+    );
+    if (!imageChild) return;
+
+    const figcaptionChild = node.children.find(child => child.type === 'figcaption') as
+      | { children: RootContent[] }
+      | undefined;
+
+    // If the image was already transformed to image-block by the earlier visitor, use it directly
+    const imageBlock =
+      (imageChild.type as string) === NodeTypes.imageBlock
+        ? (imageChild as unknown as ImageBlock)
+        : transformMagicBlockImage(imageChild as MagicBlockImage);
+
+    if (figcaptionChild?.children) {
+      const caption = extractText(figcaptionChild.children);
+      if (caption) {
+        imageBlock.caption = caption;
+        imageBlock.data.hProperties.caption = caption;
       }
-      return child;
-    });
+    }
+
+    (parent.children as Node[])[index] = imageBlock;
+  });
+
+  // Final normalization pass across all image-block nodes
+  // Ensures consistent types (border→boolean, align→ImageAlign, width→sizing) and cleans up artifacts
+  const isImageBlock = (node: Node): node is ImageBlock => (node.type as string) === NodeTypes.imageBlock;
+  visit(tree, isImageBlock, _node => {
+    const node = _node as ImageBlock;
+    const hProps = (node.data?.hProperties || {}) as Record<string, unknown>;
+
+    // Normalize boolean attrs
+    if (hProps.border !== undefined) {
+      const val = toBool(hProps.border as boolean | string);
+      node.border = val;
+      hProps.border = val;
+    } else if (node.border !== undefined) {
+      node.border = toBool(node.border as boolean | string);
+    }
+
+    // Validate align
+    const validAlign = toImageAlign(hProps.align as string) || toImageAlign(node.align as unknown as string);
+    node.align = validAlign;
+    if (validAlign) {
+      hProps.align = validAlign;
+    } else {
+      delete hProps.align;
+    }
+
+    // Map width → sizing
+    const width = (hProps.width as string) || node.width;
+    if (width) {
+      node.sizing = width;
+      node.width = width;
+      hProps.sizing = width;
+      hProps.width = width;
+    }
+
+    // Normalize caption
+    const caption = (hProps.caption as string) || node.caption;
+    if (caption) {
+      node.caption = caption;
+      hProps.caption = caption;
+    }
+
+    // Normalize src (url → src)
+    node.src = (hProps.src as string) || node.src;
+    hProps.src = node.src;
+
+    // Remove stray children array from imageTransformer, but preserve caption children
+    if (!caption) {
+      delete (node as unknown as Record<string, unknown>).children;
+    }
+    delete hProps.children;
   });
 
   return tree;
