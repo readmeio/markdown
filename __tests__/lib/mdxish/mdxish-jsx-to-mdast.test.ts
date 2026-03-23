@@ -89,6 +89,18 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(imageNode.data?.hProperties?.border).toBeUndefined();
       });
 
+      it('should parse Image with unquoted attributes containing special characters', () => {
+        const md = '<Image src=https://example.com/image.png alt=test />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+        expect(imageNode.data?.hProperties?.alt).toBe('test');
+      });
+
       it('should parse caption with markdown and HTML entities into children', () => {
         const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);
@@ -130,6 +142,20 @@ This is a warning message.
         const calloutNode = ast.children[0] as Callout;
         expect(calloutNode.children).toBeDefined();
         expect(calloutNode.children.length).toBeGreaterThan(0);
+      });
+
+      it('should parse Callout with unquoted attributes containing special characters', () => {
+        const md = `<Callout icon=📘 theme=info>
+content
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe(NodeTypes.callout);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('📘');
+        expect(calloutNode.data?.hProperties?.theme).toBe('info');
       });
     });
 
@@ -197,6 +223,18 @@ This is a warning message.
           expect(embedNode.data?.hProperties?.url).toBe(url);
         });
       });
+
+      it('should parse Embed with unquoted attributes containing special characters', () => {
+        const md = '<Embed url=https://example.com title=Example />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe(NodeTypes.embedBlock);
+
+        const embedNode = ast.children[0] as EmbedBlock;
+        expect(embedNode.data?.hProperties?.url).toBe('https://example.com');
+        expect(embedNode.data?.hProperties?.title).toBe('Example');
+      });
     });
 
     describe('Anchor component', () => {
@@ -257,6 +295,17 @@ This is a warning message.
         expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
         expect(anchorNode.children).toHaveLength(0);
       });
+
+      it('should parse Anchor with unquoted attributes containing special characters', () => {
+        const md = '<Anchor href=https://readme.com>ReadMe</Anchor>';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const anchorNode = para.children.find(c => c.type === NodeTypes.anchor) as Anchor;
+        expect(anchorNode).toBeDefined();
+        expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
+        expect(anchorNode.children[0]).toMatchObject({ type: 'text', value: 'ReadMe' });
+      });
     });
 
     describe('Recipe component', () => {
@@ -281,6 +330,18 @@ This is a warning message.
         expect(recipeNode.title).toBe('My Recipe');
         expect(recipeNode.emoji).toBe('🍳');
         expect(recipeNode.backgroundColor).toBe('#fff');
+      });
+
+      it('should parse Recipe with unquoted attributes containing special characters', () => {
+        const md = '<Recipe slug=my-recipe title=Recipe link=https://example.com/recipe />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe(NodeTypes.recipe);
+
+        const recipeNode = ast.children[0] as Recipe;
+        expect(recipeNode.slug).toBe('my-recipe');
+        expect(recipeNode.title).toBe('Recipe');
       });
     });
 

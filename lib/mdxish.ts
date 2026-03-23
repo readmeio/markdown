@@ -35,6 +35,7 @@ import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast'
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
+import { normalizeComponentAttributes } from '../processor/transform/mdxish/normalize-component-attributes';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -107,6 +108,7 @@ function preprocessContent(
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
+  result = normalizeComponentAttributes(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
