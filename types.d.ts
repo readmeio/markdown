@@ -44,7 +44,7 @@ export interface Embed extends Link {
   title: '@embed';
 }
 
-export interface EmbedBlock extends Parent {
+export interface EmbedBlock extends Node {
   data: Data & {
     hName: 'Embed' | 'embed';
     hProperties: Record<string, unknown> & {

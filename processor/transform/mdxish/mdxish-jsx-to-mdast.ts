@@ -175,7 +175,6 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
 
   return {
     type: NodeTypes.embedBlock,
-    children: [],
     title,
     url,
     data: {
@@ -264,7 +263,6 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
 
   return {
     type: NodeTypes.embedBlock,
-    children: [],
     title,
     url,
     data: {

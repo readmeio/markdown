@@ -189,7 +189,6 @@ const coerceJsxToMd =
 
       const mdNode: EmbedBlock = {
         type: NodeTypes.embedBlock,
-        children: [],
         title: hProperties.title,
         data: {
           hName: 'embed',
