@@ -18,6 +18,7 @@ const embedTransformer = () => {
 
       const newNode = {
         type: NodeTypes.embedBlock,
+        children: [],
         label,
         title,
         url,
