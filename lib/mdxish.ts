@@ -84,7 +84,7 @@ export interface MdxishOpts {
 const defaultTransformers: PluggableList = [
   [calloutTransformer, { isMdxish: true }],
   codeTabsTransformer,
-  gemojiTransformer,
+  [gemojiTransformer, { isMdxish: true }],
   embedTransformer,
 ];
 

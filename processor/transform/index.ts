@@ -45,7 +45,7 @@ export const mdxishTransformers = [
   [calloutTransformer, { isMdxish: true }],
   codeTabsTransformer,
   imageTransformer,
-  gemojiTransformer,
+  [gemojiTransformer, { isMdxish: true }],
 ];
 
 export default Object.values(defaultTransforms);

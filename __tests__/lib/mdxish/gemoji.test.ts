@@ -15,4 +15,16 @@ describe('gemoji transformer', () => {
     `);
 
   });
+
+  it('should render consecutive emoji shortcodes', () => {
+    expect(mix(':grin::grin:')).toMatchInlineSnapshot(`"<p>😁😁</p>"`);
+  });
+
+  it('should render three consecutive emoji shortcodes', () => {
+    expect(mix(':grin::joy::heart:')).toMatchInlineSnapshot(`"<p>😁😂❤️</p>"`);
+  });
+
+  it('should render consecutive emojis with surrounding text', () => {
+    expect(mix('Hello :grin::grin: world')).toMatchInlineSnapshot(`"<p>Hello 😁😁 world</p>"`);
+  });
 });
