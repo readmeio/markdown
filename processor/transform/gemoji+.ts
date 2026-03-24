@@ -7,7 +7,6 @@ import { NodeTypes } from '../../enums';
 import Owlmoji from '../../lib/owlmoji';
 
 export const regex = /(?<=^|\s):(?<name>\+1|[-\w]+):/g;
-export const consecutiveRegex = /(?<=^|\s|:(?:\+1|[-\w]+):):(?<name>\+1|[-\w]+):/g;
 
 const gemojiReplacer = (_, name: string) => {
   switch (Owlmoji.kind(name)) {
@@ -57,8 +56,8 @@ const gemojiReplacer = (_, name: string) => {
   }
 };
 
-const gemojiTransformer = ({ isMdxish = false } = {}) => (tree: Root) => {
-  findAndReplace(tree, [isMdxish ? consecutiveRegex : regex, gemojiReplacer]);
+const gemojiTransformer = () => (tree: Root) => {
+  findAndReplace(tree, [regex, gemojiReplacer]);
 
   return tree;
 };
