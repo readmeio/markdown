@@ -122,6 +122,24 @@ const Form = () => {
               type="checkbox"
             />
           </div>
+          <div>
+            <label htmlFor="show-ast">Show AST</label>
+            <input
+              checked={searchParams.has('showAst')}
+              id="show-ast"
+              onChange={onCheck('showAst')}
+              type="checkbox"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-editor-types">Editor Types (MDXish)</label>
+            <input
+              checked={searchParams.has('newEditorTypes')}
+              id="new-editor-types"
+              onChange={onCheck('newEditorTypes')}
+              type="checkbox"
+            />
+          </div>
         </fieldset>
         <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
           <legend>Pipeline</legend>
