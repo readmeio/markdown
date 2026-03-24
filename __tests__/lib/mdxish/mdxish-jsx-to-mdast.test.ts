@@ -101,6 +101,21 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(imageNode.data?.hProperties?.alt).toBe('test');
       });
 
+      it('should parse Image with unquoted attributes spanning multiple lines', () => {
+        const md = `<Image
+  src=https://example.com/image.png
+  alt=test
+/>`;
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+        expect(imageNode.data?.hProperties?.alt).toBe('test');
+      });
+
       it('should parse caption with markdown and HTML entities into children', () => {
         const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);
