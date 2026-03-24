@@ -111,9 +111,9 @@ export function createTocComponent(tocHast: TocList): React.FC<{ heading?: strin
   });
   const tocReactElement = tocProcessor.stringify(tocHast) as React.ReactNode;
 
-  const TocComponent = (props: { heading?: string }) =>
+  const TocComponent = () =>
     tocReactElement ? (
-      <Components.TableOfContents heading={props.heading}>{tocReactElement}</Components.TableOfContents>
+      <Components.TableOfContents>{tocReactElement}</Components.TableOfContents>
     ) : null;
   TocComponent.displayName = 'Toc';
 

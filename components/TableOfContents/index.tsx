@@ -77,7 +77,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>, deps: u
   }, [deps]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-function TableOfContents({ children }: React.PropsWithChildren<Record<string, never>>) {
+function TableOfContents({ children }: React.PropsWithChildren) {
   const navRef = useRef<HTMLElement>(null);
   useScrollHighlight(navRef, children);
 
