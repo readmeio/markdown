@@ -1,22 +1,85 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import type { ExpressionStatement, Identifier, MemberExpression, SimpleLiteral } from 'estree';
 import type { Nodes, Parents } from 'hast';
+import type { MdxTextExpressionHast } from 'mdast-util-mdx-expression';
 
 import { fromHtml } from 'hast-util-from-html';
+
+import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
 
 /* @note: adapted from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 
 interface Options {
+  /**
+   * When true, preserves variable syntax instead of resolving to values or bare
+   * key names. Legacy variables (from `<<key>>` syntax) output as `<<key>>`,
+   * MDX variables output as `{user.key}` for valid identifiers or
+   * `{user["key"]}` for non-identifier keys (e.g. hyphens). Used by search
+   * indexing so the frontend can interpolate variables at display time with
+   * their respective regexes.
+   */
+  preserveVariableSyntax?: boolean;
+  /**
+   * Separator to use when joining sibling nodes.
+   * Defaults to a space for document-level plain text extraction.
+   * Use an empty string for inline-only contexts like TOC labels, where
+   * adjacent inline siblings should preserve authored adjacency.
+   */
+  separator?: string;
   variables?: Record<string, string>;
 }
 
 const STRIP_TAGS = ['script', 'style'];
 
+/** Valid JS identifier: starts with $, _, or a letter; followed by $, _, letters, digits, etc. */
+const JS_IDENTIFIER_RE = /^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\u200C\u200D]*$/u;
+
+/** Format a variable key as MDX syntax, using bracket notation for non-identifier keys (e.g. hyphens). */
+function toMdxVariableSyntax(key: string): string {
+  return JS_IDENTIFIER_RE.test(key) ? `{user.${key}}` : `{user["${key}"]}`;
+}
+
+/**
+ * Extract variable key from MDX expression AST (e.g., {user.name} → 'name')
+ * Uses ESTree AST inspection, matching the approach in processor/transform/variables.ts
+ *
+ * @see https://github.com/syntax-tree/mdast-util-mdx-expression - MdxTextExpressionHast type
+ * @see https://github.com/estree/estree/blob/master/es5.md - ESTree spec for expression types
+ */
+function extractMdxVariableKey(node: MdxTextExpressionHast): string | undefined {
+  const estree = node.data?.estree;
+  if (!estree || estree.type !== 'Program' || estree.body.length === 0) return undefined;
+
+  const statement = estree.body[0];
+  if (statement.type !== 'ExpressionStatement') return undefined;
+
+  const expr = (statement as ExpressionStatement).expression;
+  if (expr.type !== 'MemberExpression') return undefined;
+
+  const memberExpr = expr as MemberExpression;
+  const obj = memberExpr.object;
+  if (obj.type !== 'Identifier' || (obj as Identifier).name !== 'user') return undefined;
+
+  const prop = memberExpr.property;
+  if (prop.type === 'Identifier') {
+    return (prop as Identifier).name;
+  }
+  if (prop.type === 'Literal') {
+    const val = (prop as SimpleLiteral).value;
+    return typeof val === 'string' ? val : undefined;
+  }
+
+  return undefined;
+}
+
 function one(node: Nodes, opts: Options) {
   if (node.type === 'comment') return '';
 
   if ('type' in node && node.type === 'text') {
-    return node.value;
+    // Remove all MDX comments from text nodes. We need this here because we
+    // don't control whether comments are parsed into comment vs text nodes.
+    return node.value.replace(MDX_COMMENT_REGEX, '');
   }
 
   if ('tagName' in node) {
@@ -35,8 +98,13 @@ function one(node: Nodes, opts: Options) {
 
         return [icon, ' ', title, title && body && ': ', body].filter(Boolean).join('');
       }
+      // 'variable' (lowercase) comes from mdxish() after rehypeRaw normalizes HTML tag names
+      case 'variable':
       case 'Variable': {
         const key = node.properties.name.toString();
+        if (opts.preserveVariableSyntax) {
+          return node.properties.isLegacy ? `<<${key}>>` : toMdxVariableSyntax(key);
+        }
         const val = 'variables' in opts && opts.variables[key];
         return val || key;
       }
@@ -58,6 +126,15 @@ function one(node: Nodes, opts: Options) {
     }
   }
 
+  // Handle MDX expressions like {user.name}
+  if (node.type === 'mdxTextExpression') {
+    const key = extractMdxVariableKey(node as MdxTextExpressionHast);
+    if (key) {
+      if (opts.preserveVariableSyntax) return toMdxVariableSyntax(key);
+      return ('variables' in opts && opts.variables[key]) || key;
+    }
+  }
+
   if ('value' in node) {
     return node.value;
   }
@@ -68,13 +145,14 @@ function one(node: Nodes, opts: Options) {
 function all(node: Parents, opts: Options) {
   let index = -1;
   const result = [];
+  const separator = opts.separator ?? ' ';
 
   // eslint-disable-next-line no-plusplus
   while (++index < node?.children.length) {
     result[index] = one(node.children[index], opts);
   }
 
-  return result.join(' ').replaceAll(/\s+/g, ' ').trim();
+  return result.join(separator).replaceAll(/\s+/g, ' ').trim();
 }
 
 const plain = (node: Nodes, opts: Options = {}) => {

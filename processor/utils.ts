@@ -220,7 +220,7 @@ export const toAttributes = (object: Record<string, unknown>, keys: string[] = [
 
     let value: MdxJsxAttributeValueExpression | string;
 
-    if (typeof v === 'undefined' || v === null || v === '') {
+    if (typeof v === 'undefined' || v === null || v === '' || v === false) {
       return;
     } else if (typeof v === 'string') {
       value = v;

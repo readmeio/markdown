@@ -1,9 +1,11 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 interface ImageProps {
   align?: string;
   alt?: string;
-  border?: boolean;
+  // MDXish passes JSX expression values as strings (e.g., border={false} becomes "false")
+  border?: boolean | string;
   caption?: string;
   children?: [React.ReactElement];
   className?: string;
@@ -14,11 +16,20 @@ interface ImageProps {
   width?: string;
 }
 
+/**
+ * Renders lightbox overlay via a React portal to document.body so it escapes
+ * any intermediate CSS stacking contexts and reliably covers all UI chrome.
+ */
+const LightboxPortal = ({ children }: { children: React.ReactNode }) => {
+  if (typeof document === 'undefined') return null;
+  return createPortal(children, document.body);
+};
+
 const Image = (Props: ImageProps) => {
   const {
     align = '',
     alt = '',
-    border = false,
+    border: borderProp = false,
     caption,
     className = '',
     height = 'auto',
@@ -28,6 +39,9 @@ const Image = (Props: ImageProps) => {
     lazy = true,
     children,
   } = Props;
+
+  // Normalize border: MDXish passes {false} as the string "false", not a boolean
+  const border = borderProp === true || borderProp === 'true';
 
   const [lightbox, setLightbox] = React.useState(false);
 
@@ -60,65 +74,76 @@ const Image = (Props: ImageProps) => {
     setLightbox(!lightbox);
   };
 
-  if (children || caption) {
-    return (
-      <figure>
+  const imgElement = (
+    <img
+      alt={alt}
+      className={`img ${caption || children ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
+      height={height}
+      loading={lazy ? 'lazy' : 'eager'}
+      src={src}
+      title={title}
+      width={width}
+    />
+  );
+
+  const lightboxOverlay = lightbox ? (
+    <LightboxPortal>
+      <div className="markdown-body">
         <span
-          aria-label={alt}
-          className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
+          aria-label={alt || 'Collapse image'}
+          className="img lightbox open"
           onClick={toggle}
           onKeyDown={handleKeyDown}
           role={'button'}
           tabIndex={0}
         >
           <span className="lightbox-inner">
-            <img
-              alt={alt}
-              className={`img img-align-center ${border ? 'border' : ''}`}
-              height={height}
-              loading={lazy ? 'lazy' : 'eager'}
-              src={src}
-              title={title}
-              width={width}
-            />
+            {imgElement}
+            {(children || caption) && <figcaption>{children || caption}</figcaption>}
+          </span>
+        </span>
+        <button aria-label="Minimize image" className="lightbox-close" onClick={toggle} type="button">
+          <i aria-hidden="true" className="fa-solid fa-xmark" />
+        </button>
+      </div>
+    </LightboxPortal>
+  ) : null;
+
+  if (children || caption) {
+    return (
+      <figure>
+        <span
+          aria-label={alt}
+          className="img lightbox closed"
+          onClick={toggle}
+          onKeyDown={handleKeyDown}
+          role={'button'}
+          tabIndex={0}
+        >
+          <span className="lightbox-inner">
+            {imgElement}
             <figcaption>{children || caption}</figcaption>
           </span>
         </span>
-        {lightbox && (
-          <button aria-label="Minimize image" className="lightbox-close" type="button">
-            <i aria-hidden="true" className="fa-solid fa-xmark" />
-          </button>
-        )}
+        {lightboxOverlay}
       </figure>
     );
   }
 
   return (
-    <span
-      aria-label={`${lightbox ? 'Collapse image' : 'Expand image'}`}
-      className={`img lightbox ${lightbox ? 'open' : 'closed'}`}
-      onClick={toggle}
-      onKeyDown={handleKeyDown}
-      role={'button'}
-      tabIndex={0}
-    >
-      <span className="lightbox-inner">
-        <img
-          alt={alt}
-          className={`img ${align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
-          height={height}
-          loading={lazy ? 'lazy' : 'eager'}
-          src={src}
-          title={title}
-          width={width}
-        />
+    <>
+      <span
+        aria-label="Expand image"
+        className="img lightbox closed"
+        onClick={toggle}
+        onKeyDown={handleKeyDown}
+        role={'button'}
+        tabIndex={0}
+      >
+        <span className="lightbox-inner">{imgElement}</span>
       </span>
-      {lightbox && (
-        <button aria-label="Minimize image" className="lightbox-close" type="button">
-          <i aria-hidden="true" className="fa-solid fa-xmark" />
-        </button>
-      )}
-    </span>
+      {lightboxOverlay}
+    </>
   );
 };
 

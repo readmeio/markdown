@@ -7,6 +7,7 @@ import type {
   Parent,
   Blockquote,
   Node,
+  PhrasingContent,
   Root,
   Text,
   Table,
@@ -16,13 +17,14 @@ import type {
 } from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXModule } from 'mdx/types';
+import type { Position } from 'unist';
 
-type Callout = Omit<Blockquote, 'children' | 'type'> & {
+export type Callout = Omit<Blockquote, 'children' | 'type'> & {
   children: BlockContent[];
   data: Data & {
-    hName: 'Callout';
+    hName: 'Callout' | 'rdme-callout';
     hProperties: {
-      empty: boolean;
+      empty?: boolean;
       icon: string;
       theme: string;
     };
@@ -30,30 +32,30 @@ type Callout = Omit<Blockquote, 'children' | 'type'> & {
   type: NodeTypes.callout;
 };
 
-interface CodeTabs extends Parent {
+export interface CodeTabs extends Parent {
   children: Code[];
-  data: Data & {
+  data?: Data & {
     hName: 'CodeTabs';
   };
   type: NodeTypes.codeTabs;
 }
 
-interface Embed extends Link {
+export interface Embed extends Link {
   title: '@embed';
 }
 
-interface EmbedBlock extends Node {
+export interface EmbedBlock extends Node {
   data: Data & {
-    hName: 'embed';
-    hProperties: {
+    hName: 'Embed' | 'embed';
+    hProperties: Record<string, unknown> & {
       favicon?: string;
       html?: string;
       iframe?: boolean;
       image?: string;
       providerName?: string;
       providerUrl?: string;
-      title: string;
-      url: string;
+      title?: string;
+      url?: string;
     };
   };
   label?: string;
@@ -62,7 +64,7 @@ interface EmbedBlock extends Node {
   url?: string;
 }
 
-interface Figure extends Node {
+export interface Figure extends Node {
   children: [ImageBlock & { url: string }, FigCaption];
   data: {
     hName: 'figure';
@@ -70,7 +72,7 @@ interface Figure extends Node {
   type: NodeTypes.figure;
 }
 
-interface FigCaption extends Node {
+export interface FigCaption extends Node {
   children: BlockContent[];
   data: {
     hName: 'figcaption';
@@ -78,7 +80,7 @@ interface FigCaption extends Node {
   type: NodeTypes.figcaption;
 }
 
-interface HTMLBlock extends Node {
+export interface HTMLBlock extends Node {
   children: Text[];
   data: Data & {
     hName: 'html-block';
@@ -91,25 +93,28 @@ interface HTMLBlock extends Node {
   type: NodeTypes.htmlBlock;
 }
 
-interface Plain extends Literal {
+export interface Plain extends Literal {
   type: NodeTypes.plain;
 }
 
-interface ImageBlockAttrs {
-  align?: string;
+export type ImageAlign = 'center' | 'left' | 'right';
+
+export interface ImageBlockAttrs {
+  align?: ImageAlign;
   alt: string;
-  border?: string;
+  border?: boolean;
   caption?: string;
   children?: RootContent[];
   className?: string;
   height?: string;
   lazy?: boolean;
+  sizing?: string;
   src: string;
   title: string;
   width?: string;
 }
 
-interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {
+export interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {
   data: Data & {
     hName: 'img';
     hProperties: ImageBlockAttrs;
@@ -117,20 +122,21 @@ interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {
   type: NodeTypes.imageBlock;
 }
 
-interface Gemoji extends Literal {
+export interface Gemoji extends Node {
   name: string;
   type: NodeTypes.emoji;
+  value?: string;
 }
 
-interface FaEmoji extends Literal {
+export interface FaEmoji extends Literal {
   type: NodeTypes.i;
 }
 
-interface Tableau extends Omit<Table, 'type'> {
+export interface Tableau extends Omit<Table, 'type'> {
   type: NodeTypes.tableau;
 }
 
-interface Recipe extends Node {
+export interface Recipe extends Node {
   backgroundColor: string;
   emoji: string;
   id: string;
@@ -141,14 +147,45 @@ interface Recipe extends Node {
   type: NodeTypes.recipe | NodeTypes.tutorialTile;
 }
 
-interface Variable extends Node {
+export interface ReusableContent extends Parent {
+  children: RootContent[];
+  tag: string;
+  type: NodeTypes.reusableContent;
+}
+
+export interface Variable extends Node {
   data: Data & {
-    hName: 'Variable';
+    hName: 'readme-variable' | 'Variable';
     hProperties: {
       name: string;
     };
   };
   value: string;
+}
+
+export interface Glossary extends Node {
+  children: [{ type: 'text'; value: string }];
+  data: Data & {
+    hName: 'Glossary';
+    hProperties: { term: string };
+  };
+  position?: Position;
+  type: NodeTypes.glossary;
+}
+
+export interface Anchor extends Node {
+  children: PhrasingContent[];
+  data: Data & {
+    hName: 'Anchor';
+    hProperties: {
+      href: string;
+      label?: string;
+      target?: string;
+      title?: string;
+    };
+  };
+  position?: Position;
+  type: NodeTypes.anchor;
 }
 
 declare module 'mdast' {
@@ -161,29 +198,36 @@ declare module 'mdast' {
     [NodeTypes.imageBlock]: ImageBlock;
     [NodeTypes.plain]: Plain;
     [NodeTypes.recipe]: Recipe;
+    [NodeTypes.reusableContent]: ReusableContent;
     [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: Recipe;
     link: Embed | Link;
   }
 
   interface PhrasingContentMap {
+    [NodeTypes.anchor]: Anchor;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
+    [NodeTypes.glossary]: Glossary;
     [NodeTypes.variable]: Variable;
     [NodeTypes.plain]: Plain;
   }
 
   interface RootContentMap {
     Link: Embed | Link;
+    [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;
+    [NodeTypes.glossary]: Glossary;
     [NodeTypes.htmlBlock]: HTMLBlock;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.imageBlock]: ImageBlock;
+    [NodeTypes.plain]: Plain;
     [NodeTypes.recipe]: Recipe;
+    [NodeTypes.reusableContent]: ReusableContent;
     [NodeTypes.tableau]: Tableau;
     [NodeTypes.tutorialTile]: Recipe;
     [NodeTypes.variable]: Variable;

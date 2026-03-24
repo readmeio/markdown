@@ -8,7 +8,45 @@ import { unified } from 'unified';
 
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
+import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 import makeUseMDXComponents from '../makeUseMdxComponents';
+
+/**
+ * Parse JSON-marked string values in props back to their original types.
+ * This handles arrays and objects that were serialized during JSX preprocessing.
+ */
+function parseJsonProps(props: Record<string, unknown> | null): Record<string, unknown> | null {
+  if (!props) return props;
+
+  const parsed: Record<string, unknown> = {};
+  Object.entries(props).forEach(([key, value]) => {
+    if (typeof value === 'string' && value.startsWith(JSON_VALUE_MARKER)) {
+      try {
+        parsed[key] = JSON.parse(value.slice(JSON_VALUE_MARKER.length));
+      } catch {
+        // If parsing fails, use the value without the marker
+        parsed[key] = value.slice(JSON_VALUE_MARKER.length);
+      }
+    } else {
+      parsed[key] = value;
+    }
+  });
+  return parsed;
+}
+
+/**
+ * Custom createElement wrapper that parses JSON-marked string props.
+ * This is needed because rehype-react converts HAST to React, but complex
+ * types (arrays/objects) get serialized to strings during markdown parsing.
+ */
+function createElementWithJsonProps(
+  type: React.ElementType,
+  props: Record<string, unknown> | null,
+  ...children: React.ReactNode[]
+): React.ReactElement {
+  const parsedProps = parseJsonProps(props);
+  return React.createElement(type, parsedProps, ...children);
+}
 
 export interface RenderOpts {
   baseUrl?: string;
@@ -57,7 +95,7 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 export function createRehypeReactProcessor(components: Record<string, React.ComponentType>) {
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
-    createElement: React.createElement,
+    createElement: createElementWithJsonProps,
     Fragment: React.Fragment,
     components,
   });

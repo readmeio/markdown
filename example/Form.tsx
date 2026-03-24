@@ -96,6 +96,15 @@ const Form = () => {
             />
           </div>
           <div>
+            <label htmlFor="strip-comments">Strip Comments</label>
+            <input
+              checked={searchParams.has('stripComments')}
+              id="strip-comments"
+              onChange={onCheck('stripComments')}
+              type="checkbox"
+            />
+          </div>
+          <div>
             <label htmlFor="lazy-images">Lazy Load Images</label>
             <input
               checked={searchParams.has('lazyImages')}
@@ -114,8 +123,52 @@ const Form = () => {
             />
           </div>
           <div>
-            <label htmlFor="legacy">Render as legacy markdown</label>
-            <input checked={searchParams.has('legacy')} id="legacy" onChange={onCheck('legacy')} type="checkbox" />
+            <label htmlFor="show-ast">Show AST</label>
+            <input
+              checked={searchParams.has('showAst')}
+              id="show-ast"
+              onChange={onCheck('showAst')}
+              type="checkbox"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-editor-types">Editor Types (MDXish)</label>
+            <input
+              checked={searchParams.has('newEditorTypes')}
+              id="new-editor-types"
+              onChange={onCheck('newEditorTypes')}
+              type="checkbox"
+            />
+          </div>
+        </fieldset>
+        <fieldset className="rdmd-demo--fieldset rdmd-demo--options">
+          <legend>Pipeline</legend>
+          <div>
+            <label htmlFor="pipeline-rmdx">RMDX</label>
+            <input
+              checked={searchParams.has('rmdx')}
+              id="pipeline-rmdx"
+              onChange={onCheck('rmdx')}
+              type="checkbox"
+            />
+          </div>
+          <div>
+            <label htmlFor="pipeline-legacy">RDMD (legacy)</label>
+            <input
+              checked={searchParams.has('legacy')}
+              id="pipeline-legacy"
+              onChange={onCheck('legacy')}
+              type="checkbox"
+            />
+          </div>
+          <div>
+            <label htmlFor="pipeline-mdxish">MDXish</label>
+            <input
+              checked={searchParams.has('mdxish')}
+              id="pipeline-mdxish"
+              onChange={onCheck('mdxish')}
+              type="checkbox"
+            />
           </div>
         </fieldset>
         <textarea name="demo-editor" onChange={onChange} value={doc} />

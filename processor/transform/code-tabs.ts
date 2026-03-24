@@ -28,8 +28,18 @@ const codeTabsTransformer =
         const sibling = parent.children[walker];
         if (!isCode(sibling)) break;
 
+        // Check that the two code blocks are truly adjacent (no blank lines or
+        // other content between them). The `gap` is the number of raw characters
+        // between the end of the previous block and the start of this one.
+        // For a LF-separated pair the gap equals `start.column` (the newline
+        // char(s) plus any indentation). CRLF line endings add one extra byte
+        // (\r) without advancing the line count, so we also accept
+        // `start.column + 1` provided the blocks are still on consecutive lines.
         const olderSibling = parent.children[walker - 1];
-        if (olderSibling.position.end.offset + sibling.position.start.column !== sibling.position.start.offset) break;
+        const gap = sibling.position.start.offset - olderSibling.position.end.offset;
+        const lineDiff = sibling.position.start.line - olderSibling.position.end.line;
+        const isCRLF = gap === sibling.position.start.column + 1 && lineDiff === 1;
+        if (gap !== sibling.position.start.column && !isCRLF) break;
 
         children.push(sibling);
         // eslint-disable-next-line no-plusplus

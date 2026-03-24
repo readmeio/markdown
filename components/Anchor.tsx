@@ -59,10 +59,19 @@ function Anchor(props: Props) {
   const { children, href = '', target = '', title = '', ...attrs } = props;
   const baseUrl: string = useContext(BaseUrlContext);
 
+  // Unwrap any nested anchor elements that GFM's autolinker may have created.
+  // This prevents invalid nested <a> tags when the Anchor's text content looks like a URL.
+  const unwrappedChildren = React.Children.map(children, child => {
+    if (React.isValidElement(child) && child.type === 'a') {
+      return child.props.children;
+    }
+    return child;
+  });
+
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
     <a {...attrs} href={getHref(href, baseUrl)} target={target} title={title} {...docLink(href)}>
-      {children}
+      {unwrappedChildren}
     </a>
   );
 }

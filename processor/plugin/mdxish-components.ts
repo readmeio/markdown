@@ -25,6 +25,31 @@ function isElementContentNode(node: Root['children'][number]): node is ElementCo
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
 
+/**
+ * Components are assumed to be block-level, so whitespace between them can be removed
+ * We want to remove them because it can be treated as actual children of the component
+ * when it doesn't need to.
+ *
+ * It can be a problem because it can be passed as args to the components, like the ones
+ * defined in /components, which can break the type assumptions of the components and cause
+ * type errors, accessing properties that don't exist.
+ */
+function areAllChildrenComponents(children: ElementContent[]): boolean {
+  return children.every(child => {
+    // Whitespace-only text nodes don't affect the check
+    if (child.type === 'text' && !child.value.trim()) return true;
+    // Text with actual content means we have mixed content
+    if (child.type === 'text') return false;
+    // Comments don't affect the check
+    if (child.type === 'comment') return true;
+    // Standard HTML tags are not considered components
+    if (child.type === 'element' && 'tagName' in child) {
+      return !STANDARD_HTML_TAGS.has(child.tagName.toLowerCase());
+    }
+    return false;
+  });
+}
+
 /** Check if nodes represent a single paragraph with only text (no markdown formatting) */
 function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
   return (
@@ -54,8 +79,11 @@ function smartCamelCase(str: string): string {
   // Sort by length (longest first) to prevent shorter matches (e.g., "column" in "columns")
   const sortedBoundaries = [...allBoundaries].sort((a, b) => b.length - a.length);
 
+  // Use case-sensitive matching ('g' not 'gi') so that once a letter is
+  // capitalized by a longer boundary, shorter boundaries won't re-match it.
+  // This prevents issues like 'iconcolor' becoming 'iconColOr' instead of 'iconColor'.
   return sortedBoundaries.reduce((res, word) => {
-    const regex = new RegExp(`(${word})([a-z])`, 'gi');
+    const regex = new RegExp(`(${word})([a-z])`, 'g');
     return res.replace(regex, (_, prefix, nextChar) => prefix.toLowerCase() + nextChar.toUpperCase());
   }, str);
 }
@@ -69,9 +97,10 @@ function isActualHtmlTag(tagName: string, originalExcerpt: string): boolean {
 }
 
 /** Parse and replace text children with processed markdown */
-function parseTextChildren(node: Element, processMarkdown: (content: string) => Root): void {
+function parseTextChildren(node: Element, processMarkdown: (content: string) => Root, components: CustomComponents): void {
   if (!node.children?.length) return;
 
+  // First pass: Recursively process text children as they may contain stringified markdown / mdx content
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
@@ -85,6 +114,39 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
 
     return children;
   });
+
+  // Unwrap <p> elements whose meaningful children are ALL components.
+  // The markdown parser wraps inline content in <p> tags, but when that content
+  // is actually component children (e.g., <Tab> inside <Tabs>), the wrapper
+  // should be removed so components appear as direct children.
+  // Only unwrap when every non-whitespace, non-br child is a known component
+  // to avoid breaking paragraphs with mixed content (text + inline HTML like <code>).
+  node.children = node.children.flatMap(child => {
+    if (child.type !== 'element' || child.tagName !== 'p') return [child];
+
+    const meaningfulChildren = child.children.filter(gc => {
+      if (gc.type === 'text' && !gc.value.trim()) return false;
+      if (gc.type === 'element' && gc.tagName === 'br') return false;
+      return true;
+    });
+
+    const allComponents = meaningfulChildren.length > 0 && meaningfulChildren.every(
+      gc => gc.type === 'element' && getComponentName(gc.tagName, components),
+    );
+
+    if (!allComponents) return [child];
+
+    return meaningfulChildren;
+  });
+
+  // Post-processing: remove whitespace-only text nodes if all siblings are components
+  // This prevents whitespace between component children from being counted as extra children
+  if (areAllChildrenComponents(node.children)) {
+    node.children = node.children.filter(child => {
+      if (child.type === 'text' && !child.value.trim()) return false;
+      return true;
+    });
+  }
 }
 
 /** Convert node properties from kebab-case/lowercase to camelCase */
@@ -115,6 +177,15 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
+      // Parse Image caption as markdown so it renders formatted (bold, code,
+      // decoded entities) in the figcaption instead of as a raw string.
+      // rehypeRaw strips children from <img> (void element), so we must
+      // re-process the caption here, after rehypeRaw.
+      if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
+        const captionHast = processMarkdown(node.properties.caption as string);
+        node.children = (captionHast.children ?? []).filter(isElementContentNode);
+      }
+
       // Skip runtime components and standard HTML tags
       if (RUNTIME_COMPONENT_TAGS.has(node.tagName)) return;
 
@@ -134,7 +205,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown);
+      parseTextChildren(node, processMarkdown, components);
     });
 
     // Remove unknown components in reverse order to preserve indices

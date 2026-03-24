@@ -29,6 +29,7 @@ const variables =
           ? expression.expression.property.name
           : expression.expression.property.value;
 
+      const position = 'position' in node ? node.position : undefined;
       const variable = asMdx
         ? ({
             type: 'mdxJsxTextElement',
@@ -41,7 +42,7 @@ const variables =
               },
             ],
             children: [],
-            position: node.position,
+            position,
           } as MdxJsxTextElement)
         : ({
             type: NodeTypes.variable,
@@ -52,7 +53,7 @@ const variables =
               },
             },
             value: `{${node.value}}`,
-            position: node.position,
+            position,
           } as Variable);
 
       parent.children.splice(index, 1, variable);

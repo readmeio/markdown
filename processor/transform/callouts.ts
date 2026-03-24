@@ -1,12 +1,32 @@
-import type { Blockquote, Heading, Node, Root } from 'mdast';
+import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'mdast';
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
-import { visit } from 'unist-util-visit';
+import { gfmToMarkdown } from 'mdast-util-gfm';
+import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
+import { toMarkdown } from 'mdast-util-to-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { unified } from 'unified';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import plain from '../../lib/plain';
+import variable from '../compile/variable';
+
+import { extractText } from './extract-text';
+
+const titleParser = unified().use(remarkParse).use(remarkGfm);
+// The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
+// natively understand
+const toMarkdownExtensions = [
+  gfmToMarkdown(),
+  // For mdx variable syntaxes (e.g., {user.name})
+  mdxExpressionToMarkdown(),
+  // Important: This is required and would crash the parser if there's no variable node handler
+  { handlers: { [NodeTypes.variable]: variable } },
+];
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
 
@@ -30,47 +50,227 @@ export const wrapHeading = (node: Blockquote | Callout): Heading => {
   };
 };
 
-const calloutTransformer = () => {
-  return (tree: Root) => {
-    visit(tree, 'blockquote', (node: Blockquote) => {
-      if (!(node.children[0].type === 'paragraph' && node.children[0].children[0].type === 'text')) return;
+/**
+ * Checks if a blockquote matches the expected callout structure:
+ * blockquote > paragraph > text node
+ */
+const isCalloutStructure = (node: Blockquote): boolean => {
+  const firstChild = node.children?.[0];
+  if (!firstChild || firstChild.type !== 'paragraph') return false;
 
-      // @ts-expect-error -- @todo: update plain to accept mdast
-      const startText = plain(node.children[0]).toString();
-      const [match, icon] = startText.match(regex) || [];
+  if (!('children' in firstChild)) return false;
 
-      if (icon && match) {
-        const heading = startText.slice(match.length);
-        const empty = !heading.length && node.children[0].children.length === 1;
-        const theme = themes[icon] || 'default';
+  const firstTextChild = firstChild.children?.[0];
+  return firstTextChild?.type === 'text';
+};
 
-        const firstChild = findFirst(node.children[0]);
-        if (firstChild && 'value' in firstChild && typeof firstChild.value === 'string') {
-          firstChild.value = firstChild.value.slice(match.length);
-        }
+/**
+ * Finds the first text node containing a newline in a paragraph's children.
+ * Returns the index and the newline position within that text node.
+ */
+const findNewlineInParagraph = (paragraph: Paragraph): { index: number; newlineIndex: number } | null => {
+  for (let i = 0; i < paragraph.children.length; i += 1) {
+    const child = paragraph.children[i];
+    if (child.type === 'text' && typeof child.value === 'string') {
+      const newlineIndex = child.value.indexOf('\n');
+      if (newlineIndex !== -1) {
+        return { index: i, newlineIndex };
+      }
+    }
+  }
+  return null;
+};
 
-        if (heading) {
+/**
+ * Splits a paragraph at the first newline, separating heading content (before \n)
+ * from body content (after \n). Mutates the paragraph to contain only heading children.
+ */
+const splitParagraphAtNewline = (paragraph: Paragraph): Paragraph['children'] | null => {
+  const splitPoint = findNewlineInParagraph(paragraph);
+  if (!splitPoint) return null;
+
+  const { index, newlineIndex } = splitPoint;
+  const originalChildren = paragraph.children;
+  const textNode = originalChildren[index] as Text;
+  const beforeNewline = textNode.value.slice(0, newlineIndex);
+  const afterNewline = textNode.value.slice(newlineIndex + 1);
+
+  // Split paragraph: heading = children[0..index-1] + text before newline
+  const headingChildren = originalChildren.slice(0, index);
+  if (beforeNewline.length > 0 || headingChildren.length === 0) {
+    headingChildren.push({ type: 'text', value: beforeNewline });
+  }
+  paragraph.children = headingChildren;
+
+  // Body = text after newline + remaining children from original array
+  const bodyChildren: Paragraph['children'] = [];
+  if (afterNewline.length > 0) {
+    bodyChildren.push({ type: 'text', value: afterNewline });
+  }
+  bodyChildren.push(...originalChildren.slice(index + 1));
+
+  return bodyChildren.length > 0 ? bodyChildren : null;
+};
+
+/**
+ * Removes the icon/match prefix from the first text node in a paragraph.
+ * This is needed to clean up the raw AST after we've extracted the icon.
+ */
+const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
+  const firstTextNode = findFirst(paragraph);
+  if (firstTextNode && 'value' in firstTextNode && typeof firstTextNode.value === 'string') {
+    firstTextNode.value = firstTextNode.value.slice(prefixLength);
+  }
+};
+
+const processBlockquote = (
+  node: Blockquote,
+  index: number | undefined,
+  parent: Parent | undefined,
+  isMdxish = false,
+) => {
+  if (!isCalloutStructure(node)) {
+    // Only stringify empty blockquotes (no extractable text content)
+    // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
+    const content = extractText(node);
+    const isEmpty = !content || content.trim() === '';
+
+    if (isEmpty && index !== undefined && parent) {
+      const textNode: Text = {
+        type: 'text',
+        value: '>',
+      };
+      const paragraphNode: Paragraph = {
+        type: 'paragraph',
+        children: [textNode],
+        position: node.position,
+      };
+      parent.children.splice(index, 1, paragraphNode);
+    }
+    return;
+  }
+
+  // isCalloutStructure ensures node.children[0] is a Paragraph with children
+  const firstParagraph = node.children[0] as Paragraph;
+  const startText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
+  const [match, icon] = startText.match(regex) || [];
+
+  const firstParagraphOriginalEnd = firstParagraph.position.end;
+
+  if (icon && match) {
+    // Handle cases where heading and body are on the same line separated by a newline.
+    // Example: "> ⚠️ **Bold heading**\nBody text here"
+    const bodyChildren = splitParagraphAtNewline(firstParagraph);
+    const didSplit = bodyChildren !== null;
+
+    removeIconPrefix(firstParagraph, match.length);
+
+    const firstText = findFirst(firstParagraph) as Text | null;
+    const rawValue = firstText?.value ?? '';
+    const hasContent = rawValue.trim().length > 0 || firstParagraph.children.length > 1;
+    const empty = !hasContent;
+    const theme = themes[icon] || 'default';
+
+    if (hasContent || didSplit) {
+      const headingMatch = rawValue.match(/^(#{1,6})\s*/);
+
+      // # heading syntax is handled via direct AST manipulation so we can
+      // set the depth while preserving the original inline children (bold, etc.)
+      if (headingMatch) {
+        firstText!.value = rawValue.slice(headingMatch[0].length);
+        const heading = wrapHeading(node);
+        heading.depth = headingMatch[1].length as Heading['depth'];
+        node.children[0] = heading;
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
+      } else if (isMdxish) {
+        // Block-level title re-parsing is only needed for MDXish where HTML stays
+        // as raw nodes. In MDX, remarkMdx has already converted HTML to JSX AST
+        // nodes which toMarkdown can't serialize — and MDX doesn't need this
+        // block-level title handling anyway.
+        const headingText = toMarkdown(
+          { type: 'root', children: [firstParagraph] },
+          {
+            extensions: toMarkdownExtensions,
+          },
+        )
+          .trim()
+          .replace(/^\\(?=[>#+\-*])/, '');
+        const parsedTitle = titleParser.parse(headingText);
+        const parsedFirstChild = parsedTitle.children[0];
+
+        // Block-level syntax ("> quote", "- list") produces non-paragraph nodes;
+        // inline text parses as a paragraph and falls through to wrapHeading().
+        if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
+          // Strip positions from re-parsed nodes since they're relative to the heading text, not the original source
+          visit(parsedTitle, (n: Node) => {
+            delete n.position;
+          });
+          const heading = wrapHeading(node);
+          heading.children = parsedTitle.children as Heading['children'];
+          delete heading.position;
+          node.children[0] = heading;
+        } else {
           node.children[0] = wrapHeading(node);
-          // @note: We add to the offset/column the length of the unicode
-          // character that was stripped off, so that the start position of the
-          // heading/text matches where it actually starts.
           node.children[0].position.start.offset += match.length;
           node.children[0].position.start.column += match.length;
         }
-
-        Object.assign(node, {
-          type: NodeTypes.callout,
-          data: {
-            hName: 'Callout',
-            hProperties: {
-              icon,
-              ...(empty && { empty }),
-              theme,
-            },
-          },
-        });
+      } else {
+        node.children[0] = wrapHeading(node);
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
       }
+    }
+
+    // Insert body content as a separate paragraph after the heading
+    if (bodyChildren) {
+      const headingPosition = node.children[0].position;
+      node.children.splice(1, 0, {
+        type: 'paragraph',
+        children: bodyChildren,
+        ...(headingPosition && firstParagraphOriginalEnd
+          ? {
+              position: {
+                start: headingPosition.end,
+                end: firstParagraphOriginalEnd,
+              },
+            }
+          : {}),
+      });
+    }
+
+    Object.assign(node, {
+      type: NodeTypes.callout,
+      data: {
+        hName: 'Callout',
+        hProperties: {
+          icon,
+          ...(empty && { empty }),
+          theme,
+        },
+      },
     });
+  }
+};
+
+const calloutTransformer = ({ isMdxish = false } = {}) => {
+  const processNode = (root: Node) => {
+    visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
+      processBlockquote(node, index, parent, isMdxish);
+      if ((node as unknown as { type: string }).type === NodeTypes.callout) {
+        // SKIP prevents re-processing synthetic blockquotes in parsed title content
+        // (e.g., blockquotes from "> Quote" titles). Recursively process body children
+        // (index 1+, skipping the heading at 0) to handle nested callouts.
+        for (let i = 1; i < node.children.length; i += 1) {
+          processNode(node.children[i]);
+        }
+        return SKIP;
+      }
+      return undefined;
+    });
+  };
+  return (tree: Root) => {
+    processNode(tree);
   };
 };
 

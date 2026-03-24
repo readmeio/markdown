@@ -1,6 +1,341 @@
 Changelog
 ===
 
+## Version 13.7.0
+### ✨ New & Improved
+
+* export MDAST node interfaces ([#1391](https://github.com/readmeio/markdown/issues/1391)) ([489a71e](https://github.com/readmeio/markdown/commit/489a71e19b34f640595ce81e988dad631045186f))
+
+### 🛠 Fixes & Updates
+
+* **dev:** allow debugging mdast and hast in demo app ([#1377](https://github.com/readmeio/markdown/issues/1377)) ([bb634a1](https://github.com/readmeio/markdown/commit/bb634a1de3503052851fa787fc9c4d59b9d64565))
+* **mdxish:** delete mdxish demo docs ([#1393](https://github.com/readmeio/markdown/issues/1393)) ([f96b109](https://github.com/readmeio/markdown/commit/f96b1098ded32b20aa571f142f052024d92e31c3))
+* **mdxish:** fix pascalCaseTagPattern to allow internal > and < ([#1387](https://github.com/readmeio/markdown/issues/1387)) ([8104df4](https://github.com/readmeio/markdown/commit/8104df4fd23ca336d081e07700f0a65e59b993c6))
+* **mdxish:** normalize image attributes in jsx-to-mdast transformer ([#1375](https://github.com/readmeio/markdown/issues/1375)) ([79c3714](https://github.com/readmeio/markdown/commit/79c3714eb8b48299676e29238fd60df58e8dcbd2))
+* portal image lightbox overlay to document.body ([#1388](https://github.com/readmeio/markdown/issues/1388)) ([42412f1](https://github.com/readmeio/markdown/commit/42412f15a2c47d94e6044d39a27832cb17f13f2a))
+* remove evaluateExpressions from mdast pipeline ([#1386](https://github.com/readmeio/markdown/issues/1386)) ([c145911](https://github.com/readmeio/markdown/commit/c14591128c659a8040fdb5efe15d3bc066498383))
+
+## Version 13.6.3
+### 🛠 Fixes & Updates
+
+* **mdx:** issues with html in callout titles for mdx rendering ([#1384](https://github.com/readmeio/markdown/issues/1384)) ([4eba2fb](https://github.com/readmeio/markdown/commit/4eba2fbe3f3c0cde315dd6afcad47f074bfc0a88)), closes [#1362](https://github.com/readmeio/markdown/issues/1362)
+
+## Version 13.6.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** add support for multi code tabs in JSX tables ([#1382](https://github.com/readmeio/markdown/issues/1382)) ([9b402b6](https://github.com/readmeio/markdown/commit/9b402b6b051d59e7ef4216f52548a7a00e797a95))
+* parse image captions as markdown instead of raw string ([#1379](https://github.com/readmeio/markdown/issues/1379)) ([1b18c11](https://github.com/readmeio/markdown/commit/1b18c11b6ef9c7f88912f6dcec270612137e416a)), closes [#x22](https://github.com/readmeio/markdown/issues/x22)
+* remove space separator when in inline context like headings ([#1374](https://github.com/readmeio/markdown/issues/1374)) ([6daee7f](https://github.com/readmeio/markdown/commit/6daee7f7aecc7ccc990ae7e92e814a6113d793da))
+* **mdxish:** strip newline from text inside components that's attached to closing tag ([#1381](https://github.com/readmeio/markdown/issues/1381)) ([aaf6690](https://github.com/readmeio/markdown/commit/aaf669088ca4888e3c5dc85d39429556ba15fb87)), closes [#RM-15614](https://github.com/readmeio/markdown/issues/RM-15614)
+
+## Version 13.6.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** parse <Table> as single token to prevent blank-line fragmentations ([#1371](https://github.com/readmeio/markdown/issues/1371)) ([ce73b7f](https://github.com/readmeio/markdown/commit/ce73b7f0db80ccfeaff367532c02c58d710a43a7))
+* **mdxish:** variables in callout titles causing it to crash ([#1378](https://github.com/readmeio/markdown/issues/1378)) ([4006247](https://github.com/readmeio/markdown/commit/40062471c8e51cda8379ff5733216c0d9e4db2e5)), closes [#1362](https://github.com/readmeio/markdown/issues/1362)
+
+## Version 13.6.0
+### ✨ New & Improved
+
+* correctly render block level elements in callout ([#1362](https://github.com/readmeio/markdown/issues/1362)) ([32040cb](https://github.com/readmeio/markdown/commit/32040cb618ad0a90c26df1f1699507fc4fa1c29e))
+
+### 🛠 Fixes & Updates
+
+* **mdxish-editor:** built in anchor component not deserializing to to a link in mdxish editor ([#1361](https://github.com/readmeio/markdown/issues/1361)) ([30e037d](https://github.com/readmeio/markdown/commit/30e037d6f763fc4fcc9ce2829ba339a82a50484a))
+* **mdxish:** callout end tag rendering ([#1373](https://github.com/readmeio/markdown/issues/1373)) ([cad7594](https://github.com/readmeio/markdown/commit/cad759433cbcdd9b1b779e130a9b1c449c1ca437))
+* **mdxish:** combine code tabs if separated by CLRF token \r\n ([#1372](https://github.com/readmeio/markdown/issues/1372)) ([2d8d267](https://github.com/readmeio/markdown/commit/2d8d26756965a3f0f146ccb1f43fd4a2a60eb87f))
+* **mdxish:** Curly braces on separate lines cause render failure on MDXish ([#1364](https://github.com/readmeio/markdown/issues/1364)) ([d85e106](https://github.com/readmeio/markdown/commit/d85e1066ab58a7ea51cdf23f9a0f8b9efcac9d62))
+* **mdxished:** Preserve embed type and dimensions when copy/pasting <Embed> blocks ([#1369](https://github.com/readmeio/markdown/issues/1369)) ([5af9623](https://github.com/readmeio/markdown/commit/5af9623013c5b7c628378a81d0b7e6d8902b9c23))
+
+### 📘 Tests & Docs
+
+* **xish:** add CLAUDE.md + processor flow overview docs ([#1370](https://github.com/readmeio/markdown/issues/1370)) ([b8d9e4c](https://github.com/readmeio/markdown/commit/b8d9e4cc7e8760236aca810f9376873cb0bb604a))
+
+## Version 13.5.0
+### ✨ New & Improved
+
+* **mdxish:** add GFM checkbox compiler & parsing when there's whitespace ([#1368](https://github.com/readmeio/markdown/issues/1368)) ([5488cce](https://github.com/readmeio/markdown/commit/5488cce527dcf0b9e8b96354892feedb41bf56ca))
+* create a comparison view between mdxish and rdmd in demo app ([#1363](https://github.com/readmeio/markdown/issues/1363)) ([506e884](https://github.com/readmeio/markdown/commit/506e8849a3d855701b52fe363fef07374829961b))
+
+### 🛠 Fixes & Updates
+
+* dont show backslash in unbalanced braces ([#1358](https://github.com/readmeio/markdown/issues/1358)) ([ae0b52e](https://github.com/readmeio/markdown/commit/ae0b52e66a0084df49a53b4de4e3224bbba81cfe))
+* **mdxish:** inconsistent line break ([#1351](https://github.com/readmeio/markdown/issues/1351)) ([5398838](https://github.com/readmeio/markdown/commit/539883812492f2ef9c67d105a832de930ed6062e))
+* normalize `&nbsp` that does not have semicolons ([#1359](https://github.com/readmeio/markdown/issues/1359)) ([c816270](https://github.com/readmeio/markdown/commit/c81627043c7bb9c3c11e87eb9a770911179b7399))
+* **mdxish:** parse legacy variables in table magic blocks that's in html markdown ([#1367](https://github.com/readmeio/markdown/issues/1367)) ([2826a8e](https://github.com/readmeio/markdown/commit/2826a8e17d4cfab2e423293816c711e54530efd1))
+* **mdxish:** stop using remark gfm for parsing html in table cell magic blocks ([#1366](https://github.com/readmeio/markdown/issues/1366)) ([f50ca9c](https://github.com/readmeio/markdown/commit/f50ca9ceb56d90ed11969d4974d49b849c254875))
+
+## Version 13.4.0
+### ✨ New & Improved
+
+* **mdxish:** preserve jsx expressions in ast processor ([#1332](https://github.com/readmeio/markdown/issues/1332)) ([7704aaa](https://github.com/readmeio/markdown/commit/7704aaa1bc2b6c9e930b53d72b36ab5966a714b2))
+
+### 🛠 Fixes & Updates
+
+* focus on code copy button ([#1352](https://github.com/readmeio/markdown/issues/1352)) ([6853be1](https://github.com/readmeio/markdown/commit/6853be19fdd3f0eace794d8bbc6f0286d093b195))
+* **stripComments:** not escape checkbox ([#1360](https://github.com/readmeio/markdown/issues/1360)) ([a4226c2](https://github.com/readmeio/markdown/commit/a4226c2252d869608290bee89584ff54b00f5dc5))
+* preserve legacy syntax for legacy variables ([#1365](https://github.com/readmeio/markdown/issues/1365)) ([d735a99](https://github.com/readmeio/markdown/commit/d735a99ccdcab866c6f087841d746504a922e8fc))
+
+## Version 13.3.0
+### ✨ New & Improved
+
+* **mdxish:** add legacy variable tokenizer ([#1339](https://github.com/readmeio/markdown/issues/1339)) ([8e8b11b](https://github.com/readmeio/markdown/commit/8e8b11b5c92d40af7d6c61bb91e40f027614fd57))
+* add option to perserve variable syntax in plain text compiler ([#1345](https://github.com/readmeio/markdown/issues/1345)) ([5ab350e](https://github.com/readmeio/markdown/commit/5ab350e02be03e6c5485ce418429df7547399a31))
+* **mdxish:** resolve variables in code blocks ([#1350](https://github.com/readmeio/markdown/issues/1350)) ([a6460f8](https://github.com/readmeio/markdown/commit/a6460f8ef8e5eaa96feccb0073eaa198f8920c27))
+* **mdxish:** use variable name for heading slug generation ([#1340](https://github.com/readmeio/markdown/issues/1340)) ([61a97d3](https://github.com/readmeio/markdown/commit/61a97d33aa101dad1c9b0f7abb4b7042633d0e82))
+
+## Version 13.2.0
+### ✨ New & Improved
+
+* **demo:** add a markdown view in demo app when stripComments is on ([#1348](https://github.com/readmeio/markdown/issues/1348)) ([a7a8726](https://github.com/readmeio/markdown/commit/a7a8726118140f7b1911b53076690bbaed69215f))
+* extend regex to cover more cases ([#1338](https://github.com/readmeio/markdown/issues/1338)) ([3e8efc8](https://github.com/readmeio/markdown/commit/3e8efc8e188296ff4a74cb021d590c12ace94715))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** add missing toMarkdown extension for MDX expressions in stripComments ([#1347](https://github.com/readmeio/markdown/issues/1347)) ([02ddfce](https://github.com/readmeio/markdown/commit/02ddfce9537589c4d85c03fe3c8e905a7f6327a5))
+* properly escape escaped chars when expression parsing fails ([#1325](https://github.com/readmeio/markdown/issues/1325)) ([136f7af](https://github.com/readmeio/markdown/commit/136f7af55d36628d8c167713129be7d3563a4641))
+* **mdxish:** tone down empty line addition preprocessing after html blocks ([#1344](https://github.com/readmeio/markdown/issues/1344)) ([e4e7362](https://github.com/readmeio/markdown/commit/e4e736206336a9b2d9d48508aa457091402aeb4f)), closes [#1336](https://github.com/readmeio/markdown/issues/1336)
+
+## Version 13.1.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** builtin tabs component rendering ([#1346](https://github.com/readmeio/markdown/issues/1346)) ([7bd6c41](https://github.com/readmeio/markdown/commit/7bd6c416f7d54801224aad219d4bf157fda81af9))
+* force release ([0352bd0](https://github.com/readmeio/markdown/commit/0352bd0e77763aeb0b8228ba22877e47b69085e0))
+* **mdxish:** Unclosed curly brace and callout fail to render on MDXish ([#1333](https://github.com/readmeio/markdown/issues/1333)) ([dbca5fa](https://github.com/readmeio/markdown/commit/dbca5fa9ca302179f18f5fce8873cb9c4791ca6d))
+
+## Version 13.1.3
+### 🛠 Fixes & Updates
+
+* **dev env:** add `stripComments` option ([#1342](https://github.com/readmeio/markdown/issues/1342)) ([721e028](https://github.com/readmeio/markdown/commit/721e0281edc15a24f95b7e460002bc8576281e27))
+* **dev env:** pass glossary terms and variables to mdxish renderer ([#1341](https://github.com/readmeio/markdown/issues/1341)) ([62654b1](https://github.com/readmeio/markdown/commit/62654b1080ef311f5315f5a9edfabfec91116157))
+* wrap empty Anchor in paragraph to prevent content loss ([#1330](https://github.com/readmeio/markdown/issues/1330)) ([8f431d4](https://github.com/readmeio/markdown/commit/8f431d47e1f1a1cdb83440e6516896b665115dca))
+
+## Version 13.1.2
+### 🛠 Fixes & Updates
+
+* **magic blocks:** ensure newline characters processed as hard breaks ([#1329](https://github.com/readmeio/markdown/issues/1329)) ([bb37d62](https://github.com/readmeio/markdown/commit/bb37d627dd91765d48be22b085c3027a0e7b1ea0))
+* fix callout magic blocks when rendered directly below a list item ([#1331](https://github.com/readmeio/markdown/issues/1331)) ([de2b82a](https://github.com/readmeio/markdown/commit/de2b82acb58d1115f1c75a30f878a9b35d8ea9c1))
+* fix rendering content in table magic blocks ([#1318](https://github.com/readmeio/markdown/issues/1318)) ([0ea1cfc](https://github.com/readmeio/markdown/commit/0ea1cfc33c07c45d5e17a38d5f84b132a4cb61db))
+* preserve recipe top level attributes in mdast ([#1324](https://github.com/readmeio/markdown/issues/1324)) ([98f466b](https://github.com/readmeio/markdown/commit/98f466b825a562b90af9a8d65aa00117731df08b))
+* **stripComments:** properly pass in the micromark extensions ([#1335](https://github.com/readmeio/markdown/issues/1335)) ([7ec9d46](https://github.com/readmeio/markdown/commit/7ec9d46cb027efb4ca868f917185f7c948026443))
+* **mdxish:** properly terminate html blocks ([#1336](https://github.com/readmeio/markdown/issues/1336)) ([d221861](https://github.com/readmeio/markdown/commit/d2218617a233463c82cce5d2be63175446058279))
+
+## Version 13.1.1
+### 🛠 Fixes & Updates
+
+* active tab color ([#1326](https://github.com/readmeio/markdown/issues/1326)) ([d53af3f](https://github.com/readmeio/markdown/commit/d53af3f66196961397c4ae8efaca9316d74ad2b6))
+* export `componentTagPattern` ([#1327](https://github.com/readmeio/markdown/issues/1327)) ([436be4f](https://github.com/readmeio/markdown/commit/436be4f01a3bdfa47ee17b7f49caa5fed77d0abd))
+
+## Version 13.1.0
+### ✨ New & Improved
+
+* correctly parse more malformed syntaxes ([#1316](https://github.com/readmeio/markdown/issues/1316)) ([87330c0](https://github.com/readmeio/markdown/commit/87330c05912f600bff82a8a668eb6f8973ae8ce7)), closes [#1279](https://github.com/readmeio/markdown/issues/1279)
+* **mdxish:** create mdxish safe mode ([#1323](https://github.com/readmeio/markdown/issues/1323)) ([2ef8816](https://github.com/readmeio/markdown/commit/2ef8816642d39897741f3450ee7df96132670ee2))
+
+### 🛠 Fixes & Updates
+
+* callout body using 2 blockquotes rendered as heading ([#1321](https://github.com/readmeio/markdown/issues/1321)) ([8b6fe88](https://github.com/readmeio/markdown/commit/8b6fe889f090d6e062f38b3c7f91103999ba3e13))
+* extend plain to accept htmlblock from mdxish ([#1314](https://github.com/readmeio/markdown/issues/1314)) ([638e639](https://github.com/readmeio/markdown/commit/638e639ca7a6cdeb23502cc4f00f38646c58373f))
+
+## Version 13.0.0
+### ⚠ BREAKING CHANGES
+
+* **magic-blocks:** paragraphs.
+
+</details>  
+
+## 🧬 QA & Testing
+> [!IMPORTANT]
+As creating micromark extensions is new in this repo, I reckon we need
+to extensively test beforehand before pushing this. Here are some
+testing files I used
+
+[test-mdx-expressions.md](https://github.com/user-attachments/files/24859879/test-mdx-expressions.md)
+
+[magic-blocks-comprehensive.md](https://github.com/user-attachments/files/24859881/magic-blocks-comprehensive.md)
+
+
+- [Broken on production][prod].
+- [Working in this PR app][demo].
+
+
+[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
+[prod]: https://SUBDOMAIN.readme.io
+[icn]:
+https://user-images.githubusercontent.com/886627/160426047-1bee9488-305a-4145-bb2b-09d8b757d38a.svg
+
+### ✨ New & Improved
+
+* add a readme-variable node compiler to `mdxishMdastToMd` ([#1317](https://github.com/readmeio/markdown/issues/1317)) ([eaaf77f](https://github.com/readmeio/markdown/commit/eaaf77f208c3cfb43c38b52c3dff0384632e23a0))
+* **magic-blocks:** create a micromark tokenizer for magic blocks ([#1301](https://github.com/readmeio/markdown/issues/1301)) ([17c5625](https://github.com/readmeio/markdown/commit/17c562504f2dff849f3afcfad961172cac8234d9))
+* support parsing and compiling jsx block syntax to the correct node type ([#1311](https://github.com/readmeio/markdown/issues/1311)) ([c83a819](https://github.com/readmeio/markdown/commit/c83a81906988d179780a33fbc85218174a22f7eb))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** code samples inside code block with underscores do not render correctly ([#1305](https://github.com/readmeio/markdown/issues/1305)) ([6f1d38b](https://github.com/readmeio/markdown/commit/6f1d38b1acb036f467ab4b852d772f463ae74e85))
+* glossary tooltip does not cause horizontal overflow ([#1307](https://github.com/readmeio/markdown/issues/1307)) ([fe012f3](https://github.com/readmeio/markdown/commit/fe012f3170c9bc76f57fbfdcfc889a7010303537))
+* image alignment in callout/blockquote, Image component for MDXish ([#1313](https://github.com/readmeio/markdown/issues/1313)) ([434252e](https://github.com/readmeio/markdown/commit/434252eb7853b7fa5cecc99bc1c1fcce24afc5d0))
+* **mdxish:** prevent stray backtick from making everything into a codeblock ([#1322](https://github.com/readmeio/markdown/issues/1322)) ([946eac3](https://github.com/readmeio/markdown/commit/946eac3bcba765c72866b5864bd50af7852d1bc4))
+
+## Version 12.2.0
+### ✨ New & Improved
+
+* **demo app:** add an MDXish option ([#1306](https://github.com/readmeio/markdown/issues/1306)) ([be94916](https://github.com/readmeio/markdown/commit/be94916a4bc800467860ac77236f59438ff7f442))
+* add MDXish option for `stripComments` ([#1308](https://github.com/readmeio/markdown/issues/1308)) ([dd23d5f](https://github.com/readmeio/markdown/commit/dd23d5f41286f9375f986623e62d9e0325a2851d))
+
+### 🛠 Fixes & Updates
+
+* **sanitizeComments:** dont collapse all white space between code blocks ([#1310](https://github.com/readmeio/markdown/issues/1310)) ([45da2dd](https://github.com/readmeio/markdown/commit/45da2dd825242972bd93069646e07e8db9e4fa9c))
+* resolve variables in TOC headings for MDX and MDXish ([#1292](https://github.com/readmeio/markdown/issues/1292)) ([cbccd0a](https://github.com/readmeio/markdown/commit/cbccd0ac9c08bb7349ae4034cf78ec1996743149))
+
+## Version 12.1.1
+### 🛠 Fixes & Updates
+
+* **stripComments:** dont escape special markdown chars *, _, # ([#1267](https://github.com/readmeio/markdown/issues/1267)) ([73b7fca](https://github.com/readmeio/markdown/commit/73b7fca860465907da19ca2a708b993d536204fc))
+* **mdxish:** escape unbalanced curly brackets ([#1300](https://github.com/readmeio/markdown/issues/1300)) ([6d988b0](https://github.com/readmeio/markdown/commit/6d988b05bd3066288144e916bb77404f9630be06))
+
+## Version 12.1.0
+### ✨ New & Improved
+
+* **lib/plain:** remove MDX comments from plain text ([#1303](https://github.com/readmeio/markdown/issues/1303)) ([b5b63ad](https://github.com/readmeio/markdown/commit/b5b63ad167e681aa03f588ae57525994981b732a))
+
+## Version 12.0.1
+### 🛠 Fixes & Updates
+
+* preserve blockquotes containing only an image ([#1304](https://github.com/readmeio/markdown/issues/1304)) ([860823d](https://github.com/readmeio/markdown/commit/860823d915000b00739baeed2e178fb3d6720901))
+
+## Version 12.0.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** the component tree.
+
+**3. HTML Entity Decoding**
+Because we introduced the double quotes, I needed to encode & decode
+some special characters in the attributes so it doesn't split the
+attributes nodes
+
+**Before**
+<img width="854" height="349" alt="Screenshot 2026-01-16 at 9 18 19 pm"
+src="https://github.com/user-attachments/assets/a948297d-6d88-410c-8c38-6324dda1d260"
+/>
+
+**After**
+
+https://github.com/user-attachments/assets/3973a605-eb30-4312-9029-5aa1f5aa9cb6
+
+## 🧬 QA & Testing
+
+- [Broken on production][prod].
+- [Working in this PR app][demo].
+
+1. In an mdxish project, create a custom component with some props
+2. In a document, use the component while passing in template literal
+prop. For example:
+```
+<MyComponent title={`Hello world`} />
+```
+
+[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
+[prod]: https://SUBDOMAIN.readme.io
+[icn]:
+https://user-images.githubusercontent.com/886627/160426047-1bee9488-305a-4145-bb2b-09d8b757d38a.svg
+
+### 🛠 Fixes & Updates
+
+* allow parsing empty callouts like `>` without breaking ([#1260](https://github.com/readmeio/markdown/issues/1260)) ([98a8c65](https://github.com/readmeio/markdown/commit/98a8c65ea8d742fa62beeba92c811f4d6a0e972f))
+* **mdxish:** fix rendering issues with `Code` magic blocks ([#1259](https://github.com/readmeio/markdown/issues/1259)) ([ea6e7bb](https://github.com/readmeio/markdown/commit/ea6e7bb7ee285d76eed884738f421b5262156cca))
+* **mdxish:** process jsx attributes on custom components ([#1298](https://github.com/readmeio/markdown/issues/1298)) ([7f21a5e](https://github.com/readmeio/markdown/commit/7f21a5e38da9a920130305aa44f0626a22a2c917))
+* **mdxish:** remove unused whitespace nodes when rehyping components ([#1297](https://github.com/readmeio/markdown/issues/1297)) ([33e868a](https://github.com/readmeio/markdown/commit/33e868aa9edac55bd3c0ce19f053d0e5b34f06c3))
+
+## Version 11.15.0
+### ✨ New & Improved
+
+* correctly parse malformed table syntax ([#1293](https://github.com/readmeio/markdown/issues/1293)) ([dd40b2e](https://github.com/readmeio/markdown/commit/dd40b2ed0729934797a080fe42ae7706fc5fc174)), closes [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279) [#1279](https://github.com/readmeio/markdown/issues/1279)
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** glossary and anchor components not inline ([#1294](https://github.com/readmeio/markdown/issues/1294)) ([96ca62e](https://github.com/readmeio/markdown/commit/96ca62ea022422c10f5072a398db485d262b665e))
+* remove `isPlainText` ([#1302](https://github.com/readmeio/markdown/issues/1302)) ([c426816](https://github.com/readmeio/markdown/commit/c42681697cd1950d4ca364d15996a39d2574f34f))
+
+## Version 11.14.1
+### 🛠 Fixes & Updates
+
+* exporting `isPlainText` from the library ([ba5a427](https://github.com/readmeio/markdown/commit/ba5a4270b84e214ba5ff79da9b9bded53823bb95))
+
+## Version 11.14.0
+### ✨ New & Improved
+
+* creation of a new `isPlainText` utility ([#1295](https://github.com/readmeio/markdown/issues/1295)) ([84ef2a2](https://github.com/readmeio/markdown/commit/84ef2a289b34adbab88c40f18fb43f8784f37d88))
+
+## Version 11.13.0
+### ✨ New & Improved
+
+* **mdxish:** add mermaid support ([#1284](https://github.com/readmeio/markdown/issues/1284)) ([3f73461](https://github.com/readmeio/markdown/commit/3f734613c0fc8fe39d97297dc6f920328e04ed4e))
+* export mdxish ast processor ([#1289](https://github.com/readmeio/markdown/issues/1289)) ([ee4a4dc](https://github.com/readmeio/markdown/commit/ee4a4dc01a8b3d11e38f87af2ba3bb36334687da))
+* **mdxish:** parse content in callout magic blocks ([#1287](https://github.com/readmeio/markdown/issues/1287)) ([43481b7](https://github.com/readmeio/markdown/commit/43481b7bfe1355a96a8f264f4858ac5674e52733))
+
+### 🛠 Fixes & Updates
+
+* Image borders are not rendering ([#1280](https://github.com/readmeio/markdown/issues/1280)) ([ff2ce93](https://github.com/readmeio/markdown/commit/ff2ce9375c95a147413cce3b11046953f178bbb8))
+* prevent nested links when Anchor label looks like a URL ([#1283](https://github.com/readmeio/markdown/issues/1283)) ([cd6a491](https://github.com/readmeio/markdown/commit/cd6a491d07cb98b1577b6ba54fb79d310eca8a26)), closes [readmeio/readme#16851](https://github.com/readmeio/readme/issues/16851)
+
+## Version 11.12.1
+### 🛠 Fixes & Updates
+
+* check not null before checking value in transformer ([#1291](https://github.com/readmeio/markdown/issues/1291)) ([decb5f4](https://github.com/readmeio/markdown/commit/decb5f4bcb4a1470908e62e6e33dcdb42480ccd7))
+* **mdxish:** empty heading for callouts without a title ([#1285](https://github.com/readmeio/markdown/issues/1285)) ([126adbd](https://github.com/readmeio/markdown/commit/126adbd740184b25099be57f6ae8b8f3b174f8bb))
+* **mdxish:** more complete component syntax extraction ([#1290](https://github.com/readmeio/markdown/issues/1290)) ([b017682](https://github.com/readmeio/markdown/commit/b017682a71969bbc6a9933cf78cbbe447277e9fa))
+* **mdxish:** properly parse embed magic blocks ([#1258](https://github.com/readmeio/markdown/issues/1258)) ([8e8126a](https://github.com/readmeio/markdown/commit/8e8126a75c6dd1b20da5b66a889fd6202cb49d55))
+
+## Version 11.12.0
+### ✨ New & Improved
+
+* **mdxish:** support tutorial tile in mdxish ([#1273](https://github.com/readmeio/markdown/issues/1273)) ([94c3753](https://github.com/readmeio/markdown/commit/94c37531993be78e847d494331e77f3f8dbc94ff))
+
+### 🛠 Fixes & Updates
+
+* space/line break got stripped in table cell ([#1288](https://github.com/readmeio/markdown/issues/1288)) ([223b6cf](https://github.com/readmeio/markdown/commit/223b6cf63450c6966dc232dda01811b321449856))
+
+## Version 11.11.0
+### ✨ New & Improved
+
+* correctly parse malformed md syntax ([#1279](https://github.com/readmeio/markdown/issues/1279)) ([4bbd8fb](https://github.com/readmeio/markdown/commit/4bbd8fbb70ac1a5e96ebec2866957f34a88a33d0))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** can't render RC with snake_case name ([#1281](https://github.com/readmeio/markdown/issues/1281)) ([0e50d1c](https://github.com/readmeio/markdown/commit/0e50d1c03c0e964273b34f18ad8660421bc12495))
+* **extractMagicBlocks:** ensure magic blocks are surrounded by newlines ([#1286](https://github.com/readmeio/markdown/issues/1286)) ([67a6914](https://github.com/readmeio/markdown/commit/67a6914ae3207584cee265c0b850977e9b6b95e9))
+* **mdxish:** fix rendering callout from magic blocks ([#1275](https://github.com/readmeio/markdown/issues/1275)) ([171a5d8](https://github.com/readmeio/markdown/commit/171a5d89cc98ff25461e3f92a3c940895bd05bdc))
+* **mdxish:** jsx braces not evaluating ([#1256](https://github.com/readmeio/markdown/issues/1256)) ([f9fe3b7](https://github.com/readmeio/markdown/commit/f9fe3b7bc7c467b923b6f00e2553f88569a5200a))
+
+## Version 11.10.1
+### 🛠 Fixes & Updates
+
+* cardssssssss ([#1278](https://github.com/readmeio/markdown/issues/1278)) ([2066a8e](https://github.com/readmeio/markdown/commit/2066a8e2652636ee03b5d7449ca0a13441c65910)), closes [#1254](https://github.com/readmeio/markdown/issues/1254)
+
+## Version 11.10.0
+### ✨ New & Improved
+
+* **mdxish:** support custom component tag extraction with mdxish syntax ([#1277](https://github.com/readmeio/markdown/issues/1277)) ([2974ccf](https://github.com/readmeio/markdown/commit/2974ccfb064da520cfad8dc93088a5e2cb9df31b))
+
+## Version 11.9.4
+### 🛠 Fixes & Updates
+
+* **sanitizeComments:** handle magic block on the first line of document ([#1276](https://github.com/readmeio/markdown/issues/1276)) ([0a5ea94](https://github.com/readmeio/markdown/commit/0a5ea94c160524f510e74b01fa0804b6fbd92056))
+
+## Version 11.9.3
+### 🛠 Fixes & Updates
+
+* card styles ([#1271](https://github.com/readmeio/markdown/issues/1271)) ([700f9ef](https://github.com/readmeio/markdown/commit/700f9ef1e716c1497b9f12a384b9cb793334afc6))
+
+## Version 11.9.2
+### 🛠 Fixes & Updates
+
+* add release instructions ([#1261](https://github.com/readmeio/markdown/issues/1261)) ([92dc651](https://github.com/readmeio/markdown/commit/92dc651ca8a6a61c6b73b77197df7bd62cbcaea7))
+* **mdxish:** parse table cells in magic blocks  ([#1255](https://github.com/readmeio/markdown/issues/1255)) ([0963562](https://github.com/readmeio/markdown/commit/0963562edac3676605cc517fc4512190a19cbb0c))
+* unblock releases update docs ([#1268](https://github.com/readmeio/markdown/issues/1268)) ([e7e68fa](https://github.com/readmeio/markdown/commit/e7e68fa9d4830d39c8eee356159416f712c54b5c))
+* update release for rdme v10 ([#1266](https://github.com/readmeio/markdown/issues/1266)) ([5859571](https://github.com/readmeio/markdown/commit/5859571cbbd80c77237f1ba0b97b9bc671a88439)), closes [#migrating-to-rdme9](https://github.com/readmeio/markdown/issues/migrating-to-rdme9)
+
 ## Version 11.9.1
 ### 🛠 Fixes & Updates
 

@@ -61,7 +61,8 @@ const Code = (props: CodeProps) => {
   const copyButtons = useContext(CodeOptsContext) || props.copyButtons;
   const isHydrated = useHydrated();
 
-  const language = isHydrated ? canonicalLanguage(lang) : '';
+  const language = canonicalLanguage(lang);
+  const isMermaid = language === 'mermaid';
 
   const codeRef = createRef<HTMLElement>();
 
@@ -78,7 +79,7 @@ const Code = (props: CodeProps) => {
       ? syntaxHighlighter(code, language, codeOpts, { mdx: true })
       : code;
 
-  if (language === 'mermaid') {
+  if (isHydrated && isMermaid) {
     return code;
   }
 

@@ -1,9 +1,9 @@
-/**
- * Pre-processes JSX-like expressions before markdown parsing.
- * Converts href={'value'} to href="value", evaluates {expressions}, etc.
- */
-
-export type JSXContext = Record<string, unknown>;
+import {
+  type ProtectedCode,
+  protectCodeBlocks,
+  restoreCodeBlocks,
+  restoreInlineCode,
+} from '../../../lib/utils/mdxish/protect-code-blocks';
 
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {
@@ -21,19 +21,28 @@ export function base64Decode(str: string): string {
   return decodeURIComponent(escape(atob(str)));
 }
 
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '&#10;');
+}
+
+// Marker prefix for JSON-serialized complex values (arrays/objects)
+// Using a prefix that won't conflict with regular string values
+export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
+
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
 
-interface ProtectedCode {
-  codeBlocks: string[];
-  inlineCode: string[];
-}
-
-interface ProtectCodeBlocksResult {
-  protectedCode: ProtectedCode;
-  protectedContent: string;
-}
+/**
+ * Pre-processes JSX-like expressions before markdown parsing.
+ * Converts href={'value'} to href="value", evaluates {expressions}, etc.
+ */
+export type JSXContext = Record<string, unknown>;
 
 /**
  * Evaluates a JavaScript expression using context variables.
@@ -48,7 +57,7 @@ interface ProtectCodeBlocksResult {
  * // Returns: 'https://example.com/api'
  * ```
  */
-function evaluateExpression(expression: string, context: JSXContext): unknown {
+export function evaluateExpression(expression: string, context: JSXContext) {
   const contextKeys = Object.keys(context);
   const contextValues = Object.values(context);
   // eslint-disable-next-line no-new-func
@@ -79,60 +88,6 @@ function protectHTMLBlockContent(content: string): string {
 }
 
 /**
- * Replaces code blocks and inline code with placeholders to protect them from JSX processing.
- *
- * @param content
- * @returns Object containing protected content and arrays of original code blocks
- * @example
- * ```typescript
- * const input = 'Text with `inline code` and ```fenced block```';
- * protectCodeBlocks(input)
- * // Returns: {
- * //   protectedCode: {
- * //     codeBlocks: ['```fenced block```'],
- * //     inlineCode: ['`inline code`']
- * //   },
- * //   protectedContent: 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___'
- * // }
- * ```
- */
-function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
-  const codeBlocks: string[] = [];
-  const inlineCode: string[] = [];
-
-  let protectedContent = '';
-  let remaining = content;
-  let codeBlockStart = remaining.indexOf('```');
-
-  while (codeBlockStart !== -1) {
-    protectedContent += remaining.slice(0, codeBlockStart);
-    remaining = remaining.slice(codeBlockStart);
-
-    const codeBlockEnd = remaining.indexOf('```', 3);
-    if (codeBlockEnd === -1) {
-      break;
-    }
-
-    const match = remaining.slice(0, codeBlockEnd + 3);
-    const index = codeBlocks.length;
-    codeBlocks.push(match);
-    protectedContent += `___CODE_BLOCK_${index}___`;
-
-    remaining = remaining.slice(codeBlockEnd + 3);
-    codeBlockStart = remaining.indexOf('```');
-  }
-  protectedContent += remaining;
-
-  protectedContent = protectedContent.replace(/`[^`]+`/g, match => {
-    const index = inlineCode.length;
-    inlineCode.push(match);
-    return `___INLINE_CODE_${index}___`;
-  });
-
-  return { protectedCode: { codeBlocks, inlineCode }, protectedContent };
-}
-
-/**
  * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
  *
  * @param content
@@ -143,7 +98,7 @@ function protectCodeBlocks(content: string): ProtectCodeBlocksResult {
  * // Returns: 'Text  more text'
  * ```
  */
-function removeJSXComments(content: string): string {
+export function removeJSXComments(content: string): string {
   return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
 }
 
@@ -176,6 +131,113 @@ function extractBalancedBraces(content: string, start: number): { content: strin
 }
 
 /**
+ * Escapes problematic braces in content to prevent MDX expression parsing errors.
+ * Handles three cases:
+ * 1. Unbalanced braces (e.g., `{foo` without closing `}`)
+ * 2. Paragraph-spanning expressions (e.g., `{\n\n}` where blank line splits paragraphs)
+ * 3. Skips HTML elements to prevent backslashes appearing in output
+ *
+ */
+function escapeProblematicBraces(content: string): string {
+  // Skip HTML elements — their content should never be escaped because
+  // rehypeRaw parses them into hast elements, making `\` literal text in output
+  const htmlElements: string[] = [];
+  const safe = content.replace(/<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g, match => {
+    const idx = htmlElements.length;
+    htmlElements.push(match);
+    return `___HTML_ELEM_${idx}___`;
+  });
+
+  const toEscape = new Set<number>();
+  // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
+  const chars = Array.from(safe);
+  let strDelim: string | null = null;
+  let strEscaped = false;
+  // Stack of open braces with their state
+  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
+  // Track position of last newline (outside strings) to detect blank lines
+  let lastNewlinePos = -2; // -2 means no recent newline
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const ch = chars[i];
+
+    // Track string delimiters inside expressions to ignore braces within them
+    if (openStack.length > 0) {
+      if (strDelim) {
+        if (strEscaped) strEscaped = false;
+        else if (ch === '\\') strEscaped = true;
+        else if (ch === strDelim) strDelim = null;
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === '`') {
+        strDelim = ch;
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      // Track newlines to detect blank lines (paragraph boundaries)
+      if (ch === '\n') {
+        // Check if this newline creates a blank line (only whitespace since last newline)
+        if (lastNewlinePos >= 0) {
+          const between = chars.slice(lastNewlinePos + 1, i).join('');
+          if (/^[ \t]*$/.test(between)) {
+            // This is a blank line - mark all open expressions as paragraph-spanning
+            openStack.forEach(entry => {
+              entry.hasBlankLine = true;
+            });
+          }
+        }
+        lastNewlinePos = i;
+      }
+    }
+
+    // Skip already-escaped braces (count preceding backslashes)
+    if (ch === '{' || ch === '}') {
+      let bs = 0;
+      for (let j = i - 1; j >= 0 && chars[j] === '\\'; j -= 1) bs += 1;
+      if (bs % 2 === 1) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+    }
+
+    if (ch === '{') {
+      openStack.push({ pos: i, hasBlankLine: false });
+      lastNewlinePos = -2; // Reset newline tracking for new expression
+    } else if (ch === '}') {
+      if (openStack.length > 0) {
+        const entry = openStack.pop()!;
+        // If expression spans paragraph boundary, escape both braces
+        if (entry.hasBlankLine) {
+          toEscape.add(entry.pos);
+          toEscape.add(i);
+        }
+      } else {
+        // Unbalanced closing brace (no matching open)
+        toEscape.add(i);
+      }
+    }
+  }
+
+  // Any remaining open braces are unbalanced
+  openStack.forEach(entry => toEscape.add(entry.pos));
+
+  // If there are no problematic braces, return safe content as-is;
+  // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
+  let result = toEscape.size === 0
+    ? safe
+    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+
+  // Restore HTML elements
+  if (htmlElements.length > 0) {
+    result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
+  }
+
+  return result;
+}
+
+/**
  * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
  * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
  *
@@ -190,7 +252,7 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * // Returns: '<a href="https://example.com">Link</a>'
  * ```
  */
-function evaluateAttributeExpressions(content: string, context: JSXContext): string {
+function evaluateAttributeExpressions(content: string, context: JSXContext, protectedCode?: ProtectedCode) {
   const attrStartRegex = /(\w+)=\{/g;
   let result = '';
   let lastEnd = 0;
@@ -202,7 +264,14 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
 
     const extracted = extractBalancedBraces(content, braceStart);
     if (extracted) {
-      const expression = extracted.content;
+      // The expression might contain template literals in MDX component tag props
+      // E.g. <Component greeting={`Hello World!`} />
+      // that is marked as inline code. So we need to restore the inline codes
+      // in the expression to evaluate it
+      let expression = extracted.content;
+      if (protectedCode) {
+        expression = restoreInlineCode(expression, protectedCode);
+      }
       const fullMatchEnd = extracted.end;
 
       result += content.slice(lastEnd, match.index);
@@ -220,12 +289,18 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
               .join('; ');
             result += `style="${cssString}"`;
           } else {
-            result += `${attributeName}='${JSON.stringify(evalResult)}'`;
+            // These are arrays / objects attribute values
+            // Mark JSON-serialized values with a prefix so they can be parsed back correctly
+            const jsonValue = escapeHtmlAttribute(JSON_VALUE_MARKER + JSON.stringify(evalResult));
+            // Use double quotes so that multi-paragraph values are not split into multiple attributes by the processors
+            result += `${attributeName}="${jsonValue}"`;
           }
         } else if (attributeName === 'className') {
-          result += `class="${evalResult}"`;
+          // Escape special characters so that it doesn't break and split the attribute value to nodes
+          // This will be restored later in the pipeline
+          result += `class="${escapeHtmlAttribute(String(evalResult))}"`;
         } else {
-          result += `${attributeName}="${evalResult}"`;
+          result += `${attributeName}="${escapeHtmlAttribute(String(evalResult))}"`;
         }
       } catch (_error) {
         result += content.slice(match.index, fullMatchEnd);
@@ -238,35 +313,6 @@ function evaluateAttributeExpressions(content: string, context: JSXContext): str
   }
   result += content.slice(lastEnd);
   return result;
-}
-
-/**
- * Restores code blocks and inline code by replacing placeholders with original content.
- *
- * @param content
- * @param protectedCode
- * @returns Content with all code blocks and inline code restored
- * @example
- * ```typescript
- * const content = 'Text with ___INLINE_CODE_0___ and ___CODE_BLOCK_0___';
- * const protectedCode = {
- *   codeBlocks: ['```js\ncode\n```'],
- *   inlineCode: ['`inline`']
- * };
- * restoreCodeBlocks(content, protectedCode)
- * // Returns: 'Text with `inline` and ```js\ncode\n```'
- * ```
- */
-function restoreCodeBlocks(content: string, protectedCode: ProtectedCode): string {
-  let restored = content.replace(/___CODE_BLOCK_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.codeBlocks[parseInt(index, 10)];
-  });
-
-  restored = restored.replace(/___INLINE_CODE_(\d+)___/g, (_match, index: string) => {
-    return protectedCode.inlineCode[parseInt(index, 10)];
-  });
-
-  return restored;
 }
 
 /**
@@ -284,13 +330,14 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
   // Step 1: Protect code blocks and inline code
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
-  // Step 2: Remove JSX comments
-  processed = removeJSXComments(protectedContent);
-
-  // Step 3: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
+  // Step 2: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   // For inline expressions, we use a library to parse the expression & evaluate it later
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(processed, context);
+  processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
+
+  // Step 3: Escape problematic braces to prevent MDX expression parsing errors
+  // This handles both unbalanced braces and paragraph-spanning expressions in one pass
+  processed = escapeProblematicBraces(processed);
 
   // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);

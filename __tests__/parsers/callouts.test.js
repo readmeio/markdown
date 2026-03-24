@@ -43,7 +43,7 @@ describe('Parse RDMD Callouts', () => {
 
       const tree = mdast(text);
       expect(tree.children[0].data.hProperties.icon).toBe('🛑');
-      expect(tree.children[0].children[0].children[0].value).toBe(
+      expect(tree.children[0].children[1].children[0].value).toBe(
         'Compact headings must be followed by two line breaks before the following block.',
       );
     });
@@ -77,9 +77,13 @@ describe('Parse RDMD Callouts', () => {
 > Lorem ipsum dolor  sit amet consectetur adipisicing elit.`;
 
     const tree = mdast(text);
+    // Title
     expect(tree.children[0].children[0].children[0].value).toBe(
-      `Undocumented Behavior
-Lorem ipsum dolor  sit amet consectetur adipisicing elit.`,
+      'Undocumented Behavior',
+    );
+    // Body
+    expect(tree.children[0].children[1].children[0].value).toBe(
+      'Lorem ipsum dolor  sit amet consectetur adipisicing elit.',
     );
   });
 });

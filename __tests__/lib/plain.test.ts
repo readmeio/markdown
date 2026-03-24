@@ -1,4 +1,4 @@
-import { hast, plain } from '../../index';
+import { hast, mdxish, plain } from '../../index';
 
 describe('plain compiler', () => {
   it('returns plain text of markdown components', () => {
@@ -102,5 +102,117 @@ Is it _me_ you're looking for?
     const txt = '{user.name}';
 
     expect(plain(hast(txt), { variables: { name: 'Owlbert' } })).toBe('Owlbert');
+  });
+
+  it('compiles multiple variables to their provided values', () => {
+    const md = 'Hello {user.name} from {user.company}';
+
+    expect(plain(hast(md), { variables: { name: 'Owlbert', company: 'ReadMe' } })).toBe('Hello Owlbert from ReadMe');
+  });
+
+  it('falls back to key name for unresolved variables when others are provided', () => {
+    const md = 'Hello {user.name} from {user.company}';
+
+    expect(plain(hast(md), { variables: { name: 'Owlbert' } })).toBe('Hello Owlbert from company');
+  });
+
+  it('preserves variable syntax via hast with preserveVariableSyntax option', () => {
+    const txt = 'Hello {user.name} and good bye';
+
+    expect(plain(hast(txt), { preserveVariableSyntax: true })).toBe('Hello {user.name} and good bye');
+  });
+
+  it('preserves legacy variable syntax with preserveVariableSyntax option', () => {
+    const txt = 'Hello <Variable name="company">company</Variable> and good bye';
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('Hello {user.company} and good bye');
+  });
+
+  it('preserveVariableSyntax takes precedence over provided variables', () => {
+    const txt = '{user.name}';
+
+    expect(plain(hast(txt), { preserveVariableSyntax: true, variables: { name: 'Owlbert' } })).toBe('{user.name}');
+  });
+
+  it('preserveVariableSyntax takes precedence over provided variables for Variable tags', () => {
+    const txt = '<Variable name="company">company</Variable>';
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true, variables: { company: 'ReadMe' } })).toBe('{user.company}');
+  });
+
+  it('preserves legacy <<variable>> syntax with preserveVariableSyntax via mdxish', () => {
+    const txt = 'Hello <<var-too>> world';
+    const tree = mdxish(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('Hello <<var-too>> world');
+  });
+
+  it('preserves MDX and legacy syntax separately with preserveVariableSyntax via mdxish', () => {
+    const txt = '{user.this_is_a_var} and <<var-too>>';
+    const tree = mdxish(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user.this_is_a_var} and <<var-too>>');
+  });
+
+  it('uses bracket notation for non-identifier keys with preserveVariableSyntax via hast', () => {
+    const txt = '{user["var-here"]}';
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('{user["var-here"]}');
+  });
+
+  it('preserves variables inside structured content with preserveVariableSyntax option', () => {
+    const txt = `
+> 📘 Welcome
+>
+> Hello {user.name}
+    `;
+    const tree = hast(txt);
+
+    expect(plain(tree, { preserveVariableSyntax: true })).toBe('Welcome Hello {user.name}');
+  });
+
+  it('removes MDX comments', () => {
+    const md = `
+## Hello!
+
+{/* comment */}
+
+{
+ /**
+  * multi-line-comment
+  */
+}
+
+{
+  /* multiple comments */
+  this-should-stay
+  /* another comment */
+}
+
+Is it _me_ you're looking for?
+`;
+
+    const hastTree = hast(md);
+    expect(plain(hastTree)).toBe("Hello! this-should-stay Is it me you're looking for?");
+  });
+
+  it('removes HTML comments', () => {
+    const md = `
+## Hello!
+
+<!-- comment -->
+
+<!--
+  multi-line-comment
+-->
+Is it _me_ you're looking for?
+`;
+
+    // NOTE: using mdxish here to allow HTML comment syntax in the markdown.
+    const tree = mdxish(md);
+    expect(plain(tree)).toBe("Hello! Is it me you're looking for?");
   });
 });

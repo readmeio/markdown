@@ -1,3 +1,5 @@
+import type { Processor } from 'unified';
+
 import { NodeTypes } from '../../enums';
 
 import callout from './callout';
@@ -6,9 +8,11 @@ import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
+import listItem from './list-item';
 import plain from './plain';
+import variable from './variable';
 
-function compilers() {
+function compilers(this: Processor, mdxish = false) {
   const data = this.data();
 
   const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
@@ -21,16 +25,22 @@ function compilers() {
     [NodeTypes.glossary]: compatibility,
     [NodeTypes.htmlBlock]: htmlBlock,
     [NodeTypes.reusableContent]: compatibility,
+    ...(mdxish && { [NodeTypes.variable]: variable }),
     embed: compatibility,
     escape: compatibility,
     figure: compatibility,
     html: compatibility,
     i: compatibility,
+    ...(mdxish && { listItem }),
     plain,
     yaml: compatibility,
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
+}
+
+export function mdxishCompilers(this: Processor) {
+  return compilers.call(this, true);
 }
 
 export default compilers;

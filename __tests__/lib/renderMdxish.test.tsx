@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { mdxish } from '../../index';
+import { compile, mdxish, run } from '../../lib';
 import renderMdxish from '../../lib/renderMdxish';
 
 describe('renderMdxish', () => {
@@ -120,4 +120,37 @@ Hello`;
     expect(htmlBlock?.innerHTML).toContain('<p>');
     expect(htmlBlock?.innerHTML).not.toContain('{');
   });
+
+  it('renders a component with an array as a prop', () => {
+    const componentWithArrayCode = `
+export const CompWithArray = ({ array }) => {
+  return (
+    <div className="flex justify-center" data-testid="comp-with-array">
+      <div className="rounded-md p-6 m-4 max-w-lg border">
+        {array.map((item, index) => (
+          <div key={index}>{item}</div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+<CompWithArray array={['a', 'b','c']}/>
+          `;
+    const compiledComponentWithArrayCode = run(compile(componentWithArrayCode));
+    const exampleComponentsWithArray: Record<string, RMDXModule> = {
+      CompWithArray: compiledComponentWithArrayCode,
+    };
+
+    const md = '<CompWithArray array={[1, 2, 3]}/>';
+    const tree = mdxish(md, { components: exampleComponentsWithArray });
+    const mod = renderMdxish(tree, { components: exampleComponentsWithArray });
+    render(<mod.default />);
+
+    const wrapper = screen.getByTestId('comp-with-array');
+    expect(wrapper).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+  })
 });
