@@ -83,19 +83,21 @@ describe('Components', () => {
     const img = container.querySelectorAll('img')[0];
     const box = container.querySelectorAll('.lightbox')[0];
 
+    // After clicking, the open lightbox is portaled to document.body
     fireEvent.click(img);
-    expect(box).toHaveClass('open');
+    expect(box).toHaveClass('closed');
+    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
 
     fireEvent.keyDown(img, { key: 'Enter' });
-    expect(box).toHaveClass('open');
+    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
 
     fireEvent.keyDown(img, { key: 'Escape' });
-    expect(box).not.toHaveClass('open');
+    expect(document.body.querySelector('.lightbox.open')).toBeFalsy();
 
     fireEvent.keyDown(img, { key: ' ' });
-    expect(box).toHaveClass('open');
+    expect(document.body.querySelector('.lightbox.open')).toBeTruthy();
 
     fireEvent.keyDown(img, { key: '.', metaKey: true });
-    expect(box).not.toHaveClass('open');
+    expect(document.body.querySelector('.lightbox.open')).toBeFalsy();
   });
 });

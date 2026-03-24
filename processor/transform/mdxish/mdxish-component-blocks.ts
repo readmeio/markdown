@@ -12,7 +12,7 @@ import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 
 import { INLINE_COMPONENT_TAGS } from './constants';
 
-const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>([\s\S]*)?$/;
+const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
 /**

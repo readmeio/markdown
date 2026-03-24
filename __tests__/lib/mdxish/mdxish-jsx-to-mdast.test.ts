@@ -34,10 +34,32 @@ describe('mdxish-jsx-to-mdast transformer', () => {
           src: 'test.png',
           alt: 'Test',
           align: 'center',
-          border: 'true',
+          border: true,
+          sizing: '300',
           width: '300',
           height: '200',
         });
+        expect(imageNode.align).toBe('center');
+        expect(imageNode.sizing).toBe('300');
+      });
+
+      it('should validate align to a known ImageAlign value', () => {
+        const md = '<Image src="test.png" alt="Test" align="invalid" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.align).toBeUndefined();
+        expect(imageNode.data?.hProperties?.align).toBeUndefined();
+      });
+
+      it('should map width to sizing on the node', () => {
+        const md = '<Image src="test.png" alt="Test" width="50%" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.sizing).toBe('50%');
+        expect(imageNode.width).toBe('50%');
+        expect(imageNode.data?.hProperties?.sizing).toBe('50%');
       });
 
       it('should handle boolean border attribute', () => {
@@ -45,7 +67,26 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
-        expect(imageNode.data?.hProperties?.border).toBe('true');
+        expect(imageNode.data?.hProperties?.border).toBe(true);
+        expect(imageNode.border).toBe(true);
+      });
+
+      it('should normalize border="false" to boolean false', () => {
+        const md = '<Image src="test.png" alt="Test" border="false" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.border).toBe(false);
+        expect(imageNode.data?.hProperties?.border).toBe(false);
+      });
+
+      it('should leave border undefined when not specified', () => {
+        const md = '<Image src="test.png" alt="Test" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.border).toBeUndefined();
+        expect(imageNode.data?.hProperties?.border).toBeUndefined();
       });
 
       it('should parse caption with markdown and HTML entities into children', () => {
@@ -302,6 +343,102 @@ This is a warning message.
       expect(imageNode.align).toBe('center');
       expect(imageNode.data?.hName).toBe('img');
       expect(imageNode.data?.hProperties?.src).toBe('https://example.com/photo.jpg');
+    });
+
+    it('should validate magic block image align to a known ImageAlign value', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "align": "center"
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.align).toBe('center');
+      expect(imageNode.data?.hProperties?.align).toBe('center');
+    });
+
+    it('should map magic block image width to sizing', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "sizing": "80"
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.sizing).toBe('80%');
+      expect(imageNode.width).toBe('80%');
+      expect(imageNode.data?.hProperties?.sizing).toBe('80%');
+      expect(imageNode.data?.hProperties?.width).toBe('80%');
+    });
+
+    it('should normalize magic block image border to boolean', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "border": true
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.border).toBe(true);
+      expect(imageNode.data?.hProperties?.border).toBe(true);
+    });
+
+    it('should flatten figure (magic block image with caption) into image-block with caption', () => {
+      const md = `[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://example.com/photo.jpg",
+        "",
+        ""
+      ],
+      "caption": "A caption",
+      "border": true
+    }
+  ]
+}
+[/block]`;
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.border).toBe(true);
+      expect(imageNode.data?.hProperties?.border).toBe(true);
+      expect(imageNode.caption).toBe('A caption');
+      expect(imageNode.data?.hProperties?.caption).toBe('A caption');
     });
 
     it('should handle mix of magic blocks and JSX components', () => {
