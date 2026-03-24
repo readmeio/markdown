@@ -84,6 +84,7 @@ const Doc = () => {
   const [strippedMarkdown, setStrippedMarkdown] = useState<string | null>(null);
   const [stripError, setStripError] = useState<string | null>(null);
   const [view, setView] = useState<'markdown' | 'rendered'>('rendered');
+  const showToc = fixture === 'tableOfContentsTests';
 
   useEffect(() => {
     const sanitize = async (mode: PipelineKey) => {
@@ -179,6 +180,8 @@ const Doc = () => {
   const renderPanel = (pipeline: PipelineKey) => {
     const error = pipeline === 'rmdx' ? rmdxError : pipeline === 'mdxish' ? mdxishError : legacyError;
 
+    const Toc = pipeline === 'rmdx' ? rmdxResult.Toc : pipeline === 'mdxish' ? mdxishResult.Toc : null;
+
     const content = (() => {
       switch (pipeline) {
         case 'rmdx': {
@@ -205,7 +208,10 @@ const Doc = () => {
         )}
         <RenderError>
           <TailwindStyle darkModeDataAttribute={darkMode}>
-            <div className="markdown-body">{content}</div>
+            <div style={{ display: 'flex', gap: '2rem' }}>
+              <div className="markdown-body">{content}</div>
+              {showToc && Toc && <div className="content-toc"><Toc /></div>}
+            </div>
           </TailwindStyle>
         </RenderError>
       </>

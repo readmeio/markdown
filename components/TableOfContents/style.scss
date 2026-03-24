@@ -1,4 +1,49 @@
-.toc-list {
+@layer markdown {
+  .rm-ToC {
+    --ToC-border-active-color: var(--color-tab-active, rgba(var(--color-bg-page-inverse-rgb), 1));
+    --ToC-border-active-height: 0;
+    --ToC-border-active-top: 0;
+    --ToC-border-color: rgba(var(--color-bg-page-inverse-rgb), 0.075);
+    --ToC-color: var(--color-text-minimum);
+    --ToC-color-active: var(--color-text-default);
+    --ToC-color-hover: var(--color-text-minimum-hover);
+
+    color: var(--ToC-color);
+    position: relative;
+
+    &::before,
+    &::after {
+      border-radius: 0.154em; // 2px
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      transition:
+        height var(--transition-slow),
+        top var(--transition-slow);
+      transition-timing-function: var(--transition-timing);
+      width: 0.154em; // 2px
+    }
+
+    &::before {
+      background-color: var(--ToC-border-color);
+      height: 100%;
+    }
+
+    &::after {
+      background-color: var(--ToC-border-active-color);
+      height: var(--ToC-border-active-height);
+      top: var(--ToC-border-active-top);
+    }
+
+    .active {
+      color: var(--ToC-color-active);
+    }
+  }
+}
+
+.tol-list {
   .glossary-tooltip {
     pointer-events: none;
   }
