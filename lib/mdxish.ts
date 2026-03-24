@@ -35,7 +35,6 @@ import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast'
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
-import { normalizeComponentAttributes } from '../processor/transform/mdxish/normalize-component-attributes';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -57,10 +56,12 @@ import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { jsxComponentBlockFromMarkdown } from './mdast-util/pascalcase-html-block';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
+import { jsxComponentBlock } from './micromark/pascalcase-html-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -108,7 +109,6 @@ function preprocessContent(
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
-  result = normalizeComponentAttributes(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -153,13 +153,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+        ? [jsxComponentBlock(), jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
+        : [jsxComponentBlock(), jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
       safeMode
         ? [
+            jsxComponentBlockFromMarkdown(),
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
             legacyVariableFromMarkdown(),
@@ -167,6 +168,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
             looseHtmlEntityFromMarkdown(),
           ]
         : [
+            jsxComponentBlockFromMarkdown(),
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
             mdxExpressionFromMarkdown(),
