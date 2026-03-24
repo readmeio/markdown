@@ -12,6 +12,7 @@ declare module 'micromark-util-types' {
 }
 
 // Matches the name pattern from the original regex: \+1 or [-\w]+
+// see https://github.com/readmeio/markdown/blob/489a71e19b34f640595ce81e988dad631045186f/processor/transform/gemoji%2B.ts#L9
 function isNameChar(code: Code): boolean {
   if (code === null) return false;
 
@@ -32,6 +33,7 @@ const gemojiConstruct: Construct = {
 function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   let hasName = false;
 
+  // Entry point — expect opening `:`
   const start = (code: Code): State | undefined => {
     if (code !== codes.colon) return nok(code);
 
@@ -43,7 +45,7 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
     return nameStart;
   };
 
-  // First character of the name — handle +1 special case
+  // First char after `:`, branch on `+` for :+1:, otherwise start normal name
   const nameStart = (code: Code): State | undefined => {
     if (code === codes.plusSign) {
       effects.consume(code); // +
@@ -56,10 +58,12 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
       return name;
     }
 
+    // Not a valid shortcode start (e.g. `::`, `: `, `:<`)
     return nok(code);
   };
 
-  // After +, expect 1
+  // After `+`, only `1` is valid (for :+1:), anything else rejects
+  // this is a special case for :+1: 👍 since + isnt a normal name character
   const plusOne = (code: Code): State | undefined => {
     if (code === codes.digit1) {
       hasName = true;
@@ -70,6 +74,7 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
     return nok(code);
   };
 
+  // Consume name characters until we hit closing `:` or an invalid char
   const name = (code: Code): State | undefined => {
     if (code === codes.colon) {
       if (!hasName) return nok(code);
@@ -81,10 +86,11 @@ function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State
       return name;
     }
 
+    // Invalid character in name (space, newline, special char) — reject
     return nok(code);
   };
 
-  // Expect closing colon
+  // Expect closing `:`
   const nameEnd = (code: Code): State | undefined => {
     if (code !== codes.colon) return nok(code);
 
