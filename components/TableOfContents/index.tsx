@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
  * Build link map and decode the hash to get the id and weird chars
@@ -21,18 +21,27 @@ function buildLinkMap(nav: HTMLElement) {
  * Watches headings in the viewport and toggles `active` on the
  * corresponding TOC links so the reader always knows where they are.
  */
-function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>, deps: unknown) {
+function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
+  const [linkCount, setLinkCount] = useState(0);
+
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav || typeof IntersectionObserver === 'undefined') return;
+    if (!nav) return;
+    const count = nav.querySelectorAll('a[href^="#"]').length;
+    setLinkCount(count);
+  });
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || typeof IntersectionObserver === 'undefined' || linkCount === 0) return undefined;
 
     const linkMap = buildLinkMap(nav);
-    if (linkMap.size === 0) return;
+    if (linkMap.size === 0) return undefined;
 
     const headings = [...linkMap.keys()]
       .map(id => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
-    if (headings.length === 0) return;
+    if (headings.length === 0) return undefined;
 
     let activeId: string | null = null;
     const visible = new Set<string>();
@@ -72,14 +81,13 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>, deps: u
     );
 
     headings.forEach(el => { observer.observe(el); });
-    // eslint-disable-next-line consistent-return
     return () => { observer.disconnect(); };
-  }, [deps]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navRef, linkCount]);
 }
 
 function TableOfContents({ children }: React.PropsWithChildren) {
   const navRef = useRef<HTMLElement>(null);
-  useScrollHighlight(navRef, children);
+  useScrollHighlight(navRef);
 
   return (
     <nav ref={navRef} aria-label="Table of contents" className="rm-ToC" role="navigation">
