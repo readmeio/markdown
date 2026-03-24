@@ -1,4 +1,23 @@
+import type { Root } from 'mdast';
+
 import { mix } from '../../lib';
+import { mdxishAstProcessor } from '../../lib/mdxish';
+
+function getAstNodes(md: string, opts = {}) {
+  const { processor, parserReadyContent } = mdxishAstProcessor(md, opts);
+  return processor.runSync(processor.parse(parserReadyContent)) as Root;
+}
+
+function findNodes(node: Record<string, unknown>, type: string): Record<string, unknown>[] {
+  const results: Record<string, unknown>[] = [];
+  if (node.type === type) results.push(node);
+  if (Array.isArray(node.children)) {
+    (node.children as Record<string, unknown>[]).forEach(child => {
+      results.push(...findNodes(child, type));
+    });
+  }
+  return results;
+}
 
 describe('evaluateExpressions', () => {
   it('should evaluate numeric operations', () => {
@@ -82,5 +101,44 @@ describe('evaluateExpressions', () => {
     expect(html).toContain(content);
     expect(html).not.toContain('WORLD');
     expect(html).not.toContain('3');
+  });
+
+  describe('JSX comments', () => {
+    it('should preserve block comment expressions as mdxTextExpression nodes in the AST', () => {
+      const ast = getAstNodes('Hello {/* this is a comment */} world');
+      const expressionNodes = findNodes(ast as unknown as Record<string, unknown>, 'mdxTextExpression');
+      expect(expressionNodes).toHaveLength(1);
+      expect(expressionNodes[0].value).toBe('/* this is a comment */');
+    });
+
+    it('should preserve multiline block comment expressions', () => {
+      const ast = getAstNodes('Text {/* line one\nline two */} more');
+      const expressionNodes = findNodes(ast as unknown as Record<string, unknown>, 'mdxTextExpression');
+      expect(expressionNodes).toHaveLength(1);
+      expect(expressionNodes[0].value).toContain('line one');
+    });
+
+    it('should preserve empty block comments', () => {
+      const ast = getAstNodes('Before {/* */} after');
+      const expressionNodes = findNodes(ast as unknown as Record<string, unknown>, 'mdxTextExpression');
+      expect(expressionNodes).toHaveLength(1);
+      expect(expressionNodes[0].value).toBe('/* */');
+    });
+
+    it('should still evaluate non-comment expressions', () => {
+      const ast = getAstNodes('Result: {1 + 1}');
+      const expressionNodes = findNodes(ast as unknown as Record<string, unknown>, 'mdxTextExpression');
+      expect(expressionNodes).toHaveLength(0);
+      const textNodes = findNodes(ast as unknown as Record<string, unknown>, 'text');
+      const resultText = textNodes.find(n => String(n.value).includes('2'));
+      expect(resultText).toBeDefined();
+    });
+
+    it('should preserve comments while evaluating other expressions in the same content', () => {
+      const ast = getAstNodes('Value: {1 + 1} {/* comment */}');
+      const expressionNodes = findNodes(ast as unknown as Record<string, unknown>, 'mdxTextExpression');
+      expect(expressionNodes).toHaveLength(1);
+      expect(expressionNodes[0].value).toBe('/* comment */');
+    });
   });
 });

@@ -23,6 +23,8 @@ const evaluateExpressions: Plugin<[{ context?: JSXContext }], Root> =
       // Skip if expression is empty (shouldn't happen, but defensive)
       if (!expression) return;
 
+      if (/^\/\*[\s\S]*\*\/$/.test(expression)) return;
+
       try {
         const result = evaluateExpression(expression, context);
 
