@@ -102,7 +102,7 @@ export function createRehypeReactProcessor(components: Record<string, React.Comp
 }
 
 /** Create a TOC React component from headings */
-export function createTocComponent(tocHast: TocList): React.FC<{ heading?: string }> {
+export function createTocComponent(tocHast: TocList): React.FC {
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   const tocProcessor = unified().use(rehypeReact, {
     createElement: React.createElement,

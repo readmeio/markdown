@@ -368,19 +368,6 @@ body {
       padding-left: 0;
       margin: 0;
     }
-    .toc-list {
-      > li:not(.toc-children) :first-child {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        pointer-events: none;
-        > i {
-          &:first-child {
-            text-align: center;
-          }
-        }
-      }
-    }
     li {
       > span {
         padding: 4px 16px;

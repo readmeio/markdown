@@ -29,7 +29,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     if (!nav) return;
     const count = nav.querySelectorAll('a[href^="#"]').length;
     setLinkCount(count);
-  });
+  }, [navRef]);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -90,7 +90,7 @@ function TableOfContents({ children }: React.PropsWithChildren) {
   useScrollHighlight(navRef);
 
   return (
-    <nav ref={navRef} aria-label="Table of contents" className="rm-ToC" role="navigation">
+    <nav ref={navRef} aria-label="Table of contents" className="rm-ToC">
       <ul className="toc-list">
         <li className="toc-children">{children}</li>
       </ul>
