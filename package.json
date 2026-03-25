@@ -10,7 +10,8 @@
     "styles",
     "components",
     "dist",
-    "types.d.ts"
+    "types.d.ts",
+    "enums.ts"
   ],
   "scripts": {
     "build": "webpack --mode production && npm run build-types",
