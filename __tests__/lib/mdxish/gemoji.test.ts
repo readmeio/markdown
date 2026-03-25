@@ -170,6 +170,38 @@ describe('gemoji transformer', () => {
     });
   });
 
+  describe('JSX tables', () => {
+    it('should render emojis in JSX table cells, including escaped and consecutive', () => {
+      const md = `<Table align={[null,null,null]}>
+  <thead>
+    <tr>
+      <th>A</th>
+      <th>B</th>
+      <th>C</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        Hello\\:grin:
+      </td>
+      <td>
+        World:grin:
+      </td>
+      <td>
+        :grin::grin:
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const result = mix(md);
+
+      expect(result).toContain('Hello:grin:');
+      expect(result).toContain('World😁');
+      expect(result).toContain('😁😁');
+    });
+  });
+
   describe('GFM tables', () => {
     it('should render consecutive emojis in table header cells', () => {
       expect(mix('| Header :grin::grin: |\n| --- |\n| cell |')).toMatchInlineSnapshot(`
