@@ -9,7 +9,8 @@
   "files": [
     "styles",
     "components",
-    "dist"
+    "dist",
+    "types.d.ts"
   ],
   "scripts": {
     "build": "webpack --mode production && npm run build-types",
