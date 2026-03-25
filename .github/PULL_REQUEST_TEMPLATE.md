@@ -1,16 +1,18 @@
-[![PR App][icn]][demo] | Fix RM-XYZ
-:-------------------:|:----------:
+| 🎫 Resolve ISSUE_ID |
+| :-----------------: |
 
-## 🧰 Changes
+## 🎯 What does this PR do?
 
-Describe your changes in detail.
+<!-- What is the reason you did this PR? What does it accomplish? -->
 
-## 🧬 QA & Testing
+-
 
-- [Broken on production][prod].
-- [Working in this PR app][demo].
+## 🧪 QA tips
 
+<!-- Unique code decisions, code walkthroughs, how to test them -->
 
-[demo]: https://markdown-pr-PR_NUMBER.herokuapp.com
-[prod]: https://SUBDOMAIN.readme.io
-[icn]: https://user-images.githubusercontent.com/886627/160426047-1bee9488-305a-4145-bb2b-09d8b757d38a.svg
+- [ ]
+
+## 📸 Screenshot or Loom
+
+<!-- all PRs should have a Loom or screenshot! -->

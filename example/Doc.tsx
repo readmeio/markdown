@@ -71,6 +71,8 @@ const Doc = () => {
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
   const darkModeDataAttribute = searchParams.has('darkModeDataAttribute');
+  const showAst = searchParams.has('showAst');
+  const newEditorTypes = searchParams.has('newEditorTypes');
 
   const [name, doc] =
     fixture === 'edited' ? [fixture, searchParams.get('edit') || ''] : [docs[fixture].name, docs[fixture].doc];
@@ -81,10 +83,19 @@ const Doc = () => {
   const [mdxishError, setMdxishError] = useState<string | null>(null);
   const [legacyContent, setLegacyContent] = useState<React.ReactNode>(null);
   const [legacyError, setLegacyError] = useState<string | null>(null);
+  const [rmdxMdast, setRmdxMdast] = useState<object | null>(null);
+  const [rmdxHast, setRmdxHast] = useState<object | null>(null);
+  const [mdxishMdast, setMdxishMdast] = useState<object | null>(null);
+  const [mdxishHast, setMdxishHast] = useState<object | null>(null);
   const [strippedMarkdown, setStrippedMarkdown] = useState<string | null>(null);
   const [stripError, setStripError] = useState<string | null>(null);
-  const [view, setView] = useState<'markdown' | 'rendered'>('rendered');
+  const [view, setView] = useState<'hast' | 'markdown' | 'mdast' | 'rendered'>('rendered');
   const showToc = fixture === 'tableOfContentsTests';
+
+  useEffect(() => {
+    if ((view === 'mdast' || view === 'hast') && !showAst) setView('rendered');
+    if (view === 'markdown' && !stripComments) setView('rendered');
+  }, [showAst, stripComments, view]);
 
   useEffect(() => {
     const sanitize = async (mode: PipelineKey) => {
@@ -128,6 +139,18 @@ const Doc = () => {
         });
         setRmdxError(null);
         setRmdxResult(content);
+        if (showAst) {
+          try {
+            setRmdxMdast(mdx.mdast(sanitized, { ...opts, components: componentsByExport }));
+          } catch {
+            setRmdxMdast(null);
+          }
+          try {
+            setRmdxHast(mdx.hast(sanitized, { ...opts, components: componentsByExport }));
+          } catch {
+            setRmdxHast(null);
+          }
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
@@ -139,10 +162,19 @@ const Doc = () => {
       try {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized, { variables });
+        const tree = mdx.mdxish(sanitized, { variables, newEditorTypes });
         const vdom = mdx.renderMdxish(tree, { terms, variables });
         setMdxishError(null);
         setMdxishResult(vdom);
+        if (showAst) {
+          setMdxishHast(tree);
+          try {
+            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { variables, newEditorTypes });
+            setMdxishMdast(processor.runSync(processor.parse(parserReadyContent)));
+          } catch {
+            setMdxishMdast(null);
+          }
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
@@ -172,7 +204,7 @@ const Doc = () => {
     if (showRmdx || (!legacy && !mdxish)) renderRMDX();
     if (mdxish) renderXish();
     if (legacy) renderRDMD();
-  }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments]);
+  }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments, showAst, newEditorTypes]);
 
 
   const darkMode = darkModeDataAttribute ? 'data-theme' : null;
@@ -228,7 +260,7 @@ const Doc = () => {
     <div className="rdmd-demo--display">
       <section id="hub-content">
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
-        {strippedMarkdown !== null && (
+        {(strippedMarkdown !== null || showAst) && (
           <div className="rdmd-demo--view-toggle">
             <button
               className={view === 'rendered' ? 'active' : ''}
@@ -237,13 +269,33 @@ const Doc = () => {
             >
               Rendered
             </button>
-            <button
-              className={view === 'markdown' ? 'active' : ''}
-              onClick={() => setView('markdown')}
-              type="button"
-            >
-              Markdown
-            </button>
+            {strippedMarkdown !== null && (
+              <button
+                className={view === 'markdown' ? 'active' : ''}
+                onClick={() => setView('markdown')}
+                type="button"
+              >
+                Markdown
+              </button>
+            )}
+            {showAst && (
+              <button
+                className={view === 'mdast' ? 'active' : ''}
+                onClick={() => setView('mdast')}
+                type="button"
+              >
+                MDAST
+              </button>
+            )}
+            {showAst && (
+              <button
+                className={view === 'hast' ? 'active' : ''}
+                onClick={() => setView('hast')}
+                type="button"
+              >
+                HAST
+              </button>
+            )}
           </div>
         )}
         {stripError && (
@@ -253,6 +305,25 @@ const Doc = () => {
         )}
         {view === 'markdown' && strippedMarkdown !== null ? (
           <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
+        ) : (view === 'mdast' || view === 'hast') && showAst ? (
+          <div className="rdmd-demo--panels">
+            {activePipelines.map(p => {
+              const ast =
+                view === 'mdast'
+                  ? p === 'rmdx' ? rmdxMdast : p === 'mdxish' ? mdxishMdast : null
+                  : p === 'rmdx' ? rmdxHast : p === 'mdxish' ? mdxishHast : null;
+              return (
+                <div key={p} className="rdmd-demo--panel">
+                  <div className="rdmd-demo--panel-label">{pipelineLabels[p]} {view.toUpperCase()}</div>
+                  {ast ? (
+                    <pre className="rdmd-demo--ast-output">{JSON.stringify(ast, null, 2)}</pre>
+                  ) : (
+                    <div className="rdmd-demo--empty">No {view.toUpperCase()} available for this pipeline</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <div className="rdmd-demo--panels">
             {activePipelines.map(p => (
