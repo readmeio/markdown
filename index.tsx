@@ -37,3 +37,4 @@ export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
 export { tailwindCompiler } from './utils/tailwind-compiler';
 export { regex as gemojiRegex } from './processor/transform/gemoji+';
+export { NodeTypes } from './enums';
