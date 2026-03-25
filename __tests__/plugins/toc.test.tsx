@@ -165,7 +165,7 @@ export const toc = [
 
     const html = renderToString(<Toc />);
     expect(html).toMatchInlineSnapshot(`
-      "<nav aria-label="Table of contents" class="rm-ToC" role="navigation"><ul class="toc-list"><li class="toc-children"><ul>
+      "<nav aria-label="Table of contents" class="rm-ToC"><ul class="toc-list"><li class="toc-children"><ul>
       <li><a href="#title">Title</a></li>
       <li>
       <ul>
@@ -201,7 +201,7 @@ export const toc = [
 
     const html = renderToString(<Toc />);
     expect(html).toMatchInlineSnapshot(`
-      "<nav aria-label="Table of contents" class="rm-ToC" role="navigation"><ul class="toc-list"><li class="toc-children"><ul>
+      "<nav aria-label="Table of contents" class="rm-ToC"><ul class="toc-list"><li class="toc-children"><ul>
       <li><a href="#title">Title</a></li>
       <li>
       <ul>
