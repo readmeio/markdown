@@ -11,6 +11,7 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { getAttrs, isMDXElement } from '../../utils';
 import calloutTransformer from '../callouts';
+import codeTabsTransformer from '../code-tabs';
 import { extractText } from '../extract-text';
 import gemojiTransformer from '../gemoji+';
 
@@ -32,7 +33,7 @@ const tableNodeProcessor = unified()
   .use(remarkParse)
   .use(remarkMdx)
   .use(normalizeEmphasisAST)
-  .use([calloutTransformer, gemojiTransformer])
+  .use([[calloutTransformer, { isMdxish: true }], gemojiTransformer, codeTabsTransformer])
   .use(remarkGfm);
 
 /**

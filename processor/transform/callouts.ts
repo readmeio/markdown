@@ -2,7 +2,7 @@ import type { Blockquote, Heading, Node, Paragraph, Parent, Root, Text } from 'm
 import type { Callout } from 'types';
 
 import emojiRegex from 'emoji-regex';
-import { gfmStrikethroughToMarkdown } from 'mdast-util-gfm-strikethrough';
+import { gfmToMarkdown } from 'mdast-util-gfm';
 import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import remarkGfm from 'remark-gfm';
@@ -21,7 +21,7 @@ const titleParser = unified().use(remarkParse).use(remarkGfm);
 // The title paragraph may contain custom AST nodes that `toMarkdown` doesn't
 // natively understand
 const toMarkdownExtensions = [
-  gfmStrikethroughToMarkdown(),
+  gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable node handler
@@ -123,7 +123,12 @@ const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   }
 };
 
-const processBlockquote = (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
+const processBlockquote = (
+  node: Blockquote,
+  index: number | undefined,
+  parent: Parent | undefined,
+  isMdxish = false,
+) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
     // Preserve blockquotes with actual content (e.g., headings, lists, etc.)
@@ -178,10 +183,17 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
         node.children[0] = heading;
         node.children[0].position.start.offset += match.length;
         node.children[0].position.start.column += match.length;
-      } else {
-        const headingText = toMarkdown({ type: 'root', children: [firstParagraph] }, {
-          extensions: toMarkdownExtensions,
-        })
+      } else if (isMdxish) {
+        // Block-level title re-parsing is only needed for MDXish where HTML stays
+        // as raw nodes. In MDX, remarkMdx has already converted HTML to JSX AST
+        // nodes which toMarkdown can't serialize — and MDX doesn't need this
+        // block-level title handling anyway.
+        const headingText = toMarkdown(
+          { type: 'root', children: [firstParagraph] },
+          {
+            extensions: toMarkdownExtensions,
+          },
+        )
           .trim()
           .replace(/^\\(?=[>#+\-*])/, '');
         const parsedTitle = titleParser.parse(headingText);
@@ -203,6 +215,10 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
           node.children[0].position.start.offset += match.length;
           node.children[0].position.start.column += match.length;
         }
+      } else {
+        node.children[0] = wrapHeading(node);
+        node.children[0].position.start.offset += match.length;
+        node.children[0].position.start.column += match.length;
       }
     }
 
@@ -237,10 +253,10 @@ const processBlockquote = (node: Blockquote, index: number | undefined, parent: 
   }
 };
 
-const calloutTransformer = () => {
+const calloutTransformer = ({ isMdxish = false } = {}) => {
   const processNode = (root: Node) => {
     visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
-      processBlockquote(node, index, parent);
+      processBlockquote(node, index, parent, isMdxish);
       if ((node as unknown as { type: string }).type === NodeTypes.callout) {
         // SKIP prevents re-processing synthetic blockquotes in parsed title content
         // (e.g., blockquotes from "> Quote" titles). Recursively process body children

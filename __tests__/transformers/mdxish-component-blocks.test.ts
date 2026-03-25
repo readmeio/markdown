@@ -240,6 +240,31 @@ Alert content here
         });
       });
 
+      it('should strip trailing newline from the last text node before the closing tag', () => {
+        const markdown = `<Callout icon="📘" theme="info">
+Hi
+
+Hello
+</Callout>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Callout',
+        });
+
+        // The last paragraph inside the Callout should contain "Hello" without a trailing newline
+        const calloutChildren = mdxNodes[0].children;
+        const lastParagraph = calloutChildren[calloutChildren.length - 1] as Parent;
+        expect(lastParagraph.type).toBe('paragraph');
+
+        const textNodes = lastParagraph.children.filter((c: { type: string }) => c.type === 'text');
+        const lastText = textNodes[textNodes.length - 1] as { value: string };
+        expect(lastText.value).toBe('Hello');
+      });
+
       it('should identify nested component that contains normal sibling content', () => {
         const markdown = `<MyComponent>
         <NestedComponent />
@@ -334,6 +359,156 @@ hello
         const names = mdxNodes.map(n => (n as { name?: string }).name);
         expect(names).toContain('First');
         expect(names).toContain('Second');
+      });
+    });
+  });
+
+  describe('attributes containing > character', () => {
+    it('should parse a self-closing tag whose attribute value contains >', () => {
+      const markdown = '<Image src="test.png" caption="Settings > Health Check" />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Image',
+        attributes: [
+          { type: 'mdxJsxAttribute', name: 'src', value: 'test.png' },
+          { type: 'mdxJsxAttribute', name: 'caption', value: 'Settings > Health Check' },
+        ],
+        children: [],
+      });
+    });
+
+    it('should parse a block component whose attribute value contains >', () => {
+      const markdown = `<Callout title="A > B">
+Some content
+</Callout>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'title', value: 'A > B' }],
+      });
+    });
+
+    it('should parse a self-contained component whose attribute value contains >', () => {
+      const markdown = "<MyComponent label='foo > bar'>content</MyComponent>";
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'MyComponent',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'label', value: 'foo > bar' }],
+      });
+    });
+
+    it('should handle multiple attributes where one contains >', () => {
+      const markdown = '<Widget theme="dark" path="A > B > C" size="large" />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Widget',
+        attributes: [
+          { type: 'mdxJsxAttribute', name: 'theme', value: 'dark' },
+          { type: 'mdxJsxAttribute', name: 'path', value: 'A > B > C' },
+          { type: 'mdxJsxAttribute', name: 'size', value: 'large' },
+        ],
+        children: [],
+      });
+    });
+
+    it('should handle consecutive >> in attribute value', () => {
+      const markdown = '<Image caption="A >> B >>> C" />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Image',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: 'A >> B >>> C' }],
+      });
+    });
+
+    it('should handle > as the entire attribute value', () => {
+      const markdown = '<Image caption=">" />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Image',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: '>' }],
+      });
+    });
+
+    it('should handle > in both single and double-quoted attributes on the same tag', () => {
+      const markdown = '<Widget title="A > B" subtitle=\'C > D\' />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Widget',
+        attributes: [
+          { type: 'mdxJsxAttribute', name: 'title', value: 'A > B' },
+          { type: 'mdxJsxAttribute', name: 'subtitle', value: 'C > D' },
+        ],
+      });
+    });
+
+    it('should handle < alongside > inside a quoted attribute', () => {
+      const markdown = '<Image caption="a < b > c" />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Image',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: 'a < b > c' }],
+      });
+    });
+
+    it('should handle > with a boolean attribute after it', () => {
+      const markdown = '<Image caption="A > B" border />';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Image',
+        attributes: [
+          { type: 'mdxJsxAttribute', name: 'caption', value: 'A > B' },
+          { type: 'mdxJsxAttribute', name: 'border', value: null },
+        ],
+      });
+    });
+
+    it('should handle nested component with > in outer attribute', () => {
+      const markdown = `<Outer label="X > Y">
+  <Inner>content</Inner>
+</Outer>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const outer = mdxNodes.find(n => (n as { name?: string }).name === 'Outer');
+      expect(outer).toBeDefined();
+      expect(outer).toMatchObject({
+        attributes: [{ type: 'mdxJsxAttribute', name: 'label', value: 'X > Y' }],
       });
     });
   });

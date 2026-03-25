@@ -380,7 +380,7 @@ function transformMagicBlock(
         data: {
           hProperties: {
             ...(imgData.align && { align: imgData.align }),
-            ...(imgData.border && { border: imgData.border.toString() }),
+            ...(imgData.border !== undefined && { border: String(imgData.border) !== 'false' }),
             ...(imgData.sizing && { width: imgWidthBySize[imgData.sizing] }),
           },
         },

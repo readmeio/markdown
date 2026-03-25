@@ -2,6 +2,7 @@ import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
+import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
@@ -83,7 +84,12 @@ export interface MdxishOpts {
   variables?: Variables;
 }
 
-const defaultTransformers = [calloutTransformer, codeTabsTransformer, gemojiTransformer, embedTransformer];
+const defaultTransformers: PluggableList = [
+  [calloutTransformer, { isMdxish: true }],
+  codeTabsTransformer,
+  gemojiTransformer,
+  embedTransformer,
+];
 
 /**
  * Preprocessing pipeline: applies string-level transformations to work around
@@ -154,8 +160,21 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'fromMarkdownExtensions',
       safeMode
-        ? [jsxTableFromMarkdown(), magicBlockFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()]
-        : [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxExpressionFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()],
+        ? [
+            jsxTableFromMarkdown(),
+            magicBlockFromMarkdown(),
+            legacyVariableFromMarkdown(),
+            emptyTaskListItemFromMarkdown(),
+            looseHtmlEntityFromMarkdown(),
+          ]
+        : [
+            jsxTableFromMarkdown(),
+            magicBlockFromMarkdown(),
+            mdxExpressionFromMarkdown(),
+            legacyVariableFromMarkdown(),
+            emptyTaskListItemFromMarkdown(),
+            looseHtmlEntityFromMarkdown(),
+          ],
     )
     .use(remarkParse)
     .use(remarkFrontmatter)
@@ -169,7 +188,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
-    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);

@@ -1,6 +1,33 @@
 Changelog
 ===
 
+## Version 13.7.0
+### ✨ New & Improved
+
+* export MDAST node interfaces ([#1391](https://github.com/readmeio/markdown/issues/1391)) ([489a71e](https://github.com/readmeio/markdown/commit/489a71e19b34f640595ce81e988dad631045186f))
+
+### 🛠 Fixes & Updates
+
+* **dev:** allow debugging mdast and hast in demo app ([#1377](https://github.com/readmeio/markdown/issues/1377)) ([bb634a1](https://github.com/readmeio/markdown/commit/bb634a1de3503052851fa787fc9c4d59b9d64565))
+* **mdxish:** delete mdxish demo docs ([#1393](https://github.com/readmeio/markdown/issues/1393)) ([f96b109](https://github.com/readmeio/markdown/commit/f96b1098ded32b20aa571f142f052024d92e31c3))
+* **mdxish:** fix pascalCaseTagPattern to allow internal > and < ([#1387](https://github.com/readmeio/markdown/issues/1387)) ([8104df4](https://github.com/readmeio/markdown/commit/8104df4fd23ca336d081e07700f0a65e59b993c6))
+* **mdxish:** normalize image attributes in jsx-to-mdast transformer ([#1375](https://github.com/readmeio/markdown/issues/1375)) ([79c3714](https://github.com/readmeio/markdown/commit/79c3714eb8b48299676e29238fd60df58e8dcbd2))
+* portal image lightbox overlay to document.body ([#1388](https://github.com/readmeio/markdown/issues/1388)) ([42412f1](https://github.com/readmeio/markdown/commit/42412f15a2c47d94e6044d39a27832cb17f13f2a))
+* remove evaluateExpressions from mdast pipeline ([#1386](https://github.com/readmeio/markdown/issues/1386)) ([c145911](https://github.com/readmeio/markdown/commit/c14591128c659a8040fdb5efe15d3bc066498383))
+
+## Version 13.6.3
+### 🛠 Fixes & Updates
+
+* **mdx:** issues with html in callout titles for mdx rendering ([#1384](https://github.com/readmeio/markdown/issues/1384)) ([4eba2fb](https://github.com/readmeio/markdown/commit/4eba2fbe3f3c0cde315dd6afcad47f074bfc0a88)), closes [#1362](https://github.com/readmeio/markdown/issues/1362)
+
+## Version 13.6.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** add support for multi code tabs in JSX tables ([#1382](https://github.com/readmeio/markdown/issues/1382)) ([9b402b6](https://github.com/readmeio/markdown/commit/9b402b6b051d59e7ef4216f52548a7a00e797a95))
+* parse image captions as markdown instead of raw string ([#1379](https://github.com/readmeio/markdown/issues/1379)) ([1b18c11](https://github.com/readmeio/markdown/commit/1b18c11b6ef9c7f88912f6dcec270612137e416a)), closes [#x22](https://github.com/readmeio/markdown/issues/x22)
+* remove space separator when in inline context like headings ([#1374](https://github.com/readmeio/markdown/issues/1374)) ([6daee7f](https://github.com/readmeio/markdown/commit/6daee7f7aecc7ccc990ae7e92e814a6113d793da))
+* **mdxish:** strip newline from text inside components that's attached to closing tag ([#1381](https://github.com/readmeio/markdown/issues/1381)) ([aaf6690](https://github.com/readmeio/markdown/commit/aaf669088ca4888e3c5dc85d39429556ba15fb87)), closes [#RM-15614](https://github.com/readmeio/markdown/issues/RM-15614)
+
 ## Version 13.6.1
 ### 🛠 Fixes & Updates
 
