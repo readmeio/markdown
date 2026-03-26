@@ -1,6 +1,6 @@
-import type { Root } from 'mdast';
+import type { Root, Table } from 'mdast';
 
-import { mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
 
 describe('mdxishAstProcessor', () => {
   describe('deferred processing (handled by mdxish rendering pipeline)', () => {
@@ -153,6 +153,115 @@ describe('mdxishAstProcessor', () => {
           ],
         },
       ],
+    });
+  });
+
+  describe('JSX Table deserialization', () => {
+    it('should convert a JSX Table with flow content to an MDAST table node', () => {
+      const md = `<Table align={[null,"center",null]}>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>\`string\`</td>
+      <td>A plain text cell.</td>
+      <td>
+        \`\`\`text
+        \`\`\`
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+      const tableNode = ast.children[0] as Table;
+      expect(tableNode.type).toBe('table');
+      expect(tableNode.align).toStrictEqual([null, 'center', null]);
+    });
+
+    it('should convert JSX Tables with thead to MDAST when newEditorTypes is true', () => {
+      const md = `<Table>
+  <thead>
+    <tr>
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Alice</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { processor: withEditor, parserReadyContent: src1 } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const withEditorAst = withEditor.runSync(withEditor.parse(src1)) as Root;
+      expect(withEditorAst.children[0].type).toBe('table');
+
+      const { processor: withoutEditor, parserReadyContent: src2 } = mdxishAstProcessor(md);
+      const withoutEditorAst = withoutEditor.runSync(withoutEditor.parse(src2)) as Root;
+      expect(withoutEditorAst.children[0].type).toBe('table');
+    });
+
+    it('should preserve alignment through a serialize → parse roundtrip', () => {
+      const mdast: Root = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, 'center', null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Name' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Type' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Desc' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'foo' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'bar' }] }] },
+                  { type: 'tableCell', children: [{ type: 'code', lang: null, meta: null, value: 'multi\nline' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const markdown = mdxishMdastToMd(mdast);
+      expect(markdown).toContain('align={[null,"center",null]}');
+
+      const { processor, parserReadyContent } = mdxishAstProcessor(markdown, { newEditorTypes: true });
+      const parsed = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+      const tableNode = parsed.children[0] as Table;
+      expect(tableNode.type).toBe('table');
+      expect(tableNode.align).toStrictEqual([null, 'center', null]);
+    });
+
+    it('should keep header-less JSX Tables as JSX elements', () => {
+      const md = `<Table>
+  <tbody>
+    <tr>
+      <td>no header</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
+      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+      expect(ast.children[0].type).not.toBe('table');
     });
   });
 
