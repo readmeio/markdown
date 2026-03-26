@@ -773,6 +773,129 @@ describe('mdxishMdastToMd', () => {
     });
   });
 
+  it('should convert readme-anchor nodes back to <Anchor> JSX syntax', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { type: 'text', value: 'Click ' },
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                },
+              },
+              children: [{ type: 'text', value: 'here' }],
+            },
+            { type: 'text', value: ' to open.' },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('Click <Anchor target="_blank" href="https://example.com">here</Anchor> to open.\n');
+  });
+
+  it('should convert readme-anchor nodes with formatted content', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                },
+              },
+              children: [
+                {
+                  type: 'strong',
+                  children: [{ type: 'text', value: 'bold link' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('<Anchor target="_blank" href="https://example.com">**bold link**</Anchor>\n');
+  });
+
+  it('should convert readme-anchor nodes with all attributes', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: {
+                  href: 'https://example.com',
+                  target: '_blank',
+                  title: 'Example Site',
+                  label: 'example',
+                },
+              },
+              children: [{ type: 'text', value: 'example' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('<Anchor label="example" target="_blank" href="https://example.com" title="Example Site">example</Anchor>\n');
+  });
+
+  it('should handle multiple anchor nodes in the same paragraph', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: { href: 'https://one.com', target: '_blank' },
+              },
+              children: [{ type: 'text', value: 'one' }],
+            },
+            { type: 'text', value: ' and ' },
+            {
+              type: NodeTypes.anchor,
+              data: {
+                hName: 'Anchor',
+                hProperties: { href: 'https://two.com', target: '_blank' },
+              },
+              children: [{ type: 'text', value: 'two' }],
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe('<Anchor target="_blank" href="https://one.com">one</Anchor> and <Anchor target="_blank" href="https://two.com">two</Anchor>\n');
+  });
+
   it('should convert gfm checklist nodes and retain checkboxes that have no text after them', () => {
     const mdast: MdastRoot = {
       type: 'root',
