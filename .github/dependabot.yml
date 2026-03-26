@@ -1,12 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
-    reviewers:
-      - rafegoldberg
-      - kellyjosephprice
     labels:
       - dependencies
     groups:
@@ -27,7 +24,7 @@ updates:
       - dependency-type: production
 
   - package-ecosystem: npm
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -49,48 +46,46 @@ updates:
       prefix-development: chore(deps-dev)
     ignore:
       - dependency-name: hast-util-to-string
-        versions: ["*2.0.0"]
+        versions: ['*2.0.0']
       - dependency-name: mdast-util-toc
-        versions: ["*6.1.0"]
+        versions: ['*6.1.0']
       - dependency-name: rehype-raw
-        versions: ["*6.1.1"]
+        versions: ['*6.1.1']
       - dependency-name: rehype-react
-        versions: ["*7.1.1"]
+        versions: ['*7.1.1']
       - dependency-name: rehype-sanitize
-        versions: ["*5.0.1"]
+        versions: ['*5.0.1']
       - dependency-name: rehype-stringify
-        versions: ["*9.0.3"]
+        versions: ['*9.0.3']
       - dependency-name: remark-breaks
-        versions: ["*3.0.2"]
+        versions: ['*3.0.2']
       - dependency-name: remark-disable-tokenizers
-        versions: ["*1.1.0"]
+        versions: ['*1.1.0']
       - dependency-name: remark-frontmatter
-        versions: ["*4.0.1"]
+        versions: ['*4.0.1']
       - dependency-name: remark-parse
-        versions: ["*10.0.1"]
+        versions: ['*10.0.1']
       - dependency-name: remark-rehype
-        versions: ["*10.1.0"]
+        versions: ['*10.1.0']
       - dependency-name: remark-slug
-        versions: ["*7.0.1"]
+        versions: ['*7.0.1']
       - dependency-name: remark-stringify
-        versions: ["*10.0.2"]
+        versions: ['*10.0.2']
       - dependency-name: unified
-        versions: ["*10.1.2"]
+        versions: ['*10.1.2']
       - dependency-name: unist-util-map
-        versions: ["*3.1.1"]
+        versions: ['*3.1.1']
       - dependency-name: unist-util-select
-        versions: ["*4.0.1"]
-      - dependency-name: "@hot-loader/react-dom"
-        versions: ["*17.0.2"]
-      - dependency-name: "@testing-library/react"
-        versions: ["*13.2.0"]
+        versions: ['*4.0.1']
+      - dependency-name: '@hot-loader/react-dom'
+        versions: ['*17.0.2']
+      - dependency-name: '@testing-library/react'
+        versions: ['*13.2.0']
       - dependency-name: react
-        versions: ["*18.1.0"]
+        versions: ['*18.1.0']
       - dependency-name: react-dom
-        versions: ["*18.1.0"]
-      - dependency-name: jest
-        versions: ["*29.0.0"]
+        versions: ['*18.1.0']
       - dependency-name: codemirror
-        versions: ["*6.0.0"]
+        versions: ['*6.0.0']
     allow:
       - dependency-type: production
