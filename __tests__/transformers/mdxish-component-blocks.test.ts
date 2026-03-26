@@ -150,6 +150,26 @@ describe('mdxish-component-blocks', () => {
           children: [],
         });
       });
+
+      it('should transform a multi-line self-closing Recipe tag', () => {
+        const markdown = `<Recipe
+  slug="my-recipe"
+  title="My Recipe"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Recipe',
+          attributes: [
+            { type: 'mdxJsxAttribute', name: 'slug', value: 'my-recipe' },
+            { type: 'mdxJsxAttribute', name: 'title', value: 'My Recipe' },
+          ],
+          children: [],
+        });
+      });
     });
 
     describe('Case 2: Self-contained blocks', () => {

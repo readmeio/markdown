@@ -180,7 +180,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(magicBlockTransformer)
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
-    .use(newEditorTypes ? mdxishSelfClosingBlocks : undefined)
+    .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks)
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)

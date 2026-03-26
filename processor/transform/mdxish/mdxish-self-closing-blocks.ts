@@ -8,9 +8,11 @@ import { parseAttributes } from './mdxish-component-blocks';
 
 /**
  * Tags to process as self-closing blocks.
- * These are components that are typically written as multi-line self-closing tags.
+ * These components use simple string attributes (no JSX expressions like `data={[...]}`).
+ * Components with JSX expression attributes should NOT be added here as parseAttributes
+ * cannot handle them correctly.
  */
-const SELF_CLOSING_BLOCK_TAGS = new Set(['Embed']);
+const SELF_CLOSING_BLOCK_TAGS = new Set(['Embed', 'Recipe']);
 
 // Regex to match self-closing PascalCase tags (handles multi-line)
 const selfClosingTagPattern = /^<([A-Z][A-Za-z0-9_]*)([\s\S]*?)\/>$/;
@@ -47,7 +49,8 @@ const tryConvertToMdxNode = (node: Paragraph): (MdxJsxFlowElement) | null => {
  * Transform paragraph-wrapped self-closing JSX components into mdxJsxFlowElement nodes.
  *
  * CommonMark wraps multi-line JSX in paragraphs when the opening tag isn't complete
- * on one line. This plugin detects these structures and unwraps them.
+ * on one line. This plugin detects these structures and unwraps them for components
+ * in the SELF_CLOSING_BLOCK_TAGS allowlist.
  *
  * Input structure:
  * ```
