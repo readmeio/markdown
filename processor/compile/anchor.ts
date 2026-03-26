@@ -20,7 +20,7 @@ const anchor = (node: Anchor) => {
   const children = toMarkdown({
     type: 'paragraph',
     children: node.children,
-  } as Nodes).trim();
+  }).trim();
 
   return `<Anchor ${formatProps(attrs)}>${children}</Anchor>`;
 };
