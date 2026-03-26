@@ -37,7 +37,7 @@ import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast'
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
-import tablesToJsx from '../processor/transform/tables-to-jsx';
+import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -204,7 +204,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
 }
 
 /**
- * Converts an Mdast to a Markdown string.
+ * Registers the mdx-jsx serialization extension so remark-stringify
+ * can convert JSX nodes (e.g. `<Table>`) to markdown.
  */
 function mdxJsxStringify(this: ReturnType<typeof unified>) {
   const data = this.data();
@@ -212,10 +213,13 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
   extensions.push({ extensions: [mdxJsxToMarkdown()] });
 }
 
+/**
+ * Serializes an Mdast back into a markdown string.
+ */
 export function mdxishMdastToMd(mdast: MdastRoot) {
   const processor = unified()
     .use(remarkGfm)
-    .use(tablesToJsx)
+    .use(mdxishTablesToJsx)
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
     .use(remarkStringify, {

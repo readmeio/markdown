@@ -180,11 +180,39 @@ describe('mdxishMdastToMd', () => {
         ],
       };
 
-      const result = mdxishMdastToMd(mdast);
-      expect(result).toContain('<Table');
-      expect(result).toContain('<thead>');
-      expect(result).toContain('<tbody>');
-      expect(result).toContain('<td');
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table align={["left","left"]}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>
+                Field
+              </th>
+
+              <th style={{ textAlign: "left" }}>
+                Description
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "left" }}>
+                orderby
+              </td>
+
+              <td style={{ textAlign: "left" }}>
+                \`\`\`
+                {
+                  "field": "ID",
+                  "type": "ASC"
+                }
+                \`\`\`
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
     });
 
     it('should serialize a table with list content in cells to JSX <Table>', () => {
@@ -227,10 +255,486 @@ describe('mdxishMdastToMd', () => {
         ],
       };
 
-      const result = mdxishMdastToMd(mdast);
-      expect(result).toContain('<Table');
-      expect(result).toContain('<thead>');
-      expect(result).toContain('<tbody>');
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table align={["left","left"]}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>
+                Name
+              </th>
+
+              <th style={{ textAlign: "left" }}>
+                Items
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "left" }}>
+                groceries
+              </td>
+
+              <td style={{ textAlign: "left" }}>
+                - apples
+                - bananas
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should include align attribute and per-column styles when columns have alignment', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: ['left', 'center', 'right'],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'A' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'B' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'C' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'left' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'code',
+                        lang: null,
+                        meta: null,
+                        value: 'multi\nline',
+                      },
+                    ],
+                  },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'right' }] }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table align={["left","center","right"]}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>
+                A
+              </th>
+
+              <th style={{ textAlign: "center" }}>
+                B
+              </th>
+
+              <th style={{ textAlign: "right" }}>
+                C
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style={{ textAlign: "left" }}>
+                left
+              </td>
+
+              <td style={{ textAlign: "center" }}>
+                \`\`\`
+                multi
+                line
+                \`\`\`
+              </td>
+
+              <td style={{ textAlign: "right" }}>
+                right
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should omit align attribute when all alignments are null', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'A' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'B' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'x' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'code',
+                        lang: null,
+                        meta: null,
+                        value: 'block\ncontent',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table>
+          <thead>
+            <tr>
+              <th>
+                A
+              </th>
+
+              <th>
+                B
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                x
+              </td>
+
+              <td>
+                \`\`\`
+                block
+                content
+                \`\`\`
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should handle a table with multiple body rows', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Key' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'a' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'code', lang: null, meta: null, value: 'line1\nline2' }],
+                  },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'b' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'code', lang: null, meta: null, value: 'line3\nline4' }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table>
+          <thead>
+            <tr>
+              <th>
+                Key
+              </th>
+
+              <th>
+                Value
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                a
+              </td>
+
+              <td>
+                \`\`\`
+                line1
+                line2
+                \`\`\`
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                b
+              </td>
+
+              <td>
+                \`\`\`
+                line3
+                line4
+                \`\`\`
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should handle an empty cell alongside flow content', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'A' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'B' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'code', lang: null, meta: null, value: 'x\ny' }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table>
+          <thead>
+            <tr>
+              <th>
+                A
+              </th>
+
+              <th>
+                B
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td />
+
+              <td>
+                \`\`\`
+                x
+                y
+                \`\`\`
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should handle inline formatting in phrasing-only cells as markdown', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Name' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Desc' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          { type: 'strong', children: [{ type: 'text', value: 'bold' }] },
+                          { type: 'text', value: ' and ' },
+                          { type: 'emphasis', children: [{ type: 'text', value: 'italic' }] },
+                        ],
+                      },
+                    ],
+                  },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'plain' }] }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Name                  | Desc  |
+        | --------------------- | ----- |
+        | **bold** and _italic_ | plain |
+        "
+      `);
+    });
+
+    it('should keep tables with raw html nodes as markdown to avoid breaking remarkMdx roundtrip', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Header' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Content' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'row1' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'html', value: '<br class="custom" />' }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Header | Content               |
+        | ------ | --------------------- |
+        | row1   | <br class="custom" /> |
+        "
+      `);
+    });
+
+    it('should convert tables with code-tabs content to JSX', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Lang' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Example' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'JS' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'code-tabs',
+                        children: [
+                          { type: 'code', lang: 'js', meta: null, value: 'console.log("hi")' },
+                        ],
+                      } as unknown as MdastRoot['children'][number],
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table>
+          <thead>
+            <tr>
+              <th>
+                Lang
+              </th>
+
+              <th>
+                Example
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                JS
+              </td>
+
+              <td>
+                \`\`\`js
+                console.log("hi")
+                \`\`\`
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
     });
 
     it('should keep phrasing-only tables as markdown tables', () => {
@@ -260,9 +764,12 @@ describe('mdxishMdastToMd', () => {
         ],
       };
 
-      const result = mdxishMdastToMd(mdast);
-      expect(result).toContain('| Name');
-      expect(result).not.toContain('<Table');
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Name  | Age |
+        | :---- | :-- |
+        | Alice | 30  |
+        "
+      `);
     });
   });
 
