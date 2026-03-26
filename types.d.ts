@@ -49,13 +49,18 @@ export interface EmbedBlock extends Node {
     hName: 'Embed' | 'embed';
     hProperties: Record<string, unknown> & {
       favicon?: string;
+      height?:string;
+      href?: string;
       html?: string;
       iframe?: boolean;
       image?: string;
+      provider?:string;
       providerName?: string;
       providerUrl?: string;
-      title?: string;
-      url?: string;
+      title: string;
+      typeOfEmbed?: string;
+      url: string;
+      width?: string;
     };
   };
   label?: string;

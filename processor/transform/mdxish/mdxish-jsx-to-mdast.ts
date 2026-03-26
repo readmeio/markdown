@@ -55,9 +55,11 @@ interface CalloutAttrs {
 interface EmbedAttrs {
   favicon?: string;
   height?: string;
+  href?: string;
   html?: string;
   iframe?: boolean;
   image?: string;
+  provider?: string;
   providerName?: string;
   providerUrl?: string;
   title?: string;
@@ -162,11 +164,13 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   const {
     favicon,
     height,
+    href,
     html,
     iframe,
     image,
     providerName,
     providerUrl,
+    provider,
     title = '',
     typeOfEmbed,
     url = '',
@@ -184,11 +188,13 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
         url,
         ...(favicon && { favicon }),
         ...(height && { height }),
+        ...(href && { href }),
         ...(html && { html }),
         ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
         ...(providerName && { providerName }),
         ...(providerUrl && { providerUrl }),
+        ...(provider && { provider }),
         ...(typeOfEmbed && { typeOfEmbed }),
         ...(width && { width }),
       },
@@ -259,7 +265,21 @@ const transformMagicBlockImage = (node: MagicBlockImage): ImageBlock => {
 const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
   const { data, position } = node;
   const hProps = data?.hProperties || {};
-  const { favicon, html, image, providerName, providerUrl, title = '', url = '' } = hProps;
+  const {
+    favicon,
+    height,
+    href,
+    html,
+    iframe,
+    image,
+    provider,
+    providerName,
+    providerUrl,
+    title = '',
+    typeOfEmbed,
+    url = '',
+    width,
+  } = hProps;
 
   return {
     type: NodeTypes.embedBlock,
@@ -271,10 +291,16 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
         title,
         url,
         ...(favicon && { favicon }),
+        ...(height && { height }),
+        ...(href && { href }),
         ...(html && { html }),
+        ...(iframe !== undefined && { iframe }),
         ...(image && { image }),
+        ...(typeOfEmbed && { typeOfEmbed }),
         ...(providerName && { providerName }),
         ...(providerUrl && { providerUrl }),
+        ...(provider && { provider }),
+        ...(width && { width }),
       },
     },
     position,
