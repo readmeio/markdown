@@ -102,14 +102,18 @@ export interface MagicBlockEmbed {
     hName?: string;
     hProperties?: {
       favicon?: string;
+      height?: string;
       href?: string;
       html?: string;
+      iframe?: boolean;
       image?: string;
       provider?: string;
       providerName?: string;
       providerUrl?: string;
       title?: string;
+      typeOfEmbed?: string;
       url?: string;
+      width?: string;
     };
   };
   position?: Position;
