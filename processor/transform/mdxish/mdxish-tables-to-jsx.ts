@@ -6,7 +6,7 @@ import { phrasing } from 'mdast-util-phrasing';
 import { visit, EXIT } from 'unist-util-visit';
 
 const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
-  if (!align) return align;
+  if (!align || align === 'left') return null;
 
   return {
     type: 'mdxJsxAttribute',

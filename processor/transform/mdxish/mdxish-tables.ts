@@ -76,10 +76,15 @@ const hasFlowContent = (nodes: Node[]): boolean => {
  * Process a Table node: re-parse text-only cell content, then output as
  * a markdown table (phrasing-only) or keep as JSX <Table> (has flow content).
  */
-const processTableNode = (node: MdxJsxFlowElement | MdxJsxTextElement, index: number, parent: Parents): void => {
+const processTableNode = (
+  node: MdxJsxFlowElement | MdxJsxTextElement,
+  index: number,
+  parent: Parents,
+  documentPosition?: Node['position'],
+): void => {
   if (node.name !== 'Table') return;
 
-  const { position } = node;
+  const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
@@ -220,7 +225,7 @@ const mdxishTables = (): Transform => tree => {
 
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name === 'Table') {
-          processTableNode(tableNode, index, parent as Parents);
+          processTableNode(tableNode, index, parent as Parents, node.position);
           // Stop after the outermost Table so nested Tables don't overwrite parent.children[index]
           // we let it get handled naturally
           return EXIT;

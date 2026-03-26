@@ -12,6 +12,8 @@ import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 
+import { JSON_VALUE_MARKER } from './transform/mdxish/preprocess-jsx-expressions';
+
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
  * This currently sets all the values to a string since we process/compile the MDX on the fly
@@ -72,7 +74,9 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
       if (typeof attr.value === 'string') {
-        memo[attr.name] = attr.value;
+        memo[attr.name] = attr.value.startsWith(JSON_VALUE_MARKER)
+          ? JSON.parse(attr.value.slice(JSON_VALUE_MARKER.length))
+          : attr.value;
       } else if (attr.value === null) {
         memo[attr.name] = true;
       } else if (attr.value.value !== 'undefined') {

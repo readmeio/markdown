@@ -1,6 +1,6 @@
 import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
 import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
-import type { Node, Parent, PhrasingContent, RootContent } from 'mdast';
+import type { Node, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -8,7 +8,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { mdast } from '../../../lib';
-import { getAttrs } from '../../utils';
+import { getAttrs, isMDXElement } from '../../utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
   if (value === 'left' || value === 'center' || value === 'right') {
@@ -281,13 +281,75 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
   };
 };
 
-type ComponentTransformer = (jsx: MdxJsxFlowElement) => RootContent;
+const isTableCell = (node: Node): node is MdxJsxFlowElement & { name: 'td' | 'th' } =>
+  isMDXElement(node) && ['th', 'td'].includes((node as MdxJsxFlowElement).name);
+
+const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+  let hasThead = false;
+  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name === 'thead') hasThead = true;
+  });
+
+  if (!hasThead) return null;
+
+  const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(jsx);
+  const align = Array.isArray(alignAttr) ? alignAttr : null;
+
+  const rows: TableRow[] = [];
+
+  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name !== 'thead' && child.name !== 'tbody') return;
+
+    visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
+      if (row.name !== 'tr') return;
+
+      const cells: TableCell[] = [];
+
+      visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
+        const parsedChildren = (cell.children as Node[]).flatMap(parsedNode => {
+          if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
+            return parsedNode.children;
+          }
+          return [parsedNode];
+        });
+
+        cells.push({
+          type: 'tableCell',
+          children: parsedChildren,
+          position: cell.position,
+        } as TableCell);
+      });
+
+      rows.push({
+        type: 'tableRow',
+        children: cells,
+        position: row.position,
+      });
+    });
+  });
+
+  const columnCount = rows[0]?.children?.length || 0;
+  const alignArray: Table['align'] =
+    align && columnCount > 0
+      ? align.slice(0, columnCount).concat(Array.from({ length: Math.max(0, columnCount - align.length) }, () => null))
+      : Array.from({ length: columnCount }, () => null);
+
+  return {
+    type: 'table',
+    align: alignArray,
+    position: jsx.position,
+    children: rows,
+  };
+};
+
+type ComponentTransformer = (jsx: MdxJsxFlowElement) => RootContent | null;
 
 const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   Callout: transformCallout,
   Embed: transformEmbed,
   Image: transformImage,
   Recipe: transformRecipe,
+  Table: transformTable,
 };
 
 /**
@@ -311,6 +373,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     if (!transformer) return;
 
     const newNode = transformer(node);
+    if (!newNode) return;
 
     // Replace the JSX node with the MDAST node
     (parent.children as Node[])[index] = newNode;

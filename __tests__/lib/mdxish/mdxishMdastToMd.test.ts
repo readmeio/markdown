@@ -184,11 +184,11 @@ describe('mdxishMdastToMd', () => {
         "<Table align={["left","left"]}>
           <thead>
             <tr>
-              <th style={{ textAlign: "left" }}>
+              <th>
                 Field
               </th>
 
-              <th style={{ textAlign: "left" }}>
+              <th>
                 Description
               </th>
             </tr>
@@ -196,11 +196,11 @@ describe('mdxishMdastToMd', () => {
 
           <tbody>
             <tr>
-              <td style={{ textAlign: "left" }}>
+              <td>
                 orderby
               </td>
 
-              <td style={{ textAlign: "left" }}>
+              <td>
                 \`\`\`
                 {
                   "field": "ID",
@@ -259,11 +259,11 @@ describe('mdxishMdastToMd', () => {
         "<Table align={["left","left"]}>
           <thead>
             <tr>
-              <th style={{ textAlign: "left" }}>
+              <th>
                 Name
               </th>
 
-              <th style={{ textAlign: "left" }}>
+              <th>
                 Items
               </th>
             </tr>
@@ -271,11 +271,11 @@ describe('mdxishMdastToMd', () => {
 
           <tbody>
             <tr>
-              <td style={{ textAlign: "left" }}>
+              <td>
                 groceries
               </td>
 
-              <td style={{ textAlign: "left" }}>
+              <td>
                 - apples
                 - bananas
               </td>
@@ -329,7 +329,7 @@ describe('mdxishMdastToMd', () => {
         "<Table align={["left","center","right"]}>
           <thead>
             <tr>
-              <th style={{ textAlign: "left" }}>
+              <th>
                 A
               </th>
 
@@ -345,7 +345,7 @@ describe('mdxishMdastToMd', () => {
 
           <tbody>
             <tr>
-              <td style={{ textAlign: "left" }}>
+              <td>
                 left
               </td>
 
