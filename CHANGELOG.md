@@ -1,6 +1,18 @@
 Changelog
 ===
 
+## Version 13.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish-editor:** add readme-anchor compiler ([#1383](https://github.com/readmeio/markdown/issues/1383)) ([026ee69](https://github.com/readmeio/markdown/commit/026ee69cf07fb9fc8f2c6344f441dc85ce0837a4))
+* **mdxish-editor:** embed serialization missing data ([#1376](https://github.com/readmeio/markdown/issues/1376)) ([aa27e7c](https://github.com/readmeio/markdown/commit/aa27e7c64db607b6262e55932e8a69b7a43e404a))
+* include types.d.ts in published package ([#1401](https://github.com/readmeio/markdown/issues/1401)) ([6d3ebd4](https://github.com/readmeio/markdown/commit/6d3ebd4d9c6cb06fa68f0a6497ed45f2310d432e)), closes [#1391](https://github.com/readmeio/markdown/issues/1391)
+* refreshing our PR template with what we're using lately ([de3cbb5](https://github.com/readmeio/markdown/commit/de3cbb5019830d02b3fea41ffc16580ab106c34a))
+* **ci:** stop running all tests twice ([#1395](https://github.com/readmeio/markdown/issues/1395)) ([81d5c44](https://github.com/readmeio/markdown/commit/81d5c44f715e93447e57a18757b7dc16fb159b29))
+* **deps:** upgrading `flatted` to the latest release ([#1397](https://github.com/readmeio/markdown/issues/1397)) ([8dd55ec](https://github.com/readmeio/markdown/commit/8dd55ec854f4c4c0bee001ee45c25f4c17aeeeb0))
+* **deps:** upgrading `ws` to the latest release ([#1400](https://github.com/readmeio/markdown/issues/1400)) ([30b97cf](https://github.com/readmeio/markdown/commit/30b97cf96f5b46201b19f711efd15cda3a6c665c))
+* **deps-dev:** upgrading jest to v30 ([#1396](https://github.com/readmeio/markdown/issues/1396)) ([6a2dfc1](https://github.com/readmeio/markdown/commit/6a2dfc1c0b9fdc0e94cfa6030eaec798a4307e55))
+
 ## Version 13.7.0
 ### ✨ New & Improved
 
