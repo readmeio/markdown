@@ -4,6 +4,10 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
+import { nonLazyContinuationStart } from '../non-lazy-continuation';
+
+import { matchSequence, suffixForFirstChar } from './tags';
+
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
     jsxComponentBlock: 'jsxComponentBlock';
@@ -11,38 +15,6 @@ declare module 'micromark-util-types' {
     jsxComponentText: 'jsxComponentText';
   }
 }
-
-// Character code sequences for each supported tag name (after the first letter).
-const IMAGE_SUFFIX: Code[] = [codes.lowercaseM, codes.lowercaseA, codes.lowercaseG, codes.lowercaseE];
-const IMG_SUFFIX: Code[] = [codes.lowercaseM, codes.lowercaseG];
-const CALLOUT_SUFFIX: Code[] = [
-  codes.lowercaseA,
-  codes.lowercaseL,
-  codes.lowercaseL,
-  codes.lowercaseO,
-  codes.lowercaseU,
-  codes.lowercaseT,
-];
-const EMBED_SUFFIX: Code[] = [codes.lowercaseM, codes.lowercaseB, codes.lowercaseE, codes.lowercaseD];
-const RECIPE_SUFFIX: Code[] = [
-  codes.lowercaseE,
-  codes.lowercaseC,
-  codes.lowercaseI,
-  codes.lowercaseP,
-  codes.lowercaseE,
-];
-const ANCHOR_SUFFIX: Code[] = [
-  codes.lowercaseN,
-  codes.lowercaseC,
-  codes.lowercaseH,
-  codes.lowercaseO,
-  codes.lowercaseR,
-];
-
-const nonLazyContinuationStart: Construct = {
-  tokenize: tokenizeNonLazyContinuationStart,
-  partial: true,
-};
 
 function resolveToBlock(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -75,53 +47,37 @@ const textConstruct: Construct = {
   tokenize: tokenizeText,
 };
 
-/**
- * Look up the suffix for a known tag given its first character code.
- * Returns undefined if the character doesn't start any known tag.
- *
- * `I` and `i` both start known names but are unambiguous because `I` → Image
- * (uppercase) and `i` → img (lowercase) never conflict.
- */
-function suffixForFirstChar(code: Code): Code[] | undefined {
-  switch (code) {
-    case codes.uppercaseI:
-      return IMAGE_SUFFIX;
-    case codes.lowercaseI:
-      return IMG_SUFFIX;
-    case codes.uppercaseC:
-      return CALLOUT_SUFFIX;
-    case codes.uppercaseE:
-      return EMBED_SUFFIX;
-    case codes.uppercaseR:
-      return RECIPE_SUFFIX;
-    case codes.uppercaseA:
-      return ANCHOR_SUFFIX;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Build a state chain that matches a sequence of character codes.
- * On match calls onMatch; on any mismatch calls nok.
- */
-function matchSequence(
-  chars: Code[],
-  idx: number,
+function createFirstChar(
   tagName: Code[],
   effects: Effects,
-  onMatch: State,
+  afterTagName: State,
   nok: State,
 ): State {
-  if (idx >= chars.length) return onMatch;
   return ((code: Code): State | undefined => {
-    if (code === chars[idx]) {
-      tagName.push(code);
-      effects.consume(code);
-      return matchSequence(chars, idx + 1, tagName, effects, onMatch, nok);
-    }
-    return nok(code);
+    const suffix = suffixForFirstChar(code);
+    if (!suffix) return nok(code);
+    tagName.push(code);
+    effects.consume(code);
+    return matchSequence(suffix, 0, tagName, effects, afterTagName, nok);
   }) as State;
+}
+
+function createInDoubleQuote(effects: Effects, nok: State, returnTo: State): State {
+  const self: State = ((code: Code): State | undefined => {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+    effects.consume(code);
+    return code === codes.quotationMark ? returnTo : self;
+  }) as State;
+  return self;
+}
+
+function createInSingleQuote(effects: Effects, nok: State, returnTo: State): State {
+  const self: State = ((code: Code): State | undefined => {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+    effects.consume(code);
+    return code === codes.apostrophe ? returnTo : self;
+  }) as State;
+  return self;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,6 +97,9 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
   let closingTagIndex = 0;
   let depth = 1;
 
+  const inDoubleQuote = createInDoubleQuote(effects, nok, inTag);
+  const inSingleQuote = createInSingleQuote(effects, nok, inTag);
+
   return start;
 
   function start(code: Code): State | undefined {
@@ -148,15 +107,7 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     effects.enter('jsxComponentBlock');
     effects.enter('jsxComponentBlockData');
     effects.consume(code);
-    return firstChar;
-  }
-
-  function firstChar(code: Code): State | undefined {
-    const suffix = suffixForFirstChar(code);
-    if (!suffix) return nok(code);
-    tagName.push(code);
-    effects.consume(code);
-    return matchSequence(suffix, 0, tagName, effects, afterTagName, nok);
+    return createFirstChar(tagName, effects, afterTagName, nok);
   }
 
   function afterTagName(code: Code): State | undefined {
@@ -178,8 +129,6 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     }
     return nok(code);
   }
-
-  // --- Tag attribute parsing (supports multi-line) ---
 
   function inTag(code: Code): State | undefined {
     if (code === null) return nok(code);
@@ -205,18 +154,6 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     }
     effects.consume(code);
     return inTag;
-  }
-
-  function inDoubleQuote(code: Code): State | undefined {
-    if (code === null || markdownLineEnding(code)) return nok(code);
-    effects.consume(code);
-    return code === codes.quotationMark ? inTag : inDoubleQuote;
-  }
-
-  function inSingleQuote(code: Code): State | undefined {
-    if (code === null || markdownLineEnding(code)) return nok(code);
-    effects.consume(code);
-    return code === codes.apostrophe ? inTag : inSingleQuote;
   }
 
   function maybeSlashClose(code: Code): State | undefined {
@@ -248,8 +185,6 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     return nok(code);
   }
 
-  // --- Multi-line tag continuation (line endings inside attribute list) ---
-
   function tagAtLineEnding(code: Code): State | undefined {
     if (code === null) return nok(code);
     return effects.check(nonLazyContinuationStart, tagContinuationNonLazy, nok)(code);
@@ -270,7 +205,6 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     return inTag(code);
   }
 
-  // After `>` for opening tags — only whitespace allowed (matches type 7 rule)
   function afterOpeningGt(code: Code): State | undefined {
     if (code === null || markdownLineEnding(code)) {
       effects.exit('jsxComponentBlockData');
@@ -282,8 +216,6 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
     }
     return nok(code);
   }
-
-  // --- Body scanning (multiline, for opening tags with children) ---
 
   function bodyAtLineEnding(code: Code): State | undefined {
     if (code === null) {
@@ -396,21 +328,16 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
 function tokenizeText(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
   const tagName: Code[] = [];
 
+  const inDoubleQuote = createInDoubleQuote(effects, nok, inTag);
+  const inSingleQuote = createInSingleQuote(effects, nok, inTag);
+
   return start;
 
   function start(code: Code): State | undefined {
     if (code !== codes.lessThan) return nok(code);
     effects.enter('jsxComponentText');
     effects.consume(code);
-    return firstChar;
-  }
-
-  function firstChar(code: Code): State | undefined {
-    const suffix = suffixForFirstChar(code);
-    if (!suffix) return nok(code);
-    tagName.push(code);
-    effects.consume(code);
-    return matchSequence(suffix, 0, tagName, effects, afterTagName, nok);
+    return createFirstChar(tagName, effects, afterTagName, nok);
   }
 
   function afterTagName(code: Code): State | undefined {
@@ -453,18 +380,6 @@ function tokenizeText(this: TokenizeContext, effects: Effects, ok: State, nok: S
     return inTag;
   }
 
-  function inDoubleQuote(code: Code): State | undefined {
-    if (code === null || markdownLineEnding(code)) return nok(code);
-    effects.consume(code);
-    return code === codes.quotationMark ? inTag : inDoubleQuote;
-  }
-
-  function inSingleQuote(code: Code): State | undefined {
-    if (code === null || markdownLineEnding(code)) return nok(code);
-    effects.consume(code);
-    return code === codes.apostrophe ? inTag : inSingleQuote;
-  }
-
   function maybeSlashClose(code: Code): State | undefined {
     if (code === codes.greaterThan) {
       effects.consume(code);
@@ -481,34 +396,6 @@ function tokenizeText(this: TokenizeContext, effects: Effects, ok: State, nok: S
       return ok(code);
     }
     return nok(code);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Lazy continuation check (shared with jsxTable pattern)
-// ---------------------------------------------------------------------------
-
-function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
-
-  return start;
-
-  function start(code: Code): State | undefined {
-    if (markdownLineEnding(code)) {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return after;
-    }
-    return nok(code);
-  }
-
-  function after(code: Code): State | undefined {
-    if (self.parser.lazy[self.now().line]) {
-      return nok(code);
-    }
-    return ok(code);
   }
 }
 
