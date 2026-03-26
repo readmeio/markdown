@@ -1864,4 +1864,67 @@ asdasdasd
       expect(tables).toHaveLength(1);
     });
   });
+
+  describe('api-header block', () => {
+    const apiHeader = (title: string, level?: number) => {
+      const json = level ? `{ "title": ${JSON.stringify(title)}, "level": ${level} }` : `{ "title": ${JSON.stringify(title)} }`;
+      return `[block:api-header]\n${json}\n[/block]`;
+    };
+
+    it('should not parse list syntax in title', () => {
+      const ast = mdxish(apiHeader('- Hello'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      expect(toHtml(heading)).toContain('- Hello');
+    });
+
+    it('should not parse heading syntax in title', () => {
+      const ast = mdxish(apiHeader('#### Hello'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      expect(toHtml(heading)).toContain('#### Hello');
+    });
+
+    it('should not parse emphasis syntax in title', () => {
+      const ast = mdxish(apiHeader('**bold**'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      expect(toHtml(heading)).toContain('**bold**');
+    });
+
+    it('should parse HTML', () => {
+      const ast = mdxish(apiHeader('Hello <em>world</em>'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      expect(toHtml(heading)).toContain('<em>world</em>');
+    });
+
+    it('should parse inline code', () => {
+      const ast = mdxish(apiHeader('Hello `code` world'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      const codeEl = heading.children.find(c => c.type === 'element' && (c as Element).tagName === 'code') as Element;
+      expect(codeEl).toBeDefined();
+      expect((codeEl.children[0] as Text).value).toBe('code');
+    });
+
+    it('should parse variables', () => {
+      const ast = mdxish(apiHeader('Hello <<name>>!'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      const variableNode = heading.children.find(
+        c => c.type === 'element' && (c as Element).tagName === 'variable',
+      ) as Element;
+      expect(variableNode).toBeDefined();
+    });
+
+    it('should parse inline code and variables', () => {
+      const ast = mdxish(apiHeader('- Hello <<name>> and `code`'));
+      const heading = ast.children[0] as Element;
+      expect(heading.tagName).toBe('h2');
+      const html = toHtml(heading);
+      expect(html).toContain('- Hello');
+      expect(html).toContain('<code>code</code>');
+    });
+  });
 });

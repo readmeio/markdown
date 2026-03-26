@@ -23,6 +23,7 @@ import type { Root as HastRoot, Text as HastText, Element as HastElement, Elemen
 import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
+import type { Position } from 'unist';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
@@ -282,10 +283,109 @@ const parseBlock = (text: string): MdastNode[] => {
   return tree.children as MdastNode[];
 };
 
-const parseInline = (text: string): MdastNode[] => {
+/**
+ * Node types that are preserved in api-header titles.
+ * Everything else gets flattened back to literal text to match legacy behaviour,
+ * which does not parse markdown in api-header titles but still renders HTML,
+ * inline code, and variables.
+ */
+const API_HEADER_ALLOWED_TYPES: ReadonlySet<string> = new Set([
+  'text',
+  'html',
+  'inlineCode',
+  'readme-variable',
+  'readme-glossary-item',
+]);
+
+/**
+ * Flatten a single MDAST node back to its source text.
+ * Uses position offsets when available, otherwise reconstructs from the node value or children.
+ */
+const flattenNode = (node: MdastNode, source: string): MdastNode => {
+  const pos = node.position as Position | undefined;
+  if (pos?.start?.offset != null && pos?.end?.offset != null) {
+    return { type: 'text', value: source.slice(pos.start.offset, pos.end.offset) };
+  }
+  if ('value' in node && typeof node.value === 'string') {
+    return { type: 'text', value: node.value };
+  }
+  return { type: 'text', value: '' };
+};
+
+/** Merge consecutive text nodes into one. */
+const mergeAdjacentTextNodes = (nodes: MdastNode[]): MdastNode[] => {
+  const merged: MdastNode[] = [];
+  nodes.forEach(node => {
+    const prev = merged[merged.length - 1];
+    if (node.type === 'text' && prev?.type === 'text') {
+      prev.value = `${prev.value as string}${node.value as string}`;
+    } else {
+      merged.push(node);
+    }
+  });
+  return merged;
+};
+
+/**
+ * Check if a node or any of its descendants is an allowed type.
+ */
+const hasAllowedDescendant = (node: MdastNode): boolean => {
+  if (API_HEADER_ALLOWED_TYPES.has(node.type)) return true;
+  if ('children' in node && Array.isArray(node.children)) {
+    return (node.children as MdastNode[]).some(hasAllowedDescendant);
+  }
+  return false;
+};
+
+/**
+ * Collect allowed nodes from a tree, filling gaps with literal source text.
+ * Walks depth-first; when an allowed leaf is found it's kept as-is.
+ * Non-allowed nodes without allowed descendants are flattened to source text.
+ * Non-allowed nodes WITH allowed descendants are recursed into, emitting
+ * literal text for the gaps between children (e.g. markdown markers like `- `, `** **`).
+ */
+const collectAllowed = (nodes: MdastNode[], source: string): MdastNode[] => {
+  const result: MdastNode[] = [];
+  nodes.forEach(node => {
+    if (API_HEADER_ALLOWED_TYPES.has(node.type)) {
+      result.push(node);
+    } else if ('children' in node && Array.isArray(node.children) && hasAllowedDescendant(node)) {
+      // Recurse, but emit gap text for syntax markers between children
+      const children = node.children as MdastNode[];
+      const nodePos = node.position as Position | undefined;
+      const nodeStart = nodePos?.start?.offset ?? 0;
+      const nodeEnd = nodePos?.end?.offset ?? source.length;
+      let cursor = nodeStart;
+
+      children.forEach(child => {
+        const childPos = child.position as Position | undefined;
+        const childStart = childPos?.start?.offset ?? cursor;
+        if (childStart > cursor) {
+          result.push({ type: 'text', value: source.slice(cursor, childStart) });
+        }
+        result.push(...collectAllowed([child], source));
+        cursor = childPos?.end?.offset ?? cursor;
+      });
+
+      if (cursor < nodeEnd) {
+        result.push({ type: 'text', value: source.slice(cursor, nodeEnd) });
+      }
+    } else {
+      result.push(flattenNode(node, source));
+    }
+  });
+  return result;
+};
+
+/**
+ * Parse an api-header title, preserving only HTML, inline code, and variables.
+ * All other markdown syntax (headings, lists, emphasis, etc.) is flattened to literal text.
+ */
+const parseApiHeaderTitle = (text: string): MdastNode[] => {
   if (!text.trim()) return textToInline(text);
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
-  return tree.children as MdastNode[];
+  const result = collectAllowed(tree.children as MdastNode[], text);
+  return mergeAdjacentTextNodes(result);
 };
 
 /**
@@ -355,7 +455,7 @@ function transformMagicBlock(
       return [
         wrapPinnedBlocks(
           {
-            children: 'title' in headerJson ? parseInline(headerJson.title || '') : [],
+            children: 'title' in headerJson ? parseApiHeaderTitle(headerJson.title || '') : [],
             depth,
             type: 'heading',
           },
