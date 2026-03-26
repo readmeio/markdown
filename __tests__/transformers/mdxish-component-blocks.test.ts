@@ -513,6 +513,36 @@ Some content
     });
   });
 
+  describe('closing tag inside inline code span', () => {
+    it('should not treat a closing tag inside backticks as the real closing tag', () => {
+      const markdown = `<Callout>
+Here is some code: \`</Callout>\` and more text.
+</Callout>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+      });
+    });
+
+    it('should skip closing tags inside multi-backtick code spans', () => {
+      const markdown = `<Callout>
+Here is some code: \`\`</Callout>\`\` and more text.
+</Callout>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+      });
+    });
+  });
+
   describe('Anchor component (inline, excluded)', () => {
     it('should NOT convert <Anchor> to mdxJsxFlowElement', () => {
       // Anchor is an inline component and must remain as raw html nodes so that

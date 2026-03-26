@@ -96,6 +96,8 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
   const tagName: Code[] = [];
   let closingTagIndex = 0;
   let depth = 1;
+  let codeSpanOpenSize = 0;
+  let codeSpanCloseSize = 0;
 
   const inDoubleQuote = createInDoubleQuote(effects, nok, inTag);
   const inSingleQuote = createInSingleQuote(effects, nok, inTag);
@@ -258,8 +260,40 @@ function tokenizeFlow(this: TokenizeContext, effects: Effects, ok: State, nok: S
       effects.consume(code);
       return bodyAfterLt;
     }
+    if (code === codes.graveAccent) {
+      codeSpanOpenSize = 0;
+      return countOpenTicks(code);
+    }
     effects.consume(code);
     return body;
+  }
+
+  function countOpenTicks(code: Code): State | undefined {
+    if (code === codes.graveAccent) {
+      codeSpanOpenSize += 1;
+      effects.consume(code);
+      return countOpenTicks;
+    }
+    return inCodeSpan(code);
+  }
+
+  function inCodeSpan(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return body(code);
+    if (code === codes.graveAccent) {
+      codeSpanCloseSize = 0;
+      return countCloseTicks(code);
+    }
+    effects.consume(code);
+    return inCodeSpan;
+  }
+
+  function countCloseTicks(code: Code): State | undefined {
+    if (code === codes.graveAccent) {
+      codeSpanCloseSize += 1;
+      effects.consume(code);
+      return countCloseTicks;
+    }
+    return codeSpanCloseSize === codeSpanOpenSize ? body(code) : inCodeSpan(code);
   }
 
   function bodyAfterLt(code: Code): State | undefined {
