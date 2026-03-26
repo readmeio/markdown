@@ -53,15 +53,15 @@ import variablesTextTransformer from '../processor/transform/mdxish/variables-te
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
+import { jsxComponentBlockFromMarkdown } from './mdast-util/jsx-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
-import { jsxComponentBlockFromMarkdown } from './mdast-util/pascalcase-html-block';
+import { jsxComponentBlock } from './micromark/jsx-component';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
-import { jsxComponentBlock } from './micromark/pascalcase-html-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
