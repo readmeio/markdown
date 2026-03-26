@@ -284,6 +284,10 @@ const transformMagicBlockEmbed = (node: MagicBlockEmbed): EmbedBlock => {
 const isTableCell = (node: Node): node is MdxJsxFlowElement & { name: 'td' | 'th' } =>
   isMDXElement(node) && ['th', 'td'].includes((node as MdxJsxFlowElement).name);
 
+/**
+ * Converts a JSX <Table> element to an MDAST table node with alignment.
+ * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
+ */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
   let hasThead = false;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {

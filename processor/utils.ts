@@ -74,9 +74,15 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
       if (typeof attr.value === 'string') {
-        memo[attr.name] = attr.value.startsWith(JSON_VALUE_MARKER)
-          ? JSON.parse(attr.value.slice(JSON_VALUE_MARKER.length))
-          : attr.value;
+        if (attr.value.startsWith(JSON_VALUE_MARKER)) {
+          try {
+            memo[attr.name] = JSON.parse(attr.value.slice(JSON_VALUE_MARKER.length));
+          } catch {
+            memo[attr.name] = attr.value;
+          }
+        } else {
+          memo[attr.name] = attr.value;
+        }
       } else if (attr.value === null) {
         memo[attr.name] = true;
       } else if (attr.value.value !== 'undefined') {
