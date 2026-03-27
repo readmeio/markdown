@@ -1885,11 +1885,12 @@ asdasdasd
       expect(toHtml(heading)).toContain('#### Hello');
     });
 
-    it('should not parse emphasis syntax in title', () => {
-      const ast = mdxish(apiHeader('**bold**'));
+    it('should parse emphasis, italic, syntax in title', () => {
+      const ast = mdxish(apiHeader('**bold** _italic_'));
       const heading = ast.children[0] as Element;
-      expect(heading.tagName).toBe('h2');
-      expect(toHtml(heading)).toContain('**bold**');
+      const html = toHtml(heading);
+      expect(html).toContain('<strong>bold</strong>');
+      expect(html).toContain('<em>italic</em>');
     });
 
     it('should parse HTML', () => {
@@ -1925,6 +1926,24 @@ asdasdasd
       const html = toHtml(heading);
       expect(html).toContain('- Hello');
       expect(html).toContain('<code>code</code>');
+    });
+
+    it('should parse gfm strikethrough syntax in title', () => {
+      const ast = mdxish(apiHeader('~strikethrough~'));
+      const heading = ast.children[0] as Element;
+      expect(toHtml(heading)).toContain('<del>strikethrough</del>');
+    });
+
+    it('should parse auto link syntax in title', () => {
+      const ast = mdxish(apiHeader('https://example.com'));
+      const heading = ast.children[0] as Element;
+      expect(toHtml(heading)).toContain('<a href="https://example.com">https://example.com</a>');
+    });
+
+    it('should parse link syntax in title', () => {
+      const ast = mdxish(apiHeader('[link](https://example.com)'));
+      const heading = ast.children[0] as Element;
+      expect(toHtml(heading)).toContain('<a href="https://example.com">link</a>');
     });
   });
 });
