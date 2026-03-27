@@ -35,21 +35,21 @@ const mdxishTablesToJsx = (): Transform => tree => {
     let hasFlowContent = false;
 
     visit(table, isTableCell, (cell: TableCell) => {
-      if (cell.children.length === 0) return;
+      if (cell.children.length === 0) return undefined;
 
       const content =
         cell.children.length === 1 && cell.children[0].type === 'paragraph'
           ? (cell.children[0] as unknown as Paragraph).children[0]
           : cell.children[0];
 
-      if (!content) return;
+      if (!content) return undefined;
 
       visit(cell, 'break', (_, breakIndex, breakParent) => {
         breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
       });
 
       if (!(phrasing(content) || content.type === 'plain') && content.type !== 'escape') {
-        if (content.type === 'html') return;
+        if (content.type === 'html') return undefined;
 
         hasFlowContent = true;
         return EXIT;
@@ -60,7 +60,10 @@ const mdxishTablesToJsx = (): Transform => tree => {
           hasFlowContent = true;
           return EXIT;
         }
+        return undefined;
       });
+
+      return undefined;
     });
 
     if (!hasFlowContent) {

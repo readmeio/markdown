@@ -15,7 +15,6 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
-
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 
 import { mdxishCompilers } from '../processor/compile';

@@ -224,12 +224,10 @@ const mdxishTables = (): Transform => tree => {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
 
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
-        if (tableNode.name === 'Table' || tableNode.name === 'table') {
-          processTableNode(tableNode, index, parent as Parents, node.position);
-          // Stop after the outermost Table so nested Tables don't overwrite parent.children[index]
-          // we let it get handled naturally
-          return EXIT;
-        }
+        if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
+
+        processTableNode(tableNode, index, parent as Parents, node.position);
+        return EXIT;
       });
     } catch {
       // If parsing fails, leave the node as-is
