@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 13.7.2
+### 🛠 Fixes & Updates
+
+* **TailwindStyle:** detect nested TailwindRoot elements on DOM updates ([#1404](https://github.com/readmeio/markdown/issues/1404)) ([8881be8](https://github.com/readmeio/markdown/commit/8881be81971a87fdf42c443852f77d4371c387a9))
+* **mdxish:** move jsx table serialization from MdxishEditor into engine ([#1402](https://github.com/readmeio/markdown/issues/1402)) ([0f527ac](https://github.com/readmeio/markdown/commit/0f527acf12fd9c4322681944ed7cb505c0b72773))
+
 ## Version 13.7.1
 ### 🛠 Fixes & Updates
 
