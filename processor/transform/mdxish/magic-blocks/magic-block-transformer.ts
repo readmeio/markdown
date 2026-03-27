@@ -305,10 +305,6 @@ const apiHeaderTitleParser = unified()
   .use(remarkParse)
   .use(remarkGfm);
 
-/**
- * Parse an api-header title, preserving only HTML, inline code, and variables.
- * All other markdown syntax (headings, lists, emphasis, etc.) is left as literal text.
- */
 const parseApiHeaderTitle = (text: string): MdastNode[] => {
   if (!text.trim()) return textToInline(text);
   const tree = apiHeaderTitleParser.runSync(apiHeaderTitleParser.parse(text)) as MdastRoot;
