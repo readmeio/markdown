@@ -4,13 +4,17 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
 
 /**
- * Helper to parse markdown and apply only the mdxishComponentBlocks plugin.
- * This isolates the plugin from the full mdxish pipeline.
+ * Helper to parse markdown and apply the component block plugins.
+ * This isolates the plugins from the full mdxish pipeline.
  */
 const parseWithPlugin = (markdown: string): Root => {
-  const processor = unified().use(remarkParse).use(mdxishComponentBlocks);
+  const processor = unified()
+    .use(remarkParse)
+    .use(mdxishSelfClosingBlocks)
+    .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
   processor.runSync(tree);
   return tree as Root;
@@ -96,6 +100,74 @@ describe('mdxish-component-blocks', () => {
             { type: 'mdxJsxAttribute', name: 'theme', value: 'dark' },
             { type: 'mdxJsxAttribute', name: 'size', value: 'large' },
           ],
+        });
+      });
+
+      it('should transform a multi-line self-closing tag', () => {
+        const markdown = `<Embed
+  typeOfEmbed="youtube"
+  url="https://example.com"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Embed',
+          attributes: [
+            { type: 'mdxJsxAttribute', name: 'typeOfEmbed', value: 'youtube' },
+            { type: 'mdxJsxAttribute', name: 'url', value: 'https://example.com' },
+          ],
+          children: [],
+        });
+      });
+
+      it('should transform a multi-line self-closing tag with many attributes', () => {
+        const markdown = `<Embed
+  typeOfEmbed="youtube"
+  url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  html="%3Ciframe%3E"
+  href="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  providerUrl="https://www.youtube.com/"
+  providerName="YouTube"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Embed',
+          attributes: [
+            { type: 'mdxJsxAttribute', name: 'typeOfEmbed', value: 'youtube' },
+            { type: 'mdxJsxAttribute', name: 'url', value: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+            { type: 'mdxJsxAttribute', name: 'html', value: '%3Ciframe%3E' },
+            { type: 'mdxJsxAttribute', name: 'href', value: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+            { type: 'mdxJsxAttribute', name: 'providerUrl', value: 'https://www.youtube.com/' },
+            { type: 'mdxJsxAttribute', name: 'providerName', value: 'YouTube' },
+          ],
+          children: [],
+        });
+      });
+
+      it('should transform a multi-line self-closing Recipe tag', () => {
+        const markdown = `<Recipe
+  slug="my-recipe"
+  title="My Recipe"
+/>`;
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'Recipe',
+          attributes: [
+            { type: 'mdxJsxAttribute', name: 'slug', value: 'my-recipe' },
+            { type: 'mdxJsxAttribute', name: 'title', value: 'My Recipe' },
+          ],
+          children: [],
         });
       });
     });
@@ -577,4 +649,6 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
     });
   });
+
 });
+

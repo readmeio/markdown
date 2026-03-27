@@ -1,6 +1,32 @@
 Changelog
 ===
 
+## Version 13.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish-editor:** add readme-anchor compiler ([#1383](https://github.com/readmeio/markdown/issues/1383)) ([026ee69](https://github.com/readmeio/markdown/commit/026ee69cf07fb9fc8f2c6344f441dc85ce0837a4))
+* **mdxish-editor:** embed serialization missing data ([#1376](https://github.com/readmeio/markdown/issues/1376)) ([aa27e7c](https://github.com/readmeio/markdown/commit/aa27e7c64db607b6262e55932e8a69b7a43e404a))
+* include types.d.ts in published package ([#1401](https://github.com/readmeio/markdown/issues/1401)) ([6d3ebd4](https://github.com/readmeio/markdown/commit/6d3ebd4d9c6cb06fa68f0a6497ed45f2310d432e)), closes [#1391](https://github.com/readmeio/markdown/issues/1391)
+* refreshing our PR template with what we're using lately ([de3cbb5](https://github.com/readmeio/markdown/commit/de3cbb5019830d02b3fea41ffc16580ab106c34a))
+* **ci:** stop running all tests twice ([#1395](https://github.com/readmeio/markdown/issues/1395)) ([81d5c44](https://github.com/readmeio/markdown/commit/81d5c44f715e93447e57a18757b7dc16fb159b29))
+* **deps:** upgrading `flatted` to the latest release ([#1397](https://github.com/readmeio/markdown/issues/1397)) ([8dd55ec](https://github.com/readmeio/markdown/commit/8dd55ec854f4c4c0bee001ee45c25f4c17aeeeb0))
+* **deps:** upgrading `ws` to the latest release ([#1400](https://github.com/readmeio/markdown/issues/1400)) ([30b97cf](https://github.com/readmeio/markdown/commit/30b97cf96f5b46201b19f711efd15cda3a6c665c))
+* **deps-dev:** upgrading jest to v30 ([#1396](https://github.com/readmeio/markdown/issues/1396)) ([6a2dfc1](https://github.com/readmeio/markdown/commit/6a2dfc1c0b9fdc0e94cfa6030eaec798a4307e55))
+
+## Version 13.7.0
+### ✨ New & Improved
+
+* export MDAST node interfaces ([#1391](https://github.com/readmeio/markdown/issues/1391)) ([489a71e](https://github.com/readmeio/markdown/commit/489a71e19b34f640595ce81e988dad631045186f))
+
+### 🛠 Fixes & Updates
+
+* **dev:** allow debugging mdast and hast in demo app ([#1377](https://github.com/readmeio/markdown/issues/1377)) ([bb634a1](https://github.com/readmeio/markdown/commit/bb634a1de3503052851fa787fc9c4d59b9d64565))
+* **mdxish:** delete mdxish demo docs ([#1393](https://github.com/readmeio/markdown/issues/1393)) ([f96b109](https://github.com/readmeio/markdown/commit/f96b1098ded32b20aa571f142f052024d92e31c3))
+* **mdxish:** fix pascalCaseTagPattern to allow internal > and < ([#1387](https://github.com/readmeio/markdown/issues/1387)) ([8104df4](https://github.com/readmeio/markdown/commit/8104df4fd23ca336d081e07700f0a65e59b993c6))
+* **mdxish:** normalize image attributes in jsx-to-mdast transformer ([#1375](https://github.com/readmeio/markdown/issues/1375)) ([79c3714](https://github.com/readmeio/markdown/commit/79c3714eb8b48299676e29238fd60df58e8dcbd2))
+* portal image lightbox overlay to document.body ([#1388](https://github.com/readmeio/markdown/issues/1388)) ([42412f1](https://github.com/readmeio/markdown/commit/42412f15a2c47d94e6044d39a27832cb17f13f2a))
+* remove evaluateExpressions from mdast pipeline ([#1386](https://github.com/readmeio/markdown/issues/1386)) ([c145911](https://github.com/readmeio/markdown/commit/c14591128c659a8040fdb5efe15d3bc066498383))
+
 ## Version 13.6.3
 ### 🛠 Fixes & Updates
 

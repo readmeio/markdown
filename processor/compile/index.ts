@@ -2,6 +2,7 @@ import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
 
+import anchor from './anchor';
 import callout from './callout';
 import codeTabs from './code-tabs';
 import compatibility from './compatibility';
@@ -18,6 +19,7 @@ function compilers(this: Processor, mdxish = false) {
   const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
 
   const handlers = {
+    ...(mdxish && { [NodeTypes.anchor]: anchor }),
     [NodeTypes.callout]: callout,
     [NodeTypes.codeTabs]: codeTabs,
     [NodeTypes.embedBlock]: embed,
