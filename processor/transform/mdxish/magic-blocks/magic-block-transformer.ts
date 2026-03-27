@@ -284,8 +284,7 @@ const parseBlock = (text: string): MdastNode[] => {
 
 /**
  * Minimal parser for api-header titles.
- * Disables most markdown constructs (headings, lists, emphasis, links, etc.)
- * so they render as literal text, while preserving HTML, inline code, and variables.
+ * Disables markdown constructs that are not parsed in legacy (headings, lists)
  */
 const apiHeaderTitleParser = unified()
   .data('micromarkExtensions', [
@@ -294,25 +293,17 @@ const apiHeaderTitleParser = unified()
     {
       disable: {
         null: [
-          'attention',
-          'autolink',
           'blockQuote',
-          'codeFenced',
-          'codeIndented',
-          'definition',
           'headingAtx',
-          'labelEnd',
-          'labelStartImage',
-          'labelStartLink',
           'list',
-          'setextUnderline',
           'thematicBreak',
         ],
       },
     },
   ])
   .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
-  .use(remarkParse);
+  .use(remarkParse)
+  .use(remarkGfm);
 
 /**
  * Parse an api-header title, preserving only HTML, inline code, and variables.
