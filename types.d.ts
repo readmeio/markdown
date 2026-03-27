@@ -105,6 +105,7 @@ export interface Plain extends Literal {
 export type ImageAlign = 'center' | 'left' | 'right';
 
 export interface ImageBlockAttrs {
+  aiAltText?: boolean;
   align?: ImageAlign;
   alt: string;
   border?: boolean;

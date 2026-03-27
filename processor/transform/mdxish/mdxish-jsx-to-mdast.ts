@@ -34,6 +34,7 @@ function extractText(nodes: RootContent[]): string {
 }
 
 interface ImageAttrs {
+  aiAltText?: boolean | string;
   align?: string;
   alt?: string;
   border?: boolean | string;
@@ -99,7 +100,7 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
 
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
-  const { align, alt = '', border, caption, className, height, lazy, src = '', title = '', width } = attrs;
+  const { align, alt = '', aiAltText, border, caption, className, height, lazy, src = '', title = '', width } = attrs;
 
   const validAlign = toImageAlign(align);
   const sizing = width !== undefined ? String(width) : undefined;
@@ -108,6 +109,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     src,
     title,
+    ...(aiAltText !== undefined && { aiAltText: toBool(aiAltText) }),
     ...(validAlign && { align: validAlign }),
     ...(border !== undefined && { border: toBool(border) }),
     ...(caption && { caption }),
@@ -120,6 +122,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
 
   return {
     type: NodeTypes.imageBlock,
+    aiAltText: toBool(aiAltText),
     align: validAlign,
     alt,
     border: toBool(border),
