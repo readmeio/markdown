@@ -282,10 +282,35 @@ const parseBlock = (text: string): MdastNode[] => {
   return tree.children as MdastNode[];
 };
 
-const parseInline = (text: string): MdastNode[] => {
+/**
+ * Minimal parser for api-header titles.
+ * Disables markdown constructs that are not parsed in legacy (headings, lists)
+ */
+const apiHeaderTitleParser = unified()
+  .data('micromarkExtensions', [
+    legacyVariable(),
+    looseHtmlEntity(),
+    {
+      disable: {
+        null: [
+          'blockQuote',
+          'headingAtx',
+          'list',
+          'thematicBreak',
+        ],
+      },
+    },
+  ])
+  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .use(remarkParse)
+  .use(remarkGfm);
+
+const parseApiHeaderTitle = (text: string): MdastNode[] => {
   if (!text.trim()) return textToInline(text);
-  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
-  return tree.children as MdastNode[];
+  const tree = apiHeaderTitleParser.runSync(apiHeaderTitleParser.parse(text)) as MdastRoot;
+  return tree.children.flatMap(n =>
+    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+  );
 };
 
 /**
@@ -355,7 +380,7 @@ function transformMagicBlock(
       return [
         wrapPinnedBlocks(
           {
-            children: 'title' in headerJson ? parseInline(headerJson.title || '') : [],
+            children: 'title' in headerJson ? parseApiHeaderTitle(headerJson.title || '') : [],
             depth,
             type: 'heading',
           },
