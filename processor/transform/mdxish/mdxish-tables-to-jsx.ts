@@ -3,7 +3,9 @@ import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { phrasing } from 'mdast-util-phrasing';
-import { visit, EXIT } from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
+
+const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
 const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
   if (!align || align === 'left') return null;
@@ -49,16 +51,18 @@ const mdxishTablesToJsx = (): Transform => tree => {
       });
 
       if (!(phrasing(content) || content.type === 'plain') && content.type !== 'escape') {
-        if (content.type === 'html') return;
-
-        hasFlowContent = true;
-        return EXIT;
+        // Plain HTML (e.g. <div>Hello</div>) is skipped here — it stays in GFM cells fine.
+        // But self-closing JSX components (e.g. <Image src="..." caption="..." />) serialize
+        // with newlines that break GFM cells, so they must trigger JSX <Table> serialization.
+        const isPlainHtml = content.type === 'html' && !SELF_CLOSING_JSX_REGEX.test((content as Literal).value);
+        if (!isPlainHtml) {
+          hasFlowContent = true;
+        }
       }
 
       visit(cell, isLiteral, (node: Literal) => {
         if (node.value.match(/\n/)) {
           hasFlowContent = true;
-          return EXIT;
         }
       });
     });
