@@ -57,9 +57,11 @@ import variablesTextTransformer from '../processor/transform/mdxish/variables-te
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
+import { jsxComponentBlockFromMarkdown } from './mdast-util/jsx-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { jsxComponentBlock } from './micromark/jsx-component';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -155,13 +157,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+        ? [jsxComponentBlock(), jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
+        : [jsxComponentBlock(), jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
       safeMode
         ? [
+            jsxComponentBlockFromMarkdown(),
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
             legacyVariableFromMarkdown(),
@@ -169,6 +172,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
             looseHtmlEntityFromMarkdown(),
           ]
         : [
+            jsxComponentBlockFromMarkdown(),
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
             mdxExpressionFromMarkdown(),

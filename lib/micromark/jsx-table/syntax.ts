@@ -4,6 +4,8 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
+import { nonLazyContinuationStart } from '../non-lazy-continuation';
+
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
     jsxTable: 'jsxTable';
@@ -11,10 +13,6 @@ declare module 'micromark-util-types' {
   }
 }
 
-const nonLazyContinuationStart: Construct = {
-  tokenize: tokenizeNonLazyContinuationStart,
-  partial: true,
-};
 
 function resolveToJsxTable(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -218,30 +216,6 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
       return nok(code);
     }
     effects.exit('jsxTable');
-    return ok(code);
-  }
-}
-
-function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
-
-  return start;
-
-  function start(code: Code): State | undefined {
-    if (markdownLineEnding(code)) {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return after;
-    }
-    return nok(code);
-  }
-
-  function after(code: Code): State | undefined {
-    if (self.parser.lazy[self.now().line]) {
-      return nok(code);
-    }
     return ok(code);
   }
 }

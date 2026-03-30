@@ -38,6 +38,44 @@ const inlineMdProcessor = unified()
 const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
 
 /**
+ * Find the index of a closing tag in a string, skipping over backtick code spans.
+ * Returns -1 if not found outside of code spans.
+ */
+const findClosingTagIndex = (str: string, closingTag: string): number => {
+  let i = 0;
+  while (i < str.length) {
+    if (str[i] === '`') {
+      let tickCount = 0;
+      while (i < str.length && str[i] === '`') {
+        tickCount += 1;
+        i += 1;
+      }
+      // Skip until matching closing backticks
+      let found = false;
+      while (i < str.length && !found) {
+        if (str[i] === '`') {
+          let closeCount = 0;
+          while (i < str.length && str[i] === '`') {
+            closeCount += 1;
+            i += 1;
+          }
+          if (closeCount === tickCount) {
+            found = true;
+          }
+        } else {
+          i += 1;
+        }
+      }
+    } else if (str.startsWith(closingTag, i)) {
+      return i;
+    } else {
+      i += 1;
+    }
+  }
+  return -1;
+};
+
+/**
  * Parse markdown content into mdast children nodes.
  */
 const parseMdChildren = (value: string): RootContent[] => {
@@ -186,8 +224,8 @@ const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): Sca
       }
 
       // Embedded closing tag (closing tag within HTML block content)
-      if (siblingValue.includes(closingTagStr)) {
-        const closeTagPos = siblingValue.indexOf(closingTagStr);
+      const closeTagPos = findClosingTagIndex(siblingValue, closingTagStr);
+      if (closeTagPos !== -1) {
         const contentBeforeClose = siblingValue.substring(0, closeTagPos).trim();
         const contentAfterClose = siblingValue.substring(closeTagPos + closingTagStr.length).trim();
         const extraChildren = contentBeforeClose
@@ -322,9 +360,8 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     }
 
     // Case 2: Self-contained block (closing tag in content)
-    if (contentAfterTag.includes(closingTagStr)) {
-      // Find the first closing tag
-      const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
+    const closingTagIndex = findClosingTagIndex(contentAfterTag, closingTagStr);
+    if (closingTagIndex !== -1) {
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex).trim();
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       const componentNode = createComponentNode({
