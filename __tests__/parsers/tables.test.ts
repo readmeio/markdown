@@ -619,6 +619,82 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('thead/tbody without explicit tr wrapper', () => {
+    it('renders table when thead cells are not wrapped in tr', () => {
+      const doc = `<Table>
+  <thead>
+    <td>Hi</td>
+    <td>World</td>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hello</td>
+      <td>Globe</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headerCells = findNodes(tables[0], 'th');
+      expect(headerCells).toHaveLength(2);
+      expect(headerCells[0].children[0]).toMatchObject({ type: 'text', value: 'Hi' });
+      expect(headerCells[1].children[0]).toMatchObject({ type: 'text', value: 'World' });
+
+      const bodyCells = findNodes(tables[0], 'td');
+      expect(bodyCells).toHaveLength(2);
+    });
+
+    it('renders table when both thead and tbody cells lack tr wrappers', () => {
+      const doc = `<Table>
+  <thead>
+    <td>Hi</td>
+    <td>World</td>
+  </thead>
+  <tbody>
+    <td>Hello</td>
+    <td>Globe</td>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headerCells = findNodes(tables[0], 'th');
+      expect(headerCells).toHaveLength(2);
+
+      const bodyCells = findNodes(tables[0], 'td');
+      expect(bodyCells).toHaveLength(2);
+      expect(bodyCells[0].children[0]).toMatchObject({ type: 'text', value: 'Hello' });
+    });
+
+    it('renders table when thead uses th cells without tr wrapper', () => {
+      const doc = `<Table>
+  <thead>
+    <th>Column A</th>
+    <th>Column B</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Value A</td>
+      <td>Value B</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headerCells = findNodes(tables[0], 'th');
+      expect(headerCells).toHaveLength(2);
+      expect(headerCells[0].children[0]).toMatchObject({ type: 'text', value: 'Column A' });
+    });
+  });
+
   describe('jsx tables with images', () => {
     it('parses jsx tables with images in cells', () => {
       const doc = `

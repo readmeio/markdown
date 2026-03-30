@@ -311,10 +311,46 @@ const isTableCell = (node: Node): node is MdxJsxFlowElement & { name: 'td' | 'th
   isMDXElement(node) && ['th', 'td'].includes((node as MdxJsxFlowElement).name);
 
 /**
+ * Wraps bare `<td>`/`<th>` cells directly inside `<thead>`/`<tbody>` with an implicit `<tr>`.
+ * remarkMdx may wrap inline JSX elements in paragraph nodes, so we unwrap those first.
+ */
+const wrapBareCellsInRow = (node: Node): void => {
+  visit(node, isMDXElement, (section: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (section.name !== 'thead' && section.name !== 'tbody') return;
+
+    const children = section.children as Node[];
+    const hasRow = children.some(
+      child => isMDXElement(child) && (child as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
+    );
+    if (hasRow) return;
+
+    const unwrapped = children.flatMap(child => {
+      if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
+        return child.children as Node[];
+      }
+      return [child];
+    });
+
+    const cells = unwrapped.filter(child => isTableCell(child));
+    if (cells.length === 0) return;
+
+    const tr: MdxJsxFlowElement = {
+      type: 'mdxJsxFlowElement',
+      name: 'tr',
+      attributes: [],
+      children: cells as MdxJsxFlowElement['children'],
+    };
+    section.children = [tr] as typeof section.children;
+  });
+};
+
+/**
  * Converts a JSX <Table> element to an MDAST table node with alignment.
  * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+  wrapBareCellsInRow(jsx as Node);
+
   let hasThead = false;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;

@@ -1,6 +1,8 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Paragraph, Root } from 'mdast';
 
+import { removePosition } from 'unist-util-remove-position';
+
 import { NodeTypes } from '../../../enums';
 import { mdxishAstProcessor } from '../../../lib/mdxish';
 
@@ -281,6 +283,58 @@ This is a warning message.
         expect(recipeNode.title).toBe('My Recipe');
         expect(recipeNode.emoji).toBe('🍳');
         expect(recipeNode.backgroundColor).toBe('#fff');
+      });
+    });
+
+    describe('Table component', () => {
+      it('should transform Table when thead cells lack tr wrapper', () => {
+        const md = `<Table>
+  <thead>
+    <td>A</td>
+    <td>B</td>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</Table>`;
+        const ast = processWithNewTypes(md);
+        removePosition(ast, { force: true });
+
+        expect(ast).toMatchSnapshot();
+      });
+
+      it('should transform Table when both thead and tbody cells lack tr wrappers', () => {
+        const md = `<Table>
+  <thead>
+    <th>A</th>
+    <th>B</th>
+  </thead>
+  <tbody>
+    <td>1</td>
+    <td>2</td>
+  </tbody>
+</Table>`;
+        const ast = processWithNewTypes(md);
+        removePosition(ast, { force: true });
+
+        expect(ast).toMatchSnapshot();
+      });
+
+      it('should return null for Table without thead', () => {
+        const md = `<Table>
+  <tbody>
+    <tr>
+      <td>1</td>
+    </tr>
+  </tbody>
+</Table>`;
+        const ast = processWithNewTypes(md);
+        removePosition(ast, { force: true });
+
+        expect(ast).toMatchSnapshot();
       });
     });
 

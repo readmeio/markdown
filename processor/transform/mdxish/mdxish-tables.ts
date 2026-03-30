@@ -29,6 +29,29 @@ const tableTypes = {
   td: 'tableCell',
 };
 
+/**
+ * Collect `<td>`/`<th>` elements from a container node and convert them to MDAST
+ * `tableCell` nodes. The container can be a `<tr>`, `<thead>`, or `<tbody>`.
+ */
+const collectCells = (container: Node): TableCell[] => {
+  const rowChildren: TableCell[] = [];
+  visit(container, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
+    const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
+      if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
+        return parsedNode.children;
+      }
+      return [parsedNode];
+    });
+
+    rowChildren.push({
+      type: tableTypes[name],
+      children: parsedChildren,
+      position: cellPosition,
+    } as TableCell);
+  });
+  return rowChildren;
+};
+
 const tableNodeProcessor = unified()
   .use(remarkParse)
   .use(remarkMdx)
@@ -157,32 +180,32 @@ const processTableNode = (
 
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead' || child.name === 'tbody') {
-      visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
-        if (row.name !== 'tr') return;
+      const sectionChildren = child.children as Node[];
+      const hasRow = sectionChildren.some(
+        c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
+      );
 
-        const rowChildren: TableCell[] = [];
-
-        visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
-            if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-              return parsedNode.children;
-            }
-            return [parsedNode];
+      if (hasRow) {
+        // visit row by row and collect cells
+        visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
+          if (row.name !== 'tr') return;
+          children.push({
+            type: 'tableRow' as const,
+            children: collectCells(row as Node),
+            position: row.position,
           });
-
-          rowChildren.push({
-            type: tableTypes[name],
-            children: parsedChildren,
-            position: cellPosition,
-          } as TableCell);
         });
-
-        children.push({
-          type: 'tableRow' as const,
-          children: rowChildren,
-          position: row.position,
-        });
-      });
+      } else {
+        // since there are no rows, we assume the entire section is one row
+        const cells = collectCells(child as Node);
+        if (cells.length > 0) {
+          children.push({
+            type: 'tableRow' as const,
+            children: cells,
+            position: child.position,
+          });
+        }
+      }
     }
   });
 

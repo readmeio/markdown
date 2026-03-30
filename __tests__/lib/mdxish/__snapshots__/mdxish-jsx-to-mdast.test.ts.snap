@@ -1,0 +1,167 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`mdxish-jsx-to-mdast transformer > with newEditorTypes enabled > Table component > should return null for Table without thead 1`] = `
+{
+  "children": [
+    {
+      "attributes": [],
+      "children": [
+        {
+          "attributes": [],
+          "children": [
+            {
+              "attributes": [],
+              "children": [
+                {
+                  "attributes": [],
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "1",
+                    },
+                  ],
+                  "name": "td",
+                  "type": "mdxJsxTextElement",
+                },
+              ],
+              "name": "tr",
+              "type": "mdxJsxFlowElement",
+            },
+          ],
+          "name": "tbody",
+          "type": "mdxJsxFlowElement",
+        },
+      ],
+      "name": "Table",
+      "type": "mdxJsxFlowElement",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`mdxish-jsx-to-mdast transformer > with newEditorTypes enabled > Table component > should transform Table when both thead and tbody cells lack tr wrappers 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        null,
+        null,
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "A",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "B",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "1",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "2",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
+
+exports[`mdxish-jsx-to-mdast transformer > with newEditorTypes enabled > Table component > should transform Table when thead cells lack tr wrapper 1`] = `
+{
+  "children": [
+    {
+      "align": [
+        null,
+        null,
+      ],
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "A",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "B",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "1",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "children": [
+                {
+                  "type": "text",
+                  "value": "2",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+      ],
+      "type": "table",
+    },
+  ],
+  "type": "root",
+}
+`;
