@@ -310,17 +310,6 @@ end"`);
     expect(output).toBe(input);
   });
 
-  it('preserves HTMLBlock template literal expressions in mdxish mode', async () => {
-    const input = `<HTMLBlock>{\`
-<div style="color: red">
-  <strong>Hello, World!</strong>
-</div>
-\`}</HTMLBlock>`;
-
-    const output = await stripComments(input, { mdxish: true });
-    expect(output).toBe(input);
-  });
-
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests
@@ -337,6 +326,30 @@ end"`);
 
       # Black"
     `);
+  });
+
+  it.each([
+    ['mdx', { mdx: true }],
+    ['mdxish', { mdxish: true }],
+  ])('preserves comments inside MDX HTMLBlocks (%s)', async (_name, opts) => {
+    const input = `<HTMLBlock>{\`
+<!-- comment -->
+<div>Hello world</div>
+\`}</HTMLBlock>`;
+    const output = await stripComments(input, opts);
+    expect(output).toContain('<!-- comment -->');
+    expect(output).toContain('{/* comment */}');
+  });
+
+  it('preserves HTMLBlock template literal expressions in mdxish mode', async () => {
+    const input = `<HTMLBlock>{\`
+<div style="color: red">
+  <strong>Hello, World!</strong>
+</div>
+\`}</HTMLBlock>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
   });
 
   it('preserves jsx tables in mdxish mode', async () => {
