@@ -310,6 +310,21 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('preserves HTMLBlock template literal expressions in mdxish mode', async () => {
+    const input = `<HTMLBlock>{\`
+<div style="color: red">
+  <strong>Hello, World!</strong>
+</div>
+\`}</HTMLBlock>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    console.log('stripped comments:', output);
+
+    expect(output).toContain('<HTMLBlock>');
+    expect(output).toContain('<strong>Hello, World!</strong>');
+    expect(output).toContain('</HTMLBlock>');
+  });
+
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests

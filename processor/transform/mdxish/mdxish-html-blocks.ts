@@ -5,27 +5,8 @@ import type { Transform } from 'mdast-util-from-markdown';
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
+import { restoreHTMLBlockContent } from '../../../lib/utils/extractors/html-blocks';
 import { formatHtmlForMdxish } from '../../utils';
-
-import { base64Decode, HTML_BLOCK_CONTENT_END, HTML_BLOCK_CONTENT_START } from './preprocess-jsx-expressions';
-
-/**
- * Decodes HTMLBlock content that was protected during preprocessing.
- * Content is wrapped in <!--RDMX_HTMLBLOCK:base64:RDMX_HTMLBLOCK-->
- */
-function decodeProtectedContent(content: string): string {
-  // Escape special regex characters in the markers
-  const startEscaped = HTML_BLOCK_CONTENT_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const endEscaped = HTML_BLOCK_CONTENT_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const markerRegex = new RegExp(`${startEscaped}([A-Za-z0-9+/=]+)${endEscaped}`, 'g');
-  return content.replace(markerRegex, (_match, encoded: string) => {
-    try {
-      return base64Decode(encoded);
-    } catch {
-      return encoded;
-    }
-  });
-}
 
 /**
  * Collects text content from a node and its children recursively
@@ -205,7 +186,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
           let content = contentParts.join('');
           content = content.replace(/^<HTMLBlock[^>]*>\s*\{?\s*`?/, '').replace(/`?\s*\}?\s*<\/HTMLBlock>$/, '');
           // Decode protected content that was base64 encoded during preprocessing
-          content = decodeProtectedContent(content);
+          content = restoreHTMLBlockContent(content);
 
           const htmlString = formatHtmlForMdxish(content);
           const runScripts = extractRunScriptsAttr(attrs);
@@ -241,7 +222,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       // Remove template literal syntax if present: {`...`}
       content = content.replace(/^\s*\{\s*`/, '').replace(/`\s*\}\s*$/, '');
       // Decode protected content that was base64 encoded during preprocessing
-      content = decodeProtectedContent(content);
+      content = restoreHTMLBlockContent(content);
 
       const htmlString = formatHtmlForMdxish(content);
       const runScripts = extractRunScriptsAttr(attrs);
@@ -286,7 +267,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       }
 
       // Decode protected content that was base64 encoded during preprocessing
-      const decodedContent = decodeProtectedContent(contentParts.join(''));
+      const decodedContent = restoreHTMLBlockContent(contentParts.join(''));
       const htmlString = formatHtmlForMdxish(decodedContent);
       const runScripts = extractRunScriptsAttr(value);
       const safeMode = extractBooleanAttr(value, 'safeMode');
@@ -356,7 +337,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
       }
 
       // Decode protected content that was base64 encoded during preprocessing
-      const decodedContent = decodeProtectedContent(templateContent.join(''));
+      const decodedContent = restoreHTMLBlockContent(templateContent.join(''));
       const htmlString = formatHtmlForMdxish(decodedContent);
 
       const runScripts = openingTag.value ? extractRunScriptsAttr(openingTag.value) : undefined;
