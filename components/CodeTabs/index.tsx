@@ -10,11 +10,19 @@ let mermaid: Mermaid;
 
 const { uppercase } = syntaxHighlighterUtils;
 
-// Batch mermaid nodes across CodeTabs instances into a single mermaid.run() call.
-// Mermaid generates SVG IDs via Date.now(), which collides when multiple diagrams
-// are processed within the same millisecond. It messes up SVG elements since mermaid 
-// uses global selector. Batching with deterministicIds ensures a single incrementing 
-// counter is used across all diagrams.
+// Module-level queue that batches mermaid nodes across all CodeTabs instances into a
+// single mermaid.run() call. This is necessary because mermaid generates SVG element IDs
+// using Date.now(), which collides when multiple diagrams render in the same millisecond.
+// Colliding IDs cause diagrams to overlap or break layout.
+//
+// Why not use `deterministicIDSeed` with a unique ID per diagram? Mermaid's implementation
+// only uses seed.length (not the seed value) to compute the starting ID, so every UUID
+// (36 chars) produces the same `mermaid-36` prefix — the collision remains.
+// See: https://github.com/mermaid-js/mermaid/blob/mermaid%4011.12.0/packages/mermaid/src/utils.ts#L755-L761
+//
+// These vars must be module-scoped (not per-instance refs) because the batching requires
+// cross-instance coordination. They are short-lived: the queue drains on the next macrotask
+// and cleanup clears everything on unmount.
 let mermaidQueue: HTMLPreElement[] = [];
 let mermaidFlushTimer: ReturnType<typeof setTimeout> | null = null;
 let currentTheme: string | undefined;
