@@ -29,7 +29,8 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   const { replaced, blocks } = extractMagicBlocks(preprocessedDoc);
   preprocessedDoc = replaced;
 
-  // We only need to protect HTML block content if we're in MDXish mode, and no
+  // We only need to protect HTML block content if we're in MDXish mode
+  // MDX has correctly handled them
   if (mdxish) {
     preprocessedDoc = protectHTMLBlockContent(preprocessedDoc);
   }

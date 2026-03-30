@@ -32,7 +32,7 @@ export const HTMLBLOCK_TEMPLATE_LITERAL_REGEX = /(<HTMLBlock[^>]*>)\{\s*`((?:[^`
  * ```typescript
  * const input = '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>';
  * protectHTMLBlockContent(input)
- * // Returns: '<HTMLBlock>RDMX-HTMLBLOCK-START:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RDMX-HTMLBLOCK-END</HTMLBlock>'
+ * // Returns: '<HTMLBlock>RDMX-!#@-HTMLBLOCK-START%:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:%RDMX-!#@-HTMLBLOCK-END</HTMLBlock>'
  * ```
  */
 export function protectHTMLBlockContent(content: string) {
