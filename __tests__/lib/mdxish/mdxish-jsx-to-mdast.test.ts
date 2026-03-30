@@ -5,7 +5,6 @@ import type { Paragraph, Root, RootContent } from 'mdast';
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 
-
 describe('mdxish-jsx-to-mdast transformer', () => {
   const processWithNewTypes = (md: string): Root => {
     const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
