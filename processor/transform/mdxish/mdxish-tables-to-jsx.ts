@@ -37,7 +37,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
     let hasFlowContent = false;
 
     visit(table, isTableCell, (cell: TableCell) => {
-      if (cell.children.length === 0) return;
+      if (hasFlowContent || cell.children.length === 0) return;
 
       const content =
         cell.children.length === 1 && cell.children[0].type === 'paragraph'
@@ -60,11 +60,13 @@ const mdxishTablesToJsx = (): Transform => tree => {
         }
       }
 
-      visit(cell, isLiteral, (node: Literal) => {
-        if (node.value.match(/\n/)) {
-          hasFlowContent = true;
-        }
-      });
+      if (!hasFlowContent) {
+        visit(cell, isLiteral, (node: Literal) => {
+          if (node.value.match(/\n/)) {
+            hasFlowContent = true;
+          }
+        });
+      }
     });
 
     if (!hasFlowContent) {

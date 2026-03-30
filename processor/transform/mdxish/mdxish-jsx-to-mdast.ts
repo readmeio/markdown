@@ -595,7 +595,7 @@ const transformFigure = (jsx: MdxJsxFlowElement): FigureNode | null => {
   let imageNode: RootContent | undefined;
   let captionText: string | undefined;
 
-  visit(jsx as unknown as Parent, (child: Node) => {
+  visit(jsx as Node as Parent, (child: Node) => {
     if (!imageNode && (child.type === 'image' || (child.type as string) === NodeTypes.imageBlock)) {
       imageNode = child as RootContent;
     }
