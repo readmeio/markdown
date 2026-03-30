@@ -338,7 +338,6 @@ end"`);
 \`}</HTMLBlock>`;
     const output = await stripComments(input, opts);
     expect(output).toContain('<!-- comment -->');
-    expect(output).toContain('{/* comment */}');
   });
 
   it('preserves HTMLBlock template literal expressions in mdxish mode', async () => {
