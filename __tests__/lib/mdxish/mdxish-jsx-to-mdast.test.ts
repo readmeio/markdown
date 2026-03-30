@@ -1,6 +1,6 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Root as HastRoot } from 'hast';
-import type { Paragraph, Root } from 'mdast';
+import type { Paragraph, Root, RootContent } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
@@ -617,8 +617,9 @@ Some callout content
       const md = '<figure>![](https://example.com/image.png)<figcaption>Hello World</figcaption></figure>';
 
       const ast = processWithNewTypes(md);
-      const firstNode = ast.children[0];
-      expect(firstNode.type).toBe('html');
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('Hello World');
     });
 
     it('should render <figure> with figcaption as a figure element without newEditorTypes', () => {
@@ -712,6 +713,232 @@ Some callout content
 
       const ast = processWithNewTypes(md);
       expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should reassemble figure inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure>
+> ![](https://example.com/image.png)
+> <figcaption>Hello</figcaption>
+> </figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should reassemble single-line figure inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should handle <figure> with attributes', () => {
+      const md = `<figure class="special">
+![](https://example.com/image.png)
+<figcaption>With attrs</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('With attrs');
+    });
+
+    it('should handle <figure> with attributes inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure class="special">![](https://example.com/image.png)<figcaption>Attrs</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Attrs');
+    });
+
+    it('should reassemble figure inside a GFM table cell into an image-block', () => {
+      const md = `| Column |
+| --- |
+| <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
+      const cell = table.children[1].children[0];
+      const imageBlock = cell.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should leave figure inside a JSX table as opaque table content', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Column</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure></td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children).toHaveLength(1);
+      // Without blank lines inside <td>, JSX tables treat content as opaque —
+      // <figure> is not parsed into separate MDAST nodes
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should reassemble figure inside a JSX table with blank lines', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Figure</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>
+
+    </td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      // With blank lines inside <td>, the parser treats <figure> as an mdxJsxFlowElement
+      // and its content is tokenized — so the image and figcaption are accessible
+      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
+      const cell = table.children[1].children[0];
+      const imageBlock = cell.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello World');
+    });
+
+    it('should treat incomplete figure syntax in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| <figure>![](https://example.com/image.png) |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should treat figure with missing closing tag in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should treat mangled figure syntax in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| \\<figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should handle figure after a callout', () => {
+      const md = `> 📘 Note
+>
+> Some text
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('Hello');
+    });
+
+    it('should handle figure between two callouts', () => {
+      const md = `> 📘 First
+>
+> Text
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Caption</figcaption>
+</figure>
+
+> ⚠️ Second
+>
+> More text`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('Caption');
+      expect(ast.children[2].type).toBe(NodeTypes.callout);
+    });
+
+    it('should handle figure after a GFM table', () => {
+      const md = `| A | B |
+| --- | --- |
+| 1 | 2 |
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>After table</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('After table');
+    });
+
+    it('should handle figure after a JSX table', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Header</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Cell</td>
+  </tr>
+</tbody>
+</Table>
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>After JSX table</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const figureNode = ast.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(figureNode).toBeDefined();
+      expect(figureNode.caption).toBe('After JSX table');
     });
   });
 
