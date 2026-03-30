@@ -1,6 +1,6 @@
-import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
+import type { MagicBlockEmbed, FigureNode, MagicBlockImage } from './magic-blocks/types';
 import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
-import type { Node, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -31,6 +31,113 @@ function extractText(nodes: RootContent[]): string {
       return '';
     })
     .join('');
+}
+
+const FIGURE_OPEN_REGEX = /^<figure(\s[^>]*)?>$/;
+const FIGURE_CLOSE_REGEX = /^\s*<\/figure>\s*$/;
+const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
+
+/**
+ * Extracts an image or image-block from a node. If the node itself is an image/image-block,
+ * it is returned directly. If the node is a paragraph, its children are searched for one.
+ * This is needed because standalone markdown images (`![](url)`) may be wrapped in a
+ * paragraph node by the parser, or already transformed to image-block by imageTransformer.
+ */
+function findImageInNode(node: RootContent): RootContent | undefined {
+  if (node.type === 'image' || (node.type as string) === NodeTypes.imageBlock) return node;
+  if (node.type === 'paragraph') {
+    return (node as Paragraph).children.find(
+      child => child.type === 'image' || (child.type as string) === NodeTypes.imageBlock,
+    ) as RootContent | undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Reconstruct fragmented HTML <figure> elements into a single <figure> with optional <figcaption>
+ * the `terminateHtmlFlowBlocks` preprocessor inserts blank lines after <figure> tags, causing
+ * micromark to essentially split the <figure> into multiple nodes. it splits them into:
+ * - <figure> open tag
+ * - image node
+ * - <figcaption> (if present)
+ * - <figure> close tag
+ */
+function reassembleHtmlFigures(tree: Parent) {
+  visit(tree, 'root', (root: Parent) => {
+    const children = root.children as RootContent[];
+    let i = 0;
+
+    while (i < children.length) {
+      const node = children[i];
+      const nextNode = children[i + 1];
+      const imageNode = nextNode ? findImageInNode(nextNode) : undefined;
+
+      if (
+        node.type === 'html' &&
+        FIGURE_OPEN_REGEX.test((node as Html).value.trim()) &&
+        imageNode
+      ) {
+        let captionText: string | undefined;
+        let endIndex = i + 1;
+        let foundClose = false;
+
+        // Scan siblings after the image for figcaption and </figure>
+        for (let j = i + 2; j < children.length; j += 1) {
+          const sibling = children[j];
+          if (sibling.type !== 'html') break;
+
+          const htmlValue = (sibling as Html).value;
+
+          if (FIGURE_CLOSE_REGEX.test(htmlValue)) {
+            endIndex = j;
+            foundClose = true;
+            break;
+          }
+
+          const figcaptionMatch = FIGCAPTION_REGEX.exec(htmlValue);
+          if (figcaptionMatch) {
+            captionText = figcaptionMatch[1];
+            // Check if this node also contains </figure>
+            if (FIGURE_CLOSE_REGEX.test(htmlValue.replace(FIGCAPTION_REGEX, ''))) {
+              endIndex = j;
+              foundClose = true;
+              break;
+            }
+            // Check if the next sibling is </figure>
+            const nextSibling = children[j + 1];
+            if (nextSibling?.type === 'html' && FIGURE_CLOSE_REGEX.test((nextSibling as Html).value)) {
+              endIndex = j + 1;
+              foundClose = true;
+              break;
+            }
+          }
+        }
+
+        if (foundClose) {
+          // builds the actual reassembled figure node
+          const figureChildren: FigureNode['children'] = [imageNode as RootContent];
+          if (captionText) {
+            figureChildren.push({
+              children: [{ type: 'text', value: captionText }],
+              data: { hName: 'figcaption' },
+              type: 'figcaption',
+            } as RootContent);
+          }
+
+          const figureNode: FigureNode = {
+            children: figureChildren,
+            data: { hName: 'figure' },
+            position: node.position,
+            type: 'figure',
+          };
+
+          // replaces all the fragmented components with the reassembled figure node
+          root.children.splice(i, endIndex - i + 1, figureNode as RootContent);
+        }
+      }
+      i += 1;
+    }
+  });
 }
 
 interface ImageAttrs {
@@ -77,6 +184,9 @@ interface RecipeAttrs {
   title?: string;
 }
 
+/**
+ * Transforms an inline `<Anchor>` JSX element into a readme-anchor MDAST node.
+ */
 const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   const attrs = getAttrs<Anchor['data']['hProperties']>(jsx);
   const { href = '', label, target, title } = attrs;
@@ -97,6 +207,10 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   };
 };
 
+/**
+ * Transforms an `<Image />` JSX element into an image-block MDAST node.
+ * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
+ */
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const { align, alt = '', border, caption, className, height, lazy, src = '', title = '', width } = attrs;
@@ -140,6 +254,9 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   };
 };
 
+/**
+ * Transforms a `<Callout>` JSX element into an rdme-callout MDAST node.
+ */
 const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const attrs = getAttrs<CalloutAttrs>(jsx);
   const { empty = false, icon = '', theme = '' } = attrs;
@@ -159,6 +276,9 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   };
 };
 
+/**
+ * Transforms an `<Embed />` JSX element into an embed-block MDAST node.
+ */
 const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   const attrs = getAttrs<EmbedAttrs>(jsx);
   const {
@@ -203,6 +323,9 @@ const transformEmbed = (jsx: MdxJsxFlowElement): EmbedBlock => {
   };
 };
 
+/**
+ * Transforms a `<Recipe />` JSX element into a recipe MDAST node.
+ */
 const transformRecipe = (jsx: MdxJsxFlowElement): Recipe => {
   const attrs = getAttrs<RecipeAttrs>(jsx);
   const { backgroundColor = '', emoji = '', id = '', link = '', slug = '', title = '' } = attrs;
@@ -441,8 +564,12 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     return SKIP;
   });
 
+  // Reassembling fragmented HTML <figure> blocks into proper figure/figcaption nodes
+  // this will then later be transformed into image-block nodes by imageTransformer
+  reassembleHtmlFigures(tree as Parent);
+
   // Flatten figure nodes (magic blocks with captions) into image-block nodes
-  const isFigure = (node: Node): node is MagicBlockFigure => node.type === 'figure';
+  const isFigure = (node: Node): node is FigureNode => node.type === 'figure';
   visit(tree, isFigure, (node, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 

@@ -121,10 +121,11 @@ export interface MagicBlockEmbed {
 }
 
 /**
- * Figure node that may contain an image (from magicBlockTransformer with caption).
- * This is an intermediate format before conversion to Figure.
+ * Intermediate figure node before conversion to the final Figure type.
+ * Produced by magicBlockTransformer (for magic block images with captions)
+ * and by reassembleHtmlFigures (for raw HTML <figure> elements).
  */
-export interface MagicBlockFigure {
+export interface FigureNode {
   children: RootContent[];
   data?: {
     hName?: string;

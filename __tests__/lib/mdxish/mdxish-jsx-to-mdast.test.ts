@@ -1,15 +1,18 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Root as HastRoot } from 'hast';
 import type { Paragraph, Root } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
-import { mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+
 
 describe('mdxish-jsx-to-mdast transformer', () => {
+  const processWithNewTypes = (md: string): Root => {
+    const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+    return processor.runSync(processor.parse(parserReadyContent)) as Root;
+  };
+
   describe('with newEditorTypes enabled', () => {
-    const processWithNewTypes = (md: string): Root => {
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
-    };
 
     describe('Image component', () => {
       it('should transform <Image /> to image-block node', () => {
@@ -309,11 +312,6 @@ This is a warning message.
   });
 
   describe('magic blocks', () => {
-    const processWithNewTypes = (md: string): Root => {
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
-    };
-
     it('should transform magic block image to image-block node', () => {
       // Magic block images are now transformed to 'image-block' type
       // Magic block image array format: [url, title, alt]
@@ -558,6 +556,162 @@ Some callout content
       const imageNode = ast.children[0] as ImageBlock;
       expect(imageNode.src).toBe('https://example.com/image.jpg');
       expect(imageNode.alt).toBe('Alt text');
+    });
+
+  });
+
+  describe('HTML figure reassembly', () => {
+    it('should reassemble <figure> with image and figcaption into an image-block', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+      expect(imageNode.caption).toBe('Hello World');
+      expect(imageNode.data?.hProperties?.caption).toBe('Hello World');
+    });
+
+    it('should handle <figure> with image but no figcaption', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should handle <figure> with combined figcaption and closing tag', () => {
+      const md = `<figure>
+![](https://example.com/photo.jpg)
+<figcaption>Caption text</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('Caption text');
+    });
+
+    it('should preserve alt text from the image', () => {
+      const md = `<figure>
+![My alt text](https://example.com/image.png)
+<figcaption>A caption</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.data?.hProperties?.alt).toBe('My alt text');
+    });
+
+    it('should handle entire figure block on a single line', () => {
+      const md = '<figure>![](https://example.com/image.png)<figcaption>Hello World</figcaption></figure>';
+
+      const ast = processWithNewTypes(md);
+      const firstNode = ast.children[0];
+      expect(firstNode.type).toBe('html');
+    });
+
+    it('should render <figure> with figcaption as a figure element without newEditorTypes', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>`;
+
+      const hast = mdxish(md) as HastRoot;
+      expect(hast.children.length).toBeGreaterThan(0);
+
+      const figure = hast.children[0] as { tagName?: string };
+      expect(figure.tagName).toBe('figure');
+    });
+
+    it('should not affect standalone html blocks', () => {
+      const md = '<div>Hello</div>';
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('html');
+    });
+
+    it('should not match escaped opening tag', () => {
+      const md = `\\<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match opening tag wrapped in inline code', () => {
+      const md = `\`<figure>\`
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match opening tag wrapped in bold', () => {
+      const md = `**<figure>**
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not extract caption when figcaption is wrapped in inline code', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+\`<figcaption>Hello</figcaption>\`
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should not extract caption when figcaption is wrapped in bold', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+**<figcaption>Hello</figcaption>**
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should not match when closing tag is wrapped in inline code', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+\`</figure>\``;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match when closing tag is wrapped in bold', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+**</figure>**`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
     });
   });
 
