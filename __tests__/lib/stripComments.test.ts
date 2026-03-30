@@ -318,11 +318,7 @@ end"`);
 \`}</HTMLBlock>`;
 
     const output = await stripComments(input, { mdxish: true });
-    console.log('stripped comments:', output);
-
-    expect(output).toContain('<HTMLBlock>');
-    expect(output).toContain('<strong>Hello, World!</strong>');
-    expect(output).toContain('</HTMLBlock>');
+    expect(output).toBe(input);
   });
 
   // TODO: enable this test after fixing the heading parsing issue

@@ -14,17 +14,12 @@ function base64Decode(str: string): string {
 }
 
 // Markers for protected HTMLBlock content
-// Add some random characters to the markers to avoid conflicts with other content
-const HTML_BLOCK_CONTENT_START = 'RMDX-!&*$@#-HTMLBLOCK-START:';
-const HTML_BLOCK_CONTENT_END = ':RMDX-!&*$@#-HTMLBLOCK-END';
+// Add some random characters to the markers to reduce likelihood of conflicts with other content
+const HTML_BLOCK_CONTENT_START = 'RMDX-!#@-HTMLBLOCK-START%:';
+const HTML_BLOCK_CONTENT_END = ':%RMDX-!#@-HTMLBLOCK-END';
 
 /**
  * Matches HTMLBlock template literal expressions: `<HTMLBlock>{` ... `}</HTMLBlock>`
- *
- * Capture groups:
- * 1. Opening tag (e.g. `<HTMLBlock>` or `<HTMLBlock runScripts="true">`)
- * 2. Template literal content (between backticks)
- * 3. Closing tag (`</HTMLBlock>`)
  */
 export const HTMLBLOCK_TEMPLATE_LITERAL_REGEX = /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g;
 
@@ -52,12 +47,28 @@ export function protectHTMLBlockContent(content: string) {
 
 /**
  * Restores HTMLBlock content that was protected by `protectHTMLBlockContent`.
+ * When `withBackticks` is true, re-wraps the decoded body as `{`...`}` (used by `stripComments` to preserve
+ * original markup). When false or omitted, inserts decoded HTML only (typical for transformers).
+ *
+ * @param content
+ * @param withBackticks
+ * @returns Content with protected markers replaced by decoded HTML, optionally wrapped in template literal syntax
+ * @example
+ * ```typescript
+ * const input =
+ *   '<HTMLBlock>RMDX-!#@-HTMLBLOCK-START%:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RMDX-!#@-HTMLBLOCK-END</HTMLBlock>';
+ * restoreHTMLBlockContent(input, true);
+ * // Returns: '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>'
+ * restoreHTMLBlockContent(input);
+ * // Returns: '<HTMLBlock><script>alert("xss")</script></HTMLBlock>'
+ * ```
  */
-export function restoreHTMLBlockContent(content: string): string {
+export function restoreHTMLBlockContent(content: string, withBackticks?: boolean) {
   const markerRegex = new RegExp(`${HTML_BLOCK_CONTENT_START}([A-Za-z0-9+/=]+)${HTML_BLOCK_CONTENT_END}`, 'g');
   return content.replace(markerRegex, (_match, encoded: string) => {
     try {
-      return base64Decode(encoded);
+      const decoded = base64Decode(encoded);
+      return withBackticks ? `{\`${decoded}\`}` : decoded;
     } catch {
       return encoded;
     }

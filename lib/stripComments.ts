@@ -89,7 +89,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
 
   let restored = stringified;
   if (mdxish) {
-    restored = restoreHTMLBlockContent(restored);
+    restored = restoreHTMLBlockContent(restored, true);
   }
   restored = restoreMagicBlocks(restored, blocks);
   return restored;
