@@ -1,4 +1,5 @@
-import type { MagicBlockEmbed, FigureNode, MagicBlockImage } from './magic-blocks/types';
+import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
+import type { FigureNode } from './types';
 import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
@@ -35,7 +36,7 @@ function extractText(nodes: RootContent[]): string {
 
 const FIGURE_OPEN_REGEX = /^<figure(\s[^>]*)?>$/;
 const FIGURE_CLOSE_REGEX = /^\s*<\/figure>\s*$/;
-const COMPLETE_FIGURE_REGEX = /^<figure(\s[^>]*)?>[\s\S]*<\/figure>\s*$/;
+const FIGURE_COMPLETE_REGEX = /^<figure(\s[^>]*)?>[\s\S]*<\/figure>\s*$/;
 const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
 const FIGCAPTION_OPEN_REGEX = /^<figcaption>$/;
 const FIGCAPTION_CLOSE_REGEX = /^<\/figcaption>$/;
@@ -184,7 +185,7 @@ function reassembleHtmlFigures(tree: Parent) {
   // Case 1: Handle complete <figure> blocks in a single html node (e.g. inside callouts)
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
-    if (!COMPLETE_FIGURE_REGEX.test(node.value.trim())) return;
+    if (!FIGURE_COMPLETE_REGEX.test(node.value.trim())) return;
 
     const parsed = parseCompleteFigure(node.value);
     if (!parsed) return;
