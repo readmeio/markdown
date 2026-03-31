@@ -24,7 +24,7 @@ const HTML_VOID_ELEMENTS = new Set([
 ]);
 
 /**
- * Matches self-closing HTML tags: `<tagname />` or `<tagname attr="val" />`
+ * Matches self-closing HTML tags: `<tagname/>` or `<tagname attr="val" />`
  *
  * Captures:
  *  1 - tag name (lowercase letters, digits, hyphens)
@@ -57,9 +57,9 @@ const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']
  * - Protects code blocks from transformation
  *
  * @example
- * closeSelfClosingHtmlTags('<i /> text')         // '<i></i> text'
- * closeSelfClosingHtmlTags('<br />')              // '<br />' (void, untouched)
- * closeSelfClosingHtmlTags('<MyComp />')          // '<MyComp />' (PascalCase, untouched)
+ * closeSelfClosingHtmlTags('<i/> text')          // '<i></i> text'
+ * closeSelfClosingHtmlTags('<br />')             // '<br />' (void, untouched)
+ * closeSelfClosingHtmlTags('<MyComp />')         // '<MyComp />' (PascalCase, untouched)
  * closeSelfClosingHtmlTags('<i class="icon" />') // '<i class="icon"></i>'
  */
 export function closeSelfClosingHtmlTags(content: string) {
