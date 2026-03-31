@@ -1,15 +1,17 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
-import type { Paragraph, Root } from 'mdast';
+import type { Root as HastRoot } from 'hast';
+import type { Paragraph, Root, RootContent } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
-import { mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 
 describe('mdxish-jsx-to-mdast transformer', () => {
+  const processWithNewTypes = (md: string): Root => {
+    const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+    return processor.runSync(processor.parse(parserReadyContent)) as Root;
+  };
+
   describe('with newEditorTypes enabled', () => {
-    const processWithNewTypes = (md: string): Root => {
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
-    };
 
     describe('Image component', () => {
       it('should transform <Image /> to image-block node', () => {
@@ -309,11 +311,6 @@ This is a warning message.
   });
 
   describe('magic blocks', () => {
-    const processWithNewTypes = (md: string): Root => {
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      return processor.runSync(processor.parse(parserReadyContent)) as Root;
-    };
-
     it('should transform magic block image to image-block node', () => {
       // Magic block images are now transformed to 'image-block' type
       // Magic block image array format: [url, title, alt]
@@ -558,6 +555,389 @@ Some callout content
       const imageNode = ast.children[0] as ImageBlock;
       expect(imageNode.src).toBe('https://example.com/image.jpg');
       expect(imageNode.alt).toBe('Alt text');
+    });
+
+  });
+
+  describe('HTML figure reassembly', () => {
+    it('should reassemble <figure> with image and figcaption into an image-block', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+      expect(imageNode.caption).toBe('Hello World');
+      expect(imageNode.data?.hProperties?.caption).toBe('Hello World');
+    });
+
+    it('should handle <figure> with image but no figcaption', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.data?.hProperties?.src).toBe('https://example.com/image.png');
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should handle <figure> with combined figcaption and closing tag', () => {
+      const md = `<figure>
+![](https://example.com/photo.jpg)
+<figcaption>Caption text</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('Caption text');
+    });
+
+    it('should preserve alt text from the image', () => {
+      const md = `<figure>
+![My alt text](https://example.com/image.png)
+<figcaption>A caption</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+
+      expect(imageNode.data?.hProperties?.alt).toBe('My alt text');
+    });
+
+    it('should handle entire figure block on a single line', () => {
+      const md = '<figure>![](https://example.com/image.png)<figcaption>Hello World</figcaption></figure>';
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('Hello World');
+    });
+
+    it('should render <figure> with figcaption as a figure element without newEditorTypes', () => {
+      const md = `<figure>
+![Alt text](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>`;
+
+      const hast = mdxish(md) as HastRoot;
+      expect(hast.children.length).toBeGreaterThan(0);
+
+      const figure = hast.children[0] as { tagName?: string };
+      expect(figure.tagName).toBe('figure');
+    });
+
+    it('should not affect standalone html blocks', () => {
+      const md = '<div>Hello</div>';
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('html');
+    });
+
+    it('should not match escaped opening tag', () => {
+      const md = `\\<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match opening tag wrapped in inline code', () => {
+      const md = `\`<figure>\`
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match opening tag wrapped in bold', () => {
+      const md = `**<figure>**
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not extract caption when figcaption is wrapped in inline code', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+\`<figcaption>Hello</figcaption>\`
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should not extract caption when figcaption is wrapped in bold', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+**<figcaption>Hello</figcaption>**
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBeUndefined();
+    });
+
+    it('should not match when closing tag is wrapped in inline code', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+\`</figure>\``;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should not match when closing tag is wrapped in bold', () => {
+      const md = `<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+**</figure>**`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).not.toBe(NodeTypes.imageBlock);
+    });
+
+    it('should reassemble figure inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure>
+> ![](https://example.com/image.png)
+> <figcaption>Hello</figcaption>
+> </figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should reassemble single-line figure inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should handle <figure> with attributes', () => {
+      const md = `<figure class="special">
+![](https://example.com/image.png)
+<figcaption>With attrs</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const imageNode = ast.children[0] as ImageBlock;
+      expect(imageNode.type).toBe(NodeTypes.imageBlock);
+      expect(imageNode.caption).toBe('With attrs');
+    });
+
+    it('should handle <figure> with attributes inside a callout', () => {
+      const md = `> 📘 Note
+>
+> <figure class="special">![](https://example.com/image.png)<figcaption>Attrs</figcaption></figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      const callout = ast.children[0] as Callout;
+      const imageBlock = callout.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Attrs');
+    });
+
+    it('should reassemble figure inside a GFM table cell into an image-block', () => {
+      const md = `| Column |
+| --- |
+| <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
+      const cell = table.children[1].children[0];
+      const imageBlock = cell.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello');
+    });
+
+    it('should leave figure inside a JSX table as opaque table content', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Column</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure></td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children).toHaveLength(1);
+      // Without blank lines inside <td>, JSX tables treat content as opaque —
+      // <figure> is not parsed into separate MDAST nodes
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should reassemble figure inside a JSX table with blank lines', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Figure</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Hello World</figcaption>
+</figure>
+
+    </td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      // With blank lines inside <td>, the parser treats <figure> as an mdxJsxFlowElement
+      // and its content is tokenized — so the image and figcaption are accessible
+      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
+      const cell = table.children[1].children[0];
+      const imageBlock = cell.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(imageBlock).toBeDefined();
+      expect(imageBlock.caption).toBe('Hello World');
+    });
+
+    it('should treat incomplete figure syntax in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| <figure>![](https://example.com/image.png) |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should treat figure with missing closing tag in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| <figure>![](https://example.com/image.png)<figcaption>Hello</figcaption> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should treat mangled figure syntax in a GFM table as text', () => {
+      const md = `| Content |
+| --- |
+| \\<figure>![](https://example.com/image.png)<figcaption>Hello</figcaption></figure> |`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+    });
+
+    it('should handle figure after a callout', () => {
+      const md = `> 📘 Note
+>
+> Some text
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Hello</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('Hello');
+    });
+
+    it('should handle figure between two callouts', () => {
+      const md = `> 📘 First
+>
+> Text
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>Caption</figcaption>
+</figure>
+
+> ⚠️ Second
+>
+> More text`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe(NodeTypes.callout);
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('Caption');
+      expect(ast.children[2].type).toBe(NodeTypes.callout);
+    });
+
+    it('should handle figure after a GFM table', () => {
+      const md = `| A | B |
+| --- | --- |
+| 1 | 2 |
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>After table</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      expect(ast.children[0].type).toBe('table');
+      expect(ast.children[1].type).toBe(NodeTypes.imageBlock);
+      expect((ast.children[1] as ImageBlock).caption).toBe('After table');
+    });
+
+    it('should handle figure after a JSX table', () => {
+      const md = `<Table>
+<thead>
+  <tr>
+    <th>Header</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Cell</td>
+  </tr>
+</tbody>
+</Table>
+
+<figure>
+![](https://example.com/image.png)
+<figcaption>After JSX table</figcaption>
+</figure>`;
+
+      const ast = processWithNewTypes(md);
+      const figureNode = ast.children.find(c => c.type === NodeTypes.imageBlock) as ImageBlock;
+      expect(figureNode).toBeDefined();
+      expect(figureNode.caption).toBe('After JSX table');
     });
   });
 
