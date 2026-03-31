@@ -19,6 +19,7 @@ import { VFile } from 'vfile';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 
 import { mdxishCompilers } from '../processor/compile';
+import { rehypeEmptyParagraphsToBr } from '../processor/plugin/empty-paragraphs-to-br';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
@@ -46,6 +47,7 @@ import {
   removeJSXComments,
   type JSXContext,
 } from '../processor/transform/mdxish/preprocess-jsx-expressions';
+import remarkRestoreBlankLines from '../processor/transform/mdxish/restore-blank-lines';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
   preserveBooleanProperties,
@@ -192,7 +194,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
-    .use(remarkGfm);
+    .use(remarkGfm)
+    .use(remarkRestoreBlankLines);
 
   return {
     processor,
@@ -261,6 +264,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(rehypeRaw, { passThrough: ['html-block'] })
     .use(restoreBooleanProperties)
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
+    .use(rehypeEmptyParagraphsToBr) // Convert empty <p> from blank lines into visible <br> spacing
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {
