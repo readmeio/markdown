@@ -39,7 +39,9 @@ import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
+import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
+import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
@@ -106,8 +108,8 @@ const preprocessBody = (text: string): string => {
 
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', [gemoji(), legacyVariable(), looseHtmlEntity()])
+  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkBreaks)
   .use(remarkGfm)
@@ -121,8 +123,8 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [gfmStrikethrough(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', [gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
+  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)

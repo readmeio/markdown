@@ -25,7 +25,6 @@ import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
-import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
@@ -57,9 +56,11 @@ import variablesTextTransformer from '../processor/transform/mdxish/variables-te
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
+import { gemojiFromMarkdown } from './mdast-util/gemoji';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { gemoji } from './micromark/gemoji';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -88,7 +89,6 @@ export interface MdxishOpts {
 const defaultTransformers: PluggableList = [
   [calloutTransformer, { isMdxish: true }],
   codeTabsTransformer,
-  gemojiTransformer,
   embedTransformer,
 ];
 
@@ -155,8 +155,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
+        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
@@ -164,6 +164,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
         ? [
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
+            gemojiFromMarkdown(),
             legacyVariableFromMarkdown(),
             emptyTaskListItemFromMarkdown(),
             looseHtmlEntityFromMarkdown(),
@@ -171,6 +172,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
         : [
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
+            gemojiFromMarkdown(),
             mdxExpressionFromMarkdown(),
             legacyVariableFromMarkdown(),
             emptyTaskListItemFromMarkdown(),
