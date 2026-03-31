@@ -97,7 +97,7 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   };
 };
 
-const transformVariable = (jsx: MdxJsxTextElement | MdxJsxFlowElement): Variable => {
+const transformVariable = (jsx: MdxJsxFlowElement | MdxJsxTextElement): Variable => {
   const attrs = getAttrs<{ name?: string; variable?: string }>(jsx);
   const name = attrs.name || attrs.variable || '';
 
@@ -107,7 +107,7 @@ const transformVariable = (jsx: MdxJsxTextElement | MdxJsxFlowElement): Variable
       hName: 'Variable',
       hProperties: { name },
     },
-    value: `{user.${name}}`,
+    value: '',
     position: jsx.position,
   };
 };

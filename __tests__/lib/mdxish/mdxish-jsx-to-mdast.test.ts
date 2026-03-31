@@ -272,7 +272,6 @@ This is a warning message.
         expect(variableNode).toBeDefined();
         expect(variableNode.data?.hProperties?.name).toBe('USERNAME');
         expect(variableNode.data?.hName).toBe('Variable');
-        expect(variableNode.value).toBe('{user.USERNAME}');
       });
 
       it('should handle "variable" attribute as alternate to "name"', () => {
@@ -283,7 +282,6 @@ This is a warning message.
         const variableNode = para.children.find(c => c.type === NodeTypes.variable) as Variable;
         expect(variableNode).toBeDefined();
         expect(variableNode.data?.hProperties?.name).toBe('API_KEY');
-        expect(variableNode.value).toBe('{user.API_KEY}');
       });
 
       it('should prefer "name" attribute over "variable" when both present', () => {
@@ -306,7 +304,6 @@ This is a warning message.
         const variableNode = ast.children[0] as Variable;
         expect(variableNode.type).toBe(NodeTypes.variable);
         expect(variableNode.data?.hProperties?.name).toBe('');
-        expect(variableNode.value).toBe('{user.}');
       });
 
       it('should handle multiple Variables in one paragraph', () => {
