@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 13.7.3
+### 🛠 Fixes & Updates
+
+* **#300:** apply Tailwind classes after loop ([#1412](https://github.com/readmeio/markdown/issues/1412)) ([4178977](https://github.com/readmeio/markdown/commit/41789773813e6534064451c579b03a4317091d54)), closes [#300](https://github.com/readmeio/markdown/issues/300) [#1404](https://github.com/readmeio/markdown/issues/1404)
+* **mdxish:** don't parse markdown in api-header magic block titles ([#1405](https://github.com/readmeio/markdown/issues/1405)) ([cee8bc3](https://github.com/readmeio/markdown/commit/cee8bc3cf00bba783f88fe5347552cdf7861dde1))
+* mermaid racing conditions when multiple diagrams are present ([#1385](https://github.com/readmeio/markdown/issues/1385)) ([81f2ad6](https://github.com/readmeio/markdown/commit/81f2ad61f55b54bc8fa0e98a5769f13c261fe3eb))
+
 ## Version 13.7.2
 ### 🛠 Fixes & Updates
 
