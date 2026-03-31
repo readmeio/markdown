@@ -328,7 +328,7 @@ describe('gemoji transformer', () => {
 
     it('should render consecutive emojis in an api-header title', () => {
       const md = '[block:api-header]{"title":"API :grin::grin:"}[/block]';
-      expect(mix(md)).toMatchInlineSnapshot('"<h2 id="api-"><p>API 😁😁</p></h2>"');
+      expect(mix(md)).toMatchInlineSnapshot('"<h2 id="api-">API 😁😁</h2>"');
     });
 
     it('should not render emojis in a code magic block', () => {

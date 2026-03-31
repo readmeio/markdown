@@ -290,6 +290,7 @@ const parseBlock = (text: string): MdastNode[] => {
  */
 const apiHeaderTitleParser = unified()
   .data('micromarkExtensions', [
+    gemoji(),
     legacyVariable(),
     looseHtmlEntity(),
     {
@@ -303,7 +304,7 @@ const apiHeaderTitleParser = unified()
       },
     },
   ])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm);
 
