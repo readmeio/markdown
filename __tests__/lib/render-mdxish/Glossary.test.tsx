@@ -25,6 +25,26 @@ describe('Glossary', () => {
     consoleErrorSpy.mockRestore();
   });
 
+  it('does not error on a lone <Glossary> tag with no children or term prop', () => {
+    const md = '<Glossary>';
+    const tree = mdxish(md);
+    const mod = renderMdxish(tree);
+
+    expect(() => render(<mod.default />)).not.toThrow();
+    expect(stderrSpy).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not error on empty <Glossary> tag', () => {
+    const md = '<Glossary></Glossary>';
+    const tree = mdxish(md);
+    const mod = renderMdxish(tree);
+
+    render(<mod.default />);
+    expect(stderrSpy).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
   it('renders a glossary item without console errors', () => {
     const md = `The term <Glossary>exogenous</Glossary> should show a tooltip on hover.
     `;
