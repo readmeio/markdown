@@ -1,4 +1,4 @@
-import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
+import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe, Variable } from '../../../types';
 import type { Paragraph, Root } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
@@ -256,6 +256,111 @@ This is a warning message.
         expect(anchorNode).toBeDefined();
         expect(anchorNode.data?.hProperties?.href).toBe('https://readme.com');
         expect(anchorNode.children).toHaveLength(0);
+      });
+    });
+
+    describe('Variable component', () => {
+      it('should transform <Variable /> to readme-variable node', () => {
+        const md = 'Hello <Variable name="USERNAME" />, welcome!';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0].type).toBe('paragraph');
+
+        const para = ast.children[0] as Paragraph;
+        const variableNode = para.children.find(c => c.type === NodeTypes.variable) as Variable;
+        expect(variableNode).toBeDefined();
+        expect(variableNode.data?.hProperties?.name).toBe('USERNAME');
+        expect(variableNode.data?.hName).toBe('Variable');
+        expect(variableNode.value).toBe('{user.USERNAME}');
+      });
+
+      it('should handle "variable" attribute as alternate to "name"', () => {
+        const md = 'Your API key is <Variable variable="API_KEY" />.';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const variableNode = para.children.find(c => c.type === NodeTypes.variable) as Variable;
+        expect(variableNode).toBeDefined();
+        expect(variableNode.data?.hProperties?.name).toBe('API_KEY');
+        expect(variableNode.value).toBe('{user.API_KEY}');
+      });
+
+      it('should prefer "name" attribute over "variable" when both present', () => {
+        // Variable alone on a line becomes a flow element (top-level node)
+        const md = '<Variable name="PREFERRED" variable="FALLBACK" />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        const variableNode = ast.children[0] as Variable;
+        expect(variableNode.type).toBe(NodeTypes.variable);
+        expect(variableNode.data?.hProperties?.name).toBe('PREFERRED');
+      });
+
+      it('should handle Variable with empty name', () => {
+        // Variable alone on a line becomes a flow element (top-level node)
+        const md = '<Variable />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        const variableNode = ast.children[0] as Variable;
+        expect(variableNode.type).toBe(NodeTypes.variable);
+        expect(variableNode.data?.hProperties?.name).toBe('');
+        expect(variableNode.value).toBe('{user.}');
+      });
+
+      it('should handle multiple Variables in one paragraph', () => {
+        const md = 'Hello <Variable name="FIRST_NAME" /> <Variable name="LAST_NAME" />!';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const variableNodes = para.children.filter(c => c.type === NodeTypes.variable) as Variable[];
+        expect(variableNodes).toHaveLength(2);
+        expect(variableNodes[0].data?.hProperties?.name).toBe('FIRST_NAME');
+        expect(variableNodes[1].data?.hProperties?.name).toBe('LAST_NAME');
+      });
+
+      it('should handle Variable in table cells (magic block)', () => {
+        const md = `[block:parameters]
+{
+  "data": {
+    "h-0": "Issue",
+    "h-1": "Resolution",
+    "0-0": "Traffic cannot reach <Variable name="PRODUCT_NICKNAME" />",
+    "0-1": "Review the DNS configuration for <Variable name="PRODUCT_NICKNAME" />."
+  },
+  "cols": 2,
+  "rows": 1
+}
+[/block]`;
+        const ast = processWithNewTypes(md);
+
+        // The table should be parsed and contain Variable nodes
+        expect(ast.children.length).toBeGreaterThanOrEqual(1);
+        const tableNode = ast.children[0];
+        expect(tableNode.type).toBe('table');
+      });
+
+      it('should handle Variable mixed with other inline content', () => {
+        const md = 'Contact **<Variable name="SUPPORT_EMAIL" />** for help.';
+        const ast = processWithNewTypes(md);
+
+        const para = ast.children[0] as Paragraph;
+        const variableNode = para.children.find(
+          c => c.type === NodeTypes.variable || (c as { children?: unknown[] }).children?.some?.((child: { type: string }) => child.type === NodeTypes.variable)
+        );
+        expect(variableNode).toBeDefined();
+      });
+
+      it('should preserve position information', () => {
+        // Variable alone on a line becomes a flow element (top-level node)
+        const md = '<Variable name="TEST" />';
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children).toHaveLength(1);
+        const variableNode = ast.children[0] as Variable;
+        expect(variableNode.type).toBe(NodeTypes.variable);
+        expect(variableNode.position).toBeDefined();
       });
     });
 
@@ -594,6 +699,16 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
+    });
+
+    it('should leave Variable as mdxJsxFlowElement (rendering path unaffected)', () => {
+      // Variable alone on a line becomes a flow element (block-level)
+      const md = '<Variable name="USERNAME" />';
+      const ast = processWithoutNewTypes(md);
+
+      // Variable stays as mdxJsxFlowElement when newEditorTypes is disabled
+      expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+      expect(ast.children.find(c => c.type === NodeTypes.variable)).toBeUndefined();
     });
   });
 });

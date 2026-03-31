@@ -1,5 +1,5 @@
 import type { MagicBlockEmbed, MagicBlockFigure, MagicBlockImage } from './magic-blocks/types';
-import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
+import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe, Variable } from '../../../types';
 import type { Node, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -93,6 +93,21 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
         ...(title && { title }),
       },
     },
+    position: jsx.position,
+  };
+};
+
+const transformVariable = (jsx: MdxJsxTextElement | MdxJsxFlowElement): Variable => {
+  const attrs = getAttrs<{ name?: string; variable?: string }>(jsx);
+  const name = attrs.name || attrs.variable || '';
+
+  return {
+    type: NodeTypes.variable,
+    data: {
+      hName: 'Variable',
+      hProperties: { name },
+    },
+    value: `{user.${name}}`,
     position: jsx.position,
   };
 };
@@ -395,9 +410,16 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
 const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
-  // Block JSX components (Image, Callout, Embed, Recipe)
+  // Block JSX components (Image, Callout, Embed, Recipe, Variable)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
+
+    // Handle Variable separately since it can appear as flow element when on its own line
+    if (node.name === 'Variable') {
+      const newNode = transformVariable(node);
+      (parent.children as Node[])[index] = newNode;
+      return;
+    }
 
     const transformer = COMPONENT_MAP[node.name];
     if (!transformer) return;
@@ -409,12 +431,15 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     (parent.children as Node[])[index] = newNode;
   });
 
-  // Inline JSX components (Anchor)
+  // Inline JSX components (Anchor, Variable)
   visit(tree, 'mdxJsxTextElement', (node: MdxJsxTextElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
 
     if (node.name === 'Anchor') {
       const newNode = transformAnchor(node);
+      (parent.children as Node[])[index] = newNode;
+    } else if (node.name === 'Variable') {
+      const newNode = transformVariable(node);
       (parent.children as Node[])[index] = newNode;
     }
   });
