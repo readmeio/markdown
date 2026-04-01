@@ -138,10 +138,7 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * 3. Skips HTML elements to prevent backslashes appearing in output
  *
  */
-function escapeProblematicBraces(
-  content: string,
-  { preserveJsxComments = false }: { preserveJsxComments?: boolean } = {},
-): string {
+function escapeProblematicBraces(content: string, preserveJsxComments = false): string {
   // Skip HTML elements — their content should never be escaped because
   // rehypeRaw parses them into hast elements, making `\` literal text in output
   const htmlElements: string[] = [];
@@ -206,7 +203,7 @@ function escapeProblematicBraces(
     }
 
     if (ch === '{') {
-      const isComment = preserveJsxComments && chars[i + 1] === '/' && chars[i + 2] === '*';
+      const isComment = preserveJsxComments && i + 2 < chars.length && chars[i + 1] === '/' && chars[i + 2] === '*';
       openStack.push({ pos: i, hasBlankLine: false, isComment });
       lastNewlinePos = -2; // Reset newline tracking for new expression
     } else if (ch === '}') {
@@ -230,9 +227,7 @@ function escapeProblematicBraces(
 
   // If there are no problematic braces, return safe content as-is;
   // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
-  let result = toEscape.size === 0
-    ? safe
-    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+  let result = toEscape.size === 0 ? safe : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
 
   // Restore HTML elements
   if (htmlElements.length > 0) {
@@ -346,7 +341,7 @@ export function preprocessJSXExpressions(
 
   // Step 3: Escape problematic braces to prevent MDX expression parsing errors
   // This handles both unbalanced braces and paragraph-spanning expressions in one pass
-  processed = escapeProblematicBraces(processed, { preserveJsxComments });
+  processed = escapeProblematicBraces(processed, preserveJsxComments);
 
   // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);
