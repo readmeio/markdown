@@ -88,11 +88,12 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   const file = await processor.process(preprocessedDoc);
   const stringified = String(file).trim();
 
+  // Restore sections that were extracted from the document
   let restored = stringified;
+  restored = restoreMagicBlocks(restored, blocks);
   if (mdxish) {
     restored = restoreHTMLBlockContent(restored, true);
   }
-  restored = restoreMagicBlocks(restored, blocks);
   return restored;
 }
 
