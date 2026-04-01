@@ -286,32 +286,28 @@ const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNod
       if (node.type !== 'html' || !value) return [node];
 
       const hast = htmlParser.parse(value) as HastRoot;
-      const nodes: MdastNode[] = [];
 
-      const flatten = (children: HastRoot['children']) => {
-        for (const child of children) {
-          if (child.type === 'text') {
-            nodes.push({ type: 'text', value: (child as HastText).value });
-          } else if (child.type === 'element') {
-            const el = child as HastElement;
-            const attrs = Object.entries(el.properties ?? {})
-              .map(([k, v]) => ` ${k}="${v}"`)
-              .join('');
+      const flatten = (children: HastRoot['children']): MdastNode[] =>
+        children.flatMap(child => {
+          if (child.type === 'text') return [{ type: 'text', value: (child as HastText).value }];
+          if (child.type !== 'element') return [];
 
-            if (el.tagName === 'br') {
-              nodes.push({ type: 'break' });
-            } else if (el.children.length === 0) {
-              nodes.push({ type: 'html', value: `<${el.tagName}${attrs}>` });
-            } else {
-              nodes.push({ type: 'html', value: `<${el.tagName}${attrs}>` });
-              flatten(el.children);
-              nodes.push({ type: 'html', value: `</${el.tagName}>` });
-            }
-          }
-        }
-      };
+          const el = child as HastElement;
+          const attrs = Object.entries(el.properties ?? {})
+            .map(([k, v]) => ` ${k}="${v}"`)
+            .join('');
 
-      flatten(hast.children);
+          if (el.tagName === 'br') return [{ type: 'break' }];
+          if (el.children.length === 0) return [{ type: 'html', value: `<${el.tagName}${attrs}>` }];
+
+          return [
+            { type: 'html', value: `<${el.tagName}${attrs}>` },
+            ...flatten(el.children),
+            { type: 'html', value: `</${el.tagName}>` },
+          ];
+        });
+
+      const nodes = flatten(hast.children);
       return nodes.length > 0 ? nodes : [node];
     });
   }
