@@ -976,4 +976,53 @@ Some callout content
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
     });
   });
+
+  describe('table cell HTML cleanup (editor-only)', () => {
+    const findHtmlValues = (tree: Root): string[] => {
+      const values: string[] = [];
+      const stack: RootContent[] = [...tree.children];
+      while (stack.length) {
+        const node = stack.pop()!;
+        if (node.type === 'html' && 'value' in node) values.push(node.value);
+        if ('children' in node) stack.push(...(node as unknown as { children: RootContent[] }).children);
+      }
+      return values;
+    };
+
+    it('should decode hex character references in HTML blocks inside table cells', () => {
+      const md = [
+        '[block:parameters]',
+        JSON.stringify({
+          data: { 'h-0': 'Header', '0-0': '<ul>\n<li>_\\<placeholder>_.example.com</li>\n</ul>' },
+          cols: 1,
+          rows: 1,
+          align: ['left'],
+        }),
+        '[/block]',
+      ].join('\n');
+
+      const ast = processWithNewTypes(md);
+      const htmlValues = findHtmlValues(ast);
+      const cellHtml = htmlValues.find(v => v.includes('<ul>'));
+
+      expect(cellHtml).toBeDefined();
+      expect(cellHtml).not.toMatch(/&#x[0-9a-f]+;/i);
+    });
+
+    it('should decode hex refs in complex multi-row table with HTML cells', () => {
+      const md = `[block:parameters]
+{"data":{"h-0":"Identity Provider Type","h-1":"Domain or URL","0-0":"Okta","0-1":"<ul>\\n<li>_\\\\<your-account>_.okta.com</li>\\n    where _\\\\<your-account>_.okta.com is the domain that your organization uses for Okta.  \\n  \\n<li>okta.report-uri.com</li>\\n<li>oktacdn.com</li>\\n</ul>","1-0":"Ping\\nOne","1-1":"<ul>\\n<li>sso.connect.pingidentity.com</li>\\n<li>js-agent.newrelic.com</li>\\n<li>bam.nr-data.net</li>\\n<li>login.pingone.com</li>\\n</ul>","2-0":"AD FS for Third-Party SAML","2-1":"https\\\\://<i>\\\\<adfs_server></i>/adfs/ls  \\n  \\nwhere <i>\\\\<adfs_server></i> is the FQDN of your AD FS server or AD FS portal.","3-0":"Microsoft Azure AD for Third-Party SAML","3-1":"<ul>\\n<li>aadcdn.msauth.net/</li>\\n<li>microsoftonline.com</li>\\n</ul>"},"cols":2,"rows":4,"align":["left","left"]}
+[/block]`;
+
+      const ast = processWithNewTypes(md);
+
+      expect(ast.children[0].type).toBe('table');
+
+      const htmlValues = findHtmlValues(ast);
+
+      for (const value of htmlValues) {
+        expect(value).not.toMatch(/&#x[0-9a-f]+;/i);
+      }
+    });
+  });
 });

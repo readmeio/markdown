@@ -1,4 +1,4 @@
-import type { Literal, Node, Paragraph, Table, TableCell } from 'mdast';
+import type { Literal, Node, Table, TableCell } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
@@ -39,25 +39,31 @@ const mdxishTablesToJsx = (): Transform => tree => {
     visit(table, isTableCell, (cell: TableCell) => {
       if (hasFlowContent || cell.children.length === 0) return;
 
-      const content =
-        cell.children.length === 1 && cell.children[0].type === 'paragraph'
-          ? (cell.children[0] as unknown as Paragraph).children[0]
-          : cell.children[0];
-
-      if (!content) return;
-
       visit(cell, 'break', (_, breakIndex, breakParent) => {
         breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
       });
 
-      if (!(phrasing(content) || content.type === 'plain') && content.type !== 'escape') {
-        // Plain HTML (e.g. <div>Hello</div>) is skipped here — it stays in GFM cells fine.
-        // But self-closing JSX components (e.g. <Image src="..." caption="..." />) serialize
-        // with newlines that break GFM cells, so they must trigger JSX <Table> serialization.
-        const isPlainHtml = content.type === 'html' && !SELF_CLOSING_JSX_REGEX.test((content as Literal).value);
-        if (!isPlainHtml) {
-          hasFlowContent = true;
+      // Check ALL direct cell children for flow content.
+      // `paragraph` is excluded because it's the normal wrapper for phrasing content
+      // in table cells — multiple paragraphs serialize fine in GFM (joined on one line).
+      // `html` nodes are excluded because raw HTML (e.g. <ul>, unclosed <br>) inside
+      // JSX <Table> breaks remarkMdx parsing on the deserialization roundtrip.
+      // Self-closing JSX components (e.g. <Image />) ARE treated as flow because they
+      // serialize with newlines that break GFM cells.
+      for (const child of cell.children as Node[]) {
+        if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') continue;
+        if (phrasing(child as Parameters<typeof phrasing>[0])) continue;
+
+        if (child.type === 'html') {
+          if (SELF_CLOSING_JSX_REGEX.test((child as Literal).value)) {
+            hasFlowContent = true;
+            break;
+          }
+          continue;
         }
+
+        hasFlowContent = true;
+        break;
       }
 
       if (!hasFlowContent) {
