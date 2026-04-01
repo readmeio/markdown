@@ -1010,9 +1010,27 @@ Some callout content
     });
 
     it('should decode hex refs in complex multi-row table with HTML cells', () => {
-      const md = `[block:parameters]
-{"data":{"h-0":"Identity Provider Type","h-1":"Domain or URL","0-0":"Okta","0-1":"<ul>\\n<li>_\\\\<your-account>_.okta.com</li>\\n    where _\\\\<your-account>_.okta.com is the domain that your organization uses for Okta.  \\n  \\n<li>okta.report-uri.com</li>\\n<li>oktacdn.com</li>\\n</ul>","1-0":"Ping\\nOne","1-1":"<ul>\\n<li>sso.connect.pingidentity.com</li>\\n<li>js-agent.newrelic.com</li>\\n<li>bam.nr-data.net</li>\\n<li>login.pingone.com</li>\\n</ul>","2-0":"AD FS for Third-Party SAML","2-1":"https\\\\://<i>\\\\<adfs_server></i>/adfs/ls  \\n  \\nwhere <i>\\\\<adfs_server></i> is the FQDN of your AD FS server or AD FS portal.","3-0":"Microsoft Azure AD for Third-Party SAML","3-1":"<ul>\\n<li>aadcdn.msauth.net/</li>\\n<li>microsoftonline.com</li>\\n</ul>"},"cols":2,"rows":4,"align":["left","left"]}
-[/block]`;
+      const data = {
+        'h-0': 'Foo',
+        'h-1': 'Bar',
+        '0-0': 'Foo A',
+        '0-1': [
+          '<ul>',
+          '<li>_\\<your-domain>_.foo.com</li>',
+          '    where _\\<your-domain>_.foo.com is your domain.  ',
+          '  ',
+          '<li>bar.foo.com</li>',
+          '<li>baz.foo.com</li>',
+          '</ul>',
+        ].join('\n'),
+        '1-0': 'Foo\nB',
+        '1-1': '<ul>\n<li>bar.foo.com</li>\n<li>baz.foo.com</li>\n<li>qux.foo.com</li>\n</ul>',
+        '2-0': 'Foo C',
+        '2-1': 'https\\://<i>\\<hostname></i>/login  \n  \nwhere <i>\\<hostname></i> is the FQDN of your server.',
+        '3-0': 'Foo D',
+        '3-1': '<ul>\n<li>bar.foo.com/</li>\n<li>baz.foo.com</li>\n</ul>',
+      };
+      const md = `[block:parameters]\n${JSON.stringify({ data, cols: 2, rows: 4, align: ['left', 'left'] })}\n[/block]`;
 
       const ast = processWithNewTypes(md);
 
