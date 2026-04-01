@@ -43,13 +43,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
         breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
       });
 
-      // Check ALL direct cell children for flow content.
-      // `paragraph` is excluded because it's the normal wrapper for phrasing content
-      // in table cells — multiple paragraphs serialize fine in GFM (joined on one line).
-      // `html` nodes are excluded because raw HTML (e.g. <ul>, unclosed <br>) inside
-      // JSX <Table> breaks remarkMdx parsing on the deserialization roundtrip.
-      // Self-closing JSX components (e.g. <Image />) ARE treated as flow because they
-      // serialize with newlines that break GFM cells.
+      // Html nodes are excluded because the editor displays them as inline syntax
+      // nodes in GFM cells. Only self-closing JSX (e.g. <Image />) triggers flow.
       for (const child of cell.children as Node[]) {
         if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') continue;
         if (phrasing(child as Parameters<typeof phrasing>[0])) continue;
