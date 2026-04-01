@@ -24,8 +24,8 @@ import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
-import gemojiTransformer from '../processor/transform/gemoji+';
 import imageTransformer from '../processor/transform/images';
+import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -56,9 +56,11 @@ import variablesTextTransformer from '../processor/transform/mdxish/variables-te
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
+import { gemojiFromMarkdown } from './mdast-util/gemoji';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { gemoji } from './micromark/gemoji';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -87,7 +89,6 @@ export interface MdxishOpts {
 const defaultTransformers: PluggableList = [
   [calloutTransformer, { isMdxish: true }],
   codeTabsTransformer,
-  gemojiTransformer,
   embedTransformer,
 ];
 
@@ -98,8 +99,9 @@ const defaultTransformers: PluggableList = [
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 3. Evaluate JSX expressions in attributes (unless safeMode)
- * 4. Replace snake_case component names with parser-safe placeholders
+ * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 4. Evaluate JSX expressions in attributes (unless safeMode)
+ * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -109,6 +111,7 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
+  result = closeSelfClosingHtmlTags(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
@@ -154,8 +157,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [jsxTable(), magicBlock(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
+        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
@@ -163,6 +166,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
         ? [
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
+            gemojiFromMarkdown(),
             legacyVariableFromMarkdown(),
             emptyTaskListItemFromMarkdown(),
             looseHtmlEntityFromMarkdown(),
@@ -170,6 +174,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
         : [
             jsxTableFromMarkdown(),
             magicBlockFromMarkdown(),
+            gemojiFromMarkdown(),
             mdxExpressionFromMarkdown(),
             legacyVariableFromMarkdown(),
             emptyTaskListItemFromMarkdown(),

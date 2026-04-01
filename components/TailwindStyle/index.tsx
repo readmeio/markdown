@@ -87,10 +87,11 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
           shouldUpdate = true;
         }
 
-        if (shouldUpdate) {
-          setClasses(Array.from(classesSet.current));
-        }
       });
+
+      if (shouldUpdate) {
+        setClasses(Array.from(classesSet.current));
+      }
     });
 
     observer.observe(ref.current.parentElement, {

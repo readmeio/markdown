@@ -119,16 +119,3 @@ export interface MagicBlockEmbed {
   position?: Position;
   type: 'embed';
 }
-
-/**
- * Figure node that may contain an image (from magicBlockTransformer with caption).
- * This is an intermediate format before conversion to Figure.
- */
-export interface MagicBlockFigure {
-  children: RootContent[];
-  data?: {
-    hName?: string;
-  };
-  position?: Position;
-  type: 'figure';
-}
