@@ -277,7 +277,7 @@ const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNod
 
   // For the editor, split html nodes at <br> boundaries into separate html + break
   // nodes. This matches the MDAST structure that GFM cell parsing produces on
-  // roundtrip, where <br /> between tags becomes break nodes — allowing the editor
+  // roundtrip, where <br /> between tags becomes break nodes. This is to allow the editor
   // to render them as line breaks instead of showing literal <br> text.
   if (newEditorTypes) {
     return result.flatMap(node => {
@@ -286,7 +286,7 @@ const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNod
 
       const parts = value.split(/<br\s*\/?>/gi);
       const nodes: MdastNode[] = [];
-      for (let i = 0; i < parts.length; i++) {
+      for (let i = 0; i < parts.length; i += 1) {
         if (parts[i]) nodes.push({ type: 'html', value: parts[i] });
         if (i < parts.length - 1) nodes.push({ type: 'break' });
       }
