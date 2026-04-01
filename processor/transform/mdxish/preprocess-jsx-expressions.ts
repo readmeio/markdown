@@ -138,7 +138,10 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * 3. Skips HTML elements to prevent backslashes appearing in output
  *
  */
-function escapeProblematicBraces(content: string): string {
+function escapeProblematicBraces(
+  content: string,
+  { preserveJsxComments = false }: { preserveJsxComments?: boolean } = {},
+): string {
   // Skip HTML elements — their content should never be escaped because
   // rehypeRaw parses them into hast elements, making `\` literal text in output
   const htmlElements: string[] = [];
@@ -154,7 +157,7 @@ function escapeProblematicBraces(content: string): string {
   let strDelim: string | null = null;
   let strEscaped = false;
   // Stack of open braces with their state
-  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
+  const openStack: { hasBlankLine: boolean; isComment?: boolean; pos: number }[] = [];
   // Track position of last newline (outside strings) to detect blank lines
   let lastNewlinePos = -2; // -2 means no recent newline
 
@@ -203,13 +206,15 @@ function escapeProblematicBraces(content: string): string {
     }
 
     if (ch === '{') {
-      openStack.push({ pos: i, hasBlankLine: false });
+      const isComment = preserveJsxComments && chars[i + 1] === '/' && chars[i + 2] === '*';
+      openStack.push({ pos: i, hasBlankLine: false, isComment });
       lastNewlinePos = -2; // Reset newline tracking for new expression
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
         // If expression spans paragraph boundary, escape both braces
-        if (entry.hasBlankLine) {
+        // But never escape JSX comment braces — they're syntactically valid
+        if (entry.hasBlankLine && !entry.isComment) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
@@ -323,7 +328,11 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
  * @param context
  * @returns Preprocessed content ready for markdown parsing
  */
-export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
+export function preprocessJSXExpressions(
+  content: string,
+  context: JSXContext = {},
+  { preserveJsxComments = false }: { preserveJsxComments?: boolean } = {},
+): string {
   // Step 0: Base64 encode HTMLBlock content
   let processed = protectHTMLBlockContent(content);
 
@@ -337,7 +346,7 @@ export function preprocessJSXExpressions(content: string, context: JSXContext = 
 
   // Step 3: Escape problematic braces to prevent MDX expression parsing errors
   // This handles both unbalanced braces and paragraph-spanning expressions in one pass
-  processed = escapeProblematicBraces(processed);
+  processed = escapeProblematicBraces(processed, { preserveJsxComments });
 
   // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);

@@ -58,10 +58,12 @@ import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
+import { jsxCommentFromMarkdown } from './mdast-util/jsx-comment';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { gemoji } from './micromark/gemoji';
+import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -106,14 +108,14 @@ const defaultTransformers: PluggableList = [
  */
 function preprocessContent(
   content: string,
-  opts: { jsxContext: JSXContext; knownComponents: Set<string>; safeMode: boolean },
+  opts: { jsxContext: JSXContext; knownComponents: Set<string>; newEditorTypes: boolean; safeMode: boolean },
 ) {
-  const { safeMode, jsxContext, knownComponents } = opts;
+  const { safeMode, jsxContext, knownComponents, newEditorTypes } = opts;
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
-  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
+  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext, { preserveJsxComments: newEditorTypes });
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -139,6 +141,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     safeMode,
     jsxContext,
     knownComponents,
+    newEditorTypes,
   });
 
   // Create string map for tailwind transformer
@@ -154,34 +157,38 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
+  const micromarkExts = safeMode
+    ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
+    : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()];
+
+  const fromMarkdownExts = safeMode
+    ? [
+        jsxTableFromMarkdown(),
+        magicBlockFromMarkdown(),
+        gemojiFromMarkdown(),
+        legacyVariableFromMarkdown(),
+        emptyTaskListItemFromMarkdown(),
+        looseHtmlEntityFromMarkdown(),
+      ]
+    : [
+        jsxTableFromMarkdown(),
+        magicBlockFromMarkdown(),
+        gemojiFromMarkdown(),
+        mdxExpressionFromMarkdown(),
+        legacyVariableFromMarkdown(),
+        emptyTaskListItemFromMarkdown(),
+        looseHtmlEntityFromMarkdown(),
+      ];
+
+  if (newEditorTypes && !safeMode) {
+    // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
+    micromarkExts.unshift(jsxComment());
+    fromMarkdownExts.unshift(jsxCommentFromMarkdown());
+  }
+
   const processor = unified()
-    .data(
-      'micromarkExtensions',
-      safeMode
-        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
-    )
-    .data(
-      'fromMarkdownExtensions',
-      safeMode
-        ? [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ]
-        : [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            mdxExpressionFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ],
-    )
+    .data('micromarkExtensions', micromarkExts)
+    .data('fromMarkdownExtensions', fromMarkdownExts)
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
