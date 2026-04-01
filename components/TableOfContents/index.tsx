@@ -81,6 +81,14 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     );
 
     headings.forEach(el => { observer.observe(el); });
+
+    // Set initial active state for the first heading visible in the viewport
+    const initialHeading = headings.find(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < window.innerHeight * 0.4;
+    });
+    if (initialHeading) activate(initialHeading.id);
+
     return () => { observer.disconnect(); };
   }, [navRef, linkCount]);
 }
