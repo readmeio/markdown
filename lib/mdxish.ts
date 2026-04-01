@@ -157,28 +157,21 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
-  const micromarkExts = safeMode
-    ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-    : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()];
+  const micromarkExts = [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const fromMarkdownExts = [
+    jsxTableFromMarkdown(),
+    magicBlockFromMarkdown(),
+    gemojiFromMarkdown(),
+    legacyVariableFromMarkdown(),
+    emptyTaskListItemFromMarkdown(),
+    looseHtmlEntityFromMarkdown(),
+  ];
 
-  const fromMarkdownExts = safeMode
-    ? [
-        jsxTableFromMarkdown(),
-        magicBlockFromMarkdown(),
-        gemojiFromMarkdown(),
-        legacyVariableFromMarkdown(),
-        emptyTaskListItemFromMarkdown(),
-        looseHtmlEntityFromMarkdown(),
-      ]
-    : [
-        jsxTableFromMarkdown(),
-        magicBlockFromMarkdown(),
-        gemojiFromMarkdown(),
-        mdxExpressionFromMarkdown(),
-        legacyVariableFromMarkdown(),
-        emptyTaskListItemFromMarkdown(),
-        looseHtmlEntityFromMarkdown(),
-      ];
+  if (!safeMode) {
+    // Insert mdx expression (text-only, no flow) after gemoji at index 3
+    micromarkExts.splice(3, 0, mdxExprTextOnly);
+    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+  }
 
   if (newEditorTypes && !safeMode) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
