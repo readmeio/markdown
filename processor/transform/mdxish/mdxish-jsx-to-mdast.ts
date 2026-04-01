@@ -314,21 +314,6 @@ const transformVariable = (jsx: MdxJsxFlowElement | MdxJsxTextElement): Variable
   };
 };
 
-const transformVariable = (jsx: MdxJsxFlowElement | MdxJsxTextElement): Variable => {
-  const attrs = getAttrs<{ name?: string; variable?: string }>(jsx);
-  const name = attrs.name || attrs.variable || '';
-
-  return {
-    type: NodeTypes.variable,
-    data: {
-      hName: 'Variable',
-      hProperties: { name },
-    },
-    value: '',
-    position: jsx.position,
-  };
-};
-
 /**
  * Transforms an `<Image />` JSX element into an image-block MDAST node.
  * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
