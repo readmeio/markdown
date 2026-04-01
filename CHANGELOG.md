@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 13.8.0
+### ✨ New & Improved
+
+* add animated toc ([#1392](https://github.com/readmeio/markdown/issues/1392)) ([9789929](https://github.com/readmeio/markdown/commit/9789929125072d98aa1b15d5c5b2c9d346f5d70c))
+
 ## Version 13.7.4
 ### 🛠 Fixes & Updates
 
