@@ -245,7 +245,7 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
  */
-const parseTableCell = (text: string): MdastNode[] => {
+const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
@@ -269,13 +269,32 @@ const parseTableCell = (text: string): MdastNode[] => {
     }
   });
 
-  if (tree.children.length > 1) {
-    return tree.children as MdastNode[];
+  const result = tree.children.length > 1
+    ? (tree.children as MdastNode[])
+    : tree.children.flatMap(n =>
+        n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+      );
+
+  // For the editor, split html nodes at <br> boundaries into separate html + break
+  // nodes. This matches the MDAST structure that GFM cell parsing produces on
+  // roundtrip, where <br /> between tags becomes break nodes — allowing the editor
+  // to render them as line breaks instead of showing literal <br> text.
+  if (newEditorTypes) {
+    return result.flatMap(node => {
+      const value = node.value as string | undefined;
+      if (node.type !== 'html' || !value?.includes('<br>')) return [node];
+
+      const parts = value.split(/<br\s*\/?>/gi);
+      const nodes: MdastNode[] = [];
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i]) nodes.push({ type: 'html', value: parts[i] });
+        if (i < parts.length - 1) nodes.push({ type: 'break' });
+      }
+      return nodes;
+    });
   }
 
-  return tree.children.flatMap(n =>
-    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
-  );
+  return result;
 };
 
 const parseBlock = (text: string): MdastNode[] => {
@@ -325,7 +344,7 @@ function transformMagicBlock(
   rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
-  const { compatibilityMode = false, safeMode = false } = options;
+  const { compatibilityMode = false, newEditorTypes = false, safeMode = false } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
   // This allows the editor to show appropriate placeholder UI instead of nothing
@@ -516,7 +535,9 @@ function transformMagicBlock(
         return mapped;
       }, [] as string[][]);
 
-      const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
+      const tokenizeCell = compatibilityMode
+        ? textToBlock
+        : (cellText: string) => parseTableCell(cellText, { newEditorTypes });
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
