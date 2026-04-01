@@ -87,6 +87,22 @@ describe('JSX comment tokenizer (newEditorTypes)', () => {
     expect(mdast.children[0].type).toBe('mdxFlowExpression');
   });
 
+  it('should parse an indented JSX comment wrapping a magic block as one node', () => {
+    const md = `   {/*
+[block:image]
+{
+  "images": [{"image": ["https://example.com/img.png", null, "Alt"]}]
+}
+[/block]
+*/}
+
+Hi there!`;
+    const mdast = parseMdast(md);
+    expect(mdast.children[0].type).toBe('mdxFlowExpression');
+    expect((mdast.children[0] as { value: string }).value).toContain('block:image');
+    expect(mdast.children[1].type).toBe('paragraph');
+  });
+
   it('should not consume non-comment expressions starting with {', () => {
     const md = '{1 + 1}';
     const mdast = parseMdast(md);
