@@ -245,7 +245,7 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
  */
-const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNode[] => {
+const parseTableCell = (text: string, newEditorTypes = false): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
@@ -555,7 +555,7 @@ function transformMagicBlock(
 
       const tokenizeCell = compatibilityMode
         ? textToBlock
-        : (cellText: string) => parseTableCell(cellText, { newEditorTypes });
+        : (cellText: string) => parseTableCell(cellText, newEditorTypes);
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
