@@ -275,22 +275,44 @@ const parseTableCell = (text: string, { newEditorTypes = false } = {}): MdastNod
         n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
       );
 
-  // For the editor, split html nodes at <br> boundaries into separate html + break
-  // nodes. This matches the MDAST structure that GFM cell parsing produces on
-  // roundtrip, where <br /> between tags becomes break nodes. This is to allow the editor
-  // to render them as line breaks instead of showing literal <br> text.
+  // For the editor, flatten html nodes into individual html tags + text nodes.
+  // This matches the MDAST structure that GFM cell parsing produces on roundtrip,
+  // where entities in text nodes are decoded (e.g. &lt; → <) and <br /> becomes
+  // break nodes. Without this, the editor shows entities as literal text because
+  // they're trapped inside html node value strings.
   if (newEditorTypes) {
     return result.flatMap(node => {
       const value = node.value as string | undefined;
-      if (node.type !== 'html' || !value?.includes('<br>')) return [node];
+      if (node.type !== 'html' || !value) return [node];
 
-      const parts = value.split(/<br\s*\/?>/gi);
+      const hast = htmlParser.parse(value) as HastRoot;
       const nodes: MdastNode[] = [];
-      for (let i = 0; i < parts.length; i += 1) {
-        if (parts[i]) nodes.push({ type: 'html', value: parts[i] });
-        if (i < parts.length - 1) nodes.push({ type: 'break' });
-      }
-      return nodes;
+
+      const flatten = (children: HastRoot['children']) => {
+        for (const child of children) {
+          if (child.type === 'text') {
+            nodes.push({ type: 'text', value: (child as HastText).value });
+          } else if (child.type === 'element') {
+            const el = child as HastElement;
+            const attrs = Object.entries(el.properties ?? {})
+              .map(([k, v]) => ` ${k}="${v}"`)
+              .join('');
+
+            if (el.tagName === 'br') {
+              nodes.push({ type: 'break' });
+            } else if (el.children.length === 0) {
+              nodes.push({ type: 'html', value: `<${el.tagName}${attrs}>` });
+            } else {
+              nodes.push({ type: 'html', value: `<${el.tagName}${attrs}>` });
+              flatten(el.children);
+              nodes.push({ type: 'html', value: `</${el.tagName}>` });
+            }
+          }
+        }
+      };
+
+      flatten(hast.children);
+      return nodes.length > 0 ? nodes : [node];
     });
   }
 

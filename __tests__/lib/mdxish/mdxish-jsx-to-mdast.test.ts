@@ -977,23 +977,12 @@ Some callout content
     });
   });
 
-  describe('table cell HTML cleanup (editor-only)', () => {
-    const findHtmlValues = (tree: Root): string[] => {
-      const values: string[] = [];
-      const stack: RootContent[] = [...tree.children];
-      while (stack.length) {
-        const node = stack.pop()!;
-        if (node.type === 'html' && 'value' in node) values.push(node.value);
-        if ('children' in node) stack.push(...(node as unknown as { children: RootContent[] }).children);
-      }
-      return values;
-    };
-
-    it('should decode hex character references in HTML blocks inside table cells', () => {
+  describe('table cell HTML flattening (editor-only)', () => {
+    it('should flatten html nodes into individual tags + text nodes with decoded entities', () => {
       const md = [
         '[block:parameters]',
         JSON.stringify({
-          data: { 'h-0': 'Header', '0-0': '<ul>\n<li>_\\<placeholder>_.example.com</li>\n</ul>' },
+          data: { 'h-0': 'H', '0-0': '<ul>\n<li>_\\<foo>_.bar.com</li>\n</ul>' },
           cols: 1,
           rows: 1,
           align: ['left'],
@@ -1002,45 +991,19 @@ Some callout content
       ].join('\n');
 
       const ast = processWithNewTypes(md);
-      const htmlValues = findHtmlValues(ast);
-      const cellHtml = htmlValues.find(v => v.includes('<ul>'));
+      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
+      const cell = table.children[1].children[0];
 
-      expect(cellHtml).toBeDefined();
-      expect(cellHtml).not.toMatch(/&#x[0-9a-f]+;/i);
-    });
+      const textNodes = cell.children.filter(c => c.type === 'text') as { type: string; value: string }[];
+      const htmlNodes = cell.children.filter(c => c.type === 'html') as { type: string; value: string }[];
+      const breakNodes = cell.children.filter(c => c.type === 'break');
 
-    it('should decode hex refs in complex multi-row table with HTML cells', () => {
-      const data = {
-        'h-0': 'Foo',
-        'h-1': 'Bar',
-        '0-0': 'Foo A',
-        '0-1': [
-          '<ul>',
-          '<li>_\\<your-domain>_.foo.com</li>',
-          '    where _\\<your-domain>_.foo.com is your domain.  ',
-          '  ',
-          '<li>bar.foo.com</li>',
-          '<li>baz.foo.com</li>',
-          '</ul>',
-        ].join('\n'),
-        '1-0': 'Foo\nB',
-        '1-1': '<ul>\n<li>bar.foo.com</li>\n<li>baz.foo.com</li>\n<li>qux.foo.com</li>\n</ul>',
-        '2-0': 'Foo C',
-        '2-1': 'https\\://<i>\\<hostname></i>/login  \n  \nwhere <i>\\<hostname></i> is the FQDN of your server.',
-        '3-0': 'Foo D',
-        '3-1': '<ul>\n<li>bar.foo.com/</li>\n<li>baz.foo.com</li>\n</ul>',
-      };
-      const md = `[block:parameters]\n${JSON.stringify({ data, cols: 2, rows: 4, align: ['left', 'left'] })}\n[/block]`;
-
-      const ast = processWithNewTypes(md);
-
-      expect(ast.children[0].type).toBe('table');
-
-      const htmlValues = findHtmlValues(ast);
-
-      for (const value of htmlValues) {
-        expect(value).not.toMatch(/&#x[0-9a-f]+;/i);
-      }
+      expect(textNodes.some(n => n.value.includes('<foo>'))).toBe(true);
+      expect(htmlNodes.some(n => n.value === '<em>')).toBe(true);
+      expect(htmlNodes.some(n => n.value === '</em>')).toBe(true);
+      expect(breakNodes.length).toBeGreaterThan(0);
+      expect(htmlNodes.every(n => !n.value.includes('&#x'))).toBe(true);
+      expect(htmlNodes.every(n => !n.value.includes('&lt;'))).toBe(true);
     });
   });
 });

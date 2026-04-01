@@ -769,19 +769,6 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     delete hProps.children;
   });
 
-  // Decode hex character references in HTML nodes inside table cells.
-  // rehype-stringify (via processMarkdownInHtmlString) encodes named entities
-  // like &lt; as hex &#x3C; which shows as ugly literal text in the editor.
-  // The rendering pipeline handles this via rehype-raw, but the editor receives
-  // raw MDAST node values directly.
-  visit(tree, 'tableCell', (cell: Parent) => {
-    visit(cell, 'html', (node: Html) => {
-      node.value = node.value.replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
-        String.fromCodePoint(parseInt(hex, 16)),
-      );
-    });
-  });
-
   return tree;
 };
 
