@@ -75,20 +75,10 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
       records.forEach(record => {
         if (record.type === 'childList') {
           record.addedNodes.forEach(node => {
-            if (!(node instanceof HTMLElement)) return;
+            if (!(node instanceof HTMLElement) || !node.classList.contains(tailwindPrefix)) return;
 
-            // Check the added node itself
-            if (node.classList.contains(tailwindPrefix)) {
-              traverse(node, addClasses);
-              shouldUpdate = true;
-            }
-
-            // Also check descendants — React may insert a parent node
-            // whose children contain TailwindRoot elements
-            node.querySelectorAll(`.${tailwindPrefix}`).forEach(child => {
-              traverse(child, addClasses);
-              shouldUpdate = true;
-            });
+            traverse(node, addClasses);
+            shouldUpdate = true;
           });
         } else if (record.type === 'attributes') {
           if (record.attributeName !== 'class' || !(record.target instanceof HTMLElement)) return;
@@ -97,10 +87,11 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
           shouldUpdate = true;
         }
 
-        if (shouldUpdate) {
-          setClasses(Array.from(classesSet.current));
-        }
       });
+
+      if (shouldUpdate) {
+        setClasses(Array.from(classesSet.current));
+      }
     });
 
     observer.observe(ref.current.parentElement, {
