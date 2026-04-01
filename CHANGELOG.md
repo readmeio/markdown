@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 13.7.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** add gemoji support to api-header title parser ([#1416](https://github.com/readmeio/markdown/issues/1416)) ([2cc0e00](https://github.com/readmeio/markdown/commit/2cc0e00b32a1bde006fe178a7bb9a1a176f8e1bf))
+* **mdxish:** allow rendering consecutive emojis ([#1390](https://github.com/readmeio/markdown/issues/1390)) ([8e60477](https://github.com/readmeio/markdown/commit/8e60477fc78eb3f640291039e0c9e0d55e2f961e))
+* **mdxish:** correctly deserialize figure html and serialize non basic JSX tables ([#1409](https://github.com/readmeio/markdown/issues/1409)) ([9b923eb](https://github.com/readmeio/markdown/commit/9b923eb433ab549c23af719cb6760a841131f9be))
+* guard against empty Glossary tag causing crash ([#1408](https://github.com/readmeio/markdown/issues/1408)) ([930161d](https://github.com/readmeio/markdown/commit/930161dfbb106d2bfa9725926b5a395eef5f2604))
+* **mdxish:** self closing html tags enclosing the content after it ([#1380](https://github.com/readmeio/markdown/issues/1380)) ([f3e9cd3](https://github.com/readmeio/markdown/commit/f3e9cd3f2f7a34a093f0ba63cb6b59cec201cf04))
+
 ## Version 13.7.3
 ### 🛠 Fixes & Updates
 
