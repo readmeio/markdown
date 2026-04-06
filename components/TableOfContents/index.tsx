@@ -17,6 +17,10 @@ function buildLinkMap(nav: HTMLElement) {
   return map;
 }
 
+const VISIBLE_RATIO = 0.4;
+/** Tolerance for subpixel rounding when checking if scrolled to the bottom. */
+const SCROLL_BOTTOM_TOLERANCE = 1;
+
 /**
  * Watches headings in the viewport and toggles `active` on the
  * corresponding TOC links so the reader always knows where they are.
@@ -44,7 +48,11 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     if (headings.length === 0) return undefined;
 
     let activeId: string | null = null;
+    let clickLocked = false;
     const visible = new Set<string>();
+
+    const isAtBottom = () =>
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
 
     const activate = (id: string | null) => {
       if (id === activeId) return;
@@ -66,22 +74,67 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       }
     };
 
+    const updateActive = () => {
+      if (clickLocked) return;
+
+      if (isAtBottom()) {
+        activate(headings[headings.length - 1].id);
+        return;
+      }
+
+      const topmost = headings.find(el => visible.has(el.id));
+      if (topmost) activate(topmost.id);
+    };
+
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(e => {
           if (e.isIntersecting) visible.add(e.target.id);
           else visible.delete(e.target.id);
         });
-        // Highlight the topmost visible heading; if none are visible,
-        // keep the last active one so the user still has context.
-        const topmost = headings.find(el => visible.has(el.id));
-        if (topmost) activate(topmost.id);
+        updateActive();
       },
-      { rootMargin: '0px 0px -60% 0px', threshold: 0 },
+      { rootMargin: `0px 0px -${(1 - VISIBLE_RATIO) * 100}% 0px`, threshold: 0 },
     );
 
+    // Also check on scroll so bottom-of-page detection works even when
+    // no headings are crossing the intersection boundary.
+    const onScroll = () => { updateActive(); };
+
+    // Click a ToC link → immediately activate it, suppress the observer
+    // until the smooth scroll finishes, then hand control back.
+    const onClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest?.('a[href^="#"]');
+      if (!anchor) return;
+      const id = decodeURIComponent(anchor.getAttribute('href')!.slice(1));
+      if (!linkMap.has(id)) return;
+
+      e.preventDefault();
+      activate(id);
+      clickLocked = true;
+
+      const unlock = () => { clickLocked = false; };
+      window.addEventListener('scrollend', unlock, { once: true });
+
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     headings.forEach(el => { observer.observe(el); });
-    return () => { observer.disconnect(); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    nav.addEventListener('click', onClick);
+
+    // Set initial active state for the first heading visible in the viewport
+    const initialHeading = headings.find(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < window.innerHeight * VISIBLE_RATIO;
+    });
+    if (initialHeading) activate(initialHeading.id);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      nav.removeEventListener('click', onClick);
+    };
   }, [navRef, linkCount]);
 }
 
