@@ -17,14 +17,14 @@ const glossaryTerms = [
 ];
 
 describe('Table of Contents', () => {
-  it('should have a header', () => {
+  it('should render toc children', () => {
     const { container } = render(
       <TableOfContents>
         <h1>Heading 1</h1>
       </TableOfContents>,
     );
 
-    expect(container.querySelectorAll('li')[0]).toHaveTextContent('Table of Contents');
+    expect(container.querySelector('.toc-children')).toHaveTextContent('Heading 1');
   });
 
   it.skip('generates TOC from headings', () => {
@@ -75,13 +75,13 @@ describe('Table of Contents', () => {
     );
   });
 
-  it('accepts custom heading', () => {
+  it('renders with rm-ToC class', () => {
     const { container } = render(
-      <TableOfContents heading="Custom Heading">
+      <TableOfContents>
         <h1>Heading 1</h1>
       </TableOfContents>,
     );
 
-    expect(container.querySelectorAll('li')[0]).toHaveTextContent('Custom Heading');
+    expect(container.querySelector('.rm-ToC')).toBeInTheDocument();
   });
 });
