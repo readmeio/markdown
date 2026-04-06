@@ -5,6 +5,8 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 import { visit } from 'unist-util-visit';
 
+import { NodeTypes } from '../../../enums';
+
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
 const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
@@ -47,6 +49,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
       // nodes in GFM cells. Only self-closing JSX (e.g. <Image />) triggers flow.
       for (const child of cell.children as Node[]) {
         if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') continue;
+        if (child.type === NodeTypes.variable) continue;
         if (phrasing(child as Parameters<typeof phrasing>[0])) continue;
 
         if (child.type === 'html') {
