@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 13.8.1
+### 🛠 Fixes & Updates
+
+* pin npm to 22.22.1 ([#1424](https://github.com/readmeio/markdown/issues/1424)) ([ebf47bd](https://github.com/readmeio/markdown/commit/ebf47bd3e9fbd5894bf2017e860fbe1cbe521599))
+* toc feedback from pr ([#1422](https://github.com/readmeio/markdown/issues/1422)) ([2e2a1e7](https://github.com/readmeio/markdown/commit/2e2a1e785a942f91d87c6c0969b5bfe29e315e9a))
+
 ## Version 13.8.0
 ### ✨ New & Improved
 
