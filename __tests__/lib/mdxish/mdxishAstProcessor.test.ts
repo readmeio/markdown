@@ -1,4 +1,6 @@
-import type { Root, Table } from 'mdast';
+import type { Html, Root, Table } from 'mdast';
+
+import { visit } from 'unist-util-visit';
 
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
 
@@ -307,6 +309,31 @@ describe('mdxishAstProcessor', () => {
           ],
         },
       ],
+    });
+  });
+
+  describe('normalizeLegacyVariablesInHtml', () => {
+    it('should not contain any <variable> tags in the AST when newEditorTypes is true', () => {
+      const md = `[block:parameters]
+${JSON.stringify({
+  data: {
+    'h-0': 'Header',
+    'h-1': 'Details',
+    '0-0': 'Hello <<MY_VAR>>',
+    '0-1': '<ul>\n<li>Set up <<MY_VAR>>.</li>\n</ul>',
+  },
+  cols: 2,
+  rows: 1,
+  align: ['left', 'left'],
+})}
+[/block]`;
+
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const astStr = JSON.stringify(ast);
+
+      expect(astStr).not.toContain('<variable');
+      expect(astStr).not.toContain('<Variable');
     });
   });
 });
