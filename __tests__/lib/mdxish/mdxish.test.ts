@@ -29,6 +29,18 @@ describe('mdxish should render', () => {
       expect(() => mdxish(md)).not.toThrow();
     });
 
+    it('should render malformed lowercase html followed by later html', () => {
+      const md = '<div>hello<div\n\n<div>';
+
+      expect(() => mdxish(md)).not.toThrow();
+
+      const tree = mdxish(md);
+      const div = findElementByTagName(tree, 'div');
+
+      expect(div).not.toBeNull();
+      expect(extractText(tree)).toContain('<div>hello<div');
+    });
+
     it('should render unclosed curly braces', () => {
       const md1 = 'Hello {user.name';
       expect(() => mdxish(md1)).not.toThrow();
@@ -59,6 +71,15 @@ describe('mdxish should render', () => {
     const md = `<div>hello
 </div>`;
     expect(() => mdxish(md)).not.toThrow();
+  });
+
+  it('should preserve valid lowercase html after malformed html text', () => {
+    const md = '<div>hello<div\n\n<div>ok</div>';
+    const tree = mdxish(md);
+    const div = findElementByTagName(tree, 'div');
+
+    expect(div).not.toBeNull();
+    expect(extractText(tree)).toContain('ok');
   });
 
   describe('should handle just ">"', () => {

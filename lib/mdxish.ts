@@ -47,6 +47,7 @@ import {
   type JSXContext,
 } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
+import sanitizeMalformedRawHtml from '../processor/transform/mdxish/sanitize-malformed-raw-html';
 import {
   preserveBooleanProperties,
   restoreBooleanProperties,
@@ -195,6 +196,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
+    .use(sanitizeMalformedRawHtml)
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
