@@ -1,5 +1,5 @@
+import type { Html } from 'mdast';
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
-import type { HTML } from 'mdast';
 
 const contextMap = new WeakMap<Token, { chunks: string[] }>();
 
@@ -13,7 +13,7 @@ function findJsxTableToken(this: CompileContext): Token | undefined {
 
 function enterJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
   contextMap.set(token, { chunks: [] });
-  this.enter({ type: 'html', value: '' } as HTML, token);
+  this.enter({ type: 'html', value: '' } as Html, token);
 }
 
 function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): void {
@@ -25,7 +25,7 @@ function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): v
 
 function exitJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
-  const node = this.stack[this.stack.length - 1] as HTML;
+  const node = this.stack[this.stack.length - 1] as Html;
   if (ctx) {
     node.value = ctx.chunks.join('\n');
     contextMap.delete(token);

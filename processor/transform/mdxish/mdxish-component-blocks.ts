@@ -1,4 +1,4 @@
-import type { Node, Parent, Paragraph, RootContent, Text } from 'mdast';
+import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -8,18 +8,14 @@ import { unified } from 'unified';
 
 import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
+import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
+import { mdxComponent } from '../../../lib/micromark/mdx-component';
 
 import { INLINE_COMPONENT_TAGS } from './constants';
 
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
-
-/**
- * Maximum number of siblings to scan forward when looking for a closing tag
- * to avoid scanning too far and degrading performance
- */
-const MAX_LOOKAHEAD = 30;
 
 /**
  * Tags that have dedicated transformers and should NOT be handled by this plugin.
@@ -30,18 +26,42 @@ const MAX_LOOKAHEAD = 30;
 const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', ...INLINE_COMPONENT_TAGS]);
 
 const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [legacyVariable()])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
+  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
+  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm);
 
-const isClosingTag = (value: string, tag: string) => value.trim() === `</${tag}>`;
+/**
+ * Reduce leading whitespace on all lines just enough to prevent
+ * remark from treating indented content as code blocks (4+ spaces).
+ * Preserves relative indentation so whitespace text nodes are
+ * maintained in the HAST output.
+ */
+function safeDeindent(text: string): string {
+  const lines = text.split('\n');
+  const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+  if (nonEmptyLines.length === 0) return text;
+
+  const minIndent = Math.min(
+    ...nonEmptyLines.map(line => {
+      const match = line.match(/^(\s*)/);
+      return match ? match[1].length : 0;
+    }),
+  );
+
+  // Only strip enough indent to keep all lines below the 4-space code threshold
+  const stripAmount = Math.max(0, minIndent - 3);
+  if (stripAmount === 0) return text;
+  return lines.map(line => line.slice(stripAmount)).join('\n');
+}
 
 /**
  * Parse markdown content into mdast children nodes.
+ * Dedents the content first to prevent indented component content
+ * (from nested components) from being treated as code blocks.
  */
 const parseMdChildren = (value: string): RootContent[] => {
-  const parsed = inlineMdProcessor.parse(value);
+  const parsed = inlineMdProcessor.parse(safeDeindent(value).trim());
   return parsed.children || [];
 };
 
@@ -116,106 +136,6 @@ const createComponentNode = ({ tag, attributes, children, startPosition, endPosi
   },
 });
 
-/**
- * Remove a closing tag from a paragraph's children and return the updated paragraph.
- */
-const stripClosingTagFromParagraph = (node: Paragraph, tag: string) => {
-  if (!Array.isArray(node.children)) return { paragraph: node, found: false } as const;
-
-  const children = [...node.children];
-  const closingIndex = children.findIndex(
-    child => child.type === 'html' && isClosingTag((child as { value?: string }).value || '', tag),
-  );
-  if (closingIndex === -1) return { paragraph: node, found: false } as const;
-
-  children.splice(closingIndex, 1);
-
-  // After removing the closing tag, trim trailing whitespace/newlines from the
-  // preceding text node. Remark parses "Hello\n</Callout>" as text("Hello\n") +
-  // html("</Callout>"), and the leftover \n would be converted to <br> in HAST.
-  if (closingIndex > 0) {
-    const prev = children[closingIndex - 1];
-    if (prev.type === 'text') {
-      const trimmed = (prev as Text).value.trimEnd();
-      if (trimmed) {
-        (prev as Text).value = trimmed;
-      } else {
-        children.splice(closingIndex - 1, 1);
-      }
-    }
-  }
-
-  return { paragraph: { ...node, children }, found: true } as const;
-};
-
-interface ScanResult {
-  /** Index of the sibling containing the closing tag */
-  closingIndex: number;
-  /** Content after the closing tag that should be re-inserted as a sibling */
-  contentAfterClose?: string;
-  /** Additional children parsed from the closing sibling (content before closing tag in HTML blocks) */
-  extraClosingChildren: MdxJsxFlowElement['children'];
-  /** For paragraph siblings, the paragraph with closing tag stripped */
-  strippedParagraph?: Paragraph;
-}
-
-/**
- * Scan forward through siblings to find a closing tag.
- * Handles:
- * - Exact match HTML siblings (e.g., `</Tag>`)
- * - HTML siblings with embedded closing tag (e.g., `...\n</Tag>`)
- * - Paragraph siblings containing the closing tag as a child
- *
- * Returns null if not found within MAX_LOOKAHEAD siblings
- */
-const scanForClosingTag = (parent: Parent, startIndex: number, tag: string): ScanResult | null => {
-  const closingTagStr = `</${tag}>`;
-  const maxIndex = Math.min(startIndex + MAX_LOOKAHEAD, parent.children.length);
-
-  let i = startIndex + 1;
-  for (; i < maxIndex; i += 1) {
-    const sibling = parent.children[i];
-
-    // Check HTML siblings
-    if (sibling.type === 'html') {
-      const siblingValue = (sibling as { value?: string }).value || '';
-
-      // Exact match (standalone closing tag)
-      if (isClosingTag(siblingValue, tag)) {
-        return { closingIndex: i, extraClosingChildren: [] };
-      }
-
-      // Embedded closing tag (closing tag within HTML block content)
-      if (siblingValue.includes(closingTagStr)) {
-        const closeTagPos = siblingValue.indexOf(closingTagStr);
-        const contentBeforeClose = siblingValue.substring(0, closeTagPos).trim();
-        const contentAfterClose = siblingValue.substring(closeTagPos + closingTagStr.length).trim();
-        const extraChildren = contentBeforeClose
-          ? (parseMdChildren(contentBeforeClose) as MdxJsxFlowElement['children'])
-          : [];
-        return { closingIndex: i, extraClosingChildren: extraChildren, contentAfterClose: contentAfterClose || undefined };
-      }
-    }
-
-    // Check paragraph siblings
-    if (sibling.type === 'paragraph') {
-      const { paragraph, found } = stripClosingTagFromParagraph(sibling as Paragraph, tag);
-      if (found) {
-        return { closingIndex: i, extraClosingChildren: [], strippedParagraph: paragraph };
-      }
-    }
-  }
-
-  if (i < parent.children.length) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `Closing tag </${tag}> not found within ${MAX_LOOKAHEAD} siblings, stopping scan`,
-    );
-  }
-
-  return null;
-};
-
 const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
   (parent.children as Node[]).splice(index, 1, mdxNode);
 };
@@ -227,9 +147,9 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * These are the custom readme MDX syntax for components.
  * This transformer identifies these patterns and converts them to proper MDX JSX elements so they
  * can be accurately recognized and rendered later with their component definition code.
- * Though for some tags, we need to handle them specially
  *
- * ## Supported HTML Structures
+ * The mdx-component micromark tokenizer ensures that multi-line components are captured
+ * as single HTML nodes, so this transformer only needs to handle two cases:
  *
  * ### 1. Self-closing tags
  * ```
@@ -239,45 +159,13 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  *
  * ### 2. Self-contained blocks (entire component in single HTML node)
  * ```
- * <Button>Click me</Button>
- * ```
- * ```
  * <Component>
- *   <h2>Title</h2>
- *   <p>Content</p>
+ *   content
  * </Component>
  * ```
- * Parsed as: `html: "<Component>\n  <h2>Title</h2>\n  <p>Content</p>\n</Component>"`
- * The opening tag, content, and closing tag are all captured in one HTML node.
- *
- * ### 3. Multi-sibling components (closing tag in a following sibling)
- * Handles various structures where the closing tag is in a later sibling, such as:
- *
- * #### 3a. Block components (closing tag in sibling paragraph)
- * ```
- * <Callout>
- * Some **markdown** content
- * </Callout>
- * ```
- *
- * #### 3b. Multi-paragraph components (closing tag several siblings away)
- * ```
- * <Callout>
- *
- * First paragraph
- *
- * Second paragraph
- * </Callout>
- * ```
- *
- * #### 3c. Nested components split by blank lines (closing tag embedded in HTML sibling)
- * ```
- * <Outer>
- *   <Inner>content</Inner>
- *
- *   <Inner>content</Inner>
- * </Outer>
- * ```
+ * Parsed as: `html: "<Component>\n  content\n</Component>"`
+ * The opening tag, content, and closing tag are all captured in one HTML node
+ * (guaranteed by the mdx-component tokenizer).
  */
 const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   const stack: Parent[] = [tree];
@@ -325,12 +213,14 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     if (contentAfterTag.includes(closingTagStr)) {
       // Find the first closing tag
       const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
-      const componentInnerContent = contentAfterTag.substring(0, closingTagIndex).trim();
+      // Pass raw (untrimmed) content so dedent in parseMdChildren can
+      // normalize indentation before trimming
+      const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
-        children: componentInnerContent ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
+        children: componentInnerContent.trim() ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
@@ -342,45 +232,6 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
         // The content inside the component block might contain new components to be processed
         stack.push(componentNode as Parent);
       }
-      return;
-    }
-
-    // Case 3: Multi-sibling component (closing tag in a following sibling)
-    // Scans forward through siblings to find closing tag in HTML or paragraph nodes
-    const scanResult = scanForClosingTag(parent, index, tag);
-    if (!scanResult) return;
-
-    const { closingIndex, extraClosingChildren, strippedParagraph, contentAfterClose: remainingAfterClose } = scanResult;
-    const extraChildren = contentAfterTag ? (parseMdChildren(contentAfterTag.trimStart()) as MdxJsxFlowElement['children']) : [];
-
-    // Collect all intermediate siblings between opening tag and closing tag
-    const intermediateChildren = parent.children.slice(index + 1, closingIndex) as MdxJsxFlowElement['children'];
-
-// For paragraph siblings, include the full paragraph (with closing tag stripped)
-// For HTML siblings, include any content parsed from before the closing tag
-    const closingChildren = strippedParagraph
-      ? (strippedParagraph.children.length > 0 ? [strippedParagraph] : [])
-      : extraClosingChildren;
-
-    const componentNode = createComponentNode({
-      tag,
-      attributes,
-      children: [...extraChildren, ...intermediateChildren, ...closingChildren],
-      startPosition: node.position,
-      endPosition: parent.children[closingIndex]?.position,
-    });
-    // Remove all nodes from opening tag to closing tag (inclusive) and replace with component node
-    (parent.children as Node[]).splice(index, closingIndex - index + 1, componentNode);
-    // Since we might be merging sibling nodes together and combining content,
-    // there might be new components to process
-    if (componentNode.children.length > 0) {
-      stack.push(componentNode as Parent);
-    }
-
-    // If the closing tag sibling had content after it (e.g., another component opening tag),
-    // re-insert it as a sibling so it can be processed in subsequent iterations
-    if (remainingAfterClose) {
-      parseSibling(stack, parent, index, remainingAfterClose);
     }
   };
 

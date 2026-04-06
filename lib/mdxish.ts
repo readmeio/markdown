@@ -5,6 +5,7 @@ import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
@@ -16,7 +17,6 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
-import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
@@ -61,11 +61,13 @@ import { gemojiFromMarkdown } from './mdast-util/gemoji';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
+import { mdxComponent } from './micromark/mdx-component';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -158,14 +160,15 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .data(
       'micromarkExtensions',
       safeMode
-        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
+        ? [jsxTable(), mdxComponent(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
+        : [jsxTable(), mdxComponent(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
     )
     .data(
       'fromMarkdownExtensions',
       safeMode
         ? [
             jsxTableFromMarkdown(),
+            mdxComponentFromMarkdown(),
             magicBlockFromMarkdown(),
             gemojiFromMarkdown(),
             legacyVariableFromMarkdown(),
@@ -174,6 +177,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
           ]
         : [
             jsxTableFromMarkdown(),
+            mdxComponentFromMarkdown(),
             magicBlockFromMarkdown(),
             gemojiFromMarkdown(),
             mdxExpressionFromMarkdown(),

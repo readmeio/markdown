@@ -3,15 +3,20 @@ import type { Parent, Root } from 'mdast';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
+import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
 
 /**
  * Helper to parse markdown and apply the component block plugins.
- * This isolates the plugins from the full mdxish pipeline.
+ * Includes the mdx-component micromark tokenizer to capture multi-line
+ * components as single HTML nodes before the transformer runs.
  */
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
+    .data('micromarkExtensions', [mdxComponent()])
+    .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
