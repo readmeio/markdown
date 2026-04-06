@@ -226,4 +226,18 @@ A list:
       expect(container.querySelector('a')).toHaveTextContent('link');
     });
   });
+
+  describe('given there is a line content right above the Tabs component', () => {
+    it('shouldnt error when rendering', () => {
+      const md = `
+Hello
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">Second tab content</Tab>
+</Tabs>
+`;
+      const mod = renderMdxish(mdxish(md));
+      expect(() => render(<mod.default />)).not.toThrow();
+    });
+  })
 });
