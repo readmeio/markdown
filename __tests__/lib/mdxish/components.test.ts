@@ -102,7 +102,7 @@ export const AdvancedTable = ({ data }) => {
       `;
       const tree = mdxish(md, { components: exampleComponentsWithArray });
 
-      const componentNode = (tree.children[0] as Element).children[0] as Element;
+      const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('AdvancedTable');
       expect(componentNode.properties?.data).toBe(`${JSON_VALUE_MARKER}${JSON.stringify([
         {
@@ -151,7 +151,7 @@ export const ApostropheTable = ({ data }) => {
       `;
       const tree = mdxish(md, { components: exampleComponentsWithApostrophe });
 
-      const componentNode = (tree.children[0] as Element).children[0] as Element;
+      const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('ApostropheTable');
       expect(String(componentNode.properties?.data)).toContain('The <API_KEY> doesn\'t match the project.');
     });
@@ -199,7 +199,7 @@ labore et dolore magna aliqua.\`}
       `;
       const tree = mdxish(md, { components: exampleComponentsWithArray });
 
-      const componentNode = (tree.children[0] as Element).children[0] as Element;
+      const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('ContentModal');
       expect(componentNode.properties).toMatchObject({
         label: 'Open Content Modal',

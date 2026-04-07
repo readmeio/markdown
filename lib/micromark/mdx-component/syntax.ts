@@ -66,6 +66,11 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
   // Attribute parsing state
   let quoteChar: Code = null;
   let braceDepth = 0;
+  let inTemplateLit = false; // true when inside a template literal (for line continuation)
+  // Stack of braceDepth values at each ${...} interpolation entry point.
+  // When a } brings braceDepth back to a saved value, we return to the
+  // template literal instead of continuing in the brace expression.
+  const templateStack: number[] = [];
 
   return start;
 
@@ -199,6 +204,13 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
       return inBraceString;
     }
 
+    // Handle template literals inside braces
+    if (code === codes.graveAccent) {
+      inTemplateLit = true;
+      effects.consume(code);
+      return inBraceTemplateLiteral;
+    }
+
     if (code === codes.leftCurlyBrace) {
       braceDepth += 1;
       effects.consume(code);
@@ -208,6 +220,14 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
     if (code === codes.rightCurlyBrace) {
       braceDepth -= 1;
       effects.consume(code);
+
+      // Check if this } closes a ${...} interpolation
+      if (templateStack.length > 0 && braceDepth === templateStack[templateStack.length - 1]) {
+        templateStack.pop();
+        inTemplateLit = true; // back inside the template literal
+        return inBraceTemplateLiteral;
+      }
+
       if (braceDepth === 0) {
         return afterOpenTagName;
       }
@@ -249,16 +269,65 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
     return inBraceString;
   }
 
+  // ── Template literal handling inside brace expressions ─────────────────
+
+  function inBraceTemplateLiteral(code: Code): State | undefined {
+    if (code === null) return nok(code);
+
+    if (markdownLineEnding(code)) {
+      effects.exit('mdxComponentData');
+      return openTagContinuationStart(code);
+    }
+
+    // Closing backtick ends the template literal
+    if (code === codes.graveAccent) {
+      inTemplateLit = false;
+      effects.consume(code);
+      return inBraceExpr;
+    }
+
+    // Backslash escape (e.g., \` or \$)
+    if (code === codes.backslash) {
+      effects.consume(code);
+      return inBraceTemplateLiteralEscape;
+    }
+
+    // ${ starts an interpolation
+    if (code === codes.dollarSign) {
+      effects.consume(code);
+      return inBraceTemplateLiteralDollar;
+    }
+
+    effects.consume(code);
+    return inBraceTemplateLiteral;
+  }
+
+  function inBraceTemplateLiteralEscape(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) {
+      return inBraceTemplateLiteral(code);
+    }
+    effects.consume(code);
+    return inBraceTemplateLiteral;
+  }
+
+  function inBraceTemplateLiteralDollar(code: Code): State | undefined {
+    if (code === codes.leftCurlyBrace) {
+      // Enter ${...} interpolation. Save current braceDepth so we know
+      // when the matching } returns us to this template literal.
+      templateStack.push(braceDepth);
+      braceDepth += 1;
+      inTemplateLit = false; // now inside interpolation expression
+      effects.consume(code);
+      return inBraceExpr;
+    }
+    // Just a $ not followed by { — back to template literal
+    return inBraceTemplateLiteral(code);
+  }
+
   function selfCloseGt(code: Code): State | undefined {
     if (code === codes.greaterThan) {
-      if (depth === 1) {
-        // Don't capture self-closing outer components as flow blocks.
-        // Remark will wrap them in paragraphs, which the existing
-        // mdxishSelfClosingBlocks and mdxishComponentBlocks transformers
-        // already handle correctly.
-        return nok(code);
-      }
       effects.consume(code);
+      // Self-closing tag completes the token
       return afterClose;
     }
     // `/ ` without `>` is just part of the attribute area
@@ -283,7 +352,8 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
     }
     effects.enter('mdxComponentData');
 
-    // Check if we were in a brace expression or quoted attribute
+    // Resume the correct state after a line ending in the opening tag.
+    if (inTemplateLit) return inBraceTemplateLiteral(code);
     if (braceDepth > 0) {
       if (quoteChar !== null) return inBraceString(code);
       return inBraceExpr(code);
