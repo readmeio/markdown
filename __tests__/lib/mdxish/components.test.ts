@@ -1,6 +1,8 @@
 import type { RMDXModule } from '../../../types';
 import type { Element, Text } from 'hast';
 
+import { visit } from 'unist-util-visit';
+
 import { mdxish, compile, run } from '../../../lib';
 import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
@@ -276,5 +278,18 @@ labore et dolore magna aliqua.`,
         ],
       },
     ]);
+  });
+
+  it('should not identify an MDX component syntax inside a code block', () => {
+    const md = '```jsx\n<ExampleComponent body="This is a body" />\n```';
+    const tree = mdxish(md, { components: exampleComponents });
+
+    let exampleComponentNode: Element | undefined;
+    visit(tree, 'element', (node: Element) => {
+      if (node.tagName === 'ExampleComponent') {
+        exampleComponentNode = node;
+      }
+    });
+    expect(exampleComponentNode).toBeUndefined();
   });
 });
