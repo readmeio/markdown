@@ -1,4 +1,4 @@
-import type { Html, Root, Table } from 'mdast';
+import type { Root, Table } from 'mdast';
 
 import { visit } from 'unist-util-visit';
 
