@@ -996,12 +996,11 @@ Some callout content
 
       const textNodes = cell.children.filter(c => c.type === 'text') as { type: string; value: string }[];
       const htmlNodes = cell.children.filter(c => c.type === 'html') as { type: string; value: string }[];
-      const breakNodes = cell.children.filter(c => c.type === 'break');
 
       expect(textNodes.some(n => n.value.includes('<foo>'))).toBe(true);
       expect(htmlNodes.some(n => n.value === '<em>')).toBe(true);
       expect(htmlNodes.some(n => n.value === '</em>')).toBe(true);
-      expect(breakNodes.length).toBeGreaterThan(0);
+      expect(htmlNodes.some(n => n.value === '<br>')).toBe(true);
       expect(htmlNodes.every(n => !n.value.includes('&#x'))).toBe(true);
       expect(htmlNodes.every(n => !n.value.includes('&lt;'))).toBe(true);
     });

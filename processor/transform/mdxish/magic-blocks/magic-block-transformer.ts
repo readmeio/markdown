@@ -247,7 +247,7 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
  */
-const parseTableCell = (text: string, newEditorTypes = false): MdastNode[] => {
+const parseTableCell = (text: string): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
@@ -277,51 +277,51 @@ const parseTableCell = (text: string, newEditorTypes = false): MdastNode[] => {
         n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
       );
 
-  // For the editor, flatten html nodes into individual html tags + text nodes.
-  // This matches the MDAST structure that GFM cell parsing produces on roundtrip,
-  // where entities in text nodes are decoded (e.g. &lt; → <) and <br /> becomes
-  // break nodes. Without this, the editor shows entities as literal text because
-  // they're trapped inside html node value strings.
-  if (newEditorTypes) {
-    return result.flatMap(node => {
-      const value = node.value as string | undefined;
-      if (node.type !== 'html' || !value) return [node];
+  // Flatten monolithic html nodes (e.g. <ul><li>text</li></ul>) into individual
+  // html tags + text nodes. This decodes entities trapped inside html node value
+  // strings (e.g. &#x3C; → <) and converts <br /> to break nodes. Single-tag
+  // nodes (already split by remark's inline HTML parser) are left as-is to
+  // preserve original casing for custom components like <Glossary>.
+  const flatten = (children: HastRoot['children']): MdastNode[] =>
+    children.flatMap(child => {
+      if (child.type === 'text') return [{ type: 'text', value: (child as HastText).value }];
+      if (child.type !== 'element') return [];
 
-      const hast = htmlParser.parse(value) as HastRoot;
+      const el = child as HastElement;
 
-      const flatten = (children: HastRoot['children']): MdastNode[] =>
-        children.flatMap(child => {
-          if (child.type === 'text') return [{ type: 'text', value: (child as HastText).value }];
-          if (child.type !== 'element') return [];
+      if (el.tagName === 'br') return [{ type: 'html', value: '<br>' }];
+      if (el.tagName === 'variable' && el.properties?.name) {
+        const name = String(el.properties.name);
+        const isLegacy = 'islegacy' in (el.properties ?? {});
+        return [{
+          type: NodeTypes.variable,
+          data: { hName: 'Variable', hProperties: { name, ...(isLegacy && { isLegacy: true }) } },
+          value: isLegacy ? `<<${name}>>` : `{user.${name}}`,
+        }];
+      }
+      if (el.children.length === 0) return [{ type: 'html', value: toHtml(el, { closeSelfClosing: true }) }];
 
-          const el = child as HastElement;
-
-          if (el.tagName === 'br') return [{ type: 'break' }];
-          if (el.tagName === 'variable' && el.properties?.name) {
-            const name = String(el.properties.name);
-            const isLegacy = 'islegacy' in (el.properties ?? {});
-            return [{
-              type: NodeTypes.variable,
-              data: { hName: 'Variable', hProperties: { name, ...(isLegacy && { isLegacy: true }) } },
-              value: isLegacy ? `<<${name}>>` : `{user.${name}}`,
-            }];
-          }
-          if (el.children.length === 0) return [{ type: 'html', value: toHtml(el, { closeSelfClosing: true }) }];
-
-          const openTag = toHtml({ ...el, children: [] }).replace(`</${el.tagName}>`, '');
-          return [
-            { type: 'html', value: openTag },
-            ...flatten(el.children),
-            { type: 'html', value: `</${el.tagName}>` },
-          ];
-        });
-
-      const nodes = flatten(hast.children);
-      return nodes.length > 0 ? nodes : [node];
+      const openTag = toHtml({ ...el, children: [] }).replace(`</${el.tagName}>`, '');
+      return [
+        { type: 'html', value: openTag },
+        ...flatten(el.children),
+        { type: 'html', value: `</${el.tagName}>` },
+      ];
     });
-  }
 
-  return result;
+  return result.flatMap(node => {
+    const value = node.value as string | undefined;
+    if (node.type !== 'html' || !value) return [node];
+
+    // Only flatten monolithic HTML strings that start with a standard tag.
+    // Custom components (e.g. <Glossary>) are left as-is to preserve casing.
+    const tag = value.slice(1, value.indexOf('>')).split(/[\s/]/)[0];
+    if (!STANDARD_HTML_TAGS.has(tag.toLowerCase())) return [node];
+
+    const hast = htmlParser.parse(value) as HastRoot;
+    const nodes = flatten(hast.children);
+    return nodes.length > 0 ? nodes : [node];
+  });
 };
 
 const parseBlock = (text: string): MdastNode[] => {
@@ -371,7 +371,7 @@ function transformMagicBlock(
   rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
-  const { compatibilityMode = false, newEditorTypes = false, safeMode = false } = options;
+  const { compatibilityMode = false, safeMode = false } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
   // This allows the editor to show appropriate placeholder UI instead of nothing
@@ -564,7 +564,7 @@ function transformMagicBlock(
 
       const tokenizeCell = compatibilityMode
         ? textToBlock
-        : (cellText: string) => parseTableCell(cellText, newEditorTypes);
+        : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],

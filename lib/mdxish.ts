@@ -185,7 +185,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
-    .use(magicBlockTransformer, { newEditorTypes })
+    .use(magicBlockTransformer)
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
