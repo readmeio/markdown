@@ -27,18 +27,29 @@ export const ExampleComponent = ({ header, body }) => {
     ExampleComponent: compiledExampleComponentCode,
   };
 
-  it('should contain a node of a user-provided component with the correct tag name', () => {
-    const md = '<ExampleComponent header="Getting Started with Custom Components" />';
-    const tree = mdxish(md, { components: exampleComponents });
+  describe('normal quoted attribute values', () => {
+    it('should parse strings attributes that contain spaces', () => {
+      const md = '<ExampleComponent header="Getting Started with Custom Components" />';
+      const tree = mdxish(md, { components: exampleComponents });
 
-    expect(tree.children).toHaveLength(1);
-    expect(tree.children[0].type).toBe('element');
-    const element = tree.children[0] as Element;
-    expect(element.tagName).toBe('ExampleComponent');
-    expect(element.properties?.header).toBe('Getting Started with Custom Components');
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('Getting Started with Custom Components');
+    });
+
+    it('should parse strings attributes that contain special characters', () => {
+      const md = '<ExampleComponent header="Special characters: < > & \n ; /" />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('Special characters: < > & \n ; /');
+    });
   });
 
-  describe('when the component props are using template literals in JSX expressions', () => {
+  describe('template literals in JSX expressions', () => {
     it('should parse a component with a string template literal as a prop', () => {
       const md = '<ExampleComponent header={`Getting Started with Custom Components`} />';
       const tree = mdxish(md, { components: exampleComponents });
@@ -216,7 +227,7 @@ labore et dolore magna aliqua.`,
     });
   });
 
-  describe('when the component props uses attribute expressions', () => {
+  describe('attribute expressions', () => {
     it('should parse an attribute expression and evaluate it', () => {
       const md = '<ExampleComponent header={1+1} body={"HELLO".toLowerCase()} />';
       const tree = mdxish(md, { components: exampleComponents });
@@ -248,6 +259,28 @@ labore et dolore magna aliqua.`,
       expect(element.tagName).toBe('ExampleComponent');
       expect(element.properties?.header).toBe('{1+1}');
       expect(element.properties?.body).toBe('{"HELLO".toLowerCase()}');
+    });
+  });
+
+  describe('unquoted attribute values', () => {
+    it('should still properly parse normal values', () => {
+      const md = '<ExampleComponent header=MyHeader />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('MyHeader');
+    });
+
+    it('should still properly parse attribute that contains /', () => {
+      const md = '<ExampleComponent header=https://example.com />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('https://example.com');
     });
   });
 });
