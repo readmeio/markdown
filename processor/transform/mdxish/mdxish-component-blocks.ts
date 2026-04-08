@@ -15,7 +15,8 @@ import { mdxComponent } from '../../../lib/micromark/mdx-component';
 import { INLINE_COMPONENT_TAGS } from './constants';
 
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
-const tagAttributePattern = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?/g;
+const tagAttributePattern =
+  /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`|\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`)*\})*\}|"[^"]*"|'[^']*'|[^\s"'>]+))?/g;
 
 /**
  * Tags that have dedicated transformers and should NOT be handled by this plugin.

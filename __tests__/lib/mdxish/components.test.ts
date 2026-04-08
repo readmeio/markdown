@@ -1,16 +1,20 @@
 import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
-import { mdxish, compile, run } from '../../../lib';
+import { mdxish, compile, run, mdxishAstProcessor } from '../../../lib';
 import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('processing mdx components in mdxish', () => {
+  // Create & compile example component
   const exampleComponentCode = `
-export const ExampleComponent = ({ header }) => {
+export const ExampleComponent = ({ header, body }) => {
   return (
     <div className="flex justify-center">
       <div className="rounded-md p-6 m-4">
         <p className="text-lg font-bold">{header}</p>
+      </div>
+      <div className="rounded-md p-6 m-4">
+        <p className="text-lg font-bold">{body}</p>
       </div>
     </div>
   );
@@ -210,5 +214,40 @@ Sed do eiusmod tempor incididunt ut
 labore et dolore magna aliqua.`,
       });
     });
-  })
+  });
+
+  describe('when the component props uses attribute expressions', () => {
+    it('should parse an attribute expression and evaluate it', () => {
+      const md = '<ExampleComponent header={1+1} body={"HELLO".toLowerCase()} />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('2');
+      expect(element.properties?.body).toBe('hello');
+    });
+
+    it('should parse an attribute expression with weird spacing and evaluate it', () => {
+      const md = '<ExampleComponent header={ 2+ 3 }  body={  "HELLO".toLowerCase()} />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('5');
+      expect(element.properties?.body).toBe('hello');
+    });
+
+    it('should not evaluate an attribute expression if in safe mode', () => {
+      const md = '<ExampleComponent header={1+1} body={"HELLO".toLowerCase()} />';
+      const tree = mdxish(md, { components: exampleComponents, safeMode: true });
+
+      expect(tree.children).toHaveLength(1);
+      const element = tree.children[0] as Element;
+      expect(element.tagName).toBe('ExampleComponent');
+      expect(element.properties?.header).toBe('{1+1}');
+      expect(element.properties?.body).toBe('{"HELLO".toLowerCase()}');
+    });
+  });
 });
