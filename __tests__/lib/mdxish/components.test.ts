@@ -1,7 +1,7 @@
 import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
-import { mdxish, compile, run, mdxishAstProcessor } from '../../../lib';
+import { mdxish, compile, run } from '../../../lib';
 import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('processing mdx components in mdxish', () => {
