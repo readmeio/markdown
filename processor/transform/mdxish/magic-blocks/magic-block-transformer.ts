@@ -25,6 +25,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
+import { toHtml } from 'hast-util-to-html';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
@@ -293,15 +294,13 @@ const parseTableCell = (text: string, newEditorTypes = false): MdastNode[] => {
           if (child.type !== 'element') return [];
 
           const el = child as HastElement;
-          const attrs = Object.entries(el.properties ?? {})
-            .map(([k, v]) => ` ${k}="${v}"`)
-            .join('');
 
           if (el.tagName === 'br') return [{ type: 'break' }];
-          if (el.children.length === 0) return [{ type: 'html', value: `<${el.tagName}${attrs}>` }];
+          if (el.children.length === 0) return [{ type: 'html', value: toHtml(el, { closeSelfClosing: true }) }];
 
+          const openTag = toHtml({ ...el, children: [] }).replace(`</${el.tagName}>`, '');
           return [
-            { type: 'html', value: `<${el.tagName}${attrs}>` },
+            { type: 'html', value: openTag },
             ...flatten(el.children),
             { type: 'html', value: `</${el.tagName}>` },
           ];
