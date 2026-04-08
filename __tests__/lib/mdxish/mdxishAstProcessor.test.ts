@@ -311,5 +311,4 @@ describe('mdxishAstProcessor', () => {
       ],
     });
   });
-
 });
