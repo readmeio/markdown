@@ -5,7 +5,10 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks, { parseAttributes, parseTag } from '../../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishComponentBlocks, {
+  parseAttributes,
+  parseTag,
+} from '../../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
 
 /**
@@ -87,7 +90,7 @@ describe('mdxish-component-blocks', () => {
   border
 `);
     });
-  })
+  });
 
   describe('parseAttributes', () => {
     describe('normal quoted attributes ""', () => {
@@ -95,27 +98,31 @@ describe('mdxish-component-blocks', () => {
         const attrString = 'attr1="value1" attr2="value2"';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: 'value1',
-        },
-        {
-          type: 'mdxJsxAttribute',
-          name: 'attr2',
-          value: 'value2',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: 'value1',
+          },
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr2',
+            value: 'value2',
+          },
+        ]);
       });
 
       it('should not break when there are special characters in the attribute value', () => {
         const attrString = 'attr1="!@#$%^&*()_+"';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: '!@#$%^&*()_+',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: '!@#$%^&*()_+',
+          },
+        ]);
       });
     });
 
@@ -124,15 +131,18 @@ describe('mdxish-component-blocks', () => {
         const attrString = 'attr1={`value1`} attr2={`value2`}';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: '{`value1`}',
-        }, {
-          type: 'mdxJsxAttribute',
-          name: 'attr2',
-          value: '{`value2`}',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: '{`value1`}',
+          },
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr2',
+            value: '{`value2`}',
+          },
+        ]);
       });
     });
 
@@ -141,37 +151,44 @@ describe('mdxish-component-blocks', () => {
         const attrString = 'attr1=value1 attr2=value2';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: 'value1',
-        }, {
-          type: 'mdxJsxAttribute',
-          name: 'attr2',
-          value: 'value2',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: 'value1',
+          },
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr2',
+            value: 'value2',
+          },
+        ]);
       });
 
       it('should not break when there are special characters in the attribute value', () => {
         const attrString = 'attr1=!@#$%^&*()_+';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: '!@#$%^&*()_+',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: '!@#$%^&*()_+',
+          },
+        ]);
       });
 
       it('should not break when there is / character in the value', () => {
         const attrString = 'attr1=https://example.com';
         const result = parseAttributes(attrString);
 
-        expect(result).toStrictEqual([{
-          type: 'mdxJsxAttribute',
-          name: 'attr1',
-          value: 'https://example.com',
-        }]);
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'attr1',
+            value: 'https://example.com',
+          },
+        ]);
       });
     });
 
@@ -179,11 +196,13 @@ describe('mdxish-component-blocks', () => {
       const attrString = 'empty';
       const result = parseAttributes(attrString);
 
-      expect(result).toStrictEqual([{
-        type: 'mdxJsxAttribute',
-        name: 'empty',
-        value: null,
-      }]);
+      expect(result).toStrictEqual([
+        {
+          type: 'mdxJsxAttribute',
+          name: 'empty',
+          value: null,
+        },
+      ]);
     });
   });
 
@@ -372,7 +391,7 @@ Some **markdown** content
                 { type: 'text', value: ' content' },
               ],
             },
-          ]
+          ],
         });
       });
 
@@ -414,27 +433,37 @@ Second paragraph
         expect(tree.children[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
           name: 'MyComponent',
-          children: [{
-            type: 'mdxJsxFlowElement',
-            name: 'NestedComponent',
-            children: [{
-              type: 'paragraph',
-              children: [{
-                type: 'text',
-                value: 'Hello'
-              }]
-            }]},
+          children: [
             {
               type: 'mdxJsxFlowElement',
               name: 'NestedComponent',
-              children: [{
-                type: 'paragraph',
-                children: [{
-                  type: 'text',
-                  value: 'Hello'
-                }]
-              }]
-            }
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      value: 'Hello',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'NestedComponent',
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      value: 'Hello',
+                    },
+                  ],
+                },
+              ],
+            },
           ],
         });
       });
@@ -474,16 +503,21 @@ More content here
         expect(tree.children[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
           name: 'MyComponent',
-          children: [{
-            type: 'mdxJsxFlowElement',
-            name: 'NestedComponent',
-          },{
-            type: 'paragraph',
-            children: [{
-              type: 'text',
-              value: 'More content here'
-            }]
-          }],
+          children: [
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'NestedComponent',
+            },
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  value: 'More content here',
+                },
+              ],
+            },
+          ],
         });
       });
     });
@@ -527,25 +561,34 @@ More content here
 </Outer>
 <Another>second</Another>`;
         const tree = parseWithPlugin(markdown);
-        expect(tree.children).toMatchObject([{
-          type: 'mdxJsxFlowElement',
-          name: 'Outer',
-          children: [{
+        expect(tree.children).toMatchObject([
+          {
             type: 'mdxJsxFlowElement',
-            name: 'Inner',
-            children: [{
-              type: 'paragraph',
-              children: [{ type: 'text', value: 'first' }]
-            }]
-          }],
-        },{
-          type: 'mdxJsxFlowElement',
-          name: 'Another',
-          children: [{
-            type: 'paragraph',
-            children: [{ type: 'text', value: 'second' }]
-          }]
-        }]);
+            name: 'Outer',
+            children: [
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Inner',
+                children: [
+                  {
+                    type: 'paragraph',
+                    children: [{ type: 'text', value: 'first' }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Another',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'second' }],
+              },
+            ],
+          },
+        ]);
       });
 
       it('should correctly handle repeated same-name components without blank line separation', () => {
@@ -557,18 +600,23 @@ first content
 <Wrapper>second content</Wrapper>`;
         const tree = parseWithPlugin(markdown);
 
-        expect(tree.children).toMatchObject([{
-          type: 'mdxJsxFlowElement',
-          name: 'Wrapper',
-          children: [{
-            type: 'paragraph',
-            children: [{ type: 'text', value: 'first content' }]
-          }]
-        },{
-          type: 'mdxJsxFlowElement',
-          name: 'Wrapper',
-          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'second content' }] }]
-        }]);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Wrapper',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'first content' }],
+              },
+            ],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Wrapper',
+            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'second content' }] }],
+          },
+        ]);
       });
 
       it('should process a component opening tag found after a closing tag in the same HTML sibling', () => {
@@ -580,15 +628,18 @@ hello
 <Second />`;
         const tree = parseWithPlugin(markdown);
 
-        expect(tree.children).toMatchObject([{
-          type: 'mdxJsxFlowElement',
-          name: 'First',
-          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'hello' }] }]
-        },{
-          type: 'mdxJsxFlowElement',
-          name: 'Second',
-          children: []
-        }]);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'First',
+            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'hello' }] }],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Second',
+            children: [],
+          },
+        ]);
       });
     });
   });
@@ -628,4 +679,3 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
     });
   });
 });
-
