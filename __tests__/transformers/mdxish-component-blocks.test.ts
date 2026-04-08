@@ -5,7 +5,7 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishComponentBlocks, { parseAttributes, parseTag } from '../../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
 
 /**
@@ -46,34 +46,144 @@ const findNodesByType = (tree: Parent, type: string): Parent[] => {
 };
 
 describe('mdxish-component-blocks', () => {
-  describe('parseAttributes', () => {
-    it('should parse normal key-value attributes', () => {
-      const attrString = 'theme="info"';
-      const result = parseAttributes(attrString);
+  describe('parseTag', () => {
+    it('should parse a self-closing tag with attributes', () => {
+      const result = parseTag('<MyComponent theme="dark" size="large" />');
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).toStrictEqual({
-        type: 'mdxJsxAttribute',
-        name: 'theme',
-        value: 'info',
+      expect(result?.tag).toBe('MyComponent');
+      expect(result?.selfClosing).toBe(true);
+      expect(result?.contentAfterTag).toBe('');
+      expect(result?.attrString.trim()).toBe('theme="dark" size="large"');
+    });
+
+    it('should parse an opening tag with content after it', () => {
+      const result = parseTag('<Callout theme="info">Some content</Callout>');
+      expect(result?.tag).toBe('Callout');
+      expect(result?.selfClosing).toBe(false);
+      expect(result?.contentAfterTag).toBe('Some content</Callout>');
+      expect(result?.attrString.trim()).toBe('theme="info"');
+    });
+
+    it('should return null for lowercase (non-component) tags', () => {
+      expect(parseTag('<div class="foo">')).toBeNull();
+    });
+
+    it('should parse a tag whose quoted attribute contains >', () => {
+      const result = parseTag('<Image caption="A > B" />');
+      expect(result?.tag).toBe('Image');
+      expect(result?.attrString.trim()).toBe('caption="A > B"');
+    });
+
+    it('should parse multilline attributes', () => {
+      const result = parseTag(`<Image
+  src="https://example.com/image.jpg"
+  alt="Some helpful text"
+  border
+/>`);
+      expect(result?.tag).toBe('Image');
+      expect(result?.attrString).toBe(`
+  src="https://example.com/image.jpg"
+  alt="Some helpful text"
+  border
+`);
+    });
+  })
+
+  describe('parseAttributes', () => {
+    describe('normal quoted attributes ""', () => {
+      it('should parse multiple attributes', () => {
+        const attrString = 'attr1="value1" attr2="value2"';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: 'value1',
+        },
+        {
+          type: 'mdxJsxAttribute',
+          name: 'attr2',
+          value: 'value2',
+        }]);
+      });
+
+      it('should not break when there are special characters in the attribute value', () => {
+        const attrString = 'attr1="!@#$%^&*()_+"';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: '!@#$%^&*()_+',
+        }]);
+      });
+    });
+
+    describe('template literal attributes', () => {
+      it('should parse template literal attributes as raw brace expressions', () => {
+        const attrString = 'attr1={`value1`} attr2={`value2`}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: '{`value1`}',
+        }, {
+          type: 'mdxJsxAttribute',
+          name: 'attr2',
+          value: '{`value2`}',
+        }]);
+      });
+    });
+
+    describe('unquoted attributes', () => {
+      it('should parse unquoted attributes', () => {
+        const attrString = 'attr1=value1 attr2=value2';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: 'value1',
+        }, {
+          type: 'mdxJsxAttribute',
+          name: 'attr2',
+          value: 'value2',
+        }]);
+      });
+
+      it('should not break when there are special characters in the attribute value', () => {
+        const attrString = 'attr1=!@#$%^&*()_+';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: '!@#$%^&*()_+',
+        }]);
+      });
+
+      it('should not break when there is / character in the value', () => {
+        const attrString = 'attr1=https://example.com';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([{
+          type: 'mdxJsxAttribute',
+          name: 'attr1',
+          value: 'https://example.com',
+        }]);
       });
     });
 
     it('should parse boolean attributes without values', () => {
-      const attrString = 'theme="info" empty';
+      const attrString = 'empty';
       const result = parseAttributes(attrString);
 
-      expect(result).toHaveLength(2);
-      expect(result[0]).toStrictEqual({
-        type: 'mdxJsxAttribute',
-        name: 'theme',
-        value: 'info',
-      });
-      expect(result[1]).toStrictEqual({
+      expect(result).toStrictEqual([{
         type: 'mdxJsxAttribute',
         name: 'empty',
         value: null,
-      });
+      }]);
     });
   });
 

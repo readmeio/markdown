@@ -90,7 +90,7 @@ export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
 /**
  * Parse an HTML tag string into structured data.
  */
-const parseTag = (value: string) => {
+export const parseTag = (value: string) => {
   const match = value.match(pascalCaseTagPattern);
   if (!match) return null;
 
@@ -100,6 +100,7 @@ const parseTag = (value: string) => {
     attributes: parseAttributes(attrString),
     selfClosing: !!selfClosing,
     contentAfterTag,
+    attrString // Just for debugging purposes
   };
 };
 
