@@ -40,7 +40,6 @@
     "github-slugger": "^2.0.0",
     "hast-util-from-html": "^2.0.1",
     "hast-util-sanitize": "^4.0.0",
-    "hast-util-to-html": "^9.0.5",
     "hastscript": "^9.0.0",
     "html-tags": "^5.1.0",
     "lodash.escape": "^4.0.1",

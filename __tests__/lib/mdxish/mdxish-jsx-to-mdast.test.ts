@@ -976,5 +976,4 @@ Some callout content
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
     });
   });
-
 });
