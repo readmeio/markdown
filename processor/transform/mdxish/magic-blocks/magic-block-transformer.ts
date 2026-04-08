@@ -25,7 +25,6 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
-import { toHtml } from 'hast-util-to-html';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
@@ -39,7 +38,6 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
-import { NodeTypes } from '../../../../enums';
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
@@ -277,51 +275,7 @@ const parseTableCell = (text: string): MdastNode[] => {
         n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
       );
 
-  // Flatten monolithic html nodes (e.g. <ul><li>text</li></ul>) into individual
-  // html tags + text nodes. This decodes entities trapped inside html node value
-  // strings (e.g. &#x3C; → <) and converts <br /> to break nodes. Single-tag
-  // nodes (already split by remark's inline HTML parser) are left as-is to
-  // preserve original casing for custom components like <Glossary>.
-  const flatten = (children: HastRoot['children']): MdastNode[] =>
-    children.flatMap(child => {
-      if (child.type === 'text') return [{ type: 'text', value: (child as HastText).value }];
-      if (child.type !== 'element') return [];
-
-      const el = child as HastElement;
-
-      if (el.tagName === 'br') return [{ type: 'html', value: '<br>' }];
-      if (el.tagName === 'variable' && el.properties?.name) {
-        const name = String(el.properties.name);
-        const isLegacy = 'islegacy' in (el.properties ?? {});
-        return [{
-          type: NodeTypes.variable,
-          data: { hName: 'Variable', hProperties: { name, ...(isLegacy && { isLegacy: true }) } },
-          value: isLegacy ? `<<${name}>>` : `{user.${name}}`,
-        }];
-      }
-      if (el.children.length === 0) return [{ type: 'html', value: toHtml(el, { closeSelfClosing: true }) }];
-
-      const openTag = toHtml({ ...el, children: [] }).replace(`</${el.tagName}>`, '');
-      return [
-        { type: 'html', value: openTag },
-        ...flatten(el.children),
-        { type: 'html', value: `</${el.tagName}>` },
-      ];
-    });
-
-  return result.flatMap(node => {
-    const value = node.value as string | undefined;
-    if (node.type !== 'html' || !value) return [node];
-
-    // Only flatten monolithic HTML strings that start with a standard tag.
-    // Custom components (e.g. <Glossary>) are left as-is to preserve casing.
-    const tag = value.slice(1, value.indexOf('>')).split(/[\s/]/)[0];
-    if (!STANDARD_HTML_TAGS.has(tag.toLowerCase())) return [node];
-
-    const hast = htmlParser.parse(value) as HastRoot;
-    const nodes = flatten(hast.children);
-    return nodes.length > 0 ? nodes : [node];
-  });
+  return result;
 };
 
 const parseBlock = (text: string): MdastNode[] => {

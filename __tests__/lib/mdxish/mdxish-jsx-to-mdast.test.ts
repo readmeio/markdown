@@ -977,32 +977,4 @@ Some callout content
     });
   });
 
-  describe('table cell HTML flattening (editor-only)', () => {
-    it('should flatten html nodes into individual tags + text nodes with decoded entities', () => {
-      const md = [
-        '[block:parameters]',
-        JSON.stringify({
-          data: { 'h-0': 'H', '0-0': '<ul>\n<li>_\\<foo>_.bar.com</li>\n</ul>' },
-          cols: 1,
-          rows: 1,
-          align: ['left'],
-        }),
-        '[/block]',
-      ].join('\n');
-
-      const ast = processWithNewTypes(md);
-      const table = ast.children[0] as { children: { children: { children: RootContent[] }[] }[] };
-      const cell = table.children[1].children[0];
-
-      const textNodes = cell.children.filter(c => c.type === 'text') as { type: string; value: string }[];
-      const htmlNodes = cell.children.filter(c => c.type === 'html') as { type: string; value: string }[];
-
-      expect(textNodes.some(n => n.value.includes('<foo>'))).toBe(true);
-      expect(htmlNodes.some(n => n.value === '<em>')).toBe(true);
-      expect(htmlNodes.some(n => n.value === '</em>')).toBe(true);
-      expect(htmlNodes.some(n => n.value === '<br>')).toBe(true);
-      expect(htmlNodes.every(n => !n.value.includes('&#x'))).toBe(true);
-      expect(htmlNodes.every(n => !n.value.includes('&lt;'))).toBe(true);
-    });
-  });
 });
