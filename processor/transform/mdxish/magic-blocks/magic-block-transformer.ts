@@ -39,6 +39,7 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
+import { NodeTypes } from '../../../../enums';
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
@@ -296,6 +297,15 @@ const parseTableCell = (text: string, newEditorTypes = false): MdastNode[] => {
           const el = child as HastElement;
 
           if (el.tagName === 'br') return [{ type: 'break' }];
+          if (el.tagName === 'variable' && el.properties?.name) {
+            const name = String(el.properties.name);
+            const isLegacy = 'islegacy' in (el.properties ?? {});
+            return [{
+              type: NodeTypes.variable,
+              data: { hName: 'Variable', hProperties: { name, ...(isLegacy && { isLegacy: true }) } },
+              value: isLegacy ? `<<${name}>>` : `{user.${name}}`,
+            }];
+          }
           if (el.children.length === 0) return [{ type: 'html', value: toHtml(el, { closeSelfClosing: true }) }];
 
           const openTag = toHtml({ ...el, children: [] }).replace(`</${el.tagName}>`, '');

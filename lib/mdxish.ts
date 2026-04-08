@@ -34,7 +34,6 @@ import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-componen
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
-import normalizeLegacyVariablesInHtml from '../processor/transform/mdxish/normalize-legacy-variables-in-html';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
@@ -196,7 +195,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishHtmlBlocks)
     .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
-    .use(newEditorTypes ? normalizeLegacyVariablesInHtml : undefined) // Convert <Variable> HTML tags to {user.*} for the editor
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
     .use(remarkGfm);
