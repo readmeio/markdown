@@ -6,6 +6,7 @@ import type { VFile } from 'vfile';
 import { visit } from 'unist-util-visit';
 
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
+import { NEWLINE_MARKER } from '../plugin/mdxish-handlers';
 import {
   CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,
@@ -56,8 +57,25 @@ function isSingleParagraphTextNode(nodes: ElementContent[]): boolean {
     nodes.length === 1 &&
     nodes[0].type === 'element' &&
     nodes[0].tagName === 'p' &&
-    nodes[0].children?.every(child => child.type === 'text')
+    nodes[0].children?.every(child =>
+      child.type === 'text' || (child.type === 'element' && child.tagName === 'br'),
+    )
   );
+}
+
+/**
+ * Extract text content from a single paragraph element.
+ * Converts `<br>` elements to newlines.
+ */
+function extractTextFromParagraph(pElement: Element): string {
+  if (!pElement.children) return '';
+  return pElement.children
+    .map(child => {
+      if (child.type === 'text') return child.value;
+      if (child.type === 'element' && child.tagName === 'br') return '\n';
+      return '';
+    })
+    .join('');
 }
 
 /**
@@ -104,12 +122,32 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
+    // Restore newlines encoded by evaluateExpressions to survive remarkBreaks and rehypeRaw.
+    // Preserve the text as-is instead of processing through markdown.
+    if (child.value.includes(NEWLINE_MARKER)) {
+      try {
+        return [{ type: 'text', value: child.value.replaceAll(NEWLINE_MARKER, '\n') } as ElementContent];
+      } catch {
+        // Fallback: return original text if decoding fails (should not happen)
+        return [child];
+      }
+    }
+
     const hast = processMarkdown(child.value.trim());
     const children = (hast.children ?? []).filter(isElementContentNode);
 
     // For inline components, preserve plain text instead of wrapping in <p>
     if (INLINE_COMPONENT_TAGS.has(node.tagName.toLowerCase()) && isSingleParagraphTextNode(children)) {
       return [child];
+    }
+
+    // For custom components with single paragraph text children, extract the text
+    // and pass it as a raw text node. This ensures components like Terminal that
+    // expect string children (e.g., `children.trim()`) receive strings, not React elements.
+    if (isSingleParagraphTextNode(children)) {
+      const pElement = children[0] as Element;
+      const textContent = extractTextFromParagraph(pElement);
+      return [{ type: 'text', value: textContent } as ElementContent];
     }
 
     return children;

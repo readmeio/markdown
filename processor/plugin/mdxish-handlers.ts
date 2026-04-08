@@ -5,6 +5,11 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
 
+// Marker used to preserve newlines in JSX element text children through rehypeRaw.
+// rehypeRaw uses parse5 which normalizes \n in text nodes to spaces inside non-<pre>
+// elements. We encode \n as this marker before rehypeRaw, then decode in parseTextChildren.
+export const NEWLINE_MARKER = '___MDXISH_NL___';
+
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
   type: 'text',

@@ -45,6 +45,18 @@ function createElementWithJsonProps(
   ...children: React.ReactNode[]
 ): React.ReactElement {
   const parsedProps = parseJsonProps(props);
+
+  // Unwrap nested single-string arrays from hast-to-hyperscript
+  // Only unwrap [['string']] -> 'string', preserve all other cases
+  if (
+    children.length === 1 &&
+    Array.isArray(children[0]) &&
+    children[0].length === 1 &&
+    typeof children[0][0] === 'string'
+  ) {
+    return React.createElement(type, parsedProps, children[0][0]);
+  }
+
   return React.createElement(type, parsedProps, ...children);
 }
 
