@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 13.8.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle user vars on standalone lines in tables ([#1423](https://github.com/readmeio/markdown/issues/1423)) ([96dbf84](https://github.com/readmeio/markdown/commit/96dbf84c4e7d825f96b7a0d5ce9389393e4a6804)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+* toc readme integration errors ([#1425](https://github.com/readmeio/markdown/issues/1425)) ([0e769e5](https://github.com/readmeio/markdown/commit/0e769e578b5eecf5f342d2ae79ac151dfc6bb3f9))
+
+## Version 13.8.1
+### 🛠 Fixes & Updates
+
+* pin npm to 22.22.1 ([#1424](https://github.com/readmeio/markdown/issues/1424)) ([ebf47bd](https://github.com/readmeio/markdown/commit/ebf47bd3e9fbd5894bf2017e860fbe1cbe521599))
+* toc feedback from pr ([#1422](https://github.com/readmeio/markdown/issues/1422)) ([2e2a1e7](https://github.com/readmeio/markdown/commit/2e2a1e785a942f91d87c6c0969b5bfe29e315e9a))
+
+## Version 13.8.0
+### ✨ New & Improved
+
+* add animated toc ([#1392](https://github.com/readmeio/markdown/issues/1392)) ([9789929](https://github.com/readmeio/markdown/commit/9789929125072d98aa1b15d5c5b2c9d346f5d70c))
+
 ## Version 13.7.4
 ### 🛠 Fixes & Updates
 

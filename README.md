@@ -125,9 +125,29 @@ To make changes to the RDMD engine locally, run the local development server. Cl
 
 If you make changes to the docs or how the markdown is rendered, you may need to update the visual regression snapshots by running `make updateSnapshot`. Running these browser tests requires `docker`. Follow the docker [install instructions for mac](https://docs.docker.com/docker-for-mac/install/). You may want to increase the [memory usage](https://docs.docker.com/docker-for-mac/#resources). If you have not already, you'll need to create an account for `docker hub` and [sign-in locally](https://docs.docker.com/docker-for-mac/#docker-hub).
 
+### Linking Changes to the Main Repo
+
+To test local changes in the main readme app, use `npm pack` (not `npm link`) and clear the webpack cache:
+
+**In this repo, run:**
+
+```
+npm run build && npm pack
+```
+
+**In the main app repo, run:**
+
+```
+npm install ../markdown/readme-markdown-<version>.tgz
+rm -rf webpack-cache
+make start
+```
+
+> **Note:** You must clear `webpack-cache` after every reinstall or the app will serve the old version.
+
 ### Linking Changes to Storybook
 
-There's currently some `babel` issues that prevent `npm link`ing to our main repo. `npm link`ing does work with our storybook app.
+`npm link` works with the storybook app:
 
 **In this repo, run:**
 
