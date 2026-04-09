@@ -1,7 +1,7 @@
+import type { Html } from 'mdast';
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
-import type { HTML } from 'mdast';
 
-const contextMap = new WeakMap<Token, { chunks: string[] }>();
+const contextMap = new WeakMap<Token, { chunks: string[]; pendingLineEndings: number }>();
 
 function findJsxTableToken(this: CompileContext): Token | undefined {
   const events = this.tokenStack;
@@ -12,22 +12,35 @@ function findJsxTableToken(this: CompileContext): Token | undefined {
 }
 
 function enterJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
-  contextMap.set(token, { chunks: [] });
-  this.enter({ type: 'html', value: '' } as HTML, token);
+  contextMap.set(token, { chunks: [], pendingLineEndings: 0 });
+  this.enter({ type: 'html', value: '' } as Html, token);
+}
+
+function exitLineEnding(this: CompileContext): void {
+  const tableToken = findJsxTableToken.call(this);
+  if (!tableToken) return;
+  const ctx = contextMap.get(tableToken);
+  if (ctx) ctx.pendingLineEndings += 1;
 }
 
 function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): void {
   const tableToken = findJsxTableToken.call(this);
   if (!tableToken) return;
   const ctx = contextMap.get(tableToken);
-  if (ctx) ctx.chunks.push(this.sliceSerialize(token));
+  if (ctx) {
+    if (ctx.chunks.length > 0) {
+      ctx.chunks.push('\n'.repeat(ctx.pendingLineEndings));
+    }
+    ctx.pendingLineEndings = 0;
+    ctx.chunks.push(this.sliceSerialize(token));
+  }
 }
 
 function exitJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
-  const node = this.stack[this.stack.length - 1] as HTML;
+  const node = this.stack[this.stack.length - 1] as Html;
   if (ctx) {
-    node.value = ctx.chunks.join('\n');
+    node.value = ctx.chunks.join('');
     contextMap.delete(token);
   }
   this.exit(token);
@@ -41,6 +54,7 @@ export function jsxTableFromMarkdown(): FromMarkdownExtension {
     exit: {
       jsxTableData: exitJsxTableData,
       jsxTable: exitJsxTable,
+      lineEnding: exitLineEnding,
     },
   };
 }
