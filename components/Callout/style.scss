@@ -88,7 +88,7 @@
     border-color: var(--border, var(--markdown-edge, #eee));
   }
 
-  blockquote {
+  blockquote:not(.callout) {
     color: var(--color-text-default, var(--text));
     border-color: var(--border);
     border-width: 3px;
