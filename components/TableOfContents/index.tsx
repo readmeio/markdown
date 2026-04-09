@@ -126,19 +126,30 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     // Click a ToC link → immediately activate it, suppress the observer
     // until the smooth scroll finishes, then hand control back.
     const onClick = (e: MouseEvent) => {
-      const anchor = (e.target as HTMLElement).closest?.('a[href^="#"]');
-      if (!anchor) return;
-      const id = decodeURIComponent(anchor.getAttribute('href')!.slice(1));
+      if (!(e.target instanceof Element)) return;
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const id = decodeURIComponent(anchor.hash.slice(1));
       if (!linkMap.has(id)) return;
 
-      e.preventDefault();
+      if (window.location.hash !== anchor.hash) {
+        window.location.hash = anchor.hash;
+      }
+
       activate(id);
       clickLocked = true;
 
-      const unlock = () => { clickLocked = false; };
+      let unlockTimer: number | null = null;
+      const unlock = () => {
+        clickLocked = false;
+        if (unlockTimer !== null) {
+          window.clearTimeout(unlockTimer);
+          unlockTimer = null;
+        }
+      };
       scrollTarget.addEventListener('scrollend', unlock, { once: true });
-
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      window.addEventListener('hashchange', unlock, { once: true });
+      unlockTimer = window.setTimeout(unlock, 500);
     };
 
     headings.forEach(el => { observer.observe(el); });
