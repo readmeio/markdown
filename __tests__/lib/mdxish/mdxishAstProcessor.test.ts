@@ -25,13 +25,26 @@ describe('mdxishAstProcessor', () => {
     });
 
     it('should not evaluate attribute expressions and not convert it to a HTML attribute in editor mode', () => {
-      const md = '<a href={baseUrl}>Link</a>';
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { jsxContext: { baseUrl: 'https://example.com' }, newEditorTypes: true });
+      const md = '<Component attr={1+1} />';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
       const mdast = processor.runSync(processor.parse(parserReadyContent));
 
-      const stringfieidAst = JSON.stringify(mdast);
-      expect(stringfieidAst).toContain('href={baseUrl}');
-      expect(stringfieidAst).not.toContain('href="https://example.com"');
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Component',
+            attributes: [
+              {
+                type: 'mdxJsxAttribute',
+                name: 'attr',
+                value: '{1+1}',
+              },
+            ],
+          },
+        ],
+      });
     });
   });
 
