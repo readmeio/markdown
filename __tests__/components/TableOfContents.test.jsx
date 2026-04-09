@@ -113,6 +113,7 @@ describe('Table of Contents', () => {
     });
 
     afterEach(() => {
+      window.location.hash = '';
       scrollContainer?.remove();
       delete global.IntersectionObserver;
     });

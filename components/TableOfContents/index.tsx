@@ -142,6 +142,8 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       let unlockTimer: number | null = null;
       const unlock = () => {
         clickLocked = false;
+        scrollTarget.removeEventListener('scrollend', unlock);
+        window.removeEventListener('hashchange', unlock);
         if (unlockTimer !== null) {
           window.clearTimeout(unlockTimer);
           unlockTimer = null;
