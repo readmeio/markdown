@@ -73,6 +73,15 @@ describe('preprocessJSXExpressions', () => {
       // Special characters are escaped: < > & " and newlines
       expect(result).toContain('greeting="Special characters: &lt; &gt; &amp; &quot; &#10; ; /"');
     });
+
+    it('should skip evaluating attribute expressions when skipAttributeExprEvaluation is true', () => {
+      const context = { baseUrl: 'https://example.com' };
+      const content = '<a href={baseUrl}>Link</a>';
+      const result = preprocessJSXExpressions(content, context, true);
+
+      expect(result).toContain('href={baseUrl}');
+      expect(result).not.toContain('href="https://example.com"');
+    });
   });
 
   describe('Code block protection', () => {
@@ -450,7 +459,7 @@ describe('preprocessJSXExpressions', () => {
 
       it('should handle expression inside template literal that spans blank line', () => {
         // Template literal with blank line - braces inside template shouldn't be affected
-        const content = '{\`template\n\nwith blank\`}';
+        const content = '{`template\n\nwith blank`}';
         const result = preprocessJSXExpressions(content);
 
         // Should NOT be escaped because blank line is inside template literal
@@ -682,7 +691,7 @@ Another valid: {name}`;
       });
 
       it('should handle interleaved balanced and unbalanced with blank lines', () => {
-        const content = `{valid} {\n\n} {valid2} unbalanced{ {\n\n}`;
+        const content = '{valid} {\n\n} {valid2} unbalanced{ {\n\n}';
         const result = preprocessJSXExpressions(content);
 
         expect(result).toContain('{valid}');
@@ -754,7 +763,7 @@ const obj = {key: value};
       });
 
       it('should handle 10 consecutive expressions with blank lines', () => {
-        const expressions = Array(10).fill('{\n\n}').join(' ');
+        const expressions = new Array(10).fill('{\n\n}').join(' ');
         const result = preprocessJSXExpressions(expressions);
 
         // All should be escaped
@@ -776,7 +785,7 @@ const obj = {key: value};
       });
 
       it('should handle expression spanning 100 lines including blank lines', () => {
-        const lines = Array(50).fill('line').join('\n');
+        const lines = new Array(50).fill('line').join('\n');
         const content = `{${lines}\n\n${lines}}`;
         const result = preprocessJSXExpressions(content);
 
