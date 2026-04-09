@@ -103,14 +103,14 @@ const defaultTransformers: PluggableList = [
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
  * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 4. Evaluate JSX expressions in attributes (unless safeMode)
+ * 4. Evaluate JSX expressions in attributes (unless safeMode or inEditor)
  * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
-  opts: { jsxContext: JSXContext; knownComponents: Set<string>; safeMode: boolean },
+  opts: { inEditor: boolean, jsxContext: JSXContext; knownComponents: Set<string>;  safeMode: boolean },
 ) {
-  const { safeMode, jsxContext, knownComponents } = opts;
+  const { safeMode, jsxContext, knownComponents, inEditor } = opts;
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
@@ -139,6 +139,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const knownComponents = new Set(Object.keys(components));
 
   const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, {
+    inEditor: newEditorTypes,
     safeMode,
     jsxContext,
     knownComponents,

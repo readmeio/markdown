@@ -317,23 +317,22 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
 
 /**
  * Preprocesses JSX-like expressions in markdown before parsing.
- * Inline expressions are handled separately; attribute expressions are processed here.
+ * Attribute expressions are processed here, not inline expressions.
  *
  * @param content
  * @param context
  * @returns Preprocessed content ready for markdown parsing
  */
-export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
+export function preprocessJSXExpressions(content: string, context: JSXContext = {}, skipAttributeExprEvaluation: boolean = false): string {
   // Step 0: Base64 encode HTMLBlock content
   let processed = protectHTMLBlockContent(content);
 
   // Step 1: Protect code blocks and inline code
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
-  // Step 2: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
-  // For inline expressions, we use a library to parse the expression & evaluate it later
-  // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
+  // Step 2: Optionally evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
+  // It was difficult to use a library to parse them, so do it manually
+  processed = skipAttributeExprEvaluation ? protectedContent : evaluateAttributeExpressions(protectedContent, context, protectedCode);
 
   // Step 3: Escape problematic braces to prevent MDX expression parsing errors
   // This handles both unbalanced braces and paragraph-spanning expressions in one pass
