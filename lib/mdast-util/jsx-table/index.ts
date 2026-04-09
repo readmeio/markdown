@@ -1,7 +1,7 @@
 import type { Html } from 'mdast';
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
 
-const contextMap = new WeakMap<Token, { chunks: string[]; pendingLineEndings: number }>();
+const contextMap = new WeakMap<Token, { chunks: string[]; lastEndLine: number }>();
 
 function findJsxTableToken(this: CompileContext): Token | undefined {
   const events = this.tokenStack;
@@ -12,15 +12,8 @@ function findJsxTableToken(this: CompileContext): Token | undefined {
 }
 
 function enterJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
-  contextMap.set(token, { chunks: [], pendingLineEndings: 0 });
+  contextMap.set(token, { chunks: [], lastEndLine: token.start.line });
   this.enter({ type: 'html', value: '' } as Html, token);
-}
-
-function exitLineEnding(this: CompileContext): void {
-  const tableToken = findJsxTableToken.call(this);
-  if (!tableToken) return;
-  const ctx = contextMap.get(tableToken);
-  if (ctx) ctx.pendingLineEndings += 1;
 }
 
 function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): void {
@@ -28,11 +21,12 @@ function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): v
   if (!tableToken) return;
   const ctx = contextMap.get(tableToken);
   if (ctx) {
-    if (ctx.chunks.length > 0) {
-      ctx.chunks.push('\n'.repeat(ctx.pendingLineEndings));
+    const gap = token.start.line - ctx.lastEndLine;
+    if (ctx.chunks.length > 0 && gap > 0) {
+      ctx.chunks.push('\n'.repeat(gap));
     }
-    ctx.pendingLineEndings = 0;
     ctx.chunks.push(this.sliceSerialize(token));
+    ctx.lastEndLine = token.end.line;
   }
 }
 
@@ -54,7 +48,6 @@ export function jsxTableFromMarkdown(): FromMarkdownExtension {
     exit: {
       jsxTableData: exitJsxTableData,
       jsxTable: exitJsxTable,
-      lineEnding: exitLineEnding,
     },
   };
 }
