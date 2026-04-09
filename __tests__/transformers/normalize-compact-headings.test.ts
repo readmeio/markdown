@@ -1,3 +1,8 @@
+import type { Element } from 'hast';
+
+import { visit } from 'unist-util-visit';
+
+import { mdxish } from '../../lib/mdxish';
 import { normalizeCompactHeadings } from '../../processor/transform/mdxish/normalize-compact-headings';
 
 describe('normalizeCompactHeadings', () => {
@@ -8,10 +13,6 @@ describe('normalizeCompactHeadings', () => {
 
     it('should add space after ## for compact h2', () => {
       expect(normalizeCompactHeadings('##Header')).toBe('## Header');
-    });
-
-    it('should add space after ### for compact h3', () => {
-      expect(normalizeCompactHeadings('###Header')).toBe('### Header');
     });
 
     it('should handle all heading levels up to h6', () => {
@@ -74,7 +75,7 @@ describe('normalizeCompactHeadings', () => {
     });
   });
 
-  describe('text before hashtag (Dimas feedback)', () => {
+  describe('text before hashtag', () => {
     it('should NOT modify mid-line # (text before hashtag)', () => {
       const input = 'Some text #hashtag on same line';
       expect(normalizeCompactHeadings(input)).toBe(input);
@@ -158,6 +159,48 @@ describe('normalizeCompactHeadings', () => {
     it('should handle empty headings', () => {
       expect(normalizeCompactHeadings('#')).toBe('#');
       expect(normalizeCompactHeadings('# ')).toBe('# ');
+    });
+  });
+
+  describe('full mdxish pipeline', () => {
+    it('should render compact headings as proper heading elements', () => {
+      const md = '#CompactH1\n\n##CompactH2\n\n###CompactH3';
+      const tree = mdxish(md);
+
+      const h1s: Element[] = [];
+      const h2s: Element[] = [];
+      const h3s: Element[] = [];
+      visit(tree, 'element', (node: Element) => {
+        if (node.tagName === 'h1') h1s.push(node);
+        if (node.tagName === 'h2') h2s.push(node);
+        if (node.tagName === 'h3') h3s.push(node);
+      });
+
+      expect(h1s).toHaveLength(1);
+      expect(h2s).toHaveLength(1);
+      expect(h3s).toHaveLength(1);
+    });
+
+    it('should not convert hashtags in code blocks to headings', () => {
+      const md = '#Heading\n\n```\n#NotAHeading\n```';
+      const tree = mdxish(md);
+
+      const h1s: Element[] = [];
+      visit(tree, 'element', (node: Element) => {
+        if (node.tagName === 'h1') h1s.push(node);
+      });
+      expect(h1s).toHaveLength(1);
+    });
+
+    it('should preserve code block content with hashtags', () => {
+      const md = '```python\n#Comment\nprint("hello")\n```';
+      const tree = mdxish(md);
+
+      const h1s: Element[] = [];
+      visit(tree, 'element', (node: Element) => {
+        if (node.tagName === 'h1') h1s.push(node);
+      });
+      expect(h1s).toHaveLength(0);
     });
   });
 });

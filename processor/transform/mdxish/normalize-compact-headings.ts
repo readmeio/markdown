@@ -1,15 +1,11 @@
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 /**
- * Preprocessor to normalize compact ATX headings.
+ * Preprocessor to normalize compact headings.
  *
- * CommonMark requires whitespace after # for ATX headings, but users often omit it.
- * This preprocessor adds the space while being careful not to modify:
- * - Content inside fenced code blocks (protected via protectCodeBlocks)
- * - Escaped hashtags (\#)
- * - Mid-line hashtags (text #hashtag)
- * - Indented code blocks (4 spaces or tab)
- *
+ * CommonMark requires whitespace after # for headings, but users often omit it.
+ * This preprocessor adds the space while
+ * 
  * Examples:
  * - `#Header` → `# Header`
  * - `##Title` → `## Title`
