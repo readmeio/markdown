@@ -74,7 +74,7 @@ describe('normalizeCompactHeadings', () => {
     });
   });
 
-  describe('edge cases', () => {
+  describe('text before hashtag (Dimas feedback)', () => {
     it('should NOT modify mid-line # (text before hashtag)', () => {
       const input = 'Some text #hashtag on same line';
       expect(normalizeCompactHeadings(input)).toBe(input);
@@ -85,8 +85,36 @@ describe('normalizeCompactHeadings', () => {
       expect(normalizeCompactHeadings(input)).toBe(input);
     });
 
+    it('should NOT modify # after punctuation on same line', () => {
+      const input = 'Hello! #hashtag';
+      expect(normalizeCompactHeadings(input)).toBe(input);
+    });
+
+    it('should NOT modify inline # with numbers', () => {
+      const input = 'Issue #123 is fixed';
+      expect(normalizeCompactHeadings(input)).toBe(input);
+    });
+
+    it('should NOT modify # in URLs', () => {
+      const input = 'Visit https://example.com#section for more';
+      expect(normalizeCompactHeadings(input)).toBe(input);
+    });
+
+    it('should handle heading after line with mid-line #', () => {
+      const input = 'Check issue #42\n#ActualHeading';
+      const expected = 'Check issue #42\n# ActualHeading';
+      expect(normalizeCompactHeadings(input)).toBe(expected);
+    });
+  });
+
+  describe('escaped hashtag (Dimas feedback)', () => {
     it('should NOT modify escaped \\# at start of line', () => {
       const input = '\\#NotAHeading';
+      expect(normalizeCompactHeadings(input)).toBe(input);
+    });
+
+    it('should NOT modify escaped \\## at start of line', () => {
+      const input = '\\##NotAHeading';
       expect(normalizeCompactHeadings(input)).toBe(input);
     });
 
@@ -96,6 +124,19 @@ describe('normalizeCompactHeadings', () => {
       expect(normalizeCompactHeadings(input)).toBe(expected);
     });
 
+    it('should handle multiple escaped # lines', () => {
+      const input = '\\#First\n\\#Second\n#ActualHeading';
+      const expected = '\\#First\n\\#Second\n# ActualHeading';
+      expect(normalizeCompactHeadings(input)).toBe(expected);
+    });
+
+    it('should NOT modify backslash-escaped # mid-line', () => {
+      const input = 'Use \\#escaped in text';
+      expect(normalizeCompactHeadings(input)).toBe(input);
+    });
+  });
+
+  describe('other edge cases', () => {
     it('should NOT modify more than 6 # symbols', () => {
       const input = '#######NotAHeading';
       expect(normalizeCompactHeadings(input)).toBe(input);

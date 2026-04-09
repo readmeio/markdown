@@ -14,8 +14,6 @@ import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/
  * - `#Header` → `# Header`
  * - `##Title` → `## Title`
  * - `######H6` → `###### H6`
- * - `# Already spaced` → `# Already spaced` (unchanged)
- * - `\#Escaped` → `\#Escaped` (unchanged)
  */
 export function normalizeCompactHeadings(content: string): string {
   // Protect code blocks from modification
