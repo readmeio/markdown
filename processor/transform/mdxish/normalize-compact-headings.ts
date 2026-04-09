@@ -4,7 +4,10 @@ import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/
  * Preprocessor to normalize compact headings.
  *
  * CommonMark requires whitespace after # for headings, but users often omit it.
- * This preprocessor adds the space while
+ * This preprocessor adds the space while being careful not to modify:
+ * - Content inside fenced code blocks (protected via protectCodeBlocks)
+ * - Escaped hashtags (\#)
+ * - Mid-line hashtags (text #hashtag)
  * 
  * Examples:
  * - `#Header` → `# Header`
@@ -12,7 +15,6 @@ import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/
  * - `######H6` → `###### H6`
  */
 export function normalizeCompactHeadings(content: string): string {
-  // Protect code blocks from modification
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
 
   const normalizedLines = protectedContent.split('\n').map(line => {
@@ -32,6 +34,5 @@ export function normalizeCompactHeadings(content: string): string {
     return line;
   });
 
-  // Restore protected code blocks
   return restoreCodeBlocks(normalizedLines.join('\n'), protectedCode);
 }
