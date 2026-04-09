@@ -2,7 +2,7 @@ import type { Element, Nodes } from 'hast';
 
 import { removePosition } from 'unist-util-remove-position';
 
-import { mdast } from '../../index';
+import { mdast, mdxishMdastToMd } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
 
 const findNodes = (node: Nodes, tagName: string): Element[] => {
@@ -150,7 +150,7 @@ describe('table parser', () => {
       expect(headerRows).toHaveLength(1);
       expect(bodyRows).toHaveLength(3);
 
-      const topLevelPres = (hast as unknown as HastNode).children?.filter(c => c.tagName === 'pre') ?? [];
+      const topLevelPres = hast.children.filter(c => c.type === 'element' && c.tagName === 'pre');
       expect(topLevelPres).toHaveLength(0);
 
       const bodyCells = findNodes(bodyRows[0], 'td');
@@ -616,6 +616,48 @@ None of the following content will get rendered!`;
 
       const codeTabs = findNodes(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(2);
+    });
+  });
+
+  describe('jsx table roundtrip stability', () => {
+    it('preserves blank lines so a second roundtrip does not corrupt closing tags', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Domains</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Foo</td>
+      <td>
+        <ul>
+          <li>one.example.com</li>
+          <li>two.example.com</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const firstMdast = mdast(doc);
+      const firstMarkdown = mdxishMdastToMd(firstMdast);
+
+      const secondMdast = mdast(firstMarkdown);
+      const secondMarkdown = mdxishMdastToMd(secondMdast);
+
+      expect(secondMarkdown).toBe(firstMarkdown);
+
+      const hast = mdxish(secondMarkdown);
+      const tables = findNodes(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const lists = findNodes(tables[0], 'ul');
+      expect(lists).toHaveLength(1);
+
+      const items = findNodes(lists[0], 'li');
+      expect(items).toHaveLength(2);
     });
   });
 
