@@ -113,6 +113,7 @@ describe('Table of Contents', () => {
     });
 
     afterEach(() => {
+      window.location.hash = '';
       scrollContainer?.remove();
       delete global.IntersectionObserver;
     });
@@ -168,6 +169,7 @@ describe('Table of Contents', () => {
       });
 
       expect(secondLink.classList.contains('active')).toBe(true);
+      expect(window.location.hash).toBe('#heading-2');
 
       // Simulate scrollend on the scroll container (not window)
       act(() => {
