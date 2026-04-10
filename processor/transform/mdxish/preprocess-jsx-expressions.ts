@@ -155,7 +155,7 @@ function escapeProblematicBraces(content: string): string {
   let strDelim: string | null = null;
   let strEscaped = false;
   // Stack of open braces with their state
-  const openStack: { hasBlankLine: boolean; isComment?: boolean; pos: number }[] = [];
+  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
   // Track position of last newline (outside strings) to detect blank lines
   let lastNewlinePos = -2; // -2 means no recent newline
 
@@ -204,15 +204,26 @@ function escapeProblematicBraces(content: string): string {
     }
 
     if (ch === '{') {
-      const isComment = i + 2 < chars.length && chars[i + 1] === '/' && chars[i + 2] === '*';
-      openStack.push({ pos: i, hasBlankLine: false, isComment });
+      openStack.push({ pos: i, hasBlankLine: false });
       lastNewlinePos = -2; // Reset newline tracking for new expression
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
-        // If expression spans paragraph boundary, escape both braces
-        // But never escape JSX comment braces — they're syntactically valid
-        if (entry.hasBlankLine && !entry.isComment) {
+        // Don't escape pure JSX comments, the `jsxComment` tokenizer downstream
+        // already knows how to swallow a whole `{/* ... */}` block in one go,
+        // even if the body has blank lines in it. If we escape the braces here
+        // the tokenizer never gets a shot at it.
+        //
+        // "Pure" means the braces open with `{/*` and close with `*/}` right
+        // next to each other. Something like `{/* c */ expr\n\nmore}` is just
+        // a regular expression that happens to start with a comment, so it
+        // still needs the normal blank-line protection.
+        const isPureJsxComment =
+          chars[entry.pos + 1] === '/' &&
+          chars[entry.pos + 2] === '*' &&
+          chars[i - 1] === '/' &&
+          chars[i - 2] === '*';
+        if (entry.hasBlankLine && !isPureJsxComment) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
