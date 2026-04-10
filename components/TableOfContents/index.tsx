@@ -151,6 +151,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       };
       scrollTarget.addEventListener('scrollend', unlock, { once: true });
       window.addEventListener('hashchange', unlock, { once: true });
+      // Fallback in case scrollend and hashchange don't fire
       unlockTimer = window.setTimeout(unlock, 500);
     };
 
