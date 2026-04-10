@@ -21,6 +21,9 @@ declare module 'micromark-util-types' {
  * everything (including line endings and magic blocks) until `*\/}` is found.
  * This runs as a flow construct so it takes priority over the magic block
  * tokenizer for content wrapped in JSX comments.
+ *
+ * The accepted grammar is mirrored by `JSX_COMMENT_REGEX` in ./pattern.ts.
+ * Any change here needs a mirror change there; the parity test locks the two.
  */
 function tokenizeJsxComment(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   let inValue = false;

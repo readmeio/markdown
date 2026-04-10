@@ -1,3 +1,4 @@
+import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
 import {
   type ProtectedCode,
   protectCodeBlocks,
@@ -99,7 +100,7 @@ function protectHTMLBlockContent(content: string): string {
  * ```
  */
 export function removeJSXComments(content: string): string {
-  return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
+  return content.replace(JSX_COMMENT_REGEX, '');
 }
 
 /**
