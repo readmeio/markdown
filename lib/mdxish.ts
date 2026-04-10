@@ -108,14 +108,14 @@ const defaultTransformers: PluggableList = [
  */
 function preprocessContent(
   content: string,
-  opts: { jsxContext: JSXContext; knownComponents: Set<string>; newEditorTypes: boolean; safeMode: boolean },
+  opts: { jsxContext: JSXContext; knownComponents: Set<string>; safeMode: boolean },
 ) {
-  const { safeMode, jsxContext, knownComponents, newEditorTypes } = opts;
+  const { safeMode, jsxContext, knownComponents } = opts;
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
-  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext, { preserveJsxComments: newEditorTypes });
+  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -141,7 +141,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     safeMode,
     jsxContext,
     knownComponents,
-    newEditorTypes,
   });
 
   // Create string map for tailwind transformer
@@ -173,7 +172,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
   }
 
-  if (newEditorTypes && !safeMode) {
+  if (!safeMode) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
     micromarkExts.unshift(jsxComment());
     fromMarkdownExts.unshift(jsxCommentFromMarkdown());

@@ -138,7 +138,7 @@ function extractBalancedBraces(content: string, start: number): { content: strin
  * 3. Skips HTML elements to prevent backslashes appearing in output
  *
  */
-function escapeProblematicBraces(content: string, preserveJsxComments = false): string {
+function escapeProblematicBraces(content: string): string {
   // Skip HTML elements — their content should never be escaped because
   // rehypeRaw parses them into hast elements, making `\` literal text in output
   const htmlElements: string[] = [];
@@ -203,7 +203,7 @@ function escapeProblematicBraces(content: string, preserveJsxComments = false): 
     }
 
     if (ch === '{') {
-      const isComment = preserveJsxComments && i + 2 < chars.length && chars[i + 1] === '/' && chars[i + 2] === '*';
+      const isComment = i + 2 < chars.length && chars[i + 1] === '/' && chars[i + 2] === '*';
       openStack.push({ pos: i, hasBlankLine: false, isComment });
       lastNewlinePos = -2; // Reset newline tracking for new expression
     } else if (ch === '}') {
@@ -323,11 +323,7 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
  * @param context
  * @returns Preprocessed content ready for markdown parsing
  */
-export function preprocessJSXExpressions(
-  content: string,
-  context: JSXContext = {},
-  { preserveJsxComments = false }: { preserveJsxComments?: boolean } = {},
-): string {
+export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
   // Step 0: Base64 encode HTMLBlock content
   let processed = protectHTMLBlockContent(content);
 
@@ -341,7 +337,7 @@ export function preprocessJSXExpressions(
 
   // Step 3: Escape problematic braces to prevent MDX expression parsing errors
   // This handles both unbalanced braces and paragraph-spanning expressions in one pass
-  processed = escapeProblematicBraces(processed, preserveJsxComments);
+  processed = escapeProblematicBraces(processed);
 
   // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);

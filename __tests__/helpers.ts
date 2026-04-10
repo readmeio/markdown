@@ -1,8 +1,11 @@
+import type { Root as MdastRoot } from 'mdast';
+
 import * as rdmd from '@readme/markdown-legacy';
 
 import { vi } from 'vitest';
 
 import { run, compile, migrate as baseMigrate, mdastV6 } from '../index';
+import { mdxishAstProcessor, type MdxishOpts } from '../lib/mdxish';
 
 export const silenceConsole =
   (prop: keyof Console = 'error', impl = () => {}) =>
@@ -31,4 +34,9 @@ export const migrate = (doc: string) => {
 
 export const mdastV6Wrapper = (doc: string) => {
   return mdastV6(doc, { rdmd });
+};
+
+export const parseMdxishMdast = (md: string, opts: MdxishOpts = {}): MdastRoot => {
+  const { processor, parserReadyContent } = mdxishAstProcessor(md, opts);
+  return processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
 };

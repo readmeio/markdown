@@ -1,8 +1,8 @@
 import type { Element, Root, RootContent } from 'hast';
-import type { Root as MdastRoot } from 'mdast';
 
-import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+import { mdxish } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
+import { parseMdxishMdast } from '../../helpers';
 
 type HastNode = Root | RootContent;
 
@@ -32,10 +32,8 @@ function findAllElementsByTagName(node: HastNode, tagName: string): Element[] {
   return results;
 }
 
-function parseMdast(md: string): MdastRoot {
-  const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-  return processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
-}
+const parseMdast = (md: string) => parseMdxishMdast(md, { newEditorTypes: true });
+const parseMdastDefault = (md: string) => parseMdxishMdast(md);
 
 describe('JSX comment tokenizer (newEditorTypes)', () => {
   it('should parse a single-line JSX comment as one mdxFlowExpression', () => {
@@ -207,6 +205,30 @@ After`;
     expect(images[0].properties?.src).toBe('https://example.com/visible.png');
   });
 
+  it('should produce identical rendering with and without newEditorTypes', () => {
+    const md = `Before
+
+{/*
+[block:image]
+{
+  "images": [{"image": ["https://example.com/hidden.png", null, "Hidden"]}]
+}
+[/block]
+*/}
+
+After`;
+    const withEditor = mdxish(md, { newEditorTypes: true });
+    const withoutEditor = mdxish(md);
+    expect(JSON.stringify(withoutEditor)).toBe(JSON.stringify(withEditor));
+  });
+
+  it('should produce identical rendering for inline JSX comments with and without newEditorTypes', () => {
+    const md = 'Hello {/* inline comment */} world';
+    const withEditor = mdxish(md, { newEditorTypes: true });
+    const withoutEditor = mdxish(md);
+    expect(JSON.stringify(withoutEditor)).toBe(JSON.stringify(withEditor));
+  });
+
   it('should handle two adjacent commented-out blocks', () => {
     const md = `{/*
 [block:image]
@@ -227,5 +249,34 @@ After`;
     const ast = mdxish(md);
     expect(findElementByTagName(ast, 'img')).toBeNull();
     expect(extractText(ast)).not.toContain('Also hidden');
+  });
+});
+
+describe('JSX comment tokenizer (default, no newEditorTypes)', () => {
+  it('should parse a single-line JSX comment as one mdxFlowExpression', () => {
+    const mdast = parseMdastDefault('{/* hello */}');
+    expect(mdast.children).toHaveLength(1);
+    expect(mdast.children[0].type).toBe('mdxFlowExpression');
+    expect((mdast.children[0] as { value: string }).value).toBe('/* hello */');
+  });
+
+  it('should parse a multiline JSX comment wrapping a magic block as one node', () => {
+    const md = `{/* commented out
+[block:image]
+{
+  "images": [{"image": ["https://example.com/img.png", null, "Alt"]}]
+}
+[/block]
+*/}`;
+    const mdast = parseMdastDefault(md);
+    expect(mdast.children).toHaveLength(1);
+    expect(mdast.children[0].type).toBe('mdxFlowExpression');
+    expect((mdast.children[0] as { value: string }).value).toContain('block:image');
+  });
+
+  it('should parse a JSX comment with blank lines as one node', () => {
+    const mdast = parseMdastDefault('{/* test\n\n*/}');
+    expect(mdast.children).toHaveLength(1);
+    expect(mdast.children[0].type).toBe('mdxFlowExpression');
   });
 });
