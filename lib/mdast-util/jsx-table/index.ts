@@ -1,7 +1,7 @@
-import type { Html } from 'mdast';
 import type { CompileContext, Extension as FromMarkdownExtension, Handle, Token } from 'mdast-util-from-markdown';
+import type { HTML } from 'mdast';
 
-const contextMap = new WeakMap<Token, { chunks: string[]; lastEndLine: number }>();
+const contextMap = new WeakMap<Token, { chunks: string[] }>();
 
 function findJsxTableToken(this: CompileContext): Token | undefined {
   const events = this.tokenStack;
@@ -12,29 +12,22 @@ function findJsxTableToken(this: CompileContext): Token | undefined {
 }
 
 function enterJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
-  contextMap.set(token, { chunks: [], lastEndLine: token.start.line });
-  this.enter({ type: 'html', value: '' } as Html, token);
+  contextMap.set(token, { chunks: [] });
+  this.enter({ type: 'html', value: '' } as HTML, token);
 }
 
 function exitJsxTableData(this: CompileContext, token: Parameters<Handle>[0]): void {
   const tableToken = findJsxTableToken.call(this);
   if (!tableToken) return;
   const ctx = contextMap.get(tableToken);
-  if (ctx) {
-    const gap = token.start.line - ctx.lastEndLine;
-    if (ctx.chunks.length > 0 && gap > 0) {
-      ctx.chunks.push('\n'.repeat(gap));
-    }
-    ctx.chunks.push(this.sliceSerialize(token));
-    ctx.lastEndLine = token.end.line;
-  }
+  if (ctx) ctx.chunks.push(this.sliceSerialize(token));
 }
 
 function exitJsxTable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
-  const node = this.stack[this.stack.length - 1] as Html;
+  const node = this.stack[this.stack.length - 1] as HTML;
   if (ctx) {
-    node.value = ctx.chunks.join('');
+    node.value = ctx.chunks.join('\n');
     contextMap.delete(token);
   }
   this.exit(token);
