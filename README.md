@@ -132,15 +132,21 @@ To test local changes in the main readme app, use `npm pack` (not `npm link`) an
 **In this repo, run:**
 
 ```
-npm run build && npm pack
+npm ci && npm run build
 ```
 
-**In the main app repo, run:**
+**In the main app repo:**
+
+Add to `.env`:
 
 ```
-npm install ../markdown/readme-markdown-<version>.tgz
-rm -rf webpack-cache
-make start
+MARKDOWN_DIR={{path to local markdown repo}}
+```
+
+Run:
+
+```
+make link-markdown && rm -rf webpack-cache && make webpack && make start
 ```
 
 > **Note:** You must clear `webpack-cache` after every reinstall or the app will serve the old version.
