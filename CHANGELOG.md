@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 13.8.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** fix magic block table parsing and variable handling in editor ([#1420](https://github.com/readmeio/markdown/issues/1420)) ([20f207a](https://github.com/readmeio/markdown/commit/20f207a16f65b3b649c8d5dc55f26634cbdafdaa))
+* fix nested callout styling being overriden ([#1427](https://github.com/readmeio/markdown/issues/1427)) ([308d051](https://github.com/readmeio/markdown/commit/308d051054f12732949d4a03ae7b906f5ab5383b))
+* id not appending to url on click ([#1431](https://github.com/readmeio/markdown/issues/1431)) ([62651cd](https://github.com/readmeio/markdown/commit/62651cddce9784f8cc8f9e55445a9a83bbf12cf6))
+
+## Version 13.8.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle user vars on standalone lines in tables ([#1423](https://github.com/readmeio/markdown/issues/1423)) ([96dbf84](https://github.com/readmeio/markdown/commit/96dbf84c4e7d825f96b7a0d5ce9389393e4a6804)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+* toc readme integration errors ([#1425](https://github.com/readmeio/markdown/issues/1425)) ([0e769e5](https://github.com/readmeio/markdown/commit/0e769e578b5eecf5f342d2ae79ac151dfc6bb3f9))
+
 ## Version 13.8.1
 ### 🛠 Fixes & Updates
 
