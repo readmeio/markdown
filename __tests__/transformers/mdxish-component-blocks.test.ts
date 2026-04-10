@@ -108,7 +108,7 @@ describe('mdxish-component-blocks', () => {
     });
 
     describe('template literal attributes', () => {
-      it('should parse template literal attributes as raw brace expressions', () => {
+      it('should parse template literal attributes as expression values', () => {
         const attrString = 'attr1={`value1`} attr2={`value2`}';
         const result = parseAttributes(attrString);
 
@@ -116,13 +116,23 @@ describe('mdxish-component-blocks', () => {
           {
             type: 'mdxJsxAttribute',
             name: 'attr1',
-            value: '{`value1`}',
+            value: { type: 'mdxJsxAttributeValueExpression', value: '`value1`' },
           },
           {
             type: 'mdxJsxAttribute',
             name: 'attr2',
-            value: '{`value2`}',
+            value: { type: 'mdxJsxAttributeValueExpression', value: '`value2`' },
           },
+        ]);
+      });
+
+      it('should keep raw text when preserveExpressionsAsText is set (safeMode)', () => {
+        const attrString = 'attr1={1+1} attr2={`value2`}';
+        const result = parseAttributes(attrString, { preserveExpressionsAsText: true });
+
+        expect(result).toStrictEqual([
+          { type: 'mdxJsxAttribute', name: 'attr1', value: '{1+1}' },
+          { type: 'mdxJsxAttribute', name: 'attr2', value: '{`value2`}' },
         ]);
       });
     });

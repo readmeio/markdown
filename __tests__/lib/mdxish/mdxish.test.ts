@@ -157,11 +157,14 @@ describe('mdxish safeMode', () => {
       expect(text).toContain('50');
     });
 
-    it('should evaluate attribute expressions', () => {
-      const md = '<a href={baseUrl}>Link</a>';
-      const tree = mdxish(md, { jsxContext: { baseUrl: 'https://example.com' } });
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor?.properties?.href).toBe('https://example.com');
+    it('should evaluate self-contained attribute expressions on custom components', () => {
+      // Attribute expressions on custom components are evaluated as plain JS literals
+      // by the mdxJsx hast handler (no jsxContext substitution). String-valued
+      // expressions survive rehypeRaw's HTML round-trip without any marker encoding.
+      const md = '<Callout value={"hello".toUpperCase()} />';
+      const tree = mdxish(md);
+      const callout = findElementByTagName(tree, 'Callout');
+      expect(callout?.properties?.value).toBe('HELLO');
     });
 
     it('should parse user variables', () => {

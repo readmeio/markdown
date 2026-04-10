@@ -12,8 +12,9 @@ import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preproces
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
 /**
- * Parse JSON-marked string values in props back to their original types.
- * This handles arrays and objects that were serialized during JSX preprocessing.
+ * Unwrap JSON-marked string props back into real JS values. The mdxJsx handler
+ * wraps objects/arrays in a marker so they can survive rehypeRaw's HTML round-trip;
+ * here we reverse that right before handing props to React.
  */
 function parseJsonProps(props: Record<string, unknown> | null): Record<string, unknown> | null {
   if (!props) return props;
@@ -24,7 +25,6 @@ function parseJsonProps(props: Record<string, unknown> | null): Record<string, u
       try {
         parsed[key] = JSON.parse(value.slice(JSON_VALUE_MARKER.length));
       } catch {
-        // If parsing fails, use the value without the marker
         parsed[key] = value.slice(JSON_VALUE_MARKER.length);
       }
     } else {
@@ -34,18 +34,12 @@ function parseJsonProps(props: Record<string, unknown> | null): Record<string, u
   return parsed;
 }
 
-/**
- * Custom createElement wrapper that parses JSON-marked string props.
- * This is needed because rehype-react converts HAST to React, but complex
- * types (arrays/objects) get serialized to strings during markdown parsing.
- */
 function createElementWithJsonProps(
   type: React.ElementType,
   props: Record<string, unknown> | null,
   ...children: React.ReactNode[]
 ): React.ReactElement {
-  const parsedProps = parseJsonProps(props);
-  return React.createElement(type, parsedProps, ...children);
+  return React.createElement(type, parseJsonProps(props), ...children);
 }
 
 export interface RenderOpts {

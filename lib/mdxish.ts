@@ -103,20 +103,19 @@ const defaultTransformers: PluggableList = [
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
  * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 4. Evaluate JSX expressions in attributes (unless safeMode or inEditor)
+ * 4. Escape problematic braces so MDX expression parsing doesn't choke
  * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
-  opts: { inEditor: boolean, jsxContext: JSXContext; knownComponents: Set<string>;  safeMode: boolean },
+  opts: { knownComponents: Set<string>; safeMode: boolean },
 ) {
-  const { safeMode, jsxContext, knownComponents, inEditor } = opts;
+  const { safeMode, knownComponents } = opts;
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
-  result = normalizeCompactHeadings(result);
-  result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
+  result = safeMode ? result : preprocessJSXExpressions(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -124,7 +123,6 @@ function preprocessContent(
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const {
     components: userComponents = {},
-    jsxContext = {},
     newEditorTypes = false,
     safeMode = false,
     useTailwind,
@@ -139,9 +137,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const knownComponents = new Set(Object.keys(components));
 
   const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, {
-    inEditor: newEditorTypes,
     safeMode,
-    jsxContext,
     knownComponents,
   });
 
@@ -195,7 +191,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
-    .use(mdxishComponentBlocks)
+    .use(mdxishComponentBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)

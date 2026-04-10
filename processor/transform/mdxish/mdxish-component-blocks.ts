@@ -1,5 +1,5 @@
 import type { Node, Parent, RootContent } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { MdxJsxAttribute, MdxJsxAttributeValueExpression, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import remarkGfm from 'remark-gfm';
@@ -12,9 +12,18 @@ import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component'
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, mdxComponent } from '../../../lib/micromark/mdx-component';
 
-const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
-const tagAttributePattern =
-  /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`|\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`)*\})*\}|"[^"]*"|'[^']*'|[^\s"'>]+))?/g;
+// Matches `{...}` with support for one level of nested braces, quoted strings,
+// and template literals inside the expression body. Kept as a const because it's
+// referenced by both pascalCaseTagPattern and tagAttributePattern below.
+const BRACE_EXPR = "\\{(?:[^{}\"'`]|\"[^\"]*\"|'[^']*'|`[^`]*`|\\{(?:[^{}\"'`]|\"[^\"]*\"|'[^']*'|`[^`]*`)*\\})*\\}";
+const pascalCaseTagPattern = new RegExp(
+  // Tag content allows: any non-delimiter char, quoted/template strings, or balanced `{...}` expressions.
+  `^<([A-Z][A-Za-z0-9_]*)((?:[^>"'\`{]|"[^"]*"|'[^']*'|\`[^\`]*\`|${BRACE_EXPR})*?)(\\/?)>([\\s\\S]*)?$`,
+);
+const tagAttributePattern = new RegExp(
+  `([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\\s*=\\s*(${BRACE_EXPR}|"[^"]*"|'[^']*'|[^\\s"'>]+))?`,
+  'g',
+);
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
@@ -56,11 +65,21 @@ const parseMdChildren = (value: string): RootContent[] => {
   return parsed.children || [];
 };
 
+interface ParseAttributesOptions {
+  /**
+   * When true, attribute expressions (`attr={expr}`) are kept as literal strings with
+   * their braces so downstream consumers don't evaluate them. This preserves safeMode
+   * semantics where all expression syntax is ignored.
+   */
+  preserveExpressionsAsText?: boolean;
+}
+
 /**
  * Convert raw attribute string into mdxJsxAttribute entries.
- * Handles both key-value attributes (theme="info") and boolean attributes (empty).
+ * Handles key-value attributes (theme="info"), boolean attributes (empty),
+ * and JSX expression values (attr={1+1}) which become MdxJsxAttributeValueExpression nodes.
  */
-export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
+export const parseAttributes = (raw: string, opts: ParseAttributesOptions = {}): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
   const attrString = raw.trim();
   if (!attrString) return attributes;
@@ -69,7 +88,28 @@ export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
   let match: RegExpExecArray | null = tagAttributePattern.exec(attrString);
   while (match !== null) {
     const [, attrName, attrValue] = match;
-    const value = attrValue ? attrValue.replace(/^['"]|['"]$/g, '') : null;
+
+    let value: MdxJsxAttribute['value'];
+    if (!attrValue) {
+      value = null;
+    } else if (attrValue.startsWith('{') && attrValue.endsWith('}')) {
+      if (opts.preserveExpressionsAsText) {
+        // safeMode: leave the raw `{expr}` text in place; the hast handler will pass
+        // it through as a plain string.
+        value = attrValue;
+      } else {
+        // JSX expression: strip the outer braces and emit as an expression node
+        // so downstream consumers receive structured expression data.
+        const expression: MdxJsxAttributeValueExpression = {
+          type: 'mdxJsxAttributeValueExpression',
+          value: attrValue.slice(1, -1),
+        };
+        value = expression;
+      }
+    } else {
+      value = attrValue.replace(/^['"]|['"]$/g, '');
+    }
+
     attributes.push({ type: 'mdxJsxAttribute', name: attrName, value });
     match = tagAttributePattern.exec(attrString);
   }
@@ -80,14 +120,14 @@ export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
 /**
  * Parse an HTML tag string into structured data.
  */
-export const parseTag = (value: string) => {
+export const parseTag = (value: string, opts: ParseAttributesOptions = {}) => {
   const match = value.match(pascalCaseTagPattern);
   if (!match) return null;
 
   const [, tag, attrString = '', selfClosing = '', contentAfterTag = ''] = match;
   return {
     tag,
-    attributes: parseAttributes(attrString),
+    attributes: parseAttributes(attrString, opts),
     selfClosing: !!selfClosing,
     contentAfterTag,
     attrString // Just for debugging purposes
@@ -159,8 +199,9 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
+const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
   const stack: Parent[] = [tree];
+  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: !!opts.safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
@@ -173,7 +214,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // which means a potential unparsed MDX component
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
-    const parsed = parseTag(value.trim());
+    const parsed = parseTag(value.trim(), parseOpts);
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;

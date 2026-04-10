@@ -1,7 +1,7 @@
 import type { Element, Root } from 'hast';
 
 import { mdxish } from '../../lib';
-import { JSON_VALUE_MARKER, preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
+import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 // Helper function to find an element by tag name in a hast tree
 function findElementByTagName(node: Element | Root, tagName: string): Element | undefined {
@@ -16,74 +16,6 @@ function findElementByTagName(node: Element | Root, tagName: string): Element | 
 }
 
 describe('preprocessJSXExpressions', () => {
-  describe('Step 2: Evaluate attribute expressions', () => {
-    it('should evaluate expressions in the attributes', () => {
-      const content = '<div style={{ height: 1+1 + "px" }}>Link</div>';
-      const result = preprocessJSXExpressions(content);
-
-      expect(result).toContain('style="height: 2px"');
-      expect(result).not.toContain('style={{ height: 1+1 + "px" }}');
-    });
-
-    it('should replace variables with their values', () => {
-      const context = {
-        baseUrl: 'https://example.com',
-        userId: '123',
-        isActive: true,
-      };
-
-      const content = '<a href={baseUrl} id={userId} active={isActive}>Link</a>';
-      const result = preprocessJSXExpressions(content, context);
-
-      expect(result).toContain('href="https://example.com"');
-      expect(result).toContain('id="123"');
-      expect(result).toContain('active="true"');
-      expect(result).not.toContain('href={baseUrl}');
-      expect(result).not.toContain('id={userId}');
-      expect(result).not.toContain('active={isActive}');
-    });
-
-    it.each([
-      [true, '{"b":1}'],
-      [false, '{"c":2}'],
-    ])('should handle nested dictionary attributes when a is %s', (a, expectedJson) => {
-      const context = { a };
-
-      const content = '<div foo={a ? {b: 1} : {c: 2}}>Link</div>';
-      const result = preprocessJSXExpressions(content, context);
-
-      // Objects are serialized with JSON_VALUE_MARKER prefix and HTML-escaped
-      const escapedJson = expectedJson.replace(/"/g, '&quot;');
-      expect(result).toContain(`foo="${JSON_VALUE_MARKER}${escapedJson}"`);
-      expect(result).not.toContain('foo={a ? {b: 1} : {c: 2}}');
-    });
-
-    it('should evaluate template literals with interpolation in JSX expression attributes', () => {
-      const content = '<Component greeting={`Hello world my name is <Test>!`} />';
-      const result = preprocessJSXExpressions(content);
-
-      // Special characters are escaped for valid HTML attribute values
-      expect(result).toContain('greeting="Hello world my name is &lt;Test&gt;!"');
-    });
-
-    it('should escape special characters in the template literal attributes', () => {
-      const content = '<Component greeting={`Special characters: < > & " \n ; /`} />';
-      const result = preprocessJSXExpressions(content);
-
-      // Special characters are escaped: < > & " and newlines
-      expect(result).toContain('greeting="Special characters: &lt; &gt; &amp; &quot; &#10; ; /"');
-    });
-
-    it('should skip evaluating attribute expressions when skipAttributeExprEvaluation is true', () => {
-      const context = { baseUrl: 'https://example.com' };
-      const content = '<a href={baseUrl}>Link</a>';
-      const result = preprocessJSXExpressions(content, context, true);
-
-      expect(result).toContain('href={baseUrl}');
-      expect(result).not.toContain('href="https://example.com"');
-    });
-  });
-
   describe('Code block protection', () => {
     it('should preserve fenced code blocks containing JSX-like syntax', () => {
       const content = '```jsx\n<div style={{ color: "red" }}></div>\n```';
@@ -652,16 +584,14 @@ Another valid: {name}`;
       });
 
       it('should handle JSX component with expression prop spanning blank line', () => {
-        // Attribute expressions with blank lines get evaluated (to undefined)
-        // by evaluateAttributeExpressions before escapeProblematicBraces runs.
-        // This tests that the result doesn't crash.
+        // Preprocessing no longer touches attribute expressions, but blank-line braces
+        // should still get escaped so the markdown parser doesn't choke on them.
         const content = `<Component value={
 
 } />`;
         const result = preprocessJSXExpressions(content);
 
-        // The expression is evaluated to undefined
-        expect(result).toContain('value="undefined"');
+        expect(result).toContain('\\{');
         expect(() => mdxish(result)).not.toThrow();
       });
 
@@ -796,13 +726,11 @@ const obj = {key: value};
 
     describe('stress tests - regression prevention', () => {
       it('should not affect valid JSX component expressions', () => {
-        // Attribute expressions are evaluated and HTML-escaped
+        // Preprocessing leaves attribute expressions untouched; evaluation happens at the hast layer.
         const content = '<Button onClick={() => alert("hi")}>Click</Button>';
         const result = preprocessJSXExpressions(content);
 
-        // The arrow function is evaluated and HTML-escaped in the attribute
-        expect(result).toContain('onClick="');
-        expect(result).toContain('alert');
+        expect(result).toBe(content);
         expect(() => mdxish(result)).not.toThrow();
       });
 
@@ -810,7 +738,7 @@ const obj = {key: value};
         const content = '<div style={{ color: "red", fontSize: "16px" }}>Text</div>';
         const result = preprocessJSXExpressions(content);
 
-        expect(result).toContain('style="color: red; font-size: 16px"');
+        expect(result).toBe(content);
         expect(() => mdxish(result)).not.toThrow();
       });
 

@@ -24,9 +24,9 @@ describe('mdxishAstProcessor', () => {
       expect(hasMdxExpression).toBe(true);
     });
 
-    it('should not evaluate attribute expressions and not convert it to a HTML attribute in editor mode', () => {
+    it('should preserve attribute expressions as mdxJsxAttributeValueExpression nodes', () => {
       const md = '<Component attr={1+1} />';
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
       const mdast = processor.runSync(processor.parse(parserReadyContent));
 
       expect(mdast).toMatchObject({
@@ -39,7 +39,10 @@ describe('mdxishAstProcessor', () => {
               {
                 type: 'mdxJsxAttribute',
                 name: 'attr',
-                value: '{1+1}',
+                value: {
+                  type: 'mdxJsxAttributeValueExpression',
+                  value: '1+1',
+                },
               },
             ],
           },

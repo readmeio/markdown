@@ -4,6 +4,7 @@ import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
+import { JSON_VALUE_MARKER } from '../transform/mdxish/preprocess-jsx-expressions';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -21,6 +22,38 @@ function decodeHtmlEntities(value: string) {
     .replace(/&amp;/g, '&');
 }
 
+/**
+ * Evaluate a JSX attribute expression source as a JavaScript literal.
+ * Wraps the source in parentheses so object literals (e.g. `{color: 'red'}`) are parsed
+ * as expressions rather than block statements. Runs with no scope so only self-contained
+ * literals (objects, arrays, numbers, strings, templates, booleans) resolve — any reference
+ * to an undeclared identifier falls back to the raw source string.
+ */
+function evaluateAttributeExpression(source: string): unknown {
+  try {
+    // eslint-disable-next-line no-new-func
+    return new Function(`return (${source})`)();
+  } catch {
+    return source;
+  }
+}
+
+/**
+ * Encode a hast property value so it survives rehypeRaw's HTML serialization step.
+ * Strings and booleans pass through untouched — booleans are preserved across the
+ * round-trip by a dedicated plugin wrapped around rehypeRaw. Everything else —
+ * numbers, objects, arrays — gets wrapped in a JSON marker string, which the render
+ * layer unwraps back into a real JS value before passing it to React.
+ */
+function encodePropertyValue(value: unknown): Properties[string] {
+  if (value === null || value === undefined) return value as Properties[string];
+  const type = typeof value;
+  if (type === 'string' || type === 'boolean') {
+    return value as Properties[string];
+  }
+  return `${JSON_VALUE_MARKER}${JSON.stringify(value)}`;
+}
+
 // Convert MDX JSX elements to HAST elements, preserving attributes and children
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
@@ -34,7 +67,8 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     } else if (typeof attribute.value === 'string') {
       properties[attribute.name] = decodeHtmlEntities(attribute.value);
     } else {
-      properties[attribute.name] = (attribute.value as MdxJsxAttributeValueExpression).value;
+      const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
+      properties[attribute.name] = encodePropertyValue(evaluateAttributeExpression(expressionSource));
     }
   });
 

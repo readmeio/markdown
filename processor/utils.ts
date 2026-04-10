@@ -12,7 +12,19 @@ import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 
-import { JSON_VALUE_MARKER } from './transform/mdxish/preprocess-jsx-expressions';
+/**
+ * Evaluate a JSX attribute expression source as a plain JavaScript literal.
+ * Wrapping in parens lets object literals (`{color: 'red'}`) parse as expressions.
+ * Runs with no scope, so only self-contained literals resolve.
+ */
+function evaluateAttributeExpression(source: string): unknown {
+  try {
+    // eslint-disable-next-line no-new-func
+    return new Function(`return (${source})`)();
+  } catch {
+    return source;
+  }
+}
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -73,20 +85,12 @@ export const getHPropKeys = <T>(node: Node): string[] => {
 export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
-      if (typeof attr.value === 'string') {
-        if (attr.value.startsWith(JSON_VALUE_MARKER)) {
-          try {
-            memo[attr.name] = JSON.parse(attr.value.slice(JSON_VALUE_MARKER.length));
-          } catch {
-            memo[attr.name] = attr.value;
-          }
-        } else {
-          memo[attr.name] = attr.value;
-        }
-      } else if (attr.value === null) {
+      if (attr.value === null) {
         memo[attr.name] = true;
-      } else if (attr.value.value !== 'undefined') {
-        memo[attr.name] = JSON.parse(attr.value.value);
+      } else if (typeof attr.value === 'string') {
+        memo[attr.name] = attr.value;
+      } else if (attr.value?.value !== undefined) {
+        memo[attr.name] = evaluateAttributeExpression(attr.value.value);
       }
     }
 

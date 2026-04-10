@@ -132,16 +132,14 @@ export const AdvancedTable = ({ data }) => {
 
       const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('AdvancedTable');
-      expect(componentNode.properties?.data).toBe(`${JSON_VALUE_MARKER}${JSON.stringify([
-        {
-          code: '<INPUT_CODE_1>',
-          status: '<INPUT_STATUS_1>',
-        },
-        {
-          code: '<INPUT_CODE_2>',
-          status: '<INPUT_STATUS_2>',
-        },
-      ])}`);
+      // Non-primitive prop values are wrapped in JSON_VALUE_MARKER so they survive
+      // rehypeRaw's HTML round-trip; the render layer unwraps them before passing to React.
+      expect(componentNode.properties?.data).toBe(
+        `${JSON_VALUE_MARKER}${JSON.stringify([
+          { code: '<INPUT_CODE_1>', status: '<INPUT_STATUS_1>' },
+          { code: '<INPUT_CODE_2>', status: '<INPUT_STATUS_2>' },
+        ])}`,
+      );
     });
 
     it('should parse a component with array props containing special characters', () => {
