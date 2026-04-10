@@ -226,13 +226,22 @@ const mdxishTables = (): Transform => tree => {
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
 
-      // Strip positions from the re-parsed subtree. The inner parse produces offsets
-      // relative to `node.value`, not the outer document source — so any downstream
-      // consumer that slices the original source by offset (e.g. the editor's
-      // nodeToSource) would read from the wrong location. Removing positions forces
-      // those consumers to fall back to re-serializing, which is correct (although not ideal)
+      // since we use a subparser in `tableNodeProcessor` to parse `node.value`,
+      // positions are relative to that substring. shifting them by the base
+      // offset and line number makes them valid in the outer source coordinate space.
+      // otherwise, consumers who directly slice based on position would read and grab the
+      // wrong content
+      const baseOffset = node.position?.start?.offset ?? 0;
+      const baseLine = (node.position?.start?.line ?? 1) - 1;
       visit(parsed as Node, child => {
-        delete (child as { position?: unknown }).position;
+        if (child.position?.start) {
+          child.position.start.offset = (child.position.start.offset ?? 0) + baseOffset;
+          child.position.start.line += baseLine;
+        }
+        if (child.position?.end) {
+          child.position.end.offset = (child.position.end.offset ?? 0) + baseOffset;
+          child.position.end.line += baseLine;
+        }
       });
 
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
