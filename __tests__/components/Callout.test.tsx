@@ -6,6 +6,8 @@ import React from 'react';
 import Callout from '../../components/Callout';
 import { mdxish } from '../../lib';
 
+import { renderingEngines } from './utils';
+
 describe('Callout', () => {
   it('render _all_ its children', () => {
     render(
@@ -16,6 +18,7 @@ describe('Callout', () => {
       </Callout>,
     );
 
+    // @ts-expect-error -- toBeVisible is valid
     expect(screen.getByText('Second Paragraph')).toBeVisible();
   });
 
@@ -31,8 +34,57 @@ describe('Callout', () => {
     expect(screen.queryByText('Title')).toBeNull();
   });
 
-  describe('mdxish', () => {
-    it('renders a callout with no title with no empty blank heading', () => {
+  it.each(renderingEngines)('%s: renders a callout with icon and body', (_label, renderContent) => {
+    const md = `<Callout theme="info" icon="📘">
+Hello there
+</Callout>`;
+    const Content = renderContent(md);
+    const { container } = render(<Content />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it.each(renderingEngines)('%s: renders the markdown inside the callout body', (_label, renderContent) => {
+    const md = `<Callout theme="info" icon="📘">
+### This should be a heading
+
+This should be **strong** text, *italic* text, and a ~strikethrough~ text.
+</Callout>`;
+    const Content = renderContent(md);
+    const { container } = render(<Content />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  describe('testing parsing robustness to various callout structures', () => {
+    it.each(renderingEngines)('%s: should parse where there is space after the opening tag and before the closing tag', (_label, renderContent) => {
+      const mdWithSpaces = `<Callout theme="info" icon="📘">
+
+
+## Heading here
+
+Body with **markdown** support.
+
+
+
+</Callout>`;
+      const mdWithoutSpaces = `<Callout theme="info" icon="📘">
+## Heading here
+
+Body with **markdown** support.
+</Callout>`;
+
+      const ContentWithSpaces = renderContent(mdWithSpaces);
+      const { container: containerWithSpaces } = render(<ContentWithSpaces />);
+      const ContentWithoutSpaces = renderContent(mdWithoutSpaces);
+      const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
+
+      expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
+    });
+  });
+
+  describe('mdxish-specific behaviours', () => {
+    it('should correctly parse content when', () => {
       const md = `<Callout theme="info" icon="📘">
 ### Title here
 
