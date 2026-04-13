@@ -50,8 +50,9 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-    const key = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
-      .map(a => a.getAttribute('href'))
+    const key = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a'))
+      .map(a => a.hash)
+      .filter(Boolean)
       .join('\0');
     setTocKey(key);
   });
@@ -132,14 +133,10 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     // until the smooth scroll finishes, then hand control back.
     const onClick = (e: MouseEvent) => {
       if (!(e.target instanceof Element)) return;
-      const anchor = e.target.closest('a[href^="#"]');
-      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const anchor = e.target.closest('a');
+      if (!(anchor instanceof HTMLAnchorElement) || !anchor.hash) return;
       const id = decodeURIComponent(anchor.hash.slice(1));
       if (!linkMap.has(id)) return;
-
-      if (window.location.hash !== anchor.hash) {
-        window.location.hash = anchor.hash;
-      }
 
       activate(id);
       clickLocked = true;
