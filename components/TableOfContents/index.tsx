@@ -76,9 +76,11 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
 
     const isAtBottom = () => {
       if (scrollParent instanceof Window) {
-        return window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+        return document.documentElement.scrollHeight > window.innerHeight
+          && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
       }
-      return scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+      return scrollParent.scrollHeight > scrollParent.clientHeight
+        && scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
     };
 
     const activate = (id: string | null) => {
