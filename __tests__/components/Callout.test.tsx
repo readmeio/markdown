@@ -1,7 +1,10 @@
 import type { Element } from 'hast';
 
+import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
+
+import { expect } from 'vitest';
 
 import Callout from '../../components/Callout';
 import { mdxish } from '../../lib';
@@ -18,7 +21,6 @@ describe('Callout', () => {
       </Callout>,
     );
 
-    // @ts-expect-error -- toBeVisible is valid
     expect(screen.getByText('Second Paragraph')).toBeVisible();
   });
 
@@ -41,6 +43,10 @@ Hello there
     const Content = renderContent(md);
     const { container } = render(<Content />);
 
+    const blockquote = container.querySelector('blockquote');
+    expect(blockquote).toHaveClass('callout', 'callout_info');
+    expect(blockquote?.querySelector('.callout-icon')).toHaveTextContent('📘');
+    expect(blockquote?.querySelector('p')).toHaveTextContent('Hello there');
     expect(container).toMatchSnapshot();
   });
 
@@ -53,6 +59,12 @@ This should be **strong** text, *italic* text, and a ~strikethrough~ text.
     const Content = renderContent(md);
     const { container } = render(<Content />);
 
+    const blockquote = container.querySelector('blockquote');
+    expect(blockquote).toHaveClass('callout', 'callout_info');
+    expect(blockquote?.querySelector('h3')).toHaveTextContent('This should be a heading');
+    expect(blockquote?.querySelector('strong')).toHaveTextContent('strong');
+    expect(blockquote?.querySelector('em')).toHaveTextContent('italic');
+    expect(blockquote?.querySelector('del')).toHaveTextContent('strikethrough');
     expect(container).toMatchSnapshot();
   });
 
