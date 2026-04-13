@@ -70,7 +70,7 @@ This should be **strong** text, *italic* text, and a ~strikethrough~ text.
     expect(container).toMatchSnapshot();
   });
 
-  describe('testing parsing robustness to various callout structures', () => {
+  describe('given various callout structures', () => {
     it.each(renderingEngines)('%s: should parse where there is space after the opening tag and before the closing tag', (_label, renderContent) => {
       const mdWithSpaces = `<Callout theme="info" icon="📘">
 
