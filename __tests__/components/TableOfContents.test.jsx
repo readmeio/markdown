@@ -113,7 +113,6 @@ describe('Table of Contents', () => {
     });
 
     afterEach(() => {
-      window.location.hash = '';
       scrollContainer?.remove();
       delete global.IntersectionObserver;
     });
@@ -169,7 +168,11 @@ describe('Table of Contents', () => {
       });
 
       expect(secondLink.classList.contains('active')).toBe(true);
-      expect(window.location.hash).toBe('#heading-2');
+      // The handler must NOT set window.location.hash directly — in frame
+      // preview the iframe's location is stale and writing to it navigates
+      // back to the wrong page. The browser's default <a> behavior or the
+      // FramePreview delegator handles the hash update instead.
+      expect(window.location.hash).toBe('');
 
       // Simulate scrollend on the scroll container (not window)
       act(() => {
@@ -231,7 +234,47 @@ describe('Table of Contents', () => {
       });
 
       expect(newLink.classList.contains('active')).toBe(true);
-      expect(window.location.hash).toBe('#new-heading-1');
+    });
+
+    it('should work when hrefs contain query params (frame preview mode)', async () => {
+      // In frame preview mode, links may include query params before the hash,
+      // e.g. href="?isFramePreview=true#heading-1" instead of "#heading-1".
+      // The TOC must still detect these links via HTMLAnchorElement.hash and
+      // must NOT set window.location.hash (the iframe's location is stale).
+
+      const { container } = render(
+        <TableOfContents>
+          <a href="?isFramePreview=true#heading-1">Heading 1</a>
+          <a href="?isFramePreview=true#heading-2">Heading 2</a>
+          <a href="?isFramePreview=true#heading-3">Heading 3</a>
+        </TableOfContents>,
+      );
+
+      await act(async () => {});
+
+      // Observer should be watching the headings
+      expect(observedElements.map(el => el.id)).toEqual(
+        expect.arrayContaining(['heading-1', 'heading-2', 'heading-3']),
+      );
+
+      // Simulate a heading entering the viewport
+      act(() => {
+        observerCallback([
+          { target: document.getElementById('heading-1'), isIntersecting: true },
+        ]);
+      });
+
+      const links = container.querySelectorAll('a');
+      const firstLink = [...links].find(a => a.hash === '#heading-1');
+      expect(firstLink.classList.contains('active')).toBe(true);
+
+      // Click should activate without setting window.location.hash
+      const secondLink = [...links].find(a => a.hash === '#heading-2');
+      act(() => {
+        secondLink.click();
+      });
+
+      expect(secondLink.classList.contains('active')).toBe(true);
     });
   });
 
