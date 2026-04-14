@@ -108,15 +108,15 @@ const defaultTransformers: PluggableList = [
  */
 function preprocessContent(
   content: string,
-  opts: { knownComponents: Set<string>; safeMode: boolean },
+  opts: { knownComponents: Set<string> },
 ) {
-  const { safeMode, knownComponents } = opts;
+  const { knownComponents } = opts;
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
-  result = safeMode ? result : preprocessJSXExpressions(result);
+  result = preprocessJSXExpressions(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -137,10 +137,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   // Build set of known component names for snake_case filtering
   const knownComponents = new Set(Object.keys(components));
 
-  const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, {
-    safeMode,
-    knownComponents,
-  });
+  const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, { knownComponents });
 
   // Create string map for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {

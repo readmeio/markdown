@@ -25,15 +25,14 @@ describe('preprocessJSXExpressions', () => {
     });
 
     it('should not evaluate expressions inside inline code', () => {
-      const context = { baseUrl: 'https://example.com' };
-      const content = 'Use `href={baseUrl}` syntax';
-      const result = preprocessJSXExpressions(content, context);
+      const content = 'Use `href={1+1}` syntax';
+      const result = preprocessJSXExpressions(content);
 
-      expect(result).toBe('Use `href={baseUrl}` syntax');
+      expect(result).toBe('Use `href={1+1}` syntax');
     });
   });
 
-  describe('Step 3: Escape unbalanced braces', () => {
+  describe('Escape unbalanced braces', () => {
     it('should not modify balanced braces', () => {
       const content = 'Hello {name}, your balance is {amount}';
       const result = preprocessJSXExpressions(content);

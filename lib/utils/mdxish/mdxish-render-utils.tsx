@@ -34,12 +34,18 @@ function parseJsonProps(props: Record<string, unknown> | null): Record<string, u
   return parsed;
 }
 
+/**
+ * Custom createElement wrapper that parses JSON-marked string props.
+ * This is needed because rehype-react converts HAST to React, but complex
+ * types (arrays/objects) get serialized to strings during markdown parsing.
+ */
 function createElementWithJsonProps(
   type: React.ElementType,
   props: Record<string, unknown> | null,
   ...children: React.ReactNode[]
 ): React.ReactElement {
-  return React.createElement(type, parseJsonProps(props), ...children);
+  const parsedProps = parseJsonProps(props);
+  return React.createElement(type, parsedProps, ...children);
 }
 
 export interface RenderOpts {
