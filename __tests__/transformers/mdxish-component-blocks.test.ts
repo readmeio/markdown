@@ -466,7 +466,7 @@ Hello
         });
 
         // The last paragraph inside the Callout should contain "Hello" without a trailing newline
-        const calloutChildren = mdxNodes[0].children;
+        const calloutChildren = (mdxNodes[0] as Parent).children;
         const lastParagraph = calloutChildren[calloutChildren.length - 1] as Parent;
         expect(lastParagraph.type).toBe('paragraph');
 
@@ -642,9 +642,9 @@ hello
 
       expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
       // The opening and closing tags stay as html nodes inside the paragraph
-      const paragraphs = collectNodes(tree, 'paragraph');
+      const paragraphs = collectNodes<Parent>(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
-      const htmlNodes = paragraphs[0].children.filter((c: { type: string }) => c.type === 'html');
+      const htmlNodes = paragraphs[0].children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThanOrEqual(2);
     });
 
