@@ -65,6 +65,7 @@ describe('mdxish-component-blocks', () => {
       expect(result?.attributes).toStrictEqual([
         {
           type: 'mdxJsxAttribute',
+          name: 'style',
           value: { type: 'mdxJsxAttributeValueExpression', value: '{ color: { r: 255, g: 0 } }' },
         },
       ]);
