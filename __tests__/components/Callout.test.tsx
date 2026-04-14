@@ -38,6 +38,31 @@ describe('Callout', () => {
     });
   });
 
+  it('does not render empty heading when empty and no body children', () => {
+    const { container } = render(
+      <Callout empty icon="📘" theme="info">
+        <p></p>
+      </Callout>,
+    );
+
+    expect(container.querySelector('.callout-heading.empty')).not.toBeInTheDocument();
+    const icon = container.querySelector('.callout-icon');
+    expect(icon).toBeInTheDocument();
+    expect(icon?.nextElementSibling).toBeNull();
+  });
+
+  it('renders empty heading when empty but has body children', () => {
+    const { container } = render(
+      <Callout empty icon="📘" theme="info">
+        <p></p>
+        <p>Body content</p>
+      </Callout>,
+    );
+
+    expect(container.querySelector('.callout-heading.empty')).toBeInTheDocument();
+    expect(screen.getByText('Body content')).toBeVisible();
+  });
+
   it.each(renderingEngines)('%s: renders a callout with icon and body', (_label, renderContent) => {
     const md = `<Callout theme="info" icon="📘">
 Hello there
