@@ -162,14 +162,14 @@ const Doc = () => {
       try {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized, { variables, newEditorTypes });
-        const vdom = mdx.renderMdxish(tree, { terms, variables });
+        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, });
+        const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables });
         setMdxishError(null);
         setMdxishResult(vdom);
         if (showAst) {
           setMdxishHast(tree);
           try {
-            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { variables, newEditorTypes });
+            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { components: executedComponents, variables, newEditorTypes });
             setMdxishMdast(processor.runSync(processor.parse(parserReadyContent)));
           } catch {
             setMdxishMdast(null);
