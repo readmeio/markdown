@@ -10,21 +10,11 @@ import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-tas
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
 import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { mdxComponent } from '../../../lib/micromark/mdx-component';
-
-import { INLINE_COMPONENT_TAGS } from './constants';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, mdxComponent } from '../../../lib/micromark/mdx-component';
 
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern =
   /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`|\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`)*\})*\}|"[^"]*"|'[^']*'|[^\s"'>]+))?/g;
-
-/**
- * Tags that have dedicated transformers and should NOT be handled by this plugin.
- * These components either have special parsing requirements that the generic component
- * block transformer cannot handle correctly, or are inline components that we don't
- * want to convert to mdxJsxFlowElement which is a block level element.
- */
-const EXCLUDED_TAGS = new Set(['HTMLBlock', 'Table', 'Glossary', ...INLINE_COMPONENT_TAGS]);
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
@@ -189,7 +179,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
     // Skip tags that have dedicated transformers
-    if (EXCLUDED_TAGS.has(tag)) return;
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
 
     const closingTagStr = `</${tag}>`;
 

@@ -4,18 +4,14 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from './excluded-tags';
+
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
     mdxComponent: 'mdxComponent';
     mdxComponentData: 'mdxComponentData';
   }
 }
-
-/**
- * Tags that have dedicated tokenizers or transformers and should NOT be
- * captured by this generic MDX component tokenizer.
- */
-const EXCLUDED_TAGS = new Set(['Table', 'HTMLBlock', 'Glossary', 'Anchor']);
 
 const nonLazyContinuationStart: Construct = {
   tokenize: tokenizeNonLazyContinuationStart,
@@ -110,7 +106,7 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
     }
 
     // Tag name complete — check exclusions
-    if (EXCLUDED_TAGS.has(tagName)) {
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
       return nok(code);
     }
 
