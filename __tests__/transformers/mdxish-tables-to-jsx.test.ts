@@ -5,6 +5,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import mdxishTablesToJsx from '../../processor/transform/mdxish/mdxish-tables-to-jsx';
+import { collectNodes } from '../helpers';
 
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified().use(remarkParse).use(remarkGfm).use(mdxishTablesToJsx);
@@ -13,55 +14,38 @@ const parseWithPlugin = (markdown: string): Root => {
   return tree as Root;
 };
 
-const findNodesByType = (tree: Parent, type: string): Parent[] => {
-  const results: Parent[] = [];
-  const stack = [tree];
-
-  while (stack.length) {
-    const node = stack.pop()!;
-    if (node.type === type) {
-      results.push(node);
-    }
-    if ('children' in node && Array.isArray(node.children)) {
-      stack.push(...(node.children as Parent[]));
-    }
-  }
-
-  return results;
-};
-
 describe('mdxish-tables-to-jsx', () => {
   describe('plain GFM tables (no flow content)', () => {
     it('leaves a simple text table as a GFM table node', () => {
       const tree = parseWithPlugin(`| a | b |\n| --- | --- |\n| c | d |`);
-      const tables = findNodesByType(tree, 'table');
+      const tables = collectNodes(tree, 'table');
 
       expect(tables).toHaveLength(1);
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
     });
 
     it('leaves a table with inline formatting as GFM', () => {
       const tree = parseWithPlugin(`| Header |\n| --- |\n| **bold** and _italic_ |`);
 
-      expect(findNodesByType(tree, 'table')).toHaveLength(1);
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
     });
 
     it('leaves a table with empty cells as GFM', () => {
       const tree = parseWithPlugin(`| a | b |\n| --- | --- |\n| | d |`);
 
-      expect(findNodesByType(tree, 'table')).toHaveLength(1);
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
     });
   });
 
   describe('tables with flow content (converted to JSX)', () => {
     it('converts a table containing a self-closing JSX component to JSX', () => {
       const tree = parseWithPlugin(`| Header |\n| --- |\n| <Image src="x.png" /> |`);
-      const jsxElements = findNodesByType(tree, 'mdxJsxFlowElement');
+      const jsxElements = collectNodes(tree, 'mdxJsxFlowElement');
       const tables = jsxElements.filter((n) => (n as { name?: string }).name === 'Table');
 
       expect(tables).toHaveLength(1);
-      expect(findNodesByType(tree, 'table')).toHaveLength(0);
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
     });
   });
 
@@ -69,14 +53,14 @@ describe('mdxish-tables-to-jsx', () => {
     it('keeps a table with a raw HTML block as GFM', () => {
       const tree = parseWithPlugin(`| Header |\n| --- |\n| <div>hello</div> |`);
 
-      expect(findNodesByType(tree, 'table')).toHaveLength(1);
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
     });
 
     it('keeps a table with unclosed HTML tags as GFM', () => {
       const tree = parseWithPlugin(`| Header |\n| --- |\n| <br> |`);
 
-      expect(findNodesByType(tree, 'table')).toHaveLength(1);
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
     });
   });
 
@@ -106,7 +90,7 @@ describe('mdxish-tables-to-jsx', () => {
       const tree = parseWithPlugin(
         `| H1 | H2 |\n| --- | --- |\n| <Image src="a.png" /> | text |`,
       );
-      const jsxElements = findNodesByType(tree, 'mdxJsxFlowElement') as (Parent & { name: string })[];
+      const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & { name: string })[];
       const names = jsxElements.map((n) => n.name);
 
       expect(names).toContain('Table');
@@ -121,7 +105,7 @@ describe('mdxish-tables-to-jsx', () => {
       const tree = parseWithPlugin(
         `| Left | Center | Right |\n| :--- | :---: | ---: |\n| <Image src="a.png" /> | b | c |`,
       );
-      const jsxElements = findNodesByType(tree, 'mdxJsxFlowElement') as (Parent & {
+      const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & {
         name: string;
         attributes: { name: string; value: { value: string } }[];
       })[];
@@ -137,7 +121,7 @@ describe('mdxish-tables-to-jsx', () => {
       const tree = parseWithPlugin(
         `| A | B |\n| --- | --- |\n| <Image src="a.png" /> | x |`,
       );
-      const jsxElements = findNodesByType(tree, 'mdxJsxFlowElement') as (Parent & {
+      const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & {
         name: string;
         attributes: { name: string }[];
       })[];
@@ -152,7 +136,7 @@ describe('mdxish-tables-to-jsx', () => {
     it('detects flow content in any child of a cell, not just the first', () => {
       const md = `| Header |\n| --- |\n| text <Image src="a.png" /> |`;
       const tree = parseWithPlugin(md);
-      const jsxElements = findNodesByType(tree, 'mdxJsxFlowElement') as (Parent & { name?: string })[];
+      const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & { name?: string })[];
       const tableNode = jsxElements.find((n) => n.name === 'Table');
 
       expect(tableNode).toBeDefined();
@@ -161,8 +145,8 @@ describe('mdxish-tables-to-jsx', () => {
     it('keeps GFM when all children are phrasing content', () => {
       const tree = parseWithPlugin(`| Header |\n| --- |\n| hello **world** |`);
 
-      expect(findNodesByType(tree, 'table')).toHaveLength(1);
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
     });
   });
 });
