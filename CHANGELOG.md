@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 13.8.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** Add compact heading preprocessor ([#1428](https://github.com/readmeio/markdown/issues/1428)) ([f20d1d0](https://github.com/readmeio/markdown/commit/f20d1d04ffed3d1e8d42fb6cc920ba139031b9f2))
+* toc refresh on load ([#1435](https://github.com/readmeio/markdown/issues/1435)) ([b850b5a](https://github.com/readmeio/markdown/commit/b850b5a8064cda0d462c32493d467917d79ca230))
+
 ## Version 13.8.3
 ### 🛠 Fixes & Updates
 

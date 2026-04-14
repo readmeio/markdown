@@ -42,18 +42,23 @@ function getScrollParent(el: HTMLElement): HTMLElement | Window {
  * corresponding TOC links so the reader always knows where they are.
  */
 function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
-  const [linkCount, setLinkCount] = useState(0);
+  const [tocKey, setTocKey] = useState('');
 
+  // Re-check after every render so we detect when children change
+  // (e.g. after page navigation). Only triggers a re-render when the
+  // set of TOC link hrefs actually differs.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-    const count = nav.querySelectorAll('a[href^="#"]').length;
-    setLinkCount(count);
-  }, [navRef]);
+    const key = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
+      .map(a => a.getAttribute('href'))
+      .join('\0');
+    setTocKey(key);
+  });
 
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav || typeof IntersectionObserver === 'undefined' || linkCount === 0) return undefined;
+    if (!nav || typeof IntersectionObserver === 'undefined' || !tocKey) return undefined;
 
     const linkMap = buildLinkMap(nav);
     if (linkMap.size === 0) return undefined;
@@ -172,7 +177,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       scrollTarget.removeEventListener('scroll', onScroll);
       nav.removeEventListener('click', onClick);
     };
-  }, [navRef, linkCount]);
+  }, [navRef, tocKey]);
 }
 
 function TableOfContents({ children }: React.PropsWithChildren) {
