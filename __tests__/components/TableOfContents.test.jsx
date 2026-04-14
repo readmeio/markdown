@@ -113,6 +113,7 @@ describe('Table of Contents', () => {
     });
 
     afterEach(() => {
+      window.location.hash = '';
       scrollContainer?.remove();
       delete global.IntersectionObserver;
     });
@@ -168,6 +169,7 @@ describe('Table of Contents', () => {
       });
 
       expect(secondLink.classList.contains('active')).toBe(true);
+      expect(window.location.hash).toBe('#heading-2');
 
       // Simulate scrollend on the scroll container (not window)
       act(() => {
@@ -184,6 +186,52 @@ describe('Table of Contents', () => {
       const firstLink = [...links].find(a => a.getAttribute('href') === '#heading-1');
       expect(firstLink.classList.contains('active')).toBe(true);
       expect(secondLink.classList.contains('active')).toBe(false);
+    });
+
+    it('should rebuild linkMap when children change (page navigation)', async () => {
+      // Simulate page navigation: TOC re-renders with new children
+      // but the TableOfContents instance persists (same position in tree).
+      // The click handler must recognize the NEW heading IDs.
+
+      // Add new headings to the DOM for "page 2"
+      ['new-heading-1', 'new-heading-2'].forEach(id => {
+        const el = document.createElement('h2');
+        el.id = id;
+        el.getBoundingClientRect = () => ({ top: 100, height: 30 });
+        scrollContainer.appendChild(el);
+      });
+
+      const { container, rerender } = render(
+        <TableOfContents>
+          <a href="#heading-1">Heading 1</a>
+          <a href="#heading-2">Heading 2</a>
+          <a href="#heading-3">Heading 3</a>
+        </TableOfContents>,
+      );
+
+      await act(async () => {});
+
+      // "Navigate" to a new page — rerender with different children
+      rerender(
+        <TableOfContents>
+          <a href="#new-heading-1">New Heading 1</a>
+          <a href="#new-heading-2">New Heading 2</a>
+        </TableOfContents>,
+      );
+
+      // Wait for effects to detect the content change and rebuild
+      await act(async () => {});
+
+      const links = container.querySelectorAll('a');
+      const newLink = [...links].find(a => a.getAttribute('href') === '#new-heading-1');
+
+      // Click a link from the new page — the handler should recognize it
+      act(() => {
+        newLink.click();
+      });
+
+      expect(newLink.classList.contains('active')).toBe(true);
+      expect(window.location.hash).toBe('#new-heading-1');
     });
   });
 

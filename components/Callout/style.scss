@@ -80,7 +80,8 @@
     padding-left: 1.3em;
   }
 
-  a {
+  h3 a,
+  .callout-heading a {
     color: inherit;
   }
 
@@ -88,7 +89,7 @@
     border-color: var(--border, var(--markdown-edge, #eee));
   }
 
-  blockquote {
+  blockquote:not(.callout) {
     color: var(--color-text-default, var(--text));
     border-color: var(--border);
     border-width: 3px;

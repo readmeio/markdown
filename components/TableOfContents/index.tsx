@@ -42,18 +42,23 @@ function getScrollParent(el: HTMLElement): HTMLElement | Window {
  * corresponding TOC links so the reader always knows where they are.
  */
 function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
-  const [linkCount, setLinkCount] = useState(0);
+  const [tocKey, setTocKey] = useState('');
 
+  // Re-check after every render so we detect when children change
+  // (e.g. after page navigation). Only triggers a re-render when the
+  // set of TOC link hrefs actually differs.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
-    const count = nav.querySelectorAll('a[href^="#"]').length;
-    setLinkCount(count);
-  }, [navRef]);
+    const key = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'))
+      .map(a => a.getAttribute('href'))
+      .join('\0');
+    setTocKey(key);
+  });
 
   useEffect(() => {
     const nav = navRef.current;
-    if (!nav || typeof IntersectionObserver === 'undefined' || linkCount === 0) return undefined;
+    if (!nav || typeof IntersectionObserver === 'undefined' || !tocKey) return undefined;
 
     const linkMap = buildLinkMap(nav);
     if (linkMap.size === 0) return undefined;
@@ -126,19 +131,33 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     // Click a ToC link → immediately activate it, suppress the observer
     // until the smooth scroll finishes, then hand control back.
     const onClick = (e: MouseEvent) => {
-      const anchor = (e.target as HTMLElement).closest?.('a[href^="#"]');
-      if (!anchor) return;
-      const id = decodeURIComponent(anchor.getAttribute('href')!.slice(1));
+      if (!(e.target instanceof Element)) return;
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const id = decodeURIComponent(anchor.hash.slice(1));
       if (!linkMap.has(id)) return;
 
-      e.preventDefault();
+      if (window.location.hash !== anchor.hash) {
+        window.location.hash = anchor.hash;
+      }
+
       activate(id);
       clickLocked = true;
 
-      const unlock = () => { clickLocked = false; };
+      let unlockTimer: number | null = null;
+      const unlock = () => {
+        clickLocked = false;
+        scrollTarget.removeEventListener('scrollend', unlock);
+        window.removeEventListener('hashchange', unlock);
+        if (unlockTimer !== null) {
+          window.clearTimeout(unlockTimer);
+          unlockTimer = null;
+        }
+      };
       scrollTarget.addEventListener('scrollend', unlock, { once: true });
-
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      window.addEventListener('hashchange', unlock, { once: true });
+      // Fallback in case scrollend and hashchange don't fire
+      unlockTimer = window.setTimeout(unlock, 500);
     };
 
     headings.forEach(el => { observer.observe(el); });
@@ -158,7 +177,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
       scrollTarget.removeEventListener('scroll', onScroll);
       nav.removeEventListener('click', onClick);
     };
-  }, [navRef, linkCount]);
+  }, [navRef, tocKey]);
 }
 
 function TableOfContents({ children }: React.PropsWithChildren) {
