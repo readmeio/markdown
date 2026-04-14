@@ -7,13 +7,15 @@ import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-componen
 import { isMDXElement } from '../processor/utils';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { magicBlock } from './micromark/magic-block';
+import { mdxComponent } from './micromark/mdx-component';
 
 const tags = (doc: string) => {
   const set = new Set<string>();
   const processor = remark()
-    .data('micromarkExtensions', [magicBlock()])
-    .data('fromMarkdownExtensions', [magicBlockFromMarkdown()])
+    .data('micromarkExtensions', [magicBlock(), mdxComponent()])
+    .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxComponentFromMarkdown()])
     .use(mdxishComponentBlocks);
   const tree = processor.parse(doc);
 
