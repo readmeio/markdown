@@ -38,11 +38,6 @@ export const mdastV6Wrapper = (doc: string) => {
   return mdastV6(doc, { rdmd });
 };
 
-export const parseMdxishMdast = (md: string, opts: MdxishOpts = {}): MdastRoot => {
-  const { processor, parserReadyContent } = mdxishAstProcessor(md, opts);
-  return processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
-};
-
 export const parseMdxishWithSource = (
   doc: string,
   opts: MdxishOpts = {},

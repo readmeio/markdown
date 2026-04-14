@@ -2,7 +2,7 @@ import type { Element, Root, RootContent } from 'hast';
 
 import { mdxish } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-import { parseMdxishMdast } from '../../helpers';
+import { parseMdxish } from '../../helpers';
 
 type HastNode = Root | RootContent;
 
@@ -32,8 +32,8 @@ function findAllElementsByTagName(node: HastNode, tagName: string): Element[] {
   return results;
 }
 
-const parseMdast = (md: string) => parseMdxishMdast(md, { newEditorTypes: true });
-const parseMdastDefault = (md: string) => parseMdxishMdast(md);
+const parseMdast = (md: string) => parseMdxish(md, { newEditorTypes: true });
+const parseMdastDefault = (md: string) => parseMdxish(md);
 
 describe('JSX comment tokenizer (newEditorTypes)', () => {
   it('should parse a single-line JSX comment as one mdxFlowExpression', () => {
