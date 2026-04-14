@@ -13,6 +13,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
 import plain from '../../lib/plain';
+import compatibility from '../compile/compatibility';
 import gemoji from '../compile/gemoji';
 import variable from '../compile/variable';
 
@@ -25,8 +26,14 @@ const toMarkdownExtensions = [
   gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
-  // Important: This is required and would crash the parser if there's no variable and gemoji node handler
-  { handlers: { [NodeTypes.variable]: variable, [NodeTypes.emoji]: gemoji } },
+  // Important: This is required and would crash the parser if there's no variable, gemoji, or fa-icon node handler
+  {
+    handlers: {
+      [NodeTypes.variable]: variable,
+      [NodeTypes.emoji]: gemoji,
+      [NodeTypes.i]: compatibility,
+    },
+  },
 ];
 
 const regex = `^(${emojiRegex().source}|⚠)(\\s+|$)`;
