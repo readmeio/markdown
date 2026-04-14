@@ -62,6 +62,10 @@ With Markdown support.
 
 > ❔ Title Only _with italics_
 
+> 📘 Callout with Links
+>
+> This callout has a [body link](https://example.com) that should use the default link color.
+
 > 📘 Image with Center Alignment in Callout
 >
 > <Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="center" width="200" />
