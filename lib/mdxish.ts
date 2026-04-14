@@ -5,6 +5,7 @@ import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
@@ -15,8 +16,6 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
-
-import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
