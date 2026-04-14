@@ -41,7 +41,8 @@ const Callout = (props: Props) => {
 
   const icon = props.icon;
   const isEmoji = icon && emojiRegex().test(icon);
-  const heading = empty ? <p className={'callout-heading empty'}></p> : children[0];
+  const hasBody = children.length > 1;
+  const heading = empty ? (hasBody ? <p className={'callout-heading empty'}></p> : null) : children[0];
   const theme = props.theme || (icon && themes[icon]) || 'default';
 
   return (

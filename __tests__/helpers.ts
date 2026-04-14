@@ -1,6 +1,8 @@
-import type { Root as MdastRoot } from 'mdast';
+import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
+
+import { visit } from 'unist-util-visit';
 
 import { vi } from 'vitest';
 
@@ -39,4 +41,28 @@ export const mdastV6Wrapper = (doc: string) => {
 export const parseMdxishMdast = (md: string, opts: MdxishOpts = {}): MdastRoot => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md, opts);
   return processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+};
+
+export const parseMdxishWithSource = (
+  doc: string,
+  opts: MdxishOpts = {},
+): { source: string; tree: MdastRoot } => {
+  const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
+  const tree = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+  return { source: parserReadyContent, tree };
+};
+
+export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
+  parseMdxishWithSource(doc, opts).tree;
+
+export const collectNodes = <T extends Node = Node>(
+  tree: Node,
+  test: string | ((node: Node) => boolean),
+): T[] => {
+  const out: T[] = [];
+  const match = typeof test === 'string' ? (node: Node) => node.type === test : test;
+  visit(tree, node => {
+    if (match(node)) out.push(node as T);
+  });
+  return out;
 };

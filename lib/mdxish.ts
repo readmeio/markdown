@@ -39,6 +39,7 @@ import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-c
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
+import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -115,6 +116,7 @@ function preprocessContent(
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
+  result = normalizeCompactHeadings(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });

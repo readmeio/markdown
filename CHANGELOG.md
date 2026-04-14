@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 13.8.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** Add compact heading preprocessor ([#1428](https://github.com/readmeio/markdown/issues/1428)) ([f20d1d0](https://github.com/readmeio/markdown/commit/f20d1d04ffed3d1e8d42fb6cc920ba139031b9f2))
+* toc refresh on load ([#1435](https://github.com/readmeio/markdown/issues/1435)) ([b850b5a](https://github.com/readmeio/markdown/commit/b850b5a8064cda0d462c32493d467917d79ca230))
+
+## Version 13.8.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** fix magic block table parsing and variable handling in editor ([#1420](https://github.com/readmeio/markdown/issues/1420)) ([20f207a](https://github.com/readmeio/markdown/commit/20f207a16f65b3b649c8d5dc55f26634cbdafdaa))
+* fix nested callout styling being overriden ([#1427](https://github.com/readmeio/markdown/issues/1427)) ([308d051](https://github.com/readmeio/markdown/commit/308d051054f12732949d4a03ae7b906f5ab5383b))
+* id not appending to url on click ([#1431](https://github.com/readmeio/markdown/issues/1431)) ([62651cd](https://github.com/readmeio/markdown/commit/62651cddce9784f8cc8f9e55445a9a83bbf12cf6))
+
 ## Version 13.8.2
 ### 🛠 Fixes & Updates
 
