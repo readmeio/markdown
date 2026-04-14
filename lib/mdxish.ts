@@ -115,6 +115,7 @@ function preprocessContent(
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
+  result = normalizeCompactHeadings(result);
   result = safeMode ? result : preprocessJSXExpressions(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
