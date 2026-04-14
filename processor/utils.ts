@@ -17,7 +17,7 @@ import mdast from '../lib/mdast';
  * Wrapping in parens lets object literals (`{color: 'red'}`) parse as expressions.
  * Runs with no scope, so only self-contained literals resolve.
  */
-function evaluateAttributeExpression(source: string): unknown {
+export function evaluateAttributeExpression(source: string): unknown {
   try {
     // eslint-disable-next-line no-new-func
     return new Function(`return (${source})`)();

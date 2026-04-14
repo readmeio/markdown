@@ -5,6 +5,7 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
 import { JSON_VALUE_MARKER } from '../transform/mdxish/preprocess-jsx-expressions';
+import { evaluateAttributeExpression } from '../utils';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -20,22 +21,6 @@ function decodeHtmlEntities(value: string) {
     .replace(/&gt;/g, '>')
     .replace(/&#10;/g, '\n')
     .replace(/&amp;/g, '&');
-}
-
-/**
- * Evaluate a JSX attribute expression source as a JavaScript literal.
- * Wraps the source in parentheses so object literals (e.g. `{color: 'red'}`) are parsed
- * as expressions rather than block statements. Runs with no scope so only self-contained
- * literals (objects, arrays, numbers, strings, templates, booleans) resolve — any reference
- * to an undeclared identifier falls back to the raw source string.
- */
-function evaluateAttributeExpression(source: string): unknown {
-  try {
-    // eslint-disable-next-line no-new-func
-    return new Function(`return (${source})`)();
-  } catch {
-    return source;
-  }
 }
 
 /**
