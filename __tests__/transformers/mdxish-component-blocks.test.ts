@@ -58,6 +58,18 @@ describe('mdxish-component-blocks', () => {
       expect(result?.attrString.trim()).toBe('caption="A > B"');
     });
 
+    it('should parse a tag with deeply nested expression attributes', () => {
+      const result = parseTag('<Component style={{ color: { r: 255, g: 0 } }} />');
+      expect(result?.tag).toBe('Component');
+      expect(result?.selfClosing).toBe(true);
+      expect(result?.attributes).toStrictEqual([
+        {
+          type: 'mdxJsxAttribute',
+          value: { type: 'mdxJsxAttributeValueExpression', value: '{ color: { r: 255, g: 0 } }' },
+        },
+      ]);
+    });
+
     it('should parse multilline attributes', () => {
       const result = parseTag(`<Image
   src="https://example.com/image.jpg"
@@ -194,6 +206,102 @@ describe('mdxish-component-blocks', () => {
           value: null,
         },
       ]);
+    });
+
+    describe('deeply nested brace expressions', () => {
+      it('should handle two levels of nested braces', () => {
+        const attrString = 'data={{ a: { b: 1 } }}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'data',
+            value: { type: 'mdxJsxAttributeValueExpression', value: '{ a: { b: 1 } }' },
+          },
+        ]);
+      });
+
+      it('should handle three levels of nested braces', () => {
+        const attrString = 'config={{ theme: { colors: { primary: "#000" } } }}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'config',
+            value: { type: 'mdxJsxAttributeValueExpression', value: '{ theme: { colors: { primary: "#000" } } }' },
+          },
+        ]);
+      });
+
+      it('should handle braces inside strings within expressions', () => {
+        const attrString = 'data={{ key: "value with { and }" }}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'data',
+            value: { type: 'mdxJsxAttributeValueExpression', value: '{ key: "value with { and }" }' },
+          },
+        ]);
+      });
+
+      it('should handle escaped quotes inside string values within expressions', () => {
+        const attrString = String.raw`data={{ message: "He said \"hello\"" }}`;
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'data',
+            value: { type: 'mdxJsxAttributeValueExpression', value: String.raw`{ message: "He said \"hello\"" }` },
+          },
+        ]);
+      });
+
+      it('should handle deeply nested expressions in preserveExpressionsAsText mode', () => {
+        const attrString = 'style={{ color: { r: 255 } }}';
+        const result = parseAttributes(attrString, { preserveExpressionsAsText: true });
+
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'style',
+            value: '{{ color: { r: 255 } }}',
+          },
+        ]);
+      });
+    });
+
+    describe('mixed attribute types', () => {
+      it('should parse mixed string, boolean, and deeply nested expression attributes', () => {
+        const attrString = 'title="Hello" data={{ items: [{ id: 1 }] }} active';
+        const result = parseAttributes(attrString);
+
+        expect(result).toHaveLength(3);
+        expect(result[0]).toStrictEqual({ type: 'mdxJsxAttribute', name: 'title', value: 'Hello' });
+        expect(result[1]).toStrictEqual({
+          type: 'mdxJsxAttribute',
+          name: 'data',
+          value: { type: 'mdxJsxAttributeValueExpression', value: '{ items: [{ id: 1 }] }' },
+        });
+        expect(result[2]).toStrictEqual({ type: 'mdxJsxAttribute', name: 'active', value: null });
+      });
+
+      it('should parse single-quoted attributes alongside expression attributes', () => {
+        const attrString = "label='Click me' onClick={() => alert('hi')}";
+        const result = parseAttributes(attrString);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toStrictEqual({ type: 'mdxJsxAttribute', name: 'label', value: 'Click me' });
+        expect(result[1]).toStrictEqual({
+          type: 'mdxJsxAttribute',
+          name: 'onClick',
+          value: { type: 'mdxJsxAttributeValueExpression', value: "() => alert('hi')" },
+        });
+      });
     });
   });
 

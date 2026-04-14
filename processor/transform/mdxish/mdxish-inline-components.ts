@@ -6,7 +6,7 @@ import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS } from '../../../lib/micromark/mdx-component';
 
-import { parseAttributes } from './mdxish-component-blocks';
+import { parseAttributes } from './mdxish-component-tag-parser';
 
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
 // Uses [A-Za-z0-9_]* to match block version in mdxish-component-blocks.ts

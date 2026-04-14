@@ -1,5 +1,5 @@
 import type { Node, Parent, RootContent } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxAttributeValueExpression, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import remarkGfm from 'remark-gfm';
@@ -12,18 +12,9 @@ import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component'
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, mdxComponent } from '../../../lib/micromark/mdx-component';
 
-// Matches `{...}` with support for one level of nested braces, quoted strings,
-// and template literals inside the expression body. Kept as a const because it's
-// referenced by both pascalCaseTagPattern and tagAttributePattern below.
-const BRACE_EXPR = "\\{(?:[^{}\"'`]|\"[^\"]*\"|'[^']*'|`[^`]*`|\\{(?:[^{}\"'`]|\"[^\"]*\"|'[^']*'|`[^`]*`)*\\})*\\}";
-const pascalCaseTagPattern = new RegExp(
-  // Tag content allows: any non-delimiter char, quoted/template strings, or balanced `{...}` expressions.
-  `^<([A-Z][A-Za-z0-9_]*)((?:[^>"'\`{]|"[^"]*"|'[^']*'|\`[^\`]*\`|${BRACE_EXPR})*?)(\\/?)>([\\s\\S]*)?$`,
-);
-const tagAttributePattern = new RegExp(
-  `([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\\s*=\\s*(${BRACE_EXPR}|"[^"]*"|'[^']*'|[^\\s"'>]+))?`,
-  'g',
-);
+import { type ParseAttributesOptions, parseTag } from './mdxish-component-tag-parser';
+
+export { parseAttributes, parseTag } from './mdxish-component-tag-parser';
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
@@ -63,75 +54,6 @@ function safeDeindent(text: string): string {
 const parseMdChildren = (value: string): RootContent[] => {
   const parsed = inlineMdProcessor.parse(safeDeindent(value).trim());
   return parsed.children || [];
-};
-
-interface ParseAttributesOptions {
-  /**
-   * When true, attribute expressions (`attr={expr}`) are kept as literal strings with
-   * their braces so downstream consumers don't evaluate them. This preserves safeMode
-   * semantics where all expression syntax is ignored.
-   */
-  preserveExpressionsAsText?: boolean;
-}
-
-/**
- * Convert raw attribute string into mdxJsxAttribute entries.
- * Handles key-value attributes (theme="info"), boolean attributes (empty),
- * and JSX expression values (attr={1+1}) which become MdxJsxAttributeValueExpression nodes.
- */
-export const parseAttributes = (raw: string, opts: ParseAttributesOptions = {}): MdxJsxAttribute[] => {
-  const attributes: MdxJsxAttribute[] = [];
-  const attrString = raw.trim();
-  if (!attrString) return attributes;
-
-  tagAttributePattern.lastIndex = 0;
-  let match: RegExpExecArray | null = tagAttributePattern.exec(attrString);
-  while (match !== null) {
-    const [, attrName, attrValue] = match;
-
-    let value: MdxJsxAttribute['value'];
-    if (!attrValue) {
-      value = null;
-    } else if (attrValue.startsWith('{') && attrValue.endsWith('}')) {
-      if (opts.preserveExpressionsAsText) {
-        // safeMode: leave the raw `{expr}` text in place; the hast handler will pass
-        // it through as a plain string.
-        value = attrValue;
-      } else {
-        // JSX expression: strip the outer braces and emit as an expression node
-        // so downstream consumers receive structured expression data.
-        const expression: MdxJsxAttributeValueExpression = {
-          type: 'mdxJsxAttributeValueExpression',
-          value: attrValue.slice(1, -1),
-        };
-        value = expression;
-      }
-    } else {
-      value = attrValue.replace(/^['"]|['"]$/g, '');
-    }
-
-    attributes.push({ type: 'mdxJsxAttribute', name: attrName, value });
-    match = tagAttributePattern.exec(attrString);
-  }
-
-  return attributes;
-};
-
-/**
- * Parse an HTML tag string into structured data.
- */
-export const parseTag = (value: string, opts: ParseAttributesOptions = {}) => {
-  const match = value.match(pascalCaseTagPattern);
-  if (!match) return null;
-
-  const [, tag, attrString = '', selfClosing = '', contentAfterTag = ''] = match;
-  return {
-    tag,
-    attributes: parseAttributes(attrString, opts),
-    selfClosing: !!selfClosing,
-    contentAfterTag,
-    attrString // Just for debugging purposes
-  };
 };
 
 /**

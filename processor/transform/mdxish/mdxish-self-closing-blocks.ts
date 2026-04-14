@@ -4,13 +4,10 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { parseAttributes } from './mdxish-component-blocks';
+import { parseAttributes } from './mdxish-component-tag-parser';
 
 /**
  * Tags to process as self-closing blocks.
- * These components use simple string attributes (no JSX expressions like `data={[...]}`).
- * Components with JSX expression attributes should NOT be added here as parseAttributes
- * cannot handle them correctly.
  */
 const SELF_CLOSING_BLOCK_TAGS = new Set(['Embed', 'Recipe']);
 
