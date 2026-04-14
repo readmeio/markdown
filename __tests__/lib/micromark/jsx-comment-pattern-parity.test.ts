@@ -1,6 +1,6 @@
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 
-import { jsxCommentFromMarkdown } from '../../../lib/mdast-util/jsx-comment';
 import { jsxComment } from '../../../lib/micromark/jsx-comment';
 import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
 
@@ -14,7 +14,7 @@ function regexMatches(src: string): boolean {
 function tokenizerMatches(src: string): boolean {
   const tree = fromMarkdown(src, {
     extensions: [jsxComment()],
-    mdastExtensions: [jsxCommentFromMarkdown()],
+    mdastExtensions: [mdxExpressionFromMarkdown()],
   });
   return tree.children.some(
     child =>

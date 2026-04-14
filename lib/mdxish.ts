@@ -58,7 +58,6 @@ import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
-import { jsxCommentFromMarkdown } from './mdast-util/jsx-comment';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
@@ -176,7 +175,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   if (!safeMode) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
     micromarkExts.unshift(jsxComment());
-    fromMarkdownExts.unshift(jsxCommentFromMarkdown());
   }
 
   const processor = unified()
