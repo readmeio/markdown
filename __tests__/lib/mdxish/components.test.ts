@@ -43,7 +43,7 @@ export const ExampleComponent = ({ header, body, children }) => {
     expect(element.properties?.body).toBe('This is a body');
   });
 
-  it('should parse component when sandwhiched between other text', () => {
+  it('should parse component when sandwiched between other text', () => {
     const md = 'Before <ExampleComponent body="This is a body" /> After';
     const tree = mdxish(md, { components: exampleComponents });
 

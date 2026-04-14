@@ -239,5 +239,5 @@ Hello
       const mod = renderMdxish(mdxish(md));
       expect(() => render(<mod.default />)).not.toThrow();
     });
-  })
+  });
 });

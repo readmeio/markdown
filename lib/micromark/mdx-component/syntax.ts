@@ -636,6 +636,8 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
       effects.exit('mdxComponent');
       return ok(code);
     }
+    // Note: This correctly won't consume text after the closing tag
+    // E.g. <Test />text text won't be consumed to inside the component
     effects.consume(code);
     return afterClose;
   }
