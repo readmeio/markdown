@@ -63,6 +63,7 @@ import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -157,36 +158,31 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
+  const micromarkExts = [jsxTable(), magicBlock(), mdxComponent(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const fromMarkdownExts = [
+    jsxTableFromMarkdown(),
+    magicBlockFromMarkdown(),
+    mdxComponentFromMarkdown(),
+    gemojiFromMarkdown(),
+    legacyVariableFromMarkdown(),
+    emptyTaskListItemFromMarkdown(),
+    looseHtmlEntityFromMarkdown(),
+  ];
+
+  if (!safeMode) {
+    // Insert mdx expression (text-only, no flow) after gemoji at index 3
+    micromarkExts.splice(3, 0, mdxExprTextOnly);
+    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+  }
+
+  if (!safeMode) {
+    // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
+    micromarkExts.unshift(jsxComment());
+  }
+
   const processor = unified()
-    .data(
-      'micromarkExtensions',
-      safeMode
-        ? [jsxTable(), mdxComponent(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), mdxComponent(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
-    )
-    .data(
-      'fromMarkdownExtensions',
-      safeMode
-        ? [
-            jsxTableFromMarkdown(),
-            mdxComponentFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ]
-        : [
-            jsxTableFromMarkdown(),
-            mdxComponentFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            mdxExpressionFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ],
-    )
+    .data('micromarkExtensions', micromarkExts)
+    .data('fromMarkdownExtensions', fromMarkdownExts)
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
