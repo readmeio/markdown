@@ -1,0 +1,1 @@
+export { jsxComment } from './syntax';
