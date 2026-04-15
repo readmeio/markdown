@@ -9,7 +9,6 @@ import mdxishComponentBlocks, {
   parseAttributes,
   parseTag,
 } from '../../processor/transform/mdxish/mdxish-component-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
 import { collectNodes } from '../helpers';
 
 /**
@@ -22,7 +21,6 @@ const parseWithPlugin = (markdown: string): Root => {
     .data('micromarkExtensions', [mdxComponent()])
     .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
-    .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
   processor.runSync(tree);
