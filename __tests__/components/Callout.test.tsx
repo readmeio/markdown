@@ -31,6 +31,31 @@ describe('Callout', () => {
     expect(screen.queryByText('Title')).toBeNull();
   });
 
+  it('does not render empty heading when empty and no body children', () => {
+    const { container } = render(
+      <Callout empty icon="📘" theme="info">
+        <p></p>
+      </Callout>,
+    );
+
+    expect(container.querySelector('.callout-heading.empty')).not.toBeInTheDocument();
+    const icon = container.querySelector('.callout-icon');
+    expect(icon).toBeInTheDocument();
+    expect(icon?.nextElementSibling).toBeNull();
+  });
+
+  it('renders empty heading when empty but has body children', () => {
+    const { container } = render(
+      <Callout empty icon="📘" theme="info">
+        <p></p>
+        <p>Body content</p>
+      </Callout>,
+    );
+
+    expect(container.querySelector('.callout-heading.empty')).toBeInTheDocument();
+    expect(screen.getByText('Body content')).toBeVisible();
+  });
+
   describe('mdxish', () => {
     it('renders a callout with no title with no empty blank heading', () => {
       const md = `<Callout theme="info" icon="📘">

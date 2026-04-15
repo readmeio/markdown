@@ -113,6 +113,69 @@ describe('variablesTextTransformer', () => {
     });
   });
 
+  describe('inside JSX table cells', () => {
+    it('parses {user.name} on its own line inside a <Table> cell', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{user.name}
+      </td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties?.name).toBe('name');
+    });
+
+    it('parses {user.name} in both <th> and <td> cells', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>
+        {user.name}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{user.email}
+      </td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(2);
+      expect(variables[0].properties?.name).toBe('name');
+      expect(variables[1].properties?.name).toBe('email');
+    });
+
+    it('parses inline {user.name} alongside text in a <Table> cell', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hello {user.name}!</td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties?.name).toBe('name');
+    });
+  });
+
   describe('code block protection', () => {
     it('does not parse {user.name} inside a fenced code block', () => {
       const tree = mdxish('```\n{user.name}\n```');

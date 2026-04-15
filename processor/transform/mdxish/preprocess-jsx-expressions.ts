@@ -1,3 +1,4 @@
+import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
 import { protectHTMLBlockContent } from '../../../lib/utils/extractors/html-blocks';
 import {
   type ProtectedCode,
@@ -58,7 +59,7 @@ export function evaluateExpression(expression: string, context: JSXContext) {
  * ```
  */
 export function removeJSXComments(content: string): string {
-  return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
+  return content.replace(JSX_COMMENT_REGEX, '');
 }
 
 /**
@@ -167,8 +168,21 @@ function escapeProblematicBraces(content: string): string {
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
-        // If expression spans paragraph boundary, escape both braces
-        if (entry.hasBlankLine) {
+        // Don't escape pure JSX comments, the `jsxComment` tokenizer downstream
+        // already knows how to swallow a whole `{/* ... */}` block in one go,
+        // even if the body has blank lines in it. If we escape the braces here
+        // the tokenizer never gets a shot at it.
+        //
+        // "Pure" means the braces open with `{/*` and close with `*/}` right
+        // next to each other. Something like `{/* c */ expr\n\nmore}` is just
+        // a regular expression that happens to start with a comment, so it
+        // still needs the normal blank-line protection.
+        const isPureJsxComment =
+          chars[entry.pos + 1] === '/' &&
+          chars[entry.pos + 2] === '*' &&
+          chars[i - 1] === '/' &&
+          chars[i - 2] === '*';
+        if (entry.hasBlankLine && !isPureJsxComment) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
@@ -184,9 +198,7 @@ function escapeProblematicBraces(content: string): string {
 
   // If there are no problematic braces, return safe content as-is;
   // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
-  let result = toEscape.size === 0
-    ? safe
-    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+  let result = toEscape.size === 0 ? safe : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
 
   // Restore HTML elements
   if (htmlElements.length > 0) {
