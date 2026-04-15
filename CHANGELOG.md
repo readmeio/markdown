@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 13.8.5
+### 🛠 Fixes & Updates
+
+* actually fix toc links with query params ([#1436](https://github.com/readmeio/markdown/issues/1436)) ([b59ce5f](https://github.com/readmeio/markdown/commit/b59ce5fb0cf928c6d5ee2088f690dbe3e4d2d597))
+* **mdxish:** fix FA Emojis in Callouts ([#1421](https://github.com/readmeio/markdown/issues/1421)) ([f7caa3e](https://github.com/readmeio/markdown/commit/f7caa3e51fca387f056abb1062e091efbfa8620e))
+* **mdxish:** preserve blank lines in JSX table parsing to fix roundtrip corruption ([#1430](https://github.com/readmeio/markdown/issues/1430)) ([9fa040c](https://github.com/readmeio/markdown/commit/9fa040c120be5687b48a79776959e2659a556708)), closes [#1371](https://github.com/readmeio/markdown/issues/1371)
+* proper spacing in empty callouts ([#1433](https://github.com/readmeio/markdown/issues/1433)) ([97b8a41](https://github.com/readmeio/markdown/commit/97b8a41ab2b0aa85007f78ce6e41e52ae42c9c4c))
+* scope link color inheritance to headings ([#1432](https://github.com/readmeio/markdown/issues/1432)) ([cd78a62](https://github.com/readmeio/markdown/commit/cd78a625dda6d56269c5ac096a8be08b463415d9))
+
 ## Version 13.8.4
 ### 🛠 Fixes & Updates
 
