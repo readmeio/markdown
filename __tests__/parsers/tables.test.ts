@@ -1,18 +1,10 @@
-import type { Element, Nodes } from 'hast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
-import { collectNodes, parseMdxishWithSource } from '../helpers';
-
-const findNodes = (node: Nodes, tagName: string): Element[] => {
-  const results: Element[] = [];
-  if (node.type === 'element' && node.tagName === tagName) results.push(node);
-  if ('children' in node) node.children.forEach(c => results.push(...findNodes(c, tagName)));
-  return results;
-};
+import { collectNodes, findAllElementsByTagName, parseMdxishWithSource } from '../helpers';
 
 describe('table parser', () => {
   describe('unescaping pipes', () => {
@@ -139,25 +131,25 @@ describe('table parser', () => {
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const thead = findNodes(tables[0], 'thead');
-      const tbody = findNodes(tables[0], 'tbody');
+      const thead = findAllElementsByTagName(tables[0], 'thead');
+      const tbody = findAllElementsByTagName(tables[0], 'tbody');
       expect(thead).toHaveLength(1);
       expect(tbody).toHaveLength(1);
 
-      const headerRows = findNodes(thead[0], 'tr');
-      const bodyRows = findNodes(tbody[0], 'tr');
+      const headerRows = findAllElementsByTagName(thead[0], 'tr');
+      const bodyRows = findAllElementsByTagName(tbody[0], 'tr');
       expect(headerRows).toHaveLength(1);
       expect(bodyRows).toHaveLength(3);
 
       const topLevelPres = hast.children.filter(c => c.type === 'element' && c.tagName === 'pre');
       expect(topLevelPres).toHaveLength(0);
 
-      const bodyCells = findNodes(bodyRows[0], 'td');
+      const bodyCells = findAllElementsByTagName(bodyRows[0], 'td');
       const codeCell = bodyCells[1];
-      const codeBlocks = findNodes(codeCell, 'code');
+      const codeBlocks = findAllElementsByTagName(codeCell, 'code');
       expect(codeBlocks.length).toBeGreaterThan(0);
     });
   });
@@ -189,10 +181,10 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      expect(findNodes(hast, 'table')).toHaveLength(2);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(2);
 
       const safeModeHast = mdxish(doc, { safeMode: true });
-      expect(findNodes(safeModeHast, 'table')).toHaveLength(2);
+      expect(findAllElementsByTagName(safeModeHast, 'table')).toHaveLength(2);
     });
 
     it('does not tokenize Table-prefixed tags, lowercase table, or Table in code blocks', () => {
@@ -209,7 +201,7 @@ describe('table parser', () => {
 \`\`\``;
 
       const hast = mdxish(doc);
-      expect(findNodes(hast, 'table')).toHaveLength(0);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(0);
     });
 
     it('does not break when cell contains escaped closing tag', () => {
@@ -223,10 +215,10 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const bodyCells = findNodes(tables[0], 'td');
+      const bodyCells = findAllElementsByTagName(tables[0], 'td');
       expect(bodyCells).toHaveLength(2);
       const textNode = bodyCells[1].children[0];
       expect(textNode.type === 'text' && textNode.value).toContain('</Table> should not be separated');
@@ -240,10 +232,10 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const cells = findNodes(tables[0], 'th');
+      const cells = findAllElementsByTagName(tables[0], 'th');
       expect(cells).toHaveLength(1);
       const textNode = cells[0].children[0];
       expect(textNode.type === 'text' && textNode.value).toBe('A');
@@ -259,13 +251,13 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const thead = findNodes(tables[0], 'thead');
+      const thead = findAllElementsByTagName(tables[0], 'thead');
       expect(thead).toHaveLength(0);
 
-      const bodyCells = findNodes(tables[0], 'td');
+      const bodyCells = findAllElementsByTagName(tables[0], 'td');
       expect(bodyCells).toHaveLength(1);
     });
 
@@ -279,13 +271,13 @@ describe('table parser', () => {
 > text after quote`;
 
       const hast = mdxish(doc);
-      const blockquotes = findNodes(hast, 'blockquote');
+      const blockquotes = findAllElementsByTagName(hast, 'blockquote');
       expect(blockquotes).toHaveLength(1);
 
-      const tables = findNodes(blockquotes[0], 'table');
+      const tables = findAllElementsByTagName(blockquotes[0], 'table');
       expect(tables).toHaveLength(1);
 
-      const bodyCells = findNodes(tables[0], 'td');
+      const bodyCells = findAllElementsByTagName(tables[0], 'td');
       expect(bodyCells).toHaveLength(1);
     });
 
@@ -308,11 +300,11 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      const allTables = findNodes(hast, 'table');
+      const allTables = findAllElementsByTagName(hast, 'table');
       expect(allTables).toHaveLength(2);
 
       const outerTable = allTables[0];
-      const outerRows = findNodes(outerTable, 'tr');
+      const outerRows = findAllElementsByTagName(outerTable, 'tr');
       expect(outerRows.length).toBeGreaterThanOrEqual(1);
 
       const outerRow = outerRows[0];
@@ -321,10 +313,10 @@ describe('table parser', () => {
       );
       expect(outerTds).toHaveLength(2);
 
-      const nestedTables = findNodes(outerTds[0], 'table');
+      const nestedTables = findAllElementsByTagName(outerTds[0], 'table');
       expect(nestedTables).toHaveLength(1);
 
-      const innerCells = findNodes(nestedTables[0], 'td');
+      const innerCells = findAllElementsByTagName(nestedTables[0], 'td');
       expect(innerCells).toHaveLength(1);
       expect(innerCells[0].children[0]).toMatchObject({ type: 'text', value: 'Nested Table' });
     });
@@ -353,10 +345,10 @@ describe('table parser', () => {
 </Table>`;
 
       const hast = mdxish(doc);
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const cells = findNodes(tables[0], 'td');
+      const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(2);
     });
 
@@ -371,7 +363,7 @@ describe('table parser', () => {
 None of the following content will get rendered!`;
 
       const hast = mdxish(doc);
-      const paragraphs = findNodes(hast, 'p');
+      const paragraphs = findAllElementsByTagName(hast, 'p');
       const textContent = JSON.stringify(hast);
       expect(textContent).toContain('None of the following content will get rendered!');
       expect(paragraphs.length).toBeGreaterThan(0);
@@ -416,13 +408,13 @@ None of the following content will get rendered!`;
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const codeTabs = findNodes(hast, 'CodeTabs');
+      const codeTabs = findAllElementsByTagName(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(1);
 
-      const codeBlocks = findNodes(codeTabs[0], 'code');
+      const codeBlocks = findAllElementsByTagName(codeTabs[0], 'code');
       expect(codeBlocks).toHaveLength(2);
     });
 
@@ -466,13 +458,13 @@ None of the following content will get rendered!`;
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const codeTabs = findNodes(hast, 'CodeTabs');
+      const codeTabs = findAllElementsByTagName(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(1);
 
-      const codeBlocks = findNodes(codeTabs[0], 'code');
+      const codeBlocks = findAllElementsByTagName(codeTabs[0], 'code');
       expect(codeBlocks).toHaveLength(3);
     });
 
@@ -510,13 +502,13 @@ None of the following content will get rendered!`;
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const codeTabs = findNodes(hast, 'CodeTabs');
+      const codeTabs = findAllElementsByTagName(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(0);
 
-      const codeBlocks = findNodes(tables[0], 'code');
+      const codeBlocks = findAllElementsByTagName(tables[0], 'code');
       expect(codeBlocks).toHaveLength(1);
     });
 
@@ -554,10 +546,10 @@ None of the following content will get rendered!`;
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const codeTabs = findNodes(hast, 'CodeTabs');
+      const codeTabs = findAllElementsByTagName(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(1);
     });
 
@@ -613,10 +605,10 @@ None of the following content will get rendered!`;
       const { mdxish: mdxishFn } = await import('../../lib/mdxish');
       const hast = mdxishFn(doc);
 
-      const tables = findNodes(hast, 'table');
+      const tables = findAllElementsByTagName(hast, 'table');
       expect(tables).toHaveLength(1);
 
-      const codeTabs = findNodes(hast, 'CodeTabs');
+      const codeTabs = findAllElementsByTagName(hast, 'CodeTabs');
       expect(codeTabs).toHaveLength(2);
     });
   });

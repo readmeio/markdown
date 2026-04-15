@@ -1,3 +1,4 @@
+import type { Element, Nodes as HastNode, Root as HastRoot } from 'hast';
 import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
@@ -37,6 +38,39 @@ export const migrate = (doc: string) => {
 export const mdastV6Wrapper = (doc: string) => {
   return mdastV6(doc, { rdmd });
 };
+
+/**
+ * Recursively searches a HAST tree for the first element matching the given
+ * tag name. Returns `null` if no match is found.
+ */
+export function findElementByTagName(node: HastNode | HastRoot, tagName: string): Element | null {
+  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
+    return node;
+  }
+  if ('children' in node && Array.isArray(node.children)) {
+    return node.children.reduce<Element | null>((found, child) => {
+      if (found) return found;
+      return findElementByTagName(child, tagName);
+    }, null);
+  }
+  return null;
+}
+
+/**
+ * Recursively collects all elements matching the given tag name in a HAST tree.
+ */
+export function findAllElementsByTagName(node: HastNode | HastRoot, tagName: string): Element[] {
+  const results: Element[] = [];
+  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
+    results.push(node);
+  }
+  if ('children' in node && Array.isArray(node.children)) {
+    node.children.forEach(child => {
+      results.push(...findAllElementsByTagName(child, tagName));
+    });
+  }
+  return results;
+}
 
 /**
  * Parses markdown through the full mdxish pipeline (tokenize + transformers)
