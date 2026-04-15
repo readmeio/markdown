@@ -962,7 +962,7 @@ const obj = {key: value};
       it('strips a comment-wrapped magic block from mdxish output', () => {
         const wrapped = '{/*\n\n[block:image]\n{"images": [{"image": ["https://example.com/x.png", null, "X"]}]}\n[/block]\n\n*/}';
         const tree = mdxish(wrapped);
-        expect(findElementByTagName(tree, 'img')).toBeUndefined();
+        expect(findElementByTagName(tree, 'img')).toBeNull();
       });
     });
   });
