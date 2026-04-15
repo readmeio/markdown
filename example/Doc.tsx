@@ -19,7 +19,8 @@ Object.entries(components).forEach(async ([tag, body]) => {
   executedComponents[tag] = mod;
   Object.keys(mod).forEach(subTag => {
     if (['toc', 'Toc', 'default', 'stylesheet'].includes(subTag)) return;
-
+    // This is add the sub components to the executedComponents object and mdxish
+    executedComponents[subTag] = { default: mod[subTag], Toc: null, toc: [] };
     componentsByExport[subTag] = body;
   });
 });
@@ -162,8 +163,8 @@ const Doc = () => {
       try {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, });
-        const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables });
+        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, useTailwind: true});
+        const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables, useTailwind: true });
         setMdxishError(null);
         setMdxishResult(vdom);
         if (showAst) {
