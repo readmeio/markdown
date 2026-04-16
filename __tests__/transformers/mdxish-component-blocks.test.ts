@@ -40,7 +40,7 @@ describe('mdxish-component-blocks', () => {
       expect(result?.attrString.trim()).toBe('theme="dark" size="large"');
     });
 
-    it('should parse an opening tag with content after it', () => {
+    it('should parse component with opening, closing tags, and content in between', () => {
       const result = parseTag('<Callout theme="info">Some content</Callout>');
       expect(result?.tag).toBe('Callout');
       expect(result?.selfClosing).toBe(false);
@@ -58,7 +58,7 @@ describe('mdxish-component-blocks', () => {
       expect(result?.attrString.trim()).toBe('caption="A > B"');
     });
 
-    it('should parse a tag with deeply nested expression attributes', () => {
+    it('should parse a tag with complex deeply nested object expression attributes', () => {
       const result = parseTag('<Component style={{ color: { r: 255, g: 0 } }} />');
       expect(result?.tag).toBe('Component');
       expect(result?.selfClosing).toBe(true);
@@ -71,7 +71,7 @@ describe('mdxish-component-blocks', () => {
       ]);
     });
 
-    it('should parse multilline attributes', () => {
+    it('should parse self closing tag that spans multiple lines', () => {
       const result = parseTag(`<Image
   src="https://example.com/image.jpg"
   alt="Some helpful text"
@@ -83,6 +83,58 @@ describe('mdxish-component-blocks', () => {
   alt="Some helpful text"
   border
 `);
+    });
+
+    describe('attributes extraction', () => {
+      it('should capture attribute that spans multiple lines', () => {
+        const result = parseTag(`<AdvancedTable
+    data={[
+      {
+        'code': 'EXAMPLE_CODE_1',
+        'status': 'EXAMPLE_STATUS_1'
+      },
+      {
+        'code': 'EXAMPLE_CODE_2',
+        'status': 'EXAMPLE_STATUS_2'
+      },
+    ]}
+  />`);
+        expect(result?.tag).toBe('AdvancedTable');
+        expect(result?.attrString).toBe(`
+    data={[
+      {
+        'code': 'EXAMPLE_CODE_1',
+        'status': 'EXAMPLE_STATUS_1'
+      },
+      {
+        'code': 'EXAMPLE_CODE_2',
+        'status': 'EXAMPLE_STATUS_2'
+      },
+    ]}
+  `);
+      });
+
+      it('should captute multiline attributes that may contain empty lines', () => {
+        const result = parseTag(`<AdvancedTable
+  data={[
+    {
+      'code': 'EXAMPLE_CODE_1',
+      'status': 'EXAMPLE_STATUS_1'
+    },
+
+  ]}
+/>`);
+        expect(result?.tag).toBe('AdvancedTable');
+        expect(result?.attrString).toBe(`
+  data={[
+    {
+      'code': 'EXAMPLE_CODE_1',
+      'status': 'EXAMPLE_STATUS_1'
+    },
+
+  ]}
+`);
+      });
     });
   });
 
@@ -209,7 +261,7 @@ describe('mdxish-component-blocks', () => {
       ]);
     });
 
-    describe('deeply nested brace expressions', () => {
+    describe('objects and deeply nested object expressions', () => {
       it('should handle two levels of nested braces', () => {
         const attrString = 'data={{ a: { b: 1 } }}';
         const result = parseAttributes(attrString);
@@ -302,6 +354,53 @@ describe('mdxish-component-blocks', () => {
           name: 'onClick',
           value: { type: 'mdxJsxAttributeValueExpression', value: "() => alert('hi')" },
         });
+      });
+    });
+
+    describe('complex attributes', () => {
+      it('should parse array props', () => {
+        const attrString = 'data={[ { id: 1 }, { id: 2 } ]}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          { type: 'mdxJsxAttribute', name: 'data', value: { type: 'mdxJsxAttributeValueExpression', value: '[ { id: 1 }, { id: 2 } ]' },
+        }]);
+      });
+
+      it('should parse object props', () => {
+        const attrString = 'data={{ name: "John Doe", age: 30 }}';
+        const result = parseAttributes(attrString);
+
+        expect(result).toStrictEqual([
+          { type: 'mdxJsxAttribute', name: 'data', value: { type: 'mdxJsxAttributeValueExpression', value: '{ name: "John Doe", age: 30 }' },
+        }]);
+      });
+
+      it('should not be affected by empty lines inside the expression', () => {
+        const attrString = `
+  data={[
+    {
+      'code': 'EXAMPLE_CODE_1',
+      'status': 'EXAMPLE_STATUS_1'
+    },
+
+  ]}
+        `;
+        const result = parseAttributes(attrString);
+        const expectedInner = `[
+    {
+      'code': 'EXAMPLE_CODE_1',
+      'status': 'EXAMPLE_STATUS_1'
+    },
+
+  ]`;
+        expect(result).toStrictEqual([
+          {
+            type: 'mdxJsxAttribute',
+            name: 'data',
+            value: { type: 'mdxJsxAttributeValueExpression', value: expectedInner },
+          },
+        ]);
       });
     });
   });
