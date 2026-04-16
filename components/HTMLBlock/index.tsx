@@ -25,10 +25,7 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   let html: string = '';
   if (htmlProp !== undefined) {
     html = htmlProp;
-  } else {
-    if (typeof children !== 'string') {
-      throw new TypeError('HTMLBlock: children must be a string');
-    }
+  } else if (typeof children === 'string') {
     html = children;
   }
 

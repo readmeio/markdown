@@ -73,9 +73,13 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.consume(code);
         return body;
       }
-      if (code === codes.space || code === codes.horizontalTab || markdownLineEnding(code)) {
+      if (code === codes.space || code === codes.horizontalTab) {
         effects.consume(code);
         return inAttributes;
+      }
+      if (mode === 'flow' && markdownLineEnding(code)) {
+        effects.exit('htmlBlockComponentData');
+        return attributeContinuationStart(code);
       }
       if (code === codes.slash) {
         effects.consume(code);
@@ -92,8 +96,32 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null) {
         return nok(code);
       }
+      if (markdownLineEnding(code)) {
+        if (mode === 'text') return nok(code);
+        effects.exit('htmlBlockComponentData');
+        return attributeContinuationStart(code);
+      }
       effects.consume(code);
       return inAttributes;
+    }
+
+    function attributeContinuationStart(code: Code): State | undefined {
+      return effects.check(nonLazyContinuationStart, attributeContinuationNonLazy, continuationAfter)(code);
+    }
+
+    function attributeContinuationNonLazy(code: Code): State | undefined {
+      effects.enter(types.lineEnding);
+      effects.consume(code);
+      effects.exit(types.lineEnding);
+      return attributeContinuationBefore;
+    }
+
+    function attributeContinuationBefore(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) {
+        return attributeContinuationStart(code);
+      }
+      effects.enter('htmlBlockComponentData');
+      return inAttributes(code);
     }
 
     function selfClose(code: Code): State | undefined {
@@ -108,13 +136,13 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null) return nok(code);
 
       if (markdownLineEnding(code)) {
-        if (mode === 'flow') {
-          effects.exit('htmlBlockComponentData');
-          return continuationStart(code);
+        if (mode === 'text') {
+          // Text constructs operate on paragraph content which spans lines
+          effects.consume(code);
+          return body;
         }
-        // text constructs can span paragraph lines
-        effects.consume(code);
-        return body;
+        effects.exit('htmlBlockComponentData');
+        return continuationStart(code);
       }
 
       if (code === codes.lessThan) {
@@ -167,11 +195,6 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       // Reject so the block re-parses as a paragraph, deferring to the
       // text tokenizer which preserves trailing content in the same line.
-      //
-      // <HTMLBlock>{`<strong style="color: o
-      // live">Hello, World!</strong>`}</HTMLBlock>.  HI
-      //
-      // Without this, the flow construct would consume "HI".
       return nok(code);
     }
 
