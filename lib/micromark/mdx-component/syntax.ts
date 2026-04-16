@@ -4,7 +4,7 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from './excluded-tags';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -718,6 +718,10 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
  *
  * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock,
  * Glossary, Anchor.
+ *
+ * The tokenizer claims the block atomically; the resulting `html` mdast
+ * node is later restructured into an `mdxJsxFlowElement` by the
+ * `mdxish-component-blocks` transformer.
  */
 export function mdxComponent(): Extension {
   return {

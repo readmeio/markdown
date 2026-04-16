@@ -9,8 +9,9 @@ import { unified } from 'unified';
 import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
 import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../lib/constants';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS, mdxComponent } from '../../../lib/micromark/mdx-component';
+import { mdxComponent } from '../../../lib/micromark/mdx-component';
 
 const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
 const tagAttributePattern =
