@@ -1,6 +1,45 @@
 Changelog
 ===
 
+## Version 13.8.5
+### 🛠 Fixes & Updates
+
+* actually fix toc links with query params ([#1436](https://github.com/readmeio/markdown/issues/1436)) ([b59ce5f](https://github.com/readmeio/markdown/commit/b59ce5fb0cf928c6d5ee2088f690dbe3e4d2d597))
+* **mdxish:** fix FA Emojis in Callouts ([#1421](https://github.com/readmeio/markdown/issues/1421)) ([f7caa3e](https://github.com/readmeio/markdown/commit/f7caa3e51fca387f056abb1062e091efbfa8620e))
+* **mdxish:** preserve blank lines in JSX table parsing to fix roundtrip corruption ([#1430](https://github.com/readmeio/markdown/issues/1430)) ([9fa040c](https://github.com/readmeio/markdown/commit/9fa040c120be5687b48a79776959e2659a556708)), closes [#1371](https://github.com/readmeio/markdown/issues/1371)
+* proper spacing in empty callouts ([#1433](https://github.com/readmeio/markdown/issues/1433)) ([97b8a41](https://github.com/readmeio/markdown/commit/97b8a41ab2b0aa85007f78ce6e41e52ae42c9c4c))
+* scope link color inheritance to headings ([#1432](https://github.com/readmeio/markdown/issues/1432)) ([cd78a62](https://github.com/readmeio/markdown/commit/cd78a625dda6d56269c5ac096a8be08b463415d9))
+
+## Version 13.8.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** Add compact heading preprocessor ([#1428](https://github.com/readmeio/markdown/issues/1428)) ([f20d1d0](https://github.com/readmeio/markdown/commit/f20d1d04ffed3d1e8d42fb6cc920ba139031b9f2))
+* toc refresh on load ([#1435](https://github.com/readmeio/markdown/issues/1435)) ([b850b5a](https://github.com/readmeio/markdown/commit/b850b5a8064cda0d462c32493d467917d79ca230))
+
+## Version 13.8.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** fix magic block table parsing and variable handling in editor ([#1420](https://github.com/readmeio/markdown/issues/1420)) ([20f207a](https://github.com/readmeio/markdown/commit/20f207a16f65b3b649c8d5dc55f26634cbdafdaa))
+* fix nested callout styling being overriden ([#1427](https://github.com/readmeio/markdown/issues/1427)) ([308d051](https://github.com/readmeio/markdown/commit/308d051054f12732949d4a03ae7b906f5ab5383b))
+* id not appending to url on click ([#1431](https://github.com/readmeio/markdown/issues/1431)) ([62651cd](https://github.com/readmeio/markdown/commit/62651cddce9784f8cc8f9e55445a9a83bbf12cf6))
+
+## Version 13.8.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle user vars on standalone lines in tables ([#1423](https://github.com/readmeio/markdown/issues/1423)) ([96dbf84](https://github.com/readmeio/markdown/commit/96dbf84c4e7d825f96b7a0d5ce9389393e4a6804)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+* toc readme integration errors ([#1425](https://github.com/readmeio/markdown/issues/1425)) ([0e769e5](https://github.com/readmeio/markdown/commit/0e769e578b5eecf5f342d2ae79ac151dfc6bb3f9))
+
+## Version 13.8.1
+### 🛠 Fixes & Updates
+
+* pin npm to 22.22.1 ([#1424](https://github.com/readmeio/markdown/issues/1424)) ([ebf47bd](https://github.com/readmeio/markdown/commit/ebf47bd3e9fbd5894bf2017e860fbe1cbe521599))
+* toc feedback from pr ([#1422](https://github.com/readmeio/markdown/issues/1422)) ([2e2a1e7](https://github.com/readmeio/markdown/commit/2e2a1e785a942f91d87c6c0969b5bfe29e315e9a))
+
+## Version 13.8.0
+### ✨ New & Improved
+
+* add animated toc ([#1392](https://github.com/readmeio/markdown/issues/1392)) ([9789929](https://github.com/readmeio/markdown/commit/9789929125072d98aa1b15d5c5b2c9d346f5d70c))
+
 ## Version 13.7.4
 ### 🛠 Fixes & Updates
 

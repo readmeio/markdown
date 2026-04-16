@@ -5,6 +5,7 @@ import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
@@ -15,7 +16,6 @@ import remarkRehype from 'remark-rehype';
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
-import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
@@ -38,6 +38,7 @@ import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-c
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
+import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -61,6 +62,7 @@ import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { gemoji } from './micromark/gemoji';
+import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
@@ -112,6 +114,7 @@ function preprocessContent(
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
+  result = normalizeCompactHeadings(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
@@ -153,34 +156,30 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
+  const micromarkExts = [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const fromMarkdownExts = [
+    jsxTableFromMarkdown(),
+    magicBlockFromMarkdown(),
+    gemojiFromMarkdown(),
+    legacyVariableFromMarkdown(),
+    emptyTaskListItemFromMarkdown(),
+    looseHtmlEntityFromMarkdown(),
+  ];
+
+  if (!safeMode) {
+    // Insert mdx expression (text-only, no flow) after gemoji at index 3
+    micromarkExts.splice(3, 0, mdxExprTextOnly);
+    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+  }
+
+  if (!safeMode) {
+    // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
+    micromarkExts.unshift(jsxComment());
+  }
+
   const processor = unified()
-    .data(
-      'micromarkExtensions',
-      safeMode
-        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
-    )
-    .data(
-      'fromMarkdownExtensions',
-      safeMode
-        ? [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ]
-        : [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            mdxExpressionFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ],
-    )
+    .data('micromarkExtensions', micromarkExts)
+    .data('fromMarkdownExtensions', fromMarkdownExts)
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)

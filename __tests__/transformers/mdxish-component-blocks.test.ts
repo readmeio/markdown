@@ -5,6 +5,7 @@ import { unified } from 'unified';
 
 import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
+import { collectNodes } from '../helpers';
 
 /**
  * Helper to parse markdown and apply the component block plugins.
@@ -18,26 +19,6 @@ const parseWithPlugin = (markdown: string): Root => {
   const tree = processor.parse(markdown);
   processor.runSync(tree);
   return tree as Root;
-};
-
-/**
- * Helper to find nodes by type in the tree.
- */
-const findNodesByType = (tree: Parent, type: string): Parent[] => {
-  const results: Parent[] = [];
-  const stack = [tree];
-
-  while (stack.length) {
-    const node = stack.pop()!;
-    if (node.type === type) {
-      results.push(node);
-    }
-    if ('children' in node && Array.isArray(node.children)) {
-      stack.push(...(node.children as Parent[]));
-    }
-  }
-
-  return results;
 };
 
 describe('mdxish-component-blocks', () => {
@@ -78,7 +59,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent />';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -91,7 +72,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent theme="dark" size="large" />';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -110,7 +91,7 @@ describe('mdxish-component-blocks', () => {
 />`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -134,7 +115,7 @@ describe('mdxish-component-blocks', () => {
 />`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -158,7 +139,7 @@ describe('mdxish-component-blocks', () => {
 />`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -177,7 +158,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent><h2>Title</h2></MyComponent>';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -193,7 +174,7 @@ describe('mdxish-component-blocks', () => {
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -205,7 +186,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent theme="info"><p>Hello</p></MyComponent>';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -218,7 +199,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent>   content with spaces   </MyComponent>';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -230,7 +211,7 @@ describe('mdxish-component-blocks', () => {
         const markdown = '<MyComponent>content</MyComponent><AnotherComponent />';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(2);
         const names = mdxNodes.map(n => (n as { name?: string }).name);
         expect(names).toContain('MyComponent');
@@ -245,7 +226,7 @@ Some **markdown** content
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -262,7 +243,7 @@ Second paragraph
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
       });
 
@@ -272,7 +253,7 @@ Alert content here
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -295,7 +276,7 @@ Alert content here
 </MyComponent>`;
           const tree = parseWithPlugin(markdown);
 
-          const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+          const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
           expect(mdxNodes).toHaveLength(3);
           expect(mdxNodes[0]).toMatchObject({
             type: 'mdxJsxFlowElement',
@@ -320,7 +301,7 @@ Hello
 </Callout>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -344,7 +325,7 @@ More content here
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(2);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
@@ -362,7 +343,7 @@ More content here
         const markdown = '<MyComponent>';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(0);
       });
 
@@ -372,7 +353,7 @@ More content here
 <AnotherComponent>content</AnotherComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(2);
         expect(mdxNodes.map(n => (n as { name?: string }).name)).toContain('MyComponent');
         expect(mdxNodes.map(n => (n as { name?: string }).name)).toContain('AnotherComponent');
@@ -382,7 +363,7 @@ More content here
         const markdown = '<div>content</div>';
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(0);
       });
     });
@@ -397,7 +378,7 @@ More content here
 <Another>second</Another>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         const names = mdxNodes.map(n => (n as { name?: string }).name);
         expect(names).toContain('Outer');
         expect(names).toContain('Inner');
@@ -413,7 +394,7 @@ first content
 <Wrapper>second content</Wrapper>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         const wrapperNodes = mdxNodes.filter(n => (n as { name?: string }).name === 'Wrapper');
         expect(wrapperNodes).toHaveLength(2);
       });
@@ -427,7 +408,7 @@ hello
 <Second />`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         const names = mdxNodes.map(n => (n as { name?: string }).name);
         expect(names).toContain('First');
         expect(names).toContain('Second');
@@ -440,7 +421,7 @@ hello
       const markdown = '<Image src="test.png" caption="Settings > Health Check" />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -459,7 +440,7 @@ Some content
 </Callout>`;
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -472,7 +453,7 @@ Some content
       const markdown = "<MyComponent label='foo > bar'>content</MyComponent>";
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -485,7 +466,7 @@ Some content
       const markdown = '<Widget theme="dark" path="A > B > C" size="large" />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -503,7 +484,7 @@ Some content
       const markdown = '<Image caption="A >> B >>> C" />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -516,7 +497,7 @@ Some content
       const markdown = '<Image caption=">" />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -529,7 +510,7 @@ Some content
       const markdown = '<Widget title="A > B" subtitle=\'C > D\' />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -545,7 +526,7 @@ Some content
       const markdown = '<Image caption="a < b > c" />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -558,7 +539,7 @@ Some content
       const markdown = '<Image caption="A > B" border />';
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect(mdxNodes[0]).toMatchObject({
         type: 'mdxJsxFlowElement',
@@ -576,7 +557,7 @@ Some content
 </Outer>`;
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       const outer = mdxNodes.find(n => (n as { name?: string }).name === 'Outer');
       expect(outer).toBeDefined();
       expect(outer).toMatchObject({
@@ -592,16 +573,16 @@ Some content
       const markdown = '<Anchor href="https://readme.com">ReadMe</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
     });
 
     it('should leave <Anchor> as raw html nodes inside a paragraph', () => {
       const markdown = 'Start by <Anchor href="https://readme.com" target="_blank">ReadMe</Anchor> today.';
       const tree = parseWithPlugin(markdown);
 
-      expect(findNodesByType(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+      expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
       // The opening and closing tags stay as html nodes inside the paragraph
-      const paragraphs = findNodesByType(tree, 'paragraph');
+      const paragraphs = collectNodes(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
       const htmlNodes = paragraphs[0].children.filter((c: { type: string }) => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThanOrEqual(2);
@@ -614,7 +595,7 @@ Some content
 Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       const tree = parseWithPlugin(markdown);
 
-      const mdxNodes = findNodesByType(tree, 'mdxJsxFlowElement');
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
     });

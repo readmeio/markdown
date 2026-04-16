@@ -367,6 +367,33 @@ describe('gemoji transformer', () => {
         '"<Callout icon="⚠️" theme="warn"><h3 id="warning-"><strong>Warning 😁😁</strong></h3><p>Be careful</p></Callout>"',
       );
     });
+
+    it('should render font-awesome emoji in callout header', () => {
+      const md = `> 📘 :grin: :fa-rss-square:
+>
+> Hello`;
+      expect(mix(md)).toMatchInlineSnapshot(
+        '"<Callout icon="📘" theme="info"><h3 id="-">😁 <i class="fa-regular fa-rss-square"></i></h3><p>Hello</p></Callout>"',
+      );
+    });
+
+    it('should render font-awesome emoji in callout body', () => {
+      const md = `> 📘 Title
+>
+> Hello :fa-rss-square:`;
+      expect(mix(md)).toMatchInlineSnapshot(
+        '"<Callout icon="📘" theme="info"><h3 id="title">Title</h3><p>Hello <i class="fa-regular fa-rss-square"></i></p></Callout>"',
+      );
+    });
+
+    it('should render font-awesome emoji in both callout header and body', () => {
+      const md = `> 📘 :grin: :fa-rss-square:
+>
+> Hello :fa-rss-square:`;
+      expect(mix(md)).toMatchInlineSnapshot(
+        '"<Callout icon="📘" theme="info"><h3 id="-">😁 <i class="fa-regular fa-rss-square"></i></h3><p>Hello <i class="fa-regular fa-rss-square"></i></p></Callout>"',
+      );
+    });
   });
 
   describe('mixed contexts', () => {

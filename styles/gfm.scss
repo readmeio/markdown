@@ -209,14 +209,14 @@
 
   ol ol,
   ul ol {
-    list-style-type: lower-roman;
+    list-style-type: lower-alpha;
   }
 
   ol ol ol,
   ol ul ol,
   ul ol ol,
   ul ul ol {
-    list-style-type: lower-alpha;
+    list-style-type: lower-roman;
   }
 
   dd {
