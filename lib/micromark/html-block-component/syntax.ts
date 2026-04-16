@@ -73,7 +73,7 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.consume(code);
         return body;
       }
-      if (code === codes.space || code === codes.horizontalTab) {
+      if (code === codes.space || code === codes.horizontalTab || markdownLineEnding(code)) {
         effects.consume(code);
         return inAttributes;
       }
@@ -89,7 +89,7 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.consume(code);
         return body;
       }
-      if (code === null || markdownLineEnding(code)) {
+      if (code === null) {
         return nok(code);
       }
       effects.consume(code);
