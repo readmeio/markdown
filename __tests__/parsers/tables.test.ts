@@ -195,7 +195,7 @@ describe('table parser', () => {
       expect(findNodes(safeModeHast, 'table')).toHaveLength(2);
     });
 
-    it('does not tokenize Table-prefixed tags, lowercase table, or Table in code blocks', () => {
+    it('does not tokenize Table-prefixed tags or Table in code blocks', () => {
       const doc = `<TableRow>
   <td>not a table</td>
 </TableRow>
@@ -210,6 +210,171 @@ describe('table parser', () => {
 
       const hast = mdxish(doc);
       expect(findNodes(hast, 'table')).toHaveLength(0);
+    });
+
+    it.each([
+      {
+        name: 'blockquote in cell',
+        body: `
+    <tr>
+      <td>
+
+> What's up
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'fenced code block in cell',
+        body: `
+    <tr>
+      <td>
+
+\`\`\`js
+const x = 1;
+\`\`\`
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'unordered list in cell',
+        body: `
+    <tr>
+      <td>
+
+* one
+* two
+* three
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'ordered list in cell',
+        body: `
+    <tr>
+      <td>
+
+1. first
+2. second
+3. third
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'heading in cell',
+        body: `
+    <tr>
+      <td>
+
+## Sub-heading
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'emphasis and strong in cell',
+        body: `
+    <tr>
+      <td>This is *italic* and **bold**</td>
+    </tr>`,
+      },
+      {
+        name: 'inline code in cell',
+        body: `
+    <tr>
+      <td>\`inline code\`</td>
+    </tr>`,
+      },
+      {
+        name: 'link in cell',
+        body: `
+    <tr>
+      <td>[Example](https://example.com)</td>
+    </tr>`,
+      },
+      {
+        name: 'image in cell',
+        body: `
+    <tr>
+      <td>![alt](https://example.com/img.png)</td>
+    </tr>`,
+      },
+      {
+        name: 'multiple rows with mixed content',
+        body: `
+    <tr>
+      <td>Plain text</td>
+      <td>**bold**</td>
+    </tr>
+    <tr>
+      <td>
+
+> quoted
+
+      </td>
+      <td>
+
+* listed
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'empty cells',
+        body: `
+    <tr>
+      <td></td>
+      <td></td>
+    </tr>`,
+      },
+      {
+        name: 'multiple blank lines between sections',
+        body: `
+    <tr>
+      <td>
+
+
+> deep blanks
+
+
+      </td>
+    </tr>`,
+      },
+      {
+        name: 'cell with horizontal rule',
+        body: `
+    <tr>
+      <td>
+
+---
+
+      </td>
+    </tr>`,
+      },
+    ])('<table> matches <Table> output: $name', ({ body }) => {
+      const thead = `
+  <thead>
+    <tr>
+      <th>Heading</th>
+    </tr>
+  </thead>`;
+
+      const uppercaseDoc = `<Table>${thead}\n  <tbody>${body}\n  </tbody>\n</Table>`;
+      const lowercaseDoc = `<table>${thead}\n  <tbody>${body}\n  </tbody>\n</table>`;
+
+      const uppercaseHast = mdxish(uppercaseDoc);
+      const lowercaseHast = mdxish(lowercaseDoc);
+
+      removePosition(uppercaseHast, { force: true });
+      removePosition(lowercaseHast, { force: true });
+
+      const uppercaseTable = findNodes(uppercaseHast, 'table');
+      const lowercaseTable = findNodes(lowercaseHast, 'table');
+      expect(lowercaseTable).toHaveLength(1);
+      expect(lowercaseTable[0]).toStrictEqual(uppercaseTable[0]);
     });
 
     it('does not break when cell contains escaped closing tag', () => {

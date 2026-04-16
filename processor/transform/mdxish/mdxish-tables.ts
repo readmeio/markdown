@@ -85,7 +85,7 @@ const processTableNode = (
   parent: Parents,
   documentPosition?: Node['position'],
 ): void => {
-  if (node.name !== 'Table') return;
+  if (node.name !== 'Table' && node.name !== 'table') return;
 
   const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
@@ -221,7 +221,7 @@ const mdxishTables = (): Transform => tree => {
   visit(tree, 'html', (_node, index, parent) => {
     const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
-    if (!node.value.startsWith('<Table')) return;
+    if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
@@ -245,12 +245,10 @@ const mdxishTables = (): Transform => tree => {
       });
 
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
-        if (tableNode.name === 'Table') {
-          processTableNode(tableNode, index, parent as Parents, node.position);
-          // Stop after the outermost Table so nested Tables don't overwrite parent.children[index]
-          // we let it get handled naturally
-          return EXIT;
-        }
+        if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
+
+        processTableNode(tableNode, index, parent as Parents, node.position);
+        return EXIT;
       });
     } catch {
       // If parsing fails, leave the node as-is
