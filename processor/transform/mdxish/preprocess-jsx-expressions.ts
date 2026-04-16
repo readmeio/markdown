@@ -6,22 +6,6 @@ import {
   restoreInlineCode,
 } from '../../../lib/utils/mdxish/protect-code-blocks';
 
-// Base64 encode (Node.js + browser compatible)
-function base64Encode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'utf-8').toString('base64');
-  }
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-// Base64 decode (Node.js + browser compatible)
-export function base64Decode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'base64').toString('utf-8');
-  }
-  return decodeURIComponent(escape(atob(str)));
-}
-
 function escapeHtmlAttribute(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -34,10 +18,6 @@ function escapeHtmlAttribute(value: string): string {
 // Marker prefix for JSON-serialized complex values (arrays/objects)
 // Using a prefix that won't conflict with regular string values
 export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
-
-// Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
-export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
-export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
 
 /**
  * Pre-processes JSX-like expressions before markdown parsing.
@@ -64,28 +44,6 @@ export function evaluateExpression(expression: string, context: JSXContext) {
   // eslint-disable-next-line no-new-func
   const func = new Function(...contextKeys, `return ${expression}`);
   return func(...contextValues);
-}
-
-/**
- * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
- *
- * @param content
- * @returns Content with HTMLBlock template literals base64 encoded in HTML comments
- * @example
- * ```typescript
- * const input = '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>';
- * protectHTMLBlockContent(input)
- * // Returns: '<HTMLBlock><!--RDMX_HTMLBLOCK:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RDMX_HTMLBLOCK--></HTMLBlock>'
- * ```
- */
-function protectHTMLBlockContent(content: string): string {
-  return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g,
-    (_match, openTag: string, templateContent: string, closeTag: string) => {
-      const encoded = base64Encode(templateContent);
-      return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
-    },
-  );
 }
 
 /**
@@ -336,16 +294,13 @@ function evaluateAttributeExpressions(content: string, context: JSXContext, prot
  * @returns Preprocessed content ready for markdown parsing
  */
 export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
-  // Step 0: Base64 encode HTMLBlock content
-  let processed = protectHTMLBlockContent(content);
-
   // Step 1: Protect code blocks and inline code
-  const { protectedCode, protectedContent } = protectCodeBlocks(processed);
+  const { protectedCode, protectedContent } = protectCodeBlocks(content);
 
   // Step 2: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
   // For inline expressions, we use a library to parse the expression & evaluate it later
   // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
+  let processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
 
   // Step 3: Escape problematic braces to prevent MDX expression parsing errors
   // This handles both unbalanced braces and paragraph-spanning expressions in one pass
