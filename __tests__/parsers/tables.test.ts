@@ -1,9 +1,11 @@
 import type { Element, Nodes } from 'hast';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { removePosition } from 'unist-util-remove-position';
 
-import { mdast } from '../../index';
+import { mdast } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
+import { collectNodes, parseMdxishWithSource } from '../helpers';
 
 const findNodes = (node: Nodes, tagName: string): Element[] => {
   const results: Element[] = [];
@@ -150,7 +152,7 @@ describe('table parser', () => {
       expect(headerRows).toHaveLength(1);
       expect(bodyRows).toHaveLength(3);
 
-      const topLevelPres = (hast as unknown as HastNode).children?.filter(c => c.tagName === 'pre') ?? [];
+      const topLevelPres = hast.children.filter(c => c.type === 'element' && c.tagName === 'pre');
       expect(topLevelPres).toHaveLength(0);
 
       const bodyCells = findNodes(bodyRows[0], 'td');
@@ -692,6 +694,119 @@ None of the following content will get rendered!`;
       const headerCells = findNodes(tables[0], 'th');
       expect(headerCells).toHaveLength(2);
       expect(headerCells[0].children[0]).toMatchObject({ type: 'text', value: 'Column A' });
+    });
+  });
+
+  describe('jsx table mdxish pipeline regression tests', () => {
+    it('translates re-parsed flow content positions into outer source coordinates', () => {
+      const doc = `Some preceding paragraph.
+
+<Table align={["left","left"]}>
+  <thead>
+    <tr><th>Name</th><th>Domains</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Foo</td>
+      <td>
+        <ul>
+          <li>one.example.com</li>
+          <li>two.example.com</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { source, tree } = parseMdxishWithSource(doc);
+
+      const tables = collectNodes(tree, n => n.type === 'table');
+      expect(tables).toHaveLength(1);
+
+      const jsxNodes = collectNodes<MdxJsxFlowElement | MdxJsxTextElement>(
+        tables[0],
+        (n): n is MdxJsxFlowElement | MdxJsxTextElement =>
+          n.type === 'mdxJsxFlowElement' || n.type === 'mdxJsxTextElement',
+      );
+      expect(jsxNodes.length).toBeGreaterThan(0);
+
+      jsxNodes.forEach(node => {
+        expect(node.position).toBeDefined();
+        const slice = source.slice(node.position!.start.offset, node.position!.end.offset);
+        expect(slice.startsWith(`<${node.name}`)).toBe(true);
+      });
+    });
+
+    it('parses two adjacent tables with mixed cell content into independent structured mdast', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>Hello</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>world</td></tr>
+  </tbody>
+</Table>
+
+<Table align={["left","left"]}>
+  <thead>
+    <tr><th>Name</th><th>Domains</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Foo</td>
+      <td>
+        <ul>
+          <li>one.example.com</li>
+          <li>two.example.com</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { source, tree } = parseMdxishWithSource(doc);
+
+      expect(JSON.stringify(tree)).not.toContain('__MDXISH_JSON__');
+
+      const tables = collectNodes(tree, n => n.type === 'table');
+      expect(tables).toHaveLength(2);
+
+      const firstTableText = JSON.stringify(tables[0]);
+      expect(firstTableText).toContain('Hello');
+      expect(firstTableText).toContain('world');
+      expect(firstTableText).not.toContain('Name');
+      expect(firstTableText).not.toContain('Domains');
+      expect(firstTableText).not.toContain('example.com');
+
+      const secondTableText = JSON.stringify(tables[1]);
+      expect(secondTableText).toContain('Name');
+      expect(secondTableText).toContain('Domains');
+      expect(secondTableText).toContain('Foo');
+
+      const secondTableLists = collectNodes<MdxJsxFlowElement>(
+        tables[1],
+        (n): n is MdxJsxFlowElement => n.type === 'mdxJsxFlowElement' && (n as MdxJsxFlowElement).name === 'ul',
+      );
+      expect(secondTableLists).toHaveLength(1);
+      const secondTableItems = collectNodes<MdxJsxTextElement>(
+        secondTableLists[0],
+        (n): n is MdxJsxTextElement => n.type === 'mdxJsxTextElement' && (n as MdxJsxTextElement).name === 'li',
+      );
+      expect(secondTableItems).toHaveLength(2);
+
+      const allJsxNodes = tables.flatMap(t =>
+        collectNodes<MdxJsxFlowElement | MdxJsxTextElement>(
+          t,
+          (n): n is MdxJsxFlowElement | MdxJsxTextElement =>
+            n.type === 'mdxJsxFlowElement' || n.type === 'mdxJsxTextElement',
+        ),
+      );
+
+      allJsxNodes.forEach(node => {
+        expect(node.position).toBeDefined();
+        const slice = source.slice(node.position!.start.offset, node.position!.end.offset);
+        expect(slice.startsWith(`<${node.name}`)).toBe(true);
+      });
     });
   });
 
