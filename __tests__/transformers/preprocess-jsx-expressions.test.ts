@@ -583,15 +583,31 @@ Another valid: {name}`;
       });
 
       it('should handle JSX component with expression prop spanning blank line', () => {
-        // Preprocessing no longer touches attribute expressions, but blank-line braces
-        // should still get escaped so the markdown parser doesn't choke on them.
+        // Attribute expressions (preceded by `=`) are NOT escaped even if they
+        // span blank lines — the mdxComponent tokenizer captures the entire
+        // component block, so blank lines inside attributes are harmless.
         const content = `<Component value={
 
 } />`;
         const result = preprocessJSXExpressions(content);
 
-        expect(result).toContain('\\{');
         expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
+      });
+
+      it('should not escape nested object braces in a JSX attribute when a blank line is inside the object', () => {
+        const content = `<AdvancedTable
+  data={[
+    { a: 1 },
+    {
+
+      b: 2
+
+    }
+  ]}
+/>`;
+        const result = preprocessJSXExpressions(content);
+        expect(result).toBe(content);
       });
 
       it('should handle HTML with curly braces in text spanning blank line', () => {

@@ -112,7 +112,7 @@ function escapeProblematicBraces(content: string): string {
   let strDelim: string | null = null;
   let strEscaped = false;
   // Stack of open braces with their state
-  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
+  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; pos: number }[] = [];
   // Track position of last newline (outside strings) to detect blank lines
   let lastNewlinePos = -2; // -2 means no recent newline
 
@@ -161,7 +161,26 @@ function escapeProblematicBraces(content: string): string {
     }
 
     if (ch === '{') {
-      openStack.push({ pos: i, hasBlankLine: false });
+      // If preceded by `=` (ignoring whitespace), this is a JSX attribute
+      // expression (e.g. `data={[...]}`). The mdxComponent tokenizer captures
+      // the entire component block, so blank lines inside attribute values
+      // won't split paragraphs — skip the blank-line check for these.
+      let isAttrExpr = false;
+      for (let j = i - 1; j >= 0; j -= 1) {
+        const pc = chars[j];
+        if (pc === '=') { isAttrExpr = true; break; }
+        if (pc !== ' ' && pc !== '\t') break;
+      }
+      // Nested `{ ... }` inside an attribute value (e.g. `data={[{ ... }]}` or
+      // `data={{ a: { b: 1 } }}`) must inherit the same exemption; only the
+      // outer `{` is directly after `=`.
+      if (!isAttrExpr && openStack.length > 0) {
+        const parent = openStack[openStack.length - 1];
+        if (parent.isAttrExpr) {
+          isAttrExpr = true;
+        }
+      }
+      openStack.push({ pos: i, hasBlankLine: false, isAttrExpr });
       lastNewlinePos = -2; // Reset newline tracking for new expression
     } else if (ch === '}') {
       if (openStack.length > 0) {
@@ -180,7 +199,7 @@ function escapeProblematicBraces(content: string): string {
           chars[entry.pos + 2] === '*' &&
           chars[i - 1] === '/' &&
           chars[i - 2] === '*';
-        if (entry.hasBlankLine && !isPureJsxComment) {
+        if (entry.hasBlankLine && !isPureJsxComment && !entry.isAttrExpr) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
