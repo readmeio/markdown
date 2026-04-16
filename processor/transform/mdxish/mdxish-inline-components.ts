@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS } from '../../../lib/micromark/mdx-component';
+import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
 
 import { parseAttributes } from './mdxish-component-tag-parser';
 

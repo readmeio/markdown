@@ -815,5 +815,91 @@ const obj = {key: value};
         expect(() => mdxish(result)).not.toThrow();
       });
     });
+
+    describe('JSX comments', () => {
+      const long = 'x'.repeat(2000);
+
+      it.each([
+        ['single-line', '{/* hello */}'],
+        ['empty', '{/**/}'],
+        ['whitespace-only', '{/*   */}'],
+        ['multi-line no blank', '{/*\nline 1\nline 2\n*/}'],
+        ['single blank line', '{/*\n\n*/}'],
+        ['many blank lines', '{/*\n\n\n\nhello\n\n\n\n*/}'],
+        ['wrapping image magic block', '{/*\n[block:image]\n{\n  "images": []\n}\n[/block]\n*/}'],
+        ['wrapping callout with interior blank lines', '{/*\n\n[block:callout]\n{"type":"info","body":"x"}\n[/block]\n\n*/}'],
+        ['unicode + emoji', '{/*\n\n你好 🎉 héllo\n\n*/}'],
+        ['markdown inside', '{/*\n**bold**\n\n[link](url)\n*/}'],
+        ['blank line at start of body', '{/*\n\nfoo*/}'],
+        ['blank line at end of body', '{/*foo\n\n*/}'],
+        ['multiple on same line', '{/* a */} text {/* b */}'],
+        ['two adjacent multi-line', '{/*\n\na\n\n*/}\n\n{/*\n\nb\n\n*/}'],
+        ['surrounded by paragraphs', 'Before\n\n{/*\n\nhidden\n\n*/}\n\nAfter'],
+        ['very long content', `{/*\n\n${long}\n\n*/}`],
+        ['balanced inner braces', '{/* { nested } */}'],
+      ])('pure JSX comment is passed through untouched: %s', (_name, content) => {
+        expect(preprocessJSXExpressions(content)).toBe(content);
+      });
+
+      it.each([
+        ['unclosed open brace', '{/* unclosed'],
+        ['unclosed spanning blank lines', '{/* unclosed\n\nmore content'],
+        ['no closing brace after `*/`', '{/* a */ '],
+        ['`{/` without `*`', '{/foo\n\n/}'],
+        ['`{*` without `/`', '{*foo\n\n*}'],
+        ['whitespace between `{` and `/*`', '{ /* c */\n\n}'],
+        ['trailing content after `*/`', '{/* c */ expr\n\nmore}'],
+        ['trailing content and no `*/` before `}`', '{/* c */ expr\n\nfoo}'],
+        ['leading content before `/*`', '{foo /* c */\n\n*/}'],
+      ])('malformed or impure JSX comment still gets escaped: %s', (_name, content) => {
+        const result = preprocessJSXExpressions(content);
+        expect(result).toContain('\\{');
+      });
+
+      it('escapes stray `}` after a valid JSX comment but leaves the comment intact', () => {
+        const content = '{/* a */} extra }';
+        const result = preprocessJSXExpressions(content);
+        expect(result).toContain('{/* a */}');
+        expect(result).toContain('\\}');
+      });
+
+      it.each([
+        ['comment next to paragraph-spanning expression', '{/* c */}\n\n{foo\n\nbar}'],
+        ['comment nested between non-comment spans', '{foo\n\nbar} and {/* c\n\nd */}'],
+      ])('escapes non-comment braces but preserves comments: %s', (_name, content) => {
+        const result = preprocessJSXExpressions(content);
+        expect(result).toContain('\\{');
+        expect(result).toContain('\\}');
+        expect(result).toContain('{/*');
+      });
+
+      it.each([
+        ['inline code', 'Use `{/* not a real comment */}` as literal'],
+        ['fenced code', '```\n{/*\n\nhello\n\n*/}\n```'],
+        ['inside <div>', '<div>{/* a */}</div>'],
+      ])('protected-content containers leave JSX-comment-shaped content alone: %s', (_name, content) => {
+        const result = preprocessJSXExpressions(content);
+        expect(result).toContain('{/*');
+        expect(result).toContain('*/}');
+      });
+
+      it.each([
+        ['multi-line comment wrapping block:image', '{/*\n\n[block:image]\n{"images": []}\n[/block]\n\n*/}'],
+        [
+          'interleaved hidden + visible magic blocks',
+          '{/* hidden 1 */}\n\n[block:callout]\n{"type":"info","body":"visible"}\n[/block]\n\n{/*\n\nhidden 2\n\n*/}',
+        ],
+        ['comment followed by unbalanced braces', '{/* c */}\n\n{unclosed'],
+        ['HTMLBlock containing JSX-comment-shaped template content', '<HTMLBlock>{`{/* in template */}`}</HTMLBlock>'],
+      ])('full mdxish pipeline does not throw: %s', (_name, content) => {
+        expect(() => mdxish(preprocessJSXExpressions(content))).not.toThrow();
+      });
+
+      it('strips a comment-wrapped magic block from mdxish output', () => {
+        const wrapped = '{/*\n\n[block:image]\n{"images": [{"image": ["https://example.com/x.png", null, "X"]}]}\n[/block]\n\n*/}';
+        const tree = mdxish(wrapped);
+        expect(findElementByTagName(tree, 'img')).toBeUndefined();
+      });
+    });
   });
 });

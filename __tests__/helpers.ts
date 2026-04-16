@@ -1,8 +1,9 @@
-import type { Node, Root } from 'mdast';
+import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
 
 import { visit } from 'unist-util-visit';
+
 import { vi } from 'vitest';
 
 import { run, compile, migrate as baseMigrate, mdastV6 } from '../index';
@@ -39,23 +40,23 @@ export const mdastV6Wrapper = (doc: string) => {
 
 /**
  * Parses markdown through the full mdxish pipeline (tokenize + transformers)
- * and returns both the MDAST tree and the post-preprocess source that was 
- * actually parsed. Useful for position-based assertions that need to slice 
+ * and returns both the MDAST tree and the post-preprocess source that was
+ * actually parsed. Useful for position-based assertions that need to slice
  * the exact string the parser saw.
  */
 export const parseMdxishWithSource = (
   doc: string,
   opts: MdxishOpts = {},
-): { source: string; tree: Root } => {
+): { source: string; tree: MdastRoot } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
+  const tree = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
   return { source: parserReadyContent, tree };
 };
 
 /**
  * Parses markdown through the full mdxish pipeline and returns only the MDAST.
  */
-export const parseMdxish = (doc: string, opts: MdxishOpts = {}): Root =>
+export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
   parseMdxishWithSource(doc, opts).tree;
 
 /**
