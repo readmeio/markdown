@@ -108,9 +108,13 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null) return nok(code);
 
       if (markdownLineEnding(code)) {
-        if (mode === 'text') return nok(code);
-        effects.exit('htmlBlockComponentData');
-        return continuationStart(code);
+        if (mode === 'flow') {
+          effects.exit('htmlBlockComponentData');
+          return continuationStart(code);
+        }
+        // text constructs can span paragraph lines
+        effects.consume(code);
+        return body;
       }
 
       if (code === codes.lessThan) {
@@ -157,9 +161,21 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null || markdownLineEnding(code)) {
         return done(code);
       }
-      effects.consume(code);
-      return afterClose;
+      if (code === codes.space || code === codes.horizontalTab) {
+        effects.consume(code);
+        return afterClose;
+      }
+      // Reject so the block re-parses as a paragraph, deferring to the
+      // text tokenizer which preserves trailing content in the same line.
+      //
+      // <HTMLBlock>{`<strong style="color: o
+      // live">Hello, World!</strong>`}</HTMLBlock>.  HI
+      //
+      // Without this, the flow construct would consume "HI".
+      return nok(code);
     }
+
+    // -- flow-only: line continuation ---------------------------------------
 
     function continuationStart(code: Code): State | undefined {
       return effects.check(nonLazyContinuationStart, continuationStartNonLazy, continuationAfter)(code);
