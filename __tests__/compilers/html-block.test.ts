@@ -68,9 +68,10 @@ describe('mdxish html-block compiler', () => {
     expect(callout.tagName).toBe('Callout');
 
     const htmlBlock = findHTMLBlock(callout);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    expect(htmlBlock?.properties?.html).toBe('  <strong style="color: olive">Hello, World!</strong>');
-    expect(htmlBlock?.properties?.html).not.toMatch(/^>/m);
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      properties: { html: '  <strong style="color: olive">Hello, World!</strong>' },
+    });
   });
 
   it('compiles html blocks preserving newlines', () => {
@@ -88,7 +89,7 @@ const foo = () => {
 
     const hast = mdxish(markdown);
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
+    expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
     const htmlProp = htmlBlock?.properties?.html as string;
     expect(htmlProp).toContain('<pre><code>');
@@ -100,47 +101,58 @@ const foo = () => {
   it('adds newlines for readability', () => {
     const hast = mdxish('<HTMLBlock>{`<p><strong">Hello</strong>, World!</p>`}</HTMLBlock>');
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    expect(htmlBlock?.properties?.html).toBe('<p><strong">Hello</strong>, World!</p>');
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      properties: { html: '<p><strong">Hello</strong>, World!</p>' },
+    });
   });
 
   it('unescapes backticks in HTML content', () => {
     const hast = mdxish('<HTMLBlock>{`<code>\\`example\\`</code>`}</HTMLBlock>');
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    expect(htmlBlock?.properties?.html).toBe('<code>`example`</code>');
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      properties: { html: '<code>`example`</code>' },
+    });
   });
 
   it('passes safeMode property correctly', () => {
     const hast = mdxish('<HTMLBlock safeMode={true}>{`<script>alert("XSS")</script><p>Content</p>`}</HTMLBlock>');
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    expect(htmlBlock?.properties?.safeMode).toBe('true');
-    expect(htmlBlock?.properties?.html).toBe('<script>alert("XSS")</script><p>Content</p>');
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      properties: { safeMode: 'true', html: '<script>alert("XSS")</script><p>Content</p>' },
+    });
   });
 
   it('handles template literal with variables', () => {
     // eslint-disable-next-line quotes
     const hast = mdxish(`<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`);
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    // eslint-disable-next-line no-template-curly-in-string
-    expect(htmlBlock?.properties?.html).toBe('<code>const x = ${variable}</code>');
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      // eslint-disable-next-line no-template-curly-in-string
+      properties: { html: '<code>const x = ${variable}</code>' },
+    });
   });
 
   it('handles nested template literals', () => {
     const hast = mdxish('<HTMLBlock>{`<pre>\\`\\`\\`javascript\\nconst x = 1;\\n\\`\\`\\`</pre>`}</HTMLBlock>');
     const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-    expect(htmlBlock?.tagName).toBe('html-block');
-    expect(htmlBlock?.properties?.html).toBe('<pre>```javascript\nconst x = 1;\n```</pre>');
+    expect(htmlBlock).toMatchObject({
+      tagName: 'html-block',
+      properties: { html: '<pre>```javascript\nconst x = 1;\n```</pre>' },
+    });
   });
 
   describe('flow-level (standalone block)', () => {
     it('handles simple single-line HTMLBlock', () => {
       const hast = mdxish('<HTMLBlock>{`<div>hello</div>`}</HTMLBlock>');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<div>hello</div>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<div>hello</div>' },
+      });
     });
 
     it('handles multiline content', () => {
@@ -153,7 +165,7 @@ const foo = () => {
 
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<li>one</li>');
@@ -169,7 +181,7 @@ const foo = () => {
 
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<div>before</div>');
@@ -184,7 +196,7 @@ const foo = () => {
 
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<script>console.log("hi")</script>');
@@ -199,7 +211,7 @@ const foo = () => {
 
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<style>.red { color: red; }</style>');
@@ -209,32 +221,38 @@ const foo = () => {
     it('handles HTMLBlock without template literal syntax', () => {
       const hast = mdxish('<HTMLBlock><em>plain</em></HTMLBlock>');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<em>plain</em>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<em>plain</em>' },
+      });
     });
 
     it('handles HTMLBlock with runScripts attribute', () => {
       const hast = mdxish('<HTMLBlock runScripts="true">{`<script>doStuff()</script>`}</HTMLBlock>');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.runScripts).toBe(true);
-      expect(htmlBlock?.properties?.html).toBe('<script>doStuff()</script>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { runScripts: true, html: '<script>doStuff()</script>' },
+      });
     });
 
     it('handles opening tag with attributes on a new line', () => {
       const markdown = '<HTMLBlock\nrunScripts="true">{`<script>void 0</script>`}</HTMLBlock>';
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.runScripts).toBe(true);
-      expect(htmlBlock?.properties?.html).toBe('<script>void 0</script>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { runScripts: true, html: '<script>void 0</script>' },
+      });
     });
 
     it('handles trailing whitespace after closing tag', () => {
       const hast = mdxish('<HTMLBlock>{`<div>hello</div>`}</HTMLBlock>   ');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<div>hello</div>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<div>hello</div>' },
+      });
     });
   });
 
@@ -242,30 +260,35 @@ const foo = () => {
     it('handles inline HTMLBlock surrounded by text', () => {
       const hast = mdxish('before <HTMLBlock>{`<span>middle</span>`}</HTMLBlock> after');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<span>middle</span>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<span>middle</span>' },
+      });
     });
 
     it('handles inline HTMLBlock at the end of a paragraph', () => {
       const hast = mdxish('some text <HTMLBlock>{`<em>italic</em>`}</HTMLBlock>');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<em>italic</em>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<em>italic</em>' },
+      });
     });
 
     it('handles inline HTMLBlock with attributes', () => {
       const hast = mdxish('text <HTMLBlock safeMode="true">{`<script>xss</script>`}</HTMLBlock> more');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.safeMode).toBe('true');
-      expect(htmlBlock?.properties?.html).toBe('<script>xss</script>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { safeMode: 'true', html: '<script>xss</script>' },
+      });
     });
 
     it('handles multiline inline HTMLBlock with trailing text', () => {
       const markdown = 'hello <HTMLBlock>{`<strong style="color: o\nlive">Hello, World!</strong>`}</HTMLBlock> world';
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
       expect(htmlBlock?.properties?.html).toContain('Hello, World!</strong>');
     });
   });
@@ -274,15 +297,17 @@ const foo = () => {
     it('preserves trailing text after single-line HTMLBlock', () => {
       const hast = mdxish('<HTMLBlock>{`<strong>Hello</strong>`}</HTMLBlock> trailing');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<strong>Hello</strong>');
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<strong>Hello</strong>' },
+      });
     });
 
     it('preserves trailing text after multiline HTMLBlock', () => {
       const markdown = '<HTMLBlock>{`<strong style="color: o\nlive">Hello</strong>`}</HTMLBlock>. trailing';
       const hast = mdxish(markdown);
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
       expect(htmlBlock?.properties?.html).toContain('Hello</strong>');
     });
 
@@ -304,12 +329,13 @@ const foo = () => {
 > \`}</HTMLBlock>`;
 
       const hast = mdxish(markdown);
-      const callout = hast.children[0] as Element;
-      expect(callout.tagName).toBe('Callout');
+      expect((hast.children[0] as Element).tagName).toBe('Callout');
 
-      const htmlBlock = findHTMLBlock(callout);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('  <strong style="color: olive">Hello, World!</strong>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '  <strong style="color: olive">Hello, World!</strong>' },
+      });
     });
 
     it('handles HTMLBlock in a callout with script tags', () => {
@@ -321,11 +347,10 @@ const foo = () => {
 > \`}</HTMLBlock>`;
 
       const hast = mdxish(markdown);
-      const callout = hast.children[0] as Element;
-      expect(callout.tagName).toBe('Callout');
+      expect((hast.children[0] as Element).tagName).toBe('Callout');
 
-      const htmlBlock = findHTMLBlock(callout);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<script>alert("test")</script>');
@@ -343,11 +368,10 @@ const foo = () => {
 > \`}</HTMLBlock>`;
 
       const hast = mdxish(markdown);
-      const callout = hast.children[0] as Element;
-      expect(callout.tagName).toBe('Callout');
+      expect((hast.children[0] as Element).tagName).toBe('Callout');
 
-      const htmlBlock = findHTMLBlock(callout);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<div>first</div>');
@@ -363,12 +387,13 @@ const foo = () => {
 > \`}</HTMLBlock>${' '}`;
 
       const hast = mdxish(markdown);
-      const callout = hast.children[0] as Element;
-      expect(callout.tagName).toBe('Callout');
+      expect((hast.children[0] as Element).tagName).toBe('Callout');
 
-      const htmlBlock = findHTMLBlock(callout);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('  <strong>Hello</strong>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '  <strong>Hello</strong>' },
+      });
     });
 
     it('handles HTMLBlock in an empty callout (no title text)', () => {
@@ -377,24 +402,26 @@ const foo = () => {
 > <HTMLBlock>{\`<p>body only</p>\`}</HTMLBlock>`;
 
       const hast = mdxish(markdown);
-      const callout = hast.children[0] as Element;
-      expect(callout.tagName).toBe('Callout');
+      expect((hast.children[0] as Element).tagName).toBe('Callout');
 
-      const htmlBlock = findHTMLBlock(callout);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<p>body only</p>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<p>body only</p>' },
+      });
     });
   });
 
   describe('inside blockquotes', () => {
     it('handles single-line HTMLBlock in a blockquote', () => {
       const hast = mdxish('> <HTMLBlock>{`<p>quoted</p>`}</HTMLBlock>');
-      const bq = hast.children[0] as Element;
-      expect(bq.tagName).toBe('blockquote');
+      expect((hast.children[0] as Element).tagName).toBe('blockquote');
 
-      const htmlBlock = findHTMLBlock(bq);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<p>quoted</p>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<p>quoted</p>' },
+      });
     });
 
     it('handles multiline HTMLBlock in a blockquote without stray > characters', () => {
@@ -404,11 +431,10 @@ const foo = () => {
 > \`}</HTMLBlock>`;
 
       const hast = mdxish(markdown);
-      const bq = hast.children[0] as Element;
-      expect(bq.tagName).toBe('blockquote');
+      expect((hast.children[0] as Element).tagName).toBe('blockquote');
 
-      const htmlBlock = findHTMLBlock(bq);
-      expect(htmlBlock?.tagName).toBe('html-block');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
 
       const htmlProp = htmlBlock?.properties?.html as string;
       expect(htmlProp).toContain('<div>line1</div>');
@@ -420,22 +446,49 @@ const foo = () => {
   describe('inside lists', () => {
     it('handles HTMLBlock in an unordered list item', () => {
       const hast = mdxish('- <HTMLBlock>{`<span>listed</span>`}</HTMLBlock>');
-      const list = hast.children[0] as Element;
-      expect(list.tagName).toBe('ul');
+      expect((hast.children[0] as Element).tagName).toBe('ul');
 
-      const htmlBlock = findHTMLBlock(list);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<span>listed</span>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<span>listed</span>' },
+      });
     });
 
     it('handles HTMLBlock in an ordered list item', () => {
       const hast = mdxish('1. <HTMLBlock>{`<span>ordered</span>`}</HTMLBlock>');
-      const list = hast.children[0] as Element;
-      expect(list.tagName).toBe('ol');
+      expect((hast.children[0] as Element).tagName).toBe('ol');
 
-      const htmlBlock = findHTMLBlock(list);
-      expect(htmlBlock?.tagName).toBe('html-block');
-      expect(htmlBlock?.properties?.html).toBe('<span>ordered</span>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({
+        tagName: 'html-block',
+        properties: { html: '<span>ordered</span>' },
+      });
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles standalone multiline HTMLBlock with surrounding paragraphs', () => {
+      const markdown = `Hello
+
+<HTMLBlock>{\`
+<p><strong">Hello</strong>, World!</p>
+\`}</HTMLBlock>
+
+there`;
+      const hast = mdxish(markdown);
+      const htmlBlock = (hast.children as Element[])
+        .filter(child => child.type === 'element')
+        .reduce<Element | undefined>((found, child) => found || findHTMLBlock(child), undefined);
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
+      expect(htmlBlock?.properties?.html).toContain('Hello</strong>, World!</p>');
+    });
+
+    it('handles nested HTMLBlock tags in content', () => {
+      const hast = mdxish('<HTMLBlock>{`<HTMLBlock>{inner}</HTMLBlock>`}</HTMLBlock>');
+      const htmlBlock = findHTMLBlock(hast.children[0] as Element);
+      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
+      expect(htmlBlock?.properties?.html).toContain('<HTMLBlock>{inner}</HTMLBlock>');
     });
   });
 });
