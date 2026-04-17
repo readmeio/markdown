@@ -168,7 +168,7 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
       // Find the first closing tag
-      const closingTagIndex = contentAfterTag.indexOf(closingTagStr);
+      const closingTagIndex = contentAfterTag.lastIndexOf(closingTagStr);
       // Pass raw (untrimmed) content so dedent in parseMdChildren can
       // normalize indentation before trimming
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
