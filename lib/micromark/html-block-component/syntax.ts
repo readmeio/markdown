@@ -39,23 +39,25 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function matchChars(chars: Code[], onMatch: State, onFail: (code: Code) => State | undefined): State {
       if (chars.length === 0) return onMatch;
-      return ((code: Code): State | undefined => {
+      const next: State = (code: Code): State | undefined => {
         if (code === chars[0]) {
           effects.consume(code);
           return matchChars(chars.slice(1), onMatch, onFail);
         }
         return onFail(code);
-      }) as State;
+      };
+      return next;
     }
 
     function matchTagName(onMatch: State, onFail: (code: Code) => State | undefined): State {
-      return ((code: Code): State | undefined => {
+      const next: State = (code: Code): State | undefined => {
         if (code === codes.uppercaseH) {
           effects.consume(code);
           return matchChars(TAG_SUFFIX, onMatch, onFail);
         }
         return onFail(code);
-      }) as State;
+      };
+      return next;
     }
 
     return start;
