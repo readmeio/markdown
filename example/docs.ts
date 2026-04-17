@@ -11,6 +11,7 @@ import varsTest from '../__tests__/fixtures/variable-tests.md';
 import builtInComponents from '../docs/built-in-components.mdx';
 import callouts from '../docs/callouts.md';
 import codeBlocks from '../docs/code-blocks.md';
+import customComponents from '../docs/custom-components.mdx';
 import embeds from '../docs/embeds.md';
 import features from '../docs/features.md';
 import gettingStarted from '../docs/getting-started.md';
@@ -30,6 +31,7 @@ const fixtures = Object.entries({
   childTests,
   codeBlockTests,
   codeBlocks,
+  customComponents,
   embeds,
   exportTests,
   features,
