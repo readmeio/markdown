@@ -296,44 +296,42 @@ exports[`Cards > given various card structures > mdx: should parse when the code
 
 exports[`Cards > given various card structures > mdxish: should parse when the code is in one line 1`] = `
 <div>
-  <p>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
     <div
-      class="CardsGrid"
-      style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+      class="Card Card_card"
     >
       <div
-        class="Card Card_card"
+        class="Card-content"
       >
         <div
-          class="Card-content"
+          class="Card-title"
         >
-          <div
-            class="Card-title"
-          >
-            First
-          </div>
-          <p>
-            Content
-          </p>
+          First
         </div>
-      </div>
-      <div
-        class="Card Card_card"
-      >
-        <div
-          class="Card-content"
-        >
+        <p>
+          Content
           <div
-            class="Card-title"
+            class="Card Card_card"
           >
-            Second
+            <div
+              class="Card-content"
+            >
+              <div
+                class="Card-title"
+              >
+                Second
+              </div>
+              <p>
+                More
+              </p>
+            </div>
           </div>
-          <p>
-            More
-          </p>
-        </div>
+        </p>
       </div>
     </div>
-  </p>
+  </div>
 </div>
 `;
