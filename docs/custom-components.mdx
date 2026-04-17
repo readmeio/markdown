@@ -1,0 +1,55 @@
+## Custom Components
+
+This page showcases all the custom components registered in the sandbox.
+
+### Demo
+
+The `Demo` component renders simple markdown content:
+
+<Demo />
+
+### Test
+
+The `Test` component renders a colored box. It accepts an optional `color` prop (defaults to `thistle`):
+
+<Test />
+
+<Test color="lightcoral" />
+
+<Test color="lightskyblue" />
+
+### Multiple Exports
+
+The `MultipleExports` component exports `One` and `Two`:
+
+<One />
+
+<Two />
+
+### Styled Component (Tailwind)
+
+The `StyledComponent` uses Tailwind classes for styling:
+
+<StyledComponent />
+
+### Steps
+
+The `Steps` component wraps children in styled containers, and exports a `Step` sub-component:
+
+<Steps>
+  <Step>First, install the dependencies.</Step>
+  <Step>Then, configure your project.</Step>
+  <Step>Finally, deploy your app.</Step>
+</Steps>
+
+### Dark Mode
+
+The `DarkMode` component lets you toggle between light and dark themes:
+
+<DarkMode />
+
+### Snake Case Component
+
+The `Snake_case_component` demonstrates snake_case component naming:
+
+<Snake_case_component>Hello from a snake_case component!</Snake_case_component>

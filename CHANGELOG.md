@@ -1,6 +1,84 @@
 Changelog
 ===
 
+## Version 14.0.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** magic blocks), the parser had no way to recognize `{/* ... */}`
+as a single expression
+
+> [!NOTE]
+> Technically, introducing the flow construct of the `mdxExpression`
+would partly fix this issue but we cannot do this because it would break
+magic block parsing. magic blocks usually contain `{ \n \n }` JSON
+payloads, and the flow construct would eat them before the magic block
+tokenizer got a chance to run.
+
+created a dedicated `jsxComment` micromark tokenizer for JSX comments.
+enabled for all branches instead of being gated by `newEditorTypes`.
+
+> [!NOTE]
+In the future as a follow up, we can work in integrating this new
+tokenizer and fully removing the `removeJSXComments` preprocessing step.
+similar to what we do in the `stripComments`
+
+## 🧪 QA tips
+
+Try pasting this in the editor (both rich and raw):
+```
+{/* Dropbox hosted. What was it?
+
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://paper-attachments.dropboxusercontent.com/s_924615C008BE616D2ABE30441190A9401D739971D9AD94E8B5B46A426C5F05E8_1683123013834_Dev+Dash+-+hero+docs+shot.png",
+        null,
+        "The My Developers page in your ReadMe project dashboard"
+      ],
+      "align": "center",
+      "border": true,
+      "caption": "The My Developers page in your ReadMe project dashboard"
+    }
+  ]
+}
+[/block]
+
+*/}
+```
+It should be treated as one big comment block instead of a rendered
+image.
+
+## 📸 Screenshot or Loom
+
+
+https://github.com/user-attachments/assets/9b619f54-3d6e-456f-83be-27d4076a7a3a
+
+### ✨ New & Improved
+
+* **mdxish:** add micromark tokenizer for MDX component parsing ([#1426](https://github.com/readmeio/markdown/issues/1426)) ([a77707d](https://github.com/readmeio/markdown/commit/a77707dfd74495088a742773ec57203c0442a3f6))
+* move numbered lists for 1 -> a -> i ([#1438](https://github.com/readmeio/markdown/issues/1438)) ([7e614d4](https://github.com/readmeio/markdown/commit/7e614d46d0c0b0889d84e9c9c1267baa728ed193))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** properly parse JSX comments in editor deserialization ([#1419](https://github.com/readmeio/markdown/issues/1419)) ([95e1969](https://github.com/readmeio/markdown/commit/95e1969ecc1d4b5aae99cfaab44bdbc8a084151a))
+
+## Version 13.8.5
+### 🛠 Fixes & Updates
+
+* actually fix toc links with query params ([#1436](https://github.com/readmeio/markdown/issues/1436)) ([b59ce5f](https://github.com/readmeio/markdown/commit/b59ce5fb0cf928c6d5ee2088f690dbe3e4d2d597))
+* **mdxish:** fix FA Emojis in Callouts ([#1421](https://github.com/readmeio/markdown/issues/1421)) ([f7caa3e](https://github.com/readmeio/markdown/commit/f7caa3e51fca387f056abb1062e091efbfa8620e))
+* **mdxish:** preserve blank lines in JSX table parsing to fix roundtrip corruption ([#1430](https://github.com/readmeio/markdown/issues/1430)) ([9fa040c](https://github.com/readmeio/markdown/commit/9fa040c120be5687b48a79776959e2659a556708)), closes [#1371](https://github.com/readmeio/markdown/issues/1371)
+* proper spacing in empty callouts ([#1433](https://github.com/readmeio/markdown/issues/1433)) ([97b8a41](https://github.com/readmeio/markdown/commit/97b8a41ab2b0aa85007f78ce6e41e52ae42c9c4c))
+* scope link color inheritance to headings ([#1432](https://github.com/readmeio/markdown/issues/1432)) ([cd78a62](https://github.com/readmeio/markdown/commit/cd78a625dda6d56269c5ac096a8be08b463415d9))
+
+## Version 13.8.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** Add compact heading preprocessor ([#1428](https://github.com/readmeio/markdown/issues/1428)) ([f20d1d0](https://github.com/readmeio/markdown/commit/f20d1d04ffed3d1e8d42fb6cc920ba139031b9f2))
+* toc refresh on load ([#1435](https://github.com/readmeio/markdown/issues/1435)) ([b850b5a](https://github.com/readmeio/markdown/commit/b850b5a8064cda0d462c32493d467917d79ca230))
+
 ## Version 13.8.3
 ### 🛠 Fixes & Updates
 
