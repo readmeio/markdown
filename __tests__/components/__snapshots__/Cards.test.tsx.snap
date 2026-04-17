@@ -1,0 +1,337 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Cards > given a Card with href > mdx: renders a Card as an anchor element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <a
+      class="Card Card_card"
+      href="https://example.com"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Link Card
+          <i
+            aria-hidden="true"
+            class="Card-arrow fa-regular fa-arrow-right"
+          />
+        </div>
+        Linked
+      </div>
+    </a>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Card with href > mdxish: renders a Card as an anchor element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <a
+      class="Card Card_card"
+      href="https://example.com"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Link Card
+          <i
+            aria-hidden="true"
+            class="Card-arrow fa-regular fa-arrow-right"
+          />
+        </div>
+        <p>
+          Linked
+        </p>
+      </div>
+    </a>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Card with icon and badge props > mdx: renders an icon and badge element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <i
+        class="Card-icon fa-duotone fa-solid fa-star"
+      />
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Featured
+          <span
+            class="Card-badge"
+          >
+            New
+          </span>
+        </div>
+        Featured content
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Card with icon and badge props > mdxish: renders an icon and badge element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <i
+        class="Card-icon fa-duotone fa-solid fa-star"
+      />
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Featured
+          <span
+            class="Card-badge"
+          >
+            New
+          </span>
+        </div>
+        <p>
+          Featured content
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Card without href > mdx: renders a Card as a div element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Static Card
+        </div>
+        Static
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Card without href > mdxish: renders a Card as a div element 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Static Card
+        </div>
+        <p>
+          Static
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Cards with Card children > mdx: renders a CardsGrid wrapper containing Card children 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        First content
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        Second content
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given a Cards with Card children > mdxish: renders a CardsGrid wrapper containing Card children 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        <p>
+          First content
+        </p>
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        <p>
+          Second content
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given various card structures > mdx: should parse when the code is in one line 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        Content
+      </div>
+    </div>
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          Second
+        </div>
+        More
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Cards > given various card structures > mdxish: should parse when the code is in one line 1`] = `
+<div>
+  <div
+    class="CardsGrid"
+    style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;"
+  >
+    <div
+      class="Card Card_card"
+    >
+      <div
+        class="Card-content"
+      >
+        <div
+          class="Card-title"
+        >
+          First
+        </div>
+        <p>
+          Content
+          <div
+            class="Card Card_card"
+          >
+            <div
+              class="Card-content"
+            >
+              <div
+                class="Card-title"
+              >
+                Second
+              </div>
+              <p>
+                More
+              </p>
+            </div>
+          </div>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+`;

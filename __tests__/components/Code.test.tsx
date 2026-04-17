@@ -1,47 +1,44 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import copy from 'copy-to-clipboard';
+import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
 import React from 'react';
-
-import { vi } from 'vitest';
 
 import Code from '../../components/Code';
 
+import { renderingEngines } from './utils';
 
-const codeProps = {
-  copyButtons: true,
-};
+describe('Code', () => {
+  describe('general component rendering', () => {
+    it('renders a code element', () => {
+      const { container } = render(<Code>{'console.log("hi");'}</Code>);
+      expect(container.querySelector('code.rdmd-code')).toBeInTheDocument();
+    });
 
-vi.mock('@readme/syntax-highlighter', () => ({
-  default: code => {
-    return <span>{code.replace(/<<.*?>>/, 'VARIABLE_SUBSTITUTED')}</span>;
-  },
-  canonical: lang => lang,
-}));
+    it('renders children as code content', () => {
+      const { container } = render(<Code>{'console.log("hi");'}</Code>);
+      expect(container).toHaveTextContent('console.log("hi");');
+    });
 
-describe.skip('Code', () => {
-  it.skip('copies the variable interpolated code', () => {
-    const props = {
-      children: ['console.log("<<name>>");'],
-    };
-
-    const { container } = render(<Code {...codeProps} {...props} />);
-
-    expect(container).toHaveTextContent(/VARIABLE_SUBSTITUTED/);
-    fireEvent.click(screen.getByRole('button'));
-
-    expect(copy).toHaveBeenCalledWith(expect.stringMatching(/VARIABLE_SUBSTITUTED/));
+    it('handles undefined children', () => {
+      const { container } = render(<Code />);
+      expect(container).toHaveTextContent('');
+    });
   });
 
-  it.skip('does not nest the button inside the code block', () => {
-    render(<Code {...codeProps}>{'console.log("hi");'}</Code>);
-    const btn = screen.getByRole('button');
-
-    expect(btn.parentNode?.nodeName.toLowerCase()).not.toBe('code');
+  it.each(renderingEngines)('%s: renders a fenced code block', (_label, renderContent) => {
+    const md = `\`\`\`js
+const x = 1;
+\`\`\``;
+    const Content = renderContent(md);
+    const { container } = render(<Content />);
+    expect(container.querySelector('code')).toBeInTheDocument();
+    expect(container.textContent).toContain('const x = 1;');
   });
 
-  it.skip('allows undefined children?!', () => {
-    const { container } = render(<Code />);
-
-    expect(container).toHaveTextContent('');
+  it.each(renderingEngines)('%s: renders inline code', (_label, renderContent) => {
+    const md = 'Use `console.log()` to debug';
+    const Content = renderContent(md);
+    const { container } = render(<Content />);
+    expect(container.querySelector('code')).toBeInTheDocument();
+    expect(container.textContent).toContain('console.log()');
   });
 });
