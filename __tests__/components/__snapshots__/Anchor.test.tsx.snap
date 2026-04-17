@@ -1,0 +1,73 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Anchor > mdx: preserves non-anchor children 1`] = `
+<a
+  href="https://example.com"
+  target=""
+  title=""
+>
+  <strong>
+    Bold
+  </strong>
+   and 
+  <em>
+    italic
+  </em>
+</a>
+`;
+
+exports[`Anchor > mdx: renders a basic anchor 1`] = `
+<a
+  href="https://example.com"
+  target=""
+  title=""
+>
+  Click me
+</a>
+`;
+
+exports[`Anchor > mdx: unwraps nested anchor elements 1`] = `
+<a
+  href="https://example.com"
+  target="_blank"
+  title=""
+>
+  https://example.com
+</a>
+`;
+
+exports[`Anchor > mdxish: preserves non-anchor children 1`] = `
+<a
+  href="https://example.com"
+  target=""
+  title=""
+>
+  <strong>
+    Bold
+  </strong>
+   and 
+  <em>
+    italic
+  </em>
+</a>
+`;
+
+exports[`Anchor > mdxish: renders a basic anchor 1`] = `
+<a
+  href="https://example.com"
+  target=""
+  title=""
+>
+  Click me
+</a>
+`;
+
+exports[`Anchor > mdxish: unwraps nested anchor elements 1`] = `
+<a
+  href="https://example.com"
+  target="_blank"
+  title=""
+>
+  https://example.com
+</a>
+`;
