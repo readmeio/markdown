@@ -578,10 +578,10 @@ there`;
     });
 
     it('handles nested HTMLBlock tags in content', () => {
-      const hast = mdxish('<HTMLBlock>{`<HTMLBlock>{inner}</HTMLBlock>`}</HTMLBlock>');
+      const hast = mdxish('<HTMLBlock>{`<HTMLBlock>{<strong>Hello</strong>}</HTMLBlock>`}</HTMLBlock>');
       const htmlBlock = findHTMLBlock(hast.children[0] as Element);
       expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
-      expect(htmlBlock?.properties?.html).toContain('<HTMLBlock>{inner}</HTMLBlock>');
+      expect(htmlBlock?.properties?.html).toContain('<HTMLBlock>{<strong>Hello</strong>}</HTMLBlock>');
     });
   });
 });
