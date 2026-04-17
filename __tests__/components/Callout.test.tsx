@@ -123,7 +123,7 @@ Body with **markdown** support.
   });
 
   describe('mdxish-specific behaviours', () => {
-    it('should correctly parse content when', () => {
+    it('should not wrap body in a paragraph if the last body line touches the closing tag', () => {
       const md = `<Callout theme="info" icon="📘">
 ### Title here
 
