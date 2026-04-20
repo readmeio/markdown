@@ -1,0 +1,1 @@
+export { htmlLowercase } from './syntax';
