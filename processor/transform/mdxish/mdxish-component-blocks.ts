@@ -12,7 +12,6 @@ import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-varia
 import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 import { mdxComponent } from '../../../lib/micromark/mdx-component';
-
 import { type ParseAttributesOptions, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 export { parseAttributes, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
@@ -145,6 +144,18 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
 
+    // Lowercase HTML tags are only eligible when the tokenizer claimed them
+    // for JSX-expression attributes. Plain HTML should stay as html nodes so
+    // rehype-raw handles it as normal. We detect the tokenizer path by the
+    // presence of at least one `mdxJsxAttributeValueExpression` attribute.
+    const isPascalCase = /^[A-Z]/.test(tag);
+    if (!isPascalCase) {
+      const hasExpressionAttr = attributes.some(
+        attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
+      );
+      if (!hasExpressionAttr) return;
+    }
+
     const closingTagStr = `</${tag}>`;
 
     // Case 1: Self-closing tag
@@ -173,10 +184,19 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
       // normalize indentation before trimming
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
+        ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children'])
+        : [];
+      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
+      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // phrasing content isn't spuriously block-wrapped.
+      if (!isPascalCase && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+      }
       const componentNode = createComponentNode({
         tag,
         attributes,
-        children: componentInnerContent.trim() ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
+        children: parsedChildren,
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);

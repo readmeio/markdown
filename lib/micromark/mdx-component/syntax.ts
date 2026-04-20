@@ -48,6 +48,11 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
   let tagName = '';
   let depth = 0;
   let closingTagName = '';
+  // For lowercase tags we only want to claim the block if it uses JSX
+  // attribute expression syntax (`attr={...}`). Plain HTML should fall
+  // through to CommonMark html-flow. Uppercase tags are always claimed.
+  let isLowercaseTag = false;
+  let sawBraceAttr = false;
 
   // Code span tracking
   let codeSpanOpenSize = 0;
@@ -68,6 +73,15 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
   // template literal instead of continuing in the brace expression.
   const templateStack: number[] = [];
 
+  const isAlpha = (code: number) =>
+    (code >= codes.uppercaseA && code <= codes.uppercaseZ) ||
+    (code >= codes.lowercaseA && code <= codes.lowercaseZ);
+
+  const isSameCaseAsTag = (code: number) =>
+    isLowercaseTag
+      ? code >= codes.lowercaseA && code <= codes.lowercaseZ
+      : code >= codes.uppercaseA && code <= codes.uppercaseZ;
+
   return start;
 
   // ── Start ──────────────────────────────────────────────────────────────
@@ -83,13 +97,22 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
   // ── Tag name parsing ───────────────────────────────────────────────────
 
   function tagNameFirst(code: Code): State | undefined {
-    // Must start with uppercase A-Z
-    if (code === null || code < codes.uppercaseA || code > codes.uppercaseZ) {
-      return nok(code);
+    // Uppercase A-Z → PascalCase MDX component (always claim)
+    if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
+      tagName = String.fromCharCode(code);
+      isLowercaseTag = false;
+      effects.consume(code);
+      return tagNameRest;
     }
-    tagName = String.fromCharCode(code);
-    effects.consume(code);
-    return tagNameRest;
+    // Lowercase a-z → HTML tag (claim only if `{...}` attr appears)
+    if (code !== null && code >= codes.lowercaseA && code <= codes.lowercaseZ) {
+      tagName = String.fromCharCode(code);
+      isLowercaseTag = true;
+      sawBraceAttr = false;
+      effects.consume(code);
+      return tagNameRest;
+    }
+    return nok(code);
   }
 
   function tagNameRest(code: Code): State | undefined {
@@ -126,12 +149,14 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
 
     // Self-closing />
     if (code === codes.slash) {
+      if (isLowercaseTag && !sawBraceAttr) return nok(code);
       effects.consume(code);
       return selfCloseGt;
     }
 
     // End of opening tag
     if (code === codes.greaterThan) {
+      if (isLowercaseTag && !sawBraceAttr) return nok(code);
       effects.consume(code);
       return body;
     }
@@ -146,6 +171,7 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
     // JSX expression attribute
     if (code === codes.leftCurlyBrace) {
       braceDepth = 1;
+      sawBraceAttr = true;
       effects.consume(code);
       return inBraceExpr;
     }
@@ -551,8 +577,8 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
       return closingTagNameFirst;
     }
 
-    // Potential nested opening tag
-    if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
+    // Potential nested opening tag (same case class as the outer tag)
+    if (code !== null && isAlpha(code) && isSameCaseAsTag(code)) {
       closingTagName = String.fromCharCode(code);
       effects.consume(code);
       return nestedOpenTagName;
@@ -589,7 +615,7 @@ function tokenizeMdxComponent(this: TokenizeContext, effects: Effects, ok: State
   // ── Closing tag ────────────────────────────────────────────────────────
 
   function closingTagNameFirst(code: Code): State | undefined {
-    if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
+    if (code !== null && isAlpha(code) && isSameCaseAsTag(code)) {
       closingTagName = String.fromCharCode(code);
       effects.consume(code);
       return closingTagNameRest;
