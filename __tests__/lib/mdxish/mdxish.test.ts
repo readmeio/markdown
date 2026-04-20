@@ -3,7 +3,6 @@ import type { Element, Root, RootContent, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-import { mdastV6Wrapper } from '../../helpers';
 
 type HastNode = Root | RootContent;
 

@@ -1,7 +1,5 @@
 import type { Root, Table } from 'mdast';
 
-import { visit } from 'unist-util-visit';
-
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
 
 describe('mdxishAstProcessor', () => {
