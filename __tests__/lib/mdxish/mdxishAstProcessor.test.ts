@@ -13,7 +13,7 @@ describe('mdxishAstProcessor', () => {
 
     it('should NOT evaluate MDX expressions', () => {
       const md = 'Result: {5 * 10}';
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { jsxContext: {} });
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
       // IMPORTANT: Must call runSync() to execute transformers (e.g., evaluateExpression).
       // This is why the test couldn't catch the regression in RM-15705.
       const mdast = processor.runSync(processor.parse(parserReadyContent));

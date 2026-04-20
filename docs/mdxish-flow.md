@@ -43,14 +43,13 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  STEP 3: Pre-process JSX Expressions                                        │
 │  ─────────────────────────────────────────────────────────────────────────  │
-│  preprocessJSXExpressions(content, jsxContext)                              │
+│  preprocessJSXExpressions(content)                                          │
 │                                                                             │
 │  0. Protect HTMLBlock content (base64 encode to prevent parser issues)      │
 │  1. Extract & protect code blocks (```...```) and inline code (`...`)       │
 │  2. Remove JSX comments: {/* comment */} → ""                               │
-│  3. Evaluate attribute expressions: href={baseUrl} → href="https://..."     │
-│  4. Escape unbalanced braces to prevent MDX expression parsing errors       │
-│  5. Restore protected code blocks                                           │
+│  3. Escape unbalanced braces to prevent MDX expression parsing errors       │
+│  4. Restore protected code blocks                                           │
 │                                                                             │
 │  Note: Inline expressions ({5 * 10}) are now parsed by mdast-util-mdx-      │
 │  expression and evaluated in the AST transformer (evaluateExpressions)      │
@@ -183,11 +182,12 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌─────────────────────┐               │                             │
 │evaluateExpressions  │               │                             │
 │  ─────────────────  │               │                             │
-│  Evaluates MDX      │               │                             │
+│  Evaluates self-    │               │                             │
+│  contained MDX      │               │                             │
 │  expressions        │               │                             │
 │  ({expression})     │               │                             │
-│  using jsxContext   │               │                             │
-│  and replaces with  │               │                             │
+│  (e.g. `{1+1}`) and │               │                             │
+│  replaces with      │               │                             │
 │  evaluated values   │               │                             │
 └─────────────────────┘               │                             │
         │                             │                             │
@@ -320,7 +320,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `restoreSnakeCaseComponentNames` | Restore snake_case component names from placeholders |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
-| MDAST | `evaluateExpressions` | Evaluate MDX expressions (`{expression}`) using `jsxContext` |
+| MDAST | `evaluateExpressions` | Evaluate self-contained MDX expressions (e.g. `{1+1}`, `{"hi".toUpperCase()}`); unresolved identifiers stay as literal text |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
 | MDAST | `remarkGfm` | GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes |

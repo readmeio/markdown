@@ -16,21 +16,18 @@ import mdast from '../lib/mdast';
  * Evaluate a JavaScript expression source and return its value.
  *
  * Wrapping in parens lets object literals (`{color: 'red'}`) parse as
- * expressions. Runs with no scope, so only self-contained literals resolve;
- * anything that fails to parse or throws at runtime falls back to the raw source.
+ * expressions. Runs with no scope, so only self-contained literals resolve.
  *
  * > ☢️ **Danger**: this `eval`s JavaScript. Only call when safeMode is off —
  * > safeMode's contract is that expression syntax is never evaluated, and the
  * > pipeline guards against reaching this path by keeping attribute expressions
  * > as literal strings and skipping the expression transformer entirely.
+ *
+ * Throws on parse/runtime error; callers decide the fallback.
  */
 export function evaluate(source: string) {
-  try {
-    // eslint-disable-next-line no-new-func
-    return new Function(`return (${source})`)();
-  } catch {
-    return source;
-  }
+  // eslint-disable-next-line no-new-func
+  return new Function(`return (${source})`)();
 }
 
 /**
@@ -97,7 +94,11 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
       } else if (typeof attr.value === 'string') {
         memo[attr.name] = attr.value;
       } else if (attr.value?.value !== undefined) {
-        memo[attr.name] = evaluate(attr.value.value);
+        try {
+          memo[attr.name] = evaluate(attr.value.value);
+        } catch {
+          memo[attr.name] = attr.value.value;
+        }
       }
     }
 
