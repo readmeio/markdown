@@ -26,12 +26,13 @@ const toMarkdownExtensions = [
   gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
-  // Important: This is required and would crash the parser if there's no variable, gemoji, or fa-icon node handler
+  // Important: This is required and would crash the parser if there's no variable, gemoji, fa-icon, or glossary node handler
   {
     handlers: {
       [NodeTypes.variable]: variable,
       [NodeTypes.emoji]: gemoji,
       [NodeTypes.i]: compatibility,
+      [NodeTypes.glossary]: compatibility,
     },
   },
 ];
