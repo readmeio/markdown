@@ -331,7 +331,7 @@
     padding: 0 1em;
   }
 
-  img {
+  .img {
     margin: round(calc(var(--markdown-img-margin, var(--markdown-spacing, 15px)) * 1.33), 1px) 0;
   }
 
