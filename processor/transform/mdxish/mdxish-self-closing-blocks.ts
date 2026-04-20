@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { parseAttributes } from './mdxish-component-tag-parser';
+import { parseAttributes } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 /**
  * Tags to process as self-closing blocks.

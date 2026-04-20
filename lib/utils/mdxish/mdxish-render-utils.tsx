@@ -25,6 +25,7 @@ function parseJsonProps(props: Record<string, unknown> | null): Record<string, u
       try {
         parsed[key] = JSON.parse(value.slice(JSON_VALUE_MARKER.length));
       } catch {
+        // If parsing fails, use the value without the marker
         parsed[key] = value.slice(JSON_VALUE_MARKER.length);
       }
     } else {

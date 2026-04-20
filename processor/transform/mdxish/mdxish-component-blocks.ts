@@ -13,9 +13,9 @@ import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component'
 import { legacyVariable } from '../../../lib/micromark/legacy-variable';
 import { mdxComponent } from '../../../lib/micromark/mdx-component';
 
-import { type ParseAttributesOptions, parseTag } from './mdxish-component-tag-parser';
+import { type ParseAttributesOptions, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-export { parseAttributes, parseTag } from './mdxish-component-tag-parser';
+export { parseAttributes, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 const inlineMdProcessor = unified()
   .data('micromarkExtensions', [mdxComponent(), legacyVariable()])

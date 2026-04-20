@@ -5,7 +5,7 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
 import { JSON_VALUE_MARKER } from '../transform/mdxish/preprocess-jsx-expressions';
-import { evaluateAttributeExpression } from '../utils';
+import { evaluate } from '../utils';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -53,7 +53,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
       properties[attribute.name] = decodeHtmlEntities(attribute.value);
     } else {
       const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
-      properties[attribute.name] = encodePropertyValue(evaluateAttributeExpression(expressionSource));
+      properties[attribute.name] = encodePropertyValue(evaluate(expressionSource));
     }
   });
 
