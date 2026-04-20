@@ -24,7 +24,7 @@ import mdast from '../lib/mdast';
  * > pipeline guards against reaching this path by keeping attribute expressions
  * > as literal strings and skipping the expression transformer entirely.
  */
-export function evaluate(source: string): unknown {
+export function evaluate(source: string) {
   try {
     // eslint-disable-next-line no-new-func
     return new Function(`return (${source})`)();

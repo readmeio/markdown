@@ -21,14 +21,6 @@ export function base64Decode(str: string): string {
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
 
-/**
- * Marker prefix for JSON-serialized non-primitive prop values (objects/arrays).
- * The mdxJsx handler wraps complex values in this marker so they can round-trip
- * through rehypeRaw's HTML serialization step, and the render layer unwraps them
- * back into real JS values before handing them to React.
- */
-export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
-
 export type JSXContext = Record<string, unknown>;
 
 /**

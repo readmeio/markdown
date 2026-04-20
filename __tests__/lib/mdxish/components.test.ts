@@ -4,7 +4,6 @@ import type { Element, Text } from 'hast';
 import { visit } from 'unist-util-visit';
 
 import { mdxish, compile, run } from '../../../lib';
-import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 
 describe('end-to-end tests in the mdxish pipeline for various types and variations of MDX components', () => {
   // Create & compile example component
@@ -132,14 +131,12 @@ export const AdvancedTable = ({ data }) => {
 
       const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('AdvancedTable');
-      // Non-primitive prop values are wrapped in JSON_VALUE_MARKER so they survive
-      // rehypeRaw's HTML round-trip; the render layer unwraps them before passing to React.
-      expect(componentNode.properties?.data).toBe(
-        `${JSON_VALUE_MARKER}${JSON.stringify([
-          { code: '<INPUT_CODE_1>', status: '<INPUT_STATUS_1>' },
-          { code: '<INPUT_CODE_2>', status: '<INPUT_STATUS_2>' },
-        ])}`,
-      );
+      // Array props survive as real JS values — the rehypeRaw passThrough keeps
+      // the mdx-jsx node off parse5's string-only HTML round-trip.
+      expect(componentNode.properties?.data).toStrictEqual([
+        { code: '<INPUT_CODE_1>', status: '<INPUT_STATUS_1>' },
+        { code: '<INPUT_CODE_2>', status: '<INPUT_STATUS_2>' },
+      ]);
     });
 
     it('should parse a component with array props containing special characters', () => {
@@ -179,7 +176,9 @@ export const ApostropheTable = ({ data }) => {
 
       const componentNode = tree.children[0] as Element;
       expect(componentNode.tagName).toBe('ApostropheTable');
-      expect(String(componentNode.properties?.data)).toContain('The <API_KEY> doesn\'t match the project.');
+      expect(componentNode.properties?.data).toStrictEqual([
+        { message: "The <API_KEY> doesn't match the project." },
+      ]);
     });
 
     it('should parse a component with multiline props', () => {

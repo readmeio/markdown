@@ -1,11 +1,19 @@
-import type { HTMLBlock } from '../../types';
+import type { HTMLBlock, MdxJsx } from '../../types';
 import type { Properties } from 'hast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
-import { JSON_VALUE_MARKER } from '../transform/mdxish/preprocess-jsx-expressions';
 import { evaluate } from '../utils';
+
+/**
+ * Custom hast node type emitted for MDX JSX components. Its entire subtree is
+ * passed through rehypeRaw untouched (see `passThrough` in lib/mdxish.ts),
+ * which keeps non-primitive attribute values (objects, arrays, numbers) as real
+ * JS values instead of forcing them through parse5's string-only HTML round-trip.
+ * A downstream plugin rewrites `mdx-jsx` back to `element` before rehype-react.
+ */
+export const MDX_JSX_NODE_TYPE = 'mdx-jsx';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -24,22 +32,24 @@ function decodeHtmlEntities(value: string) {
 }
 
 /**
- * Encode a hast property value so it survives rehypeRaw's HTML serialization step.
- * Strings and booleans pass through untouched — booleans are preserved across the
- * round-trip by a dedicated plugin wrapped around rehypeRaw. Everything else —
- * numbers, objects, arrays — gets wrapped in a JSON marker string, which the render
- * layer unwraps back into a real JS value before passing it to React.
+ * rehypeRaw's passThrough clones our mdx-jsx node with structuredClone, which
+ * rejects functions and other non-serializable values. Attribute expressions
+ * that evaluate to such values (`onClick={() => ...}`) would crash the pipeline,
+ * so we check the result up front and fall back to the raw expression source.
  */
-function encodePropertyValue(value: unknown): Properties[string] {
-  if (value === null || value === undefined) return value as Properties[string];
-  const type = typeof value;
-  if (type === 'string' || type === 'boolean') {
-    return value as Properties[string];
-  }
-  return `${JSON_VALUE_MARKER}${JSON.stringify(value)}`;
+function isStructuredCloneable(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  const t = typeof value;
+  if (t === 'string' || t === 'number' || t === 'boolean') return true;
+  if (t !== 'object') return false;
+  if (Array.isArray(value)) return value.every(isStructuredCloneable);
+  const proto = Object.getPrototypeOf(value as object);
+  if (proto !== Object.prototype && proto !== null) return false;
+  return Object.values(value as Record<string, unknown>).every(isStructuredCloneable);
 }
 
-// Convert MDX JSX elements to HAST elements, preserving attributes and children
+// Convert MDX JSX elements to a custom mdx-jsx hast node that bypasses rehypeRaw's
+// HTML serialization round-trip; downstream normalization rewrites it to `element`.
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
   const properties: Properties = {};
@@ -53,16 +63,26 @@ const mdxJsxElementHandler: Handler = (state, node) => {
       properties[attribute.name] = decodeHtmlEntities(attribute.value);
     } else {
       const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
-      properties[attribute.name] = encodePropertyValue(evaluate(expressionSource));
+      let evaluated: ReturnType<typeof evaluate>;
+      try {
+        evaluated = evaluate(expressionSource);
+      } catch {
+        evaluated = expressionSource;
+      }
+      if (!isStructuredCloneable(evaluated)) {
+        evaluated = expressionSource;
+      }
+      properties[attribute.name] = evaluated;
     }
   });
 
-  return {
-    type: 'element',
+  const jsxNode: MdxJsx = {
+    type: MDX_JSX_NODE_TYPE,
     tagName: name || '',
     properties,
     children: state.all(node),
   };
+  return jsxNode;
 };
 
 // Convert html-block MDAST nodes to HAST elements, preserving hProperties

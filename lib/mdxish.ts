@@ -40,6 +40,7 @@ import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
+import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
   preprocessJSXExpressions,
@@ -259,8 +260,9 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
-    .use(rehypeRaw, { passThrough: ['html-block'] })
+    .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip
     .use(restoreBooleanProperties)
+    .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
