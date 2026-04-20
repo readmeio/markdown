@@ -21,30 +21,6 @@ export function base64Decode(str: string): string {
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
 
-export type JSXContext = Record<string, unknown>;
-
-/**
- * Evaluates a JavaScript expression using context variables.
- * Used by the mdast-level text-expression transformer.
- *
- * @param expression
- * @param context
- * @returns The evaluated result
- * @example
- * ```typescript
- * const context = { baseUrl: 'https://example.com', path: '/api' };
- * evaluateExpression('baseUrl + path', context)
- * // Returns: 'https://example.com/api'
- * ```
- */
-export function evaluateExpression(expression: string, context: JSXContext) {
-  const contextKeys = Object.keys(context);
-  const contextValues = Object.values(context);
-  // eslint-disable-next-line no-new-func
-  const func = new Function(...contextKeys, `return ${expression}`);
-  return func(...contextValues);
-}
-
 /**
  * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
  *

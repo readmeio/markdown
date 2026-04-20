@@ -152,15 +152,15 @@ describe('mdxish safeMode', () => {
   describe('with safeMode: false (default)', () => {
     it('should evaluate inline expressions', () => {
       const md = 'Result: {5 * 10}';
-      const tree = mdxish(md, { jsxContext: {} });
+      const tree = mdxish(md);
       const text = extractText(tree);
       expect(text).toContain('50');
     });
 
     it('should evaluate self-contained attribute expressions on custom components', () => {
       // Attribute expressions on custom components are evaluated as plain JS literals
-      // by the mdxJsx hast handler (no jsxContext substitution). String-valued
-      // expressions survive rehypeRaw's HTML round-trip without any marker encoding.
+      // by the mdxJsx hast handler. String-valued expressions survive rehypeRaw's
+      // HTML round-trip without any marker encoding.
       const md = '<Callout value={"hello".toUpperCase()} />';
       const tree = mdxish(md);
       const callout = findElementByTagName(tree, 'Callout');

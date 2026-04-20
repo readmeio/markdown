@@ -45,7 +45,6 @@ import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize
 import {
   preprocessJSXExpressions,
   removeJSXComments,
-  type JSXContext,
 } from '../processor/transform/mdxish/preprocess-jsx-expressions';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
@@ -75,7 +74,6 @@ import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-cod
 
 export interface MdxishOpts {
   components?: CustomComponents;
-  jsxContext?: JSXContext;
   newEditorTypes?: boolean;
   /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
@@ -240,7 +238,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, jsxContext = {}, safeMode = false, variables } = opts;
+  const { components: userComponents = {}, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -255,7 +253,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
-    .use(safeMode ? undefined : evaluateExpressions, { context: jsxContext }) // Evaluate MDX expressions using jsxContext
+    .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
