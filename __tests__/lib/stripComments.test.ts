@@ -328,6 +328,29 @@ end"`);
     `);
   });
 
+  it.each([
+    ['mdx', { mdx: true }],
+    ['mdxish', { mdxish: true }],
+  ])('preserves comments inside MDX HTMLBlocks (%s)', async (_name, opts) => {
+    const input = `<HTMLBlock>{\`
+<!-- comment -->
+<div>Hello world</div>
+\`}</HTMLBlock>`;
+    const output = await stripComments(input, opts);
+    expect(output).toContain('<!-- comment -->');
+  });
+
+  it('preserves HTMLBlock template literal expressions in mdxish mode', async () => {
+    const input = `<HTMLBlock>{\`
+<div style="color: red">
+  <strong>Hello, World!</strong>
+</div>
+\`}</HTMLBlock>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+  });
+
   it('preserves jsx tables in mdxish mode', async () => {
     const input = `<Table align={["left","left"]}>
   <thead>

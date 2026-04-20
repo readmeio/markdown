@@ -12,7 +12,8 @@ import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { jsxTable } from './micromark/jsx-table';
-import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
+import { protectHTMLBlockContent, restoreHTMLBlockContent } from './utils/extractors/html-blocks';
+import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractors/magic-blocks';
 
 interface Opts {
   mdx?: boolean;
@@ -23,7 +24,16 @@ interface Opts {
  * Removes Markdown and MDX comments.
  */
 async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<string> {
-  const { replaced, blocks } = extractMagicBlocks(doc);
+  // Preprocessing step: Don't touch magic blocks and HTML block content
+  let preprocessedDoc = doc;
+  const { replaced, blocks } = extractMagicBlocks(preprocessedDoc);
+  preprocessedDoc = replaced;
+
+  // We only need to protect HTML block content if we're in MDXish mode
+  // MDX has correctly handled them
+  if (mdxish) {
+    preprocessedDoc = protectHTMLBlockContent(preprocessedDoc);
+  }
 
   const processor = unified();
 
@@ -75,10 +85,15 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
           },
     );
 
-  const file = await processor.process(replaced);
+  const file = await processor.process(preprocessedDoc);
   const stringified = String(file).trim();
 
-  const restored = restoreMagicBlocks(stringified, blocks);
+  // Restore sections that were extracted from the document
+  let restored = stringified;
+  restored = restoreMagicBlocks(restored, blocks);
+  if (mdxish) {
+    restored = restoreHTMLBlockContent(restored, true);
+  }
   return restored;
 }
 
