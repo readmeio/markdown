@@ -58,11 +58,13 @@ import tailwindTransformer from '../processor/transform/tailwind';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
+import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
@@ -158,8 +160,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
-  const micromarkExts = [jsxTable(), magicBlock(), mdxComponent(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const micromarkExts = [htmlBlockComponent(), jsxTable(), magicBlock(), mdxComponent(), gemoji(), legacyVariable(), looseHtmlEntity()];
   const fromMarkdownExts = [
+    htmlBlockComponentFromMarkdown(),
     jsxTableFromMarkdown(),
     magicBlockFromMarkdown(),
     mdxComponentFromMarkdown(),
