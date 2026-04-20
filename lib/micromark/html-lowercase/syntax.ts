@@ -13,30 +13,34 @@ declare module 'micromark-util-types' {
 }
 
 /**
- * CommonMark html-flow "type 6" block tags. These already have working flow
- * semantics (capture until blank line) that the rest of the pipeline relies
- * on — we defer to CommonMark so behaviors like figure/figcaption reassembly
- * keep working.
+ * Explicit allowlist of HTML tags this tokenizer claims.
  *
- * The value of this tokenizer is in *non-type-6* tags (inline-ish tags like
- * `a`, `span`, `em`, `b`, etc.) where CommonMark's html-text is too strict
- * about unquoted attribute values.
+ * These are inline/phrasing HTML tags where CommonMark's html-text tokenizer
+ * is too strict about unquoted attribute values — notably rejecting `/` in a
+ * value, which breaks any URL-valued attribute that isn't quoted (e.g.
+ * `<a href=https://example.com>`). By claiming these ourselves, we capture
+ * the raw tag source and let parse5 (via rehype-raw) parse it correctly.
  *
- * @see https://spec.commonmark.org/0.31.2/#html-blocks — type 6 tag list.
+ * Everything NOT in this list — block tags (`div`, `figure`, `section`,
+ * headings, lists, etc.), rawtext tags (`script`, `style`, `pre`, `textarea`),
+ * custom elements, and unknown tags — falls through to CommonMark, whose
+ * html-flow tokenizer already handles those with the semantics the rest of
+ * the pipeline depends on (blank-line block termination, figcaption pattern-
+ * matching, etc.).
+ *
+ * To extend coverage, append a tag here.
  */
-const COMMONMARK_TYPE_6_TAGS = new Set([
-  'address', 'article', 'aside', 'base', 'basefont', 'blockquote', 'body',
-  'caption', 'center', 'col', 'colgroup', 'dd', 'details', 'dialog', 'dir',
-  'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form',
-  'frame', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header',
-  'hr', 'html', 'iframe', 'legend', 'li', 'link', 'main', 'menu', 'menuitem',
-  'nav', 'noframes', 'ol', 'optgroup', 'option', 'p', 'param', 'search',
-  'section', 'summary', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead',
-  'title', 'tr', 'track', 'ul',
+const INLINE_HTML_TAGS = new Set([
+  // Text-level semantics
+  'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'del',
+  'dfn', 'em', 'i', 'ins', 'kbd', 'mark', 'q', 'rp', 'rt', 'ruby', 's',
+  'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr',
+  // Embedded content
+  'audio', 'canvas', 'embed', 'img', 'map', 'object', 'picture', 'source',
+  'svg', 'track', 'video',
+  // Form controls
+  'button', 'input', 'label', 'meter', 'output', 'progress', 'select',
 ]);
-
-/** Tags with specialized rawtext/rcdata parsing — defer to CommonMark. */
-const SPECIALIZED_TAGS = new Set(['script', 'style', 'pre', 'textarea']);
 
 /** HTML5 void elements — no matching close tag required. */
 const VOID_ELEMENTS = new Set<string>(voidHtmlTags);
@@ -165,9 +169,9 @@ function createTokenize(mode: 'flow' | 'text') {
         return tagNameRest;
       }
 
-      // Defer tags that already have working CommonMark semantics.
-      if (SPECIALIZED_TAGS.has(tagName)) return nok(code);
-      if (COMMONMARK_TYPE_6_TAGS.has(tagName)) return nok(code);
+      // Only claim tags on the explicit allowlist — everything else defers
+      // to CommonMark, which has correct semantics for block / rawtext tags.
+      if (!INLINE_HTML_TAGS.has(tagName)) return nok(code);
 
       isVoid = VOID_ELEMENTS.has(tagName);
       depth = 1;
@@ -439,18 +443,26 @@ const htmlLowercaseTextConstruct: Construct = {
 };
 
 /**
- * Micromark extension that tokenizes lowercase HTML tags, tolerating unquoted
- * attribute values with characters that micromark-core-commonmark's html-flow
- * / html-text reject (notably `/`).
+ * Micromark extension that tokenizes a narrow set of inline / phrasing HTML
+ * tags (see {@link INLINE_HTML_TAGS}) whose attribute-parsing needs go beyond
+ * what micromark-core-commonmark's html-flow / html-text accepts. Fixes the
+ * common case of unquoted URL attributes (e.g. `<a href=https://...>`) where
+ * a `/` in the value makes the core tokenizer reject the whole tag, which in
+ * turn lets GFM autolink mangling take over.
  *
- * Emits an `html` mdast node containing the raw tag source — rehype-raw then
- * parses it via parse5, which is spec-compliant for HTML5.
+ * Scope is intentionally tight. Block tags (`<div>`, `<figure>`, `<section>`,
+ * etc.), rawtext tags (`<script>`, `<style>`, `<pre>`, `<textarea>`), custom
+ * elements, and unknown tags are NOT claimed — CommonMark already handles
+ * those correctly and the downstream pipeline (figcaption reassembly, html-
+ * flow block termination, rawtext body rules) depends on that.
  *
- * Registered for both flow (block) and text (inline) contexts. Bails (`nok`)
- * on tags that already have working CommonMark semantics (type-6 block tags
- * like `<div>`, `<figure>`; rawtext tags like `<script>`, `<pre>`). Void
- * elements (`<br>`, `<img>`, `<hr>`, etc.) are recognized as self-
- * terminating without requiring a matching close tag.
+ * Registered for both flow (block) and text (inline) contexts. Emits an
+ * opaque `html` mdast node containing the raw tag source — rehype-raw then
+ * parses it via parse5, which is spec-compliant for HTML5. Void elements
+ * (`<br>`, `<img>`, etc.) terminate without requiring a matching close tag.
+ *
+ * JSX attribute expressions (`<a href={url}>`) are not handled here — those
+ * are claimed by `mdxComponent`, which runs earlier in the extension list.
  */
 export function htmlLowercase(): Extension {
   return {

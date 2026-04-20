@@ -1,9 +1,7 @@
-import type { Root } from 'mdast';
-
 import { describe, expect, it } from 'vitest';
 
 import { mdxish } from '../../../lib';
-import { collectNodes, parseMdxishWithSource } from '../../helpers';
+import { collectNodes, parseMdxish, parseMdxishWithSource } from '../../helpers';
 
 describe('html-lowercase tokenizer', () => {
   describe('captures the whole tag as one html mdast node', () => {
@@ -69,28 +67,23 @@ describe('html-lowercase tokenizer', () => {
 
   describe('does not break surrounding markdown', () => {
     it('inline tag inside a paragraph preserves leading / trailing text', () => {
-      const tree = mdxish('Start <a href=https://example.com>here</a> end.');
+      const tree = parseMdxish('Start <a href=https://example.com>here</a> end.');
 
-      const paragraphs = collectNodes(tree as Root, 'p');
+      const paragraphs = collectNodes(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
 
-      const anchors = collectNodes(paragraphs[0], 'a');
-      expect(anchors).toHaveLength(1);
-      expect(anchors[0]).toMatchObject({ type: 'element', tagName: 'a', properties: { href: 'https://example.com' } });
+      const htmlNodes = collectNodes(paragraphs[0], 'html');
+      expect(htmlNodes.some(n => (n as { value: string }).value.includes('<a href=https://example.com>'))).toBe(true);
     });
 
     it('inline tag adjacent to markdown emphasis', () => {
-      const tree = mdxish('**bold** <a href=https://x.com>link</a> *italic*');
+      const tree = parseMdxish('**bold** <a href=https://x.com>link</a> *italic*');
 
-      const paragraphs = collectNodes(tree as Root, 'p');
+      const paragraphs = collectNodes(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
-
-      const strong = collectNodes(paragraphs[0], 'strong')[0];
-      expect(strong).not.toBeNull();
-      const em = collectNodes(paragraphs[0], 'em')[0];
-      expect(em).not.toBeNull();
-      const anchor = collectNodes(paragraphs[0], 'a')[0];
-      expect(anchor).not.toBeNull();
+      expect(collectNodes(paragraphs[0], 'strong')).toHaveLength(1);
+      expect(collectNodes(paragraphs[0], 'emphasis')).toHaveLength(1);
+      expect(collectNodes(paragraphs[0], 'html').length).toBeGreaterThan(0);
     });
 
     it('defers type-6 block tags (<div>) to CommonMark', () => {
