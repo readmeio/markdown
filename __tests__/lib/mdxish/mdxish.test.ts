@@ -3,6 +3,7 @@ import type { Element, Root, RootContent, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
+import { mdastV6Wrapper } from '../../helpers';
 
 type HastNode = Root | RootContent;
 
@@ -602,6 +603,35 @@ describe('html tags rendering', () => {
       const tree = mdxish(md);
       const anchor = findElementByTagName(tree, 'a');
       expect(anchor).toMatchObject(expectedAnchor);
+    });
+
+    it('should not error when the attribute value has unclosed curly brace', () => {
+      const md = '<a href={https://example.com>Example</a>';
+      const tree = mdxish(md);
+
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'a',
+        properties: {
+          href: '{https://example.com',
+        },
+        children: [{ type: 'text', value: 'Example' }],
+      });
+    });
+  });
+
+  it('should parse inline html tags with its attributes as normal html nodes', () => {
+    const md = 'Hello <a href="https://example.com">Example</a> there';
+    const tree = mdxish(md);
+    const anchor = findElementByTagName(tree, 'a');
+    expect(anchor).toMatchObject({
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: 'https://example.com',
+      },
+      children: [{ type: 'text', value: 'Example' }],
     });
   });
 });

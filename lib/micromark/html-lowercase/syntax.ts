@@ -77,6 +77,11 @@ const htmlLowercaseConstruct: Construct = {
   concrete: true,
 };
 
+const htmlLowercaseTextConstruct: Construct = {
+  name: 'htmlLowercaseText',
+  tokenize: tokenizeHtmlLowercaseText,
+};
+
 function tokenizeHtmlLowercase(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
   let tagName = '';
   let depth = 0;
@@ -213,10 +218,6 @@ function tokenizeHtmlLowercase(this: TokenizeContext, effects: Effects, ok: Stat
       return afterEquals;
     }
 
-    // `{` directly after `=` is a JSX attribute expression — bail so the
-    // mdxComponent tokenizer can claim this tag instead.
-    if (code === codes.leftCurlyBrace) return nok(code);
-
     // Quoted value
     if (code === codes.quotationMark || code === codes.apostrophe) {
       quoteChar = code;
@@ -224,7 +225,11 @@ function tokenizeHtmlLowercase(this: TokenizeContext, effects: Effects, ok: Stat
       return inQuotedAttr;
     }
 
-    // Unquoted value — first char must be a non-terminator
+    // Unquoted value — first char must be a non-terminator.
+    // Note: `{` is allowed here. Valid JSX expressions are claimed by the
+    // mdxComponent tokenizer first (runs earlier in the extension list); we
+    // only reach this branch when mdxComponent failed (e.g. unbalanced `{`),
+    // in which case the `{` is a literal char per HTML5 unquoted-value rules.
     if (
       code === codes.equalsTo ||
       code === codes.lessThan ||
@@ -469,6 +474,290 @@ function tokenizeHtmlLowercase(this: TokenizeContext, effects: Effects, ok: Stat
   }
 }
 
+/**
+ * Inline (text-context) variant of the tokenizer.
+ *
+ * Differences from the flow variant:
+ * - No line continuation — a line ending anywhere inside the tag, quoted
+ *   attribute value, or body is `nok`. Inline HTML stays on one line.
+ * - `afterClose` returns `ok` immediately without consuming trailing chars,
+ *   so the surrounding paragraph picks up where the tag ended.
+ * - No type-6 tag exclusion (those aren't legal phrasing content anyway, but
+ *   we keep it narrow by not claiming them here either, to match the flow
+ *   variant's deference).
+ */
+function tokenizeHtmlLowercaseText(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
+  let tagName = '';
+  let depth = 0;
+  let closingTagName = '';
+  let isVoid = false;
+  let quoteChar: Code = null;
+
+  return start;
+
+  function start(code: Code): State | undefined {
+    if (code !== codes.lessThan) return nok(code);
+    effects.enter('htmlLowercase');
+    effects.enter('htmlLowercaseData');
+    effects.consume(code);
+    return tagNameFirst;
+  }
+
+  function tagNameFirst(code: Code): State | undefined {
+    if (code === null || code < codes.lowercaseA || code > codes.lowercaseZ) {
+      return nok(code);
+    }
+    tagName = String.fromCharCode(code);
+    effects.consume(code);
+    return tagNameRest;
+  }
+
+  function tagNameRest(code: Code): State | undefined {
+    if (
+      code !== null &&
+      ((code >= codes.lowercaseA && code <= codes.lowercaseZ) ||
+        (code >= codes.digit0 && code <= codes.digit9) ||
+        code === codes.dash ||
+        code === codes.underscore)
+    ) {
+      tagName += String.fromCharCode(code);
+      effects.consume(code);
+      return tagNameRest;
+    }
+
+    if (SPECIALIZED_TAGS.has(tagName)) return nok(code);
+    if (COMMONMARK_TYPE_6_TAGS.has(tagName)) return nok(code);
+
+    isVoid = VOID_ELEMENTS.has(tagName);
+    depth = 1;
+    return afterOpenTagName(code);
+  }
+
+  function afterOpenTagName(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.consume(code);
+      return afterOpenTagName;
+    }
+
+    if (code === codes.slash) {
+      effects.consume(code);
+      return selfCloseGt;
+    }
+
+    if (code === codes.greaterThan) {
+      effects.consume(code);
+      if (isVoid) return afterClose;
+      return body;
+    }
+
+    if (isAttrNameStart(code)) {
+      effects.consume(code);
+      return attrName;
+    }
+
+    return nok(code);
+  }
+
+  function attrName(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (isAttrNameChar(code)) {
+      effects.consume(code);
+      return attrName;
+    }
+
+    if (code === codes.equalsTo) {
+      effects.consume(code);
+      return afterEquals;
+    }
+
+    if (
+      code === codes.space ||
+      code === codes.horizontalTab ||
+      code === codes.greaterThan ||
+      code === codes.slash
+    ) {
+      return afterOpenTagName(code);
+    }
+
+    return nok(code);
+  }
+
+  function afterEquals(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (code === codes.space || code === codes.horizontalTab) {
+      effects.consume(code);
+      return afterEquals;
+    }
+
+    if (code === codes.quotationMark || code === codes.apostrophe) {
+      quoteChar = code;
+      effects.consume(code);
+      return inQuotedAttr;
+    }
+
+    // `{` is allowed. Valid JSX expressions are claimed by mdxComponent first;
+    // we only reach this branch when mdxComponent failed (e.g. unbalanced `{`),
+    // where `{` is a literal unquoted-value char per HTML5.
+    if (
+      code === codes.equalsTo ||
+      code === codes.lessThan ||
+      code === codes.greaterThan ||
+      code === codes.graveAccent
+    ) {
+      return nok(code);
+    }
+
+    effects.consume(code);
+    return unquotedAttrValue;
+  }
+
+  function inQuotedAttr(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (code === quoteChar) {
+      effects.consume(code);
+      quoteChar = null;
+      return afterOpenTagName;
+    }
+
+    effects.consume(code);
+    return inQuotedAttr;
+  }
+
+  function unquotedAttrValue(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (
+      code === codes.space ||
+      code === codes.horizontalTab ||
+      code === codes.greaterThan
+    ) {
+      return afterOpenTagName(code);
+    }
+
+    if (
+      code === codes.quotationMark ||
+      code === codes.apostrophe ||
+      code === codes.equalsTo ||
+      code === codes.lessThan ||
+      code === codes.graveAccent
+    ) {
+      return nok(code);
+    }
+
+    effects.consume(code);
+    return unquotedAttrValue;
+  }
+
+  function selfCloseGt(code: Code): State | undefined {
+    if (code === codes.greaterThan) {
+      effects.consume(code);
+      return afterClose;
+    }
+    return afterOpenTagName(code);
+  }
+
+  function body(code: Code): State | undefined {
+    // Inline HTML doesn't span lines.
+    if (code === null || markdownLineEnding(code)) return nok(code);
+
+    if (code === codes.lessThan) {
+      effects.consume(code);
+      return bodyLessThan;
+    }
+
+    effects.consume(code);
+    return body;
+  }
+
+  function bodyLessThan(code: Code): State | undefined {
+    if (code === codes.slash) {
+      effects.consume(code);
+      closingTagName = '';
+      return closingTagNameFirst;
+    }
+
+    if (code !== null && code >= codes.lowercaseA && code <= codes.lowercaseZ) {
+      closingTagName = String.fromCharCode(code);
+      effects.consume(code);
+      return nestedOpenTagName;
+    }
+
+    return body(code);
+  }
+
+  function nestedOpenTagName(code: Code): State | undefined {
+    if (
+      code !== null &&
+      ((code >= codes.lowercaseA && code <= codes.lowercaseZ) ||
+        (code >= codes.digit0 && code <= codes.digit9) ||
+        code === codes.dash ||
+        code === codes.underscore)
+    ) {
+      closingTagName += String.fromCharCode(code);
+      effects.consume(code);
+      return nestedOpenTagName;
+    }
+
+    if (
+      closingTagName === tagName &&
+      !VOID_ELEMENTS.has(closingTagName) &&
+      (code === codes.greaterThan ||
+        code === codes.slash ||
+        code === codes.space ||
+        code === codes.horizontalTab)
+    ) {
+      depth += 1;
+    }
+
+    return body(code);
+  }
+
+  function closingTagNameFirst(code: Code): State | undefined {
+    if (code !== null && code >= codes.lowercaseA && code <= codes.lowercaseZ) {
+      closingTagName = String.fromCharCode(code);
+      effects.consume(code);
+      return closingTagNameRest;
+    }
+    return body(code);
+  }
+
+  function closingTagNameRest(code: Code): State | undefined {
+    if (
+      code !== null &&
+      ((code >= codes.lowercaseA && code <= codes.lowercaseZ) ||
+        (code >= codes.digit0 && code <= codes.digit9) ||
+        code === codes.dash ||
+        code === codes.underscore)
+    ) {
+      closingTagName += String.fromCharCode(code);
+      effects.consume(code);
+      return closingTagNameRest;
+    }
+
+    if (closingTagName === tagName && code === codes.greaterThan) {
+      depth -= 1;
+      effects.consume(code);
+      if (depth === 0) return afterClose;
+      return body;
+    }
+
+    return body(code);
+  }
+
+  // Inline: exit immediately, leave trailing chars to the surrounding
+  // paragraph's text parser.
+  function afterClose(code: Code): State | undefined {
+    effects.exit('htmlLowercaseData');
+    effects.exit('htmlLowercase');
+    return ok(code);
+  }
+}
+
 function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
   // eslint-disable-next-line @typescript-eslint/no-this-alias
   const self = this;
@@ -532,6 +821,9 @@ export function htmlLowercase(): Extension {
   return {
     flow: {
       [codes.lessThan]: [htmlLowercaseConstruct],
+    },
+    text: {
+      [codes.lessThan]: [htmlLowercaseTextConstruct],
     },
   };
 }
