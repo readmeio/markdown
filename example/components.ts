@@ -66,6 +66,13 @@ export const DarkMode = () => {
   )
 }
 `,
+  Snake_case_component: `
+export const Snake_case_component = ({ children }) => {
+  return <div style={{ backgroundColor: 'peachpuff', padding: '1rem', borderRadius: '0.5rem' }}>{children}</div>;
+};
+
+<Snake_case_component>Snake case component</Snake_case_component>
+  `,
 };
 
 export default components;

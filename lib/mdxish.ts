@@ -5,6 +5,7 @@ import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
+import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
@@ -16,8 +17,6 @@ import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
-import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
-
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
@@ -26,6 +25,7 @@ import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
+import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -38,6 +38,7 @@ import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-c
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
+import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
@@ -60,11 +61,14 @@ import { gemojiFromMarkdown } from './mdast-util/gemoji';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
+import { mdxComponent } from './micromark/mdx-component';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -99,8 +103,9 @@ const defaultTransformers: PluggableList = [
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 3. Evaluate JSX expressions in attributes (unless safeMode)
- * 4. Replace snake_case component names with parser-safe placeholders
+ * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 4. Evaluate JSX expressions in attributes (unless safeMode)
+ * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -110,6 +115,8 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
+  result = closeSelfClosingHtmlTags(result);
+  result = normalizeCompactHeadings(result);
   result = safeMode ? result : preprocessJSXExpressions(result, jsxContext);
 
   return processSnakeCaseComponent(result, { knownComponents });
@@ -151,34 +158,31 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
+  const micromarkExts = [jsxTable(), magicBlock(), mdxComponent(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const fromMarkdownExts = [
+    jsxTableFromMarkdown(),
+    magicBlockFromMarkdown(),
+    mdxComponentFromMarkdown(),
+    gemojiFromMarkdown(),
+    legacyVariableFromMarkdown(),
+    emptyTaskListItemFromMarkdown(),
+    looseHtmlEntityFromMarkdown(),
+  ];
+
+  if (!safeMode) {
+    // Insert mdx expression (text-only, no flow) after gemoji at index 3
+    micromarkExts.splice(3, 0, mdxExprTextOnly);
+    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+  }
+
+  if (!safeMode) {
+    // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
+    micromarkExts.unshift(jsxComment());
+  }
+
   const processor = unified()
-    .data(
-      'micromarkExtensions',
-      safeMode
-        ? [jsxTable(), magicBlock(), gemoji(), legacyVariable(), looseHtmlEntity()]
-        : [jsxTable(), magicBlock(), gemoji(), mdxExprTextOnly, legacyVariable(), looseHtmlEntity()],
-    )
-    .data(
-      'fromMarkdownExtensions',
-      safeMode
-        ? [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ]
-        : [
-            jsxTableFromMarkdown(),
-            magicBlockFromMarkdown(),
-            gemojiFromMarkdown(),
-            mdxExpressionFromMarkdown(),
-            legacyVariableFromMarkdown(),
-            emptyTaskListItemFromMarkdown(),
-            looseHtmlEntityFromMarkdown(),
-          ],
-    )
+    .data('micromarkExtensions', micromarkExts)
+    .data('fromMarkdownExtensions', fromMarkdownExts)
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)

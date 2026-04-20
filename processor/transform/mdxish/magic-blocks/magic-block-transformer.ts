@@ -269,13 +269,13 @@ const parseTableCell = (text: string): MdastNode[] => {
     }
   });
 
-  if (tree.children.length > 1) {
-    return tree.children as MdastNode[];
-  }
+  const result = tree.children.length > 1
+    ? (tree.children as MdastNode[])
+    : tree.children.flatMap(n =>
+        n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+      );
 
-  return tree.children.flatMap(n =>
-    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
-  );
+  return result;
 };
 
 const parseBlock = (text: string): MdastNode[] => {
@@ -290,6 +290,7 @@ const parseBlock = (text: string): MdastNode[] => {
  */
 const apiHeaderTitleParser = unified()
   .data('micromarkExtensions', [
+    gemoji(),
     legacyVariable(),
     looseHtmlEntity(),
     {
@@ -303,7 +304,7 @@ const apiHeaderTitleParser = unified()
       },
     },
   ])
-  .data('fromMarkdownExtensions', [legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm);
 
@@ -515,7 +516,9 @@ function transformMagicBlock(
         return mapped;
       }, [] as string[][]);
 
-      const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
+      const tokenizeCell = compatibilityMode
+        ? textToBlock
+        : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],

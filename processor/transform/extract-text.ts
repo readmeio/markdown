@@ -7,8 +7,8 @@
  * @param node - The node to extract text from (can be MDAST Node or HAST-like structure)
  * @returns The concatenated text content
  */
-export const extractText = (node: { children?: unknown[]; type?: string; value?: unknown; alt?: unknown }): string => {
-  if ((node.type === 'text' || node.type === 'html') && typeof node.value === 'string') {
+export const extractText = (node: { alt?: unknown; children?: unknown[]; type?: string; value?: unknown }): string => {
+  if (typeof node.value === 'string') {
     return node.value;
   }
 
@@ -17,7 +17,7 @@ export const extractText = (node: { children?: unknown[]; type?: string; value?:
   if (node.type === 'image') {
     return typeof node.alt === 'string' && node.alt ? node.alt : '[image]';
   }
-  
+
   if (node.children && Array.isArray(node.children)) {
     return node.children
       .map(child => {

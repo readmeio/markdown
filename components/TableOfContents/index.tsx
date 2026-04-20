@@ -1,16 +1,191 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-function TableOfContents({ children, heading = 'Table of Contents' }: React.PropsWithChildren<{ heading?: string }>) {
+/**
+ * Build link map and decode the hash to get the id and weird chars
+ */
+function buildLinkMap(nav: HTMLElement) {
+  const map = new Map<string, HTMLAnchorElement[]>();
+
+  Array.from(nav.querySelectorAll<HTMLAnchorElement>('a')).forEach(link => {
+    const id = decodeURIComponent(link.hash.slice(1));
+    if (!id) return;
+    const list = map.get(id);
+    if (list) list.push(link);
+    else map.set(id, [link]);
+  });
+
+  return map;
+}
+
+const VISIBLE_RATIO = 0.4;
+/** Tolerance for subpixel rounding when checking if scrolled to the bottom. */
+const SCROLL_BOTTOM_TOLERANCE = 1;
+
+/**
+ * Walk up the DOM to find the nearest scrollable ancestor.
+ * Falls back to `window` when the page itself scrolls.
+ */
+function getScrollParent(el: HTMLElement): HTMLElement | Window {
+  let parent = el.parentElement;
+  while (parent) {
+    const { overflow, overflowY } = getComputedStyle(parent);
+    if (/(auto|scroll)/.test(overflow + overflowY) && parent.scrollHeight > parent.clientHeight) {
+      return parent;
+    }
+    parent = parent.parentElement;
+  }
+  return window;
+}
+
+/**
+ * Watches headings in the viewport and toggles `active` on the
+ * corresponding TOC links so the reader always knows where they are.
+ */
+function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
+  const [tocKey, setTocKey] = useState('');
+
+  // Re-check after every render so we detect when children change
+  // (e.g. after page navigation). Only triggers a re-render when the
+  // set of TOC link hrefs actually differs.
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const key = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a'))
+      .map(a => a.hash)
+      .filter(Boolean)
+      .join('\0');
+    setTocKey(key);
+  });
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav || typeof IntersectionObserver === 'undefined' || !tocKey) return undefined;
+
+    const linkMap = buildLinkMap(nav);
+    if (linkMap.size === 0) return undefined;
+
+    const headings = [...linkMap.keys()]
+      .map(id => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+    if (headings.length === 0) return undefined;
+
+    let activeId: string | null = null;
+    let clickLocked = false;
+    const visible = new Set<string>();
+    const scrollParent = getScrollParent(headings[0]);
+
+    const isAtBottom = () => {
+      if (scrollParent instanceof Window) {
+        return document.documentElement.scrollHeight > window.innerHeight
+          && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+      }
+      return scrollParent.scrollHeight > scrollParent.clientHeight
+        && scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
+    };
+
+    const activate = (id: string | null) => {
+      if (id === activeId) return;
+      if (activeId) linkMap.get(activeId)?.forEach(a => a.classList.remove('active'));
+      activeId = id;
+
+      // set active states + border pos/size
+      if (id) {
+        const links = linkMap.get(id);
+        links?.forEach(a => a.classList.add('active'));
+
+        const link = links?.[0];
+        if (link) {
+          const navRect = nav.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          nav.style.setProperty('--ToC-border-active-height', `${linkRect.height}px`);
+          nav.style.setProperty('--ToC-border-active-top', `${linkRect.top - navRect.top}px`);
+        }
+      }
+    };
+
+    const updateActive = () => {
+      if (clickLocked) return;
+
+      if (isAtBottom()) {
+        activate(headings[headings.length - 1].id);
+        return;
+      }
+
+      const topmost = headings.find(el => visible.has(el.id));
+      if (topmost) activate(topmost.id);
+    };
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        });
+        updateActive();
+      },
+      { rootMargin: `0px 0px -${(1 - VISIBLE_RATIO) * 100}% 0px`, threshold: 0 },
+    );
+
+    // Check on scroll so bottom-of-page detection works even when
+    // no headings are crossing the intersection boundary.
+    const scrollTarget = scrollParent instanceof Window ? window : scrollParent;
+    const onScroll = () => { updateActive(); };
+
+    // Click a ToC link → immediately activate it, suppress the observer
+    // until the smooth scroll finishes, then hand control back.
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target instanceof Element)) return;
+      const anchor = e.target.closest('a');
+      if (!(anchor instanceof HTMLAnchorElement) || !anchor.hash) return;
+      const id = decodeURIComponent(anchor.hash.slice(1));
+      if (!linkMap.has(id)) return;
+
+      activate(id);
+      clickLocked = true;
+
+      let unlockTimer: number | null = null;
+      const unlock = () => {
+        clickLocked = false;
+        scrollTarget.removeEventListener('scrollend', unlock);
+        window.removeEventListener('hashchange', unlock);
+        if (unlockTimer !== null) {
+          window.clearTimeout(unlockTimer);
+          unlockTimer = null;
+        }
+      };
+      scrollTarget.addEventListener('scrollend', unlock, { once: true });
+      window.addEventListener('hashchange', unlock, { once: true });
+      // Fallback in case scrollend and hashchange don't fire
+      unlockTimer = window.setTimeout(unlock, 500);
+    };
+
+    headings.forEach(el => { observer.observe(el); });
+    scrollTarget.addEventListener('scroll', onScroll, { passive: true });
+    nav.addEventListener('click', onClick);
+
+    // Set initial active state for the first heading visible in the viewport,
+    // falling back to the first heading if none is in the observation zone yet.
+    const initialHeading = headings.find(el => {
+      const rect = el.getBoundingClientRect();
+      return rect.top >= 0 && rect.top < window.innerHeight * VISIBLE_RATIO;
+    }) || headings[0];
+    activate(initialHeading.id);
+
+    return () => {
+      observer.disconnect();
+      scrollTarget.removeEventListener('scroll', onScroll);
+      nav.removeEventListener('click', onClick);
+    };
+  }, [navRef, tocKey]);
+}
+
+function TableOfContents({ children }: React.PropsWithChildren) {
+  const navRef = useRef<HTMLElement>(null);
+  useScrollHighlight(navRef);
+
   return (
-    <nav aria-label="Table of contents" role="navigation">
+    <nav ref={navRef} aria-label="Table of contents" className="rm-ToC">
       <ul className="toc-list">
-        <li>
-          {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-          <a className="tocHeader" href="#">
-            <i className="icon icon-text-align-left"></i>
-            {heading}
-          </a>
-        </li>
         <li className="toc-children">{children}</li>
       </ul>
     </nav>
