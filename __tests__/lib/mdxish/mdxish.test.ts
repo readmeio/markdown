@@ -185,11 +185,11 @@ describe('mdxish safeMode', () => {
       expect(text).not.toContain('50');
     });
 
-    it('should NOT evaluate attribute expressions', () => {
-      const md = '<a href={baseUrl}>Link</a>';
-      const tree = mdxish(md, { safeMode: true, jsxContext: { baseUrl: 'https://example.com' } });
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor?.properties?.href).not.toBe('https://example.com');
+    it('should NOT evaluate attribute expressions — raw `{...}` text is preserved', () => {
+      const md = '<Callout value={"hello".toUpperCase()} />';
+      const tree = mdxish(md, { safeMode: true });
+      const callout = findElementByTagName(tree, 'Callout');
+      expect(callout?.properties?.value).toBe('{"hello".toUpperCase()}');
     });
 
     it('should still parse user variables', () => {
