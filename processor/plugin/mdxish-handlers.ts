@@ -31,21 +31,13 @@ function decodeHtmlEntities(value: string) {
     .replace(/&amp;/g, '&');
 }
 
-/**
- * rehypeRaw's passThrough clones our mdx-jsx node with structuredClone, which
- * rejects functions and other non-serializable values. Attribute expressions
- * that evaluate to such values (`onClick={() => ...}`) would crash the pipeline,
- * so we check the result up front and fall back to the raw expression source.
- */
 function isStructuredCloneable(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
-  const t = typeof value;
-  if (t === 'string' || t === 'number' || t === 'boolean') return true;
-  if (t !== 'object') return false;
-  if (Array.isArray(value)) return value.every(isStructuredCloneable);
-  const proto = Object.getPrototypeOf(value as object);
-  if (proto !== Object.prototype && proto !== null) return false;
-  return Object.values(value as Record<string, unknown>).every(isStructuredCloneable);
+  try {
+    structuredClone(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Convert MDX JSX elements to a custom mdx-jsx hast node that bypasses rehypeRaw's
@@ -69,9 +61,16 @@ const mdxJsxElementHandler: Handler = (state, node) => {
       } catch {
         evaluated = expressionSource;
       }
+
+      // rehypeRaw's passThrough clones our mdx-jsx node with structuredClone, which
+      // rejects functions and other non-serializable values. Attribute expressions
+      // that evaluate to such values (`onClick={() => ...}`) would crash the pipeline,
+      // so if we have a non-serializable value, we fall back to the raw expression source
+      // and not support it for now.
       if (!isStructuredCloneable(evaluated)) {
         evaluated = expressionSource;
       }
+
       properties[attribute.name] = evaluated;
     }
   });
