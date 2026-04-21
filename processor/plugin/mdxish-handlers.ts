@@ -6,15 +6,6 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 import { NodeTypes } from '../../enums';
 import { evaluate } from '../utils';
 
-/**
- * Custom hast node type emitted for MDX JSX components. Its entire subtree is
- * passed through rehypeRaw untouched (see `passThrough` in lib/mdxish.ts),
- * which keeps non-primitive attribute values (objects, arrays, numbers) as real
- * JS values instead of forcing them through parse5's string-only HTML round-trip.
- * A downstream plugin rewrites `mdx-jsx` back to `element` before rehype-react.
- */
-export const MDX_JSX_NODE_TYPE = 'mdx-jsx';
-
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
   type: 'text',
@@ -76,7 +67,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
   });
 
   const jsxNode: MdxJsx = {
-    type: MDX_JSX_NODE_TYPE,
+    type: 'mdx-jsx',
     tagName: name || '',
     properties,
     children: state.all(node),
