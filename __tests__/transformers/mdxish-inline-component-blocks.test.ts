@@ -6,20 +6,18 @@ import { unified } from 'unified';
 
 import { describe, expect, it } from 'vitest';
 
-import { htmlLowercaseFromMarkdown } from '../../lib/mdast-util/html-lowercase';
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
-import { htmlLowercase } from '../../lib/micromark/html-lowercase';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks from '../../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishInlineComponentBlocks from '../../processor/transform/mdxish/mdxish-inline-component-blocks';
 import { collectNodes } from '../helpers';
 
-// Mirrors the relevant slice of the mdxish pipeline: tokenizers + both
+// Mirrors the relevant slice of the mdxish pipeline: tokenizer + both
 // component-block transformers. Keeps tests honest about extension ordering.
 const parse = (md: string): Root => {
   const processor = unified()
-    .data('micromarkExtensions', [mdxComponent(), htmlLowercase()])
-    .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), htmlLowercaseFromMarkdown()])
+    .data('micromarkExtensions', [mdxComponent()])
+    .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
     .use(mdxishComponentBlocks)
     .use(mdxishInlineComponentBlocks);
