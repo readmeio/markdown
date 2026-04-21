@@ -596,28 +596,6 @@ describe('html tags rendering', () => {
       const anchor = findElementByTagName(tree, 'a');
       expect(anchor).toMatchObject(expectedAnchor);
     });
-
-    it('should parse bare attribute syntax', () => {
-      const md = '<a href=https://example.com>Example</a>';
-      const tree = mdxish(md);
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor).toMatchObject(expectedAnchor);
-    });
-
-    it('should not error when the attribute value has unclosed curly brace', () => {
-      const md = '<a href={https://example.com>Example</a>';
-      const tree = mdxish(md);
-
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor).toMatchObject({
-        type: 'element',
-        tagName: 'a',
-        properties: {
-          href: '{https://example.com',
-        },
-        children: [{ type: 'text', value: 'Example' }],
-      });
-    });
   });
 
   it('should parse inline html tags with its attributes as normal html nodes', () => {

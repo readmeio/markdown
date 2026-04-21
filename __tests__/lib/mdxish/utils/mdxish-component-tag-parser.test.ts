@@ -1,5 +1,6 @@
 import type { MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 
+import { mdxish } from '../../../../lib';
 import { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { parseMdxishWithSource } from '../../../helpers';
 
@@ -434,15 +435,21 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
   });
 
   it('should leave lowercase tags without any JSX expression as html nodes', () => {
-    // Single-line inline tags at block level flow through the paragraph +
-    // inline path, so they end up paragraph-wrapped with the html node as
-    // phrasing content. The important invariant is that the `<a>` stays an
+    // The important invariant is that the `<a>` stays an
     // html node rather than being promoted to an mdxJsx element.
     const { tree } = parseMdxishWithSource('<a href="https://example.com">Example</a>');
-    expect(tree.children[0]).toMatchObject({
-      type: 'paragraph',
-      children: [{ type: 'html', value: '<a href="https://example.com">Example</a>' }],
-    });
     expect(tree.children[0]).not.toMatchObject({ type: 'mdxJsxFlowElement' });
+
+    const hast = mdxish('<a href="https://example.com">Example</a>');
+    expect(hast.children[0]).toMatchObject({
+      type: 'element',
+      tagName: 'p',
+      children: [{
+        type: 'element',
+        tagName: 'a',
+        properties: { href: 'https://example.com' },
+        children: [{ type: 'text', value: 'Example' }]
+      }],
+    });
   });
 });

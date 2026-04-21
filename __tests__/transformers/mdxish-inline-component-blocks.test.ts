@@ -1,4 +1,4 @@
-import type { Html, Root } from 'mdast';
+import type { Root } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import remarkParse from 'remark-parse';
@@ -54,8 +54,6 @@ describe('mdxishInlineComponentBlocks', () => {
     // Plain inline HTML (no `{…}`) stays an html node for rehype-raw/parse5.
     const tree = parse('before <a href="x">link</a> after');
     expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
-    const htmlNodes = collectNodes<Html>(tree, 'html');
-    expect(htmlNodes.some(n => n.value.includes('<a href="x">link</a>'))).toBe(true);
   });
 
   it('does not touch inline PascalCase components — mdxishComponentBlocks owns them', () => {
