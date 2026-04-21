@@ -500,4 +500,23 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
     });
   });
+
+  describe('inline PascalCase components', () => {
+    it('promotes inline PascalCase to mdxJsxFlowElement (paragraph-parented)', () => {
+      // Contract with mdxishInlineComponentBlocks: PascalCase is flow-level
+      // even when authored inline, so this transformer owns the promotion
+      // and the inline pass (lowercase-only) must not rewrite it.
+      const markdown = 'before <MyComponent foo="bar" /> after';
+      const tree = parseWithPlugin(markdown);
+
+      expect(collectNodes(tree, 'mdxJsxTextElement')).toHaveLength(0);
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'MyComponent',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'foo', value: 'bar' }],
+      });
+    });
+  });
 });
