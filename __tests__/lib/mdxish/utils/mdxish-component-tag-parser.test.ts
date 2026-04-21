@@ -434,8 +434,15 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
   });
 
   it('should leave lowercase tags without any JSX expression as html nodes', () => {
+    // Single-line inline tags at block level flow through the paragraph +
+    // inline path, so they end up paragraph-wrapped with the html node as
+    // phrasing content. The important invariant is that the `<a>` stays an
+    // html node rather than being promoted to an mdxJsx element.
     const { tree } = parseMdxishWithSource('<a href="https://example.com">Example</a>');
-    expect(tree.children[0]).toMatchObject({ type: 'html' });
+    expect(tree.children[0]).toMatchObject({
+      type: 'paragraph',
+      children: [{ type: 'html', value: '<a href="https://example.com">Example</a>' }],
+    });
     expect(tree.children[0]).not.toMatchObject({ type: 'mdxJsxFlowElement' });
   });
 });

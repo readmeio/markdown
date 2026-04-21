@@ -133,6 +133,12 @@ function createTokenize(mode: 'flow' | 'text') {
     let closingTagName = '';
     let isVoid = false;
     let quoteChar: Code = null;
+    // Flow mode only claims tags that actually span multiple lines (open tag
+    // or body continuation). Single-line tags fall through to CommonMark's
+    // paragraph path and are picked up by the text variant during inline
+    // parsing, which puts them inside a paragraph — semantically correct for
+    // inline / phrasing tags at block level.
+    let sawLineEnd = false;
 
     // In flow mode, line endings inside the open tag transition to the
     // continuation check. In text mode, they abort.
@@ -297,6 +303,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function openTagContinuationNonLazy(code: Code): State | undefined {
+      sawLineEnd = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);
@@ -390,6 +397,10 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('htmlLowercase');
         return ok(code);
       }
+      // Flow only claims multi-line tags. Single-line tags nok here so they
+      // fall through to CommonMark's paragraph path, where the text variant
+      // will wrap them in a paragraph like any other inline content.
+      if (!sawLineEnd) return nok(code);
       if (code === null || markdownLineEnding(code)) {
         effects.exit('htmlLowercaseData');
         effects.exit('htmlLowercase');
@@ -412,6 +423,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function bodyContinuationNonLazy(code: Code): State | undefined {
+      sawLineEnd = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);
