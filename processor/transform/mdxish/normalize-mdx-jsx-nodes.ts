@@ -4,7 +4,6 @@ import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import { STANDARD_HTML_TAGS } from '../../../utils/common-html-words';
-import { MDX_JSX_NODE_TYPE } from '../../plugin/mdxish-handlers';
 
 // parse5 (and the HTML5 tree-construction spec) rewrites a few legacy tag names
 // during parsing. Since rehypeRaw's passThrough skips parse5 entirely for our
@@ -33,7 +32,7 @@ function normalizeTagName(tagName: string): string {
  * PascalCase custom component names are left alone for `rehypeMdxishComponents`.
  */
 const normalizeMdxJsxNodes: Plugin<[], Root> = () => tree => {
-  visit(tree, MDX_JSX_NODE_TYPE, (node, index, parent) => {
+  visit(tree, 'mdx-jsx', (node, index, parent) => {
     if (!parent || index === null || index === undefined) return;
     const element: Element = {
       type: 'element',
