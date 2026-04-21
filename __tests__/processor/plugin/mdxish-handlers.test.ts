@@ -3,7 +3,7 @@ import type { MdxJsxAttribute, MdxJsxExpressionAttribute } from 'mdast-util-mdx-
 import type { State } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../../enums';
-import { MDX_JSX_NODE_TYPE, mdxComponentHandlers } from '../../../processor/plugin/mdxish-handlers';
+import { mdxComponentHandlers } from '../../../processor/plugin/mdxish-handlers';
 
 type Attr = MdxJsxAttribute | MdxJsxExpressionAttribute;
 
@@ -27,7 +27,7 @@ const runJsx = (attributes: Attr[], name = 'C'): MdxJsx =>
 describe('mdxJsxElementHandler', () => {
   it('emits an mdx-jsx node with tagName and string properties', () => {
     const node = runJsx([{ type: 'mdxJsxAttribute', name: 'foo', value: 'bar' }], 'MyComp');
-    expect(node.type).toBe(MDX_JSX_NODE_TYPE);
+    expect(node.type).toBe('mdx-jsx');
     expect(node.tagName).toBe('MyComp');
     expect(node.properties).toStrictEqual({ foo: 'bar' });
   });
