@@ -67,13 +67,36 @@ describe('html-lowercase tokenizer', () => {
 
   describe('does not break surrounding markdown', () => {
     it('inline tag inside a paragraph preserves leading / trailing text', () => {
-      const tree = parseMdxish('Start <a href=https://example.com>here</a> end.');
+      const md = 'Start <a href=https://example.com>here</a> end.';
+      const tree = parseMdxish(md);
 
-      const paragraphs = collectNodes(tree, 'paragraph');
-      expect(paragraphs).toHaveLength(1);
+      expect(tree.children).toMatchObject([{
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Start ' },
+          { type: 'html', value: '<a href=https://example.com>here</a>' },
+          { type: 'text', value: ' end.' },
+        ],
+      }]);
+    });
 
-      const htmlNodes = collectNodes(paragraphs[0], 'html');
-      expect(htmlNodes.some(n => (n as { value: string }).value.includes('<a href=https://example.com>'))).toBe(true);
+    it('tag that is only 1 line below a sentence should still be treated as inline', () => {
+      const md = `Start
+<a href="https://example.com">here</a>
+end.
+      `;
+      const tree = parseMdxish(md);
+
+      // Soft breaks serialize as `\n` inside the adjacent text nodes — that's
+      // native mdast behavior, rendered as a space in the final HTML output.
+      expect(tree.children).toMatchObject([{
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Start\n' },
+          { type: 'html', value: '<a href="https://example.com">here</a>' },
+          { type: 'text', value: '\nend.' },
+        ],
+      }]);
     });
 
     it('inline tag adjacent to markdown emphasis', () => {

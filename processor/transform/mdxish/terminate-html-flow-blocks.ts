@@ -45,7 +45,13 @@ export function terminateHtmlFlowBlocks(content: string) {
 
     const isCurrentLineHtml = isLineHtml(lines[i]);
     const isNextLineHtml = isLineHtml(lines[i + 1]);
-    if (isCurrentLineHtml && !isNextLineHtml) {
+    // Skip when the previous line is paragraph prose (starts with a letter)
+    // — the current HTML line is inline within an ongoing paragraph, not a
+    // standalone block. Injecting a blank here would wrongly split the
+    // paragraph
+    const prevLine = i > 0 ? lines[i - 1] : '';
+    const isParagraphContinuation = /^[A-Za-z]/.test(prevLine);
+    if (isCurrentLineHtml && !isNextLineHtml && !isParagraphContinuation) {
       result.push('');
     }
   }

@@ -126,6 +126,8 @@ function createTokenize(mode: 'flow' | 'text') {
   const isFlow = mode === 'flow';
 
   return function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
     let tagName = '';
     let depth = 0;
     let closingTagName = '';
@@ -146,6 +148,11 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function start(code: Code): State | undefined {
       if (code !== codes.lessThan) return nok(code);
+      // Flow mode: refuse when interrupting a paragraph. Matches CommonMark's
+      // html-flow type-7 rule — inline-style tags on their own line inside a
+      // soft-break paragraph stay inline rather than breaking it into two.
+      // The text variant picks them up during inline parsing.
+      if (isFlow && self.interrupt) return nok(code);
       effects.enter('htmlLowercase');
       effects.enter('htmlLowercaseData');
       effects.consume(code);
