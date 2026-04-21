@@ -76,9 +76,9 @@ const run = (string: string, _opts: RunOpts = {}) => {
       </Contexts>
     ),
     toc,
-    Toc: (props: { heading?: string }) =>
+    Toc: () =>
       Toc ? (
-        <Components.TableOfContents heading={props.heading}>
+        <Components.TableOfContents>
           <Toc />
         </Components.TableOfContents>
       ) : null,

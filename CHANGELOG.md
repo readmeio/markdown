@@ -1,6 +1,130 @@
 Changelog
 ===
 
+## Version 14.0.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** magic blocks), the parser had no way to recognize `{/* ... */}`
+as a single expression
+
+> [!NOTE]
+> Technically, introducing the flow construct of the `mdxExpression`
+would partly fix this issue but we cannot do this because it would break
+magic block parsing. magic blocks usually contain `{ \n \n }` JSON
+payloads, and the flow construct would eat them before the magic block
+tokenizer got a chance to run.
+
+created a dedicated `jsxComment` micromark tokenizer for JSX comments.
+enabled for all branches instead of being gated by `newEditorTypes`.
+
+> [!NOTE]
+In the future as a follow up, we can work in integrating this new
+tokenizer and fully removing the `removeJSXComments` preprocessing step.
+similar to what we do in the `stripComments`
+
+## 🧪 QA tips
+
+Try pasting this in the editor (both rich and raw):
+```
+{/* Dropbox hosted. What was it?
+
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://paper-attachments.dropboxusercontent.com/s_924615C008BE616D2ABE30441190A9401D739971D9AD94E8B5B46A426C5F05E8_1683123013834_Dev+Dash+-+hero+docs+shot.png",
+        null,
+        "The My Developers page in your ReadMe project dashboard"
+      ],
+      "align": "center",
+      "border": true,
+      "caption": "The My Developers page in your ReadMe project dashboard"
+    }
+  ]
+}
+[/block]
+
+*/}
+```
+It should be treated as one big comment block instead of a rendered
+image.
+
+## 📸 Screenshot or Loom
+
+
+https://github.com/user-attachments/assets/9b619f54-3d6e-456f-83be-27d4076a7a3a
+
+### ✨ New & Improved
+
+* **mdxish:** add micromark tokenizer for MDX component parsing ([#1426](https://github.com/readmeio/markdown/issues/1426)) ([a77707d](https://github.com/readmeio/markdown/commit/a77707dfd74495088a742773ec57203c0442a3f6))
+* move numbered lists for 1 -> a -> i ([#1438](https://github.com/readmeio/markdown/issues/1438)) ([7e614d4](https://github.com/readmeio/markdown/commit/7e614d46d0c0b0889d84e9c9c1267baa728ed193))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** properly parse JSX comments in editor deserialization ([#1419](https://github.com/readmeio/markdown/issues/1419)) ([95e1969](https://github.com/readmeio/markdown/commit/95e1969ecc1d4b5aae99cfaab44bdbc8a084151a))
+
+## Version 13.8.5
+### 🛠 Fixes & Updates
+
+* actually fix toc links with query params ([#1436](https://github.com/readmeio/markdown/issues/1436)) ([b59ce5f](https://github.com/readmeio/markdown/commit/b59ce5fb0cf928c6d5ee2088f690dbe3e4d2d597))
+* **mdxish:** fix FA Emojis in Callouts ([#1421](https://github.com/readmeio/markdown/issues/1421)) ([f7caa3e](https://github.com/readmeio/markdown/commit/f7caa3e51fca387f056abb1062e091efbfa8620e))
+* **mdxish:** preserve blank lines in JSX table parsing to fix roundtrip corruption ([#1430](https://github.com/readmeio/markdown/issues/1430)) ([9fa040c](https://github.com/readmeio/markdown/commit/9fa040c120be5687b48a79776959e2659a556708)), closes [#1371](https://github.com/readmeio/markdown/issues/1371)
+* proper spacing in empty callouts ([#1433](https://github.com/readmeio/markdown/issues/1433)) ([97b8a41](https://github.com/readmeio/markdown/commit/97b8a41ab2b0aa85007f78ce6e41e52ae42c9c4c))
+* scope link color inheritance to headings ([#1432](https://github.com/readmeio/markdown/issues/1432)) ([cd78a62](https://github.com/readmeio/markdown/commit/cd78a625dda6d56269c5ac096a8be08b463415d9))
+
+## Version 13.8.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** Add compact heading preprocessor ([#1428](https://github.com/readmeio/markdown/issues/1428)) ([f20d1d0](https://github.com/readmeio/markdown/commit/f20d1d04ffed3d1e8d42fb6cc920ba139031b9f2))
+* toc refresh on load ([#1435](https://github.com/readmeio/markdown/issues/1435)) ([b850b5a](https://github.com/readmeio/markdown/commit/b850b5a8064cda0d462c32493d467917d79ca230))
+
+## Version 13.8.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** fix magic block table parsing and variable handling in editor ([#1420](https://github.com/readmeio/markdown/issues/1420)) ([20f207a](https://github.com/readmeio/markdown/commit/20f207a16f65b3b649c8d5dc55f26634cbdafdaa))
+* fix nested callout styling being overriden ([#1427](https://github.com/readmeio/markdown/issues/1427)) ([308d051](https://github.com/readmeio/markdown/commit/308d051054f12732949d4a03ae7b906f5ab5383b))
+* id not appending to url on click ([#1431](https://github.com/readmeio/markdown/issues/1431)) ([62651cd](https://github.com/readmeio/markdown/commit/62651cddce9784f8cc8f9e55445a9a83bbf12cf6))
+
+## Version 13.8.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle user vars on standalone lines in tables ([#1423](https://github.com/readmeio/markdown/issues/1423)) ([96dbf84](https://github.com/readmeio/markdown/commit/96dbf84c4e7d825f96b7a0d5ce9389393e4a6804)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+* toc readme integration errors ([#1425](https://github.com/readmeio/markdown/issues/1425)) ([0e769e5](https://github.com/readmeio/markdown/commit/0e769e578b5eecf5f342d2ae79ac151dfc6bb3f9))
+
+## Version 13.8.1
+### 🛠 Fixes & Updates
+
+* pin npm to 22.22.1 ([#1424](https://github.com/readmeio/markdown/issues/1424)) ([ebf47bd](https://github.com/readmeio/markdown/commit/ebf47bd3e9fbd5894bf2017e860fbe1cbe521599))
+* toc feedback from pr ([#1422](https://github.com/readmeio/markdown/issues/1422)) ([2e2a1e7](https://github.com/readmeio/markdown/commit/2e2a1e785a942f91d87c6c0969b5bfe29e315e9a))
+
+## Version 13.8.0
+### ✨ New & Improved
+
+* add animated toc ([#1392](https://github.com/readmeio/markdown/issues/1392)) ([9789929](https://github.com/readmeio/markdown/commit/9789929125072d98aa1b15d5c5b2c9d346f5d70c))
+
+## Version 13.7.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** add gemoji support to api-header title parser ([#1416](https://github.com/readmeio/markdown/issues/1416)) ([2cc0e00](https://github.com/readmeio/markdown/commit/2cc0e00b32a1bde006fe178a7bb9a1a176f8e1bf))
+* **mdxish:** allow rendering consecutive emojis ([#1390](https://github.com/readmeio/markdown/issues/1390)) ([8e60477](https://github.com/readmeio/markdown/commit/8e60477fc78eb3f640291039e0c9e0d55e2f961e))
+* **mdxish:** correctly deserialize figure html and serialize non basic JSX tables ([#1409](https://github.com/readmeio/markdown/issues/1409)) ([9b923eb](https://github.com/readmeio/markdown/commit/9b923eb433ab549c23af719cb6760a841131f9be))
+* guard against empty Glossary tag causing crash ([#1408](https://github.com/readmeio/markdown/issues/1408)) ([930161d](https://github.com/readmeio/markdown/commit/930161dfbb106d2bfa9725926b5a395eef5f2604))
+* **mdxish:** self closing html tags enclosing the content after it ([#1380](https://github.com/readmeio/markdown/issues/1380)) ([f3e9cd3](https://github.com/readmeio/markdown/commit/f3e9cd3f2f7a34a093f0ba63cb6b59cec201cf04))
+
+## Version 13.7.3
+### 🛠 Fixes & Updates
+
+* **#300:** apply Tailwind classes after loop ([#1412](https://github.com/readmeio/markdown/issues/1412)) ([4178977](https://github.com/readmeio/markdown/commit/41789773813e6534064451c579b03a4317091d54)), closes [#300](https://github.com/readmeio/markdown/issues/300) [#1404](https://github.com/readmeio/markdown/issues/1404)
+* **mdxish:** don't parse markdown in api-header magic block titles ([#1405](https://github.com/readmeio/markdown/issues/1405)) ([cee8bc3](https://github.com/readmeio/markdown/commit/cee8bc3cf00bba783f88fe5347552cdf7861dde1))
+* mermaid racing conditions when multiple diagrams are present ([#1385](https://github.com/readmeio/markdown/issues/1385)) ([81f2ad6](https://github.com/readmeio/markdown/commit/81f2ad61f55b54bc8fa0e98a5769f13c261fe3eb))
+
+## Version 13.7.2
+### 🛠 Fixes & Updates
+
+* **TailwindStyle:** detect nested TailwindRoot elements on DOM updates ([#1404](https://github.com/readmeio/markdown/issues/1404)) ([8881be8](https://github.com/readmeio/markdown/commit/8881be81971a87fdf42c443852f77d4371c387a9))
+* **mdxish:** move jsx table serialization from MdxishEditor into engine ([#1402](https://github.com/readmeio/markdown/issues/1402)) ([0f527ac](https://github.com/readmeio/markdown/commit/0f527acf12fd9c4322681944ed7cb505c0b72773))
+
 ## Version 13.7.1
 ### 🛠 Fixes & Updates
 

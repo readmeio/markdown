@@ -9,11 +9,12 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
+import { gemojiFromMarkdown } from '../../../lib/mdast-util/gemoji';
+import { gemoji } from '../../../lib/micromark/gemoji';
 import { getAttrs, isMDXElement } from '../../utils';
 import calloutTransformer from '../callouts';
 import codeTabsTransformer from '../code-tabs';
 import { extractText } from '../extract-text';
-import gemojiTransformer from '../gemoji+';
 
 import normalizeEmphasisAST from './normalize-malformed-md-syntax';
 
@@ -30,10 +31,12 @@ const tableTypes = {
 };
 
 const tableNodeProcessor = unified()
+  .data('micromarkExtensions', [gemoji()])
+  .data('fromMarkdownExtensions', [gemojiFromMarkdown()])
   .use(remarkParse)
   .use(remarkMdx)
   .use(normalizeEmphasisAST)
-  .use([[calloutTransformer, { isMdxish: true }], gemojiTransformer, codeTabsTransformer])
+  .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
   .use(remarkGfm);
 
 /**
@@ -222,6 +225,24 @@ const mdxishTables = (): Transform => tree => {
 
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
+
+      // since we use a subparser in `tableNodeProcessor` to parse `node.value`,
+      // positions are relative to that substring. shifting them by the base
+      // offset and line number makes them valid in the outer source coordinate space.
+      // otherwise, consumers who directly slice based on position would read and grab the
+      // wrong content
+      const baseOffset = node.position?.start?.offset ?? 0;
+      const baseLine = (node.position?.start?.line ?? 1) - 1;
+      visit(parsed as Node, child => {
+        if (child.position?.start) {
+          child.position.start.offset = (child.position.start.offset ?? 0) + baseOffset;
+          child.position.start.line += baseLine;
+        }
+        if (child.position?.end) {
+          child.position.end.offset = (child.position.end.offset ?? 0) + baseOffset;
+          child.position.end.line += baseLine;
+        }
+      });
 
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name === 'Table') {

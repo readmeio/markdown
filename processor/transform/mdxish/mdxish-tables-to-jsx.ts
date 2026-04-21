@@ -1,9 +1,13 @@
-import type { Literal, Node, Paragraph, Table, TableCell } from 'mdast';
+import type { Literal, Node, Table, TableCell } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { phrasing } from 'mdast-util-phrasing';
-import { visit, EXIT } from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
+
+import { NodeTypes } from '../../../enums';
+
+const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
 const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
   if (!align || align === 'left') return null;
@@ -31,108 +35,118 @@ const isLiteral = (node: Node): node is Literal => 'value' in node;
  *   in later cells is still detected.
  */
 const mdxishTablesToJsx = (): Transform => tree => {
-  visit(tree, (node: Node) => ['table', 'tableau'].includes(node.type), (table: Table, index, parent) => {
-    let hasFlowContent = false;
+  visit(
+    tree,
+    (node: Node) => ['table', 'tableau'].includes(node.type),
+    (table: Table, index, parent) => {
+      let hasFlowContent = false;
 
-    visit(table, isTableCell, (cell: TableCell) => {
-      if (cell.children.length === 0) return;
+      visit(table, isTableCell, (cell: TableCell) => {
+        if (hasFlowContent || cell.children.length === 0) return;
 
-      const content =
-        cell.children.length === 1 && cell.children[0].type === 'paragraph'
-          ? (cell.children[0] as unknown as Paragraph).children[0]
-          : cell.children[0];
+        visit(cell, 'break', (_, breakIndex, breakParent) => {
+          breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
+        });
 
-      if (!content) return;
+        // Check if any child is "flow" content (block-level) that requires JSX <Table>
+        // serialization instead of GFM. `phrasing()` from mdast-util-phrasing returns
+        // true for inline node types (text, emphasis, strong, link, etc.) which are
+        // safe to keep in GFM cells.
+        const hasFlowChild = (cell.children as Node[]).some(child => {
+          if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
+          if (child.type === NodeTypes.variable) return false;
+          if (phrasing(child as Parameters<typeof phrasing>[0])) return false;
+          if (child.type === 'html') {
+            return SELF_CLOSING_JSX_REGEX.test((child as Literal).value);
+          }
 
-      visit(cell, 'break', (_, breakIndex, breakParent) => {
-        breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
-      });
+          return true;
+        });
 
-      if (!(phrasing(content) || content.type === 'plain') && content.type !== 'escape') {
-        if (content.type === 'html') return;
-
-        hasFlowContent = true;
-        return EXIT;
-      }
-
-      visit(cell, isLiteral, (node: Literal) => {
-        if (node.value.match(/\n/)) {
+        if (hasFlowChild) {
           hasFlowContent = true;
-          return EXIT;
+        }
+
+        if (!hasFlowContent) {
+          visit(cell, isLiteral, (node: Literal) => {
+            if (node.value.match(/\n/)) {
+              hasFlowContent = true;
+            }
+          });
         }
       });
-    });
 
-    if (!hasFlowContent) {
-      table.type = 'table';
-      return;
-    }
+      if (!hasFlowContent) {
+        table.type = 'table';
+        return;
+      }
 
-    const styles = table.align.map(alignToStyle);
+      const styles = table.align.map(alignToStyle);
 
-    const head: MdxJsxFlowElement = {
-      attributes: [],
-      type: 'mdxJsxFlowElement',
-      name: 'thead',
-      children: [
+      const head: MdxJsxFlowElement = {
+        attributes: [],
+        type: 'mdxJsxFlowElement',
+        name: 'thead',
+        children: [
+          {
+            attributes: [],
+            type: 'mdxJsxFlowElement',
+            name: 'tr',
+            children: table.children[0].children.map((cell, cellIndex) => {
+              return {
+                attributes: [],
+                type: 'mdxJsxFlowElement',
+                name: 'th',
+                children: cell.children,
+                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+              } as MdxJsxFlowElement;
+            }),
+          },
+        ],
+      };
+
+      const body: MdxJsxFlowElement = {
+        attributes: [],
+        type: 'mdxJsxFlowElement',
+        name: 'tbody',
+        children: table.children.splice(1).map(row => {
+          return {
+            attributes: [],
+            type: 'mdxJsxFlowElement',
+            name: 'tr',
+            children: row.children.map((cell, cellIndex) => {
+              return {
+                type: 'mdxJsxFlowElement',
+                name: 'td',
+                children: cell.children,
+                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+              };
+            }),
+          } as MdxJsxFlowElement;
+        }),
+      };
+
+      const attributes: MdxJsxFlowElement['attributes'] = [
         {
-          attributes: [],
-          type: 'mdxJsxFlowElement',
-          name: 'tr',
-          children: table.children[0].children.map((cell, cellIndex) => {
-            return {
-              attributes: [],
-              type: 'mdxJsxFlowElement',
-              name: 'th',
-              children: cell.children,
-              ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
-            } as MdxJsxFlowElement;
-          }),
+          type: 'mdxJsxAttribute',
+          name: 'align',
+          value: {
+            type: 'mdxJsxAttributeValueExpression',
+            value: JSON.stringify(table.align),
+          },
         },
-      ],
-    };
+      ];
 
-    const body: MdxJsxFlowElement = {
-      attributes: [],
-      type: 'mdxJsxFlowElement',
-      name: 'tbody',
-      children: table.children.splice(1).map(row => {
-        return {
-          attributes: [],
-          type: 'mdxJsxFlowElement',
-          name: 'tr',
-          children: row.children.map((cell, cellIndex) => {
-            return {
-              type: 'mdxJsxFlowElement',
-              name: 'td',
-              children: cell.children,
-              ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
-            };
-          }),
-        } as MdxJsxFlowElement;
-      }),
-    };
+      const jsx: MdxJsxFlowElement = {
+        type: 'mdxJsxFlowElement',
+        name: 'Table',
+        attributes: table.align.find(a => a) ? attributes : [],
+        children: [head, body],
+      };
 
-    const attributes: MdxJsxFlowElement['attributes'] = [
-      {
-        type: 'mdxJsxAttribute',
-        name: 'align',
-        value: {
-          type: 'mdxJsxAttributeValueExpression',
-          value: JSON.stringify(table.align),
-        },
-      },
-    ];
-
-    const jsx: MdxJsxFlowElement = {
-      type: 'mdxJsxFlowElement',
-      name: 'Table',
-      attributes: table.align.find(a => a) ? attributes : [],
-      children: [head, body],
-    };
-
-    parent.children[index] = jsx;
-  });
+      parent.children[index] = jsx;
+    },
+  );
 
   return tree;
 };

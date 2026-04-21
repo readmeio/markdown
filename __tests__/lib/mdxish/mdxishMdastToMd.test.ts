@@ -737,6 +737,177 @@ describe('mdxishMdastToMd', () => {
       `);
     });
 
+    it('should serialize a table with self-closing JSX component in cell to JSX <Table>', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Image' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Row' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'html',
+                        value: '\n<Image src="https://example.com/image.jpg" caption="Hello" />\n',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('<Table>');
+      expect(result).toContain('<Image src="https://example.com/image.jpg" caption="Hello" />');
+    });
+
+    it('should keep table with plain HTML in cell as GFM', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'HTML' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Row' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'html',
+                        value: '<div>Hello</div>',
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('|');
+      expect(result).not.toContain('<Table>');
+    });
+
+    it('should keep tables with readme-variable nodes as GFM markdown', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          {
+                            type: NodeTypes.variable,
+                            data: { hName: 'Variable', hProperties: { name: 'WHOA' } },
+                            value: '{user.WHOA}',
+                          } as unknown as MdastRoot['children'][number],
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('|');
+      expect(result).not.toContain('<Table>');
+    });
+
+    it('should keep tables with readme-variable alongside text as GFM markdown', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          { type: 'text', value: 'Hello ' },
+                          {
+                            type: NodeTypes.variable,
+                            data: { hName: 'Variable', hProperties: { name: 'name' } },
+                            value: '{user.name}',
+                          } as unknown as MdastRoot['children'][number],
+                        ],
+                      },
+                    ],
+                  },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'a' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'b' }] }] },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('|');
+      expect(result).not.toContain('<Table>');
+    });
+
     it('should keep phrasing-only tables as markdown tables', () => {
       const mdast: MdastRoot = {
         type: 'root',

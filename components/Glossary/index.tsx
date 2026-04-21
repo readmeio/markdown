@@ -12,6 +12,9 @@ interface Props extends React.PropsWithChildren {
 
 const Glossary = ({ children, term: termProp, terms }: Props) => {
   const term = (Array.isArray(children) ? children[0] : children) || termProp;
+
+  if (!term) return null;
+
   const foundTerm = terms.find(i => term.toLowerCase() === i?.term?.toLowerCase());
 
   if (!foundTerm) return <span>{term}</span>;

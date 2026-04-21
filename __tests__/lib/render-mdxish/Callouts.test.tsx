@@ -197,6 +197,22 @@ describe('Callouts', () => {
     expect(container.textContent).toContain('Test');
   });
 
+  it('renders <<glossary:*>> terms in callout title without error', () => {
+    const md = `> 📘 Login hint encoded in a <<glossary:JWT>> token
+>
+> Body`;
+    const terms = [{ term: 'JWT', definition: 'JSON Web Token' }];
+
+    const hast = mdxish(md);
+    const mod = renderMdxish(hast, { terms });
+    const { container } = render(<mod.default />);
+
+    expect(container.querySelector('.callout.callout_info')).toBeInTheDocument();
+    expect(container.textContent).toContain('Login hint encoded in a');
+    expect(container.textContent).toContain('JWT');
+    expect(container.textContent).toContain('Body');
+  });
+
   it('renders mdx {user.*} variables in callout title without error', () => {
     const md = `> 🚧 Hello {user.name}
 >
