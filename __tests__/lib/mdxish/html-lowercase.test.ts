@@ -99,6 +99,40 @@ end.
       }]);
     });
 
+    it('tag that has attribute expression should be treated as inline', () => {
+      const md = `Start
+<a href={"https://example.com"}>here</a>
+end`;
+      const tree = parseMdxish(md);
+      expect(tree.children).toMatchObject([{
+        type: 'paragraph',
+        children: [
+          { type: 'text', value: 'Start\n' },
+          {
+            type: 'mdxJsxTextElement',
+            name: 'a',
+            attributes: [
+              {
+                type: 'mdxJsxAttribute',
+                name: 'href',
+                value: { type: 'mdxJsxAttributeValueExpression', value: '"https://example.com"' },
+              },
+            ],
+            children: [{ type: 'text', value: 'here' }],
+          },
+          { type: 'text', value: '\nend' },
+        ],
+      }]);
+    });
+
+    it('evaluates inline brace-attribute expressions end-to-end (hast)', () => {
+      const hast = mdxish('before <a href={"https://example.com"}>link</a> after');
+      const paragraph = hast.children[0] as { children: { properties?: Record<string, unknown>; tagName?: string; type: string; }[] };
+      const anchor = paragraph.children.find(c => c.type === 'element' && c.tagName === 'a');
+      expect(anchor).toBeDefined();
+      expect(anchor!.properties).toMatchObject({ href: 'https://example.com' });
+    });
+
     it('inline tag adjacent to markdown emphasis', () => {
       const tree = parseMdxish('**bold** <a href=https://x.com>link</a> *italic*');
 

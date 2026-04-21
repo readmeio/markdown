@@ -31,6 +31,7 @@ import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
+import mdxishInlineComponentBlocks from '../processor/transform/mdxish/mdxish-inline-component-blocks';
 import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
@@ -196,6 +197,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks, { safeMode })
+    .use(mdxishInlineComponentBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
