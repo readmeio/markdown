@@ -136,6 +136,7 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // which means a potential unparsed MDX component
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
+
     const parsed = parseTag(value.trim(), parseOpts);
     if (!parsed) return;
 
@@ -144,11 +145,19 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
 
+    const isPascalCase = /^[A-Z]/.test(tag);
+
+    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
+    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
+    // them here so they stay as html for that pass; PascalCase components
+    // keep going through this transformer (they stay flow-level even when
+    // inline, which is how ReadMe's custom components are modeled).
+    if (!isPascalCase && parent.type === 'paragraph') return;
+
     // Lowercase HTML tags are only eligible when the tokenizer claimed them
     // for JSX-expression attributes. Plain HTML should stay as html nodes so
     // rehype-raw handles it as normal. We detect the tokenizer path by the
     // presence of at least one `mdxJsxAttributeValueExpression` attribute.
-    const isPascalCase = /^[A-Z]/.test(tag);
     if (!isPascalCase) {
       const hasExpressionAttr = attributes.some(
         attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
