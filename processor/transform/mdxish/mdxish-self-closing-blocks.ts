@@ -8,6 +8,9 @@ import { parseAttributes } from '../../../lib/utils/mdxish/mdxish-component-tag-
 
 /**
  * Tags to process as self-closing blocks.
+ * These components use simple string attributes (no JSX expressions like `data={[...]}`).
+ * Components with JSX expression attributes should NOT be added here as parseAttributes
+ * cannot handle them correctly.
  */
 const SELF_CLOSING_BLOCK_TAGS = new Set(['Embed', 'Recipe']);
 

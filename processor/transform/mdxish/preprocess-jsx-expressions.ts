@@ -43,7 +43,6 @@ function protectHTMLBlockContent(content: string): string {
   );
 }
 
-
 /**
  * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
  *
