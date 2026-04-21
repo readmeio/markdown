@@ -32,14 +32,11 @@ declare module 'micromark-util-types' {
  */
 const INLINE_HTML_TAGS = new Set([
   // Text-level semantics
-  'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'del',
-  'dfn', 'em', 'i', 'ins', 'kbd', 'mark', 'q', 'rp', 'rt', 'ruby', 's',
-  'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr',
+  'a', 'code', 'em', 'i', 'span', 'strong',
   // Embedded content
-  'audio', 'canvas', 'embed', 'img', 'map', 'object', 'picture', 'source',
-  'svg', 'track', 'video',
+  'embed', 'img',
   // Form controls
-  'button', 'input', 'label', 'meter', 'output', 'progress', 'select',
+  'button', 'input', 'label',
 ]);
 
 /** HTML5 void elements — no matching close tag required. */
