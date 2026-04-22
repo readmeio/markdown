@@ -788,7 +788,7 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
  * **Text (inline)** — registers only for lowercase tags with brace attrs
  * (e.g. `Start <a href={url}>here</a> end`). Picks them up during inline
  * parsing so they render inline inside their paragraph, then are rewritten
- * to `mdxJsxTextElement` by the `components/inline-component-blocks` transformer.
+ * to `mdxJsxTextElement` by the `components/inline-html` transformer.
  * PascalCase is intentionally flow-only; ReadMe's custom components are
  * authored as block-level elements.
  *

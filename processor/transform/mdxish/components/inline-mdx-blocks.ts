@@ -1,5 +1,4 @@
 import type { Html, Node, Parent, PhrasingContent } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -7,21 +6,14 @@ import { visit } from 'unist-util-visit';
 import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { parseAttributes } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
+import { toMdxJsxTextElement } from './utils';
+
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
-// Uses [A-Za-z0-9_]* to match block version in component-blocks.ts
+// Uses [A-Za-z0-9_]* to match block version in mdx-blocks.ts
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
 
-function toMdxJsxTextElement(name: string, attributes: MdxJsxAttribute[], children: PhrasingContent[]): MdxJsxTextElement {
-  return {
-    type: 'mdxJsxTextElement',
-    name,
-    attributes,
-    children,
-  };
-}
-
 /**
- * Transforms inline html component nodes (e.g. <Anchor>) into proper MDAST phrasing content.
+ * Transforms inline MDX blocks inside html nodes (e.g. <Anchor>) into proper MDAST phrasing content.
  *
  * Inline components are excluded from mdxishComponentBlocks (which only handles block-level
  * elements), so they remain as scattered html/text/html sibling nodes inside a paragraph.

@@ -5,7 +5,7 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks from '../../processor/transform/mdxish/components/component-blocks';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes } from '../helpers';
 
@@ -26,7 +26,7 @@ const parseWithPlugin = (markdown: string): Root => {
   return tree as Root;
 };
 
-describe('mdxish-component-blocks', () => {
+describe('block-level MDX components transformation', () => {
   describe('mdxishComponentBlocks plugin', () => {
     describe('case 1: simple self-closing tags', () => {
       it('should transform a simple self-closing tag', () => {

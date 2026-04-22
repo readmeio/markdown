@@ -8,8 +8,8 @@ import { describe, expect, it } from 'vitest';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks from '../../processor/transform/mdxish/components/component-blocks';
-import mdxishInlineComponentBlocks from '../../processor/transform/mdxish/components/inline-component-blocks';
+import mdxishInlineComponentBlocks from '../../processor/transform/mdxish/components/inline-html';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
 import { collectNodes } from '../helpers';
 
 // Mirrors the relevant slice of the mdxish pipeline: tokenizer + both
@@ -26,7 +26,7 @@ const parse = (md: string): Root => {
   return tree as Root;
 };
 
-describe('mdxishInlineComponentBlocks', () => {
+describe('inline HTML with expression attributes transformation to MDX text', () => {
   it('promotes lowercase inline tags with expression attrs to mdxJsxTextElement', () => {
     const tree = parse('before <a href={url}>link</a> after');
     const [inline] = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');

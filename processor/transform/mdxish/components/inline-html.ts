@@ -1,5 +1,4 @@
 import type { Html, Paragraph, PhrasingContent, Root } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -7,9 +6,7 @@ import { visit } from 'unist-util-visit';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { inlineMdProcessor } from './utils';
-
-type Attributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
+import { hasExpressionAttr, inlineMdProcessor, isPascalCase, toMdxJsxTextElement } from './utils';
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always
@@ -26,24 +23,6 @@ const parsePhrasingChildren = (value: string): PhrasingContent[] => {
   const [first] = inlineMdProcessor.parse(trimmed).children;
   return first?.type === 'paragraph' ? (first as Paragraph).children : [];
 };
-
-const hasExpressionAttr = (attributes: Attributes): boolean =>
-  attributes.some(
-    attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-  );
-
-const toInlineElement = (
-  node: Html,
-  tag: string,
-  attributes: Attributes,
-  children: PhrasingContent[],
-): MdxJsxTextElement => ({
-  type: 'mdxJsxTextElement',
-  name: tag,
-  attributes,
-  children,
-  position: node.position,
-});
 
 /**
  * Attempt to promote a lowercase inline `html` node to an
@@ -62,7 +41,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
   const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
   // PascalCase stays flow-level; handled by mdxishComponentBlocks.
-  if (/^[A-Z]/.test(tag)) return node;
+  if (isPascalCase(tag)) return node;
 
   // Dedicated tokenizers (Table, HTMLBlock, Glossary, Anchor) handle their
   // own tags — don't hijack them here.
@@ -72,7 +51,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
   // parses it with parse5 as normal.
   if (!hasExpressionAttr(attributes)) return node;
 
-  if (selfClosing) return toInlineElement(node, tag, attributes, []);
+  if (selfClosing) return toMdxJsxTextElement(tag, attributes, [], node.position);
 
   // Paired tag: the text tokenizer captures `<tag …>body</tag>` as one html
   // node, so the body is everything up to the closing tag in contentAfterTag.
@@ -81,7 +60,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
   if (closeIdx < 0) return node;
 
   const inner = contentAfterTag.slice(0, closeIdx);
-  return toInlineElement(node, tag, attributes, parsePhrasingChildren(inner));
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner), node.position);
 };
 
 /**

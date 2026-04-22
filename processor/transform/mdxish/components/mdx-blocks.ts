@@ -5,7 +5,7 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { inlineMdProcessor } from './utils';
+import { hasExpressionAttr, inlineMdProcessor, isPascalCase } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
@@ -132,25 +132,19 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
 
-    const isPascalCase = /^[A-Z]/.test(tag);
+    const isPascal = isPascalCase(tag);
 
     // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
     // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
     // them here so they stay as html for that pass; PascalCase components
     // keep going through this transformer (they stay flow-level even when
     // inline, which is how ReadMe's custom components are modeled).
-    if (!isPascalCase && parent.type === 'paragraph') return;
+    if (!isPascal && parent.type === 'paragraph') return;
 
     // Lowercase HTML tags are only eligible when the tokenizer claimed them
     // for JSX-expression attributes. Plain HTML should stay as html nodes so
-    // rehype-raw handles it as normal. We detect the tokenizer path by the
-    // presence of at least one `mdxJsxAttributeValueExpression` attribute.
-    if (!isPascalCase) {
-      const hasExpressionAttr = attributes.some(
-        attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-      );
-      if (!hasExpressionAttr) return;
-    }
+    // rehype-raw handles it as normal.
+    if (!isPascal && !hasExpressionAttr(attributes)) return;
 
     const closingTagStr = `</${tag}>`;
 
@@ -186,7 +180,7 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
       // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
       // bare text in a paragraph; unwrap when there's exactly one paragraph so
       // phrasing content isn't spuriously block-wrapped.
-      if (!isPascalCase && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
+      if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
       }
       const componentNode = createComponentNode({
