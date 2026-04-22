@@ -8,8 +8,8 @@ import { describe, expect, it } from 'vitest';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishInlineComponentBlocks from '../../processor/transform/mdxish/components/inline-html';
-import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
+import mdxishInlineMdxHtmlBlocks from '../../processor/transform/mdxish/components/inline-html';
+import mdxishMdxComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
 import { collectNodes } from '../helpers';
 
 // Mirrors the relevant slice of the mdxish pipeline: tokenizer + both
@@ -19,8 +19,8 @@ const parse = (md: string): Root => {
     .data('micromarkExtensions', [mdxComponent()])
     .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
-    .use(mdxishComponentBlocks)
-    .use(mdxishInlineComponentBlocks);
+    .use(mdxishMdxComponentBlocks)
+    .use(mdxishInlineMdxHtmlBlocks);
   const tree = processor.parse(md);
   processor.runSync(tree);
   return tree as Root;

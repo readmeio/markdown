@@ -64,7 +64,8 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
 };
 
 /**
- * Transform inline html nodes inside paragraphs into `mdxJsxTextElement`s.
+ * Transform inline html nodes with expression attributes
+ * inside paragraphs into `mdxJsxTextElement`s.
  *
  * Runs after `mdxishComponentBlocks`, which skips paragraph-parented html
  * nodes and leaves them for this pass. Two producers put html nodes inside
@@ -78,7 +79,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
  * when they carry an expression attribute; plain inline HTML like
  * `<a href="x">` stays as an html node for rehype-raw.
  */
-const mdxishInlineComponentBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
+const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: !!opts.safeMode };
 
   visit(tree, 'paragraph', (paragraph: Paragraph) => {
@@ -88,4 +89,4 @@ const mdxishInlineComponentBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (op
   });
 };
 
-export default mdxishInlineComponentBlocks;
+export default mdxishInlineMdxHtmlBlocks;

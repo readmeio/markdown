@@ -108,7 +108,7 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
   const stack: Parent[] = [tree];
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: !!opts.safeMode };
 
@@ -214,4 +214,4 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
   return tree;
 };
 
-export default mdxishComponentBlocks;
+export default mdxishMdxComponentBlocks;

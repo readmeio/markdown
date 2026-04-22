@@ -19,7 +19,7 @@ const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
  * elements), so they remain as scattered html/text/html sibling nodes inside a paragraph.
  * This plugin merges them into a single typed MDAST node.
  */
-const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
+const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 
@@ -50,4 +50,4 @@ const mdxishInlineComponents: Plugin<[], Parent> = () => tree => {
   });
 };
 
-export default mdxishInlineComponents;
+export default mdxishInlineMdxComponents;

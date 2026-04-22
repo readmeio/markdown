@@ -26,9 +26,9 @@ import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
 import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
-import mdxishInlineComponentBlocks from '../processor/transform/mdxish/components/inline-html';
-import mdxishInlineComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
-import mdxishComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
+import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
+import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
+import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
@@ -192,12 +192,12 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
-    .use(mdxishComponentBlocks, { safeMode })
-    .use(mdxishInlineComponentBlocks, { safeMode })
+    .use(mdxishMdxComponentBlocks, { safeMode })
+    .use(mdxishInlineMdxHtmlBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
-    .use(newEditorTypes ? mdxishInlineComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
+    .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
     .use(useTailwind ? tailwindTransformer : undefined, { components: tempComponentsMap })
