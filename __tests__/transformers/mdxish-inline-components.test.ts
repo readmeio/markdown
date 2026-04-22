@@ -4,7 +4,7 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import mdxishInlineComponents from '../../processor/transform/mdxish/mdxish-inline-components';
+import mdxishInlineComponents from '../../processor/transform/mdxish/components/inline-components';
 import { collectNodes } from '../helpers';
 
 /**

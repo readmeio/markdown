@@ -27,7 +27,7 @@ export const FLOW_TYPES = new Set([
  * paragraph nodes. Excluding them from the generic `mdxComponent` micromark
  * construct lets the dedicated inline transformer handle them instead.
  *
- * @see processor/transform/mdxish/mdxish-inline-components.ts
+ * @see processor/transform/mdxish/components/inline-components.ts
  */
 export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
 

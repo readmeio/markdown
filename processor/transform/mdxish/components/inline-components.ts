@@ -4,12 +4,11 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
-
-import { parseAttributes } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
+import { parseAttributes } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 // Matches any PascalCase inline component opening tag. Groups: (name, attrs).
-// Uses [A-Za-z0-9_]* to match block version in mdxish-component-blocks.ts
+// Uses [A-Za-z0-9_]* to match block version in component-blocks.ts
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
 
 function toMdxJsxTextElement(name: string, attributes: MdxJsxAttribute[], children: PhrasingContent[]): MdxJsxTextElement {

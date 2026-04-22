@@ -5,8 +5,8 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks from '../../processor/transform/mdxish/mdxish-component-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/component-blocks';
+import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes } from '../helpers';
 
 /**

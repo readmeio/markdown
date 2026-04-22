@@ -2,28 +2,14 @@ import type { Html, Paragraph, PhrasingContent, Root } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../lib/constants';
-import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
-import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
-import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
-import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { mdxComponent } from '../../../lib/micromark/mdx-component';
-import { type ParseAttributesOptions, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+
+import { inlineMdProcessor } from './inline-processor';
 
 type Attributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
-
-// Mirror of mdxishComponentBlocks' inner processor — nested inline components
-// (e.g. `<a href={x}>text with <b>bold</b></a>`) need the same tokenizer chain.
-const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
-  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkGfm);
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always

@@ -2,25 +2,12 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../lib/constants';
-import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
-import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
-import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
-import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { mdxComponent } from '../../../lib/micromark/mdx-component';
-import { type ParseAttributesOptions, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { inlineMdProcessor } from './utils';
 
-export { parseAttributes, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
-
-const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
-  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkGfm);
+export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 /**
  * Reduce leading whitespace on all lines just enough to prevent

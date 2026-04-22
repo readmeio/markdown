@@ -36,7 +36,7 @@ const HTML_VOID_ELEMENTS = new Set([
  *
  * Only matches lowercase tag names to avoid interfering with PascalCase
  * JSX custom components (e.g. `<MyComponent />`), which are handled
- * separately by mdxish-component-blocks.
+ * separately by components/component-blocks.
  */
 const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)?)?\s*\/>/g;
 

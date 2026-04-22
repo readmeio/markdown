@@ -3,7 +3,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
-import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishComponentBlocks from '../processor/transform/mdxish/components/component-blocks';
 import { isMDXElement } from '../processor/utils';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
