@@ -7,7 +7,7 @@ import { visit } from 'unist-util-visit';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { inlineMdProcessor } from './inline-processor';
+import { inlineMdProcessor } from './utils';
 
 type Attributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
