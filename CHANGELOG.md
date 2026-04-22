@@ -1,6 +1,26 @@
 Changelog
 ===
 
+## Version 14.1.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** AST nodes
+- We can't just use safeMode because we still need the inline
+expressions to be parsed as expression nodes, so there still needs to be
+an expression parsing
+
+## 🎯 What does this PR do?
+
+### ✨ New & Improved
+
+* **mdxish:** remove jsx attribute expression preprocessing ([#1429](https://github.com/readmeio/markdown/issues/1429)) ([9545472](https://github.com/readmeio/markdown/commit/954547277fc95719b0fab92510f4103a22c528a3)), closes [#1426](https://github.com/readmeio/markdown/issues/1426)
+
+### 🛠 Fixes & Updates
+
+* add readme components tests ([#1434](https://github.com/readmeio/markdown/issues/1434)) ([72ea080](https://github.com/readmeio/markdown/commit/72ea08051b368506989e293e467e3973da42d8a3)), closes [#1354](https://github.com/readmeio/markdown/issues/1354)
+* **deps:** bump actions/upload-artifact from 5 to 7 ([#1417](https://github.com/readmeio/markdown/issues/1417)) ([3ca6d32](https://github.com/readmeio/markdown/commit/3ca6d322831d257f87565bd3b0e82a39669cf0cb))
+* **mdxish:** legacy glossary syntax in callout title crashing ([#1441](https://github.com/readmeio/markdown/issues/1441)) ([9d1b18b](https://github.com/readmeio/markdown/commit/9d1b18bace4548288abd9c1b9e9937e3d8b7d394))
+
 ## Version 14.0.0
 ### ⚠ BREAKING CHANGES
 
