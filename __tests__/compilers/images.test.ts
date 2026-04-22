@@ -97,7 +97,7 @@ describe('mdxish image compiler', () => {
     expect(image.type).toBe('element');
     expect(image.tagName).toBe('img');
     expect(image.properties.src).toBe('/path/to/image.png');
-    expect(image.properties.border).toBe('true');
+    expect(image.properties.border).toBe(true);
     expect(image.properties.alt).toBe('');
   });
 
@@ -111,7 +111,7 @@ describe('mdxish image compiler', () => {
     expect(image.type).toBe('element');
     expect(image.tagName).toBe('img');
     expect(image.properties.src).toBe('/path/to/image.png');
-    expect(image.properties.border).toBe('false');
+    expect(image.properties.border).toBe(false);
   });
 
   it('correctly converts Image component with border={true} to Image component', () => {
@@ -123,6 +123,6 @@ describe('mdxish image compiler', () => {
     expect(image.type).toBe('element');
     expect(image.tagName).toBe('img');
     expect(image.properties.src).toBe('/path/to/image.png');
-    expect(image.properties.border).toBe('true');
+    expect(image.properties.border).toBe(true);
   });
 });

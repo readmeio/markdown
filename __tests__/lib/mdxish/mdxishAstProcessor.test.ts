@@ -1,7 +1,5 @@
 import type { Root, Table } from 'mdast';
 
-import { visit } from 'unist-util-visit';
-
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
 
 describe('mdxishAstProcessor', () => {
@@ -15,13 +13,39 @@ describe('mdxishAstProcessor', () => {
 
     it('should NOT evaluate MDX expressions', () => {
       const md = 'Result: {5 * 10}';
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { jsxContext: {} });
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
       // IMPORTANT: Must call runSync() to execute transformers (e.g., evaluateExpression).
       // This is why the test couldn't catch the regression in RM-15705.
       const mdast = processor.runSync(processor.parse(parserReadyContent));
       // The mdast should still have mdxTextExpression nodes - evaluation happens in mdxish()
       const hasMdxExpression = JSON.stringify(mdast).includes('mdxTextExpression');
       expect(hasMdxExpression).toBe(true);
+    });
+
+    it('should preserve attribute expressions as mdxJsxAttributeValueExpression nodes', () => {
+      const md = '<Component attr={1+1} />';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md);
+      const mdast = processor.runSync(processor.parse(parserReadyContent));
+
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Component',
+            attributes: [
+              {
+                type: 'mdxJsxAttribute',
+                name: 'attr',
+                value: {
+                  type: 'mdxJsxAttributeValueExpression',
+                  value: '1+1',
+                },
+              },
+            ],
+          },
+        ],
+      });
     });
   });
 

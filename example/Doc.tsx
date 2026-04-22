@@ -163,14 +163,14 @@ const Doc = () => {
       try {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
-        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, useTailwind: true});
+        const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, useTailwind: true, safeMode });
         const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables, useTailwind: true });
         setMdxishError(null);
         setMdxishResult(vdom);
         if (showAst) {
           setMdxishHast(tree);
           try {
-            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { components: executedComponents, variables, newEditorTypes });
+            const { processor, parserReadyContent } = mdx.mdxishAstProcessor(sanitized, { components: executedComponents, variables, newEditorTypes, safeMode });
             setMdxishMdast(processor.runSync(processor.parse(parserReadyContent)));
           } catch {
             setMdxishMdast(null);

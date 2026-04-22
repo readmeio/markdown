@@ -9,47 +9,32 @@ describe('evaluateExpressions', () => {
     expect(html).not.toContain('{4 * 2 / 2}');
   });
 
-  it('should evaluate inline MDX expressions and replace with results', () => {
-    const context = {
-      count: 5,
-      price: 10,
-      name: 'Test',
-    };
-
-    const content = 'Total: {count * price} items for {name}';
-    const html = mix(content, { jsxContext: context });
+  it('should evaluate self-contained inline MDX expressions and replace with results', () => {
+    const content = 'Total: {5 * 10} items for {"Test"}';
+    const html = mix(content);
 
     // The expressions should be evaluated and converted to text nodes
-    expect(html).toContain('50'); // count * price = 50
-    expect(html).toContain('Test'); // name = 'Test'
-    expect(html).not.toContain('{count * price}');
-    expect(html).not.toContain('{name}');
+    expect(html).toContain('50'); // 5 * 10
+    expect(html).toContain('Test');
+    expect(html).not.toContain('{5 * 10}');
+    expect(html).not.toContain('{"Test"}');
   });
 
   it('should handle null and undefined expressions', () => {
-    const context = {
-      nullValue: null,
-      undefinedValue: undefined,
-    };
+    const content = 'Before {null} middle {undefined} after';
+    const html = mix(content);
 
-    const content = 'Before {nullValue} middle {undefinedValue} after';
-    const html = mix(content, { jsxContext: context });
-
-    // Null/undefined should be removed (empty string)
+    // Null/undefined should render as empty strings
     expect(html).toContain('Before');
     expect(html).toContain('middle');
     expect(html).toContain('after');
-    expect(html).not.toContain('nullValue');
-    expect(html).not.toContain('undefinedValue');
+    expect(html).not.toContain('null');
+    expect(html).not.toContain('undefined');
   });
 
   it('should handle object expressions', () => {
-    const context = {
-      obj: { a: 1, b: 2 },
-    };
-
-    const content = 'Object: {obj}';
-    const html = mix(content, { jsxContext: context });
+    const content = 'Object: {({a: 1, b: 2})}';
+    const html = mix(content);
 
     // Objects should be JSON stringified (account for JSON escaping in stringified output)
     expect(html).toContain('{"a":1,"b":2}');
@@ -64,16 +49,12 @@ describe('evaluateExpressions', () => {
   });
 
   it('should preserve expressions in code blocks', () => {
-    const context = {
-      count: 5,
-    };
-
-    const content = '```\nconst x = {count};\n```';
-    const html = mix(content, { jsxContext: context });
+    const content = '```\nconst x = {1 + 1};\n```';
+    const html = mix(content);
 
     // Expressions in code blocks should be preserved
-    expect(html).toContain('{count}');
-    expect(html).not.toContain('5');
+    expect(html).toContain('{1 + 1}');
+    expect(html).not.toContain('const x = 2');
   });
 
   it('should not evaluate operations when not in braces', () => {
@@ -82,5 +63,11 @@ describe('evaluateExpressions', () => {
     expect(html).toContain(content);
     expect(html).not.toContain('WORLD');
     expect(html).not.toContain('3');
+  });
+
+  it('should keep unresolved identifiers as literal text', () => {
+    const content = 'Hello {nonexistent}!';
+    const html = mix(content);
+    expect(html).toContain('{nonexistent}');
   });
 });
