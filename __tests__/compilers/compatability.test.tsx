@@ -4,6 +4,7 @@ import type { Element } from 'hast';
 import fs from 'node:fs';
 
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 
 import { vi } from 'vitest';
 
