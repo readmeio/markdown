@@ -12,7 +12,23 @@ import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 
-import { JSON_VALUE_MARKER } from './transform/mdxish/preprocess-jsx-expressions';
+/**
+ * Evaluate a JavaScript expression source and return its value.
+ *
+ * Wrapping in parens lets object literals (`{color: 'red'}`) parse as
+ * expressions. Runs with no scope, so only self-contained literals resolve.
+ *
+ * > ☢️ **Danger**: this `eval`s JavaScript. Only call when safeMode is off —
+ * > safeMode's contract is that expression syntax is never evaluated, and the
+ * > pipeline guards against reaching this path by keeping attribute expressions
+ * > as literal strings and skipping the expression transformer entirely.
+ *
+ * Throws on parse/runtime error; callers decide the fallback.
+ */
+export function evaluate(source: string) {
+  // eslint-disable-next-line no-new-func
+  return new Function(`return (${source})`)();
+}
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
@@ -73,20 +89,16 @@ export const getHPropKeys = <T>(node: Node): string[] => {
 export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
   jsx.attributes.reduce((memo, attr) => {
     if ('name' in attr) {
-      if (typeof attr.value === 'string') {
-        if (attr.value.startsWith(JSON_VALUE_MARKER)) {
-          try {
-            memo[attr.name] = JSON.parse(attr.value.slice(JSON_VALUE_MARKER.length));
-          } catch {
-            memo[attr.name] = attr.value;
-          }
-        } else {
-          memo[attr.name] = attr.value;
-        }
-      } else if (attr.value === null) {
+      if (attr.value === null) {
         memo[attr.name] = true;
-      } else if (attr.value.value !== 'undefined') {
-        memo[attr.name] = JSON.parse(attr.value.value);
+      } else if (typeof attr.value === 'string') {
+        memo[attr.name] = attr.value;
+      } else if (attr.value?.value !== undefined) {
+        try {
+          memo[attr.name] = evaluate(attr.value.value);
+        } catch {
+          memo[attr.name] = attr.value.value;
+        }
       }
     }
 

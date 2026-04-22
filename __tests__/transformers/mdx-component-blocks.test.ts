@@ -5,11 +5,8 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks, {
-  parseAttributes,
-  parseTag,
-} from '../../processor/transform/mdxish/mdxish-component-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
+import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes } from '../helpers';
 
 /**
@@ -29,164 +26,7 @@ const parseWithPlugin = (markdown: string): Root => {
   return tree as Root;
 };
 
-describe('mdxish-component-blocks', () => {
-  describe('parseTag', () => {
-    it('should parse a self-closing tag with attributes', () => {
-      const result = parseTag('<MyComponent theme="dark" size="large" />');
-
-      expect(result?.tag).toBe('MyComponent');
-      expect(result?.selfClosing).toBe(true);
-      expect(result?.contentAfterTag).toBe('');
-      expect(result?.attrString.trim()).toBe('theme="dark" size="large"');
-    });
-
-    it('should parse an opening tag with content after it', () => {
-      const result = parseTag('<Callout theme="info">Some content</Callout>');
-      expect(result?.tag).toBe('Callout');
-      expect(result?.selfClosing).toBe(false);
-      expect(result?.contentAfterTag).toBe('Some content</Callout>');
-      expect(result?.attrString.trim()).toBe('theme="info"');
-    });
-
-    it('should return null for lowercase (non-component) tags', () => {
-      expect(parseTag('<div class="foo">')).toBeNull();
-    });
-
-    it('should parse a tag whose quoted attribute contains >', () => {
-      const result = parseTag('<Image caption="A > B" />');
-      expect(result?.tag).toBe('Image');
-      expect(result?.attrString.trim()).toBe('caption="A > B"');
-    });
-
-    it('should parse multilline attributes', () => {
-      const result = parseTag(`<Image
-  src="https://example.com/image.jpg"
-  alt="Some helpful text"
-  border
-/>`);
-      expect(result?.tag).toBe('Image');
-      expect(result?.attrString).toBe(`
-  src="https://example.com/image.jpg"
-  alt="Some helpful text"
-  border
-`);
-    });
-  });
-
-  describe('parseAttributes', () => {
-    describe('normal quoted attributes ""', () => {
-      it('should parse multiple attributes', () => {
-        const attrString = 'attr1="value1" attr2="value2"';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: 'value1',
-          },
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr2',
-            value: 'value2',
-          },
-        ]);
-      });
-
-      it('should not break when there are special characters in the attribute value', () => {
-        const attrString = 'attr1="!@#$%^&*()_+"';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: '!@#$%^&*()_+',
-          },
-        ]);
-      });
-    });
-
-    describe('template literal attributes', () => {
-      it('should parse template literal attributes as raw brace expressions', () => {
-        const attrString = 'attr1={`value1`} attr2={`value2`}';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: '{`value1`}',
-          },
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr2',
-            value: '{`value2`}',
-          },
-        ]);
-      });
-    });
-
-    describe('unquoted attributes', () => {
-      it('should parse unquoted attributes', () => {
-        const attrString = 'attr1=value1 attr2=value2';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: 'value1',
-          },
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr2',
-            value: 'value2',
-          },
-        ]);
-      });
-
-      it('should not break when there are special characters in the attribute value', () => {
-        const attrString = 'attr1=!@#$%^&*()_+';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: '!@#$%^&*()_+',
-          },
-        ]);
-      });
-
-      it('should not break when there is / character in the value', () => {
-        const attrString = 'attr1=https://example.com';
-        const result = parseAttributes(attrString);
-
-        expect(result).toStrictEqual([
-          {
-            type: 'mdxJsxAttribute',
-            name: 'attr1',
-            value: 'https://example.com',
-          },
-        ]);
-      });
-    });
-
-    it('should parse boolean attributes without values', () => {
-      const attrString = 'empty';
-      const result = parseAttributes(attrString);
-
-      expect(result).toStrictEqual([
-        {
-          type: 'mdxJsxAttribute',
-          name: 'empty',
-          value: null,
-        },
-      ]);
-    });
-  });
-
+describe('block-level MDX components transformation', () => {
   describe('mdxishComponentBlocks plugin', () => {
     describe('case 1: simple self-closing tags', () => {
       it('should transform a simple self-closing tag', () => {
@@ -658,6 +498,25 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
+    });
+  });
+
+  describe('inline PascalCase components', () => {
+    it('promotes inline PascalCase to mdxJsxFlowElement (paragraph-parented)', () => {
+      // Contract with mdxishInlineComponentBlocks: PascalCase is flow-level
+      // even when authored inline, so this transformer owns the promotion
+      // and the inline pass (lowercase-only) must not rewrite it.
+      const markdown = 'before <MyComponent foo="bar" /> after';
+      const tree = parseWithPlugin(markdown);
+
+      expect(collectNodes(tree, 'mdxJsxTextElement')).toHaveLength(0);
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'MyComponent',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'foo', value: 'bar' }],
+      });
     });
   });
 });

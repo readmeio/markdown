@@ -1,9 +1,10 @@
-import type { HTMLBlock } from '../../types';
+import type { HTMLBlock, MdxJsx } from '../../types';
 import type { Properties } from 'hast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { NodeTypes } from '../../enums';
+import { evaluate } from '../utils';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -21,7 +22,17 @@ function decodeHtmlEntities(value: string) {
     .replace(/&amp;/g, '&');
 }
 
-// Convert MDX JSX elements to HAST elements, preserving attributes and children
+function isStructuredCloneable(value: unknown): boolean {
+  try {
+    structuredClone(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Convert MDX JSX elements to a custom mdx-jsx hast node that bypasses rehypeRaw's
+// HTML serialization round-trip; downstream normalization rewrites it to `element`.
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
   const properties: Properties = {};
@@ -34,16 +45,34 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     } else if (typeof attribute.value === 'string') {
       properties[attribute.name] = decodeHtmlEntities(attribute.value);
     } else {
-      properties[attribute.name] = (attribute.value as MdxJsxAttributeValueExpression).value;
+      const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
+      let evaluated: ReturnType<typeof evaluate>;
+      try {
+        evaluated = evaluate(expressionSource);
+      } catch {
+        evaluated = expressionSource;
+      }
+
+      // rehypeRaw's passThrough clones our mdx-jsx node with structuredClone, which
+      // rejects functions and other non-serializable values. Attribute expressions
+      // that evaluate to such values (`onClick={() => ...}`) would crash the pipeline,
+      // so if we have a non-serializable value, we fall back to the raw expression source
+      // and not support it for now.
+      if (!isStructuredCloneable(evaluated)) {
+        evaluated = expressionSource;
+      }
+
+      properties[attribute.name] = evaluated;
     }
   });
 
-  return {
-    type: 'element',
+  const jsxNode: MdxJsx = {
+    type: 'mdx-jsx',
     tagName: name || '',
     properties,
     children: state.all(node),
   };
+  return jsxNode;
 };
 
 // Convert html-block MDAST nodes to HAST elements, preserving hProperties
