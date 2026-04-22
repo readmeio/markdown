@@ -1,7 +1,7 @@
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 
-// Simple regex to extract the PascalCase tag name at the start of a tag string.
-const tagNamePattern = /^<([A-Z][A-Za-z0-9_]*)/;
+// Extract the tag name (PascalCase or lowercase HTML) at the start of a tag string.
+const tagNamePattern = /^<([A-Za-z][A-Za-z0-9_-]*)/;
 
 const NAME_START = /[a-zA-Z_:]/;
 const NAME_CHAR = /[-a-zA-Z0-9_:.]/;

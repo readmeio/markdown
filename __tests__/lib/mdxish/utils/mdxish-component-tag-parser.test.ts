@@ -1,6 +1,8 @@
 import type { MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 
+import { mdxish } from '../../../../lib';
 import { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { parseMdxishWithSource } from '../../../helpers';
 
 describe('parseAttributes', () => {
   describe('boolean attributes', () => {
@@ -285,10 +287,6 @@ describe('parseTag', () => {
     expect(result?.attrString.trim()).toBe('theme="info"');
   });
 
-  it('should return null for lowercase (non-component) tags', () => {
-    expect(parseTag('<div class="foo">')).toBeNull();
-  });
-
   it('should return null when there is no tag to match', () => {
     expect(parseTag('hello')).toBeNull();
   });
@@ -395,6 +393,63 @@ describe('parseTag', () => {
 
   ]}
 `);
+    });
+  });
+});
+
+describe('lowercase html tags with JSX expressions are treated as MDX', () => {
+  it('should parse lowercase HTML tags (eligibility is gated in the transformer)', () => {
+    const result = parseTag('<div class="foo">');
+    expect(result?.tag).toBe('div');
+    expect(result?.selfClosing).toBe(false);
+  });
+
+  it('should treat a lowercase tag with a JSX attribute expression as mdxJsxFlowElement', () => {
+    const { tree } = parseMdxishWithSource('<a href={"https://example.com"}>Example</a>');
+    expect(tree.children[0]).toMatchObject({
+      type: 'mdxJsxFlowElement',
+      name: 'a',
+      attributes: [
+        {
+          type: 'mdxJsxAttribute',
+          name: 'href',
+          value: { type: 'mdxJsxAttributeValueExpression', value: '"https://example.com"' },
+        },
+      ],
+    });
+  });
+
+  it('should treat a type-6 block tag with a JSX object expression as mdxJsxFlowElement', () => {
+    const { tree } = parseMdxishWithSource('<div style={{color: "red"}}>Hello</div>');
+    expect(tree.children[0]).toMatchObject({
+      type: 'mdxJsxFlowElement',
+      name: 'div',
+      attributes: [
+        {
+          type: 'mdxJsxAttribute',
+          name: 'style',
+          value: { type: 'mdxJsxAttributeValueExpression' },
+        },
+      ],
+    });
+  });
+
+  it('should leave lowercase tags without any JSX expression as html nodes', () => {
+    // The important invariant is that the `<a>` stays an
+    // html node rather than being promoted to an mdxJsx element.
+    const { tree } = parseMdxishWithSource('<a href="https://example.com">Example</a>');
+    expect(tree.children[0]).not.toMatchObject({ type: 'mdxJsxFlowElement' });
+
+    const hast = mdxish('<a href="https://example.com">Example</a>');
+    expect(hast.children[0]).toMatchObject({
+      type: 'element',
+      tagName: 'p',
+      children: [{
+        type: 'element',
+        tagName: 'a',
+        properties: { href: 'https://example.com' },
+        children: [{ type: 'text', value: 'Example' }]
+      }],
     });
   });
 });

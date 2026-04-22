@@ -2,25 +2,12 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../lib/constants';
-import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
-import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
-import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
-import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { mdxComponent } from '../../../lib/micromark/mdx-component';
-import { type ParseAttributesOptions, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { hasExpressionAttr, inlineMdProcessor, isPascalCase } from './utils';
 
-export { parseAttributes, parseTag } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
-
-const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
-  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkGfm);
+export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 /**
  * Reduce leading whitespace on all lines just enough to prevent
@@ -136,6 +123,7 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
     // which means a potential unparsed MDX component
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
+
     const parsed = parseTag(value.trim(), parseOpts);
     if (!parsed) return;
 
@@ -143,6 +131,20 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
 
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
+
+    const isPascal = isPascalCase(tag);
+
+    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
+    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
+    // them here so they stay as html for that pass; PascalCase components
+    // keep going through this transformer (they stay flow-level even when
+    // inline, which is how ReadMe's custom components are modeled).
+    if (!isPascal && parent.type === 'paragraph') return;
+
+    // Lowercase HTML tags are only eligible when the tokenizer claimed them
+    // for JSX-expression attributes. Plain HTML should stay as html nodes so
+    // rehype-raw handles it as normal.
+    if (!isPascal && !hasExpressionAttr(attributes)) return;
 
     const closingTagStr = `</${tag}>`;
 
@@ -172,10 +174,19 @@ const mdxishComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts =
       // normalize indentation before trimming
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
+        ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children'])
+        : [];
+      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
+      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // phrasing content isn't spuriously block-wrapped.
+      if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+      }
       const componentNode = createComponentNode({
         tag,
         attributes,
-        children: componentInnerContent.trim() ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
+        children: parsedChildren,
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);

@@ -571,3 +571,44 @@ b
     });
   });
 });
+
+describe('html tags rendering', () => {
+  describe('given various attribute formats', () => {
+    const expectedAnchor = {
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: 'https://example.com',
+      },
+      children: [{ type: 'text', value: 'Example' }],
+    };
+
+    it('should parse normal attribute syntax', () => {
+      const md = '<a href="https://example.com">Example</a>';
+      const tree = mdxish(md);
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor).toMatchObject(expectedAnchor);
+    });
+
+    it('should parse attribute expression syntax', () => {
+      const md = '<a href={"https://example.com"}>Example</a>';
+      const tree = mdxish(md);
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor).toMatchObject(expectedAnchor);
+    });
+  });
+
+  it('should parse inline html tags with its attributes as normal html nodes', () => {
+    const md = 'Hello <a href="https://example.com">Example</a> there';
+    const tree = mdxish(md);
+    const anchor = findElementByTagName(tree, 'a');
+    expect(anchor).toMatchObject({
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: 'https://example.com',
+      },
+      children: [{ type: 'text', value: 'Example' }],
+    });
+  });
+});

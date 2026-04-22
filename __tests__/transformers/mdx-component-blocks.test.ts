@@ -5,8 +5,8 @@ import { unified } from 'unified';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
-import mdxishComponentBlocks from '../../processor/transform/mdxish/mdxish-component-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
+import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes } from '../helpers';
 
 /**
@@ -26,7 +26,7 @@ const parseWithPlugin = (markdown: string): Root => {
   return tree as Root;
 };
 
-describe('mdxish-component-blocks', () => {
+describe('block-level MDX components transformation', () => {
   describe('mdxishComponentBlocks plugin', () => {
     describe('case 1: simple self-closing tags', () => {
       it('should transform a simple self-closing tag', () => {
@@ -498,6 +498,25 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
       expect((mdxNodes[0] as { name?: string }).name).toBe('Image');
+    });
+  });
+
+  describe('inline PascalCase components', () => {
+    it('promotes inline PascalCase to mdxJsxFlowElement (paragraph-parented)', () => {
+      // Contract with mdxishInlineComponentBlocks: PascalCase is flow-level
+      // even when authored inline, so this transformer owns the promotion
+      // and the inline pass (lowercase-only) must not rewrite it.
+      const markdown = 'before <MyComponent foo="bar" /> after';
+      const tree = parseWithPlugin(markdown);
+
+      expect(collectNodes(tree, 'mdxJsxTextElement')).toHaveLength(0);
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'MyComponent',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'foo', value: 'bar' }],
+      });
     });
   });
 });

@@ -26,16 +26,17 @@ import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
 import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
+import mdxishInlineComponentBlocks from '../processor/transform/mdxish/components/inline-html';
+import mdxishInlineComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
+import mdxishComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
+import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
+import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
-import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
-import mdxishInlineComponents from '../processor/transform/mdxish/mdxish-inline-components';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
-import mdxishSelfClosingBlocks from '../processor/transform/mdxish/mdxish-self-closing-blocks';
-import { processSnakeCaseComponent } from '../processor/transform/mdxish/mdxish-snake-case-components';
 import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
@@ -152,7 +153,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     text: mdxExprExt.text,
   };
 
-  const micromarkExts = [jsxTable(), magicBlock(), mdxComponent(), gemoji(), legacyVariable(), looseHtmlEntity()];
+  const micromarkExts = [
+    jsxTable(),
+    magicBlock(),
+    mdxComponent(),
+    gemoji(),
+    legacyVariable(),
+    looseHtmlEntity(),
+  ];
   const fromMarkdownExts = [
     jsxTableFromMarkdown(),
     magicBlockFromMarkdown(),
@@ -185,6 +193,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks, { safeMode })
+    .use(mdxishInlineComponentBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
