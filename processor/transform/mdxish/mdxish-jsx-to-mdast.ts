@@ -551,12 +551,18 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       const cells: TableCell[] = [];
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
-        const parsedChildren = (cell.children as Node[]).flatMap(parsedNode => {
-          if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-            return parsedNode.children;
-          }
-          return [parsedNode];
-        });
+        // Unwrap a paragraph child when it is the cell's sole paragraph as it might affect rendering
+        // However if there are multiple paragraphs, they are legitimate paragraphs of separate lines of content
+        const paragraphCount = cell.children.filter(c => c.type === 'paragraph').length;
+        const parsedChildren =
+          paragraphCount === 1
+            ? cell.children.flatMap((parsedNode: Node) => {
+                if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
+                  return parsedNode.children;
+                }
+                return [parsedNode];
+              })
+            : cell.children;
 
         cells.push({
           type: 'tableCell',

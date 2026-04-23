@@ -166,12 +166,18 @@ const processTableNode = (
         const rowChildren: TableCell[] = [];
 
         visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
-            if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-              return parsedNode.children;
-            }
-            return [parsedNode];
-          });
+          // Unwrap a paragraph child when it is the cell's sole paragraph as it might affect rendering
+          // However if there are multiple paragraphs, they are legitimate paragraphs of separate lines of content
+          const paragraphCount = (cellChildren as Node[]).filter(c => c.type === 'paragraph').length;
+          const parsedChildren =
+            paragraphCount === 1
+              ? (cellChildren as Node[]).flatMap(parsedNode => {
+                  if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
+                    return parsedNode.children;
+                  }
+                  return [parsedNode];
+                })
+              : (cellChildren as Node[]);
 
           rowChildren.push({
             type: tableTypes[name],
@@ -251,6 +257,7 @@ const mdxishTables = (): Transform => tree => {
           // we let it get handled naturally
           return EXIT;
         }
+        return undefined;
       });
     } catch {
       // If parsing fails, leave the node as-is
