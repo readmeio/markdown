@@ -48,6 +48,15 @@ const mdxishTablesToJsx = (): Transform => tree => {
           breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
         });
 
+        // A cell with more than one paragraph child cannot be serialized as GFM
+        // (pipe tables are single-line per cell), so force JSX <Table> output to
+        // preserve paragraph separation.
+        const paragraphCount = cell.children.filter(child => child.type === 'paragraph').length;
+        if (paragraphCount > 1) {
+          hasFlowContent = true;
+          return;
+        }
+
         // Check if any child is "flow" content (block-level) that requires JSX <Table>
         // serialization instead of GFM. `phrasing()` from mdast-util-phrasing returns
         // true for inline node types (text, emphasis, strong, link, etc.) which are
