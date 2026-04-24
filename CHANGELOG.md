@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.1.1
+### 🛠 Fixes & Updates
+
+* DRY up some test helpers ([#1437](https://github.com/readmeio/markdown/issues/1437)) ([f761248](https://github.com/readmeio/markdown/commit/f7612485e5abe6181bef4a5013df29e79781d748))
+* **mdxish:** preserve multi-paragraph table cells ([#1445](https://github.com/readmeio/markdown/issues/1445)) ([c821b2d](https://github.com/readmeio/markdown/commit/c821b2d77ca3ddaf874c5a8516a69823a915cbb4))
+* use magic block tokenizer when parsing JSX component children ([#1447](https://github.com/readmeio/markdown/issues/1447)) ([51b22a9](https://github.com/readmeio/markdown/commit/51b22a94557a1641657d02fc3f68bde8b53be23b)), closes [#1429](https://github.com/readmeio/markdown/issues/1429)
+
 ## Version 14.1.0
 ### ⚠ BREAKING CHANGES
 
