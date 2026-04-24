@@ -1,36 +1,6 @@
-import type { Element, Root, RootContent } from 'hast';
-
 import { mdxish } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-import { parseMdxish } from '../../helpers';
-
-type HastNode = Root | RootContent;
-
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-  return null;
-}
-
-function findAllElementsByTagName(node: HastNode, tagName: string): Element[] {
-  const results: Element[] = [];
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    results.push(node);
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      results.push(...findAllElementsByTagName(child, tagName));
-    });
-  }
-  return results;
-}
+import { findAllElementsByTagName, findElementByTagName, parseMdxish } from '../../helpers';
 
 const parseMdast = (md: string) => parseMdxish(md, { newEditorTypes: true });
 const parseMdastDefault = (md: string) => parseMdxish(md);
