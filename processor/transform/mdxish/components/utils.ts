@@ -7,8 +7,10 @@ import { unified } from 'unified';
 
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
+import { magicBlockFromMarkdown } from '../../../../lib/mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../../../../lib/mdast-util/mdx-component';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
+import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
@@ -20,8 +22,8 @@ export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
  * tokenizer chain as the top-level parse.
  */
 export const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
-  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
+  .data('micromarkExtensions', [mdxComponent(), legacyVariable(), magicBlock()])
+  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), magicBlockFromMarkdown()])
   .use(remarkParse)
   .use(remarkGfm);
 

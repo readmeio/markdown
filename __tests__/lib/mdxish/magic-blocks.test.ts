@@ -1946,4 +1946,29 @@ asdasdasd
       expect(toHtml(heading)).toContain('<a href="https://example.com">link</a>');
     });
   });
+
+  describe('magic blocks inside JSX components', () => {
+    it('should parse image block inside a Tabs component child', () => {
+      const md = `
+<Tabs>
+<Tab title="Foo">
+
+[block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"],"align":"left","sizing":"50%"}]}[/block]
+
+</Tab>
+</Tabs>
+`;
+      const ast = mdxish(md);
+      const tabs = ast.children[0] as Element;
+      expect(tabs.tagName).toBe('Tabs');
+
+      const tab = tabs.children[0] as Element;
+      expect(tab.tagName).toBe('Tab');
+
+      const img = toHtml(tab);
+      expect(img).toContain('<img');
+      expect(img).toContain('example.com/image.png');
+      expect(img).not.toContain('[block:image]');
+    });
+  });
 });
