@@ -109,4 +109,54 @@ describe('mdxish tables transformation', () => {
       });
     });
   });
+
+  it('should unwrap a sole paragraph in a table cell', () => {
+    const md = `<Table align={["left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Header
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Just one line
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+    const ast = astProcessor(md);
+
+    expect(ast).toMatchObject({
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableCell',
+                  children: [{ type: 'text', value: 'Header' }],
+                },
+              ],
+            },
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableCell',
+                  children: [{ type: 'text', value: 'Just one line' }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
 });
