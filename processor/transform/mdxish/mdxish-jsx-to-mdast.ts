@@ -1,5 +1,5 @@
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
-import type { FigureNode, MdxishTable, MdxishTableCell, MdxishTableCellContent, MdxishTableRow } from './types';
+import type { FigureNode, MdxishTable, MdxishTableCell, MdxishTableRow } from './types';
 import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
@@ -555,7 +555,7 @@ const transformTable = (jsx: MdxJsxFlowElement): MdxishTable | null => {
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
         cells.push({
           type: 'tableCell',
-          children: unwrapSoleParagraph(cell.children) as MdxishTableCellContent[],
+          children: unwrapSoleParagraph(cell.children),
           position: cell.position,
         });
       });

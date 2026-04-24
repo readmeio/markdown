@@ -1,5 +1,5 @@
 import type { MdxishTable, MdxishTableCell } from '../types';
-import type { Literal, Node, Table } from 'mdast';
+import type { Literal, Node } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
@@ -39,7 +39,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
   visit(
     tree,
     (node: Node) => ['table', 'tableau'].includes(node.type),
-    (table: MdxishTable | Table, index, parent) => {
+    (tableNode, index, parent) => {
+      const table = tableNode as MdxishTable;
       let hasFlowContent = false;
 
       visit(table, isTableCell, (cell: MdxishTableCell) => {
