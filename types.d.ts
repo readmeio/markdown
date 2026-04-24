@@ -17,7 +17,16 @@ import type {
 } from 'mdast';
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXModule } from 'mdx/types';
+import type { MdxishMdastRootContent } from 'processor/transform/mdxish/types';
 import type { Position } from 'unist';
+
+/**
+ * MDAST root accepted by mdxish serialization, including tables whose cells
+ * carry flow content beyond mdast’s built-in `TableCell` typing.
+ */
+export interface MdxishMdastRoot extends Omit<Root, 'children'> {
+  children: MdxishMdastRootContent[];
+}
 
 /**
  * Custom hast node emitted by `mdxJsxElementHandler` for every MDX JSX element.

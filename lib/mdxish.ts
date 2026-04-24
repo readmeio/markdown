@@ -1,4 +1,4 @@
-import type { CustomComponents, Variables } from '../types';
+import type { CustomComponents, Variables, MdxishMdastRoot } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
@@ -227,7 +227,7 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
 /**
  * Serializes an Mdast back into a markdown string.
  */
-export function mdxishMdastToMd(mdast: MdastRoot) {
+export function mdxishMdastToMd(mdast: MdxishMdastRoot) {
   const processor = unified()
     .use(remarkGfm)
     .use(mdxishTablesToJsx)
@@ -237,7 +237,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
       bullet: '-',
       emphasis: '_',
     });
-  return processor.stringify(processor.runSync(mdast));
+  return processor.stringify(processor.runSync(mdast as MdastRoot));
 }
 
 /**
