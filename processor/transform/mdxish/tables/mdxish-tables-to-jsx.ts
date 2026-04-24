@@ -5,7 +5,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../../enums';
+import { NodeTypes } from '../../../../enums';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 

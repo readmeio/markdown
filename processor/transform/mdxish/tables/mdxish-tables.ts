@@ -9,14 +9,15 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
-import { gemojiFromMarkdown } from '../../../lib/mdast-util/gemoji';
-import { gemoji } from '../../../lib/micromark/gemoji';
-import { getAttrs, isMDXElement } from '../../utils';
-import calloutTransformer from '../callouts';
-import codeTabsTransformer from '../code-tabs';
-import { extractText } from '../extract-text';
+import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
+import { gemoji } from '../../../../lib/micromark/gemoji';
+import { getAttrs, isMDXElement } from '../../../utils';
+import calloutTransformer from '../../callouts';
+import codeTabsTransformer from '../../code-tabs';
+import { extractText } from '../../extract-text';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
-import normalizeEmphasisAST from './normalize-malformed-md-syntax';
+import { unwrapSoleParagraph } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -166,22 +167,9 @@ const processTableNode = (
         const rowChildren: TableCell[] = [];
 
         visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          // Unwrap a paragraph child when it is the cell's sole paragraph as it might affect rendering
-          // However if there are multiple paragraphs, they are legitimate paragraphs of separate lines of content
-          const paragraphCount = (cellChildren as Node[]).filter(c => c.type === 'paragraph').length;
-          const parsedChildren =
-            paragraphCount === 1
-              ? (cellChildren as Node[]).flatMap(parsedNode => {
-                  if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-                    return parsedNode.children;
-                  }
-                  return [parsedNode];
-                })
-              : (cellChildren as Node[]);
-
           rowChildren.push({
             type: tableTypes[name],
-            children: parsedChildren,
+            children: unwrapSoleParagraph(cellChildren as Node[]),
             position: cellPosition,
           } as TableCell);
         });
