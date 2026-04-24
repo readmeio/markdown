@@ -177,7 +177,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -323,7 +323,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -393,7 +393,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -471,7 +471,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -544,7 +544,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -620,7 +620,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -690,7 +690,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -728,7 +728,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -773,7 +773,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -840,7 +840,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -880,7 +880,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -924,7 +924,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -971,7 +971,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -1003,7 +1003,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 

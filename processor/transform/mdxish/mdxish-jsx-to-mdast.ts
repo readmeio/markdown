@@ -553,9 +553,11 @@ const transformTable = (jsx: MdxJsxFlowElement): MdxishTable | null => {
       const cells: MdxishTableCell[] = [];
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
+        const parsedChildren = unwrapSoleParagraph(cell.children as Node[]);
+
         cells.push({
           type: 'tableCell',
-          children: unwrapSoleParagraph(cell.children),
+          children: parsedChildren,
           position: cell.position,
         });
       });
