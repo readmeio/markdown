@@ -1,4 +1,5 @@
-import type { Literal, Node, Table, TableCell } from 'mdast';
+import type { MdxishTable, MdxishTableCell } from '../types';
+import type { Literal, Node, Table } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
@@ -38,10 +39,10 @@ const mdxishTablesToJsx = (): Transform => tree => {
   visit(
     tree,
     (node: Node) => ['table', 'tableau'].includes(node.type),
-    (table: Table, index, parent) => {
+    (table: MdxishTable | Table, index, parent) => {
       let hasFlowContent = false;
 
-      visit(table, isTableCell, (cell: TableCell) => {
+      visit(table, isTableCell, (cell: MdxishTableCell) => {
         if (hasFlowContent || cell.children.length === 0) return;
 
         visit(cell, 'break', (_, breakIndex, breakParent) => {
@@ -61,7 +62,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
         // serialization instead of GFM. `phrasing()` from mdast-util-phrasing returns
         // true for inline node types (text, emphasis, strong, link, etc.) which are
         // safe to keep in GFM cells.
-        const hasFlowChild = (cell.children as Node[]).some(child => {
+        const hasFlowChild = cell.children.some(child => {
           if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
           if (child.type === NodeTypes.variable) return false;
           if (phrasing(child as Parameters<typeof phrasing>[0])) return false;

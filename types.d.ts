@@ -21,8 +21,8 @@ import type { MdxishMdastRootContent } from 'processor/transform/mdxish/types';
 import type { Position } from 'unist';
 
 /**
- * MDAST root accepted by mdxish serialization, including tables whose cells
- * carry flow content beyond mdast’s built-in `TableCell` typing.
+ * Extension of MDAST's Root that has some custom extended content types
+ * E.g. Tables whose cells carry flow content beyond mdast’s built-in `TableCell` typing.
  */
 export interface MdxishMdastRoot extends Omit<Root, 'children'> {
   children: MdxishMdastRootContent[];

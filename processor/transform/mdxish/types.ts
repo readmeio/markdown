@@ -33,7 +33,7 @@ export interface FigureNode {
  *
  * If there's more node types that should be allowed, add them here.
  */
-type MdxishTableCellContent =
+export type MdxishTableCellContent =
   | Code
   | CodeTabs
   | Html
@@ -44,15 +44,15 @@ type MdxishTableCellContent =
 /**
  * A `tableCell` that allows the same content the serializer accepts at runtime.
  */
-interface MdxishTableCell extends Omit<TableCell, 'children'> {
+export interface MdxishTableCell extends Omit<TableCell, 'children'> {
   children: MdxishTableCellContent[];
 }
 
-interface MdxishTableRow extends Omit<TableRow, 'children'> {
+export interface MdxishTableRow extends Omit<TableRow, 'children'> {
   children: MdxishTableCell[];
 }
 
-interface MdxishTable extends Omit<Table, 'children'> {
+export interface MdxishTable extends Omit<Table, 'children'> {
   children: MdxishTableRow[];
 }
 

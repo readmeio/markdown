@@ -169,7 +169,7 @@ const processTableNode = (
         visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
           rowChildren.push({
             type: tableTypes[name],
-            children: unwrapSoleParagraph(cellChildren as Node[]),
+            children: unwrapSoleParagraph(cellChildren),
             position: cellPosition,
           } as TableCell);
         });
