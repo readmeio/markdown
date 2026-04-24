@@ -11,6 +11,8 @@ import { NodeTypes } from '../../../enums';
 import { mdast } from '../../../lib';
 import { getAttrs, isMDXElement } from '../../utils';
 
+import { unwrapSoleParagraph } from './tables/utils';
+
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
   if (value === 'left' || value === 'center' || value === 'right') {
     return value;
@@ -551,12 +553,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       const cells: TableCell[] = [];
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
-        const parsedChildren = (cell.children as Node[]).flatMap(parsedNode => {
-          if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-            return parsedNode.children;
-          }
-          return [parsedNode];
-        });
+        const parsedChildren = unwrapSoleParagraph(cell.children as Node[]);
 
         cells.push({
           type: 'tableCell',
