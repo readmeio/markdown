@@ -1,5 +1,5 @@
 import type { NodeTypes } from './enums';
-import type { Element } from 'hast';
+import type { Element, ElementContent, Properties } from 'hast';
 import type {
   Code,
   Data,
@@ -18,6 +18,31 @@ import type {
 import type { MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import type { MDXModule } from 'mdx/types';
 import type { Position } from 'unist';
+
+/**
+ * Custom hast node emitted by `mdxJsxElementHandler` for every MDX JSX element.
+ * Registered with hast below so the unified/unist tooling (remark-rehype handlers,
+ * unist-util-visit, rehype-raw's passThrough) recognizes it as a first-class
+ * hast node. `properties` intentionally widens `hast`'s `Properties` type because
+ * attribute expressions evaluate to real JS values (objects, arrays, numbers)
+ * which don't fit hast's HTML-attribute-oriented `PropertyValue` union.
+ */
+export interface MdxJsx {
+  children: ElementContent[];
+  position?: Position;
+  properties: Properties;
+  tagName: string;
+  type: 'mdx-jsx';
+}
+
+declare module 'hast' {
+  interface RootContentMap {
+    'mdx-jsx': MdxJsx;
+  }
+  interface ElementContentMap {
+    'mdx-jsx': MdxJsx;
+  }
+}
 
 export type Callout = Omit<Blockquote, 'children' | 'type'> & {
   children: BlockContent[];

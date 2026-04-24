@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { execute } from '../helpers';
+import { renderingEngines } from './utils';
 
 describe('Variable', () => {
-  it('render a variable', () => {
+  it.each(renderingEngines)('%s: render a variable', (_label, renderContent) => {
     const md = '<Variable variable="name" />';
-    const Content = execute(md);
+    const Content = renderContent(md);
 
     render(<Content />);
 

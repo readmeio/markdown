@@ -1,0 +1,133 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Callout > mdx: renders a callout with icon and body 1`] = `
+<div>
+  <blockquote
+    class="callout callout_info"
+    theme="📘"
+  >
+    <span
+      class="callout-icon"
+    >
+      📘
+    </span>
+    <p>
+      Hello there
+    </p>
+  </blockquote>
+</div>
+`;
+
+exports[`Callout > mdx: renders the markdown inside the callout body 1`] = `
+<div>
+  <blockquote
+    class="callout callout_info"
+    theme="📘"
+  >
+    <span
+      class="callout-icon"
+    >
+      📘
+    </span>
+    <h3
+      class="heading heading-3 header-scroll"
+    >
+      <div
+        class="heading-anchor anchor waypoint"
+        id="this-should-be-a-heading"
+      />
+      <div
+        class="heading-text"
+      >
+        This should be a heading
+      </div>
+      <a
+        aria-label="Skip link to This should be a heading"
+        class="heading-anchor-icon fa fa-regular fa-anchor"
+        href="#this-should-be-a-heading"
+      />
+    </h3>
+    <p>
+      This should be 
+      <strong>
+        strong
+      </strong>
+       text, 
+      <em>
+        italic
+      </em>
+       text, and a 
+      <del>
+        strikethrough
+      </del>
+       text.
+    </p>
+  </blockquote>
+</div>
+`;
+
+exports[`Callout > mdxish: renders a callout with icon and body 1`] = `
+<div>
+  <blockquote
+    class="callout callout_info"
+    theme="📘"
+  >
+    <span
+      class="callout-icon"
+    >
+      📘
+    </span>
+    <p>
+      Hello there
+    </p>
+  </blockquote>
+</div>
+`;
+
+exports[`Callout > mdxish: renders the markdown inside the callout body 1`] = `
+<div>
+  <blockquote
+    class="callout callout_info"
+    theme="📘"
+  >
+    <span
+      class="callout-icon"
+    >
+      📘
+    </span>
+    <h3
+      class="heading heading-3 header-scroll"
+    >
+      <div
+        class="heading-anchor anchor waypoint"
+        id="this-should-be-a-heading"
+      />
+      <div
+        class="heading-text"
+      >
+        This should be a heading
+      </div>
+      <a
+        aria-label="Skip link to This should be a heading"
+        class="heading-anchor-icon fa fa-regular fa-anchor"
+        href="#this-should-be-a-heading"
+      />
+    </h3>
+    <p>
+      This should be 
+      <strong>
+        strong
+      </strong>
+       text, 
+      <em>
+        italic
+      </em>
+       text, and a 
+      <del>
+        strikethrough
+      </del>
+       text.
+    </p>
+  </blockquote>
+</div>
+`;

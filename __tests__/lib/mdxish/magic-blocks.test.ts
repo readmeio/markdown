@@ -1008,7 +1008,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
       const calloutElement = ast.children[0] as Element;
 
-      expect(calloutElement.properties.empty).toBe('true');
+      expect(calloutElement.properties.empty).toBe(true);
 
       // Should have 2 children: empty heading placeholder + body paragraph
       expect(calloutElement.children).toHaveLength(2);

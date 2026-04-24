@@ -135,16 +135,19 @@ describe('mdxish safeMode', () => {
   describe('with safeMode: false (default)', () => {
     it('should evaluate inline expressions', () => {
       const md = 'Result: {5 * 10}';
-      const tree = mdxish(md, { jsxContext: {} });
+      const tree = mdxish(md);
       const text = extractText(tree);
       expect(text).toContain('50');
     });
 
-    it('should evaluate attribute expressions', () => {
-      const md = '<a href={baseUrl}>Link</a>';
-      const tree = mdxish(md, { jsxContext: { baseUrl: 'https://example.com' } });
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor?.properties?.href).toBe('https://example.com');
+    it('should evaluate self-contained attribute expressions on custom components', () => {
+      // Attribute expressions on custom components are evaluated as plain JS literals
+      // by the mdxJsx hast handler. String-valued expressions survive rehypeRaw's
+      // HTML round-trip without any marker encoding.
+      const md = '<Callout value={"hello".toUpperCase()} />';
+      const tree = mdxish(md);
+      const callout = findElementByTagName(tree, 'Callout');
+      expect(callout?.properties?.value).toBe('HELLO');
     });
 
     it('should parse user variables', () => {
@@ -165,11 +168,11 @@ describe('mdxish safeMode', () => {
       expect(text).not.toContain('50');
     });
 
-    it('should NOT evaluate attribute expressions', () => {
-      const md = '<a href={baseUrl}>Link</a>';
-      const tree = mdxish(md, { safeMode: true, jsxContext: { baseUrl: 'https://example.com' } });
-      const anchor = findElementByTagName(tree, 'a');
-      expect(anchor?.properties?.href).not.toBe('https://example.com');
+    it('should NOT evaluate attribute expressions — raw `{...}` text is preserved', () => {
+      const md = '<Callout value={"hello".toUpperCase()} />';
+      const tree = mdxish(md, { safeMode: true });
+      const callout = findElementByTagName(tree, 'Callout');
+      expect(callout?.properties?.value).toBe('{"hello".toUpperCase()}');
     });
 
     it('should still parse user variables', () => {
@@ -548,6 +551,47 @@ b
       expect(paragraphs).toHaveLength(2);
       expect((paragraphs[0].children[0] as Text).value).toBe('Line 1');
       expect((paragraphs[1].children[0] as Text).value).toBe('Line 2');
+    });
+  });
+});
+
+describe('html tags rendering', () => {
+  describe('given various attribute formats', () => {
+    const expectedAnchor = {
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: 'https://example.com',
+      },
+      children: [{ type: 'text', value: 'Example' }],
+    };
+
+    it('should parse normal attribute syntax', () => {
+      const md = '<a href="https://example.com">Example</a>';
+      const tree = mdxish(md);
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor).toMatchObject(expectedAnchor);
+    });
+
+    it('should parse attribute expression syntax', () => {
+      const md = '<a href={"https://example.com"}>Example</a>';
+      const tree = mdxish(md);
+      const anchor = findElementByTagName(tree, 'a');
+      expect(anchor).toMatchObject(expectedAnchor);
+    });
+  });
+
+  it('should parse inline html tags with its attributes as normal html nodes', () => {
+    const md = 'Hello <a href="https://example.com">Example</a> there';
+    const tree = mdxish(md);
+    const anchor = findElementByTagName(tree, 'a');
+    expect(anchor).toMatchObject({
+      type: 'element',
+      tagName: 'a',
+      properties: {
+        href: 'https://example.com',
+      },
+      children: [{ type: 'text', value: 'Example' }],
     });
   });
 });

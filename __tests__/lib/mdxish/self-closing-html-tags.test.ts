@@ -463,7 +463,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     });
 
     it('should handle <i /> alongside JSX expressions', () => {
-      const tree = mdxish('<i /> result: {5 * 10}', { jsxContext: {} });
+      const tree = mdxish('<i /> result: {5 * 10}');
       const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
