@@ -37,12 +37,9 @@ import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/ma
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
-import mdxishTables from '../processor/transform/mdxish/mdxish-tables';
-import mdxishTablesToJsx from '../processor/transform/mdxish/mdxish-tables-to-jsx';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
-import { normalizeTableSeparator } from '../processor/transform/mdxish/normalize-table-separator';
 import {
   preprocessJSXExpressions,
   removeJSXComments,
@@ -52,6 +49,9 @@ import {
   preserveBooleanProperties,
   restoreBooleanProperties,
 } from '../processor/transform/mdxish/retain-boolean-attributes';
+import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
+import mdxishTablesToJsx from '../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
+import { normalizeTableSeparator } from '../processor/transform/mdxish/tables/normalize-table-separator';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';

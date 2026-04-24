@@ -1,19 +1,6 @@
-import type { Element, Root } from 'hast';
-
 import { mdxish } from '../../lib';
 import { preprocessJSXExpressions } from '../../processor/transform/mdxish/preprocess-jsx-expressions';
-
-// Helper function to find an element by tag name in a hast tree
-function findElementByTagName(node: Element | Root, tagName: string): Element | undefined {
-  if (node.type === 'element' && node.tagName === tagName) return node;
-  if (!('children' in node)) return undefined;
-
-  return node.children.reduce<Element | undefined>((found, child) => {
-    if (found) return found;
-    if (child.type !== 'element') return undefined;
-    return findElementByTagName(child, tagName);
-  }, undefined);
-}
+import { findElementByTagName } from '../helpers';
 
 describe('preprocessJSXExpressions', () => {
   describe('Code block protection', () => {
@@ -914,7 +901,7 @@ const obj = {key: value};
       it('strips a comment-wrapped magic block from mdxish output', () => {
         const wrapped = '{/*\n\n[block:image]\n{"images": [{"image": ["https://example.com/x.png", null, "X"]}]}\n[/block]\n\n*/}';
         const tree = mdxish(wrapped);
-        expect(findElementByTagName(tree, 'img')).toBeUndefined();
+        expect(findElementByTagName(tree, 'img')).toBeNull();
       });
     });
   });
