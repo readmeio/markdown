@@ -5,7 +5,7 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { hasExpressionAttr, inlineMdProcessor, isPascalCase } from './utils';
+import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
@@ -38,16 +38,16 @@ function safeDeindent(text: string): string {
  * Dedents the content first to prevent indented component content
  * (from nested components) from being treated as code blocks.
  */
-const parseMdChildren = (value: string): RootContent[] => {
-  const parsed = inlineMdProcessor.parse(safeDeindent(value).trim());
+const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
+  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
   return parsed.children || [];
 };
 
 /**
  * Parse substring content of a node and update the parent's children to include the new nodes.
  */
-const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string) => {
-  const siblingNodes = parseMdChildren(sibling) as Node[];
+const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+  const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   // The new sibling nodes might contain new components to be processed
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
@@ -110,7 +110,8 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  */
 const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
   const stack: Parent[] = [tree];
-  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: !!opts.safeMode };
+  const safeMode = !!opts.safeMode;
+  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
@@ -161,7 +162,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       // Check and parse if there's relevant content after the current closing tag
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(stack, parent, index, remainingContent);
+        parseSibling(stack, parent, index, remainingContent, safeMode);
       }
       return;
     }
@@ -175,7 +176,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
-        ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children'])
+        ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
         : [];
       // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
       // bare text in a paragraph; unwrap when there's exactly one paragraph so
@@ -193,7 +194,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
       // After the closing tag, there might be more content to be processed
       if (contentAfterClose) {
-        parseSibling(stack, parent, index, contentAfterClose);
+        parseSibling(stack, parent, index, contentAfterClose, safeMode);
       } else if (componentNode.children.length > 0) {
         // The content inside the component block might contain new components to be processed
         stack.push(componentNode as Parent);
