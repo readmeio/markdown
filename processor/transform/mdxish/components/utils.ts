@@ -20,11 +20,10 @@ import { mdxComponent } from '../../../../lib/micromark/mdx-component';
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
 /**
- * Parse-only processor for re-parsing the body of an MDX-ish component.
- * Tokenizer extensions match the top-level parse so a nested component
+ * Shared unified processor for re-parsing the body of an MDX-ish component.
+ * Used by both the block and inline-block transformers so a nested component
  * (e.g. `<Anchor>text with <b>bold</b></Anchor>`) goes through the same
- * chain. `mdxExpression` is included only when not in safeMode, mirroring
- * the top-level parser's safeMode contract.
+ * tokenizer chain as the top-level parse.
  */
 export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
   const micromarkExts = [mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
