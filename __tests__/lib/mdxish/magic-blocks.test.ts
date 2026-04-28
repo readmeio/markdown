@@ -1970,5 +1970,125 @@ asdasdasd
       expect(img).toContain('example.com/image.png');
       expect(img).not.toContain('[block:image]');
     });
+
+    it('should parse image block indented under a list item (column 3) inside a Tabs component', () => {
+      const md = `<Tabs>
+<Tab title="Foo">
+3. Baz
+   [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+</Tab>
+</Tabs>`;
+      const ast = mdxish(md);
+
+      expect(ast.children[0]).toMatchObject({
+        type: 'element',
+        tagName: 'Tabs',
+        children: [
+          {
+            type: 'element',
+            tagName: 'Tab',
+            properties: { title: 'Foo' },
+            children: [
+              {
+                type: 'element',
+                tagName: 'ol',
+                properties: { start: 3 },
+                children: [
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                  {
+                    type: 'element',
+                    tagName: 'li',
+                    children: [
+                      {
+                        type: 'text',
+                        value: 'Baz\n',
+                      },
+                      {
+                        type: 'element',
+                        tagName: 'img',
+                        properties: { src: 'https://example.com/image.png', alt: 'Alt text', title: '' },
+                      },
+                      {
+                        type: 'text',
+                        value: '\n',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should parse image block inside a blockquote inside a Tabs component', () => {
+      const md = `<Tabs>
+<Tab title="Foo">
+
+> [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+
+</Tab>
+</Tabs>`;
+      const ast = mdxish(md);
+
+      expect(ast.children[0]).toMatchObject({
+        type: 'element',
+        tagName: 'Tabs',
+        children: [
+          {
+            type: 'element',
+            tagName: 'Tab',
+            properties: { title: 'Foo' },
+            children: [
+              {
+                type: 'element',
+                tagName: 'blockquote',
+                children: [
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                  {
+                    type: 'element',
+                    tagName: 'img',
+                    properties: { src: 'https://example.com/image.png', alt: 'Alt text', title: '' },
+                  },
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should parse image block indented under a list item inside a Callout component', () => {
+      const md = `<Callout icon="📘">
+
+3. Baz
+
+   [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+
+</Callout>`;
+      const ast = mdxish(md);
+      const callout = ast.children[0] as Element;
+      expect(callout.tagName).toBe('Callout');
+
+      const html = toHtml(callout);
+      expect(html).toContain('<img');
+      expect(html).toContain('example.com/image.png');
+      expect(html).not.toContain('[block:image]');
+    });
   });
 });

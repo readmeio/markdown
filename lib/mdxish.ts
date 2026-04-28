@@ -188,15 +188,18 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
-    .use(magicBlockTransformer)
-    .use(imageTransformer, { isMdxish: true })
-    .use(defaultTransformers)
     .use(mdxishSelfClosingBlocks)
     .use(mdxishMdxComponentBlocks, { safeMode })
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
+    // The next few transformers must appear after mdxishMdxComponentBlocks
+    // so nodes produced by the inline re-parse of component bodies
+    // (e.g. code/image/embed inside <Tabs>) get visited too
+    .use(magicBlockTransformer)
+    .use(imageTransformer, { isMdxish: true })
+    .use(defaultTransformers)
     .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
