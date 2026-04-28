@@ -194,6 +194,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks)
+    // The next few transformers must appear after mdxishMdxComponentBlocks
+    // so nodes produced by the inline re-parse of component bodies
+    // (e.g. code/image/embed inside <Tabs>) get visited too
     .use(magicBlockTransformer)
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
