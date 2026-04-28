@@ -6,7 +6,7 @@ import { visit } from 'unist-util-visit';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { hasExpressionAttr, inlineMdProcessor, isPascalCase, toMdxJsxTextElement } from './utils';
+import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always
@@ -17,10 +17,10 @@ import { hasExpressionAttr, inlineMdProcessor, isPascalCase, toMdxJsxTextElement
  * rejects line endings), so the paragraph-flatten path covers every case we
  * actually produce; other shapes fall back to empty children.
  */
-const parsePhrasingChildren = (value: string): PhrasingContent[] => {
+const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingContent[] => {
   const trimmed = value.trim();
   if (!trimmed) return [];
-  const [first] = inlineMdProcessor.parse(trimmed).children;
+  const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
   return first?.type === 'paragraph' ? (first as Paragraph).children : [];
 };
 
@@ -34,7 +34,7 @@ const parsePhrasingChildren = (value: string): PhrasingContent[] => {
  *
  * Returns the original node unchanged when it doesn't qualify.
  */
-const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): PhrasingContent => {
+const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMode: boolean): PhrasingContent => {
   const parsed = parseTag((node.value ?? '').trim(), parseOpts);
   if (!parsed) return node;
 
@@ -60,7 +60,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
   if (closeIdx < 0) return node;
 
   const inner = contentAfterTag.slice(0, closeIdx);
-  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner), node.position);
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode), node.position);
 };
 
 /**
@@ -80,11 +80,12 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions): Phras
  * `<a href="x">` stays as an html node for rehype-raw.
  */
 const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
-  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: !!opts.safeMode };
+  const safeMode = !!opts.safeMode;
+  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   visit(tree, 'paragraph', (paragraph: Paragraph) => {
     paragraph.children = paragraph.children.map(child =>
-      child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts) : child,
+      child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode) : child,
     );
   });
 };

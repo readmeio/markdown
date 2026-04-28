@@ -1,5 +1,7 @@
 import type { Element, Text } from 'hast';
 
+import { toHtml } from 'hast-util-to-html';
+
 import { describe, it, expect } from 'vitest';
 
 import { mdxish } from '../../../lib/mdxish';
@@ -640,6 +642,60 @@ Third {"3"} paragraph.`;
 
       const blockquote = ast.children.find(c => (c as Element).tagName === 'blockquote') as Element;
       expect(blockquote).toBeDefined();
+    });
+  });
+
+  describe('inside JSX components', () => {
+    it('should evaluate inline expressions inside a Tabs component child', () => {
+      const md = `
+<Tabs>
+<Tab title="Foo">
+
+The answer is {1 + 1}.
+
+</Tab>
+</Tabs>
+`;
+      const ast = mdxish(md);
+      const tabs = ast.children[0] as Element;
+      expect(tabs.tagName).toBe('Tabs');
+
+      const html = toHtml(tabs);
+      expect(html).toContain('The answer is 2');
+      expect(html).not.toContain('{1 + 1}');
+    });
+
+    it('should evaluate inline expressions inside a Callout component', () => {
+      const md = `
+<Callout icon="📘">
+
+The answer is {1 + 1}.
+
+</Callout>
+`;
+      const ast = mdxish(md);
+      const callout = ast.children[0] as Element;
+      expect(callout.tagName).toBe('Callout');
+
+      const html = toHtml(callout);
+      expect(html).toContain('The answer is 2');
+      expect(html).not.toContain('{1 + 1}');
+    });
+
+    it('should leave expressions as text inside components when safeMode is on', () => {
+      const md = `
+<Tabs>
+<Tab title="Foo">
+
+The answer is {1 + 1}.
+
+</Tab>
+</Tabs>
+`;
+      const ast = mdxish(md, { safeMode: true });
+      const tabs = ast.children[0] as Element;
+      const html = toHtml(tabs);
+      expect(html).toContain('{1 + 1}');
     });
   });
 });
