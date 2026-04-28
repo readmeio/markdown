@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.1.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** gemoji & expressions not rendering in components ([#1449](https://github.com/readmeio/markdown/issues/1449)) ([1d6f315](https://github.com/readmeio/markdown/commit/1d6f315f871b92dfec9f43998d79a35154ec3ebf)), closes [#1447](https://github.com/readmeio/markdown/issues/1447)
+* **mdxish:** move node-level transformers after MDX component re-parse ([#1450](https://github.com/readmeio/markdown/issues/1450)) ([ea23e7e](https://github.com/readmeio/markdown/commit/ea23e7e05d7f5552ca0a37f695df62b4099a7c02)), closes [#1447](https://github.com/readmeio/markdown/issues/1447) [#1449](https://github.com/readmeio/markdown/issues/1449)
+* preserve target attribute on links ([#1443](https://github.com/readmeio/markdown/issues/1443)) ([6ae279e](https://github.com/readmeio/markdown/commit/6ae279e95cccdb9c52eb89a4ad76a010034b0536))
+
 ## Version 14.1.1
 ### 🛠 Fixes & Updates
 
