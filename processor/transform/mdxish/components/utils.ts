@@ -19,13 +19,7 @@ import { mdxComponent } from '../../../../lib/micromark/mdx-component';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
-/**
- * Shared unified processor for re-parsing the body of an MDX-ish component.
- * Used by both the block and inline-block transformers so a nested component
- * (e.g. `<Anchor>text with <b>bold</b></Anchor>`) goes through the same
- * tokenizer chain as the top-level parse.
- */
-export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
+const buildInlineMdProcessor = (safeMode: boolean) => {
   const micromarkExts = [mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
   const fromMarkdownExts = [
     mdxComponentFromMarkdown(),
@@ -35,12 +29,8 @@ export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean 
     magicBlockFromMarkdown(),
   ];
 
+  // Since evaluating expressions can be dangerous, do so only when safeMode is off
   if (!safeMode) {
-    // Text-only mdx expression so `{1 + 1}` etc. inside a component body
-    // produce expression nodes that `evaluateExpressions` can later resolve,
-    // rather than falling through as literal text. Flow form is omitted on
-    // purpose to match the top-level parser, where `{...}` must not
-    // interrupt paragraphs (would break multiline magic blocks).
     const mdxExprExt = mdxExpression({ allowEmpty: true });
     micromarkExts.push({ text: mdxExprExt.text });
     fromMarkdownExts.push(mdxExpressionFromMarkdown());
@@ -51,6 +41,23 @@ export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean 
     .data('fromMarkdownExtensions', fromMarkdownExts)
     .use(remarkParse)
     .use(remarkGfm);
+};
+
+const processorCache = new Map<boolean, ReturnType<typeof buildInlineMdProcessor>>();
+
+/**
+ * Unified processor for re-parsing the body of an MDX component
+ * Memoized based on the argument value so we don't pay the construction cost on every parse
+ * Currently the argument is only safeMode, but we could add more arguments in the future,
+ * in which case the key would need to be extend to include the new arguments.
+ */
+export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
+  let processor = processorCache.get(safeMode);
+  if (!processor) {
+    processor = buildInlineMdProcessor(safeMode);
+    processorCache.set(safeMode, processor);
+  }
+  return processor;
 };
 
 /**
