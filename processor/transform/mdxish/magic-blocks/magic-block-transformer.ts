@@ -65,6 +65,17 @@ import {
 } from './placeholder';
 
 /**
+ * To be used when trying to lift a block node out of a paragraph
+ * since it can't be in a paragraph
+ */
+interface NodeLiftEvent {
+  childrenBlockNodes: RootContent[];
+  grandparent: Parent;
+  node: MagicBlockNode;
+  parent: Paragraph;
+}
+
+/**
  * Wraps a node in a "pinned" container if sidebar: true is set.
  */
 const wrapPinnedBlocks = (node: MdastNode, data: MagicBlockJson): MdastNode => {
@@ -652,12 +663,6 @@ const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    interface NodeLiftEvent {
-      childrenBlockNodes: RootContent[];
-      grandparent: Parent;
-      node: MagicBlockNode;
-      parent: Paragraph;
-    }
     const lifts: NodeLiftEvent[] = [];
 
     visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
