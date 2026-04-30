@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.1.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** consecutive magic blocks not rendering if they have html tags in their content ([#1452](https://github.com/readmeio/markdown/issues/1452)) ([4b2ffbf](https://github.com/readmeio/markdown/commit/4b2ffbf43d93fed9dc8d86c82f64cfda6c2006ce))
+
 ## Version 14.1.2
 ### 🛠 Fixes & Updates
 
