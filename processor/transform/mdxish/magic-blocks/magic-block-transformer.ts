@@ -652,14 +652,13 @@ const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    interface Lift {
-      blockNodes: RootContent[];
-      container: Parent;
-      inlineNodes: PhrasingContent[];
+    interface NodeLiftEvent {
+      childrenBlockNodes: RootContent[];
+      grandparent: Parent;
       node: MagicBlockNode;
-      paragraph: Paragraph;
+      parent: Paragraph;
     }
-    const lifts: Lift[] = [];
+    const lifts: NodeLiftEvent[] = [];
 
     visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
@@ -680,89 +679,62 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         return;
       }
 
-      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
+      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs)
+      // it means we need to lift them out
       if (isParagraph(parent) && children.some(isBlockNode)) {
         const blockNodes: RootContent[] = [];
-        const inlineNodes: PhrasingContent[] = [];
-
         children.forEach(child => {
           if (isBlockNode(child)) {
             blockNodes.push(child);
-          } else {
-            // Non-block children produced by transformMagicBlock are valid
-            // phrasing content and belong inside the paragraph.
-            inlineNodes.push(child as PhrasingContent);
           }
         });
 
-        // Defer the lift to a second pass — we don't precompute before/after
-        // here because multiple magicBlocks may share the same paragraph parent,
-        // and snapshots taken at visit-time would go stale once a sibling is
-        // processed (see the regression where two magic blocks under a list
-        // item caused the second one's raw text to leak back into the paragraph).
         lifts.push({
-          blockNodes,
-          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
-          inlineNodes,
+          childrenBlockNodes: blockNodes,
+          grandparent: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           node,
-          paragraph: parent,
+          parent,
         });
       } else {
         parent.children.splice(index, 1, ...children);
       }
     });
 
-    // Second pass: apply lifts that move block nodes out of paragraphs.
+    // Second pass: apply lifts that move block nodes, and the content after them, out of paragraphs.
     // Operate on live state (find each node's current index now) and process in reverse so
     // that container insertions don't disturb earlier paragraphs' positions.
     for (let i = lifts.length - 1; i >= 0; i -= 1) {
-      const { blockNodes, container, inlineNodes, node, paragraph } = lifts[i];
-      const liveIndex = paragraph.children.indexOf(node);
-      if (liveIndex === -1) {
+      const { childrenBlockNodes: blockNodes, grandparent, node, parent: parentParagraph } = lifts[i];
+      const nodePosition = parentParagraph.children.indexOf(node);
+      const parentPosition = grandparent.children.indexOf(parentParagraph);
+      if (nodePosition === -1 || parentPosition === -1) {
         // eslint-disable-next-line no-continue
         continue;
       }
 
-      // Snapshot live siblings — these are correct now (sibling magicBlocks for this
-      // paragraph were already lifted by earlier reverse-order iterations).
-      const before = paragraph.children.slice(0, liveIndex);
-      const after = paragraph.children.slice(liveIndex + 1);
+      // Snapshot live siblings to reconstruct the parent paragraph around the lifted node.
+      const parentSiblingsBefore = parentParagraph.children.slice(0, nodePosition);
+      const parentSiblingsAfter = parentParagraph.children.slice(nodePosition + 1);
 
-      // The newline that originally separated the magic block from its surrounding
-      // text now sits as a leading break (or whitespace-only text) on the trailing
-      // siblings, and a trailing one on the leading siblings. Drop those so the
-      // lifted block doesn't render with an extra blank line on either side.
-      while (before.length > 0 && isWhitespacePhrasing(before[before.length - 1])) before.pop();
-      while (after.length > 0 && isWhitespacePhrasing(after[0])) after.shift();
+      // Remove split-edge whitespace so lifted blocks do not render with extra blank lines.
+      while (parentSiblingsBefore.length > 0 && isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])) parentSiblingsBefore.pop();
+      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) parentSiblingsAfter.shift();
 
-      const paraIndex = container.children.indexOf(paragraph);
-      if (paraIndex === -1) {
-        // Defensive: paragraph isn't in the container we expected (tree was
-        // mutated between visit and apply). Drop just the magic block from the
-        // paragraph and place its inline portion in its slot — we can't safely
-        // lift block nodes out without a known container.
-        paragraph.children.splice(liveIndex, 1, ...inlineNodes);
-        // eslint-disable-next-line no-continue
-        continue;
+      const splitOffContentFromParent: RootContent[] = [...blockNodes];
+      if (parentSiblingsAfter.length > 0) {
+        // Keep trailing inline content grouped under a paragraph sibling as it might be an inline node
+        // Even if it contains a block node, it will be hoisted out during its turn in the loop
+        const trailingParagraph: Paragraph = { type: 'paragraph', children: parentSiblingsAfter };
+        splitOffContentFromParent.push(trailingParagraph);
       }
 
-      // Reshape the paragraph to hold only the leading content (plus inline nodes
-      // produced by the transform), then insert lifted blocks after the paragraph,
-      // followed by a new paragraph for any trailing content. This preserves
-      // source order: text-before, lifted block, text-after.
-      paragraph.children = [...before, ...inlineNodes];
-
-      const insertions: RootContent[] = [...blockNodes];
-      if (after.length > 0) {
-        const trailing: Paragraph = { type: 'paragraph', children: after };
-        insertions.push(trailing);
-      }
-
-      if (paragraph.children.length === 0) {
-        // Original paragraph would be empty — drop it and put insertions in its place.
-        container.children.splice(paraIndex, 1, ...insertions);
+      parentParagraph.children = [...parentSiblingsBefore];
+      // If the parent paragraph is empty, just replace it with the lifted block nodes
+      const shouldReplaceParent = parentParagraph.children.length === 0;
+      if (shouldReplaceParent) {
+        grandparent.children.splice(parentPosition, 1, ...splitOffContentFromParent);
       } else {
-        container.children.splice(paraIndex + 1, 0, ...insertions);
+        grandparent.children.splice(parentPosition + 1, 0, ...splitOffContentFromParent);
       }
     }
   };
