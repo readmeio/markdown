@@ -644,11 +644,10 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
   (options = {}) =>
   tree => {
     const replacements: {
-      after: RootContent[];
-      before: RootContent[];
       blockNodes: RootContent[];
       container: Parent;
       inlineNodes: RootContent[];
+      node: MagicBlockNode;
       parent: Parent;
     }[] = [];
 
@@ -680,44 +679,52 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
           (isBlockNode(child) ? blockNodes : inlineNodes).push(child);
         });
 
+        // Defer the lift to a second pass — we don't precompute before/after
+        // here because multiple magicBlocks may share the same paragraph parent,
+        // and snapshots taken at visit-time would go stale once a sibling is
+        // processed (see the regression where two magic blocks under a list
+        // item caused the second one's raw text to leak back into the paragraph).
         replacements.push({
           container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           parent,
           blockNodes,
           inlineNodes,
-          before: parent.children.slice(0, index) as RootContent[],
-          after: parent.children.slice(index + 1) as RootContent[],
+          node,
         });
       } else {
         parent.children.splice(index, 1, ...children);
       }
     });
 
-    // Second pass: apply replacements that require lifting block nodes out of paragraphs
-    // Process in reverse order to maintain correct indices
+    // Second pass: apply replacements that require lifting block nodes out of paragraphs.
+    // Operate on live state (find each node's current index now) and process in reverse so
+    // that container insertions don't disturb earlier paragraphs' positions.
     for (let i = replacements.length - 1; i >= 0; i -= 1) {
-      const { after, before, blockNodes, container, inlineNodes, parent } = replacements[i];
-      const containerChildren = container.children as RootContent[];
-      const paraIndex = containerChildren.indexOf(parent as RootContent);
-
-      if (paraIndex === -1) {
-        parent.children.splice(before.length, 1, ...blockNodes, ...inlineNodes);
+      const { blockNodes, container, inlineNodes, node, parent } = replacements[i];
+      const liveIndex = parent.children.indexOf(node as unknown as RootContent);
+      if (liveIndex === -1) {
         // eslint-disable-next-line no-continue
         continue;
       }
 
-      if (inlineNodes.length > 0) {
-        parent.children = [...before, ...inlineNodes, ...after];
-        if (blockNodes.length > 0) {
-          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
-        }
-      } else if (before.length === 0 && after.length === 0) {
+      // Replace the magicBlock node in the paragraph with its inline portion (if any).
+      parent.children.splice(liveIndex, 1, ...inlineNodes);
+
+      const containerChildren = container.children as RootContent[];
+      const paraIndex = containerChildren.indexOf(parent as RootContent);
+
+      if (paraIndex === -1) {
+        // Paragraph not found in container - leave block nodes alongside inline ones in place.
+        parent.children.splice(liveIndex + inlineNodes.length, 0, ...blockNodes);
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      if (parent.children.length === 0) {
+        // Paragraph is now empty — replace it with the block nodes directly.
         containerChildren.splice(paraIndex, 1, ...blockNodes);
-      } else {
-        parent.children = [...before, ...after];
-        if (blockNodes.length > 0) {
-          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
-        }
+      } else if (blockNodes.length > 0) {
+        containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
       }
     }
   };
