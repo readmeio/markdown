@@ -3,6 +3,7 @@ import type { Element, Text } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
+import { findElementByTagName } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -2089,6 +2090,37 @@ asdasdasd
       expect(html).toContain('<img');
       expect(html).toContain('example.com/image.png');
       expect(html).not.toContain('[block:image]');
+    });
+  });
+
+  describe('multiple magic blocks', () => {
+    it('should parse 2 magic blocks that have html content in the same line', () => {
+      const md = `
+[block:parameters]
+{
+  "data": {
+    "h-0": "Heading",
+    "0-0": "<li>List item<li>"
+  },
+  "cols": 1,
+  "rows": 1
+}
+[/block]
+
+
+[block:html]
+{
+  "html": "<table><tbody><tr><td><ul><li>a</li><li>b</li></ul></td></tr></tbody></table>"
+}
+[/block]
+`;
+      const ast = mdxish(md);
+
+      const tableNode = findElementByTagName(ast, 'table');
+      expect(tableNode).not.toBeNull();
+
+      const htmlBlockNode = findElementByTagName(ast, 'html-block');
+      expect(htmlBlockNode).not.toBeNull();
     });
   });
 });

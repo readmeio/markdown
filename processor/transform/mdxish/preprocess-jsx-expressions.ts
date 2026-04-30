@@ -1,4 +1,5 @@
 import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
+import { MAGIC_BLOCK_REGEX } from '../../../lib/utils/extractMagicBlocks';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 // Base64 encode (Node.js + browser compatible)
@@ -204,10 +205,25 @@ function escapeProblematicBraces(content: string): string {
  */
 export function preprocessJSXExpressions(content: string): string {
   let processed = protectHTMLBlockContent(content);
+
+  // We don't want to touch magic block content as well as they're flaky
+  // and need to be exact as it is in the original markdown.
+  const magicBlocks: string[] = [];
+  processed = processed.replace(MAGIC_BLOCK_REGEX, match => {
+    const idx = magicBlocks.length;
+    magicBlocks.push(match);
+    return `___MAGIC_BLOCK_${idx}___`;
+  });
+
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
   processed = escapeProblematicBraces(protectedContent);
 
   processed = restoreCodeBlocks(processed, protectedCode);
+
+  if (magicBlocks.length > 0) {
+    processed = processed.replace(/___MAGIC_BLOCK_(\d+)___/g, (_m, idx) => magicBlocks[parseInt(idx, 10)]);
+  }
+
   return processed;
 }
