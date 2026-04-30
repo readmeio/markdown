@@ -65,14 +65,12 @@ const HTML_ELEM_PLACEHOLDER = new RegExp(`${HTML_ELEM_PLACEHOLDER_PREFIX}(\\d+)_
 const BLOCK_HTML_RE = /(?<=^|\n)[ \t]*<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>[ \t]*(?=\n|$)/g;
 
 /**
- * Extracts and replaces raw HTML element sequences so they don't get affected by the brace escaping
- * and surface literal `\{` before an unclosed brace inside the HTML.
+ * Hides line-anchored HTML elements from the brace-escaping pass so we don't leak `\{`
+ * into rendered output (rehypeRaw renders the `\` literally, e.g. `<div>{foo</div>`).
  *
- * In most cases, we still need to escape unclosed braces  under HTML elements,
- * especially if they span multiple lines because the sequence might get split in the pipeline and
- * the opening braces might cause an error with the mdxExpression step.
- *
- * E.g. `<div>{foo</div>` should be rendered as raw HTML, so escaping the `{` would surface `\{` literally.
+ * One carve-out: if an interior line at column 0 has bare text containing `{`, mdxish
+ * parses that line as a paragraph and the mdxExpression step would throw without an
+ * escape — so we leave that case to the brace balancer.
  */
 function protectHTMLElements(content: string): { htmlElements: string[]; protectedContent: string } {
   const htmlElements: string[] = [];
@@ -81,6 +79,7 @@ function protectHTMLElements(content: string): { htmlElements: string[]; protect
     // at column 0 with bare text (not whitespace, not another tag) and contains
     // `{`, mdxish will parse that line as a paragraph and the brace as an MDX
     // expression, which would throw an error. So we let the brace balancer escape it.
+    // Otherwise, we need to extract the sequence to protect it from the brace escaping.
     const interior = match.split('\n').slice(1, -1);
     const hazard = interior.some(line => line.length > 0 && line[0] !== ' ' && line[0] !== '\t' && line[0] !== '<' && line.includes('{'));
     if (hazard) return match;
@@ -170,7 +169,6 @@ function escapeProblematicBraces(content: string): string {
       }
       openStack.push({ pos: i, hasBlankLine: false, isAttrExpr });
       lastNewlinePos = -2;
-
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
@@ -196,9 +194,7 @@ function escapeProblematicBraces(content: string): string {
 
   // Reconstruct the content with the escaped braces.
   const escapedContent = toEscape.size === 0 ? protectedContent : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
-
-  const restoredContent = restoreHTMLElements(escapedContent, htmlElements);
-  return restoredContent;
+  return restoreHTMLElements(escapedContent, htmlElements);
 }
 
 /**

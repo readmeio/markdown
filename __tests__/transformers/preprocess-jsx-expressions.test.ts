@@ -741,7 +741,7 @@ hi \\{ unclosed
         `);
       });
 
-      it('should not escape multilne balanced braces inside HTML tags that starts right after the opening tag', () => {
+      it('should not escape multi-line balanced braces inside HTML tags that start right after the opening tag', () => {
         const content = `<div>{
 hello
 
@@ -762,21 +762,21 @@ hello
         expect(result).toBe(content);
       });
 
-      it('should not escape unclosed curly braces if it is next to an unclosed HTML tag', () => {
+      it('should escape an unclosed brace next to an inline HTML tag (mdxish would otherwise throw)', () => {
         const content = '<strong> hello {';
         const result = preprocessJSXExpressions(content);
         expect(() => mdxish(result)).not.toThrow();
         expect(result).toBe('<strong> hello \\{');
       });
 
-      it.skip('should not escape unclosed curly braces if it is next to an unclosed list tag', () => {
+      it.skip('should not escape an unclosed brace next to a block-level HTML tag', () => {
         const content = '<li> hello {';
         const result = preprocessJSXExpressions(content);
         expect(() => mdxish(result)).not.toThrow();
         expect(result).toBe(content);
       });
 
-      it.skip('should not escape unclosed curly braces if it is next to an unclosed HTML tag inside a component', () => {
+      it.skip('should not escape an unclosed brace next to a block-level HTML tag nested inside a component', () => {
         const content = `
 <Callout>
 <li> hello {
