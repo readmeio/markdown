@@ -58,52 +58,61 @@ export function removeJSXComments(content: string): string {
   return content.replace(JSX_COMMENT_REGEX, '');
 }
 
+const HTML_ELEM_PLACEHOLDER_PREFIX = '___MDXISH_HTML_ELEM_';
+const HTML_ELEM_PLACEHOLDER = new RegExp(`${HTML_ELEM_PLACEHOLDER_PREFIX}(\\d+)___`, 'g');
+// Matches an HTML element that starts at a line boundary and ends at a line boundary.
+// Allows optional leading indentation and lazily matches until the same closing tag.
+const BLOCK_HTML_RE = /(?<=^|\n)[ \t]*<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>[ \t]*(?=\n|$)/g;
+
 /**
- * Escapes problematic braces in content to prevent MDX expression parsing errors.
- * Handles unbalanced braces and paragraph-spanning expressions. Skips HTML elements
- * so backslashes don't leak into rendered output via rehypeRaw.
+ * Extracts and replaces raw HTML element sequences so they don't get affected by the brace escaping
+ * and surface literal `\{` before an unclosed brace inside the HTML.
+ *
+ * In most cases, we still need to escape unclosed braces  under HTML elements,
+ * especially if they span multiple lines because the sequence might get split in the pipeline and
+ * the opening braces might cause an error with the mdxExpression step.
+ *
+ * E.g. `<div>{foo</div>` should be rendered as raw HTML, so escaping the `{` would surface `\{` literally.
+ */
+function protectHTMLElements(content: string): { htmlElements: string[]; protectedContent: string } {
+  const htmlElements: string[] = [];
+  const protectedContent = content.replace(BLOCK_HTML_RE, match => {
+    // Look at the lines between the open and close tags. If any of them starts
+    // at column 0 with bare text (not whitespace, not another tag) and contains
+    // `{`, mdxish will parse that line as a paragraph and the brace as an MDX
+    // expression, which would throw an error. So we let the brace balancer escape it.
+    const interior = match.split('\n').slice(1, -1);
+    const hazard = interior.some(line => line.length > 0 && line[0] !== ' ' && line[0] !== '\t' && line[0] !== '<' && line.includes('{'));
+    if (hazard) return match;
+
+    htmlElements.push(match);
+    return `${HTML_ELEM_PLACEHOLDER_PREFIX}${htmlElements.length - 1}___`;
+  });
+  return { htmlElements, protectedContent };
+}
+
+function restoreHTMLElements(content: string, htmlElements: string[]): string {
+  if (htmlElements.length === 0) return content;
+  return content.replace(HTML_ELEM_PLACEHOLDER, (_m, idx) => htmlElements[parseInt(idx, 10)]);
+}
+
+/**
+ * Escapes unbalanced and paragraph-spanning braces so MDX doesn't trip on them.
  */
 function escapeProblematicBraces(content: string): string {
-  // Skip HTML elements that mdxish parses as raw HTML — escaping their braces
-  // would leak `\` as literal text via rehypeRaw. The hazard signal is an
-  // interior line that starts with `{` at column 0: mdxish tokenizes that as
-  // an MDX expression, and a following blank line breaks parsing. Indented
-  // `{` is fine — mdxish doesn't promote it to an expression. So skip any
-  // line-anchored block element whose interior has no column-0 `{`.
-  const htmlElements: string[] = [];
-  const TAG = '[a-z][a-zA-Z0-9]*';
-  const BLOCK_HTML = new RegExp(
-    `(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[\\s\\S]*?</\\1>[ \\t]*(?=\\n|$)`,
-    'g',
-  );
+  const { htmlElements, protectedContent } = protectHTMLElements(content);
 
-  const hasColumnZeroOpenBrace = (match: string): boolean => {
-    // Hazard: an interior line that begins at column 0 with bare text (not a
-    // tag, not whitespace) and contains `{`. mdxish promotes it to an MDX
-    // expression and the surrounding block then breaks parsing. Indented
-    // text and tag-only lines are safe — mdxish keeps treating them as raw
-    // HTML, so we can leave the braces alone there.
-    const lines = match.split('\n');
-    return lines.slice(1, -1).some(line => line.length > 0 && line[0] !== ' ' && line[0] !== '\t' && line[0] !== '<' && line.includes('{'));
-  };
-
-  const stashIfRaw = (match: string): string => {
-    if (hasColumnZeroOpenBrace(match)) return match;
-    const idx = htmlElements.length;
-    htmlElements.push(match);
-    return `___HTML_ELEM_${idx}___`;
-  };
-  const safe = content.replace(BLOCK_HTML, stashIfRaw);
-
-  const toEscape = new Set<number>();
-  // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
-  const chars = Array.from(safe);
   let strDelim: string | null = null;
   let strEscaped = false;
-  // Stack of open braces with their state
-  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; pos: number }[] = [];
   // Track position of last newline (outside strings) to detect blank lines
-  let lastNewlinePos = -2; // -2 means no recent newline
+  // -2 means no recent newline
+  let lastNewlinePos = -2;
+
+  // Character state machine trackers
+  const toEscape = new Set<number>();
+  // Convert to array of Unicode code points so that emojis and multi-byte characters are correctly tracked
+  const chars = Array.from(protectedContent);
+  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; pos: number }[] = [];
 
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i];
@@ -122,24 +131,18 @@ function escapeProblematicBraces(content: string): string {
         // eslint-disable-next-line no-continue
         continue;
       }
-
-      // Track newlines to detect blank lines (paragraph boundaries)
       if (ch === '\n') {
-        // Check if this newline creates a blank line (only whitespace since last newline)
         if (lastNewlinePos >= 0) {
           const between = chars.slice(lastNewlinePos + 1, i).join('');
           if (/^[ \t]*$/.test(between)) {
-            // This is a blank line - mark all open expressions as paragraph-spanning
-            openStack.forEach(entry => {
-              entry.hasBlankLine = true;
-            });
+            openStack.forEach(entry => { entry.hasBlankLine = true; });
           }
         }
         lastNewlinePos = i;
       }
     }
 
-    // Skip already-escaped braces (count preceding backslashes)
+    // Skip already-escaped braces (odd run of preceding backslashes).
     if (ch === '{' || ch === '}') {
       let bs = 0;
       for (let j = i - 1; j >= 0 && chars[j] === '\\'; j -= 1) bs += 1;
@@ -150,10 +153,9 @@ function escapeProblematicBraces(content: string): string {
     }
 
     if (ch === '{') {
-      // If preceded by `=` (ignoring whitespace), this is a JSX attribute
-      // expression (e.g. `data={[...]}`). The mdxComponent tokenizer captures
-      // the entire component block, so blank lines inside attribute values
-      // won't split paragraphs — skip the blank-line check for these.
+      // `=` (after whitespace) before `{` ⇒ JSX attribute expression. The
+      // mdxComponent tokenizer captures the whole component, so blank lines
+      // inside attribute values are harmless. Nested `{` inherits the flag.
       let isAttrExpr = false;
       for (let j = i - 1; j >= 0; j -= 1) {
         const pc = chars[j];
@@ -163,26 +165,17 @@ function escapeProblematicBraces(content: string): string {
       // Nested `{ ... }` inside an attribute value (e.g. `data={[{ ... }]}` or
       // `data={{ a: { b: 1 } }}`) must inherit the same exemption; only the
       // outer `{` is directly after `=`.
-      if (!isAttrExpr && openStack.length > 0) {
-        const parent = openStack[openStack.length - 1];
-        if (parent.isAttrExpr) {
-          isAttrExpr = true;
-        }
+      if (!isAttrExpr && openStack.length > 0 && openStack[openStack.length - 1].isAttrExpr) {
+        isAttrExpr = true;
       }
       openStack.push({ pos: i, hasBlankLine: false, isAttrExpr });
-      lastNewlinePos = -2; // Reset newline tracking for new expression
+      lastNewlinePos = -2;
+
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
-        // Don't escape pure JSX comments, the `jsxComment` tokenizer downstream
-        // already knows how to swallow a whole `{/* ... */}` block in one go,
-        // even if the body has blank lines in it. If we escape the braces here
-        // the tokenizer never gets a shot at it.
-        //
-        // "Pure" means the braces open with `{/*` and close with `*/}` right
-        // next to each other. Something like `{/* c */ expr\n\nmore}` is just
-        // a regular expression that happens to start with a comment, so it
-        // still needs the normal blank-line protection.
+        // Pure `{/* ... */}` comments are handled downstream by the jsxComment
+        // tokenizer — escaping their braces would prevent it from running.
         const isPureJsxComment =
           chars[entry.pos + 1] === '/' &&
           chars[entry.pos + 2] === '*' &&
@@ -193,25 +186,19 @@ function escapeProblematicBraces(content: string): string {
           toEscape.add(i);
         }
       } else {
-        // Unbalanced closing brace (no matching open)
         toEscape.add(i);
       }
     }
   }
 
-  // Any remaining open braces are unbalanced
+  // Anything still open is unbalanced.
   openStack.forEach(entry => toEscape.add(entry.pos));
 
-  // If there are no problematic braces, return safe content as-is;
-  // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
-  let result = toEscape.size === 0 ? safe : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+  // Reconstruct the content with the escaped braces.
+  const escapedContent = toEscape.size === 0 ? protectedContent : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
 
-  // Restore HTML elements
-  if (htmlElements.length > 0) {
-    result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
-  }
-
-  return result;
+  const restoredContent = restoreHTMLElements(escapedContent, htmlElements);
+  return restoredContent;
 }
 
 /**
@@ -226,12 +213,10 @@ function escapeProblematicBraces(content: string): string {
  */
 export function preprocessJSXExpressions(content: string): string {
   let processed = protectHTMLBlockContent(content);
-
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
   processed = escapeProblematicBraces(protectedContent);
 
   processed = restoreCodeBlocks(processed, protectedCode);
-
   return processed;
 }

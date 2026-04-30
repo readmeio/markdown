@@ -761,6 +761,31 @@ hello
         expect(() => mdxish(result)).not.toThrow();
         expect(result).toBe(content);
       });
+
+      it('should not escape unclosed curly braces if it is next to an unclosed HTML tag', () => {
+        const content = '<strong> hello {';
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe('<strong> hello \\{');
+      });
+
+      it.skip('should not escape unclosed curly braces if it is next to an unclosed list tag', () => {
+        const content = '<li> hello {';
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
+      });
+
+      it.skip('should not escape unclosed curly braces if it is next to an unclosed HTML tag inside a component', () => {
+        const content = `
+<Callout>
+<li> hello {
+</Callout>
+        `;
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
+      });
     });
 
     describe('stress tests - regression prevention', () => {
