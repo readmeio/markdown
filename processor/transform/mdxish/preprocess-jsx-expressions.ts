@@ -64,27 +64,36 @@ export function removeJSXComments(content: string): string {
  * so backslashes don't leak into rendered output via rehypeRaw.
  */
 function escapeProblematicBraces(content: string): string {
-  // Skip HTML elements that mdxish will parse as raw HTML — escaping their
-  // braces would surface backslashes as literal text via rehypeRaw. We only
-  // match what mdxish actually treats as raw: (1) a block element on a single
-  // line, or (2) a block element whose interior lines are themselves only
-  // tags. A bare-text line at column 0 inside a block makes mdxish split a
-  // paragraph out and parse `{` as MDX, so we must NOT skip those.
+  // Skip HTML elements that mdxish parses as raw HTML — escaping their braces
+  // would leak `\` as literal text via rehypeRaw. The hazard signal is an
+  // interior line that starts with `{` at column 0: mdxish tokenizes that as
+  // an MDX expression, and a following blank line breaks parsing. Indented
+  // `{` is fine — mdxish doesn't promote it to an expression. So skip any
+  // line-anchored block element whose interior has no column-0 `{`.
   const htmlElements: string[] = [];
   const TAG = '[a-z][a-zA-Z0-9]*';
-  const SAME_LINE = new RegExp(`(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[^\\n]*?</\\1>[ \\t]*(?=\\n|$)`, 'g');
-  // Multi-line: opening tag alone on its line, interior lines each start with
-  // whitespace + `<` (i.e., tags only), closing tag alone on its line.
-  const MULTI_LINE = new RegExp(
-    `(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[ \\t]*\\n(?:[ \\t]*<[^\\n]*\\n)+?[ \\t]*</\\1>[ \\t]*(?=\\n|$)`,
+  const BLOCK_HTML = new RegExp(
+    `(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[\\s\\S]*?</\\1>[ \\t]*(?=\\n|$)`,
     'g',
   );
-  const stash = (match: string): string => {
+
+  const hasColumnZeroOpenBrace = (match: string): boolean => {
+    // Hazard: an interior line that begins at column 0 with bare text (not a
+    // tag, not whitespace) and contains `{`. mdxish promotes it to an MDX
+    // expression and the surrounding block then breaks parsing. Indented
+    // text and tag-only lines are safe — mdxish keeps treating them as raw
+    // HTML, so we can leave the braces alone there.
+    const lines = match.split('\n');
+    return lines.slice(1, -1).some(line => line.length > 0 && line[0] !== ' ' && line[0] !== '\t' && line[0] !== '<' && line.includes('{'));
+  };
+
+  const stashIfRaw = (match: string): string => {
+    if (hasColumnZeroOpenBrace(match)) return match;
     const idx = htmlElements.length;
     htmlElements.push(match);
     return `___HTML_ELEM_${idx}___`;
   };
-  const safe = content.replace(MULTI_LINE, stash).replace(SAME_LINE, stash);
+  const safe = content.replace(BLOCK_HTML, stashIfRaw);
 
   const toEscape = new Set<number>();
   // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly

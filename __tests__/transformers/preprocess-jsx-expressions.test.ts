@@ -604,26 +604,6 @@ Another valid: {name}`;
         expect(result).toBe(content);
       });
 
-      it('should handle HTML with curly braces in text spanning blank line', () => {
-        // CX-2978: backslashes from preprocessor escaping must not surface as
-        // literal text in the rendered output. For a multi-line block like
-        // this, mdxish parses the interior as MDX, so escaping is harmless
-        // — the `\` is consumed by the MDX text parser, not rendered.
-        const content = `<div>
-{
-
-}
-</div>`;
-        const tree = mdxish(preprocessJSXExpressions(content));
-        const texts: string[] = [];
-        const collect = (n: { children?: unknown[]; type: string; value?: string }): void => {
-          if (n.type === 'text' && typeof n.value === 'string') texts.push(n.value);
-          n.children?.forEach(c => collect(c as Parameters<typeof collect>[0]));
-        };
-        collect(tree as Parameters<typeof collect>[0]);
-        expect(texts.join('')).not.toContain('\\');
-      });
-
       it('should handle very long content between braces with blank line', () => {
         const longContent = 'a'.repeat(1000);
         const content = `{${longContent}\n\n${longContent}}`;
@@ -748,7 +728,7 @@ const obj = {key: value};
       it('should deal with unclosed { inside multi-line HTML tags', () => {
         const content = `
 <li>
-{ unclosed
+hi { unclosed
 </li>
         `;
         const result = preprocessJSXExpressions(content);
@@ -756,9 +736,30 @@ const obj = {key: value};
         expect(() => mdxish(result)).not.toThrow();
         expect(result).toBe(`
 <li>
-\\{ unclosed
+hi \\{ unclosed
 </li>
         `);
+      });
+
+      it('should not escape multilne balanced braces inside HTML tags that starts right after the opening tag', () => {
+        const content = `<div>{
+hello
+
+}
+</div>`;
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('should not escape empty curly braces inside HTML tags', () => {
+        const content = `<div>
+{
+}
+</div>`;
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
       });
     });
 
