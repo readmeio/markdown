@@ -2094,7 +2094,7 @@ asdasdasd
   });
 
   describe('multiple magic blocks', () => {
-    it('should parse 2 magic blocks that have html content in the same line', () => {
+    it('should parse consecutive magic blocks whose JSON bodies contain HTML tags', () => {
       const md = `
 [block:parameters]
 {

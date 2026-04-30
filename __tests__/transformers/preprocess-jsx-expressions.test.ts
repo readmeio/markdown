@@ -102,6 +102,13 @@ describe('preprocessJSXExpressions', () => {
         expect(result).toBe(content);
       });
 
+      it('table magic blocks', () => {
+        const content = '[block:parameters]\n{"data":{"h-0":"Header","0-0":"{ unclosed "},"cols":1,"rows":1}\n[/block]';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
       it('html blocks', () => {
         const content = '<HTMLBlock>{`unclosed } { unclosed `}</HTMLBlock>';
         const tree = mdxish(content);
@@ -597,21 +604,6 @@ Another valid: {name}`;
         expect(result).toBe(content);
       });
 
-      it('should handle HTML with curly braces in text spanning blank line', () => {
-        // HTML elements are protected and their content is NOT escaped,
-        // because rehypeRaw parses them into hast elements and backslashes
-        // would appear as literal text in the output (CX-2978)
-        const content = `<div>
-{
-
-}
-</div>`;
-        const result = preprocessJSXExpressions(content);
-
-        // Braces inside HTML elements should NOT be escaped
-        expect(result).toBe(content);
-      });
-
       it('should handle very long content between braces with blank line', () => {
         const longContent = 'a'.repeat(1000);
         const content = `{${longContent}\n\n${longContent}}`;
@@ -723,6 +715,76 @@ const obj = {key: value};
 
         expect(result).toContain('\\{');
         expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should deal with unclosed { inside HTML tags that has surrounding text', () => {
+        const content = 'hi <div>{unclosed</div>';
+        const result = preprocessJSXExpressions(content);
+
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe('hi <div>\\{unclosed</div>');
+      });
+
+      it('should deal with unclosed { inside multi-line HTML tags', () => {
+        const content = `
+<li>
+hi { unclosed
+</li>
+        `;
+        const result = preprocessJSXExpressions(content);
+
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(`
+<li>
+hi \\{ unclosed
+</li>
+        `);
+      });
+
+      it('should not escape multi-line balanced braces inside HTML tags that start right after the opening tag', () => {
+        const content = `<div>{
+hello
+
+}
+</div>`;
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('should not escape empty curly braces inside HTML tags', () => {
+        const content = `<div>
+{
+}
+</div>`;
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
+      });
+
+      it('should escape an unclosed brace next to an inline HTML tag (mdxish would otherwise throw)', () => {
+        const content = '<strong> hello {';
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe('<strong> hello \\{');
+      });
+
+      it.skip('should not escape an unclosed brace next to a block-level HTML tag', () => {
+        const content = '<li> hello {';
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
+      });
+
+      it.skip('should not escape an unclosed brace next to a block-level HTML tag nested inside a component', () => {
+        const content = `
+<Callout>
+<li> hello {
+</Callout>
+        `;
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(content);
       });
     });
 
