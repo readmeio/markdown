@@ -4,11 +4,6 @@ export interface BlockHit {
   token: string;
 }
 
-export interface ExtractMagicBlocksOptions {
-  /** Skip the padding-newline around the magic blocks */
-  lossless?: boolean;
-}
-
 /**
  * The content matching in this regex captures everything between `[block:TYPE]`
  * and `[/block]`, including new lines. Negative lookahead for the closing
@@ -53,10 +48,7 @@ export function extractMagicBlocks(markdown: string) {
 /**
  * Restore extracted magic blocks back into a markdown string.
  */
-export function restoreMagicBlocks(replaced: string, blocks: BlockHit[], options: ExtractMagicBlocksOptions = {}) {
-  if (blocks.length === 0) return replaced;
-
-  const { lossless = false } = options;
+export function restoreMagicBlocks(replaced: string, blocks: BlockHit[]) {
   // If a magic block is at the start or end of the document, the extraction
   // token's newlines will have been trimmed during processing. We need to
   // account for that here to ensure the token is found and replaced correctly.
@@ -64,8 +56,8 @@ export function restoreMagicBlocks(replaced: string, blocks: BlockHit[], options
   const content = `\n${replaced}\n`;
 
   const restoredContent = blocks.reduce((acc, { token, raw }) => {
-    const restoredBlock = lossless ? raw : `\n${raw}\n`;
-    return acc.split(token).join(restoredBlock);
+    // Ensure each magic block is separated by newlines when restored.
+    return acc.split(token).join(`\n${raw}\n`);
   }, content);
 
   return restoredContent.trim();
