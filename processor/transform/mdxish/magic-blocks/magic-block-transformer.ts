@@ -707,24 +707,50 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         continue;
       }
 
-      // Replace the magicBlock node in the paragraph with its inline portion (if any).
-      parent.children.splice(liveIndex, 1, ...inlineNodes);
+      // Snapshot live siblings — these are correct now (sibling magicBlocks for this
+      // paragraph were already lifted by earlier reverse-order iterations).
+      const beforeChildren = parent.children.slice(0, liveIndex) as RootContent[];
+      const afterChildren = parent.children.slice(liveIndex + 1) as RootContent[];
+
+      // The newline that originally separated the magic block from its surrounding
+      // text now sits as a leading `break` (or whitespace-only text) on the trailing
+      // siblings, and a trailing one on the leading siblings. Drop those so the
+      // lifted block doesn't render with an extra blank line on either side.
+      const isWhitespaceOnly = (n: RootContent): boolean =>
+        n.type === 'break' || (n.type === 'text' && !/\S/.test((n as { value: string }).value));
+      while (beforeChildren.length > 0 && isWhitespaceOnly(beforeChildren[beforeChildren.length - 1])) {
+        beforeChildren.pop();
+      }
+      while (afterChildren.length > 0 && isWhitespaceOnly(afterChildren[0])) {
+        afterChildren.shift();
+      }
 
       const containerChildren = container.children as RootContent[];
       const paraIndex = containerChildren.indexOf(parent as RootContent);
 
       if (paraIndex === -1) {
-        // Paragraph not found in container - leave block nodes alongside inline ones in place.
-        parent.children.splice(liveIndex + inlineNodes.length, 0, ...blockNodes);
+        // Paragraph not found in container — splice block + inline nodes in place.
+        parent.children.splice(liveIndex, 1, ...blockNodes, ...inlineNodes);
         // eslint-disable-next-line no-continue
         continue;
       }
 
+      // Reshape the paragraph to hold only the leading content (plus inline nodes
+      // produced by the transform), then insert lifted blocks after the paragraph,
+      // followed by a new paragraph for any trailing content. This preserves
+      // source order: text-before, lifted block, text-after.
+      parent.children = [...beforeChildren, ...inlineNodes];
+
+      const insertions: RootContent[] = [...blockNodes];
+      if (afterChildren.length > 0) {
+        insertions.push({ type: 'paragraph', children: afterChildren } as unknown as RootContent);
+      }
+
       if (parent.children.length === 0) {
-        // Paragraph is now empty — replace it with the block nodes directly.
-        containerChildren.splice(paraIndex, 1, ...blockNodes);
-      } else if (blockNodes.length > 0) {
-        containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
+        // Original paragraph would be empty — drop it and put insertions in its place.
+        containerChildren.splice(paraIndex, 1, ...insertions);
+      } else {
+        containerChildren.splice(paraIndex + 1, 0, ...insertions);
       }
     }
   };
