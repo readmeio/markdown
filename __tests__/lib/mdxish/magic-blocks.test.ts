@@ -1,9 +1,9 @@
-import type { Element, Text } from 'hast';
+import type { Element, Parent, RootContent, Text } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
-import { findElementByTagName } from '../../helpers';
+import { findElementByTagName, parseMdxish } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -1387,6 +1387,165 @@ ${JSON.stringify(
 
       const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
       expect(nestedUl).toBeDefined();
+    });
+
+    it('should lift two consecutive magic blocks under a list item out of the paragraph in source order', () => {
+      const md = `- Item two
+[block:callout]
+{"type":"info","title":"first","body":"one"}
+[/block]
+[block:callout]
+{"type":"info","title":"second","body":"two"}
+[/block]`;
+
+      const tree = parseMdxish(md);
+
+      expect(tree.children).toHaveLength(1);
+      const list = tree.children[0] as RootContent;
+      expect(list.type).toBe('list');
+      expect((list as Parent).children).toHaveLength(1);
+
+      const li = (list as Parent).children[0] as Parent;
+      // listItem holds the leading paragraph and the two lifted Callouts in source order.
+      expect(li.children).toHaveLength(3);
+      expect(li.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'Item two\n' }],
+      });
+      expect(li.children[1]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        children: [
+          { type: 'heading', depth: 3, children: [{ type: 'text', value: 'first' }] },
+          { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+        ],
+      });
+      expect(li.children[2]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        children: [
+          { type: 'heading', depth: 3, children: [{ type: 'text', value: 'second' }] },
+          { type: 'paragraph', children: [{ type: 'text', value: 'two' }] },
+        ],
+      });
+    });
+
+    it('should place trailing text after a magic block (not before it) when both share a list-item paragraph', () => {
+      const md = `- Item two
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+trailing text`;
+
+      const tree = parseMdxish(md);
+      expect(tree.children[0]).toMatchObject({
+        type: 'list',
+        children: [
+          {
+            type: 'listItem',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'Item two\n' }],
+              },
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Callout',
+              },
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: '\ntrailing text' }],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should lift mixed block types (callout + html-block) consecutively under a list item', () => {
+      const md = `- Item
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+[block:html]
+{"html":"<div>raw</div>"}
+[/block]`;
+
+      const tree = parseMdxish(md);
+      const li = (tree.children[0] as Parent).children[0] as Parent;
+
+      expect(li.children).toHaveLength(3);
+      expect(li.children[1]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Callout' });
+      expect(li.children[2]).toMatchObject({ type: 'html-block' });
+    });
+
+    it('should render mix of magic blocks and text interleaved under a list item', () => {
+      const md = `- first line
+[block:callout]
+{"type":"info","title":"first","body":"one"}
+[/block]
+second line
+[block:image]
+{"images":[{"image":["https://example.com/image.png",null,"Image"]}]}
+[/block]
+third line
+[block:image]
+{"images":[{"image":["https://example.com/image.png",null,"Image"]}]}
+[/block]
+fourth line
+`;
+
+      const ast = parseMdxish(md);
+      expect(ast.children[0]).toMatchObject({
+        type: 'list',
+        children: [
+          {
+            type: 'listItem',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'first line\n' }],
+              },
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Callout',
+              },
+              {
+                type: 'paragraph',
+                children: [
+                  { type: 'text', value: '\nsecond line\n' },
+                  { type: 'image', url: 'https://example.com/image.png' },
+                  { type: 'text', value: '\nthird line\n' },
+                  { type: 'image', url: 'https://example.com/image.png' },
+                  { type: 'text', value: '\nfourth line' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('lifting magic blocks out of paragraphs at root', () => {
+    it('should split a paragraph around a lifted block, preserving leading and trailing text', () => {
+      const md = `before text
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+after text`;
+
+      const tree = parseMdxish(md);
+      expect(tree.children).toHaveLength(3);
+      expect(tree.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'before text' }],
+      });
+      expect(tree.children[1]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Callout' });
+      expect(tree.children[2]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'after text' }],
+      });
     });
   });
 
