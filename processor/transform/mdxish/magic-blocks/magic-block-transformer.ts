@@ -20,7 +20,7 @@ import type {
 } from './types';
 import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
-import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
+import type { Root as MdastRoot, RootContent, Parent, Paragraph, PhrasingContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -637,19 +637,29 @@ const blockTypes = [
  */
 const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.type);
 
+const isParagraph = (node: Parent): node is Paragraph => node.type === 'paragraph';
+
+/**
+ * True for phrasing content that contributes only whitespace at render time
+ * (a soft `break` node or a text node with no non-whitespace characters).
+ */
+const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
+  node.type === 'break' || (node.type === 'text' && !node.value.trim());
+
 /**
  * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
  */
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    const replacements: {
+    interface Lift {
       blockNodes: RootContent[];
       container: Parent;
-      inlineNodes: RootContent[];
+      inlineNodes: PhrasingContent[];
       node: MagicBlockNode;
-      parent: Parent;
-    }[] = [];
+      paragraph: Paragraph;
+    }
+    const lifts: Lift[] = [];
 
     visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
@@ -671,12 +681,18 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       }
 
       // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
-      if (parent.type === 'paragraph' && children.some(child => isBlockNode(child))) {
+      if (isParagraph(parent) && children.some(isBlockNode)) {
         const blockNodes: RootContent[] = [];
-        const inlineNodes: RootContent[] = [];
+        const inlineNodes: PhrasingContent[] = [];
 
         children.forEach(child => {
-          (isBlockNode(child) ? blockNodes : inlineNodes).push(child);
+          if (isBlockNode(child)) {
+            blockNodes.push(child);
+          } else {
+            // Non-block children produced by transformMagicBlock are valid
+            // phrasing content and belong inside the paragraph.
+            inlineNodes.push(child as PhrasingContent);
+          }
         });
 
         // Defer the lift to a second pass — we don't precompute before/after
@@ -684,24 +700,24 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         // and snapshots taken at visit-time would go stale once a sibling is
         // processed (see the regression where two magic blocks under a list
         // item caused the second one's raw text to leak back into the paragraph).
-        replacements.push({
-          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
-          parent,
+        lifts.push({
           blockNodes,
+          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
           inlineNodes,
           node,
+          paragraph: parent,
         });
       } else {
         parent.children.splice(index, 1, ...children);
       }
     });
 
-    // Second pass: apply replacements that require lifting block nodes out of paragraphs.
+    // Second pass: apply lifts that move block nodes out of paragraphs.
     // Operate on live state (find each node's current index now) and process in reverse so
     // that container insertions don't disturb earlier paragraphs' positions.
-    for (let i = replacements.length - 1; i >= 0; i -= 1) {
-      const { blockNodes, container, inlineNodes, node, parent } = replacements[i];
-      const liveIndex = parent.children.indexOf(node as unknown as RootContent);
+    for (let i = lifts.length - 1; i >= 0; i -= 1) {
+      const { blockNodes, container, inlineNodes, node, paragraph } = lifts[i];
+      const liveIndex = paragraph.children.indexOf(node);
       if (liveIndex === -1) {
         // eslint-disable-next-line no-continue
         continue;
@@ -709,28 +725,23 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
 
       // Snapshot live siblings — these are correct now (sibling magicBlocks for this
       // paragraph were already lifted by earlier reverse-order iterations).
-      const beforeChildren = parent.children.slice(0, liveIndex) as RootContent[];
-      const afterChildren = parent.children.slice(liveIndex + 1) as RootContent[];
+      const before = paragraph.children.slice(0, liveIndex);
+      const after = paragraph.children.slice(liveIndex + 1);
 
       // The newline that originally separated the magic block from its surrounding
-      // text now sits as a leading `break` (or whitespace-only text) on the trailing
+      // text now sits as a leading break (or whitespace-only text) on the trailing
       // siblings, and a trailing one on the leading siblings. Drop those so the
       // lifted block doesn't render with an extra blank line on either side.
-      const isWhitespaceOnly = (n: RootContent): boolean =>
-        n.type === 'break' || (n.type === 'text' && !/\S/.test((n as { value: string }).value));
-      while (beforeChildren.length > 0 && isWhitespaceOnly(beforeChildren[beforeChildren.length - 1])) {
-        beforeChildren.pop();
-      }
-      while (afterChildren.length > 0 && isWhitespaceOnly(afterChildren[0])) {
-        afterChildren.shift();
-      }
+      while (before.length > 0 && isWhitespacePhrasing(before[before.length - 1])) before.pop();
+      while (after.length > 0 && isWhitespacePhrasing(after[0])) after.shift();
 
-      const containerChildren = container.children as RootContent[];
-      const paraIndex = containerChildren.indexOf(parent as RootContent);
-
+      const paraIndex = container.children.indexOf(paragraph);
       if (paraIndex === -1) {
-        // Paragraph not found in container — splice block + inline nodes in place.
-        parent.children.splice(liveIndex, 1, ...blockNodes, ...inlineNodes);
+        // Defensive: paragraph isn't in the container we expected (tree was
+        // mutated between visit and apply). Drop just the magic block from the
+        // paragraph and place its inline portion in its slot — we can't safely
+        // lift block nodes out without a known container.
+        paragraph.children.splice(liveIndex, 1, ...inlineNodes);
         // eslint-disable-next-line no-continue
         continue;
       }
@@ -739,18 +750,19 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       // produced by the transform), then insert lifted blocks after the paragraph,
       // followed by a new paragraph for any trailing content. This preserves
       // source order: text-before, lifted block, text-after.
-      parent.children = [...beforeChildren, ...inlineNodes];
+      paragraph.children = [...before, ...inlineNodes];
 
       const insertions: RootContent[] = [...blockNodes];
-      if (afterChildren.length > 0) {
-        insertions.push({ type: 'paragraph', children: afterChildren } as unknown as RootContent);
+      if (after.length > 0) {
+        const trailing: Paragraph = { type: 'paragraph', children: after };
+        insertions.push(trailing);
       }
 
-      if (parent.children.length === 0) {
+      if (paragraph.children.length === 0) {
         // Original paragraph would be empty — drop it and put insertions in its place.
-        containerChildren.splice(paraIndex, 1, ...insertions);
+        container.children.splice(paraIndex, 1, ...insertions);
       } else {
-        containerChildren.splice(paraIndex + 1, 0, ...insertions);
+        container.children.splice(paraIndex + 1, 0, ...insertions);
       }
     }
   };
