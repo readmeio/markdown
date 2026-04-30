@@ -102,6 +102,13 @@ describe('preprocessJSXExpressions', () => {
         expect(result).toBe(content);
       });
 
+      it('table magic blocks', () => {
+        const content = '[block:parameters]\n{"data":{"h-0":"Header","0-0":"{ unclosed "},"cols":1,"rows":1}\n[/block]';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
       it('html blocks', () => {
         const content = '<HTMLBlock>{`unclosed } { unclosed `}</HTMLBlock>';
         const tree = mdxish(content);
@@ -598,18 +605,23 @@ Another valid: {name}`;
       });
 
       it('should handle HTML with curly braces in text spanning blank line', () => {
-        // HTML elements are protected and their content is NOT escaped,
-        // because rehypeRaw parses them into hast elements and backslashes
-        // would appear as literal text in the output (CX-2978)
+        // CX-2978: backslashes from preprocessor escaping must not surface as
+        // literal text in the rendered output. For a multi-line block like
+        // this, mdxish parses the interior as MDX, so escaping is harmless
+        // — the `\` is consumed by the MDX text parser, not rendered.
         const content = `<div>
 {
 
 }
 </div>`;
-        const result = preprocessJSXExpressions(content);
-
-        // Braces inside HTML elements should NOT be escaped
-        expect(result).toBe(content);
+        const tree = mdxish(preprocessJSXExpressions(content));
+        const texts: string[] = [];
+        const collect = (n: { children?: unknown[]; type: string; value?: string }): void => {
+          if (n.type === 'text' && typeof n.value === 'string') texts.push(n.value);
+          n.children?.forEach(c => collect(c as Parameters<typeof collect>[0]));
+        };
+        collect(tree as Parameters<typeof collect>[0]);
+        expect(texts.join('')).not.toContain('\\');
       });
 
       it('should handle very long content between braces with blank line', () => {
@@ -723,6 +735,30 @@ const obj = {key: value};
 
         expect(result).toContain('\\{');
         expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should deal with unclosed { inside HTML tags that has surrounding text', () => {
+        const content = 'hi <div>{unclosed</div>';
+        const result = preprocessJSXExpressions(content);
+
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe('hi <div>\\{unclosed</div>');
+      });
+
+      it('should deal with unclosed { inside multi-line HTML tags', () => {
+        const content = `
+<li>
+{ unclosed
+</li>
+        `;
+        const result = preprocessJSXExpressions(content);
+
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(`
+<li>
+\\{ unclosed
+</li>
+        `);
       });
     });
 

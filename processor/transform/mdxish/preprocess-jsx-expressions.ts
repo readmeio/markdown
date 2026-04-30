@@ -1,5 +1,4 @@
 import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
-import { MAGIC_BLOCK_REGEX } from '../../../lib/utils/extractMagicBlocks';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 // Base64 encode (Node.js + browser compatible)
@@ -65,14 +64,27 @@ export function removeJSXComments(content: string): string {
  * so backslashes don't leak into rendered output via rehypeRaw.
  */
 function escapeProblematicBraces(content: string): string {
-  // Skip HTML elements — their content should never be escaped because
-  // rehypeRaw parses them into hast elements, making `\` literal text in output
+  // Skip HTML elements that mdxish will parse as raw HTML — escaping their
+  // braces would surface backslashes as literal text via rehypeRaw. We only
+  // match what mdxish actually treats as raw: (1) a block element on a single
+  // line, or (2) a block element whose interior lines are themselves only
+  // tags. A bare-text line at column 0 inside a block makes mdxish split a
+  // paragraph out and parse `{` as MDX, so we must NOT skip those.
   const htmlElements: string[] = [];
-  const safe = content.replace(/<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g, match => {
+  const TAG = '[a-z][a-zA-Z0-9]*';
+  const SAME_LINE = new RegExp(`(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[^\\n]*?</\\1>[ \\t]*(?=\\n|$)`, 'g');
+  // Multi-line: opening tag alone on its line, interior lines each start with
+  // whitespace + `<` (i.e., tags only), closing tag alone on its line.
+  const MULTI_LINE = new RegExp(
+    `(?<=^|\\n)[ \\t]*<(${TAG})(?:\\s[^>]*)?>[ \\t]*\\n(?:[ \\t]*<[^\\n]*\\n)+?[ \\t]*</\\1>[ \\t]*(?=\\n|$)`,
+    'g',
+  );
+  const stash = (match: string): string => {
     const idx = htmlElements.length;
     htmlElements.push(match);
     return `___HTML_ELEM_${idx}___`;
-  });
+  };
+  const safe = content.replace(MULTI_LINE, stash).replace(SAME_LINE, stash);
 
   const toEscape = new Set<number>();
   // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
@@ -206,24 +218,11 @@ function escapeProblematicBraces(content: string): string {
 export function preprocessJSXExpressions(content: string): string {
   let processed = protectHTMLBlockContent(content);
 
-  // We don't want to touch magic block content as well as they're flaky
-  // and need to be exact as it is in the original markdown.
-  const magicBlocks: string[] = [];
-  processed = processed.replace(MAGIC_BLOCK_REGEX, match => {
-    const idx = magicBlocks.length;
-    magicBlocks.push(match);
-    return `___MAGIC_BLOCK_${idx}___`;
-  });
-
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
   processed = escapeProblematicBraces(protectedContent);
 
   processed = restoreCodeBlocks(processed, protectedCode);
-
-  if (magicBlocks.length > 0) {
-    processed = processed.replace(/___MAGIC_BLOCK_(\d+)___/g, (_m, idx) => magicBlocks[parseInt(idx, 10)]);
-  }
 
   return processed;
 }
