@@ -762,6 +762,21 @@ hello
         expect(result).toBe(content);
       });
 
+      it('should escape both braces in an empty expression that spans multiple lines inside an HTML tag, that has an empty line inside the expression', () => {
+        const content = `<div>
+{
+
+}
+</div>`;
+        const result = preprocessJSXExpressions(content);
+        expect(() => mdxish(result)).not.toThrow();
+        expect(result).toBe(`<div>
+\\{
+
+\\}
+</div>`);
+      });
+
       it('should escape an unclosed brace next to an inline HTML tag (mdxish would otherwise throw)', () => {
         const content = '<strong> hello {';
         const result = preprocessJSXExpressions(content);
