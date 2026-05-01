@@ -5,6 +5,7 @@ import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
 
+import { INLINE_COMPONENT_TAGS_LOWER } from '../../lib/constants';
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
 import {
   CUSTOM_PROP_BOUNDARIES,
@@ -18,8 +19,6 @@ interface Options {
   components: CustomComponents;
   processMarkdown: (markdownContent: string) => Root;
 }
-
-const INLINE_COMPONENT_TAGS = new Set(['anchor', 'glossary']);
 
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
@@ -108,7 +107,7 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
     const children = (hast.children ?? []).filter(isElementContentNode);
 
     // For inline components, preserve plain text instead of wrapping in <p>
-    if (INLINE_COMPONENT_TAGS.has(node.tagName.toLowerCase()) && isSingleParagraphTextNode(children)) {
+    if (INLINE_COMPONENT_TAGS_LOWER.has(node.tagName.toLowerCase()) && isSingleParagraphTextNode(children)) {
       return [child];
     }
 

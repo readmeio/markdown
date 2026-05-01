@@ -9,14 +9,15 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
-import { gemojiFromMarkdown } from '../../../lib/mdast-util/gemoji';
-import { gemoji } from '../../../lib/micromark/gemoji';
-import { getAttrs, isMDXElement } from '../../utils';
-import calloutTransformer from '../callouts';
-import codeTabsTransformer from '../code-tabs';
-import { extractText } from '../extract-text';
+import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
+import { gemoji } from '../../../../lib/micromark/gemoji';
+import { getAttrs, isMDXElement } from '../../../utils';
+import calloutTransformer from '../../callouts';
+import codeTabsTransformer from '../../code-tabs';
+import { extractText } from '../../extract-text';
+import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
-import normalizeEmphasisAST from './normalize-malformed-md-syntax';
+import { unwrapSoleParagraph } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -166,12 +167,7 @@ const processTableNode = (
         const rowChildren: TableCell[] = [];
 
         visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          const parsedChildren = (cellChildren as Node[]).flatMap(parsedNode => {
-            if (parsedNode.type === 'paragraph' && 'children' in parsedNode && parsedNode.children) {
-              return parsedNode.children;
-            }
-            return [parsedNode];
-          });
+          const parsedChildren = unwrapSoleParagraph(cellChildren as Node[]);
 
           rowChildren.push({
             type: tableTypes[name],

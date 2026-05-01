@@ -1,6 +1,108 @@
 Changelog
 ===
 
+## Version 14.1.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** consecutive magic blocks not rendering if they have html tags in their content ([#1452](https://github.com/readmeio/markdown/issues/1452)) ([4b2ffbf](https://github.com/readmeio/markdown/commit/4b2ffbf43d93fed9dc8d86c82f64cfda6c2006ce))
+
+## Version 14.1.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** gemoji & expressions not rendering in components ([#1449](https://github.com/readmeio/markdown/issues/1449)) ([1d6f315](https://github.com/readmeio/markdown/commit/1d6f315f871b92dfec9f43998d79a35154ec3ebf)), closes [#1447](https://github.com/readmeio/markdown/issues/1447)
+* **mdxish:** move node-level transformers after MDX component re-parse ([#1450](https://github.com/readmeio/markdown/issues/1450)) ([ea23e7e](https://github.com/readmeio/markdown/commit/ea23e7e05d7f5552ca0a37f695df62b4099a7c02)), closes [#1447](https://github.com/readmeio/markdown/issues/1447) [#1449](https://github.com/readmeio/markdown/issues/1449)
+* preserve target attribute on links ([#1443](https://github.com/readmeio/markdown/issues/1443)) ([6ae279e](https://github.com/readmeio/markdown/commit/6ae279e95cccdb9c52eb89a4ad76a010034b0536))
+
+## Version 14.1.1
+### 🛠 Fixes & Updates
+
+* DRY up some test helpers ([#1437](https://github.com/readmeio/markdown/issues/1437)) ([f761248](https://github.com/readmeio/markdown/commit/f7612485e5abe6181bef4a5013df29e79781d748))
+* **mdxish:** preserve multi-paragraph table cells ([#1445](https://github.com/readmeio/markdown/issues/1445)) ([c821b2d](https://github.com/readmeio/markdown/commit/c821b2d77ca3ddaf874c5a8516a69823a915cbb4))
+* use magic block tokenizer when parsing JSX component children ([#1447](https://github.com/readmeio/markdown/issues/1447)) ([51b22a9](https://github.com/readmeio/markdown/commit/51b22a94557a1641657d02fc3f68bde8b53be23b)), closes [#1429](https://github.com/readmeio/markdown/issues/1429)
+
+## Version 14.1.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** AST nodes
+- We can't just use safeMode because we still need the inline
+expressions to be parsed as expression nodes, so there still needs to be
+an expression parsing
+
+## 🎯 What does this PR do?
+
+### ✨ New & Improved
+
+* **mdxish:** remove jsx attribute expression preprocessing ([#1429](https://github.com/readmeio/markdown/issues/1429)) ([9545472](https://github.com/readmeio/markdown/commit/954547277fc95719b0fab92510f4103a22c528a3)), closes [#1426](https://github.com/readmeio/markdown/issues/1426)
+
+### 🛠 Fixes & Updates
+
+* add readme components tests ([#1434](https://github.com/readmeio/markdown/issues/1434)) ([72ea080](https://github.com/readmeio/markdown/commit/72ea08051b368506989e293e467e3973da42d8a3)), closes [#1354](https://github.com/readmeio/markdown/issues/1354)
+* **deps:** bump actions/upload-artifact from 5 to 7 ([#1417](https://github.com/readmeio/markdown/issues/1417)) ([3ca6d32](https://github.com/readmeio/markdown/commit/3ca6d322831d257f87565bd3b0e82a39669cf0cb))
+* **mdxish:** legacy glossary syntax in callout title crashing ([#1441](https://github.com/readmeio/markdown/issues/1441)) ([9d1b18b](https://github.com/readmeio/markdown/commit/9d1b18bace4548288abd9c1b9e9937e3d8b7d394))
+
+## Version 14.0.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** magic blocks), the parser had no way to recognize `{/* ... */}`
+as a single expression
+
+> [!NOTE]
+> Technically, introducing the flow construct of the `mdxExpression`
+would partly fix this issue but we cannot do this because it would break
+magic block parsing. magic blocks usually contain `{ \n \n }` JSON
+payloads, and the flow construct would eat them before the magic block
+tokenizer got a chance to run.
+
+created a dedicated `jsxComment` micromark tokenizer for JSX comments.
+enabled for all branches instead of being gated by `newEditorTypes`.
+
+> [!NOTE]
+In the future as a follow up, we can work in integrating this new
+tokenizer and fully removing the `removeJSXComments` preprocessing step.
+similar to what we do in the `stripComments`
+
+## 🧪 QA tips
+
+Try pasting this in the editor (both rich and raw):
+```
+{/* Dropbox hosted. What was it?
+
+[block:image]
+{
+  "images": [
+    {
+      "image": [
+        "https://paper-attachments.dropboxusercontent.com/s_924615C008BE616D2ABE30441190A9401D739971D9AD94E8B5B46A426C5F05E8_1683123013834_Dev+Dash+-+hero+docs+shot.png",
+        null,
+        "The My Developers page in your ReadMe project dashboard"
+      ],
+      "align": "center",
+      "border": true,
+      "caption": "The My Developers page in your ReadMe project dashboard"
+    }
+  ]
+}
+[/block]
+
+*/}
+```
+It should be treated as one big comment block instead of a rendered
+image.
+
+## 📸 Screenshot or Loom
+
+
+https://github.com/user-attachments/assets/9b619f54-3d6e-456f-83be-27d4076a7a3a
+
+### ✨ New & Improved
+
+* **mdxish:** add micromark tokenizer for MDX component parsing ([#1426](https://github.com/readmeio/markdown/issues/1426)) ([a77707d](https://github.com/readmeio/markdown/commit/a77707dfd74495088a742773ec57203c0442a3f6))
+* move numbered lists for 1 -> a -> i ([#1438](https://github.com/readmeio/markdown/issues/1438)) ([7e614d4](https://github.com/readmeio/markdown/commit/7e614d46d0c0b0889d84e9c9c1267baa728ed193))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** properly parse JSX comments in editor deserialization ([#1419](https://github.com/readmeio/markdown/issues/1419)) ([95e1969](https://github.com/readmeio/markdown/commit/95e1969ecc1d4b5aae99cfaab44bdbc8a084151a))
+
 ## Version 13.8.5
 ### 🛠 Fixes & Updates
 

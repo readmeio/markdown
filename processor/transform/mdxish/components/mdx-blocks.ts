@@ -1,0 +1,218 @@
+import type { Node, Parent, RootContent } from 'mdast';
+import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { Plugin } from 'unified';
+
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+
+import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
+
+export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+
+/**
+ * Reduce leading whitespace on all lines just enough to prevent
+ * remark from treating indented content as code blocks (4+ spaces).
+ * Preserves relative indentation so whitespace text nodes are
+ * maintained in the HAST output.
+ */
+function safeDeindent(text: string): string {
+  const lines = text.split('\n');
+  const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+  if (nonEmptyLines.length === 0) return text;
+
+  const minIndent = Math.min(
+    ...nonEmptyLines.map(line => {
+      const match = line.match(/^(\s*)/);
+      return match ? match[1].length : 0;
+    }),
+  );
+
+  // Only strip enough indent to keep all lines below the 4-space code threshold
+  const stripAmount = Math.max(0, minIndent - 3);
+  if (stripAmount === 0) return text;
+  return lines.map(line => line.slice(stripAmount)).join('\n');
+}
+
+/**
+ * Parse markdown content into mdast children nodes.
+ * Dedents the content first to prevent indented component content
+ * (from nested components) from being treated as code blocks.
+ */
+const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
+  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
+  return parsed.children || [];
+};
+
+/**
+ * Parse substring content of a node and update the parent's children to include the new nodes.
+ */
+const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+  const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
+  // The new sibling nodes might contain new components to be processed
+  if (siblingNodes.length > 0) {
+    (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
+    stack.push(parent);
+  }
+};
+
+interface ComponentNodeOptions {
+  attributes: MdxJsxAttribute[];
+  children: MdxJsxFlowElement['children'];
+  endPosition?: Node['position'];
+  startPosition?: Node['position'];
+  tag: string;
+}
+
+/**
+ * Create an MdxJsxFlowElement node from component data.
+ */
+const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
+  type: 'mdxJsxFlowElement',
+  name: tag,
+  attributes,
+  children,
+  position: {
+    start: startPosition?.start,
+    end: endPosition?.end ?? startPosition?.end,
+  },
+});
+
+const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
+  (parent.children as Node[]).splice(index, 1, mdxNode);
+};
+
+/**
+ * Transform PascalCase HTML nodes into mdxJsxFlowElement nodes.
+ *
+ * Remark parses unknown/custom component tags as raw HTML nodes.
+ * These are the custom readme MDX syntax for components.
+ * This transformer identifies these patterns and converts them to proper MDX JSX elements so they
+ * can be accurately recognized and rendered later with their component definition code.
+ *
+ * The mdx-component micromark tokenizer ensures that multi-line components are captured
+ * as single HTML nodes, so this transformer only needs to handle two cases:
+ *
+ * ### 1. Self-closing tags
+ * ```
+ * <Component />
+ * ```
+ * Parsed as: `html: "<Component />"`
+ *
+ * ### 2. Self-contained blocks (entire component in single HTML node)
+ * ```
+ * <Component>
+ *   content
+ * </Component>
+ * ```
+ * Parsed as: `html: "<Component>\n  content\n</Component>"`
+ * The opening tag, content, and closing tag are all captured in one HTML node
+ * (guaranteed by the mdx-component tokenizer).
+ */
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
+  const stack: Parent[] = [tree];
+  const safeMode = !!opts.safeMode;
+  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+
+  const processChildNode = (parent: Parent, index: number) => {
+    const node = parent.children[index];
+    if (!node) return;
+    if ('children' in node && Array.isArray(node.children)) {
+      stack.push(node as Parent);
+    }
+
+    // Only visit HTML nodes with an actual html tag,
+    // which means a potential unparsed MDX component
+    const value = (node as { value?: string }).value;
+    if (node.type !== 'html' || typeof value !== 'string') return;
+
+    const parsed = parseTag(value.trim(), parseOpts);
+    if (!parsed) return;
+
+    const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
+
+    // Skip tags that have dedicated transformers
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
+
+    const isPascal = isPascalCase(tag);
+
+    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
+    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
+    // them here so they stay as html for that pass; PascalCase components
+    // keep going through this transformer (they stay flow-level even when
+    // inline, which is how ReadMe's custom components are modeled).
+    if (!isPascal && parent.type === 'paragraph') return;
+
+    // Lowercase HTML tags are only eligible when the tokenizer claimed them
+    // for JSX-expression attributes. Plain HTML should stay as html nodes so
+    // rehype-raw handles it as normal.
+    if (!isPascal && !hasExpressionAttr(attributes)) return;
+
+    const closingTagStr = `</${tag}>`;
+
+    // Case 1: Self-closing tag
+    if (selfClosing) {
+      const componentNode = createComponentNode({
+        tag,
+        attributes,
+        children: [],
+        startPosition: node.position,
+      });
+      substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // Check and parse if there's relevant content after the current closing tag
+      const remainingContent = contentAfterTag.trim();
+      if (remainingContent) {
+        parseSibling(stack, parent, index, remainingContent, safeMode);
+      }
+      return;
+    }
+
+    // Case 2: Self-contained block (closing tag in content)
+    if (contentAfterTag.includes(closingTagStr)) {
+      // Find the first closing tag
+      const closingTagIndex = contentAfterTag.lastIndexOf(closingTagStr);
+      // Pass raw (untrimmed) content so dedent in parseMdChildren can
+      // normalize indentation before trimming
+      const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
+      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
+        ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
+        : [];
+      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
+      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // phrasing content isn't spuriously block-wrapped.
+      if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+      }
+      const componentNode = createComponentNode({
+        tag,
+        attributes,
+        children: parsedChildren,
+        startPosition: node.position,
+      });
+      substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // After the closing tag, there might be more content to be processed
+      if (contentAfterClose) {
+        parseSibling(stack, parent, index, contentAfterClose, safeMode);
+      } else if (componentNode.children.length > 0) {
+        // The content inside the component block might contain new components to be processed
+        stack.push(componentNode as Parent);
+      }
+    }
+  };
+
+  // Process the nodes with the components depth-first to maintain the correct order of the nodes
+  while (stack.length) {
+    const parent = stack.pop();
+    if (parent?.children) {
+      parent.children.forEach((_child, index) => {
+        processChildNode(parent, index);
+      });
+    }
+  }
+
+  return tree;
+};
+
+export default mdxishMdxComponentBlocks;

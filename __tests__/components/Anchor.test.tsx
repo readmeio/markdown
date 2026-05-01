@@ -1,66 +1,37 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import Anchor from '../../components/Anchor';
+import { renderingEngines } from './utils';
 
 describe('Anchor', () => {
-  it('renders a basic anchor', () => {
-    render(<Anchor href="https://example.com">Click me</Anchor>);
+  it.each(renderingEngines)('%s: renders a basic anchor', (_label, renderContent) => {
+    const md = '<Anchor href="https://example.com">Click me</Anchor>';
+    const Content = renderContent(md);
 
-    expect(screen.getByRole('link')).toMatchInlineSnapshot(`
-      <a
-        href="https://example.com"
-        target=""
-        title=""
-      >
-        Click me
-      </a>
-    `);
+    render(<Content />);
+
+    expect(screen.getByRole('link')).toMatchSnapshot();
   });
 
-  it('unwraps nested anchor elements', () => {
-    // Simulates what happens when GFM autolinks URL-like text inside an Anchor
-    const { container } = render(
-      <Anchor href="https://example.com" target="_blank">
-        <a href="https://example.com">https://example.com</a>
-      </Anchor>,
-    );
+  it.each(renderingEngines)('%s: unwraps nested anchor elements', (_label, renderContent) => {
+    // GFM autolinks URL-like text inside an Anchor; output must be a single <a>
+    const md = '<Anchor href="https://example.com" target="_blank">https://example.com</Anchor>';
+    const Content = renderContent(md);
 
-    // Should only have one <a> tag, not nested
+    const { container } = render(<Content />);
+
     const anchors = container.querySelectorAll('a');
     expect(anchors).toHaveLength(1);
-    expect(anchors[0]).toMatchInlineSnapshot(`
-      <a
-        href="https://example.com"
-        target="_blank"
-        title=""
-      >
-        https://example.com
-      </a>
-    `);
+    expect(anchors[0]).toMatchSnapshot();
   });
 
-  it('preserves non-anchor children', () => {
-    render(
-      <Anchor href="https://example.com">
-        <strong>Bold</strong> and <em>italic</em>
-      </Anchor>,
-    );
+  it.each(renderingEngines)('%s: preserves non-anchor children', (_label, renderContent) => {
+    const md =
+      '<Anchor href="https://example.com"><strong>Bold</strong> and <em>italic</em></Anchor>';
+    const Content = renderContent(md);
 
-    expect(screen.getByRole('link')).toMatchInlineSnapshot(`
-      <a
-        href="https://example.com"
-        target=""
-        title=""
-      >
-        <strong>
-          Bold
-        </strong>
-         and 
-        <em>
-          italic
-        </em>
-      </a>
-    `);
+    render(<Content />);
+
+    expect(screen.getByRole('link')).toMatchSnapshot();
   });
 });

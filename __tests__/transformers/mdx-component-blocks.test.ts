@@ -3,16 +3,21 @@ import type { Parent, Root } from 'mdast';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import mdxishComponentBlocks, { parseAttributes } from '../../processor/transform/mdxish/mdxish-component-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/mdxish-self-closing-blocks';
+import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
+import { mdxComponent } from '../../lib/micromark/mdx-component';
+import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
+import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes } from '../helpers';
 
 /**
  * Helper to parse markdown and apply the component block plugins.
- * This isolates the plugins from the full mdxish pipeline.
+ * Includes the mdx-component micromark tokenizer to capture multi-line
+ * components as single HTML nodes before the transformer runs.
  */
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
+    .data('micromarkExtensions', [mdxComponent()])
+    .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
@@ -21,40 +26,9 @@ const parseWithPlugin = (markdown: string): Root => {
   return tree as Root;
 };
 
-describe('mdxish-component-blocks', () => {
-  describe('parseAttributes', () => {
-    it('should parse normal key-value attributes', () => {
-      const attrString = 'theme="info"';
-      const result = parseAttributes(attrString);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toStrictEqual({
-        type: 'mdxJsxAttribute',
-        name: 'theme',
-        value: 'info',
-      });
-    });
-
-    it('should parse boolean attributes without values', () => {
-      const attrString = 'theme="info" empty';
-      const result = parseAttributes(attrString);
-
-      expect(result).toHaveLength(2);
-      expect(result[0]).toStrictEqual({
-        type: 'mdxJsxAttribute',
-        name: 'theme',
-        value: 'info',
-      });
-      expect(result[1]).toStrictEqual({
-        type: 'mdxJsxAttribute',
-        name: 'empty',
-        value: null,
-      });
-    });
-  });
-
+describe('block-level MDX components transformation', () => {
   describe('mdxishComponentBlocks plugin', () => {
-    describe('Case 1: Self-closing tags', () => {
+    describe('case 1: simple self-closing tags', () => {
       it('should transform a simple self-closing tag', () => {
         const markdown = '<MyComponent />';
         const tree = parseWithPlugin(markdown);
@@ -153,7 +127,7 @@ describe('mdxish-component-blocks', () => {
       });
     });
 
-    describe('Case 2: Self-contained blocks', () => {
+    describe('case 2: with open and closing tags', () => {
       it('should transform a component with HTML content on same line', () => {
         const markdown = '<MyComponent><h2>Title</h2></MyComponent>';
         const tree = parseWithPlugin(markdown);
@@ -217,9 +191,7 @@ describe('mdxish-component-blocks', () => {
         expect(names).toContain('MyComponent');
         expect(names).toContain('AnotherComponent');
       });
-    });
 
-    describe('Case 3: Multi-line components', () => {
       it('should transform a block component with markdown content', () => {
         const markdown = `<MyComponent>
 Some **markdown** content
@@ -231,6 +203,16 @@ Some **markdown** content
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
           name: 'MyComponent',
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                { type: 'text', value: 'Some ' },
+                { type: 'strong', children: [{ type: 'text', value: 'markdown' }] },
+                { type: 'text', value: ' content' },
+              ],
+            },
+          ],
         });
       });
 
@@ -245,51 +227,66 @@ Second paragraph
 
         const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
         expect(mdxNodes).toHaveLength(1);
-      });
-
-      it('should transform a block component with attributes', () => {
-        const markdown = `<MyComponent theme="warning">
-Alert content here
-</MyComponent>`;
-        const tree = parseWithPlugin(markdown);
-
-        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-        expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
           name: 'MyComponent',
-          attributes: [{ type: 'mdxJsxAttribute', name: 'theme', value: 'warning' }],
+          children: [
+            { type: 'paragraph', children: [{ type: 'text', value: 'First paragraph' }] },
+            { type: 'paragraph', children: [{ type: 'text', value: 'Second paragraph' }] },
+          ],
         });
       });
+    });
 
-      describe('nested components', () => {
-        it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
-          const markdown = `
+    describe('multiple components in combination', () => {
+      it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
+        const markdown = `
 <MyComponent>
-  <NestedComponent>
-    Hello
-  </NestedComponent>
+<NestedComponent>
+  Hello
+</NestedComponent>
 
-  <NestedComponent>
-    Hello
-  </NestedComponent>
+<NestedComponent>
+  Hello
+</NestedComponent>
 </MyComponent>`;
-          const tree = parseWithPlugin(markdown);
+        const tree = parseWithPlugin(markdown);
 
-          const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-          expect(mdxNodes).toHaveLength(3);
-          expect(mdxNodes[0]).toMatchObject({
-            type: 'mdxJsxFlowElement',
-            name: 'MyComponent',
-          });
-          expect(mdxNodes[1]).toMatchObject({
-            type: 'mdxJsxFlowElement',
-            name: 'NestedComponent',
-          });
-          expect(mdxNodes[2]).toMatchObject({
-            type: 'mdxJsxFlowElement',
-            name: 'NestedComponent',
-          });
+        expect(tree.children[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'MyComponent',
+          children: [
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'NestedComponent',
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      value: 'Hello',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'NestedComponent',
+              children: [
+                {
+                  type: 'paragraph',
+                  children: [
+                    {
+                      type: 'text',
+                      value: 'Hello',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         });
       });
 
@@ -309,7 +306,7 @@ Hello
         });
 
         // The last paragraph inside the Callout should contain "Hello" without a trailing newline
-        const calloutChildren = mdxNodes[0].children;
+        const calloutChildren = (mdxNodes[0] as Parent).children;
         const lastParagraph = calloutChildren[calloutChildren.length - 1] as Parent;
         expect(lastParagraph.type).toBe('paragraph');
 
@@ -325,20 +322,29 @@ More content here
 </MyComponent>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-        expect(mdxNodes).toHaveLength(2);
-        expect(mdxNodes[0]).toMatchObject({
+        expect(tree.children[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
           name: 'MyComponent',
+          children: [
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'NestedComponent',
+            },
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  type: 'text',
+                  value: 'More content here',
+                },
+              ],
+            },
+          ],
         });
-        const foundNestedComponent = mdxNodes[0].children.some(child => {
-          return child.type === 'mdxJsxFlowElement' && (child as { name?: string }).name === 'NestedComponent';
-        });
-        expect(foundNestedComponent).toBe(true);
       });
     });
 
-    describe('Integration cases', () => {
+    describe('cases where it should not transform to mdx flow nodes', () => {
       it('should not transform tag without closing tag', () => {
         const markdown = '<MyComponent>';
         const tree = parseWithPlugin(markdown);
@@ -368,7 +374,7 @@ More content here
       });
     });
 
-    describe('Case 3: embedded closing tag with trailing content', () => {
+    describe('case 3: embedded closing tag with trailing content', () => {
       it('should preserve content after the closing tag in an HTML sibling', () => {
         const markdown = `<Outer>
 
@@ -377,12 +383,34 @@ More content here
 </Outer>
 <Another>second</Another>`;
         const tree = parseWithPlugin(markdown);
-
-        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-        const names = mdxNodes.map(n => (n as { name?: string }).name);
-        expect(names).toContain('Outer');
-        expect(names).toContain('Inner');
-        expect(names).toContain('Another');
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Outer',
+            children: [
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Inner',
+                children: [
+                  {
+                    type: 'paragraph',
+                    children: [{ type: 'text', value: 'first' }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Another',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'second' }],
+              },
+            ],
+          },
+        ]);
       });
 
       it('should correctly handle repeated same-name components without blank line separation', () => {
@@ -394,9 +422,23 @@ first content
 <Wrapper>second content</Wrapper>`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-        const wrapperNodes = mdxNodes.filter(n => (n as { name?: string }).name === 'Wrapper');
-        expect(wrapperNodes).toHaveLength(2);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Wrapper',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'first content' }],
+              },
+            ],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Wrapper',
+            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'second content' }] }],
+          },
+        ]);
       });
 
       it('should process a component opening tag found after a closing tag in the same HTML sibling', () => {
@@ -408,160 +450,18 @@ hello
 <Second />`;
         const tree = parseWithPlugin(markdown);
 
-        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-        const names = mdxNodes.map(n => (n as { name?: string }).name);
-        expect(names).toContain('First');
-        expect(names).toContain('Second');
-      });
-    });
-  });
-
-  describe('attributes containing > character', () => {
-    it('should parse a self-closing tag whose attribute value contains >', () => {
-      const markdown = '<Image src="test.png" caption="Settings > Health Check" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: [
-          { type: 'mdxJsxAttribute', name: 'src', value: 'test.png' },
-          { type: 'mdxJsxAttribute', name: 'caption', value: 'Settings > Health Check' },
-        ],
-        children: [],
-      });
-    });
-
-    it('should parse a block component whose attribute value contains >', () => {
-      const markdown = `<Callout title="A > B">
-Some content
-</Callout>`;
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Callout',
-        attributes: [{ type: 'mdxJsxAttribute', name: 'title', value: 'A > B' }],
-      });
-    });
-
-    it('should parse a self-contained component whose attribute value contains >', () => {
-      const markdown = "<MyComponent label='foo > bar'>content</MyComponent>";
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'MyComponent',
-        attributes: [{ type: 'mdxJsxAttribute', name: 'label', value: 'foo > bar' }],
-      });
-    });
-
-    it('should handle multiple attributes where one contains >', () => {
-      const markdown = '<Widget theme="dark" path="A > B > C" size="large" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Widget',
-        attributes: [
-          { type: 'mdxJsxAttribute', name: 'theme', value: 'dark' },
-          { type: 'mdxJsxAttribute', name: 'path', value: 'A > B > C' },
-          { type: 'mdxJsxAttribute', name: 'size', value: 'large' },
-        ],
-        children: [],
-      });
-    });
-
-    it('should handle consecutive >> in attribute value', () => {
-      const markdown = '<Image caption="A >> B >>> C" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: 'A >> B >>> C' }],
-      });
-    });
-
-    it('should handle > as the entire attribute value', () => {
-      const markdown = '<Image caption=">" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: '>' }],
-      });
-    });
-
-    it('should handle > in both single and double-quoted attributes on the same tag', () => {
-      const markdown = '<Widget title="A > B" subtitle=\'C > D\' />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Widget',
-        attributes: [
-          { type: 'mdxJsxAttribute', name: 'title', value: 'A > B' },
-          { type: 'mdxJsxAttribute', name: 'subtitle', value: 'C > D' },
-        ],
-      });
-    });
-
-    it('should handle < alongside > inside a quoted attribute', () => {
-      const markdown = '<Image caption="a < b > c" />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: [{ type: 'mdxJsxAttribute', name: 'caption', value: 'a < b > c' }],
-      });
-    });
-
-    it('should handle > with a boolean attribute after it', () => {
-      const markdown = '<Image caption="A > B" border />';
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      expect(mdxNodes).toHaveLength(1);
-      expect(mdxNodes[0]).toMatchObject({
-        type: 'mdxJsxFlowElement',
-        name: 'Image',
-        attributes: [
-          { type: 'mdxJsxAttribute', name: 'caption', value: 'A > B' },
-          { type: 'mdxJsxAttribute', name: 'border', value: null },
-        ],
-      });
-    });
-
-    it('should handle nested component with > in outer attribute', () => {
-      const markdown = `<Outer label="X > Y">
-  <Inner>content</Inner>
-</Outer>`;
-      const tree = parseWithPlugin(markdown);
-
-      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
-      const outer = mdxNodes.find(n => (n as { name?: string }).name === 'Outer');
-      expect(outer).toBeDefined();
-      expect(outer).toMatchObject({
-        attributes: [{ type: 'mdxJsxAttribute', name: 'label', value: 'X > Y' }],
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'First',
+            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'hello' }] }],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Second',
+            children: [],
+          },
+        ]);
       });
     });
   });
@@ -582,9 +482,9 @@ Some content
 
       expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
       // The opening and closing tags stay as html nodes inside the paragraph
-      const paragraphs = collectNodes(tree, 'paragraph');
+      const paragraphs = collectNodes<Parent>(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
-      const htmlNodes = paragraphs[0].children.filter((c: { type: string }) => c.type === 'html');
+      const htmlNodes = paragraphs[0].children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThanOrEqual(2);
     });
 
@@ -601,5 +501,22 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
     });
   });
 
-});
+  describe('inline PascalCase components', () => {
+    it('promotes inline PascalCase to mdxJsxFlowElement (paragraph-parented)', () => {
+      // Contract with mdxishInlineComponentBlocks: PascalCase is flow-level
+      // even when authored inline, so this transformer owns the promotion
+      // and the inline pass (lowercase-only) must not rewrite it.
+      const markdown = 'before <MyComponent foo="bar" /> after';
+      const tree = parseWithPlugin(markdown);
 
+      expect(collectNodes(tree, 'mdxJsxTextElement')).toHaveLength(0);
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'MyComponent',
+        attributes: [{ type: 'mdxJsxAttribute', name: 'foo', value: 'bar' }],
+      });
+    });
+  });
+});

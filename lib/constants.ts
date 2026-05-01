@@ -20,3 +20,36 @@ export const FLOW_TYPES = new Set([
   'thematicBreak',
 ]);
 
+// HELPER CONSTANTS FOR MDXISH RENDERING
+
+/**
+ * Inline-only custom components that appear as phrasing content within
+ * paragraph nodes. Excluding them from the generic `mdxComponent` micromark
+ * construct lets the dedicated inline transformer handle them instead.
+ *
+ * @see processor/transform/mdxish/components/inline-mdx-blocks.ts
+ */
+export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
+
+/**
+ * PascalCase tags that have their own dedicated tokenizer / transformer
+ * and must not be claimed by the generic `mdxComponent` construct.
+ */
+const DEDICATED_COMPONENT_TAGS = ['HTMLBlock', 'Table'] as const;
+
+/**
+ * PascalCase tags excluded from generic `<Name ...>` MDX-style handling in
+ * both the micromark tokenizer and the mdxish remark transforms.
+ */
+export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
+  ...DEDICATED_COMPONENT_TAGS,
+  ...INLINE_COMPONENT_TAGS,
+]);
+
+/**
+ * Lowercased variant of {@link INLINE_COMPONENT_TAGS} for consumers that
+ * run after rehype (where hast `tagName` is normalized to lowercase).
+ */
+export const INLINE_COMPONENT_TAGS_LOWER = new Set(
+  [...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()),
+);
