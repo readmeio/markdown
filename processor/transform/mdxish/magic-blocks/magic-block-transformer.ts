@@ -50,9 +50,9 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
   CLOSE_BLOCK_TAG_BOUNDARY_RE,
-  COMPLETE_HTML_ELEMENT_RE,
   HTML_ELEMENT_BLOCK_RE,
   HTML_TAG_RE,
+  HTML_TAG_STRIP_RE,
   NEWLINE_WITH_WHITESPACE_RE,
 } from './patterns';
 import {
@@ -270,10 +270,12 @@ const parseTableCell = (text: string): MdastNode[] => {
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
-  // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
-  // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
+  // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`
+  // or `<ul><li>_x_</li></ul>`). Pure bare tags like "<i>" or "<br>" are left for rehypeRaw
+  // since rehype-parse would mangle them (auto-closing void/inline elements).
   visit(tree, 'html', (node: { type: 'html'; value: string }) => {
-    if (COMPLETE_HTML_ELEMENT_RE.test(node.value)) {
+    const hasInnerText = node.value.replace(HTML_TAG_STRIP_RE, '').trim().length > 0;
+    if (hasInnerText) {
       node.value = processMarkdownInHtmlString(node.value);
     } else {
       node.value = escapeInvalidTags(node.value);
