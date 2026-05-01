@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.1.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle lowercase <table> the same way as <Table> ([#1403](https://github.com/readmeio/markdown/issues/1403)) ([5582947](https://github.com/readmeio/markdown/commit/55829472acdf98cc60cdf5626aeea1dbffd25429))
+* **Callout:** only apply callout title style to headings ([#1454](https://github.com/readmeio/markdown/issues/1454)) ([98986fe](https://github.com/readmeio/markdown/commit/98986fe9c0f4d1f228cb8ee46f40927da3b908e3))
+* **mdxish:** render markdown after unclosed block-level HTML in table cells ([#1453](https://github.com/readmeio/markdown/issues/1453)) ([8cf6313](https://github.com/readmeio/markdown/commit/8cf6313a11d47e7035cc2c3c122c2b1006a6314a))
+
 ## Version 14.1.3
 ### 🛠 Fixes & Updates
 
