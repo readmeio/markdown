@@ -10,5 +10,5 @@ export const NEWLINE_WITH_WHITESPACE_RE = /[^\S\n]*\n[^\S\n]*/g;
 /** Matches a closing block-level tag followed by non-tag text or by a newline then non-blank content. */
 export const CLOSE_BLOCK_TAG_BOUNDARY_RE = /<\/([a-zA-Z][a-zA-Z0-9-]*)>\s*(?:(?!<)(\S)|\n([^\n]))/g;
 
-/** Tests whether a string contains a complete HTML element (open + close tag). */
-export const COMPLETE_HTML_ELEMENT_RE = /<[a-zA-Z][^>]*>[\s\S]*<\/[a-zA-Z]/;
+/** Strips HTML open/close tags. Used to detect non-tag inner text content. */
+export const HTML_TAG_STRIP_RE = /<\/?[a-zA-Z][^>]*>/g;

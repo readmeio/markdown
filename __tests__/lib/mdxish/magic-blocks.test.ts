@@ -758,6 +758,71 @@ ${JSON.stringify(
       expect(underscoreEm).toBeDefined();
       expect(underscoreEm.tagName).toBe('em');
     });
+
+    it('should render markdown in a cell if it is under an unclosed HTML tag', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<div>**strong**',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      const body = findElementByTagName(ast, 'strong');
+      expect(body).not.toBeNull();
+    });
+
+    it('should render markdown after an unclosed block-level HTML tag with multiple inline marks', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<section>**bold** and _em_ and `code`',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(findElementByTagName(ast, 'strong')).not.toBeNull();
+      expect(findElementByTagName(ast, 'em')).not.toBeNull();
+      expect(findElementByTagName(ast, 'code')).not.toBeNull();
+    });
+
+    it('should leave bare inline HTML tags untouched (no mangling to <i></i>)', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<i>italic text</i>',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      const i = findElementByTagName(ast, 'i');
+      expect(i).not.toBeNull();
+      expect(i!.children.length).toBeGreaterThan(0);
+    });
   });
 
   describe('recipe block', () => {
