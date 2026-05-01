@@ -1,3 +1,4 @@
+import type { Element } from 'hast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { removePosition } from 'unist-util-remove-position';
@@ -363,8 +364,8 @@ const x = 1;
       removePosition(uppercaseHast, { force: true });
       removePosition(lowercaseHast, { force: true });
 
-      const uppercaseTable = findNodes(uppercaseHast, 'table');
-      const lowercaseTable = findNodes(lowercaseHast, 'table');
+      const uppercaseTable = findAllElementsByTagName(uppercaseHast, 'table');
+      const lowercaseTable = findAllElementsByTagName(lowercaseHast, 'table');
       expect(lowercaseTable).toHaveLength(1);
       expect(lowercaseTable[0]).toStrictEqual(uppercaseTable[0]);
     });
