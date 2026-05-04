@@ -29,7 +29,12 @@ export type CompileOpts = CompileOptions & {
 };
 
 const sanitizeSchema = deepmerge(defaultSchema, {
-  protocols: ['doc', 'ref', 'blog', 'changelog', 'page'],
+  attributes: {
+    a: ['target'],
+  },
+  protocols: {
+    href: ['doc', 'ref', 'blog', 'changelog', 'page'],
+  },
 });
 
 const compile = (

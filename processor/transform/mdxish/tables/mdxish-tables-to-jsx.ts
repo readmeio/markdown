@@ -5,7 +5,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import { phrasing } from 'mdast-util-phrasing';
 import { visit } from 'unist-util-visit';
 
-import { NodeTypes } from '../../../enums';
+import { NodeTypes } from '../../../../enums';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
@@ -47,6 +47,15 @@ const mdxishTablesToJsx = (): Transform => tree => {
         visit(cell, 'break', (_, breakIndex, breakParent) => {
           breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
         });
+
+        // A cell with more than one paragraph child cannot be serialized as GFM
+        // (pipe tables are single-line per cell), so force JSX <Table> output to
+        // preserve paragraph separation.
+        const paragraphCount = cell.children.filter(child => child.type === 'paragraph').length;
+        if (paragraphCount > 1) {
+          hasFlowContent = true;
+          return;
+        }
 
         // Check if any child is "flow" content (block-level) that requires JSX <Table>
         // serialization instead of GFM. `phrasing()` from mdast-util-phrasing returns
