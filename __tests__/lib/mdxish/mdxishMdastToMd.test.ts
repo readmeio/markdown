@@ -1,4 +1,5 @@
-import type { Root as MdastRoot, RootContent, Table } from 'mdast';
+import type { MdxishMdastRoot } from '../../../types';
+import type { Root as MdastRoot, RootContent } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
@@ -144,7 +145,7 @@ describe('mdxishMdastToMd', () => {
 
   describe('tables with flow content', () => {
     it('should serialize a table with newlines in cells to JSX <Table>', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -176,7 +177,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -216,7 +217,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should serialize a table with newlines in cells to JSX <Table> and separate the lines with an empty line between them', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -261,7 +262,7 @@ describe('mdxishMdastToMd', () => {
                 ]
               }
             ]
-          } as Table
+          }
         ]
       };
 
@@ -287,7 +288,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should serialize a table with list content in cells to JSX <Table>', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -322,7 +323,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -358,7 +359,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should include align attribute and per-column styles when columns have alignment', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -392,7 +393,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -438,7 +439,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should omit align attribute when all alignments are null', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -470,7 +471,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -508,7 +509,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should handle a table with multiple body rows', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -543,7 +544,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -594,7 +595,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should handle an empty cell alongside flow content', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -619,7 +620,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -655,7 +656,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should handle inline formatting in phrasing-only cells as markdown', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -689,7 +690,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -702,7 +703,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should keep tables with raw html nodes as markdown to avoid breaking remarkMdx roundtrip', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -727,7 +728,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -740,7 +741,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should convert tables with code-tabs content to JSX', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -766,13 +767,13 @@ describe('mdxishMdastToMd', () => {
                         children: [
                           { type: 'code', lang: 'js', meta: null, value: 'console.log("hi")' },
                         ],
-                      } as unknown as MdastRoot['children'][number],
+                      },
                     ],
                   },
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -809,7 +810,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should serialize a table with self-closing JSX component in cell to JSX <Table>', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -839,7 +840,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -849,7 +850,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should keep table with plain HTML in cell as GFM', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -879,7 +880,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -889,7 +890,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should keep tables with readme-variable nodes as GFM markdown', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -909,7 +910,7 @@ describe('mdxishMdastToMd', () => {
                             type: NodeTypes.variable,
                             data: { hName: 'Variable', hProperties: { name: 'WHOA' } },
                             value: '{user.WHOA}',
-                          } as unknown as MdastRoot['children'][number],
+                          },
                         ],
                       },
                     ],
@@ -923,7 +924,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -933,7 +934,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should keep tables with readme-variable alongside text as GFM markdown', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -954,7 +955,7 @@ describe('mdxishMdastToMd', () => {
                             type: NodeTypes.variable,
                             data: { hName: 'Variable', hProperties: { name: 'name' } },
                             value: '{user.name}',
-                          } as unknown as MdastRoot['children'][number],
+                          },
                         ],
                       },
                     ],
@@ -970,7 +971,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 
@@ -980,7 +981,7 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should keep phrasing-only tables as markdown tables', () => {
-      const mdast: MdastRoot = {
+      const mdast: MdxishMdastRoot = {
         type: 'root',
         children: [
           {
@@ -1002,7 +1003,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          } as Table,
+          },
         ],
       };
 

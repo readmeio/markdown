@@ -1,7 +1,7 @@
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
-import type { FigureNode } from './types';
+import type { FigureNode, MdxishTable, MdxishTableCell, MdxishTableRow } from './types';
 import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
-import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -531,7 +531,7 @@ const isTableCell = (node: Node): node is MdxJsxFlowElement & { name: 'td' | 'th
  * Converts a JSX <Table> element to an MDAST table node with alignment.
  * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
  */
-const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+const transformTable = (jsx: MdxJsxFlowElement): MdxishTable | null => {
   let hasThead = false;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
@@ -542,7 +542,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(jsx);
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
-  const rows: TableRow[] = [];
+  const rows: MdxishTableRow[] = [];
 
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name !== 'thead' && child.name !== 'tbody') return;
@@ -550,7 +550,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
     visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
       if (row.name !== 'tr') return;
 
-      const cells: TableCell[] = [];
+      const cells: MdxishTableCell[] = [];
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
         const parsedChildren = unwrapSoleParagraph(cell.children as Node[]);
@@ -559,7 +559,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
           type: 'tableCell',
           children: parsedChildren,
           position: cell.position,
-        } as TableCell);
+        });
       });
 
       rows.push({
@@ -576,12 +576,14 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       ? align.slice(0, columnCount).concat(Array.from({ length: Math.max(0, columnCount - align.length) }, () => null))
       : Array.from({ length: columnCount }, () => null);
 
-  return {
+  const table: MdxishTable = {
     type: 'table',
     align: alignArray,
     position: jsx.position,
     children: rows,
   };
+
+  return table;
 };
 
 /**

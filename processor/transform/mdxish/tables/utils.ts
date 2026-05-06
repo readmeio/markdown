@@ -7,13 +7,13 @@ import type { Node } from 'mdast';
  * When there are multiple paragraphs, leave them intact — they represent distinct lines
  * of content that need to be preserved for JSX `<Table>` serialization.
  */
-export const unwrapSoleParagraph = (children: Node[]): Node[] => {
+export const unwrapSoleParagraph = (children: Node[]) => {
   const paragraphCount = children.filter(c => c.type === 'paragraph').length;
   if (paragraphCount !== 1) return children;
 
   return children.flatMap(child => {
     if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
-      return child.children as Node[];
+      return child.children;
     }
     return [child];
   });
