@@ -32,7 +32,10 @@ const buildInlineMdProcessor = (safeMode: boolean) => {
   // Since evaluating expressions can be dangerous, do so only when safeMode is off
   if (!safeMode) {
     const mdxExprExt = mdxExpression({ allowEmpty: true });
-    micromarkExts.push({ text: mdxExprExt.text });
+    // Include the flow construct (unlike the main processor which strips it) so
+    // block-level expressions like {`...\n\n...`} can span blank lines inside
+    // component bodies without the blank line splitting the paragraph.
+    micromarkExts.push({ flow: mdxExprExt.flow, text: mdxExprExt.text });
     fromMarkdownExts.push(mdxExpressionFromMarkdown());
   }
 

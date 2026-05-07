@@ -534,6 +534,7 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       const markdown = `<Terminal>{\`
   $ npx run command
   This is the response
+
   $ inputs start with a dollar sign
   outputs start with no prefix
   and can be multiline
