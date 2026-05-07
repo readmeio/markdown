@@ -380,6 +380,135 @@ function createTokenize(mode: 'flow' | 'text') {
       return inBraceTemplateLiteral(code);
     }
 
+    // ── Brace expression handling within the body ─────────────────────────────────────
+
+    function inBodyBraceExpr(code: Code): State | undefined {
+      if (code === null) return nok(code);
+
+      if (markdownLineEnding(code)) {
+        if (!isFlow) return nok(code);
+        effects.exit('mdxComponentData');
+        return bodyContinuationStart(code);
+      }
+
+      if (code === codes.quotationMark || code === codes.apostrophe) {
+        quoteChar = code;
+        effects.consume(code);
+        return inBodyBraceString;
+      }
+
+      if (code === codes.graveAccent) {
+        inTemplateLit = true;
+        effects.consume(code);
+        return inBodyBraceTemplateLiteral;
+      }
+
+      if (code === codes.leftCurlyBrace) {
+        braceDepth += 1;
+        effects.consume(code);
+        return inBodyBraceExpr;
+      }
+
+      if (code === codes.rightCurlyBrace) {
+        braceDepth -= 1;
+        effects.consume(code);
+
+        if (templateStack.length > 0 && braceDepth === templateStack[templateStack.length - 1]) {
+          templateStack.pop();
+          inTemplateLit = true;
+          return inBodyBraceTemplateLiteral;
+        }
+
+        if (braceDepth === 0) {
+          return body;
+        }
+        return inBodyBraceExpr;
+      }
+
+      effects.consume(code);
+      return inBodyBraceExpr;
+    }
+
+    function inBodyBraceString(code: Code): State | undefined {
+      if (code === null) return nok(code);
+
+      if (markdownLineEnding(code)) {
+        if (!isFlow) return nok(code);
+        effects.exit('mdxComponentData');
+        return bodyContinuationStart(code);
+      }
+
+      if (code === codes.backslash) {
+        effects.consume(code);
+        return inBodyBraceStringEscape;
+      }
+
+      if (code === quoteChar) {
+        effects.consume(code);
+        quoteChar = null;
+        return inBodyBraceExpr;
+      }
+
+      effects.consume(code);
+      return inBodyBraceString;
+    }
+
+    function inBodyBraceStringEscape(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) {
+        return inBodyBraceString(code);
+      }
+      effects.consume(code);
+      return inBodyBraceString;
+    }
+
+    function inBodyBraceTemplateLiteral(code: Code): State | undefined {
+      if (code === null) return nok(code);
+
+      if (markdownLineEnding(code)) {
+        if (!isFlow) return nok(code);
+        effects.exit('mdxComponentData');
+        return bodyContinuationStart(code);
+      }
+
+      if (code === codes.graveAccent) {
+        inTemplateLit = false;
+        effects.consume(code);
+        return inBodyBraceExpr;
+      }
+
+      if (code === codes.backslash) {
+        effects.consume(code);
+        return inBodyBraceTemplateLiteralEscape;
+      }
+
+      if (code === codes.dollarSign) {
+        effects.consume(code);
+        return inBodyBraceTemplateLiteralDollar;
+      }
+
+      effects.consume(code);
+      return inBodyBraceTemplateLiteral;
+    }
+
+    function inBodyBraceTemplateLiteralEscape(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) {
+        return inBodyBraceTemplateLiteral(code);
+      }
+      effects.consume(code);
+      return inBodyBraceTemplateLiteral;
+    }
+
+    function inBodyBraceTemplateLiteralDollar(code: Code): State | undefined {
+      if (code === codes.leftCurlyBrace) {
+        templateStack.push(braceDepth);
+        braceDepth += 1;
+        inTemplateLit = false;
+        effects.consume(code);
+        return inBodyBraceExpr;
+      }
+      return inBodyBraceTemplateLiteral(code);
+    }
+
     function selfCloseGt(code: Code): State | undefined {
       if (code === codes.greaterThan) {
         effects.consume(code);
@@ -444,6 +573,16 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === codes.graveAccent) {
         codeSpanOpenSize = 0;
         return countOpenTicks(code);
+      }
+
+      // JSX expression child — track braces/template literals so the closing
+      // backtick of `{`...`}` is not misread as a code span opener
+      if (code === codes.leftCurlyBrace) {
+        braceDepth = 1;
+        inTemplateLit = false;
+        effects.consume(code);
+        atLineStart = false;
+        return inBodyBraceExpr;
       }
 
       effects.consume(code);
@@ -724,6 +863,13 @@ function createTokenize(mode: 'flow' | 'text') {
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');
+
+      // Resume inside a body brace expression if a line ending interrupted one
+      if (braceDepth > 0) {
+        if (inTemplateLit) return inBodyBraceTemplateLiteral(code);
+        if (quoteChar !== null) return inBodyBraceString(code);
+        return inBodyBraceExpr(code);
+      }
 
       // Detect tilde fences at line start
       if (atLineStart && code === codes.tilde) {

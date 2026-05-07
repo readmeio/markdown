@@ -519,4 +519,92 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       });
     });
   });
+
+  describe('JSX template literal expressions in body', () => {
+    it('should recognize closing tag after single-line template literal expression', () => {
+      const markdown = '<Terminal>{`ls -la`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Terminal' });
+    });
+
+    it('should recognize closing tag after multi-line template literal expression', () => {
+      const markdown = `<Terminal>{\`
+  $ npx run command
+  This is the response
+  $ inputs start with a dollar sign
+  outputs start with no prefix
+  and can be multiline
+\`}</Terminal>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Terminal' });
+    });
+
+    it('should handle template literal with ${...} interpolation in body', () => {
+      const markdown = '<Terminal>{`Hello ${name}!`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Terminal' });
+    });
+
+    it('should handle escaped backtick inside template literal', () => {
+      const markdown = '<Terminal>{`code \\` escaped`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should handle double-quoted string in body brace expression', () => {
+      const markdown = '<MyComponent>{"</MyComponent>"}</MyComponent>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'MyComponent' });
+    });
+
+    it('should handle single-quoted string in body brace expression', () => {
+      const markdown = "<MyComponent>{'</MyComponent>'}</MyComponent>";
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should handle multiple brace expressions in body', () => {
+      const markdown = '<Terminal>{`cmd1`} and {`cmd2`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should handle multi-line brace expression with nested braces', () => {
+      const markdown = `<Terminal>
+{JSON.stringify({
+  key: "value"
+})}
+</Terminal>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should handle empty brace expression in body', () => {
+      const markdown = '<Terminal>{}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+  });
 });
