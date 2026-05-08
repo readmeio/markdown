@@ -34,26 +34,25 @@ const tableTypes = {
   td: 'tableCell',
 };
 
-const sharedMicromarkExts = [gemoji(), legacyVariable()];
-const sharedFromMarkdownExts = [gemojiFromMarkdown(), legacyVariableFromMarkdown()];
-
 // `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
 // register them manually so we control ordering against our other tokenizers.
-const tableNodeProcessor = unified()
-  .data('micromarkExtensions', [mdxjs(), ...sharedMicromarkExts])
-  .data('fromMarkdownExtensions', [mdxFromMarkdown(), ...sharedFromMarkdownExts])
-  .use(remarkParse)
-  .use(normalizeEmphasisAST)
-  .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
-  .use(remarkGfm);
+// The fallback omits these so blank-line-separated markdown inside cells still
+// parses when mdxjs throws on malformed JSX.
+const buildTableNodeProcessor = (withMdx: boolean) =>
+  unified()
+    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
+    .data('fromMarkdownExtensions', [
+      ...(withMdx ? [mdxFromMarkdown()] : []),
+      gemojiFromMarkdown(),
+      legacyVariableFromMarkdown(),
+    ])
+    .use(remarkParse)
+    .use(normalizeEmphasisAST)
+    .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
+    .use(remarkGfm);
 
-// No-MDX fallback for when mdxjs throws on malformed JSX. Loses structured
-// cells but lets blank-line-separated markdown (e.g. fenced code) still parse.
-const fallbackTableNodeProcessor = unified()
-  .data('micromarkExtensions', sharedMicromarkExts)
-  .data('fromMarkdownExtensions', sharedFromMarkdownExts)
-  .use(remarkParse)
-  .use(remarkGfm);
+const tableNodeProcessor = buildTableNodeProcessor(true);
+const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
 // Since we use a subparser in `tableNodeProcessor` to parse `node.value`,
 // positions are relative to that substring. Shifting them by the base
