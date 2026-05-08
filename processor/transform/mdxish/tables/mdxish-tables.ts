@@ -2,15 +2,18 @@ import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdas
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
+import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { phrasing } from 'mdast-util-phrasing';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import remarkGfm from 'remark-gfm';
-import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
+import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
+import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
@@ -31,11 +34,14 @@ const tableTypes = {
   td: 'tableCell',
 };
 
+// we want to use remarkMdx here to utilise all its capabilities, but in order for
+// it to not clash with any of our other tokenizers and so that we gain control over
+// the tokenizer registration order, we manually register `mdxjs` and `mdxJsxFromMarkdown`
+// which is basically the same as calling `use.remarkMdx()`
 const tableNodeProcessor = unified()
-  .data('micromarkExtensions', [gemoji()])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown()])
+  .data('micromarkExtensions', [mdxjs(), gemoji(), legacyVariable()])
+  .data('fromMarkdownExtensions', [mdxFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown()])
   .use(remarkParse)
-  .use(remarkMdx)
   .use(normalizeEmphasisAST)
   .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
   .use(remarkGfm);

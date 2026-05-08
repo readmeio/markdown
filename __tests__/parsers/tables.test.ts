@@ -897,6 +897,55 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('jsx tables with legacy variables', () => {
+    it('parses markdown and <<variable>> syntax inside cells', () => {
+      const doc = '<table><tr><td>**bold** <<NAME>></td></tr></table>';
+
+      const tree = mdxish(doc);
+      removePosition(tree, { force: true });
+
+      expect(tree).toStrictEqual({
+        type: 'root',
+        children: [
+          {
+            type: 'element',
+            tagName: 'table',
+            properties: {},
+            children: [
+              {
+                type: 'element',
+                tagName: 'tr',
+                properties: {},
+                children: [
+                  {
+                    type: 'element',
+                    tagName: 'td',
+                    properties: {},
+                    children: [
+                      {
+                        type: 'element',
+                        tagName: 'strong',
+                        properties: {},
+                        children: [{ type: 'text', value: 'bold' }],
+                      },
+                      {
+                        type: 'element',
+                        tagName: 'variable',
+                        properties: { name: 'NAME', isLegacy: true },
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        data: { quirksMode: false },
+      });
+    });
+  });
+
   describe('jsx tables with images', () => {
     it('parses jsx tables with images in cells', () => {
       const doc = `
