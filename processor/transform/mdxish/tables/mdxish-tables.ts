@@ -165,29 +165,49 @@ const processTableNode = (
   // All cells are phrasing-only — convert to markdown table
   const children: TableRow[] = [];
 
+  // Collect `<td>`/`<th>` cells under any container (a `<tr>`, or a section
+  // when cells are bare).
+  const collectCells = (container: Node): TableCell[] => {
+    const cells: TableCell[] = [];
+    visit(container, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
+      cells.push({
+        type: tableTypes[name],
+        children: unwrapSoleParagraph(cellChildren as Node[]),
+        position: cellPosition,
+      } as TableCell);
+    });
+    return cells;
+  };
+
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (child.name === 'thead' || child.name === 'tbody') {
+    if (child.name !== 'thead' && child.name !== 'tbody') return;
+
+    const sectionChildren = child.children as Node[];
+    const hasRow = sectionChildren.some(
+      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
+    );
+
+    if (hasRow) {
       visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (row.name !== 'tr') return;
-
-        const rowChildren: TableCell[] = [];
-
-        visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          const parsedChildren = unwrapSoleParagraph(cellChildren as Node[]);
-
-          rowChildren.push({
-            type: tableTypes[name],
-            children: parsedChildren,
-            position: cellPosition,
-          } as TableCell);
-        });
-
         children.push({
           type: 'tableRow' as const,
-          children: rowChildren,
+          children: collectCells(row as Node),
           position: row.position,
         });
       });
+    } else {
+      // No explicit `<tr>`, treat the section as a single implicit row so
+      // bare `<th>`s in a `<thead>` (or bare `<td>`s in a `<tbody>`) still
+      // produce a row instead of disappearing.
+      const cells = collectCells(child as Node);
+      if (cells.length > 0) {
+        children.push({
+          type: 'tableRow' as const,
+          children: cells,
+          position: child.position,
+        });
+      }
     }
   });
 

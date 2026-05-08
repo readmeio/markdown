@@ -897,6 +897,48 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('jsx tables with bare cells (no <tr> wrapper)', () => {
+    it('renders header row when <thead> contains <th>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<th>Question</th>
+<th>Answer</th>
+</thead>
+<tbody>
+<tr>
+<td>q1</td>
+<td>a1</td>
+</tr>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"tagName":"th"');
+      expect(json).toContain('"value":"Question"');
+      expect(json).toContain('"value":"Answer"');
+    });
+
+    it('renders body row when <tbody> contains <td>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<tr>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<td>bare-cell</td>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"value":"bare-cell"');
+    });
+  });
+
   describe('jsx tables with legacy variables', () => {
     it('parses markdown and <<variable>> syntax inside cells', () => {
       const doc = '<table><tr><td>**bold** <<NAME>></td></tr></table>';
