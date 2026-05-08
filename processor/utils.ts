@@ -161,8 +161,23 @@ export function formatHtmlForMdxish(html: string): string {
   // Removes the leading/trailing newlines
   let cleaned = processed.replace(/^\s*\n|\n\s*$/g, '');
 
-  // Unescape backticks: \` -> ` (users escape backticks in template literals
-  // because backticks would otherwise terminate the JSX template literal child).
+  // Convert literal \n sequences to actual newlines only inside <pre> and <code>.
+  // Because <pre> needs to respect the newline visual and
+  // escape characters shoudl be processed in the <code> tag.
+  //
+  // We don't want to unescape every \n because it might break the HTML & cause errors
+  // Example: <script>console.log("\n");</script>
+  // Would get turned into: <script>console.log("
+  // ");</script>
+  // which is invalid javascript and will cause error
+  cleaned = cleaned.replace(
+    /(<(pre|code)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi,
+    (_m, open: string, _tag: string, inner: string, close: string) =>
+      open + inner.replace(/\\n/g, '\n') + close,
+  );
+
+  // Unescape backticks: \` -> ` (users escape backticks in template literals)
+  // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
   cleaned = cleaned.replace(/\\`/g, '`');
 
   // Also handle case where backslash and backtick got separated by markdown parsing
