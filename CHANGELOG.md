@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.2.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** table rendering fixes to reallow legacy variables, MDX error fallback, and headers without row ([#1458](https://github.com/readmeio/markdown/issues/1458)) ([94b587b](https://github.com/readmeio/markdown/commit/94b587b038e358f462b95d5893ac1ec4258872b1))
+
 ## Version 14.2.0
 ### ✨ New & Improved
 
