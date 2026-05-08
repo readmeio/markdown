@@ -161,12 +161,8 @@ export function formatHtmlForMdxish(html: string): string {
   // Removes the leading/trailing newlines
   let cleaned = processed.replace(/^\s*\n|\n\s*$/g, '');
 
-  // Convert literal \n sequences to actual newlines BEFORE processing backticks
-  // This prevents the backtick unescaping regex from incorrectly matching \n sequences
-  cleaned = cleaned.replace(/\\n/g, '\n');
-
-  // Unescape backticks: \` -> ` (users escape backticks in template literals)
-  // Handle both cases: \` (adjacent) and \ followed by ` (split by markdown parser)
+  // Unescape backticks: \` -> ` (users escape backticks in template literals
+  // because backticks would otherwise terminate the JSX template literal child).
   cleaned = cleaned.replace(/\\`/g, '`');
 
   // Also handle case where backslash and backtick got separated by markdown parsing
