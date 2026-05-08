@@ -216,10 +216,17 @@ const processTableNode = (
     return cells;
   };
 
+  // remarkMdx wraps inline `<tr>`s in a paragraph; unwrap one level so the
+  // hasRow check below sees them.
+  const flattenSectionChildren = (nodes: Node[]): Node[] =>
+    nodes.flatMap(n =>
+      n.type === 'paragraph' && 'children' in n && Array.isArray(n.children) ? (n.children as Node[]) : [n],
+    );
+
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name !== 'thead' && child.name !== 'tbody') return;
 
-    const sectionChildren = child.children as Node[];
+    const sectionChildren = flattenSectionChildren(child.children as Node[]);
     const hasRow = sectionChildren.some(
       c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
     );
@@ -234,14 +241,16 @@ const processTableNode = (
         });
       });
     } else {
-      // No explicit `<tr>`, treat the section as a single implicit row so
-      // bare `<th>`s in a `<thead>` (or bare `<td>`s in a `<tbody>`) still
-      // produce a row instead of disappearing.
+      // No `<tr>`, chunk bare cells into rows using the prior row's column
+      // count (e.g. from `<thead>`), so 4 bare `<td>`s under a 2-col header
+      // become 2 rows of 2.
       const cells = collectCells(child as Node);
-      if (cells.length > 0) {
+      if (cells.length === 0) return;
+      const cols = children[0]?.children?.length || cells.length;
+      for (let i = 0; i < cells.length; i += cols) {
         children.push({
           type: 'tableRow' as const,
-          children: cells,
+          children: cells.slice(i, i + cols),
           position: child.position,
         });
       }
