@@ -62,6 +62,8 @@ const variablesCodeResolver: Plugin<[Options?]> = ({ variables }: Options = {}) 
 
   visit(tree, 'code', (node: Code) => {
     if (!node.value) return;
+    if (node.lang === 'mermaid') return;
+
     const nextValue = resolveCodeVariables(node.value, resolvedVariables);
     node.value = nextValue;
 
