@@ -2,15 +2,18 @@ import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdas
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
+import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { phrasing } from 'mdast-util-phrasing';
+import { mdxjs } from 'micromark-extension-mdxjs';
 import remarkGfm from 'remark-gfm';
-import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
+import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
+import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
@@ -31,14 +34,53 @@ const tableTypes = {
   td: 'tableCell',
 };
 
-const tableNodeProcessor = unified()
-  .data('micromarkExtensions', [gemoji()])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkMdx)
-  .use(normalizeEmphasisAST)
-  .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
-  .use(remarkGfm);
+// `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
+// register them manually so we control ordering against our other tokenizers.
+// The fallback omits these so blank-line-separated markdown inside cells still
+// parses when mdxjs throws on malformed JSX.
+const buildTableNodeProcessor = (withMdx: boolean) =>
+  unified()
+    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
+    .data('fromMarkdownExtensions', [
+      ...(withMdx ? [mdxFromMarkdown()] : []),
+      gemojiFromMarkdown(),
+      legacyVariableFromMarkdown(),
+    ])
+    .use(remarkParse)
+    .use(normalizeEmphasisAST)
+    .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
+    .use(remarkGfm);
+
+const tableNodeProcessor = buildTableNodeProcessor(true);
+const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
+
+// Since we use a subparser in `tableNodeProcessor` to parse `node.value`,
+// positions are relative to that substring. Shifting them by the base
+// offset and line number makes them valid in the outer source coordinate space.
+// Otherwise, consumers who directly slice based on position would read and grab the
+// wrong content
+const parseTableNode = (processor: typeof tableNodeProcessor, node: Html): Root | undefined => {
+  let parsed: Root;
+  try {
+    parsed = processor.runSync(processor.parse(node.value)) as Root;
+  } catch {
+    return undefined;
+  }
+
+  const baseOffset = node.position?.start?.offset ?? 0;
+  const baseLine = (node.position?.start?.line ?? 1) - 1;
+  visit(parsed as Node, child => {
+    if (child.position?.start) {
+      child.position.start.offset = (child.position.start.offset ?? 0) + baseOffset;
+      child.position.start.line += baseLine;
+    }
+    if (child.position?.end) {
+      child.position.end.offset = (child.position.end.offset ?? 0) + baseOffset;
+      child.position.end.line += baseLine;
+    }
+  });
+  return parsed;
+};
 
 /**
  * Check if children are only text nodes that might contain markdown
@@ -159,29 +201,58 @@ const processTableNode = (
   // All cells are phrasing-only — convert to markdown table
   const children: TableRow[] = [];
 
+  // Collect `<td>`/`<th>` cells under any container (a `<tr>`, or a section
+  // when cells are bare).
+  const collectCells = (container: Node): TableCell[] => {
+    const cells: TableCell[] = [];
+    visit(container, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
+      cells.push({
+        type: tableTypes[name],
+        children: unwrapSoleParagraph(cellChildren as Node[]),
+        position: cellPosition,
+      } as TableCell);
+    });
+    return cells;
+  };
+
+  // remarkMdx wraps inline `<tr>`s in a paragraph; unwrap one level so the
+  // hasRow check below sees them.
+  const flattenSectionChildren = (nodes: Node[]): Node[] =>
+    nodes.flatMap(n =>
+      n.type === 'paragraph' && 'children' in n && Array.isArray(n.children) ? (n.children as Node[]) : [n],
+    );
+
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (child.name === 'thead' || child.name === 'tbody') {
+    if (child.name !== 'thead' && child.name !== 'tbody') return;
+
+    const sectionChildren = flattenSectionChildren(child.children as Node[]);
+    const hasRow = sectionChildren.some(
+      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
+    );
+
+    if (hasRow) {
       visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (row.name !== 'tr') return;
-
-        const rowChildren: TableCell[] = [];
-
-        visit(row as Node, isTableCell, ({ name, children: cellChildren, position: cellPosition }: MdxJsxTableCell) => {
-          const parsedChildren = unwrapSoleParagraph(cellChildren as Node[]);
-
-          rowChildren.push({
-            type: tableTypes[name],
-            children: parsedChildren,
-            position: cellPosition,
-          } as TableCell);
-        });
-
         children.push({
           type: 'tableRow' as const,
-          children: rowChildren,
+          children: collectCells(row as Node),
           position: row.position,
         });
       });
+    } else {
+      // No `<tr>`, chunk bare cells into rows using the prior row's column
+      // count (e.g. from `<thead>`), so 4 bare `<td>`s under a 2-col header
+      // become 2 rows of 2.
+      const cells = collectCells(child as Node);
+      if (cells.length === 0) return;
+      const cols = children[0]?.children?.length || cells.length;
+      for (let i = 0; i < cells.length; i += cols) {
+        children.push({
+          type: 'tableRow' as const,
+          children: cells.slice(i, i + cols),
+          position: child.position,
+        });
+      }
     }
   });
 
@@ -219,36 +290,22 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
-    try {
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(node.value)) as Root;
-
-      // since we use a subparser in `tableNodeProcessor` to parse `node.value`,
-      // positions are relative to that substring. shifting them by the base
-      // offset and line number makes them valid in the outer source coordinate space.
-      // otherwise, consumers who directly slice based on position would read and grab the
-      // wrong content
-      const baseOffset = node.position?.start?.offset ?? 0;
-      const baseLine = (node.position?.start?.line ?? 1) - 1;
-      visit(parsed as Node, child => {
-        if (child.position?.start) {
-          child.position.start.offset = (child.position.start.offset ?? 0) + baseOffset;
-          child.position.start.line += baseLine;
-        }
-        if (child.position?.end) {
-          child.position.end.offset = (child.position.end.offset ?? 0) + baseOffset;
-          child.position.end.line += baseLine;
-        }
-      });
-
+    const parsed = parseTableNode(tableNodeProcessor, node);
+    if (parsed) {
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
 
         processTableNode(tableNode, index, parent as Parents, node.position);
         return EXIT;
       });
-    } catch {
-      // If parsing fails, leave the node as-is
+      return;
     }
+
+    // MDX parse failed (usually unbalanced JSX). Re-parse without MDX so
+    // markdown between `<td>` and `</td>` still renders; tags stay as raw HTML.
+    const fallback = parseTableNode(fallbackTableNodeProcessor, node);
+    if (!fallback || fallback.children.length <= 1) return;
+    parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
   });
 
   return tree;

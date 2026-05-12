@@ -185,4 +185,60 @@ const foo = () => {
     // The expected content should have triple backticks
     expect(htmlProp).toBe('<pre>```javascript\nconst x = 1;\n```</pre>');
   });
+
+  it('expands \\n only inside <pre>/<code>, not in plain text after tags', () => {
+    const markdown = [
+      '<HTMLBlock>{`',
+      '<pre>qerq3er \\n qerreqqe</pre>',
+      '<code>qerq3er \\n qerreqqe</code>',
+      'hello \\n world',
+      '`}</HTMLBlock>',
+    ].join('\n');
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+
+    const htmlProp = htmlBlock?.properties?.html as string;
+    expect(htmlProp).toBeDefined();
+
+    // Literal `\n` expands to real newlines only inside <pre> / <code>.
+    expect(htmlProp).toBe(
+      '<pre>qerq3er \n qerreqqe</pre>\n<code>qerq3er \n qerreqqe</code>\n\nhello \\n world',
+    );
+    // Must not turn the plain-text `hello \n world` into a line break between words.
+    expect(htmlProp).toContain('hello \\n world');
+    expect(htmlProp).not.toMatch(/hello \n world/); // space + LF + space (wrong)
+  });
+
+  it('preserves \\n escape sequences inside <script> string literals', () => {
+    const markdown = [
+      '<HTMLBlock runScripts={true}>{`',
+      '<div id="repro">before</div>',
+      '<script>alert(1);</script>',
+      '<script>',
+      '  var x = "hello\\nworld";',
+      '  document.getElementById("repro").textContent = "script ran: " + x;',
+      '</script>',
+      '`}</HTMLBlock>',
+    ].join('\n');
+
+    const hast = mdxish(markdown);
+    const paragraph = hast.children[0] as Element;
+
+    expect(paragraph.type).toBe('element');
+    const htmlBlock = findHTMLBlock(paragraph);
+    expect(htmlBlock).toBeDefined();
+
+    const htmlProp = htmlBlock?.properties?.html as string;
+    expect(htmlProp).toBeDefined();
+
+    // The `\n` inside the JS string literal must survive as the two-byte escape
+    // sequence so eval() sees a well-formed JS string. A real LF here would break it.
+    expect(htmlProp).toContain('var x = "hello\\nworld";');
+    expect(htmlProp).not.toContain('var x = "hello\nworld";');
+  });
 });

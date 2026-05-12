@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 14.2.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** table rendering fixes to reallow legacy variables, MDX error fallback, and headers without row ([#1458](https://github.com/readmeio/markdown/issues/1458)) ([94b587b](https://github.com/readmeio/markdown/commit/94b587b038e358f462b95d5893ac1ec4258872b1))
+
+## Version 14.2.0
+### ✨ New & Improved
+
+* **MDX:** add optional hard breaks option ([#1406](https://github.com/readmeio/markdown/issues/1406)) ([e1d80ef](https://github.com/readmeio/markdown/commit/e1d80eff139ebd5f24132048768cc175d100e51b))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** scope \n unescaping in HTMLBlock content ([#1457](https://github.com/readmeio/markdown/issues/1457)) ([4af0d2d](https://github.com/readmeio/markdown/commit/4af0d2de6a34e38f3c7a04e832b5490e70a215a4))
+
 ## Version 14.1.4
 ### 🛠 Fixes & Updates
 

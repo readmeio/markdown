@@ -897,6 +897,138 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('jsx tables with bare cells (no <tr> wrapper)', () => {
+    it('renders header row when <thead> contains <th>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<th>Question</th>
+<th>Answer</th>
+</thead>
+<tbody>
+<tr>
+<td>q1</td>
+<td>a1</td>
+</tr>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"tagName":"th"');
+      expect(json).toContain('"value":"Question"');
+      expect(json).toContain('"value":"Answer"');
+    });
+
+    it('renders body row when <tbody> contains <td>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<tr>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<td>bare-cell</td>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"value":"bare-cell"');
+    });
+
+    it('chunks bare <td>s into multiple body rows using the header column count', () => {
+      const doc = `<table>
+  <thead>
+    <td>Hi</td>
+    <td>World</td>
+  </thead>
+  <tbody>
+    <td>Hello</td>
+    <td>Globe</td>
+    <td>Hello</td>
+    <td>Globe</td>
+  </tbody>
+</table>`;
+
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
+        .filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+
+      expect(bodyRows).toStrictEqual([
+        ['Hello', 'Globe'],
+        ['Hello', 'Globe'],
+      ]);
+    });
+
+    it('preserves multiple <tr>s inside <tbody> when remarkMdx wraps them in a paragraph', () => {
+      const doc = `<Table>
+<thead><tr><th>L</th></tr></thead>
+<tbody>
+<tr><td>1</td></tr>
+<tr><td>2</td></tr>
+<tr><td>3</td></tr>
+</tbody>
+</Table>`;
+
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
+        .filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+
+      expect(bodyRows).toStrictEqual([['1'], ['2'], ['3']]);
+    });
+  });
+
+  describe('jsx tables with legacy variables', () => {
+    it('parses markdown and <<variable>> syntax inside cells', () => {
+      const doc = '<table><tr><td>**bold** <<NAME>></td></tr></table>';
+
+      const tree = mdxish(doc);
+      removePosition(tree, { force: true });
+
+      expect(tree).toStrictEqual({
+        type: 'root',
+        children: [
+          {
+            type: 'element',
+            tagName: 'table',
+            properties: {},
+            children: [
+              {
+                type: 'element',
+                tagName: 'tr',
+                properties: {},
+                children: [
+                  {
+                    type: 'element',
+                    tagName: 'td',
+                    properties: {},
+                    children: [
+                      {
+                        type: 'element',
+                        tagName: 'strong',
+                        properties: {},
+                        children: [{ type: 'text', value: 'bold' }],
+                      },
+                      {
+                        type: 'element',
+                        tagName: 'variable',
+                        properties: { name: 'NAME', isLegacy: true },
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        data: { quirksMode: false },
+      });
+    });
+  });
+
   describe('jsx tables with images', () => {
     it('parses jsx tables with images in cells', () => {
       const doc = `
