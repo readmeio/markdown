@@ -163,11 +163,22 @@ const processTableNode = (
   // represent a header-less table in mdast without the first body row getting
   // promoted. Keep as JSX instead so remarkRehype renders it correctly
   let hasThead = false;
+  // mdast table/tableRow/tableCell can't represent HTML attributes (colspan,
+  // rowspan, class, style, etc). If any row/cell carries attributes, keep the
+  // table as JSX so they're preserved through to the rendered output.
+  let hasRowOrCellAttributes = false;
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
+    if (
+      (child.name === 'tr' || child.name === 'th' || child.name === 'td') &&
+      Array.isArray(child.attributes) &&
+      child.attributes.length > 0
+    ) {
+      hasRowOrCellAttributes = true;
+    }
   });
 
-  if (tableHasFlowContent || !hasThead) {
+  if (tableHasFlowContent || !hasThead || hasRowOrCellAttributes) {
     // remarkMdx wraps inline elements in paragraph nodes (e.g. <td> on the
     // same line as content becomes mdxJsxTextElement inside a paragraph).
     // Unwrap these so <td>/<th> sit directly under <tr>, and strip
