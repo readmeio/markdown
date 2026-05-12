@@ -96,10 +96,10 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
-        expect(imageNode.caption).toBe('With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used.');
+        expect(imageNode.caption).toBe('With **Default Handling** enabled, the `default` value "Buster" is used.');
         expect(imageNode.children).toHaveLength(1);
 
-        const paragraph = imageNode.children[0] as Paragraph;
+        const paragraph = imageNode.children![0] as Paragraph;
         expect(paragraph.type).toBe('paragraph');
         expect(paragraph.children[0]).toMatchObject({ type: 'text', value: 'With ' });
         expect(paragraph.children[1]).toMatchObject({ type: 'strong' });
@@ -132,6 +132,36 @@ This is a warning message.
         const calloutNode = ast.children[0] as Callout;
         expect(calloutNode.children).toBeDefined();
         expect(calloutNode.children.length).toBeGreaterThan(0);
+      });
+
+      it('should decode HTML numeric entities in Callout icon attribute', () => {
+        const md = `<Callout icon="&#128679;" theme="warn">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('\u{1F6A7}');
+      });
+
+      it('should decode HTML hex entities in Callout icon attribute', () => {
+        const md = `<Callout icon="&#x1F4D8;" theme="info">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('\u{1F4D8}');
+      });
+
+      it('should decode named HTML entities in JSX attributes', () => {
+        const md = `<Callout icon="&amp;" theme="info">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('&');
       });
     });
 
