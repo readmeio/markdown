@@ -8,6 +8,7 @@ import type {
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
 
+import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
@@ -92,7 +93,7 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
       if (attr.value === null) {
         memo[attr.name] = true;
       } else if (typeof attr.value === 'string') {
-        memo[attr.name] = attr.value;
+        memo[attr.name] = decodeHTMLStrict(attr.value);
       } else if (attr.value?.value !== undefined) {
         try {
           memo[attr.name] = evaluate(attr.value.value);

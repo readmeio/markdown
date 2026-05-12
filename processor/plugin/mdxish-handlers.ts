@@ -3,6 +3,8 @@ import type { Properties } from 'hast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
+import { decodeHTMLStrict } from 'entities';
+
 import { NodeTypes } from '../../enums';
 import { evaluate } from '../utils';
 
@@ -11,16 +13,6 @@ const mdxExpressionHandler: Handler = (_state, node) => ({
   type: 'text',
   value: (node as { value?: string }).value || '',
 });
-
-// Since we serialize component / html tag attributes
-function decodeHtmlEntities(value: string) {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#10;/g, '\n')
-    .replace(/&amp;/g, '&');
-}
 
 function isStructuredCloneable(value: unknown): boolean {
   try {
@@ -43,7 +35,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     if (attribute.value === null) {
       properties[attribute.name] = true;
     } else if (typeof attribute.value === 'string') {
-      properties[attribute.name] = decodeHtmlEntities(attribute.value);
+      properties[attribute.name] = decodeHTMLStrict(attribute.value);
     } else {
       const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
       let evaluated: ReturnType<typeof evaluate>;
