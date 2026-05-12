@@ -86,21 +86,37 @@ describe('mdxish tables transformation', () => {
         type: 'root',
         children: [
           {
-            type: 'table',
+            type: 'mdxJsxFlowElement',
+            name: 'Table',
             children: [
               {
-                type: 'tableRow',
-                children: [{ type: 'tableCell', children: [] }],
-              },
-              {
-                type: 'tableRow',
+                type: 'mdxJsxFlowElement',
+                name: 'thead',
                 children: [
                   {
-                    type: 'tableCell',
+                    type: 'mdxJsxFlowElement',
+                    name: 'tr',
+                    children: [{ type: 'mdxJsxFlowElement', name: 'th', children: [] }],
+                  },
+                ],
+              },
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'tbody',
+                children: [
+                  {
+                    type: 'mdxJsxFlowElement',
+                    name: 'tr',
                     children: [
-                      { type: 'paragraph', children: [{ type: 'text', value: 'Line 1' }] },
-                      { type: 'paragraph', children: [{ type: 'text', value: 'Line 3' }] },
-                      { type: 'paragraph', children: [{ type: 'text', value: 'Line 5' }] },
+                      {
+                        type: 'mdxJsxFlowElement',
+                        name: 'td',
+                        children: [
+                          { type: 'text', value: 'Line 1' },
+                          { type: 'text', value: 'Line 3' },
+                          { type: 'text', value: 'Line 5' },
+                        ],
+                      },
                     ],
                   },
                 ],
@@ -159,7 +175,141 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  it('should unwrap a sole paragraph in a table cell', () => {
+  describe('given HTML attributes on rows/cells', () => {
+    describe('in raw HTML tables', () => {
+      // Regression test: lowercase `<table>` paths previously dropped
+      // class/style/colspan/rowspan because the table was converted to a
+      // markdown table node, which can't carry HTML attributes
+      it('preserves class attribute', () => {
+        const html = toHtml(
+          mdxish(`<table>
+  <thead>
+  <tr><th class="head">A</th></tr>
+  </thead>
+  <tbody>
+  <tr><td>x</td></tr>
+  </tbody>
+  </table>`),
+        );
+
+        expect(html).toContain('<th class="head">A</th>');
+      });
+
+      it('preserves colspan attribute', () => {
+        const html = toHtml(
+          mdxish(`<table>
+  <thead>
+  <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+  <tr><td colspan="2">merged</td></tr>
+  </tbody>
+  </table>`),
+        );
+
+        expect(html).toContain('<td colspan="2">merged</td>');
+      });
+
+      it('preserves inline style', () => {
+        const html = toHtml(
+          mdxish(`<table>
+  <thead>
+  <tr><th>A</th></tr>
+  </thead>
+  <tbody>
+  <tr><td style="color:red">x</td></tr>
+  </tbody>
+  </table>`),
+        );
+
+        expect(html).toContain('<td style="color:red">x</td>');
+      });
+
+      it('preserves attributes when only some cells carry them', () => {
+        const html = toHtml(
+          mdxish(`<table>
+  <thead>
+  <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+  <tr><td class="hi">x</td><td>y</td></tr>
+  </tbody>
+  </table>`),
+        );
+
+        expect(html).toContain('<td class="hi">x</td>');
+        expect(html).toContain('<td>y</td>');
+      });
+    });
+
+    describe('in JSX <Table> tables', () => {
+      it('preserves class attributes', () => {
+        const md = `<Table>
+<thead>
+<tr>
+<th class="head">A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2">merged</td>
+</tr>
+</tbody>
+</Table>`;
+        const ast = astProcessor(md);
+
+        expect(ast).toMatchObject({
+          type: 'root',
+          children: [
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'Table',
+              children: [
+                {
+                  type: 'mdxJsxFlowElement',
+                  name: 'thead',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'tr',
+                      children: [
+                        {
+                          type: 'mdxJsxTextElement',
+                          name: 'th',
+                          attributes: [{ type: 'mdxJsxAttribute', name: 'class', value: 'head' }],
+                          children: [{ type: 'text', value: 'A' }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'mdxJsxFlowElement',
+                  name: 'tbody',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'tr',
+                      children: [
+                        {
+                          type: 'mdxJsxTextElement',
+                          name: 'td',
+                          attributes: [{ type: 'mdxJsxAttribute', name: 'colspan', value: '2' }],
+                          children: [{ type: 'text', value: 'merged' }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+      });
+    });
+  });
+
+  it('should unwrap a sole paragraph in a Table cell', () => {
     const md = `<Table align={["left"]}>
   <thead>
     <tr>
@@ -183,23 +333,40 @@ describe('mdxish tables transformation', () => {
       type: 'root',
       children: [
         {
-          type: 'table',
+          type: 'mdxJsxFlowElement',
+          name: 'Table',
           children: [
             {
-              type: 'tableRow',
+              type: 'mdxJsxFlowElement',
+              name: 'thead',
               children: [
                 {
-                  type: 'tableCell',
-                  children: [{ type: 'text', value: 'Header' }],
+                  type: 'mdxJsxFlowElement',
+                  name: 'tr',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'th',
+                      children: [{ type: 'text', value: 'Header' }],
+                    },
+                  ],
                 },
               ],
             },
             {
-              type: 'tableRow',
+              type: 'mdxJsxFlowElement',
+              name: 'tbody',
               children: [
                 {
-                  type: 'tableCell',
-                  children: [{ type: 'text', value: 'Just one line' }],
+                  type: 'mdxJsxFlowElement',
+                  name: 'tr',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'td',
+                      children: [{ type: 'text', value: 'Just one line' }],
+                    },
+                  ],
                 },
               ],
             },
