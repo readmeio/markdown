@@ -1,8 +1,9 @@
-import type { Root } from 'mdast';
+import type { Node, Root } from 'mdast';
 
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
+import { collectNodes } from '../helpers';
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
@@ -156,6 +157,106 @@ describe('mdxish tables transformation', () => {
       expect(html).toContain('<pre><code');
       expect(html).toContain('2.16.0.0/13');
       expect(html).not.toContain('```');
+    });
+  });
+
+  describe('given raw/unclosed HTML inside cells', () => {
+    // Unclosed void elements, unclosed pairs, and unknown lowercase tags
+    // would otherwise crash remarkMdx and force the fallback path, which
+    // shreds the table structure. The HTML normalizer should fix the cell
+    // contents so MDX parsing succeeds and the <Table> stays intact.
+    it('parses unclosed void elements (<br>, <img>) inside a <Table>', () => {
+      const md = `<Table>
+<thead>
+<tr><th>Header</th></tr>
+</thead>
+<tbody>
+<tr><td>line1<br>line2 with <img src="x.png"></td></tr>
+</tbody>
+</Table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<table');
+      expect(html).toContain('<br');
+      expect(html).toContain('<img');
+      expect(html).toContain('src="x.png"');
+    });
+
+    it('auto-closes unclosed non-void tags inside a <Table> cell', () => {
+      const md = `<Table>
+<thead>
+<tr><th>Header</th></tr>
+</thead>
+<tbody>
+<tr><td><p>hi <a href="z">link</td></tr>
+</tbody>
+</Table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<table');
+      expect(html).toContain('hi');
+      expect(html).toContain('link');
+      expect(html).toContain('href="z"');
+    });
+
+    it('keeps an uppercase JSX component intact when normalizing sibling raw HTML', () => {
+      const md = `<Table>
+<thead>
+<tr><th>Header</th></tr>
+</thead>
+<tbody>
+<tr><td><Image src="a.png" /> before <br> after</td></tr>
+</tbody>
+</Table>`;
+      const ast = astProcessor(md);
+      const jsxElements = collectNodes(ast, 'mdxJsxTextElement') as (Node & { name?: string })[];
+      const image = jsxElements.find(n => n.name === 'Image');
+
+      expect(image).toBeDefined();
+      expect(image!.type).toBe('mdxJsxTextElement');
+    });
+
+    it('doesnt break table when there are empty lines inside the table', () => {
+      const md = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Parameter 2
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Specifies the tracking and click-through URLs for each supported ad unit
+
+        **_Note:_**_&#x20;To ensure complete ad delivery on all ad units, ensure that clickUrl\\* is provided for all ad units (marquee, skyline, gallery, brandbox, tile ) while associating a creative._<br />**The urlTracker objects are detailed** <p><a href="#C4">**here**</a></p>
+      </td>
+
+      <td>
+        Array <string>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        asa
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const ast = astProcessor(md);
+      const tableNode = collectNodes(ast, 'table');
+      expect(tableNode).toHaveLength(1);
     });
   });
 

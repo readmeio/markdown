@@ -2,6 +2,9 @@ import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdas
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
+import { fromHtml } from 'hast-util-from-html';
+import { toHtml } from 'hast-util-to-html';
+import htmlTags from 'html-tags';
 import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { phrasing } from 'mdast-util-phrasing';
 import { mdxjs } from 'micromark-extension-mdxjs';
@@ -89,12 +92,97 @@ const isTextOnly = (children: unknown[]): boolean => {
   return children.every(child => {
     if (child && typeof child === 'object' && 'type' in child) {
       if (child.type === 'text') return true;
+      // An empty mdxJsxTextElement is a self-closing inline element like
+      // `<br />` or `<img />` — it isn't text, and treating it as such would
+      // cause `extractTextFromChildren` to drop it during the cell re-parse.
       if (child.type === 'mdxJsxTextElement' && 'children' in child && Array.isArray(child.children)) {
-        return child.children.every((c: unknown) => c && typeof c === 'object' && 'type' in c && c.type === 'text');
+        return (
+          child.children.length > 0 &&
+          child.children.every((c: unknown) => c && typeof c === 'object' && 'type' in c && c.type === 'text')
+        );
       }
     }
     return false;
   });
+};
+
+// Run a captured `<Table>...</Table>` source string through the HTML5 parser
+// and re-serialize. The parser auto-closes void elements (`<br>` → `<br />`),
+// repairs unclosed non-void tags per the HTML5 algorithm, and preserves
+// already-matched pairs by construction — producing markup that remarkMdx
+// can parse. Uppercase JSX components (`<Image />`, `<Foo>...</Foo>`) are
+// masked with text placeholders before parsing so the HTML parser doesn't
+// lowercase their names.
+const JSX_PLACEHOLDER_RE = /__MDXISH_JSX_(\d+)__/g;
+
+// Mask uppercase JSX components other than the outer `<Table>` wrapper. The
+// HTML parser must still see `<Table>...</Table>` (it lowercases it to
+// `<table>` and parses the table structure normally), but inner components
+// like `<Image src="x" />` or `<Foo>...</Foo>` would have their casing
+// destroyed — so we swap them for opaque text placeholders and restore
+// after re-serialization.
+const maskUppercaseJsx = (source: string): { jsx: string[]; masked: string } => {
+  const jsx: string[] = [];
+  const masked = source
+    .replace(/<(?!Table\b)[A-Z][A-Za-z0-9.]*\b[^>]*\/>/g, m => {
+      const id = jsx.length;
+      jsx.push(m);
+      return `__MDXISH_JSX_${id}__`;
+    })
+    .replace(/<(?!Table\b)([A-Z][A-Za-z0-9.]*)\b[^>]*>[\s\S]*?<\/\1\s*>/g, m => {
+      const id = jsx.length;
+      jsx.push(m);
+      return `__MDXISH_JSX_${id}__`;
+    });
+  return { jsx, masked };
+};
+
+const VALID_HTML_TAGS = new Set<string>(htmlTags);
+
+// Escape `<unknownTag>` / `</unknownTag>` so the HTML parser treats them as
+// literal text instead of opening a generic element. Required because MDX
+// rejects unclosed/balanced-but-line-split pseudo-tags like `<string>` even
+// when an HTML parser would happily auto-close them — escaping renders the
+// author's `Array <string>` intent as visible text.
+const ESCAPE_UNKNOWN_TAG_RE = /<\/?([a-z][a-zA-Z0-9-]*)(?:\s[^>]*|\s*\/?)>/g;
+
+const escapeUnknownTags = (source: string): string =>
+  source.replace(ESCAPE_UNKNOWN_TAG_RE, (m, tagName) =>
+    VALID_HTML_TAGS.has(tagName) ? m : m.replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+  );
+
+// Mask `={expression}` JSX attribute values so parse5 doesn't HTML-encode
+// the braces/quotes inside them. Restored verbatim after re-serialization.
+const EXPR_PLACEHOLDER_RE = /__MDXISH_EXPR_(\d+)__/g;
+
+const maskJsxExpressionAttributes = (source: string): { expressions: string[]; masked: string } => {
+  const expressions: string[] = [];
+  const masked = source.replace(/=\{(?:[^{}]|\{[^{}]*\})*\}/g, m => {
+    const id = expressions.length;
+    expressions.push(m);
+    return `="__MDXISH_EXPR_${id}__"`;
+  });
+  return { expressions, masked };
+};
+
+const repairTableSourceHtml = (source: string): string => {
+  const { expressions, masked: noExpr } = maskJsxExpressionAttributes(source);
+  const { jsx, masked: noJsx } = maskUppercaseJsx(noExpr);
+  const escaped = escapeUnknownTags(noJsx);
+  const fragment = fromHtml(escaped, { fragment: true });
+  const serialized = toHtml(fragment, {
+    allowDangerousCharacters: true,
+    allowDangerousHtml: true,
+    closeEmptyElements: true,
+    closeSelfClosing: true,
+  });
+  // Each masked attribute was stored as the full `={expr}` slice, so swap
+  // the synthetic `="placeholder"` form (including its quotes) back to the
+  // original — anything else would double the `=`.
+  return serialized
+    .replace(/="__MDXISH_EXPR_(\d+)__"/g, (_, id) => expressions[Number(id)])
+    .replace(EXPR_PLACEHOLDER_RE, (_, id) => expressions[Number(id)])
+    .replace(JSX_PLACEHOLDER_RE, (_, id) => jsx[Number(id)]);
 };
 
 /**
@@ -301,8 +389,26 @@ const mdxishTables = (): Transform => tree => {
       return;
     }
 
-    // MDX parse failed (usually unbalanced JSX). Re-parse without MDX so
-    // markdown between `<td>` and `</td>` still renders; tags stay as raw HTML.
+    // MDX parse failed — usually because a cell contains raw HTML the JSX
+    // parser rejects (`<br>`, `<img src="x">`, `<p>hi`, `Array <div`). Run
+    // the captured source through the HTML5 parser to repair unclosed/void
+    // tags, then retry under MDX before falling back to the non-MDX path.
+    const repaired = repairTableSourceHtml(node.value);
+    if (repaired !== node.value) {
+      const retried = parseTableNode(tableNodeProcessor, { ...node, value: repaired });
+      if (retried) {
+        visit(retried as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
+          if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
+
+          processTableNode(tableNode, index, parent as Parents, node.position);
+          return EXIT;
+        });
+        return;
+      }
+    }
+
+    // Repair didn't help — re-parse without MDX so markdown between `<td>`
+    // and `</td>` still renders; tags stay as raw HTML.
     const fallback = parseTableNode(fallbackTableNodeProcessor, node);
     if (!fallback || fallback.children.length <= 1) return;
     parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
