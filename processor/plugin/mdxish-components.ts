@@ -3,6 +3,7 @@ import type { Root, Element, ElementContent } from 'hast';
 import type { Transformer } from 'unified';
 import type { VFile } from 'vfile';
 
+import { decodeHTML } from 'entities';
 import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS_LOWER } from '../../lib/constants';
@@ -181,7 +182,10 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
       // rehypeRaw strips children from <img> (void element), so we must
       // re-process the caption here, after rehypeRaw.
       if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
-        const captionHast = processMarkdown(node.properties.caption as string);
+        // Decode HTML character references before re-parsing so any JSX the author embedded with entity-encoded
+        // quotes (e.g. `caption="<Image align=&#x22;center&#x22; />"`) becomes valid JSX that the inner
+        // pipeline can parse
+        const captionHast = processMarkdown(decodeHTML(node.properties.caption as string));
         node.children = (captionHast.children ?? []).filter(isElementContentNode);
       }
 
