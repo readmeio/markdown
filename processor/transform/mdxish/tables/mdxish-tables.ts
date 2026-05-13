@@ -303,44 +303,39 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
+    // Main logic to transform table node to its parts
+    // Because the processor uses remarkMdx, it is stricter in what it accepts
+    // and only accepts valid MDX syntax. in the table node.
+    // To get around that, we have some fallback logics after trying to repair the table content
     let parsed = parseTableNode(tableNodeProcessor, node);
-
-    // remarkMdx throws when a JSX element's opener and closer sit
-    // asymmetrically across lines (`<span>X\n</span>` and mirror). Rewrite the
-    // offending side to a flow position so both ends match, then retry.
     if (!parsed) {
-      const normalized = normalizeTagSpacing(node.value);
-      if (normalized !== node.value) {
-        parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized });
-      }
-    }
-
-    // remarkMdx throws when JSX inside a cell is unbalanced. Try once more
-    // with synthetic closers appended for any unclosed tags so the structure
-    // round-trips through the MDX-aware pipeline. This recovery only fires
-    // when the strict parse has already failed.
-    if (!parsed) {
+      // First common error is unclosed HTML tags
       const repaired = repairUnclosedTags(node.value);
       if (repaired !== node.value) {
         parsed = parseTableNode(tableNodeProcessor, { ...node, value: repaired });
       }
+      if (!parsed) {
+        // Second common error is having a line with text and an opening tag
+        // E.g. text <div> \n <div> text
+        const normalized = normalizeTagSpacing(node.value);
+        if (normalized !== node.value) {
+          parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized });
+        }
+      }
     }
 
     if (parsed) {
+      // If the table is parsed successfully, we can now process it further
+      // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-
         processTableNode(tableNode, index, parent as Parents, node.position);
         return EXIT;
       });
-      return;
-    }
-
-    // If the table is a raw HTML table, re-parse without MDX as
-    // the rest of the transformer pipeline can handle the raw HTML table.
-    // For JSX <Table> tables, this means it gets passed through to remarkRehype as is
-    // which will parse some content, but won't have the full parsing from the processor.
-    if (node.value.startsWith('<table')) {
+    } else if (node.value.startsWith('<table')) {
+      // If the parsing still fails, give an opportunity to the fallback parser
+      // without remarkMdx to process lowercase tables as it's likely to not
+      // have needed MDX parsing anyway
       const fallback = parseTableNode(fallbackTableNodeProcessor, node);
       if (!fallback || fallback.children.length <= 1) return;
       parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
