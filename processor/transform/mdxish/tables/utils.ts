@@ -1,5 +1,17 @@
 import type { Node } from 'mdast';
 
+export const tableTags = new Set([
+  'thead',
+  'tbody',
+  'tfoot',
+  'caption',
+  'colgroup',
+  'col',
+  'tr',
+  'th',
+  'td',
+]);
+
 /**
  * If the cell has exactly one paragraph child, unwrap it so its inline children sit
  * directly under the cell (matches GFM table cell shape and avoids stray `<p>` wrappers).
