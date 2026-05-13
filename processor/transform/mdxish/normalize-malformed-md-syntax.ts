@@ -257,12 +257,12 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     if (index === undefined || !parent) return undefined;
 
     // Skip if inside code blocks, inline code, or MDX JSX <code> elements.
-    // The parent type check for mdxJsxTextElement/mdxJsxFlowElement handles
-    // raw HTML <code>...</code> inside table cells, which the table re-parser
-    // parses as MDX JSX (not as an mdast `inlineCode` node).
     if (parent.type === 'inlineCode' || parent.type === 'code') {
       return undefined;
     }
+    // The parent type check for mdxJsxTextElement/mdxJsxFlowElement handles
+    // raw HTML <code>...</code> inside table cells, which the table re-parser
+    // parses as MDX JSX (not as an mdast `inlineCode` node).
     if (
       (parent.type === 'mdxJsxTextElement' || parent.type === 'mdxJsxFlowElement') &&
       'name' in parent && parent.name === 'code'
