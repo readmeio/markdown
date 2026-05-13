@@ -209,7 +209,7 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  describe('given raw HTML table with raw markdown in td cells', () => {
+  describe('given raw HTML table', () => {
     it('should render markdown syntax in plain-text cells', () => {
       const md = `<table>
   <thead>
@@ -224,9 +224,7 @@ describe('mdxish tables transformation', () => {
       const html = toHtml(mdxish(md));
       expect(html).toContain('<strong>bold</strong>');
     });
-  });
 
-  describe('given raw HTML table with inline <code> elements', () => {
     it('should preserve <code> wrappers in td cells', () => {
       const md = `<table>
   <thead>
@@ -243,5 +241,21 @@ describe('mdxish tables transformation', () => {
       expect(html).toContain('<code>action</code>');
       expect(html).toContain('<code>penalty box</code>');
     });
+  });
+
+  it('renders inline HTML elements and markdown syntax as markup', () => {
+    const md = `<table>
+<thead>
+  <tr><th>Header</th></tr>
+</thead>
+<tbody>
+  <tr>
+    <td>**bold** and <code>code</code></td>
+  </tr>
+</tbody>
+</table>`;
+    const html = toHtml(mdxish(md));
+    expect(html).toContain('<code>code</code>');
+    expect(html).toContain('<strong>bold</strong>');
   });
 });
