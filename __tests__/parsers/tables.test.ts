@@ -629,7 +629,7 @@ const x = 1;
         expect(json).toContain('second paragraph');
       });
 
-      it('does not break when there is <object> tag', () => {
+      it('table does not break when there is <object> tag', () => {
         const doc = `<Table>
     <thead>
       <tr>
@@ -657,6 +657,108 @@ const x = 1;
       </tr>
     </tbody>
   </Table>`;
+
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
+      });
+
+      it('table does not break when there is genuine escaped HTML tag', () => {
+        const doc = `<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Notes
+      </th>
+
+      <th>
+        Type
+      </th>
+
+      <th>
+        Required
+      </th>
+
+      <th>
+        Possible Values
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        urlTracker
+      </td>
+
+      <td>
+        Specifies
+
+        **_Note:_**_&#x20;Somehthing_<br />**The urlTracker objects are detailed** <p><a href="#C4">**here**</a></p>
+      </td>
+
+      <td>
+        string
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        badgeSettings
+      </td>
+
+      <td>
+        Cell
+      </td>
+
+      <td>
+        Array <object>
+      </td>
+
+      <td>
+        N
+      </td>
+
+      <td>
+        Enum Values: ROLLBACK, EXPRESS\\_DELIVERY
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        associatedItems
+      </td>
+
+      <td>
+        Something
+      </td>
+
+      <td>
+        Array \\<string>
+      </td>
+
+      <td>
+        N
+      </td>
+
+      <td>
+        valid itemId
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
 
         const { tree } = parseMdxishWithSource(doc);
         const tableNode = collectNodes(tree, 'table');

@@ -20,16 +20,21 @@ const VOID_ELEMENTS = new Set([
 ]);
 
 /**
- * Replace fenced code blocks and inline code spans with same-length whitespace
- * so htmlparser2 doesn't try to parse `<` inside code as tags. We feed the
- * masked string to the parser purely for tag detection — final string-splicing
+ * Replace fenced code blocks, inline code spans, and backslash-escaped tag
+ * openers with same-length whitespace so htmlparser2 doesn't try to parse
+ * `<` inside code or after a markdown escape as tags. We feed the masked
+ * string to the parser purely for tag detection — final string-splicing
  * happens against the original `html`, so offsets line up either way.
  *
  * htmlparser2 already understands JSX expression attributes (`align={[…]}`,
  * `style={{ … }}`), so those don't need masking.
  */
 const maskCodeRegions = (html: string): string =>
-  html.replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length));
+  html
+    .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    // `\<tag>` is a markdown escape — the `<` is literal text, not a tag.
+    // Blank the backslash + `<` so htmlparser2 doesn't tokenize it.
+    .replace(/\\</g, '  ');
 
 interface CloseInsert {
   name: string;

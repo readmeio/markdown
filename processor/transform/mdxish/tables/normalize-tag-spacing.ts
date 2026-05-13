@@ -1,13 +1,17 @@
 import { Parser } from 'htmlparser2';
 
 /**
- * Replace fenced code blocks and inline code spans with same-length whitespace
- * so htmlparser2 doesn't pick up `<` inside code as tags. We feed the masked
- * string to the parser purely for tag detection; the rewrites splice against
- * the original `html`, so offsets line up either way.
+ * Replace fenced code blocks, inline code spans, and backslash-escaped tag
+ * openers with same-length whitespace so htmlparser2 doesn't pick up `<`
+ * inside code or after a markdown escape as tags. We feed the masked string
+ * to the parser purely for tag detection; the rewrites splice against the
+ * original `html`, so offsets line up either way.
  */
 const maskCodeRegions = (html: string): string =>
-  html.replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length));
+  html
+    .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    // `\<tag>` is a markdown escape — the `<` is literal text, not a tag.
+    .replace(/\\</g, '  ');
 
 interface OpenTag {
   name: string;
