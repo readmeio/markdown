@@ -518,6 +518,101 @@ const x = 1;
       expect(cells).toHaveLength(2);
     });
 
+    describe('unclosed JSX inside cells', () => {
+      it('repairs an unclosed inline element inside a cell', () => {
+        const doc = `<Table>
+  <thead><tr><th>Heading</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>cell with <span>unclosed inline</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(cells).toHaveLength(1);
+        expect(JSON.stringify(cells[0])).toContain('unclosed inline');
+      });
+
+      it('repairs an unclosed td before another td', () => {
+        const doc = `<Table>
+  <thead><tr><th>Heading</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>first
+      <td>second</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(cells.length).toBeGreaterThanOrEqual(2);
+      });
+
+      it('repairs unclosed jsx alongside a jsx expression attribute', () => {
+        const doc = `<Table>
+  <thead><tr><th style={{ textAlign: "left" }}>Heading</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>this is <em>broken emphasis</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(cells).toHaveLength(1);
+        expect(JSON.stringify(cells[0])).toContain('broken emphasis');
+      });
+
+      it('still parses markdown inside a cell after repair', () => {
+        // The unclosed <em> would normally crash remarkMdx. After repair the
+        // table goes through the MDX-aware pipeline, which means **bold**
+        // inside the (well-formed) sibling cell still becomes a <strong>.
+        const doc = `<Table>
+  <thead><tr><th>A</th><th>B</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>before <em>oops</td>
+      <td>**emphasized**</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const hast = mdxish(doc);
+        const strongs = findAllElementsByTagName(hast, 'strong');
+        expect(strongs.length).toBeGreaterThan(0);
+        expect(JSON.stringify(strongs[0])).toContain('emphasized');
+      });
+
+      it('does not modify well-formed tables (repair is a no-op)', () => {
+        const doc = `<Table>
+  <thead><tr><th>Heading</th></tr></thead>
+  <tbody>
+    <tr><td>fine</td></tr>
+  </tbody>
+</Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(cells).toHaveLength(1);
+      });
+    });
+
     it('does not swallow content after an unclosed Table', () => {
       const doc = `<Table>
   <tbody>

@@ -20,6 +20,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { repairUnclosedTags } from './repair-unclosed-tags';
 import { tableTags, unwrapSoleParagraph } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
@@ -301,7 +302,19 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
-    const parsed = parseTableNode(tableNodeProcessor, node);
+    let parsed = parseTableNode(tableNodeProcessor, node);
+
+    // remarkMdx throws when JSX inside a cell is unbalanced. Try once more
+    // with synthetic closers appended for any unclosed tags so the structure
+    // round-trips through the MDX-aware pipeline. This recovery only fires
+    // when the strict parse has already failed.
+    if (!parsed) {
+      const repaired = repairUnclosedTags(node.value);
+      if (repaired !== node.value) {
+        parsed = parseTableNode(tableNodeProcessor, { ...node, value: repaired });
+      }
+    }
+
     if (parsed) {
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
