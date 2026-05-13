@@ -540,7 +540,7 @@ const x = 1;
 
       it('repairs an unclosed td before another td', () => {
         const doc = `<Table>
-  <thead><tr><th>Heading</th></tr></thead>
+  <thead><tr><th>A</th><th>B</th></tr></thead>
   <tbody>
     <tr>
       <td>first
