@@ -20,7 +20,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
-import { unwrapSoleParagraph } from './utils';
+import { tableTags, unwrapSoleParagraph } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -163,22 +163,22 @@ const processTableNode = (
   // represent a header-less table in mdast without the first body row getting
   // promoted. Keep as JSX instead so remarkRehype renders it correctly
   let hasThead = false;
-  // mdast table/tableRow/tableCell can't represent HTML attributes (colspan,
-  // rowspan, class, style, etc). If any row/cell carries attributes, keep the
-  // table as JSX so they're preserved through to the rendered output.
-  let hasRowOrCellAttributes = false;
+  // mdast table/tableRow/tableCell does not represent HTML attributes (class, style, etc).
+  // If any structural table HTML child carries attributes, keep the table as JSX so their attributes
+  // are preserved through to the rendered output.
+  let hasStructuralAttributes = false;
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
     if (
-      (child.name === 'tr' || child.name === 'th' || child.name === 'td') &&
+      tableTags.has(child.name) &&
       Array.isArray(child.attributes) &&
       child.attributes.length > 0
     ) {
-      hasRowOrCellAttributes = true;
+      hasStructuralAttributes = true;
     }
   });
 
-  if (tableHasFlowContent || !hasThead || hasRowOrCellAttributes) {
+  if (tableHasFlowContent || !hasThead || hasStructuralAttributes) {
     // remarkMdx wraps inline elements in paragraph nodes (e.g. <td> on the
     // same line as content becomes mdxJsxTextElement inside a paragraph).
     // Unwrap these so <td>/<th> sit directly under <tr>, and strip

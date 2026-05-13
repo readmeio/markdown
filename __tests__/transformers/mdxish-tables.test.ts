@@ -175,8 +175,8 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  describe('given HTML attributes on rows/cells', () => {
-    describe('in raw HTML tables', () => {
+  describe('given HTML attributes on structural table HTML children', () => {
+    describe('with raw HTML tables', () => {
       // Regression test: lowercase `<table>` paths previously dropped
       // class/style/colspan/rowspan because the table was converted to a
       // markdown table node, which can't carry HTML attributes
@@ -225,36 +225,50 @@ describe('mdxish tables transformation', () => {
         expect(html).toContain('<td style="color:red">x</td>');
       });
 
-      it('preserves attributes when only some cells carry them', () => {
+      it('preserves attributes on thead and tbody', () => {
         const html = toHtml(
           mdxish(`<table>
-  <thead>
-  <tr><th>A</th><th>B</th></tr>
+  <thead class="head-group">
+  <tr><th>A</th></tr>
   </thead>
-  <tbody>
-  <tr><td class="hi">x</td><td>y</td></tr>
+  <tbody align="left">
+  <tr><td>x</td></tr>
   </tbody>
   </table>`),
         );
 
-        expect(html).toContain('<td class="hi">x</td>');
-        expect(html).toContain('<td>y</td>');
+        expect(html).toContain('<thead class="head-group">');
+        expect(html).toContain('<tbody align="left">');
+      });
+
+      it('preserves attributes on columns (colgroup/col)', () => {
+        const html = toHtml(
+          mdxish(`<table>
+          <colgroup class="head-group">
+          <col style="width:100px" />
+          </colgroup>
+          </table>`),
+        );
+        expect(html).toContain('<colgroup class="head-group">');
+        expect(html).toContain('<col style="width:100px">');
       });
     });
 
-    describe('in JSX <Table> tables', () => {
-      it('preserves class attributes', () => {
+    describe('with JSX tables', () => {
+      it('preserves class attributes, outputs table in JSX, and denotes table nodes as mdxElements', () => {
         const md = `<Table>
-<thead>
+<thead style="color:blue">
 <tr>
 <th class="head">A</th>
 </tr>
 </thead>
-<tbody>
+
+<tbody style="color:red">
 <tr>
 <td colspan="2">merged</td>
 </tr>
 </tbody>
+
 </Table>`;
         const ast = astProcessor(md);
 
@@ -268,6 +282,7 @@ describe('mdxish tables transformation', () => {
                 {
                   type: 'mdxJsxFlowElement',
                   name: 'thead',
+                  attributes: [{ type: 'mdxJsxAttribute', name: 'style', value: 'color:blue' }],
                   children: [
                     {
                       type: 'mdxJsxFlowElement',
@@ -286,6 +301,7 @@ describe('mdxish tables transformation', () => {
                 {
                   type: 'mdxJsxFlowElement',
                   name: 'tbody',
+                  attributes: [{ type: 'mdxJsxAttribute', name: 'style', value: 'color:red' }],
                   children: [
                     {
                       type: 'mdxJsxFlowElement',
