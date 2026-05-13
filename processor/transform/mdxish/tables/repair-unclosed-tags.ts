@@ -1,8 +1,9 @@
-import { Parser } from 'htmlparser2';
+import { walkTags } from './tag-walker';
+import { applyInserts, type Insert } from './utils';
 
 // HTML void elements never have a closing tag. htmlparser2 already handles
-// these in HTML mode, but we still need the set to skip repair for any voids
-// that get emitted as implicit closes.
+// these in HTML mode, but we still skip them defensively in case a void shows
+// up as an implicit close.
 const VOID_ELEMENTS = new Set([
   'area',
   'base',
@@ -20,47 +21,16 @@ const VOID_ELEMENTS = new Set([
 ]);
 
 /**
- * Replace fenced code blocks, inline code spans, and backslash-escaped tag
- * openers with same-length whitespace so htmlparser2 doesn't try to parse
- * `<` inside code or after a markdown escape as tags. We feed the masked
- * string to the parser purely for tag detection — final string-splicing
- * happens against the original `html`, so offsets line up either way.
- *
- * htmlparser2 already understands JSX expression attributes (`align={[…]}`,
- * `style={{ … }}`), so those don't need masking.
- */
-const maskCodeRegions = (html: string): string =>
-  html
-    .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
-    // `<<NAME>>` is ReadMe's legacy variable syntax. Without this, htmlparser2
-    // sees the inner `<NAME>` as a tag opener. Mask any `<<` (also handles
-    // malformed variants like `<<string>` with a single `>`).
-    .replace(/<</g, '  ')
-    // `\<tag>` is a markdown escape — the `<` is literal text, not a tag.
-    // Blank the backslash + `<` so htmlparser2 doesn't tokenize it.
-    .replace(/\\</g, '  ');
-
-interface CloseInsert {
-  name: string;
-  offset: number;
-}
-
-interface OpenFrame {
-  end: number;
-  name: string;
-}
-
-/**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
  * just the same paragraph. (`<td>\nArray <object>\n</object></td>` still
  * throws even though there's no blank line between open and close.) When the
- * open and the auto-close trigger sit on different lines, insert the synthetic
- * closer at the first `\n` after the open so it lands at the end of the open's
- * line. If they're on the same line (e.g. `<b><i>x</b>`), insert at the trigger.
+ * open and the auto-close trigger sit on different lines, return the offset
+ * of the first newline after the open so the synthetic closer lands at the
+ * end of the open's line. If they share a line (e.g. `<b><i>x</b>`), return
+ * the trigger position.
  */
-const findInsertOffset = (html: string, openEnd: number, triggerStart: number): number => {
-  const slice = html.slice(openEnd, triggerStart);
-  const newlineIdx = slice.indexOf('\n');
+const findCloserOffset = (html: string, openEnd: number, triggerStart: number): number => {
+  const newlineIdx = html.slice(openEnd, triggerStart).indexOf('\n');
   return newlineIdx === -1 ? triggerStart : openEnd + newlineIdx;
 };
 
@@ -68,61 +38,36 @@ const findInsertOffset = (html: string, openEnd: number, triggerStart: number): 
  * Rewrites `html` so every open tag has a matching close. Returns the input
  * unchanged when nothing needed repair, so callers can cheaply detect no-ops.
  *
- * Detection runs through htmlparser2: any `</tag>` event flagged `implicit`
- * by the parser is a tag the user opened but didn't explicitly close. We
- * insert the synthetic closer either at the first blank line after the open
- * (so it lands in the same paragraph as MDX requires) or at the trigger
- * position if the open and trigger share a paragraph.
+ * Detection runs through htmlparser2: any close event flagged `implicit` is
+ * a tag the user opened but didn't explicitly close. We pair it with the
+ * matching opener (popped from a stack we maintain) and insert `</name>` at
+ * the end of the opener's line, or at the trigger if they're on the same line.
  *
  * Scoped to a known-malformed retry path — the happy path never calls this.
  */
 export const repairUnclosedTags = (html: string): string => {
-  const masked = maskCodeRegions(html);
-  const inserts: CloseInsert[] = [];
-  const openStack: OpenFrame[] = [];
+  const inserts: Insert[] = [];
+  const openStack: { end: number; name: string }[] = [];
 
-  const parser: Parser = new Parser(
-    {
-      onopentag(name) {
-        if (VOID_ELEMENTS.has(name.toLowerCase())) return;
-        openStack.push({ name, end: parser.endIndex + 1 });
-      },
-      onclosetag(name, implicit) {
-        if (VOID_ELEMENTS.has(name.toLowerCase())) return;
-        const opener = openStack.pop();
-        if (!implicit || !opener) return;
-        const offset = findInsertOffset(html, opener.end, parser.startIndex);
-        inserts.push({ name, offset });
-      },
+  walkTags(html, {
+    onOpen({ name, end }) {
+      if (VOID_ELEMENTS.has(name.toLowerCase())) {
+        // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
+        // If the source open tag doesn't end with `/`, inject one before the
+        // `>` so it parses. `end` is one past `>`, so `end - 2` is the char
+        // immediately before `>`.
+        if (html[end - 2] !== '/') inserts.push({ offset: end - 1, text: '/' });
+        return;
+      }
+      openStack.push({ name, end });
     },
-    {
-      lowerCaseTags: false,
-      lowerCaseAttributeNames: false,
-      recognizeSelfClosing: true,
+    onClose({ name, start, implicit }) {
+      if (VOID_ELEMENTS.has(name.toLowerCase())) return;
+      const opener = openStack.pop();
+      if (!implicit || !opener) return;
+      inserts.push({ offset: findCloserOffset(html, opener.end, start), text: `</${name}>` });
     },
-  );
-  parser.write(masked);
-  parser.end();
-
-  if (inserts.length === 0) return html;
-
-  // Repositioning inserts to blank-line offsets can break document order
-  // (htmlparser2 unwinds the stack inner-first, but an inner tag's blank line
-  // may sit earlier than the outer's). Stable-sort by offset ascending so the
-  // cursor walks forward; ties keep htmlparser2's innermost-first order, which
-  // yields the correct `</inner></outer>` nesting at shared offsets.
-  inserts.sort((a, b) => a.offset - b.offset);
-
-  let out = '';
-  let cursor = 0;
-  inserts.forEach(({ name, offset }) => {
-    const clamped = Math.min(Math.max(offset, cursor), html.length);
-    if (clamped > cursor) {
-      out += html.slice(cursor, clamped);
-      cursor = clamped;
-    }
-    out += `</${name}>`;
   });
-  out += html.slice(cursor);
-  return out;
+
+  return applyInserts(html, inserts);
 };

@@ -529,6 +529,10 @@ const x = 1;
   </tbody>
 </Table>`;
 
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
+
         const hast = mdxish(doc);
         const tables = findAllElementsByTagName(hast, 'table');
         expect(tables).toHaveLength(1);
@@ -548,6 +552,10 @@ const x = 1;
     </tr>
   </tbody>
 </Table>`;
+
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
 
         const hast = mdxish(doc);
         const tables = findAllElementsByTagName(hast, 'table');
@@ -627,6 +635,21 @@ const x = 1;
         const json = JSON.stringify(cells[0]);
         expect(json).toContain('first paragraph');
         expect(json).toContain('second paragraph');
+      });
+
+      it('table does not break with <br> tag', () => {
+        const doc = `<Table>
+  <thead><tr><th>A</th><th>B</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>before <br> oops</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
       });
 
       it('table does not break when there is <object> tag', () => {
