@@ -36,29 +36,54 @@ interface CloseInsert {
   offset: number;
 }
 
+interface OpenFrame {
+  end: number;
+  name: string;
+}
+
+/**
+ * MDX requires a JSX inline tag and its closer to live on the same line — not
+ * just the same paragraph. (`<td>\nArray <object>\n</object></td>` still
+ * throws even though there's no blank line between open and close.) When the
+ * open and the auto-close trigger sit on different lines, insert the synthetic
+ * closer at the first `\n` after the open so it lands at the end of the open's
+ * line. If they're on the same line (e.g. `<b><i>x</b>`), insert at the trigger.
+ */
+const findInsertOffset = (html: string, openEnd: number, triggerStart: number): number => {
+  const slice = html.slice(openEnd, triggerStart);
+  const newlineIdx = slice.indexOf('\n');
+  return newlineIdx === -1 ? triggerStart : openEnd + newlineIdx;
+};
+
 /**
  * Rewrites `html` so every open tag has a matching close. Returns the input
  * unchanged when nothing needed repair, so callers can cheaply detect no-ops.
  *
  * Detection runs through htmlparser2: any `</tag>` event flagged `implicit`
  * by the parser is a tag the user opened but didn't explicitly close. We
- * insert the synthetic closer at that event's `startIndex` — for mid-stream
- * mismatches that's right before the close tag that triggered the auto-close
- * (so `<b><i>x</b>` becomes `<b><i>x</i></b>`); for end-of-input that's the
- * end of the string.
+ * insert the synthetic closer either at the first blank line after the open
+ * (so it lands in the same paragraph as MDX requires) or at the trigger
+ * position if the open and trigger share a paragraph.
  *
  * Scoped to a known-malformed retry path — the happy path never calls this.
  */
 export const repairUnclosedTags = (html: string): string => {
   const masked = maskCodeRegions(html);
   const inserts: CloseInsert[] = [];
+  const openStack: OpenFrame[] = [];
 
   const parser: Parser = new Parser(
     {
-      onclosetag(name, implicit) {
-        if (!implicit) return;
+      onopentag(name) {
         if (VOID_ELEMENTS.has(name.toLowerCase())) return;
-        inserts.push({ name, offset: parser.startIndex });
+        openStack.push({ name, end: parser.endIndex + 1 });
+      },
+      onclosetag(name, implicit) {
+        if (VOID_ELEMENTS.has(name.toLowerCase())) return;
+        const opener = openStack.pop();
+        if (!implicit || !opener) return;
+        const offset = findInsertOffset(html, opener.end, parser.startIndex);
+        inserts.push({ name, offset });
       },
     },
     {
@@ -72,14 +97,17 @@ export const repairUnclosedTags = (html: string): string => {
 
   if (inserts.length === 0) return html;
 
-  // Inserts come out in document order; same-offset entries are innermost-first
-  // (htmlparser2 unwinds the stack bottom-up). Walking in order with a cursor
-  // preserves that nesting and avoids the offset-drift you'd hit if you spliced
-  // in arbitrary order.
+  // Repositioning inserts to blank-line offsets can break document order
+  // (htmlparser2 unwinds the stack inner-first, but an inner tag's blank line
+  // may sit earlier than the outer's). Stable-sort by offset ascending so the
+  // cursor walks forward; ties keep htmlparser2's innermost-first order, which
+  // yields the correct `</inner></outer>` nesting at shared offsets.
+  inserts.sort((a, b) => a.offset - b.offset);
+
   let out = '';
   let cursor = 0;
   inserts.forEach(({ name, offset }) => {
-    const clamped = Math.min(offset, html.length);
+    const clamped = Math.min(Math.max(offset, cursor), html.length);
     if (clamped > cursor) {
       out += html.slice(cursor, clamped);
       cursor = clamped;

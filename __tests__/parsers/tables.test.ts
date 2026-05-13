@@ -596,6 +596,73 @@ const x = 1;
         expect(JSON.stringify(strongs[0])).toContain('emphasized');
       });
 
+      it('inserts the closer at a blank line so it lands in the same paragraph as the open', () => {
+        // <span> opens in the first paragraph but never closes; the next paragraph
+        // continues with more text before </td>. MDX requires the synthetic </span>
+        // to land at the paragraph boundary (the blank line), not at </td>, or it
+        // gets parsed as a different paragraph and remarkMdx still throws.
+        const doc = `<Table>
+  <thead><tr><th>Description</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+        <span style="color:red">first paragraph with unclosed span.
+
+        second paragraph keeps going.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(cells).toHaveLength(1);
+        const json = JSON.stringify(cells[0]);
+        expect(json).toContain('first paragraph');
+        expect(json).toContain('second paragraph');
+      });
+
+      it('does not break when there is <object> tag', () => {
+        const doc = `<Table>
+    <thead>
+      <tr>
+        <th>
+          Parameter
+        </th>
+
+        <th>
+          Notes
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>
+          Array <object>
+        </td>
+
+        <td>
+          Each object can have:<ul><li>type (Enum:
+   ROLLBACK)</li><li>enabled (default: true)</li></ul><br
+  /><br />
+        </td>
+      </tr>
+    </tbody>
+  </Table>`;
+
+        const { tree } = parseMdxishWithSource(doc);
+        const tableNode = collectNodes(tree, 'table');
+        expect(tableNode).toHaveLength(1);
+      });
+
       it('does not modify well-formed tables (repair is a no-op)', () => {
         const doc = `<Table>
   <thead><tr><th>Heading</th></tr></thead>

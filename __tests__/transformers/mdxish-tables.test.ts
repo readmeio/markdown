@@ -175,6 +175,67 @@ describe('mdxish tables transformation', () => {
     });
   });
 
+  describe('given unclosed inline JSX inside a cell', () => {
+    // <object> opens but is never closed before </td>. remarkMdx rejects this
+    // because inline JSX has to balance on the same line as the open. The
+    // repair injects a synthetic </object> at the end of the open's line so
+    // the table parses as a real mdast table (instead of staying as a raw
+    // html node).
+    it('repairs an unclosed inline tag so the table is no longer a raw html node', () => {
+      const md = `<Table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Array <object>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const ast = astProcessor(md);
+      const top = ast.children[0];
+
+      expect(top.type).not.toBe('html');
+      expect(['table', 'mdxJsxFlowElement']).toContain(top.type);
+    });
+
+    // <span style="color:red">…</span> spans across a blank-line paragraph
+    // break inside the cell. The repair lands the synthetic </span> at the end
+    // of the open's line (before the blank line) so MDX accepts both
+    // paragraphs as part of the cell.
+    it('repairs an unclosed span that spans multiple paragraphs', () => {
+      const md = `<Table align={["left"]}>
+  <thead>
+    <tr>
+      <th>Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        <span style="color:red">First paragraph with unclosed span.
+
+        Second paragraph keeps going.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const ast = astProcessor(md);
+      const top = ast.children[0];
+
+      expect(top.type).not.toBe('html');
+      expect(['table', 'mdxJsxFlowElement']).toContain(top.type);
+    });
+  });
+
   describe('given HTML attributes on structural table HTML children', () => {
     describe('with raw HTML tables', () => {
       // Regression test: lowercase `<table>` paths previously dropped
