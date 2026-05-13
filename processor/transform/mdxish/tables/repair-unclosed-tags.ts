@@ -32,6 +32,10 @@ const VOID_ELEMENTS = new Set([
 const maskCodeRegions = (html: string): string =>
   html
     .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    // `<<NAME>>` is ReadMe's legacy variable syntax. Without this, htmlparser2
+    // sees the inner `<NAME>` as a tag opener. Mask any `<<` (also handles
+    // malformed variants like `<<string>` with a single `>`).
+    .replace(/<</g, '  ')
     // `\<tag>` is a markdown escape — the `<` is literal text, not a tag.
     // Blank the backslash + `<` so htmlparser2 doesn't tokenize it.
     .replace(/\\</g, '  ');

@@ -10,6 +10,10 @@ import { Parser } from 'htmlparser2';
 const maskCodeRegions = (html: string): string =>
   html
     .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    // `<<NAME>>` is ReadMe's legacy variable syntax — the inner `<NAME>` is
+    // not a tag. Mask any `<<` (also handles malformed variants like
+    // `<<string>` with a single `>`).
+    .replace(/<</g, '  ')
     // `\<tag>` is a markdown escape — the `<` is literal text, not a tag.
     .replace(/\\</g, '  ');
 
