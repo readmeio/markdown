@@ -20,6 +20,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { repairUnclosedTags } from './repair-unclosed-tags';
 import { tableTags, unwrapSoleParagraph } from './utils';
 
@@ -303,6 +304,16 @@ const mdxishTables = (): Transform => tree => {
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
     let parsed = parseTableNode(tableNodeProcessor, node);
+
+    // remarkMdx throws when a JSX element's opener and closer sit
+    // asymmetrically across lines (`<span>X\n</span>` and mirror). Rewrite the
+    // offending side to a flow position so both ends match, then retry.
+    if (!parsed) {
+      const normalized = normalizeTagSpacing(node.value);
+      if (normalized !== node.value) {
+        parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized });
+      }
+    }
 
     // remarkMdx throws when JSX inside a cell is unbalanced. Try once more
     // with synthetic closers appended for any unclosed tags so the structure
