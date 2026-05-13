@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.2.3
+### 🛠 Fixes & Updates
+
+* code elements stripped from td elements ([#1466](https://github.com/readmeio/markdown/issues/1466)) ([ac1a45d](https://github.com/readmeio/markdown/commit/ac1a45d8a5c8ab056e5f0c9abd85049b45ff2480))
+* don't parse content of <code> elements in table cells ([#1467](https://github.com/readmeio/markdown/issues/1467)) ([130fb0b](https://github.com/readmeio/markdown/commit/130fb0b01cdbfa959f623bbbd991792150550789))
+
 ## Version 14.2.2
 ### 🛠 Fixes & Updates
 
