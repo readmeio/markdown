@@ -62,7 +62,7 @@ function Anchor(props: Props) {
   // Unwrap any nested anchor elements that GFM's autolinker may have created.
   // This prevents invalid nested <a> tags when the Anchor's text content looks like a URL.
   const unwrappedChildren = React.Children.map(children, child => {
-    if (React.isValidElement(child) && child.type === 'a') {
+    if (React.isValidElement(child) && (child.type === 'a' || child.type === Anchor)) {
       return child.props.children;
     }
     return child;

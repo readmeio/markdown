@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.2.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** decode html entities in jsx attribute values ([#1462](https://github.com/readmeio/markdown/issues/1462)) ([0e202e1](https://github.com/readmeio/markdown/commit/0e202e150e4f6b35623452fc3ebd0ba5249d72c1)), closes [#128679](https://github.com/readmeio/markdown/issues/128679) [#128679](https://github.com/readmeio/markdown/issues/128679)
+* mdx resolves internal links server side ([#1456](https://github.com/readmeio/markdown/issues/1456)) ([5b9702b](https://github.com/readmeio/markdown/commit/5b9702bfe08a6e12feaa649daee23de723d6fef8))
+* **mdxish:** preserve attributes on raw <table> rows/cells ([#1463](https://github.com/readmeio/markdown/issues/1463)) ([98c9dbc](https://github.com/readmeio/markdown/commit/98c9dbc001d23b8f21a8cb130fa38fdd4cd6da9d)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+
 ## Version 14.2.1
 ### 🛠 Fixes & Updates
 
