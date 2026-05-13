@@ -208,4 +208,23 @@ describe('mdxish tables transformation', () => {
       ],
     });
   });
+
+  describe('given raw HTML table with inline <code> elements', () => {
+    it('should preserve <code> wrappers in td cells', () => {
+      const md = `<table>
+  <thead>
+    <tr><th>Attribute</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>action</code></td>
+      <td>If true, <code>penalty box</code> is enabled.</td>
+    </tr>
+  </tbody>
+</table>`;
+      const html = toHtml(mdxish(md));
+      expect(html).toContain('<code>action</code>');
+      expect(html).toContain('<code>penalty box</code>');
+    });
+  });
 });
