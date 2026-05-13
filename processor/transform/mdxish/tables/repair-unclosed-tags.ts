@@ -1,24 +1,7 @@
+import { HTML_VOID_ELEMENTS } from '../../../../utils/common-html-words';
+
 import { walkTags } from './tag-walker';
 import { applyInserts, type Insert } from './utils';
-
-// HTML void elements never have a closing tag. htmlparser2 already handles
-// these in HTML mode, but we still skip them defensively in case a void shows
-// up as an implicit close.
-const VOID_ELEMENTS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'source',
-  'track',
-  'wbr',
-]);
 
 /**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
@@ -51,7 +34,7 @@ export const repairUnclosedTags = (html: string): string => {
 
   walkTags(html, {
     onOpen({ name, end }) {
-      if (VOID_ELEMENTS.has(name.toLowerCase())) {
+      if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) {
         // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
         // If the source open tag doesn't end with `/`, inject one before the
         // `>` so it parses. `end` is one past `>`, so `end - 2` is the char
@@ -62,7 +45,7 @@ export const repairUnclosedTags = (html: string): string => {
       openStack.push({ name, end });
     },
     onClose({ name, start, implicit }) {
-      if (VOID_ELEMENTS.has(name.toLowerCase())) return;
+      if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) return;
       const opener = openStack.pop();
       if (!implicit || !opener) return;
       inserts.push({ offset: findCloserOffset(html, opener.end, start), text: `</${name}>` });
