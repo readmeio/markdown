@@ -1,6 +1,7 @@
 import type { Element } from 'hast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
+import { toHtml } from 'hast-util-to-html';
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../lib';
@@ -1052,6 +1053,46 @@ None of the following content will get rendered!`;
       removePosition(ast, { force: true });
 
       expect(ast).toMatchSnapshot();
+    });
+  });
+
+  describe('code content preservation in table cells', () => {
+    it('preserves <code> content containing {expression} patterns verbatim (RM-16556)', () => {
+      const doc = `<table>
+    <thead>
+        <th>Attribute</th>
+        <th>Description</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>action</code></td>
+            <td>Contains: <ul><li><code>deny_custom_{custom_deny_id}</code>. Custom action.</li></ul></td>
+        </tr>
+    </tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>deny_custom_{custom_deny_id}</code>');
+    });
+
+    it('does not apply emphasis to underscores inside <code> elements in table cells', () => {
+      const doc = `<table>
+    <thead><tr><th>Name</th><th>Type</th></tr></thead>
+    <tbody>
+        <tr>
+          <td>field</td>
+          <td>Contains: <ul><li><code>snake_case_value</code></li><li><code>another_name_here</code></li></ul></td>
+        </tr>
+    </tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>snake_case_value</code>');
+      expect(html).toContain('<code>another_name_here</code>');
     });
   });
 });
