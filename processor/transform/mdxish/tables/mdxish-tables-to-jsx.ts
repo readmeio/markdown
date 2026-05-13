@@ -7,8 +7,6 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
 
-import { balanceHtmlInCell } from './utils';
-
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
 const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
@@ -108,7 +106,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 attributes: [],
                 type: 'mdxJsxFlowElement',
                 name: 'th',
-                children: balanceHtmlInCell(cell.children as Node[]) as MdxJsxFlowElement['children'],
+                children: cell.children,
                 ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
               } as MdxJsxFlowElement;
             }),
@@ -129,7 +127,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
               return {
                 type: 'mdxJsxFlowElement',
                 name: 'td',
-                children: balanceHtmlInCell(cell.children as Node[]) as MdxJsxFlowElement['children'],
+                children: cell.children,
                 ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
               };
             }),
