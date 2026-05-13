@@ -312,11 +312,15 @@ const mdxishTables = (): Transform => tree => {
       return;
     }
 
-    // MDX parse failed (usually unbalanced JSX). Re-parse without MDX so
-    // markdown between `<td>` and `</td>` still renders; tags stay as raw HTML.
-    const fallback = parseTableNode(fallbackTableNodeProcessor, node);
-    if (!fallback || fallback.children.length <= 1) return;
-    parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
+    // If the table is a raw HTML table, re-parse without MDX as
+    // the rest of the transformer pipeline can handle the raw HTML table.
+    // For JSX <Table> tables, this means it gets passed through to remarkRehype as is
+    // which will parse some content, but won't have the full parsing from the processor.
+    if (node.value.startsWith('<table')) {
+      const fallback = parseTableNode(fallbackTableNodeProcessor, node);
+      if (!fallback || fallback.children.length <= 1) return;
+      parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
+    }
   });
 
   return tree;

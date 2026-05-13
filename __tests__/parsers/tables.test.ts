@@ -236,9 +236,9 @@ const x = 1;
     <tr>
       <td>
 
-* one
-* two
-* three
+        * one
+        * two
+        * three
 
       </td>
     </tr>`,
@@ -249,9 +249,9 @@ const x = 1;
     <tr>
       <td>
 
-1. first
-2. second
-3. third
+        1. first
+        2. second
+        3. third
 
       </td>
     </tr>`,
@@ -305,12 +305,12 @@ const x = 1;
     <tr>
       <td>
 
-> quoted
+        > quoted
 
       </td>
       <td>
 
-* listed
+        * listed
 
       </td>
     </tr>`,
