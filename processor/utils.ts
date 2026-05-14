@@ -17,7 +17,9 @@ import mdast from '../lib/mdast';
  * Evaluate a JavaScript expression source and return its value.
  *
  * Wrapping in parens lets object literals (`{color: 'red'}`) parse as
- * expressions. Runs with no scope, so only self-contained literals resolve.
+ * expressions. Pass `scope` to expose named bindings (e.g. values introduced
+ * by an `export const`) to the expression; without it, only self-contained
+ * literals resolve.
  *
  * > ☢️ **Danger**: this `eval`s JavaScript. Only call when safeMode is off —
  * > safeMode's contract is that expression syntax is never evaluated, and the
@@ -26,9 +28,11 @@ import mdast from '../lib/mdast';
  *
  * Throws on parse/runtime error; callers decide the fallback.
  */
-export function evaluate(source: string) {
+export function evaluate(source: string, scope: Record<string, unknown> = {}) {
+  const names = Object.keys(scope);
+  const values = names.map(name => scope[name]);
   // eslint-disable-next-line no-new-func
-  return new Function(`return (${source})`)();
+  return new Function(...names, `return (${source})`)(...values);
 }
 
 /**

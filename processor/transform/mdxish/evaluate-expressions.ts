@@ -5,6 +5,8 @@ import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
 
+import { evaluate } from '../../utils';
+
 /**
  * AST transformer to evaluate MDX expressions.
  * Replaces mdxFlowExpression and mdxTextExpression nodes with their evaluated values.
@@ -14,9 +16,7 @@ import { visit } from 'unist-util-visit';
  * Anything else falls through to the error branch and is kept as literal `{...}` text.
  */
 const evaluateExpressions: Plugin<[], Root> = () => (tree, file: VFile) => {
-  const scopeEntries = Object.entries(file.data.mdxishScope?.values ?? {});
-  const scopeNames = scopeEntries.map(([name]) => name);
-  const scopeValues = scopeEntries.map(([, value]) => value);
+  const scope = file.data.mdxishScope?.values ?? {};
 
   visit(tree, ['mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
     if (!parent || index === null || index === undefined) return;
@@ -29,8 +29,7 @@ const evaluateExpressions: Plugin<[], Root> = () => (tree, file: VFile) => {
     if (!expression) return;
 
     try {
-      // eslint-disable-next-line no-new-func
-      const result = new Function(...scopeNames, `return (${expression})`)(...scopeValues);
+      const result = evaluate(expression, scope);
 
       // Extract evaluated value text
       let textValue: string;
