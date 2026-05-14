@@ -171,6 +171,13 @@ function normalizeProperties(node: Element): void {
  */
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {
+    // Merge any local components introduced by `export function` declarations
+    // (collected by the evaluate-esm transformer) into the lookup map. Only the
+    // keys matter here — the rehype-mdxish-components plugin keys off names to
+    // decide whether to keep a tag in the tree.
+    const localComponents = (vfile.data.mdxishScope?.components ?? {}) as Record<string, unknown>;
+    const allComponents = { ...components, ...localComponents } as CustomComponents;
+
     const nodesToRemove: { index: number; parent: Element | Root }[] = [];
 
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
@@ -196,7 +203,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
         if (isActualHtmlTag(node.tagName, original)) return;
       }
 
-      const componentName = getComponentName(node.tagName, components);
+      const componentName = getComponentName(node.tagName, allComponents);
       if (!componentName) {
         nodesToRemove.push({ index, parent });
         return;
@@ -204,7 +211,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown, components);
+      parseTextChildren(node, processMarkdown, allComponents);
     });
 
     // Remove unknown components in reverse order to preserve indices

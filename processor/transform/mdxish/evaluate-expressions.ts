@@ -1,19 +1,23 @@
 import type { Root } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
+import type { VFile } from 'vfile';
 
 import { visit } from 'unist-util-visit';
-
-import { evaluate } from '../../utils';
 
 /**
  * AST transformer to evaluate MDX expressions.
  * Replaces mdxFlowExpression and mdxTextExpression nodes with their evaluated values.
- * Runs with no scope, so only self-contained expressions resolve
- * (e.g. `{1+1}`, `{"hi".toUpperCase()}`); anything that references an external
- * identifier falls through to the error branch and is kept as literal `{...}` text.
+ * Self-contained expressions resolve directly (e.g. `{1+1}`); expressions that
+ * reference identifiers can resolve if those identifiers were introduced by an
+ * earlier `export const` (collected onto `file.data.mdxishScope.values`).
+ * Anything else falls through to the error branch and is kept as literal `{...}` text.
  */
-const evaluateExpressions: Plugin<[], Root> = () => tree => {
+const evaluateExpressions: Plugin<[], Root> = () => (tree, file: VFile) => {
+  const scopeEntries = Object.entries(file.data.mdxishScope?.values ?? {});
+  const scopeNames = scopeEntries.map(([name]) => name);
+  const scopeValues = scopeEntries.map(([, value]) => value);
+
   visit(tree, ['mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
     if (!parent || index === null || index === undefined) return;
 
@@ -25,7 +29,8 @@ const evaluateExpressions: Plugin<[], Root> = () => tree => {
     if (!expression) return;
 
     try {
-      const result = evaluate(expression);
+      // eslint-disable-next-line no-new-func
+      const result = new Function(...scopeNames, `return (${expression})`)(...scopeValues);
 
       // Extract evaluated value text
       let textValue: string;

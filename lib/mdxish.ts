@@ -4,9 +4,13 @@ import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
+import { Parser } from 'acorn';
+import acornJsx from 'acorn-jsx';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
@@ -31,6 +35,7 @@ import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
+import evaluateEsm from '../processor/transform/mdxish/evaluate-esm';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -175,6 +180,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // Insert mdx expression (text-only, no flow) after gemoji at index 3
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+
+    // Enable `export const/function` declarations as `mdxjsEsm` nodes
+    const acorn = Parser.extend(acornJsx());
+    micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
+    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
   }
 
   if (!safeMode) {
@@ -265,6 +275,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
+    .use(safeMode ? undefined : evaluateEsm) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
@@ -282,7 +293,36 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     });
 
   const vfile = new VFile({ value: parserReadyContent });
-  const hast = processor.runSync(processor.parse(parserReadyContent), vfile) as Root;
+
+  // If a malformed `export ...` line trips the mdxjsEsm tokenizer's acorn
+  // parser, fall back to a processor without the esm extension so the rest of
+  // the document still renders.
+  let mdast;
+  try {
+    mdast = processor.parse(parserReadyContent);
+  } catch {
+    const { processor: fallback } = mdxishAstProcessor(contentWithoutComments, { ...opts, safeMode: true });
+    mdast = fallback
+      .use(evaluateExpressions)
+      .use(remarkBreaks)
+      .use(variablesCodeResolver, { variables })
+      .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
+      .use(preserveBooleanProperties)
+      .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] })
+      .use(restoreBooleanProperties)
+      .use(normalizeMdxJsxNodes)
+      .use(rehypeFlattenTableCellParagraphs)
+      .use(mdxishMermaidTransformer)
+      .use(generateSlugForHeadings)
+      .use(rehypeMdxishComponents, {
+        components,
+        processMarkdown: (markdown: string) => mdxish(markdown, { ...opts, safeMode: true }),
+      })
+      .parse(parserReadyContent);
+    return fallback.runSync(mdast, vfile) as Root;
+  }
+
+  const hast = processor.runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
