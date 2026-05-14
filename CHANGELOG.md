@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.2.5
+### 🛠 Fixes & Updates
+
+* **mdxish:** support unclosed tags in JSX table cells ([#1465](https://github.com/readmeio/markdown/issues/1465)) ([c83a777](https://github.com/readmeio/markdown/commit/c83a777fe6af250758d1d397218d4cbabfa25b6a)), closes [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [#x20](https://github.com/readmeio/markdown/issues/x20)
+
 ## Version 14.2.4
 ### 🛠 Fixes & Updates
 
