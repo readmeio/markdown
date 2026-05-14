@@ -75,6 +75,7 @@ import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { mdxComponent } from './micromark/mdx-component';
+import hasEsmDeclarations from './utils/mdxish/check-for-esm-declarations';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -181,10 +182,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
 
-    // Enable `export const/function` declarations as `mdxjsEsm` nodes
-    const acorn = Parser.extend(acornJsx());
-    micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
-    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
+    // Hesitantly enable mdxjsEsm tokenization only when it looks like
+    // there's a good chance it contains an ESM declaration, so that
+    // it errors on potentially less pages
+    if (hasEsmDeclarations(parserReadyContent)) {
+      const acorn = Parser.extend(acornJsx());
+      micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
+      fromMarkdownExts.push(mdxjsEsmFromMarkdown());
+    }
   }
 
   if (!safeMode) {
@@ -293,45 +298,16 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     });
 
   const vfile = new VFile({ value: parserReadyContent });
-
-  // If a malformed `export ...` line trips the mdxjsEsm tokenizer's acorn
-  // parser, fall back to a processor without the esm extension so the rest of
-  // the document still renders.
-  let mdast;
-  try {
-    mdast = processor.parse(parserReadyContent);
-  } catch {
-    const { processor: fallback } = mdxishAstProcessor(contentWithoutComments, { ...opts, safeMode: true });
-    mdast = fallback
-      .use(evaluateExpressions)
-      .use(remarkBreaks)
-      .use(variablesCodeResolver, { variables })
-      .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
-      .use(preserveBooleanProperties)
-      .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] })
-      .use(restoreBooleanProperties)
-      .use(normalizeMdxJsxNodes)
-      .use(rehypeFlattenTableCellParagraphs)
-      .use(mdxishMermaidTransformer)
-      .use(generateSlugForHeadings)
-      .use(rehypeMdxishComponents, {
-        components,
-        processMarkdown: (markdown: string) => mdxish(markdown, { ...opts, safeMode: true }),
-      })
-      .parse(parserReadyContent);
-    const fallbackHast = fallback.runSync(mdast, vfile) as Root;
-    if (vfile.data.mdxishScope) {
-      fallbackHast.data = { ...fallbackHast.data, mdxishScope: vfile.data.mdxishScope };
-    }
-    return fallbackHast;
-  }
-
+  const mdast = processor.parse(parserReadyContent);
   const hast = processor.runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
   }
 
+  // Stash the in-document exported components on the tree
+  // so that the renderer consumer knows about them & renders is.
+  // Required for `export function` components.
   if (vfile.data.mdxishScope) {
     hast.data = { ...hast.data, mdxishScope: vfile.data.mdxishScope };
   }

@@ -1,4 +1,4 @@
-import type { Element, ElementContent, Root } from 'hast';
+import type { ElementContent, Root } from 'hast';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -7,24 +7,11 @@ import { describe, it, expect } from 'vitest';
 
 import { mdxish } from '../../../lib/mdxish';
 import renderMdxish from '../../../lib/renderMdxish';
+import { findElementByTagName } from '../../helpers';
 
 type AnyNode = ElementContent | Root;
 
-const findElement = (ast: Root, tagName: string): Element | undefined => {
-  const walk = (nodes: AnyNode[]): Element | undefined => {
-    return nodes.reduce<Element | undefined>((found, node) => {
-      if (found) return found;
-      if (node.type === 'element' && node.tagName === tagName) return node;
-      if ('children' in node && Array.isArray(node.children)) {
-        return walk(node.children as AnyNode[]);
-      }
-      return undefined;
-    }, undefined);
-  };
-  return walk(ast.children as AnyNode[]);
-};
-
-const allText = (node: AnyNode | undefined): string => {
+const allText = (node: AnyNode | null | undefined): string => {
   if (!node) return '';
   if (node.type === 'text') return node.value;
   if ('children' in node && Array.isArray(node.children)) {
@@ -38,7 +25,7 @@ describe('mdxish MDX exports', () => {
     const md = 'export const foo = "hello";\n\nHi {foo}.';
     const ast = mdxish(md);
 
-    const p = findElement(ast, 'p');
+    const p = findElementByTagName(ast,'p');
     expect(p).toBeDefined();
     expect(allText(p)).toBe('Hi hello.');
   });
@@ -47,7 +34,7 @@ describe('mdxish MDX exports', () => {
     const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
     const ast = mdxish(md);
 
-    const el = findElement(ast, 'Greeting');
+    const el = findElementByTagName(ast,'Greeting');
     expect(el).toBeDefined();
   });
 
@@ -70,14 +57,22 @@ describe('mdxish MDX exports', () => {
     expect(text).toContain('{foo}');
   });
 
-  it('falls back gracefully on malformed export bodies', () => {
-    // `export const x =;` is syntactically invalid — the tokenizer throws and
-    // mdxish falls back to a no-esm parse so the rest of the doc still renders.
+  it('throws on malformed export bodies so authors see the syntax error', () => {
+    // `export const x =;` is syntactically invalid. We deliberately don't
+    // swallow the acorn error — the author needs to know their export is
+    // broken rather than have it silently disappear from the rendered doc.
     const md = 'export const x =;\n\nHello world.';
-    const ast = mdxish(md);
+    expect(() => mdxish(md)).toThrow(/unexpected|parse|syntax/i);
+  });
 
-    expect(findElement(ast, 'p')).toBeDefined();
-    expect(allText(ast)).toContain('Hello world.');
+  it('does not treat prose starting with "Export"/"Import" as ESM', () => {
+    // Bare keywords without a real declarator (const/function/etc.) should
+    // not opt the doc into mdxjsEsm tokenization — otherwise acorn would
+    // choke on plain English.
+    const md = 'Export your data by clicking save.\n\nImport the file first.';
+    const ast = mdxish(md);
+    expect(allText(ast)).toContain('Export your data');
+    expect(allText(ast)).toContain('Import the file');
   });
 
   it('removes export declarations from the rendered output', () => {
