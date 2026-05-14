@@ -31,6 +31,7 @@ import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
+import demoteUnresolvedJsxTags from '../processor/transform/mdxish/demote-unresolved-jsx-tags';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -265,6 +266,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
+    .use(demoteUnresolvedJsxTags, { components }) // Convert unresolved PascalCase tags (e.g. user-typed <Version>) to literal text in view-mode rendering
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes

@@ -53,13 +53,13 @@ describe('reusable content compiler', () => {
 });
 
 describe('mdxish reusable content compiler', () => {
-  it('removes undefined reusable content blocks', () => {
+  it('renders undefined reusable content blocks as literal text (CX-3284)', () => {
     const doc = '<Undefined />';
 
     const hast = mdxish(doc);
 
-    // Unknown components are filtered out by rehypeMdxishComponents
-    expect(hast.children).toHaveLength(0);
+    expect(hast.children.length).toBeGreaterThan(0);
+    expect(JSON.stringify(hast)).toContain('Undefined');
   });
 
   it('processes defined reusable content blocks as components', () => {

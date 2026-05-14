@@ -6,16 +6,15 @@ import { describe, it, expect } from 'vitest';
 import { mix, mdxish } from '../../../lib';
 
 describe('rehypeMdxishComponents', () => {
-  it('should remove non-existent custom components from the tree', () => {
+  it('renders unresolved PascalCase tags as literal text instead of dropping them (CX-3284)', () => {
     const md = `<MyDemo> from inside </MyDemo>
 Hello
 <Custom>`;
     const html = mix(md);
-    // Should only contain "Hello" and not the non-existent component tags or their content
     expect(html).toContain('Hello');
-    expect(html).not.toContain('MyDemo');
-    expect(html).not.toContain('from inside');
-    expect(html).not.toContain('Custom');
+    expect(html).toContain('MyDemo');
+    expect(html).toContain('from inside');
+    expect(html).toContain('Custom');
   });
 
   it('should preserve existing custom components', () => {
@@ -28,42 +27,41 @@ Hello`;
     expect(result).toContain('Hello');
   });
 
-  it('should remove nested non-existent components', () => {
+  it('preserves nested unresolved components and their content as literal text', () => {
     const md = `<Outer>
   <Inner>nested content</Inner>
   Hello
 </Outer>`;
     const result = mix(md);
-    expect(result).not.toContain('Hello');
-    expect(result).not.toContain('Outer');
-    expect(result).not.toContain('Inner');
-    expect(result).not.toContain('nested content');
+    expect(result).toContain('Hello');
+    expect(result).toContain('Outer');
+    expect(result).toContain('Inner');
+    expect(result).toContain('nested content');
   });
 
-  it('should handle mixed existing and non-existent components', () => {
-    // componentExists only checks if the key exists, so we can use a minimal mock
+  it('handles mixed existing and non-existent components (renders unknown as text)', () => {
     const ExistingComponent = {} as CustomComponents[string];
     const md = `<ExistingComponent>Keep this</ExistingComponent>
-<NonExistent>Remove this</NonExistent>
+<NonExistent>Show this</NonExistent>
 Hello`;
     const result = mix(md, { components: { ExistingComponent } });
     expect(result).toContain('ExistingComponent');
     expect(result).toContain('Keep this');
     expect(result).toContain('Hello');
-    expect(result).not.toContain('NonExistent');
-    expect(result).not.toContain('Remove this');
+    expect(result).toContain('NonExistent');
+    expect(result).toContain('Show this');
   });
 
-  it('should preserve regular HTML tags', () => {
+  it('preserves regular HTML tags and renders unknown components as text alongside them', () => {
     const md = `<div>This is HTML</div>
-<NonExistentComponent>Remove this</NonExistentComponent>
+<NonExistentComponent>Show this</NonExistentComponent>
 Hello`;
     const result = mix(md);
     expect(result).toContain('<div>');
     expect(result).toContain('This is HTML');
     expect(result).toContain('Hello');
-    expect(result).not.toContain('NonExistentComponent');
-    expect(result).not.toContain('Remove this');
+    expect(result).toContain('NonExistentComponent');
+    expect(result).toContain('Show this');
   });
 
   it('should parse Image caption as markdown with decoded HTML entities', () => {
@@ -92,7 +90,7 @@ Hello`;
     expect(code).toBeDefined();
   });
 
-  it('should correctly handle real-life cases', () => {
+  it('preserves all content even when mixing unknown components with real content (no silent drops)', () => {
     const md = `<MyDemoComponent message="Hello from MDX!">Hello world!</MyDemoComponent>
 Reusable content should work the same way:
 <ContentBlock />
@@ -102,10 +100,10 @@ hello
   <Inner> from inside </Inner>
 </Outer>`;
     const result = mix(md);
-    expect(result).not.toContain('Hello world!');
+    expect(result).toContain('Hello world!');
     expect(result).toContain('Reusable content should work the same way:');
     expect(result).toContain('hello');
-    expect(result).not.toContain('from inside');
+    expect(result).toContain('from inside');
   });
 });
 
