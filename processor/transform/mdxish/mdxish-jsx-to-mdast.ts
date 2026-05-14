@@ -700,6 +700,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     if (!parent || index === undefined) return SKIP;
     if (parent.type === 'paragraph') return SKIP;
 
+    // `![](url)` in any tableCell stays inline. Authors who want a captioned figure use
+    // `<Image caption="…" />` JSX, which becomes `image-block` via `COMPONENT_MAP` above.
+    if (parent.type === 'tableCell') return SKIP;
+
     const newNode = transformMagicBlockImage(node);
     (parent.children as Node[])[index] = newNode;
 

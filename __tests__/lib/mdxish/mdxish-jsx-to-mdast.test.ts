@@ -589,6 +589,48 @@ Some callout content
 
   });
 
+  describe('magic-block image promotion in tableCells (RM-16543)', () => {
+    const cellMd = (cell: string) => `[block:parameters]
+{
+  "data": {
+    "h-0": "Header",
+    "0-0": ${JSON.stringify(cell)}
+  },
+  "cols": 1,
+  "rows": 1,
+  "align": ["left"]
+}
+[/block]`;
+
+    const findCell = (root: Root) => {
+      const table = root.children.find(c => c.type === 'table') as { children: { children: { children: unknown[]; type: string }[] }[] };
+      const bodyRow = table.children[1];
+      return bodyRow.children[0];
+    };
+
+    it('keeps `![](url)` alone in a tableCell as inline `image` (no image-block promotion)', () => {
+      // Magic-block image syntax in tableCells stays inline. Authors who want a
+      // captionable figure use `<Image caption="…" />` JSX instead.
+      const ast = processWithNewTypes(cellMd('![](https://example.com/img.png)'));
+      const cell = findCell(ast);
+      expect(cell.children).toHaveLength(1);
+      expect(cell.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` mixed with other inline content in a tableCell as inline `image`', () => {
+      const ast = processWithNewTypes(cellMd('![](https://example.com/img.png)<br><br>The **bold** word.'));
+      const cell = findCell(ast);
+      // Image stays as inline `image` so downstream consumers can put it in a paragraph.
+      expect(cell.children[0].type).toBe('image');
+      expect(cell.children.some(c => c.type === 'strong')).toBe(true);
+    });
+
+    it('still promotes `![](url)` at root level to image-block', () => {
+      const ast = processWithNewTypes('![](https://example.com/img.png)');
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+    });
+  });
+
   describe('HTML figure reassembly', () => {
     it('should reassemble <figure> with image and figcaption into an image-block', () => {
       const md = `<figure>
