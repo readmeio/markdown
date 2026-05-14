@@ -12,11 +12,12 @@ const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name
  *
  * When a pair of tags sit on different lines, return the offset of the first newline
  * after the open so the synthetic closer lands at the end of the open's line.
- * If they share a line (e.g. `<b><i>x</b>`), return the trigger position.
+ * If they share a line (e.g. `<b><i>x</b>`), just use the position htmlparser2
+ * decides the unclosed tag must be closed at by
  */
-const findCloserOffset = (html: string, openEnd: number, triggerStart: number): number => {
-  const newlineIdx = html.slice(openEnd, triggerStart).indexOf('\n');
-  return newlineIdx === -1 ? triggerStart : openEnd + newlineIdx;
+const findOffsetToPlaceCloser = (html: string, openTagEnd: number, forcedCloseAt: number): number => {
+  const newlineIdx = html.slice(openTagEnd, forcedCloseAt).indexOf('\n');
+  return newlineIdx === -1 ? forcedCloseAt : openTagEnd + newlineIdx;
 };
 
 /**
@@ -30,13 +31,12 @@ const findCloserOffset = (html: string, openEnd: number, triggerStart: number): 
  */
 export const repairUnclosedTags = (html: string): RepairResult => {
   const inserts: Insert[] = [];
-  const openStack: { end: number; name: string; start: number }[] = [];
+  const openTags: { end: number; name: string; start: number }[] = [];
 
   walkTags(html, {
     onOpen({ name, start, end }) {
       // Escape non-HTML names (custom components, typos, `<arbitrary-tag>`)
-      // at the open tag's `<` so MDX treats them as literal text
-      // instead of expecting a closer
+      // so MDX treats them as literal text instead of expecting a closer
       if (!isStandardHtmlTag(name)) {
         inserts.push({ offset: start, text: '\\' });
         return;
@@ -49,14 +49,14 @@ export const repairUnclosedTags = (html: string): RepairResult => {
         if (html[end - 2] !== '/') inserts.push({ offset: end - 1, text: '/' });
         return;
       }
-      openStack.push({ name, start, end });
+      openTags.push({ name, start, end });
     },
     onClose({ name, start, implicit }) {
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) return;
       if (!isStandardHtmlTag(name)) return;
-      const opener = openStack.pop();
-      if (!implicit || !opener) return;
-      inserts.push({ offset: findCloserOffset(html, opener.end, start), text: `</${name}>` });
+      const openTag = openTags.pop();
+      if (!implicit || !openTag) return;
+      inserts.push({ offset: findOffsetToPlaceCloser(html, openTag.end, start), text: `</${name}>` });
     },
   });
 

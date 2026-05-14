@@ -1,4 +1,4 @@
-import type { Root } from 'mdast';
+import type { Root, Text } from 'mdast';
 import type { MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
@@ -839,12 +839,36 @@ describe('mdxish tables transformation', () => {
 
       const { tree, parserReadyContent } = astAndSource(md);
 
-      const ul = collectNodes(tree, (node) => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul');
-      expect(ul).toHaveLength(1);
-      const { start, end } = ul[0].position!;
-      const slice = parserReadyContent.slice(start.offset!, end.offset!);
-      expect(slice.startsWith('<ul')).toBe(true);
-      expect(slice.endsWith('</ul>')).toBe(true);
+      const mdxSlices = collectNodes(
+        tree,
+        node => node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement',
+      ).map(node => {
+        const { position } = node as MdxJsxTextElement;
+        return parserReadyContent.slice(position!.start.offset!, position!.end.offset!);
+      });
+
+      expect(mdxSlices).toStrictEqual(expect.arrayContaining([
+        '<object>',
+        '<li>type</li>',
+        '<li>enabled</li>',
+        '<ul><li>type</li><li>enabled</li></ul>',
+        '<br />',
+      ]));
+
+      const textSlices = collectNodes(
+        tree,
+        node => node.type === 'text',
+      ).map(node => {
+        const { position } = node as Text;
+        return parserReadyContent.slice(position!.start.offset!, position!.end.offset!);
+      });
+
+      expect(textSlices).toStrictEqual(expect.arrayContaining([
+        'Array ',
+        'List of badge configurations:',
+        'type',
+        'enabled',
+      ]));
     });
   });
 
