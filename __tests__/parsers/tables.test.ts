@@ -1094,5 +1094,32 @@ None of the following content will get rendered!`;
       expect(html).toContain('<code>snake_case_value</code>');
       expect(html).toContain('<code>another_name_here</code>');
     });
+
+    it('preserves <code> content with underscores and {expression} in GFM-style markdown tables (RM-16575)', () => {
+      const doc = `|Attribute|Description|
+|---|---|
+|\`action\`|Action taken any time the penalty box is triggered. Contains: <ul><li><code>alert</code>. Event recorded.</li><li><code>deny</code>. Event blocked.</li><li><code>deny_custom_{custom_deny_id}</code>. Took your custom action against the event.</li><li><code>none</code>. No action taken.</li></ul>|
+|\`enabled\`|If **true**, penalty box protection is enabled.|`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>deny_custom_{custom_deny_id}</code>');
+      expect(html).toContain('<code>alert</code>');
+      expect(html).toContain('<code>deny</code>');
+      expect(html).toContain('<code>none</code>');
+    });
+
+    it('does not apply emphasis to underscores inside inline <code> elements in GFM tables', () => {
+      const doc = `|Name|Type|
+|---|---|
+|field|Contains: <ul><li><code>snake_case_value</code></li><li><code>another_name_here</code></li></ul>|`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>snake_case_value</code>');
+      expect(html).toContain('<code>another_name_here</code>');
+    });
   });
 });

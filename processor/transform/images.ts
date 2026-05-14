@@ -53,7 +53,8 @@ const imageTransformer = ({ isMdxish }: { isMdxish?: boolean } = {}) => (tree: N
   visit(tree, isImageBlock, (node: MdxJsxFlowElement) => {
     const attrs = getAttrs<ImageBlock>(node);
 
-    if (attrs.caption) {
+    // Mdxish handles caption parsing at the HAST stage via `rehypeMdxishComponents`
+    if (attrs.caption && !isMdxish) {
       // @ts-expect-error - @todo: figure out how to coerce RootContent[] to
       // the correct type
       node.children = mdast(attrs.caption).children;
