@@ -250,7 +250,7 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  describe('given unclosed tags inside a cels', () => {
+  describe('given unclosed tags inside cells that is not MDX valid', () => {
     it('repairs unclosed jsx alongside a jsx expression attribute', () => {
       const doc = `<Table>
 <thead><tr><th style={{ textAlign: "left" }}>Heading</th></tr></thead>
@@ -488,6 +488,33 @@ describe('mdxish tables transformation', () => {
 
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(1);
+    });
+
+    it('escapes a non-HTML tag name instead of trying to close it', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th><th>B</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>literal <non-html-tag> here</td>
+      <td>
+        <span>unclosed span
+
+        across paragraphs.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // No phantom <randomstuff> element should appear in the tree —
+      // the tag was escaped to literal text.
+      const phantom = findAllElementsByTagName(tables[0], 'non-html-tag');
+      expect(phantom).toHaveLength(0);
+      // The literal text survives.
+      expect(JSON.stringify(tables[0])).toContain('non-html-tag');
     });
   });
 

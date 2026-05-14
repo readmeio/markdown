@@ -1,7 +1,9 @@
-import { HTML_VOID_ELEMENTS } from '../../../../utils/common-html-words';
+import { HTML_VOID_ELEMENTS, STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 
 import { walkTags } from './tag-walker';
 import { applyInserts, type Insert } from './utils';
+
+const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name.toLowerCase());
 
 /**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
@@ -30,10 +32,17 @@ const findCloserOffset = (html: string, openEnd: number, triggerStart: number): 
  */
 export const repairUnclosedTags = (html: string): string => {
   const inserts: Insert[] = [];
-  const openStack: { end: number; name: string }[] = [];
+  const openStack: { end: number; name: string; start: number }[] = [];
 
   walkTags(html, {
-    onOpen({ name, end }) {
+    onOpen({ name, start, end }) {
+      // Non-HTML names (custom components, typos, `<arbitrary-tag>`) get
+      // escaped at the open tag's `<` so MDX treats them as literal text
+      // instead of expecting a closer
+      if (!isStandardHtmlTag(name)) {
+        inserts.push({ offset: start, text: '\\' });
+        return;
+      }
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) {
         // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
         // If the source open tag doesn't end with `/`, inject one before the
@@ -42,10 +51,11 @@ export const repairUnclosedTags = (html: string): string => {
         if (html[end - 2] !== '/') inserts.push({ offset: end - 1, text: '/' });
         return;
       }
-      openStack.push({ name, end });
+      openStack.push({ name, start, end });
     },
     onClose({ name, start, implicit }) {
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) return;
+      if (!isStandardHtmlTag(name)) return;
       const opener = openStack.pop();
       if (!implicit || !opener) return;
       inserts.push({ offset: findCloserOffset(html, opener.end, start), text: `</${name}>` });
