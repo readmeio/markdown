@@ -102,15 +102,9 @@ const parseTableNode = (
  * Check if children are only text nodes that might contain markdown
  */
 const isTextOnly = (children: unknown[]): boolean => {
-  return children.every(child => {
-    if (child && typeof child === 'object' && 'type' in child) {
-      if (child.type === 'text') return true;
-      if (child.type === 'mdxJsxTextElement' && 'children' in child && Array.isArray(child.children)) {
-        return child.children.every((c: unknown) => c && typeof c === 'object' && 'type' in c && c.type === 'text');
-      }
-    }
-    return false;
-  });
+  return children.every(
+    child => child && typeof child === 'object' && 'type' in child && child.type === 'text',
+  );
 };
 
 /**

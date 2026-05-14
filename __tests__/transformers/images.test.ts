@@ -1,3 +1,5 @@
+import type { Element, Nodes as HastNode, Root as HastRoot } from 'hast';
+
 import { mdast } from '../../index';
 import { mdxish } from '../../lib/mdxish';
 import { findElementByTagName } from '../helpers';
@@ -21,6 +23,28 @@ describe('images transformer', () => {
 
     expect(tree.children[0].children[0].children[0].type).toBe('strong');
     expect(tree.children[0].children[0].children[2].type).toBe('emphasis');
+  });
+
+  it('parses an Image inside a caption attribute via mdxish (RM-16428)', () => {
+    const md = `
+<Image align="center" caption="<Image align=&#x22;center&#x22; caption=&#x22;Light & Dark&#x22; src=&#x22;https://example.com/a.png&#x22; />" src="https://example.com/b.png" width="700px" />
+`;
+    expect(() => mdxish(md)).not.toThrow();
+
+    const hast = mdxish(md);
+    const imgs: Element[] = [];
+    const walk = (n: HastNode | HastRoot) => {
+      if ('tagName' in n && n.tagName === 'img') imgs.push(n);
+      if ('children' in n && Array.isArray(n.children)) n.children.forEach(walk);
+    };
+    walk(hast);
+    expect(imgs.length).toBeGreaterThanOrEqual(2);
+
+    const srcs = imgs.map(i => i.properties?.src ?? '');
+    expect(srcs).toStrictEqual(expect.arrayContaining([
+      'https://example.com/b.png',
+      'https://example.com/a.png',
+    ]));
   });
 
   it('can parse attributes', () => {
