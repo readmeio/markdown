@@ -1,8 +1,12 @@
 import type { Element, ElementContent, Root } from 'hast';
 
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+
 import { describe, it, expect } from 'vitest';
 
 import { mdxish } from '../../../lib/mdxish';
+import renderMdxish from '../../../lib/renderMdxish';
 
 type AnyNode = ElementContent | Root;
 
@@ -45,6 +49,16 @@ describe('mdxish MDX exports', () => {
 
     const el = findElement(ast, 'Greeting');
     expect(el).toBeDefined();
+  });
+
+  it('renders `export function` components to their JSX body', () => {
+    const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
+    const ast = mdxish(md);
+    const { default: Content } = renderMdxish(ast);
+
+    const html = renderToStaticMarkup(Content ? React.createElement(Content) : null);
+    expect(html).toContain('Hey Ho');
+    expect(html).toContain('<div>Hey Ho</div>');
   });
 
   it('leaves exports as literal text when safeMode is enabled', () => {

@@ -319,13 +319,21 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
         processMarkdown: (markdown: string) => mdxish(markdown, { ...opts, safeMode: true }),
       })
       .parse(parserReadyContent);
-    return fallback.runSync(mdast, vfile) as Root;
+    const fallbackHast = fallback.runSync(mdast, vfile) as Root;
+    if (vfile.data.mdxishScope) {
+      fallbackHast.data = { ...fallbackHast.data, mdxishScope: vfile.data.mdxishScope };
+    }
+    return fallbackHast;
   }
 
   const hast = processor.runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
+  }
+
+  if (vfile.data.mdxishScope) {
+    hast.data = { ...hast.data, mdxishScope: vfile.data.mdxishScope };
   }
 
   return hast;

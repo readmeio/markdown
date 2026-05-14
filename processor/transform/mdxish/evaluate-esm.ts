@@ -22,6 +22,12 @@ declare module 'vfile' {
   }
 }
 
+declare module 'hast' {
+  interface RootData {
+    mdxishScope?: MdxishScope;
+  }
+}
+
 /**
  * Collect names introduced by an `export const/function/class` declaration.
  * Mirrors the structure documented in `getExports` (see processor/utils.ts).
