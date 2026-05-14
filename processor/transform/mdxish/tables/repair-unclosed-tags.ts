@@ -8,11 +8,11 @@ const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name
 /**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
  * just the same paragraph. (`<td>\nArray <object>\n</object></td>` still
- * throws even though there's no blank line between open and close.) When the
- * open and the auto-close trigger sit on different lines, return the offset
- * of the first newline after the open so the synthetic closer lands at the
- * end of the open's line. If they share a line (e.g. `<b><i>x</b>`), return
- * the trigger position.
+ * throws even though there's no blank line between open and close.)
+ *
+ * When a pair of tags sit on different lines, return the offset of the first newline
+ * after the open so the synthetic closer lands at the end of the open's line.
+ * If they share a line (e.g. `<b><i>x</b>`), return the trigger position.
  */
 const findCloserOffset = (html: string, openEnd: number, triggerStart: number): number => {
   const newlineIdx = html.slice(openEnd, triggerStart).indexOf('\n');
@@ -27,8 +27,6 @@ const findCloserOffset = (html: string, openEnd: number, triggerStart: number): 
  * a tag the user opened but didn't explicitly close. We pair it with the
  * matching opener (popped from a stack we maintain) and insert `</name>` at
  * the end of the opener's line, or at the trigger if they're on the same line.
- *
- * Scoped to a known-malformed retry path — the happy path never calls this.
  */
 export const repairUnclosedTags = (html: string): string => {
   const inserts: Insert[] = [];
@@ -36,8 +34,8 @@ export const repairUnclosedTags = (html: string): string => {
 
   walkTags(html, {
     onOpen({ name, start, end }) {
-      // Non-HTML names (custom components, typos, `<arbitrary-tag>`) get
-      // escaped at the open tag's `<` so MDX treats them as literal text
+      // Escape non-HTML names (custom components, typos, `<arbitrary-tag>`)
+      // at the open tag's `<` so MDX treats them as literal text
       // instead of expecting a closer
       if (!isStandardHtmlTag(name)) {
         inserts.push({ offset: start, text: '\\' });
