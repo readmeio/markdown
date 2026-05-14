@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.2.4
+### 🛠 Fixes & Updates
+
+* dont normalize emphasis syntax within html code elements ([#1471](https://github.com/readmeio/markdown/issues/1471)) ([db1f88f](https://github.com/readmeio/markdown/commit/db1f88f09575e696ee522a3fb8c33bc394f61e17))
+* **mdxish:** render Image captions containing entity-encoded JSX ([#1461](https://github.com/readmeio/markdown/issues/1461)) ([d6c7e61](https://github.com/readmeio/markdown/commit/d6c7e61e88b53ecd598393417abae44aff4efaf1)), closes [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22)
+
 ## Version 14.2.3
 ### 🛠 Fixes & Updates
 
