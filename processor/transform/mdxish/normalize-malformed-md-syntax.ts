@@ -243,21 +243,18 @@ function visitMultiNodeEmphasis(tree: Root) {
 /**
  * Returns true when the node at `index` inside `parent.children` sits between
  * sibling `html` nodes that form an inline `<code>…</code>` element.
- *
- * In GFM tables, inline HTML like `<code>value</code>` is tokenised as
- * separate sibling nodes — an `html` open-tag node, inline text/expression
- * nodes, then an `html` close-tag node — rather than as an mdxJsxTextElement.
- * We scan backwards from the current index to find the nearest `<code>` or
- * `</code>` tag; if we hit `<code>` first the node is inside a code element.
  */
 function isInsideInlineHtmlCode(index: number | undefined, parent: Parent): boolean {
   if (index === undefined || !Array.isArray(parent.children)) return false;
-  for (let i = index - 1; i >= 0; i--) {
+  let i = index - 1;
+  while (i >= 0) {
     const sibling = parent.children[i];
-    if (sibling.type !== 'html' || !('value' in sibling) || typeof sibling.value !== 'string') continue;
-    const val = (sibling as { type: 'html'; value: string }).value.trim().toLowerCase();
-    if (val === '<code>' || val.startsWith('<code ') || val.startsWith('<code\t')) return true;
-    if (val === '</code>') return false;
+    if (sibling.type === 'html' && 'value' in sibling && typeof sibling.value === 'string') {
+      const val = (sibling as { type: 'html'; value: string }).value.trim().toLowerCase();
+      if (val === '<code>' || val.startsWith('<code ') || val.startsWith('<code\t')) return true;
+      if (val === '</code>') return false;
+    }
+    i -= 1;
   }
   return false;
 }
