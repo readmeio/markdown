@@ -1,5 +1,5 @@
 import { walkTags } from './tag-walker';
-import { applyInserts, type Insert } from './utils';
+import { applyInserts, type Insert, type RepairResult } from './utils';
 
 interface OpenFrame {
   name: string;
@@ -79,7 +79,7 @@ const symmetrizePair = (html: string, { openStart, openEnd, closeStart, closeEnd
  * non-tag content to a separate line, restoring symmetry. Scoped to the
  * malformed-retry path; the happy path doesn't touch this.
  */
-export const normalizeTagSpacing = (html: string): string => {
+export const normalizeTagSpacing = (html: string): RepairResult => {
   const stack: OpenFrame[] = [];
   const pairs: PairedTag[] = [];
 

@@ -21,8 +21,9 @@ import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import { normalizeTagSpacing } from './normalize-tag-spacing';
+import { remapPositionsToOriginal } from './remap-positions';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import { tableTags, unwrapSoleParagraph } from './utils';
+import { tableTags, unwrapSoleParagraph, type Insert } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -61,26 +62,25 @@ const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 // offset and line number makes them valid in the outer source coordinate space.
 // Otherwise, consumers who directly slice based on position would read and grab the
 // wrong content.
+//
+// When `node.value` was repaired/normalized before parsing, positions point at
+// the repaired string instead of the original. `inserts` lets us translate
+// those positions back to the original coordinate space before lifting them
+// into outer-document coords.
 const parseTableNode = (
   processor: typeof tableNodeProcessor,
   node: Html,
-  sourceWasModified = false,
+  repair?: { inserts: Insert[]; originalSource: string },
 ): Root | undefined => {
   let parsed: Root;
   try {
     parsed = processor.runSync(processor.parse(node.value)) as Root;
-    // If the source was modified, positions are not really accurate anymore
-    // because the parsed node was based on the repaired/normalized content,
-    // which adds closing tags, escapes to the content.
-    // Invalidate the positions to avoid slicing the wrong content.
-    if (sourceWasModified) {
-      visit(parsed as Node, child => {
-        delete child.position;
-      });
-      return parsed;
-    }
   } catch {
     return undefined;
+  }
+
+  if (repair) {
+    remapPositionsToOriginal(parsed as Node, repair.originalSource, repair.inserts);
   }
 
   const baseOffset = node.position?.start?.offset ?? 0;
@@ -319,15 +319,23 @@ const mdxishTables = (): Transform => tree => {
     if (!parsed) {
       // First common error is unclosed HTML tags
       const repaired = repairUnclosedTags(node.value);
-      if (repaired !== node.value) {
-        parsed = parseTableNode(tableNodeProcessor, { ...node, value: repaired }, true);
+      if (repaired.value !== node.value) {
+        parsed = parseTableNode(
+          tableNodeProcessor,
+          { ...node, value: repaired.value },
+          { inserts: repaired.inserts, originalSource: node.value },
+        );
       }
       if (!parsed) {
         // Second common error is having a line with text and an opening tag
         // E.g. text <div> \n <div> text
         const normalized = normalizeTagSpacing(node.value);
-        if (normalized !== node.value) {
-          parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized }, true);
+        if (normalized.value !== node.value) {
+          parsed = parseTableNode(
+            tableNodeProcessor,
+            { ...node, value: normalized.value },
+            { inserts: normalized.inserts, originalSource: node.value },
+          );
         }
       }
     }

@@ -1,7 +1,7 @@
 import { HTML_VOID_ELEMENTS, STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 
 import { walkTags } from './tag-walker';
-import { applyInserts, type Insert } from './utils';
+import { applyInserts, type Insert, type RepairResult } from './utils';
 
 const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name.toLowerCase());
 
@@ -28,7 +28,7 @@ const findCloserOffset = (html: string, openEnd: number, triggerStart: number): 
  * matching opener (popped from a stack we maintain) and insert `</name>` at
  * the end of the opener's line, or at the trigger if they're on the same line.
  */
-export const repairUnclosedTags = (html: string): string => {
+export const repairUnclosedTags = (html: string): RepairResult => {
   const inserts: Insert[] = [];
   const openStack: { end: number; name: string; start: number }[] = [];
 

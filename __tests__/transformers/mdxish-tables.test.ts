@@ -823,7 +823,7 @@ describe('mdxish tables transformation', () => {
       expect(slice.endsWith('</ul>')).toBe(true);
     });
 
-    it('strips descendant positions when the repair retry path modifies the source', () => {
+    it('remaps descendant positions back to the original source when the repair retry path modifies it', () => {
       const md = `<Table>
   <tbody>
     <tr>
@@ -837,11 +837,14 @@ describe('mdxish tables transformation', () => {
   </tbody>
 </Table>`;
 
-      const { tree } = astAndSource(md);
+      const { tree, parserReadyContent } = astAndSource(md);
 
       const ul = collectNodes(tree, (node) => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul');
       expect(ul).toHaveLength(1);
-      expect(ul[0].position).toBeUndefined();
+      const { start, end } = ul[0].position!;
+      const slice = parserReadyContent.slice(start.offset!, end.offset!);
+      expect(slice.startsWith('<ul')).toBe(true);
+      expect(slice.endsWith('</ul>')).toBe(true);
     });
   });
 

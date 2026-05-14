@@ -5,6 +5,11 @@ export interface Insert {
   text: string;
 }
 
+export interface RepairResult {
+  inserts: Insert[];
+  value: string;
+}
+
 
 export const tableTags = new Set([
   'thead',
@@ -42,13 +47,13 @@ export const unwrapSoleParagraph = (children: Node[]): Node[] => {
  * are emitted in their input order (a stable sort by offset), so callers can
  * rely on innermost-first ordering by emitting events in stack-unwind order.
  */
-export const applyInserts = (html: string, inserts: Insert[]): string => {
-  if (inserts.length === 0) return html;
-  inserts.sort((a, b) => a.offset - b.offset);
+export const applyInserts = (html: string, inserts: Insert[]): RepairResult => {
+  if (inserts.length === 0) return { value: html, inserts: [] };
+  const sorted = [...inserts].sort((a, b) => a.offset - b.offset);
 
   let out = '';
   let cursor = 0;
-  inserts.forEach(({ offset, text }) => {
+  sorted.forEach(({ offset, text }) => {
     const clamped = Math.min(Math.max(offset, cursor), html.length);
     if (clamped > cursor) {
       out += html.slice(cursor, clamped);
@@ -56,6 +61,6 @@ export const applyInserts = (html: string, inserts: Insert[]): string => {
     }
     out += text;
   });
-  return out + html.slice(cursor);
+  return { value: out + html.slice(cursor), inserts: sorted };
 };
 

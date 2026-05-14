@@ -19,6 +19,7 @@ interface TagEvent {
   start: number;
 }
 
+// Implicit means the tag was opened but not closed
 interface CloseEvent extends TagEvent {
   implicit: boolean;
 }
@@ -33,7 +34,7 @@ interface TagWalkHandlers {
  * tag-balance events. `start`/`end` use the original-string offsets, so
  * callers can splice against the input directly.
  */
-export const walkTags = (html: string, handlers: TagWalkHandlers): void => {
+export const walkTags = (html: string, handlers: TagWalkHandlers)=> {
   const masked = maskNonTagRegions(html);
   // htmlparser2's endIndex points at the `>` (inclusive); +1 lands just past
   // it, which is what callers want for splicing.
