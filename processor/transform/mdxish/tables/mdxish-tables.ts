@@ -60,11 +60,25 @@ const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 // positions are relative to that substring. Shifting them by the base
 // offset and line number makes them valid in the outer source coordinate space.
 // Otherwise, consumers who directly slice based on position would read and grab the
-// wrong content
-const parseTableNode = (processor: typeof tableNodeProcessor, node: Html): Root | undefined => {
+// wrong content.
+const parseTableNode = (
+  processor: typeof tableNodeProcessor,
+  node: Html,
+  sourceWasModified = false,
+): Root | undefined => {
   let parsed: Root;
   try {
     parsed = processor.runSync(processor.parse(node.value)) as Root;
+    // If the source was modified, positions are not really accurate anymore
+    // because the parsed node was based on the repaired/normalized content,
+    // which adds closing tags, escapes to the content.
+    // Invalidate the positions to avoid slicing the wrong content.
+    if (sourceWasModified) {
+      visit(parsed as Node, child => {
+        delete child.position;
+      });
+      return parsed;
+    }
   } catch {
     return undefined;
   }
@@ -312,14 +326,14 @@ const mdxishTables = (): Transform => tree => {
       // First common error is unclosed HTML tags
       const repaired = repairUnclosedTags(node.value);
       if (repaired !== node.value) {
-        parsed = parseTableNode(tableNodeProcessor, { ...node, value: repaired });
+        parsed = parseTableNode(tableNodeProcessor, { ...node, value: repaired }, true);
       }
       if (!parsed) {
         // Second common error is having a line with text and an opening tag
         // E.g. text <div> \n <div> text
         const normalized = normalizeTagSpacing(node.value);
         if (normalized !== node.value) {
-          parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized });
+          parsed = parseTableNode(tableNodeProcessor, { ...node, value: normalized }, true);
         }
       }
     }

@@ -1,12 +1,20 @@
 import type { Root } from 'mdast';
+import type { MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
+import { collectNodes, findAllElementsByTagName, parseMdxishWithSource } from '../helpers';
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
   return processor.runSync(processor.parse(parserReadyContent)) as Root;
+};
+
+const astAndSource = (md: string): { parserReadyContent: string; tree: Root } => {
+  const { processor, parserReadyContent } = mdxishAstProcessor(md);
+  const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
+  return { tree, parserReadyContent };
 };
 
 describe('mdxish tables transformation', () => {
@@ -128,6 +136,73 @@ describe('mdxish tables transformation', () => {
     });
   });
 
+  it('should unwrap a sole paragraph in a Table cell', () => {
+    const md = `<Table align={["left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Header
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Just one line
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+    const ast = astProcessor(md);
+
+    expect(ast).toMatchObject({
+      type: 'root',
+      children: [
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Table',
+          children: [
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'thead',
+              children: [
+                {
+                  type: 'mdxJsxFlowElement',
+                  name: 'tr',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'th',
+                      children: [{ type: 'text', value: 'Header' }],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'mdxJsxFlowElement',
+              name: 'tbody',
+              children: [
+                {
+                  type: 'mdxJsxFlowElement',
+                  name: 'tr',
+                  children: [
+                    {
+                      type: 'mdxJsxFlowElement',
+                      name: 'td',
+                      children: [{ type: 'text', value: 'Just one line' }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
   describe('given malformed JSX inside <table>', () => {
     // Stray duplicated </td></tr> makes mdxjs reject the captured value;
     // the non-MDX fallback should still split the html node so blank-line
@@ -175,17 +250,105 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  describe('given unclosed inline JSX inside a cell', () => {
-    // <object> opens but is never closed before </td>. remarkMdx rejects this
-    // because inline JSX has to balance on the same line as the open. The
-    // repair injects a synthetic </object> at the end of the open's line so
-    // the table parses as a real mdast table (instead of staying as a raw
-    // html node).
-    it('repairs an unclosed inline tag so the table is no longer a raw html node', () => {
-      const md = `<Table>
+  describe('given unclosed tags inside a cels', () => {
+    it('repairs unclosed jsx alongside a jsx expression attribute', () => {
+      const doc = `<Table>
+<thead><tr><th style={{ textAlign: "left" }}>Heading</th></tr></thead>
+<tbody>
+  <tr>
+    <td>this is <em>broken emphasis</td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+      expect(JSON.stringify(cells[0])).toContain('broken emphasis');
+    });
+
+    it('still parses markdown inside a cell after repair', () => {
+      // The unclosed <em> would normally crash remarkMdx. After repair the
+      // table goes through the MDX-aware pipeline, which means **bold**
+      // inside the (well-formed) sibling cell still becomes a <strong>.
+      const doc = `<Table>
+<thead><tr><th>A</th><th>B</th></tr></thead>
+<tbody>
+  <tr>
+    <td>before <em>oops</td>
+    <td>**emphasized**</td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const strongs = findAllElementsByTagName(hast, 'strong');
+      expect(strongs.length).toBeGreaterThan(0);
+      expect(JSON.stringify(strongs[0])).toContain('emphasized');
+    });
+
+    it('inserts the closer at a blank line so it lands in the same paragraph as the open', () => {
+      // <span> opens in the first paragraph but never closes; the next paragraph
+      // continues with more text before </td>. MDX requires the synthetic </span>
+      // to land at the paragraph boundary (the blank line), not at </td>, or it
+      // gets parsed as a different paragraph and remarkMdx still throws.
+      const doc = `<Table>
+<thead><tr><th>Description</th></tr></thead>
+<tbody>
+  <tr>
+    <td>
+      <span style="color:red">first paragraph with unclosed span.
+
+      second paragraph keeps going.
+    </td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+      const json = JSON.stringify(cells[0]);
+      expect(json).toContain('first paragraph');
+      expect(json).toContain('second paragraph');
+    });
+
+    it('table does not break with <br> tag', () => {
+      const doc = `<Table>
+<thead><tr><th>A</th><th>B</th></tr></thead>
+<tbody>
+  <tr>
+    <td>before <br> oops</td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
+
+    it('table does not break when there is <object> tag', () => {
+      const doc = `<Table>
   <thead>
     <tr>
-      <th>Parameter</th>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Notes
+      </th>
     </tr>
   </thead>
 
@@ -194,45 +357,137 @@ describe('mdxish tables transformation', () => {
       <td>
         Array <object>
       </td>
-    </tr>
-  </tbody>
-</Table>`;
 
-      const ast = astProcessor(md);
-      const top = ast.children[0];
-
-      expect(top.type).not.toBe('html');
-      expect(['table', 'mdxJsxFlowElement']).toContain(top.type);
-    });
-
-    // <span style="color:red">…</span> spans across a blank-line paragraph
-    // break inside the cell. The repair lands the synthetic </span> at the end
-    // of the open's line (before the blank line) so MDX accepts both
-    // paragraphs as part of the cell.
-    it('repairs an unclosed span that spans multiple paragraphs', () => {
-      const md = `<Table align={["left"]}>
-  <thead>
-    <tr>
-      <th>Description</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
       <td>
-        <span style="color:red">First paragraph with unclosed span.
-
-        Second paragraph keeps going.
+        Each object can have:<ul><li>type (Enum:
+ ROLLBACK)</li><li>enabled (default: true)</li></ul><br
+/><br />
       </td>
     </tr>
   </tbody>
 </Table>`;
 
-      const ast = astProcessor(md);
-      const top = ast.children[0];
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
 
-      expect(top.type).not.toBe('html');
-      expect(['table', 'mdxJsxFlowElement']).toContain(top.type);
+    it('table does not break when there is genuine escaped HTML tag', () => {
+      const doc = `<Table>
+<thead>
+  <tr>
+    <th>
+      Parameter
+    </th>
+
+    <th>
+      Notes
+    </th>
+
+    <th>
+      Type
+    </th>
+
+    <th>
+      Required
+    </th>
+
+    <th>
+      Possible Values
+    </th>
+  </tr>
+</thead>
+
+<tbody>
+  <tr>
+    <td>
+      urlTracker
+    </td>
+
+    <td>
+      Specifies
+
+      **_Note:_**_&#x20;Somehthing_<br />**The urlTracker objects are detailed** <p><a href="#C4">**here**</a></p>
+    </td>
+
+    <td>
+      string
+    </td>
+
+    <td>
+
+    </td>
+
+    <td>
+
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      badgeSettings
+    </td>
+
+    <td>
+      Cell
+    </td>
+
+    <td>
+      Array <object>
+    </td>
+
+    <td>
+      N
+    </td>
+
+    <td>
+      Enum Values: ROLLBACK, EXPRESS\\_DELIVERY
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      associatedItems
+    </td>
+
+    <td>
+      Something
+    </td>
+
+    <td>
+      Array \\<string>
+    </td>
+
+    <td>
+      N
+    </td>
+
+    <td>
+      valid <<variable>>
+    </td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
+
+    it('does not modify well-formed tables (repair is a no-op)', () => {
+      const doc = `<Table>
+<thead><tr><th>Heading</th></tr></thead>
+<tbody>
+  <tr><td>fine</td></tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
     });
   });
 
@@ -386,70 +641,53 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  it('should unwrap a sole paragraph in a Table cell', () => {
-    const md = `<Table align={["left"]}>
+  describe('node position fidelity', () => {
+    it('produces global offsets for JSX nodes inside re-parsed <Table> html cells', () => {
+      const md = `<Table align={[null, null, null]}>
   <thead>
     <tr>
-      <th style={{ textAlign: "left" }}>
-        Header
-      </th>
+      <th>Parameter</th>
     </tr>
   </thead>
-
   <tbody>
     <tr>
-      <td style={{ textAlign: "left" }}>
-        Just one line
+      <td>
+        List of configurations:<ul><li>type</li><li>enabled</li></ul><br /><br />
       </td>
     </tr>
   </tbody>
 </Table>`;
-    const ast = astProcessor(md);
 
-    expect(ast).toMatchObject({
-      type: 'root',
-      children: [
-        {
-          type: 'mdxJsxFlowElement',
-          name: 'Table',
-          children: [
-            {
-              type: 'mdxJsxFlowElement',
-              name: 'thead',
-              children: [
-                {
-                  type: 'mdxJsxFlowElement',
-                  name: 'tr',
-                  children: [
-                    {
-                      type: 'mdxJsxFlowElement',
-                      name: 'th',
-                      children: [{ type: 'text', value: 'Header' }],
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'mdxJsxFlowElement',
-              name: 'tbody',
-              children: [
-                {
-                  type: 'mdxJsxFlowElement',
-                  name: 'tr',
-                  children: [
-                    {
-                      type: 'mdxJsxFlowElement',
-                      name: 'td',
-                      children: [{ type: 'text', value: 'Just one line' }],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      const { tree, parserReadyContent } = astAndSource(md);
+
+      const ul = collectNodes(tree, (node) => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul');
+
+      expect(ul).toHaveLength(1);
+      const { start, end } = ul[0].position!;
+      const slice = parserReadyContent.slice(start.offset!, end.offset!);
+      expect(slice.startsWith('<ul')).toBe(true);
+      expect(slice.endsWith('</ul>')).toBe(true);
+    });
+
+    it('strips descendant positions when the repair retry path modifies the source', () => {
+      const md = `<Table>
+  <tbody>
+    <tr>
+      <td>
+        Array <object>
+      </td>
+      <td>
+        List of badge configurations:<ul><li>type</li><li>enabled</li></ul><br /><br />
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { tree } = astAndSource(md);
+
+      const ul = collectNodes(tree, (node) => node.type === 'mdxJsxTextElement' && (node as MdxJsxTextElement).name === 'ul');
+      expect(ul).toHaveLength(1);
+      expect(ul[0].position).toBeUndefined();
     });
   });
 });
