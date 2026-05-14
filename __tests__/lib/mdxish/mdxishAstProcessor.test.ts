@@ -289,6 +289,31 @@ describe('mdxishAstProcessor', () => {
 
       expect(ast.children[0].type).not.toBe('table');
     });
+
+    it('should round-trip a body-only JSX Callout without promoting body to title', () => {
+      const md = `<Callout icon="📘" theme="info">
+Content here
+</Callout>
+`;
+
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
+      const out = mdxishMdastToMd(tree);
+
+      expect(out).not.toMatch(/^>\s*📘\s+Content here/);
+
+      const second = mdxishAstProcessor(out, { newEditorTypes: true });
+      const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent)) as Root;
+      const callout = tree2.children[0] as { children: { type: string }[]; data?: { hProperties?: { empty?: boolean } } };
+
+      expect(callout.data?.hProperties?.empty).toBe(true);
+      const firstChildText = ((callout.children[0] as { children?: { value?: string }[] }).children?.[0]?.value) ?? '';
+      expect(firstChildText).toBe('');
+      expect(callout.children[1]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'Content here' }],
+      });
+    });
   });
 
   it('should only normalize empty checklist items when whitespace exists after ]', () => {
