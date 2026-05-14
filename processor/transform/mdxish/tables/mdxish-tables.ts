@@ -57,16 +57,12 @@ const buildTableNodeProcessor = (withMdx: boolean) =>
 const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
-// Since we use a subparser in `tableNodeProcessor` to parse `node.value`,
-// positions are relative to that substring. Shifting them by the base
-// offset and line number makes them valid in the outer source coordinate space.
-// Otherwise, consumers who directly slice based on position would read and grab the
-// wrong content.
-//
-// When `node.value` was repaired/normalized before parsing, positions point at
-// the repaired string instead of the original. `inserts` lets us translate
-// those positions back to the original coordinate space before lifting them
-// into outer-document coords.
+/**
+ * Parse the HTML node that contains the full table substring
+ * into the table parts (headers, rows, cells).
+ * The plugins in the processor allows parsing markdown & special syntax inside the table cells
+ * After parsing, we need to update the node positions
+ */
 const parseTableNode = (
   processor: typeof tableNodeProcessor,
   node: Html,
@@ -79,10 +75,15 @@ const parseTableNode = (
     return undefined;
   }
 
+  // If `node.value` was repaired before parsing, first remap positions back to
+  // the original (unrepaired) coordinates via the insert list — otherwise the
+  // shift would land on synthetic characters and be inaccurate
   if (repair) {
     remapPositionsToOriginal(parsed as Node, repair.originalSource, repair.inserts);
   }
 
+  // The subparser produces positions relative to `node.value`; shift them by
+  // the outer node's offset/line so consumers can slice the full source.
   const baseOffset = node.position?.start?.offset ?? 0;
   const baseLine = (node.position?.start?.line ?? 1) - 1;
   visit(parsed as Node, child => {

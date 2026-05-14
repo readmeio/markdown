@@ -23,9 +23,8 @@ const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) =>
   });
 
   return (repaired: number): number => {
-    // A repaired offset that lands inside an insert's synthetic text has no
-    // original counterpart; clamp it to the insert's anchor offset. Returning
-    // early on first match is the reason this isn't a plain reduce.
+    // Offsets inside an insert's synthetic span have no original counterpart;
+    // clamp to the insert's anchor so consumers slice a real boundary.
     const hit = segments.find(seg => seg.repairedStart < repaired && repaired < seg.repairedStart + seg.len);
     if (hit) return hit.origOffset;
     const shift = segments.reduce((acc2, seg) => (seg.repairedStart < repaired ? acc2 + seg.len : acc2), 0);
