@@ -1,6 +1,6 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Root as HastRoot } from 'hast';
-import type { Paragraph, Root, RootContent } from 'mdast';
+import type { Paragraph, Root, RootContent, Table, TableCell } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
@@ -602,8 +602,8 @@ Some callout content
 }
 [/block]`;
 
-    const findCell = (root: Root) => {
-      const table = root.children.find(c => c.type === 'table') as { children: { children: { children: unknown[]; type: string }[] }[] };
+    const findCell = (root: Root): TableCell => {
+      const table = root.children.find(c => c.type === 'table') as Table;
       const bodyRow = table.children[1];
       return bodyRow.children[0];
     };
@@ -628,6 +628,13 @@ Some callout content
     it('still promotes `![](url)` at root level to image-block', () => {
       const ast = processWithNewTypes('![](https://example.com/img.png)');
       expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+    });
+
+    it('keeps `![](url)` in a GFM tableCell as inline `image`', () => {
+      const md = '| Header |\n| :-- |\n| ![](https://example.com/img.png)This is a cat |';
+      const ast = processWithNewTypes(md);
+      const cell = findCell(ast);
+      expect(cell.children[0].type).toBe('image');
     });
   });
 
