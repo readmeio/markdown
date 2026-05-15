@@ -9,7 +9,7 @@ import { toJs } from 'estree-util-to-js';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
-import { isMDXEsm } from '../../utils';
+import { evaluate, isMDXEsm } from '../../utils';
 
 export interface MdxishScope {
   components: Record<string, ReturnType<typeof Function>>;
@@ -50,10 +50,6 @@ const collectExportNames = (declaration: Declaration): string[] => {
  * any JSX in function bodies into `React.createElement` calls, then evaluates
  * the whole batch in a single sandboxed Function so later exports can
  * reference earlier ones.
- *
- * Results land on `file.data.mdxishScope`:
- * - function-valued exports → `components`
- * - everything else → `values`
  *
  * The mdxjsEsm nodes are removed from the tree so they don't render as text.
  * On any failure (eval throws, malformed estree) the nodes are still removed
@@ -102,9 +98,13 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     const program: Program = { type: 'Program', sourceType: 'module', body: programBody };
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
     const { value: source } = toJs(program);
-    // eslint-disable-next-line no-new-func
-    const fn = new Function('React', `${source}\nreturn { ${names.join(', ')} };`);
-    const result = fn(React) as Record<string, unknown>;
+
+    // Evaluate and build on the expression source
+    // Use react to compile JSX codes
+    const result = evaluate(`(() => { ${source}\nreturn { ${names.join(', ')} }; })()`, { React }) as Record<
+      string,
+      unknown
+    >;
 
     Object.entries(result).forEach(([name, value]) => {
       if (typeof value === 'function' && jsxNames.has(name)) {

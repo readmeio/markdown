@@ -75,7 +75,6 @@ import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { mdxComponent } from './micromark/mdx-component';
-import hasEsmDeclarations from './utils/mdxish/check-for-esm-declarations';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -182,14 +181,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
 
-    // Hesitantly enable mdxjsEsm tokenization only when it looks like
-    // there's a good chance it contains an ESM declaration, so that
-    // it errors on potentially less pages
-    if (hasEsmDeclarations(parserReadyContent)) {
-      const acorn = Parser.extend(acornJsx());
-      micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
-      fromMarkdownExts.push(mdxjsEsmFromMarkdown());
-    }
+    const acorn = Parser.extend(acornJsx());
+    micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
+    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
   }
 
   if (!safeMode) {
