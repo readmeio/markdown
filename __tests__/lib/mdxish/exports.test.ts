@@ -81,4 +81,45 @@ describe('mdxish MDX exports', () => {
 
     expect(allText(ast)).not.toContain('export const');
   });
+
+  // Classification policy: `evaluate-esm` inspects each export's declaration
+  // AST and routes it based on whether the body contains JSX:
+  // - JSX-bearing functions  → scope.components (callable as <Component />)
+  // - Everything else        → scope.values     (callable from {...} exprs)
+  describe('classification of function exports', () => {
+    it('routes JSX-returning functions to scope.components', () => {
+      const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
+      const tree = mdxish(md);
+      expect(Object.keys(tree.data?.mdxishScope?.components ?? {})).toContain('Greeting');
+      expect(Object.keys(tree.data?.mdxishScope?.values ?? {})).not.toContain('Greeting');
+    });
+
+    it('routes value-returning functions to scope.values', () => {
+      // `add` has no JSX in its body — it's a pure value function, so it
+      // should be callable from `{add(2, 3)}` expression interpolation.
+      const md = 'export function add(a, b) {\n  return a + b;\n}\n\nResult: {add(2, 3)}.';
+      const tree = mdxish(md);
+      expect(Object.keys(tree.data?.mdxishScope?.values ?? {})).toContain('add');
+      expect(Object.keys(tree.data?.mdxishScope?.components ?? {})).not.toContain('add');
+      expect(allText(tree)).toContain('Result: 5.');
+    });
+
+    it('exposes value-returning functions and const values together in expressions', () => {
+      const md = 'export const base = 10;\nexport function bump(n) { return n + base; }\n\n{bump(5)}';
+      const tree = mdxish(md);
+      expect(allText(tree)).toContain('15');
+    });
+
+    it('leaves JSX-returning function calls as literal {...} text in expression position', () => {
+      // `{x()}` where x is a component would otherwise stringify a React
+      // element object as garbage. Components aren't in expression scope, so
+      // the call falls through to the error branch and the source text is
+      // preserved. Authors should use `<X />` to render JSX-returning exports.
+      const md = 'export function X() { return <div>hi</div>; }\n\n{X()}';
+      const tree = mdxish(md);
+      const text = allText(tree);
+      expect(text).toContain('{X()}');
+      expect(text).not.toContain('"type":"div"');
+    });
+  });
 });

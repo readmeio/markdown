@@ -12,7 +12,7 @@ import { visit } from 'unist-util-visit';
 import { isMDXEsm } from '../../utils';
 
 export interface MdxishScope {
-  components: Record<string, unknown>;
+  components: Record<string, ReturnType<typeof Function>>;
   values: Record<string, unknown>;
 }
 
@@ -29,8 +29,7 @@ declare module 'hast' {
 }
 
 /**
- * Collect names introduced by an `export const/function/class` declaration.
- * Mirrors the structure documented in `getExports` (see processor/utils.ts).
+ * Collect names introduced by an `export const/function/class` declaration
  */
 const collectExportNames = (declaration: Declaration): string[] => {
   if (declaration.type === 'VariableDeclaration') {
@@ -63,6 +62,10 @@ const collectExportNames = (declaration: Declaration): string[] => {
 const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
   const names: string[] = [];
+  // Names whose declaration directly returns JSX. Used after eval to route
+  // JSX-bearing exports to `scope.components`; everything else lands on
+  // `scope.values` so it's accessible from `{...}` expression interpolation.
+  const jsxNames = new Set<string>();
   const esmNodes: { index: number; parent: Root }[] = [];
 
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
@@ -75,8 +78,15 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
 
     body.forEach(child => {
       if (child.type !== 'ExportNamedDeclaration' || !child.declaration) return;
-      programBody.push(child.declaration);
-      names.push(...collectExportNames(child.declaration));
+      const declaration = child.declaration;
+      const declNames = collectExportNames(declaration);
+      programBody.push(declaration);
+      names.push(...declNames);
+      // Cheap JSX sniff over the JSON-serialized estree — catches JSX
+      // anywhere in the declaration (returns, conditionals, helpers).
+      if (/"type":"JSX(Element|Fragment)"/.test(JSON.stringify(declaration))) {
+        declNames.forEach(n => jsxNames.add(n));
+      }
     });
   });
 
@@ -97,8 +107,11 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     const result = fn(React) as Record<string, unknown>;
 
     Object.entries(result).forEach(([name, value]) => {
-      if (typeof value === 'function') scope.components[name] = value;
-      else scope.values[name] = value;
+      if (typeof value === 'function' && jsxNames.has(name)) {
+        scope.components[name] = value;
+      } else if (!jsxNames.has(name)) {
+        scope.values[name] = value;
+      }
     });
   } catch {
     // Tokenizer succeeded but evaluation didn't — leave the (empty) scope and

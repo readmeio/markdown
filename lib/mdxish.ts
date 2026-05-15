@@ -306,8 +306,8 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   }
 
   // Stash the in-document exported components on the tree
-  // so that the renderer consumer knows about them & renders is.
-  // Required for `export function` components.
+  // so that the renderer consumer knows & renders them.
+  // Required for exported components to get rendered.
   if (vfile.data.mdxishScope) {
     hast.data = { ...hast.data, mdxishScope: vfile.data.mdxishScope };
   }
