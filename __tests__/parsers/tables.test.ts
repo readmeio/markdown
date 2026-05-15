@@ -237,9 +237,9 @@ const x = 1;
     <tr>
       <td>
 
-* one
-* two
-* three
+        * one
+        * two
+        * three
 
       </td>
     </tr>`,
@@ -250,9 +250,9 @@ const x = 1;
     <tr>
       <td>
 
-1. first
-2. second
-3. third
+        1. first
+        2. second
+        3. third
 
       </td>
     </tr>`,
@@ -306,12 +306,12 @@ const x = 1;
     <tr>
       <td>
 
-> quoted
+        > quoted
 
       </td>
       <td>
 
-* listed
+        * listed
 
       </td>
     </tr>`,
@@ -982,6 +982,54 @@ None of the following content will get rendered!`;
   });
 
   describe('jsx tables with legacy variables', () => {
+    it('preserves <<variable>> when another cell triggers the malformed-retry path', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hello <<NAME>>!</td>
+      <td>
+        <span style="color:red">unclosed span here
+
+        across paragraphs.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const variables = findAllElementsByTagName(tables[0], 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties).toMatchObject({ name: 'NAME', isLegacy: true });
+    });
+
+    it('does not treat <<string> as a phantom tag during malformed-retry', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>literal <<string> here</td>
+      <td>
+        <span style="color:red">unclosed span
+
+        more text.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+    });
+
     it('parses markdown and <<variable>> syntax inside cells', () => {
       const doc = '<table><tr><td>**bold** <<NAME>></td></tr></table>';
 
@@ -1087,6 +1135,33 @@ None of the following content will get rendered!`;
         </tr>
     </tbody>
 </table>`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>snake_case_value</code>');
+      expect(html).toContain('<code>another_name_here</code>');
+    });
+
+    it('preserves <code> content with underscores and {expression} in GFM-style markdown tables (RM-16575)', () => {
+      const doc = `|Attribute|Description|
+|---|---|
+|\`action\`|Action taken any time the penalty box is triggered. Contains: <ul><li><code>alert</code>. Event recorded.</li><li><code>deny</code>. Event blocked.</li><li><code>deny_custom_{custom_deny_id}</code>. Took your custom action against the event.</li><li><code>none</code>. No action taken.</li></ul>|
+|\`enabled\`|If **true**, penalty box protection is enabled.|`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>deny_custom_{custom_deny_id}</code>');
+      expect(html).toContain('<code>alert</code>');
+      expect(html).toContain('<code>deny</code>');
+      expect(html).toContain('<code>none</code>');
+    });
+
+    it('does not apply emphasis to underscores inside inline <code> elements in GFM tables', () => {
+      const doc = `|Name|Type|
+|---|---|
+|field|Contains: <ul><li><code>snake_case_value</code></li><li><code>another_name_here</code></li></ul>|`;
 
       const hast = mdxish(doc);
       const html = toHtml(hast);

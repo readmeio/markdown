@@ -241,6 +241,25 @@ function visitMultiNodeEmphasis(tree: Root) {
 }
 
 /**
+ * Returns true when the node at `index` inside `parent.children` sits between
+ * sibling `html` nodes that form an inline `<code>…</code>` element.
+ */
+function isInsideInlineHtmlCode(index: number | undefined, parent: Parent): boolean {
+  if (index === undefined || !Array.isArray(parent.children)) return false;
+  let i = index - 1;
+  while (i >= 0) {
+    const sibling = parent.children[i];
+    if (sibling.type === 'html' && 'value' in sibling && typeof sibling.value === 'string') {
+      const val = (sibling as { type: 'html'; value: string }).value.trim().toLowerCase();
+      if (val === '<code>' || val.startsWith('<code ') || val.startsWith('<code\t')) return true;
+      if (val === '</code>') return false;
+    }
+    i -= 1;
+  }
+  return false;
+}
+
+/**
  * A remark plugin that normalizes malformed bold and italic markers in text nodes.
  * Detects patterns like `** bold**`, `Hello** Wrong Bold**`, `__ bold__`, `Hello__ Wrong Bold__`,
  * `* italic*`, `Hello* Wrong Italic*`, `_ italic_`, or `Hello_ Wrong Italic_`
@@ -267,6 +286,13 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       (parent.type === 'mdxJsxTextElement' || parent.type === 'mdxJsxFlowElement') &&
       'name' in parent && parent.name === 'code'
     ) {
+      return undefined;
+    }
+    // In GFM tables, inline <code>...</code> is represented as sibling `html`
+    // nodes rather than as an mdxJsxTextElement, so the check above doesn't
+    // apply. Scan backwards through siblings to see if we are enclosed by a
+    // <code>…</code> inline HTML pair.
+    if (isInsideInlineHtmlCode(index, parent)) {
       return undefined;
     }
 
