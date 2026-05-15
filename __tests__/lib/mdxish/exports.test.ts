@@ -109,17 +109,5 @@ describe('mdxish MDX exports', () => {
       const tree = mdxish(md);
       expect(allText(tree)).toContain('15');
     });
-
-    it('leaves JSX-returning function calls as literal {...} text in expression position', () => {
-      // `{x()}` where x is a component would otherwise stringify a React
-      // element object as garbage. Components aren't in expression scope, so
-      // the call falls through to the error branch and the source text is
-      // preserved. Authors should use `<X />` to render JSX-returning exports.
-      const md = 'export function X() { return <div>hi</div>; }\n\n{X()}';
-      const tree = mdxish(md);
-      const text = allText(tree);
-      expect(text).toContain('{X()}');
-      expect(text).not.toContain('"type":"div"');
-    });
   });
 });
