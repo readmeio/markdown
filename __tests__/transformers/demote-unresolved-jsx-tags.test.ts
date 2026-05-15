@@ -46,4 +46,41 @@ describe('demote unresolved PascalCase JSX tags', () => {
     expect(html).toContain('Callout');
     expect(html).toContain('hello');
   });
+
+  it('demotes camelCase tags that start with lowercase (e.g. <myTag>)', () => {
+    const html = mix('Hello <myTag>world</myTag> tail\n');
+
+    expect(html).toContain('Hello');
+    expect(html).toContain('world');
+    expect(html).toContain('tail');
+  });
+
+  it('demotes a bare camelCase opener (e.g. <myThing>)', () => {
+    const html = mix('Use <myThing> please\n');
+
+    expect(html).toContain('Use');
+    expect(html).toContain('please');
+  });
+
+  it('demotes ALL-UPPERCASE unresolved tags (e.g. <XYZ>)', () => {
+    const html = mix('Use <XYZ>content</XYZ> please\n');
+
+    expect(html).toContain('content');
+    expect(html).toContain('please');
+  });
+
+  it('demotes lowercase unknown tags so they do not swallow following text', () => {
+    const html = mix('<Batch_id>_<File_Type>_<version>.csv\n');
+
+    expect(html).toContain('version');
+    expect(html).toContain('.csv');
+    expect(html).not.toMatch(/<version[\s>]/);
+  });
+
+  it('demotes a bare lowercase unknown tag', () => {
+    const html = mix('xx_<version>.csv\n');
+
+    expect(html).toContain('.csv');
+    expect(html).not.toMatch(/<version[\s>]/);
+  });
 });

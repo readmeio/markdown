@@ -169,9 +169,8 @@ describe('mdxish plain compiler', () => {
     const markdown = '<not valid jsx>';
 
     const hast = mdxish(markdown);
-    // Angle brackets without a valid tag are filtered out by rehypeRaw/rehypeMdxishComponents
-    // So we expect empty children or no children
-    expect(hast.children).toHaveLength(0);
+    const text = JSON.stringify(hast);
+    expect(text).toContain('not valid jsx');
   });
 
   it('preserves text content at root level', () => {
