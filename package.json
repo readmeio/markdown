@@ -2,7 +2,7 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "14.2.3",
+  "version": "14.2.5",
   "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
   "browser": "dist/main.js",
@@ -42,6 +42,7 @@
     "hast-util-sanitize": "^4.0.0",
     "hastscript": "^9.0.0",
     "html-tags": "^5.1.0",
+    "htmlparser2": "^12.0.0",
     "lodash.escape": "^4.0.1",
     "lodash.kebabcase": "^4.1.1",
     "mdast-util-find-and-replace": "^3.0.1",
@@ -171,7 +172,7 @@
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "875KB"
+        "maxSize": "920KB"
       }
     ]
   },
