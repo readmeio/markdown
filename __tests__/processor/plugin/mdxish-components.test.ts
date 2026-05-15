@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { mix, mdxish } from '../../../lib';
 
 describe('rehypeMdxishComponents', () => {
-  it('renders unresolved PascalCase tags as literal text instead of dropping them (CX-3284)', () => {
+  it('renders unresolved PascalCase tags as literal text instead of dropping them', () => {
     const md = `<MyDemo> from inside </MyDemo>
 Hello
 <Custom>`;

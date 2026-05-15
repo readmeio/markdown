@@ -7,7 +7,7 @@ import { mix } from '../../lib';
 const Registered = {} as CustomComponents[string];
 
 describe('demoteUnresolvedJsxTags — bug repros at scale', () => {
-  it('preserves the original CX-3284 input', () => {
+  it('preserves the original  input', () => {
     const html = mix('<Batch_id>_<File_Type>_<Version>.csv\n');
     expect(html).toContain('Version');
     expect(html).toContain('.csv');

@@ -53,7 +53,7 @@ describe('reusable content compiler', () => {
 });
 
 describe('mdxish reusable content compiler', () => {
-  it('renders undefined reusable content blocks as literal text (CX-3284)', () => {
+  it('renders undefined reusable content blocks as literal text', () => {
     const doc = '<Undefined />';
 
     const hast = mdxish(doc);
