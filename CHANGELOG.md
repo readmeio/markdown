@@ -1,6 +1,30 @@
 Changelog
 ===
 
+## Version 14.2.5
+### 🛠 Fixes & Updates
+
+* **mdxish:** support unclosed tags in JSX table cells ([#1465](https://github.com/readmeio/markdown/issues/1465)) ([c83a777](https://github.com/readmeio/markdown/commit/c83a777fe6af250758d1d397218d4cbabfa25b6a)), closes [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [#x20](https://github.com/readmeio/markdown/issues/x20)
+
+## Version 14.2.4
+### 🛠 Fixes & Updates
+
+* dont normalize emphasis syntax within html code elements ([#1471](https://github.com/readmeio/markdown/issues/1471)) ([db1f88f](https://github.com/readmeio/markdown/commit/db1f88f09575e696ee522a3fb8c33bc394f61e17))
+* **mdxish:** render Image captions containing entity-encoded JSX ([#1461](https://github.com/readmeio/markdown/issues/1461)) ([d6c7e61](https://github.com/readmeio/markdown/commit/d6c7e61e88b53ecd598393417abae44aff4efaf1)), closes [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22)
+
+## Version 14.2.3
+### 🛠 Fixes & Updates
+
+* code elements stripped from td elements ([#1466](https://github.com/readmeio/markdown/issues/1466)) ([ac1a45d](https://github.com/readmeio/markdown/commit/ac1a45d8a5c8ab056e5f0c9abd85049b45ff2480))
+* don't parse content of <code> elements in table cells ([#1467](https://github.com/readmeio/markdown/issues/1467)) ([130fb0b](https://github.com/readmeio/markdown/commit/130fb0b01cdbfa959f623bbbd991792150550789))
+
+## Version 14.2.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** decode html entities in jsx attribute values ([#1462](https://github.com/readmeio/markdown/issues/1462)) ([0e202e1](https://github.com/readmeio/markdown/commit/0e202e150e4f6b35623452fc3ebd0ba5249d72c1)), closes [#128679](https://github.com/readmeio/markdown/issues/128679) [#128679](https://github.com/readmeio/markdown/issues/128679)
+* mdx resolves internal links server side ([#1456](https://github.com/readmeio/markdown/issues/1456)) ([5b9702b](https://github.com/readmeio/markdown/commit/5b9702bfe08a6e12feaa649daee23de723d6fef8))
+* **mdxish:** preserve attributes on raw <table> rows/cells ([#1463](https://github.com/readmeio/markdown/issues/1463)) ([98c9dbc](https://github.com/readmeio/markdown/commit/98c9dbc001d23b8f21a8cb130fa38fdd4cd6da9d)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+
 ## Version 14.2.1
 ### 🛠 Fixes & Updates
 

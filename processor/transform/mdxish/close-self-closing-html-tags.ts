@@ -1,27 +1,5 @@
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
-
-/**
- * HTML void elements that are legitimately self-closing per the HTML spec.
- * These should NOT be transformed.
- *
- * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements
- */
-const HTML_VOID_ELEMENTS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-]);
+import { HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 
 /**
  * Matches self-closing HTML tags: `<tagname/>` or `<tagname attr="val" />`

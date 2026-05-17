@@ -40,10 +40,10 @@ describe('compile', () => {
       expect(anchor).toHaveAttribute('target', '_blank');
     });
 
-    it('preserves internal reference protocols on raw HTML anchors', () => {
+    it('resolves internal reference protocols on raw HTML anchors', () => {
       const anchor = renderMarkdown('<a href="ref:getting-started" target="_blank">test</a>');
 
-      expect(anchor).toHaveAttribute('href', 'ref:getting-started');
+      expect(anchor).toHaveAttribute('href', '/reference-link/getting-started');
       expect(anchor).toHaveAttribute('target', '_blank');
     });
 
