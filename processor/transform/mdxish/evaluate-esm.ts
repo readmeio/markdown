@@ -58,10 +58,7 @@ const collectExportNames = (declaration: Declaration): string[] => {
 const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
   const names: string[] = [];
-  // Names whose declaration directly returns JSX. Used after eval to route
-  // JSX-bearing exports to `scope.components`; everything else lands on
-  // `scope.values` so it's accessible from `{...}` expression interpolation.
-  const jsxNames = new Set<string>();
+  const jsxComponentNames = new Set<string>();
   const esmNodes: { index: number; parent: Root }[] = [];
 
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
@@ -78,10 +75,14 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
       const declNames = collectExportNames(declaration);
       programBody.push(declaration);
       names.push(...declNames);
-      // Cheap JSX sniff over the JSON-serialized estree — catches JSX
-      // anywhere in the declaration (returns, conditionals, helpers).
-      if (/"type":"JSX(Element|Fragment)"/.test(JSON.stringify(declaration))) {
-        declNames.forEach(n => jsxNames.add(n));
+
+      // Only function declarations can be invoked as `<Component />`. Cheap
+      // JSX sniff catches JSX anywhere in the function body.
+      if (
+        declaration.type === 'FunctionDeclaration' &&
+        /"type":"JSX(Element|Fragment)"/.test(JSON.stringify(declaration))
+      ) {
+        declNames.forEach(n => jsxComponentNames.add(n));
       }
     });
   });
@@ -107,9 +108,9 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     >;
 
     Object.entries(result).forEach(([name, value]) => {
-      if (typeof value === 'function' && jsxNames.has(name)) {
+      if (typeof value === 'function' && jsxComponentNames.has(name)) {
         scope.components[name] = value;
-      } else if (!jsxNames.has(name)) {
+      } else {
         scope.values[name] = value;
       }
     });
