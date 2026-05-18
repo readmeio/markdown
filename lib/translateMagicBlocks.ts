@@ -1,19 +1,17 @@
 import type { MdastNode, MagicBlockImage } from '../processor/transform/mdxish/magic-blocks/types';
 import type { Root as MdastRoot } from 'mdast';
-import type { MdxJsxAttribute, MdxJsxAttributeValueExpression, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
-import { valueToEstree } from 'estree-util-value-to-estree';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
+import { toAttributes } from '../processor/utils';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxishMdastToMd } from './mdxish';
 import { magicBlock } from './micromark/magic-block';
 import { MAGIC_BLOCK_REGEX } from './utils/extractMagicBlocks';
-
-type AttributeValue = boolean | number | string;
 
 type MagicBlockTranslator = (raw: string) => string;
 
@@ -26,7 +24,6 @@ type MagicBlockImageNode = MagicBlockImage & MdastNode;
 
 const MAGIC_BLOCK_OPEN_RE = /^\[block:([^\]]{1,100})\]/;
 const IMAGE_BLOCK_BODY_RE = /^\[block:image\]([\s\S]*)\[\/block\]$/;
-const UNSAFE_JSX_ATTRIBUTE_CHARS = new Set(['"', '\\', '<', '>', '{', '}']);
 
 const processor = unified()
   .data('micromarkExtensions', [magicBlock()])
@@ -79,43 +76,6 @@ function hasImageBlockData(raw: string) {
   }
 }
 
-function requiresJsxExpressionAttribute(value: string) {
-  return [...value].some(character => {
-    const charCode = character.charCodeAt(0);
-    return UNSAFE_JSX_ATTRIBUTE_CHARS.has(character) || charCode < 32 || charCode === 127;
-  });
-}
-
-function formatAttribute(key: string, value: AttributeValue) {
-  if (typeof value === 'string' && !requiresJsxExpressionAttribute(value)) {
-    return { type: 'mdxJsxAttribute', name: key, value } satisfies MdxJsxAttribute;
-  }
-
-  const expressionValue = typeof value === 'string' ? JSON.stringify(value) : String(value);
-  return {
-    type: 'mdxJsxAttribute',
-    name: key,
-    value: {
-      type: 'mdxJsxAttributeValueExpression',
-      value: expressionValue,
-      data: {
-        estree: {
-          type: 'Program',
-          body: [{ type: 'ExpressionStatement', expression: valueToEstree(value) }],
-          sourceType: 'module',
-          comments: [],
-        },
-      },
-    } satisfies MdxJsxAttributeValueExpression,
-  } satisfies MdxJsxAttribute;
-}
-
-function formatAttributes(attributes: [string, AttributeValue | undefined][]): MdxJsxAttribute[] {
-  return attributes
-    .flatMap(([key, value]) => (value === undefined ? [] : [formatAttribute(key, value)]))
-    .filter(attribute => attribute.value !== undefined);
-}
-
 function stringifyCaption(node: MdastNode): string {
   if (typeof node.value === 'string') return node.value;
   if (node.type === 'break') return '\n';
@@ -125,24 +85,27 @@ function stringifyCaption(node: MdastNode): string {
 
 function imageToMdx(node: MagicBlockImageNode, caption?: string) {
   const hProperties = node.data?.hProperties ?? {};
-  const src = hProperties.src || node.url;
+  const src = node.url;
 
   if (!src) return null;
 
-  const attributes: [string, AttributeValue | undefined][] = [
-    ['align', hProperties.align],
-    ['alt', node.alt ?? ''],
-    ['border', hProperties.border],
-    ['caption', caption],
-    ['title', node.title || undefined],
-    ['width', hProperties.width],
-    ['src', src],
-  ];
+  const attributes = {
+    align: hProperties.align,
+    alt: node.alt ?? '',
+    border: hProperties.border,
+    caption,
+    title: node.title || undefined,
+    width: hProperties.width,
+    src,
+  };
 
   return {
     type: 'mdxJsxFlowElement',
     name: 'Image',
-    attributes: formatAttributes(attributes),
+    attributes: toAttributes(attributes, ['align', 'alt', 'border', 'caption', 'title', 'width', 'src'], {
+      preserveEmpty: ['alt'],
+      preserveFalse: ['border'],
+    }),
     children: [],
   } satisfies MdxJsxFlowElement;
 }

@@ -38,11 +38,31 @@ describe('toAttributes', () => {
     expect(attrs[0].name).toBe('name');
   });
 
+  it('preserves selected empty string values', () => {
+    const attrs = toAttributes({ alt: '', caption: '' }, [], { preserveEmpty: ['alt'] });
+
+    expect(attrs).toHaveLength(1);
+    expect(attrs[0]).toStrictEqual({
+      type: 'mdxJsxAttribute',
+      name: 'alt',
+      value: '',
+    });
+  });
+
   it('skips boolean false values', () => {
     const attrs = toAttributes({ name: 'test', disabled: false, empty: false });
 
     expect(attrs).toHaveLength(1);
     expect(attrs[0].name).toBe('name');
+  });
+
+  it('preserves selected boolean false values', () => {
+    const attrs = toAttributes({ border: false, disabled: false }, [], { preserveFalse: ['border'] });
+
+    expect(attrs).toHaveLength(1);
+    expect(attrs[0].name).toBe('border');
+    expect(attrs[0].value).toHaveProperty('type', 'mdxJsxAttributeValueExpression');
+    expect(attrs[0].value).toHaveProperty('value', 'false');
   });
 
   it('converts boolean true to expression attribute', () => {

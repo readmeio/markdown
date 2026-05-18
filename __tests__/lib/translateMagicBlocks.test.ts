@@ -110,7 +110,7 @@ describe('translateMagicBlocks', () => {
     expect(lineCount(output)).toBe(lineCount(input));
   });
 
-  it('escapes JSX-ambiguous attribute values with expression attributes', () => {
+  it('escapes JSX-ambiguous attribute values through the MDX stringifier', () => {
     const input = imageBlock({
       caption: 'Caption with "quotes" and {braces}',
       image: ['https://example.com/unsafe.png', '', 'Alt with "quotes", <tags>, and {braces}'],
@@ -118,8 +118,8 @@ describe('translateMagicBlocks', () => {
 
     const output = translateMagicBlocks(input);
 
-    expect(output).toContain('alt={"Alt with \\"quotes\\", <tags>, and {braces}"}');
-    expect(output).toContain('caption={"Caption with \\"quotes\\" and {braces}"}');
+    expect(output).toContain('alt="Alt with &#x22;quotes&#x22;, <tags>, and {braces}"');
+    expect(output).toContain('caption="Caption with &#x22;quotes&#x22; and {braces}"');
     expect(lineCount(output)).toBe(lineCount(input));
   });
 
