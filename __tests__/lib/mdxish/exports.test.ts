@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { mdxish, mix, renderMdxish } from '../../../lib';
 import { findElementByTagName } from '../../helpers';
 
-describe('MDX variable and function declarations in MDXish', () => {
+describe('In-document MDX variable and function declarations', () => {
   it('throws on malformed export bodies', () => {
     // `export const x =;` is syntactically invalid
     const md = 'export const x =;\n\nHello world.';
@@ -55,6 +55,12 @@ describe('MDX variable and function declarations in MDXish', () => {
       const md = 'export const a = 1, b = "hello", c = true;\n\nNumbers: {a} Strings: {b} Booleans: {c}';
       const html = mix(md);
       expect(html).toContain('Numbers: 1 Strings: hello Booleans: true');
+    });
+
+    it('resolves HTML values', () => {
+      const md = 'export const variable = <strong>hello</strong>;\n\n{variable}';
+      const html = mix(md);
+      expect(html).toContain('<strong>hello</strong>');
     });
   });
 
@@ -106,6 +112,74 @@ describe('MDX variable and function declarations in MDXish', () => {
         const html = mix(md);
         expect(html).toContain('15');
       });
+    });
+
+    it('renders component when called using <Component /> syntax', () => {
+      const md = 'export function Greeting() { return (<div>hello</div>); }\n\n<Greeting />.';
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+      expect(html).toContain('hello');
+    });
+
+    it('renders component when called using Component() syntax', () => {
+      const md = 'export function Greeting() { return (<div>hello</div>); }\n\n{Greeting()}.';
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+      expect(html).toContain('<div>hello</div>');
+    });
+  });
+
+  describe('variable naming semantics', () => {
+    it('accepts lowercase JSX function declarations as a component', () => {
+      const md = 'export function greeting() { return (<div>hello</div>); }\n\n<greeting />';
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+      expect(html).toContain('<div>hello</div>');
+    });
+  });
+
+  describe('using exported variables and functions: {variable} vs Function() vs <Component />', () => {
+    it('only evaluates variables inside {...} expressions', () => {
+      const md = 'export const variable = "hello";\n\nHi {variable}.\n\nvariable should literally be variable';
+      const html = mix(md);
+      expect(html).toContain('Hi hello.');
+      expect(html).toContain('variable should literally be variable');
+    });
+
+    it('only evaluates Function() inside {...} expressions', () => {
+      const md = 'export function Greeting() { return "Hello World"; }\n\nHi {Greeting()}.\n\nGreeting() should literally be Greeting()';
+      const html = mix(md);
+      expect(html).toContain('Hi Hello World.');
+      expect(html).toContain('Greeting() should literally be Greeting()');
+    });
+
+    it('using <Component /> does not need to be wrapped in {...} expressions', () => {
+      const md = 'export function Greeting() { return (<div>hello</div>); }\n\n<Greeting />';
+      const ast = mdxish(md);
+
+      const { default: Content } = renderMdxish(ast);
+      const html = renderToStaticMarkup(React.createElement(Content));
+      expect(html).toContain('<div>hello</div>');
+    });
+
+    it('evaluates <Component /> when declared inside {...} expressions', () => {
+      const md = 'export function Greeting() { return (<div>hello</div>); }\n\n{<Greeting />}.';
+
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+      expect(html).toContain('<div>hello</div>');
+      expect(html).not.toContain('{<Greeting />}.');
     });
   });
 });
