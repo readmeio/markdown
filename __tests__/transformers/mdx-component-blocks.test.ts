@@ -535,6 +535,11 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       mdxFlow: collectNodes(tree, 'mdxJsxFlowElement').length,
     });
 
+    const calloutContains = (tree: Root, text: string, index = 0) => {
+      const callouts = collectNodes<Parent>(tree, 'rdme-callout');
+      return JSON.stringify(callouts[index]).includes(text);
+    };
+
     describe('original repro', () => {
       it('parses both callouts when separated by `<Batch_id>_<File_Type>_<Version>.csv`', () => {
         const md = `> 📘 Success
@@ -577,6 +582,8 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
 `;
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(1);
+        expect(calloutContains(tree, 'Heads up')).toBe(true);
+        expect(calloutContains(tree, 'body')).toBe(true);
       });
 
       it('preserves a following ATX heading', () => {
@@ -659,6 +666,8 @@ code
         expect(c.callouts).toBe(1);
         expect(c.lists).toBe(1);
         expect(c.code).toBe(1);
+        expect(calloutContains(tree, 'Tip')).toBe(true);
+        expect(calloutContains(tree, 'Body.')).toBe(true);
       });
     });
 
@@ -705,6 +714,8 @@ code
 `;
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(1);
+        expect(calloutContains(tree, 'inside list')).toBe(true);
+        expect(calloutContains(tree, 'body')).toBe(true);
       });
 
       it('preserves headings nested under a broken line in document order', () => {
@@ -730,6 +741,8 @@ text
         const tree = parseMdxish(md);
         expect(counts(tree).headings).toBe(1);
         expect(counts(tree).callouts).toBe(1);
+        expect(calloutContains(tree, 'Tip')).toBe(true);
+        expect(calloutContains(tree, 'body')).toBe(true);
       });
     });
 
@@ -901,6 +914,9 @@ Second paragraph
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(3);
         expect(counts(tree).headings).toBe(1);
+        expect(calloutContains(tree, 'One', 0)).toBe(true);
+        expect(calloutContains(tree, 'Two', 1)).toBe(true);
+        expect(calloutContains(tree, 'Three', 2)).toBe(true);
       });
 
       it('does not consume the only callout when the opener uses a real component-style name', () => {
