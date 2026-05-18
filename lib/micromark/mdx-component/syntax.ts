@@ -88,6 +88,15 @@ function createTokenize(mode: 'flow' | 'text') {
     let fenceCloseLength = 0;
     let atLineStart = false;
 
+    // Bail when the opener line has unmatched tag-like tokens in its body.
+    // `<Foo>_<Bar>.csv` leaves opens > closes; matched shapes like
+    // `<Callout>x <strong>y</strong>` balance to 0. Without this,
+    // `concrete: true` causes orphan openers to eat sibling blockquotes.
+    let bodyOnOpenerLine = false;
+    let bodySawContentOnOpenerLine = false;
+    let bodyOpenersOnOpenerLine = 0;
+    let bodyClosersOnOpenerLine = 0;
+
     // Attribute parsing state
     let quoteChar: Code = null;
     let braceDepth = 0;
@@ -188,6 +197,7 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === codes.greaterThan) {
         if (isLowercaseTag && !sawBraceAttr) return nok(code);
         effects.consume(code);
+        bodyOnOpenerLine = isFlow;
         return body;
       }
 
@@ -425,9 +435,23 @@ function createTokenize(mode: 'flow' | 'text') {
 
       if (markdownLineEnding(code)) {
         if (!isFlow) return nok(code);
+        // See `bodyOnOpenerLine` declaration. Bail iff the opener line had
+        // content AND more opener-shaped tokens than closer-shaped tokens.
+        if (
+          bodyOnOpenerLine &&
+          bodySawContentOnOpenerLine &&
+          bodyOpenersOnOpenerLine > bodyClosersOnOpenerLine
+        ) {
+          return nok(code);
+        }
+        bodyOnOpenerLine = false;
         effects.exit('mdxComponentData');
         atLineStart = true;
         return bodyContinuationStart(code);
+      }
+
+      if (code !== codes.space && code !== codes.horizontalTab) {
+        bodySawContentOnOpenerLine = true;
       }
 
       if (code === codes.backslash) {
@@ -607,6 +631,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function bodyLessThan(code: Code): State | undefined {
       if (code === codes.slash) {
+        if (bodyOnOpenerLine) bodyClosersOnOpenerLine += 1;
         effects.consume(code);
         closingTagName = '';
         return closingTagNameFirst;
@@ -614,9 +639,17 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // Potential nested opening tag (same case class as the outer tag)
       if (code !== null && isAlpha(code) && isSameCaseAsTag(code)) {
+        if (bodyOnOpenerLine) bodyOpenersOnOpenerLine += 1;
         closingTagName = String.fromCharCode(code);
         effects.consume(code);
         return nestedOpenTagName;
+      }
+
+      // Tag-like token but not in nested-tracking case (different case).
+      // Count it for the opener-line bail heuristic anyway: `<strong>` in
+      // `<Callout>x <strong>y</strong></Callout>` should pair with `</strong>`.
+      if (code !== null && isAlpha(code) && bodyOnOpenerLine) {
+        bodyOpenersOnOpenerLine += 1;
       }
 
       atLineStart = false;
