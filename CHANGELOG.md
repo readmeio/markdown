@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 14.2.6
+### 🛠 Fixes & Updates
+
+* **mdxish:** bail orphaned `<Tag>` openers before they eat sibling blocks ([#1474](https://github.com/readmeio/markdown/issues/1474)) ([55285f8](https://github.com/readmeio/markdown/commit/55285f86514e636eb2f51cf6078120cd0cd8b5d3))
+* **mdxish:** keep JSX Callout body in body slot only in roundtrip ([#1468](https://github.com/readmeio/markdown/issues/1468)) ([1b3fce1](https://github.com/readmeio/markdown/commit/1b3fce1e81c067928345c0ed9f23e348e4af2010))
+* **mdxish:** keep md images inline when in tableCells ([#1469](https://github.com/readmeio/markdown/issues/1469)) ([e7a2c64](https://github.com/readmeio/markdown/commit/e7a2c647460cfcb0bc114d3158a4030d28186410))
+* **mdxish:** skip variable resolution in Mermaid code blocks ([#1459](https://github.com/readmeio/markdown/issues/1459)) ([62d973a](https://github.com/readmeio/markdown/commit/62d973a261c1b0c8bb993000678338f10c9f4b5c))
+
 ## Version 14.2.5
 ### 🛠 Fixes & Updates
 
