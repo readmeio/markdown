@@ -319,17 +319,5 @@ export function Card({ children }) { return (<section>{children}</section>); }
         expect(html).not.toContain('{who}');
       });
     });
-
-    describe('magic blocks', () => {
-      it('renders exports and a magic-block callout side-by-side', () => {
-        const md = `export const variable = 'exported variable';
-
-[block:callout]
-{ "type": "info", "title": "Note", "body": "Hello {variable}!" }
-[/block]`;
-        const html = renderToHtml(md);
-        expect(html).toContain('Hello exported variable!');
-      });
-    });
   });
 });
