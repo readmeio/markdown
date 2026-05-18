@@ -163,6 +163,38 @@ This is a warning message.
         const calloutNode = ast.children[0] as Callout;
         expect(calloutNode.data?.hProperties?.icon).toBe('&');
       });
+
+      it('should prepend an empty title placeholder when body has no heading', () => {
+        const md = `<Callout icon="📘" theme="info">
+Content here
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.empty).toBe(true);
+        expect(calloutNode.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [{ type: 'text', value: '' }],
+        });
+        expect(calloutNode.children[1]).toMatchObject({
+          type: 'paragraph',
+          children: [{ type: 'text', value: 'Content here' }],
+        });
+      });
+
+      it('should leave children alone when callout already starts with a heading', () => {
+        const md = `<Callout icon="📘" theme="info">
+## My Title
+
+Body content
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.empty).toBe(false);
+        expect(calloutNode.children[0]).toMatchObject({ type: 'heading', depth: 2 });
+        expect(calloutNode.children[1]).toMatchObject({ type: 'paragraph' });
+      });
     });
 
     describe('Embed component', () => {
