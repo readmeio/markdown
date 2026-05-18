@@ -118,4 +118,15 @@ const name = 'Bearer ${variable}';
 
     expect(getCodeText(tree)).toBe('{user.secret}');
   });
+
+  it('does not resolve Mermaid sequence arrows as legacy variables', () => {
+    const tree = mdxish(`\`\`\`mermaid
+sequenceDiagram
+  Client <<-->> Server: Bidirectional dotted
+  Client <<->> Server: Bidirectional solid
+\`\`\``);
+
+    expect(getCodeText(tree)).toContain('Client <<-->> Server: Bidirectional dotted');
+    expect(getCodeText(tree)).toContain('Client <<->> Server: Bidirectional solid');
+  });
 });

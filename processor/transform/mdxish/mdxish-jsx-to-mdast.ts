@@ -353,15 +353,26 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
  */
 const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const attrs = getAttrs<CalloutAttrs>(jsx);
-  const { empty = false, icon = '', theme = '' } = attrs;
+  const { empty: explicitEmpty = false, icon = '', theme = '' } = attrs;
+
+  // children[0] is the title slot. Prepend an empty-paragraph placeholder
+  // when JSX has no leading heading, otherwise the body round-trips into it.
+  const jsxChildren = jsx.children as Callout['children'];
+  const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
+  const children = hasHeadingFirst
+    ? jsxChildren
+    : ([
+        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
+        ...jsxChildren,
+      ] as Callout['children']);
 
   return {
     type: NodeTypes.callout,
-    children: jsx.children as Callout['children'],
+    children,
     data: {
       hName: 'Callout',
       hProperties: {
-        empty,
+        empty: explicitEmpty || !hasHeadingFirst,
         icon,
         theme,
       },
@@ -699,6 +710,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
   visit(tree, 'image', (node: MagicBlockImage, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return SKIP;
     if (parent.type === 'paragraph') return SKIP;
+
+    // `![](url)` in any tableCell stays inline. Authors who want a captioned figure use
+    // `<Image caption="…" />` JSX, which becomes `image-block` via `COMPONENT_MAP` above.
+    if (parent.type === 'tableCell') return SKIP;
 
     const newNode = transformMagicBlockImage(node);
     (parent.children as Node[])[index] = newNode;
