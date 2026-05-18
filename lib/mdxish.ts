@@ -181,6 +181,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
 
+    // Tokenizer for MDX variable declarations
     const acorn = Parser.extend(acornJsx());
     micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
     fromMarkdownExts.push(mdxjsEsmFromMarkdown());
