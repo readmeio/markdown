@@ -1,25 +1,30 @@
+import type { MdastNode, MagicBlockImage } from '../processor/transform/mdxish/magic-blocks/types';
+import type { Root as MdastRoot } from 'mdast';
+import type { MdxJsxAttribute, MdxJsxAttributeValueExpression, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
+
+import { valueToEstree } from 'estree-util-value-to-estree';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
+import { mdxishMdastToMd } from './mdxish';
 import { magicBlock } from './micromark/magic-block';
 import { MAGIC_BLOCK_REGEX } from './utils/extractMagicBlocks';
 
 type AttributeValue = boolean | number | string;
 
-interface SerializableNode {
-  alt?: unknown;
-  children?: SerializableNode[];
-  data?: unknown;
-  title?: unknown;
-  type?: unknown;
-  url?: unknown;
-  value?: unknown;
+type MagicBlockTranslator = (raw: string) => string;
+
+interface MagicBlockFigure extends MdastNode {
+  children: MdastNode[];
+  type: 'figure';
 }
 
-const IMAGE_BLOCK_OPEN_RE = /^\[block:image\]/;
+type MagicBlockImageNode = MagicBlockImage & MdastNode;
+
+const MAGIC_BLOCK_OPEN_RE = /^\[block:([^\]]{1,100})\]/;
 const IMAGE_BLOCK_BODY_RE = /^\[block:image\]([\s\S]*)\[\/block\]$/;
 const UNSAFE_JSX_ATTRIBUTE_CHARS = new Set(['"', '\\', '<', '>', '{', '}']);
 
@@ -37,39 +42,40 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isSerializableNode(value: unknown): value is SerializableNode {
-  return isRecord(value);
+function isMdastNode(value: unknown): value is MdastNode {
+  return isRecord(value) && typeof value.type === 'string';
 }
 
-function getString(value: unknown) {
-  return typeof value === 'string' ? value : undefined;
+function isMdastRoot(value: unknown): value is MdastRoot {
+  return isRecord(value) && value.type === 'root' && Array.isArray(value.children);
 }
 
-function getChildren(value: unknown) {
-  return isRecord(value) && Array.isArray(value.children) ? value.children.filter(isSerializableNode) : [];
+function isMagicBlockImage(node: MdastNode): node is MagicBlockImageNode {
+  return node.type === 'image';
 }
 
-function getHProperties(node: SerializableNode) {
-  if (!isRecord(node.data) || !isRecord(node.data.hProperties)) return {};
-  return node.data.hProperties;
+function isMagicBlockFigure(node: MdastNode): node is MagicBlockFigure {
+  return node.type === 'figure' && Array.isArray(node.children);
 }
 
-function parseImageBlock(raw: string) {
+function getChildren(value: MdastNode | MdastRoot) {
+  return Array.isArray(value.children) ? value.children.filter(isMdastNode) : [];
+}
+
+function hasImageBlockData(raw: string) {
   const body = raw.match(IMAGE_BLOCK_BODY_RE)?.[1];
-  if (!body) return null;
+  if (!body) return false;
 
   try {
     const parsed: unknown = JSON.parse(body.trim());
-    if (!isRecord(parsed) || !Array.isArray(parsed.images)) return null;
+    if (!isRecord(parsed) || !Array.isArray(parsed.images)) return false;
 
     return parsed.images.some(image => {
       if (!isRecord(image) || !Array.isArray(image.image)) return false;
       return typeof image.image[0] === 'string';
-    })
-      ? parsed
-      : null;
+    });
   } catch {
-    return null;
+    return false;
   }
 }
 
@@ -81,77 +87,104 @@ function requiresJsxExpressionAttribute(value: string) {
 }
 
 function formatAttribute(key: string, value: AttributeValue) {
-  if (typeof value === 'boolean' || typeof value === 'number') return `${key}={${JSON.stringify(value)}}`;
-  if (requiresJsxExpressionAttribute(value)) return `${key}={${JSON.stringify(value)}}`;
-  return `${key}="${value}"`;
+  if (typeof value === 'string' && !requiresJsxExpressionAttribute(value)) {
+    return { type: 'mdxJsxAttribute', name: key, value } satisfies MdxJsxAttribute;
+  }
+
+  const expressionValue = typeof value === 'string' ? JSON.stringify(value) : String(value);
+  return {
+    type: 'mdxJsxAttribute',
+    name: key,
+    value: {
+      type: 'mdxJsxAttributeValueExpression',
+      value: expressionValue,
+      data: {
+        estree: {
+          type: 'Program',
+          body: [{ type: 'ExpressionStatement', expression: valueToEstree(value) }],
+          sourceType: 'module',
+          comments: [],
+        },
+      },
+    } satisfies MdxJsxAttributeValueExpression,
+  } satisfies MdxJsxAttribute;
 }
 
-function formatAttributes(attributes: [string, AttributeValue | undefined][]) {
+function formatAttributes(attributes: [string, AttributeValue | undefined][]): MdxJsxAttribute[] {
   return attributes
     .flatMap(([key, value]) => (value === undefined ? [] : [formatAttribute(key, value)]))
-    .join(' ');
+    .filter(attribute => attribute.value !== undefined);
 }
 
-function stringifyCaption(node: SerializableNode): string {
+function stringifyCaption(node: MdastNode): string {
   if (typeof node.value === 'string') return node.value;
   if (node.type === 'break') return '\n';
 
   return getChildren(node).map(stringifyCaption).join('');
 }
 
-function serializeImage(node: SerializableNode, caption?: string) {
-  const hProperties = getHProperties(node);
-  const alt = getString(node.alt);
-  const title = getString(node.title);
-  const src = getString(hProperties.src) || getString(node.url);
+function imageToMdx(node: MagicBlockImageNode, caption?: string) {
+  const hProperties = node.data?.hProperties ?? {};
+  const src = hProperties.src || node.url;
 
   if (!src) return null;
 
   const attributes: [string, AttributeValue | undefined][] = [
-    ['align', getString(hProperties.align)],
-    ['alt', alt],
-    ['border', typeof hProperties.border === 'boolean' ? hProperties.border : undefined],
+    ['align', hProperties.align],
+    ['alt', node.alt ?? ''],
+    ['border', hProperties.border],
     ['caption', caption],
-    ['title', title || undefined],
-    ['width', getString(hProperties.width)],
+    ['title', node.title || undefined],
+    ['width', hProperties.width],
     ['src', src],
   ];
 
-  return `<Image ${formatAttributes(attributes)} />`;
+  return {
+    type: 'mdxJsxFlowElement',
+    name: 'Image',
+    attributes: formatAttributes(attributes),
+    children: [],
+  } satisfies MdxJsxFlowElement;
 }
 
-function serializeFigure(node: SerializableNode) {
-  const image = getChildren(node).find(child => child.type === 'image');
+function figureToMdx(node: MagicBlockFigure) {
+  const image = getChildren(node).find(isMagicBlockImage);
   const figcaption = getChildren(node).find(child => child.type === 'figcaption');
   const caption = figcaption ? getChildren(figcaption).map(stringifyCaption).join('').trim() : undefined;
 
-  return image ? serializeImage(image, caption || undefined) : null;
+  return image ? imageToMdx(image, caption || undefined) : null;
 }
 
-function serializeTransformedNode(node: SerializableNode): string | null {
-  if (node.type === 'image') return serializeImage(node);
-  if (node.type === 'figure') return serializeFigure(node);
+function transformedNodeToMdx(node: MdastNode) {
+  if (isMagicBlockImage(node)) return imageToMdx(node);
+  if (isMagicBlockFigure(node)) return figureToMdx(node);
 
   if (node.type === 'rdme-pin') {
     const child = getChildren(node).find(item => item.type === 'image' || item.type === 'figure');
-    return child ? serializeTransformedNode(child) : null;
+    return child ? transformedNodeToMdx(child) : null;
   }
 
   return null;
 }
 
-function serializeTransformedBlock(tree: unknown) {
+function stringifyMdxImage(tree: MdastRoot) {
   const children = getChildren(tree);
   const node = children.find(item => item.type === 'image' || item.type === 'figure' || item.type === 'rdme-pin');
+  const mdxNode = node ? transformedNodeToMdx(node) : null;
 
-  return node ? serializeTransformedNode(node) : null;
+  if (!mdxNode) return null;
+
+  return mdxishMdastToMd({ type: 'root', children: [mdxNode] }).trim();
 }
 
 function translateImageBlock(raw: string) {
-  if (!IMAGE_BLOCK_OPEN_RE.test(raw) || !parseImageBlock(raw)) return raw;
+  if (!hasImageBlockData(raw)) return raw;
 
   try {
-    const translated = serializeTransformedBlock(processor.runSync(processor.parse(raw)));
+    const tree = processor.runSync(processor.parse(raw));
+    if (!isMdastRoot(tree)) return raw;
+
+    const translated = stringifyMdxImage(tree);
     if (!translated) return raw;
 
     const originalNewlineCount = countNewlines(raw);
@@ -164,11 +197,22 @@ function translateImageBlock(raw: string) {
   }
 }
 
+const translators: Partial<Record<string, MagicBlockTranslator>> = {
+  image: translateImageBlock,
+};
+
+function translateMagicBlock(raw: string) {
+  const blockType = raw.match(MAGIC_BLOCK_OPEN_RE)?.[1];
+  const translator = blockType ? translators[blockType] : undefined;
+
+  return translator ? translator(raw) : raw;
+}
+
 /**
  * Translates supported legacy magic blocks into MDX-shaped markdown while
  * preserving the source document's line count.
  */
 export default function translateMagicBlocks(content: string) {
   MAGIC_BLOCK_REGEX.lastIndex = 0;
-  return content.replace(MAGIC_BLOCK_REGEX, match => translateImageBlock(match));
+  return content.replace(MAGIC_BLOCK_REGEX, match => translateMagicBlock(match));
 }
