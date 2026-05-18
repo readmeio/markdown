@@ -194,8 +194,7 @@ describe('In-document MDX variable and function declarations', () => {
 
     describe('readme components', () => {
       it('resolves variable interpolations inside a Callout body', () => {
-        const md = `
-export const product = "RDMD";
+        const md = `export const product = "RDMD";
 
 <Callout icon="📘" theme="info">
   Welcome to {product}!
@@ -204,8 +203,7 @@ export const product = "RDMD";
       });
 
       it('resolves function calls inside a Callout body', () => {
-        const md = `
-export function shout(s) { return s.toUpperCase(); }
+        const md = `export function shout(s) { return s.toUpperCase(); }
 
 <Callout icon="📘" theme="info">
   {shout("hello")}
@@ -214,8 +212,7 @@ export function shout(s) { return s.toUpperCase(); }
       });
 
       it('resolves JSX-returning function calls inside a Callout body', () => {
-        const md = `
-export function Bold(s) { return (<strong>{s}</strong>); }
+        const md = `export function Bold(s) { return (<strong>{s}</strong>); }
 
 <Callout icon="📘" theme="info">
   Hi {Bold("world")}!
@@ -224,8 +221,7 @@ export function Bold(s) { return (<strong>{s}</strong>); }
       });
 
       it('resolves variable interpolations inside a Tab body', () => {
-        const md = `
-export const greeting = "hello";
+        const md = `export const greeting = "hello";
 
 <Tabs>
   <Tab title="Overview">Says {greeting}.</Tab>
@@ -233,12 +229,70 @@ export const greeting = "hello";
 </Tabs>`;
         expect(renderToHtml(md)).toContain('Says hello.');
       });
+
+      it('resolves variable interpolations inside a JSX Table', () => {
+        const md = `export const greeting = "hello";
+
+<Table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Hello</td><td>Greeting: {greeting}</td></tr>
+  </tbody>
+</Table>`;
+        expect(renderToHtml(md)).toContain('Greeting: hello');
+      });
+
+      it('resolves variable interpolations inside a native <table> element', () => {
+        const md = `export const greeting = "hello";
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Greeting: {greeting}</td></tr>
+  </tbody>
+</table>`;
+        expect(renderToHtml(md)).toContain('Greeting: hello');
+      });
+
+      it('does not resolve variable interpolations inside a CodeTabs', () => {
+        const md = `export const greeting = "hello";
+
+\`\`\`js
+Greeting: {greeting}
+\`\`\`
+\`\`\`js
+Greeting: {greeting}
+\`\`\`
+`;
+
+        expect(renderToHtml(md)).toContain('Greeting: {greeting}');
+        expect(renderToHtml(md)).not.toContain('Greeting: hello');
+      });
+
+      it('does not resolve variable interpolations inside an HTMLBlock', () => {
+        const md = `export const greeting = "hello";
+
+<HTMLBlock>{\`
+  <p>Hello {greeting}.</p>
+\`}</HTMLBlock>`;
+        expect(renderToHtml(md)).toContain('<p>Hello {greeting}.</p>');
+        expect(renderToHtml(md)).not.toContain('Hello hello.');
+      });
     });
 
     describe('custom components', () => {
       it('resolves variables passed as children of an in-document component', () => {
-        const md = `
-export const name = "World";
+        const md = `export const name = "World";
 export function Card({ children }) { return (<section>{children}</section>); }
 
 <Card>Hello, {name}!</Card>`;
@@ -246,8 +300,7 @@ export function Card({ children }) { return (<section>{children}</section>); }
       });
 
       it('resolves function calls passed as children of an in-document component', () => {
-        const md = `
-export function shout(s) { return s.toUpperCase(); }
+        const md = `export function shout(s) { return s.toUpperCase(); }
 export function Card({ children }) { return (<section>{children}</section>); }
 
 <Card>{shout("hello")}</Card>`;
@@ -258,8 +311,7 @@ export function Card({ children }) { return (<section>{children}</section>); }
         const GreeterMd = 'export function Greeter({ children }) { return (<div>{children}</div>); }';
         const compiledGreeter = run(compile(GreeterMd));
 
-        const md = `
-export const who = "everyone";
+        const md = `export const who = "everyone";
 
 <Greeter>Hi {who}!</Greeter>`;
         const html = renderToHtml(md, { components: { Greeter: compiledGreeter } });
@@ -270,8 +322,7 @@ export const who = "everyone";
 
     describe('magic blocks', () => {
       it('renders exports and a magic-block callout side-by-side', () => {
-        const md = `
-export const variable = 'exported variable';
+        const md = `export const variable = 'exported variable';
 
 [block:callout]
 { "type": "info", "title": "Note", "body": "Hello {variable}!" }
