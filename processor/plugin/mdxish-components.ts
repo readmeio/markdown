@@ -172,7 +172,7 @@ function normalizeProperties(node: Element): void {
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {
     // Merge any local components introduced by `export function` declarations
-    // (collected by the evaluate-esm transformer) into the lookup map. Only the
+    // (collected by the evaluate-exports transformer) into the lookup map. Only the
     // keys matter here — the rehype-mdxish-components plugin keys off names to
     // decide whether to keep a tag in the tree.
     const localComponents = (vfile.data.mdxishScope?.components ?? {}) as Record<string, unknown>;

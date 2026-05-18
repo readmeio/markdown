@@ -83,7 +83,7 @@ describe('In-document MDX variable and function declarations', () => {
       expect(html).toContain('<div>Hey Ho</div>');
     });
 
-    // Classification policy: `evaluate-esm` inspects each export's declaration
+    // Classification policy: `evaluate-exports` inspects each export's declaration
     // AST and routes it based on whether the body contains JSX:
     // - JSX-bearing functions  → scope.components (callable as <Component />)
     // - Everything else        → scope.values     (callable from {...} exprs)

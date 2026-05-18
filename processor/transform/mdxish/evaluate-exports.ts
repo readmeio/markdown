@@ -55,26 +55,26 @@ const collectExportNames = (declaration: Declaration): string[] => {
  * On any failure (eval throws, malformed estree) the nodes are still removed
  * and downstream rendering continues with an empty scope.
  */
-const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
+const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
-  const names: string[] = [];
+  const exportNames: string[] = [];
   const jsxComponentNames = new Set<string>();
-  const esmNodes: { index: number; parent: Root }[] = [];
+  const nodesToRemove: { index: number; parent: Root }[] = [];
 
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
     if (parent && typeof index === 'number') {
-      esmNodes.push({ index, parent: parent as Root });
+      nodesToRemove.push({ index, parent: parent as Root });
     }
 
-    const body = node.data?.estree?.body;
-    if (!body) return;
+    const estreeBody = node.data?.estree?.body;
+    if (!estreeBody) return;
 
-    body.forEach(child => {
-      if (child.type !== 'ExportNamedDeclaration' || !child.declaration) return;
-      const declaration = child.declaration;
-      const declNames = collectExportNames(declaration);
+    estreeBody.forEach(statement => {
+      if (statement.type !== 'ExportNamedDeclaration' || !statement.declaration) return;
+      const declaration = statement.declaration;
+      const declaredNames = collectExportNames(declaration);
       programBody.push(declaration);
-      names.push(...declNames);
+      exportNames.push(...declaredNames);
 
       // Only function declarations can be invoked as `<Component />`. Cheap
       // JSX sniff catches JSX anywhere in the function body.
@@ -82,16 +82,16 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
         declaration.type === 'FunctionDeclaration' &&
         /"type":"JSX(Element|Fragment)"/.test(JSON.stringify(declaration))
       ) {
-        declNames.forEach(n => jsxComponentNames.add(n));
+        declaredNames.forEach(n => jsxComponentNames.add(n));
       }
     });
   });
 
-  esmNodes
+  nodesToRemove
     .sort((a, b) => b.index - a.index)
     .forEach(({ index, parent }) => parent.children.splice(index, 1));
 
-  if (!names.length) return tree;
+  if (!exportNames.length) return tree;
 
   const scope: MdxishScope = { components: {}, values: {} };
 
@@ -102,12 +102,12 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
 
     // Evaluate and build on the expression source
     // Use react to compile JSX codes
-    const result = evaluate(`(() => { ${source}\nreturn { ${names.join(', ')} }; })()`, { React }) as Record<
-      string,
-      unknown
-    >;
+    const evaluatedExports = evaluate(
+      `(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`,
+      { React },
+    ) as Record<string, unknown>;
 
-    Object.entries(result).forEach(([name, value]) => {
+    Object.entries(evaluatedExports).forEach(([name, value]) => {
       if (typeof value === 'function' && jsxComponentNames.has(name)) {
         scope.components[name] = value;
       } else {
@@ -124,4 +124,4 @@ const evaluateEsm: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   return tree;
 };
 
-export default evaluateEsm;
+export default evaluateExports;

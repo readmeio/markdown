@@ -35,7 +35,7 @@ import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
-import evaluateEsm from '../processor/transform/mdxish/evaluate-esm';
+import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -275,7 +275,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
-    .use(safeMode ? undefined : evaluateEsm) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
+    .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes

@@ -18,6 +18,7 @@ import { evaluate } from '../../utils';
 const JsxParser = Parser.extend(acornJsx());
 const HAS_JSX = /<[A-Za-z]|<>/;
 
+/** The raw Function() can't parse JSX, so parse & convert it to a React element first so later we can get its HTML representation */
 const evalJsxExpression = (expression: string, scope: Record<string, unknown>) => {
   const program = JsxParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
   buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
@@ -37,7 +38,7 @@ const createEvaluatedNode = (result: unknown, position: Position | undefined): H
     return { type: 'text', value: '', position };
   } else if (React.isValidElement(result)) {
     // Convert react elements to its HTML representation
-    // This must come before the object check as this is a subset of object check
+    // This must come before the object check as this is a subset of it
     return { type: 'html', value: renderToStaticMarkup(result), position };
   } else if (typeof result === 'object') {
     return { type: 'text', value: JSON.stringify(result), position };
