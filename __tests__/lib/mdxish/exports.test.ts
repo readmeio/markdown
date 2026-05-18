@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { describe, it, expect } from 'vitest';
 
-import { mdxish, mix, renderMdxish } from '../../../lib';
+import { compile, mdxish, mix, renderMdxish, run } from '../../../lib';
 import { findElementByTagName } from '../../helpers';
 
 describe('In-document MDX variable and function declarations', () => {
@@ -180,6 +180,105 @@ describe('In-document MDX variable and function declarations', () => {
       const html = renderToStaticMarkup(React.createElement(Content));
       expect(html).toContain('<div>hello</div>');
       expect(html).not.toContain('{<Greeting />}.');
+    });
+  });
+
+  describe('usage in components', () => {
+    // Run the full mdxish → renderMdxish → React render pipeline and return the HTML.
+    // Needed (instead of `mix`) so caller-provided / in-document components actually execute.
+    const renderToHtml = (md: string, opts: Parameters<typeof mdxish>[1] = {}): string => {
+      const ast = mdxish(md, opts);
+      const { default: Content } = renderMdxish(ast);
+      return Content ? renderToStaticMarkup(React.createElement(Content)) : '';
+    };
+
+    describe('readme components', () => {
+      it('resolves variable interpolations inside a Callout body', () => {
+        const md = `
+export const product = "RDMD";
+
+<Callout icon="📘" theme="info">
+  Welcome to {product}!
+</Callout>`;
+        expect(renderToHtml(md)).toContain('Welcome to RDMD!');
+      });
+
+      it('resolves function calls inside a Callout body', () => {
+        const md = `
+export function shout(s) { return s.toUpperCase(); }
+
+<Callout icon="📘" theme="info">
+  {shout("hello")}
+</Callout>`;
+        expect(renderToHtml(md)).toContain('HELLO');
+      });
+
+      it('resolves JSX-returning function calls inside a Callout body', () => {
+        const md = `
+export function Bold(s) { return (<strong>{s}</strong>); }
+
+<Callout icon="📘" theme="info">
+  Hi {Bold("world")}!
+</Callout>`;
+        expect(renderToHtml(md)).toContain('<strong>world</strong>');
+      });
+
+      it('resolves variable interpolations inside a Tab body', () => {
+        const md = `
+export const greeting = "hello";
+
+<Tabs>
+  <Tab title="Overview">Says {greeting}.</Tab>
+  <Tab title="Detail">More info.</Tab>
+</Tabs>`;
+        expect(renderToHtml(md)).toContain('Says hello.');
+      });
+    });
+
+    describe('custom components', () => {
+      it('resolves variables passed as children of an in-document component', () => {
+        const md = `
+export const name = "World";
+export function Card({ children }) { return (<section>{children}</section>); }
+
+<Card>Hello, {name}!</Card>`;
+        expect(renderToHtml(md)).toContain('Hello, World!');
+      });
+
+      it('resolves function calls passed as children of an in-document component', () => {
+        const md = `
+export function shout(s) { return s.toUpperCase(); }
+export function Card({ children }) { return (<section>{children}</section>); }
+
+<Card>{shout("hello")}</Card>`;
+        expect(renderToHtml(md)).toContain('HELLO');
+      });
+
+      it('resolves variables passed as children of a caller-provided component', () => {
+        const GreeterMd = 'export function Greeter({ children }) { return (<div>{children}</div>); }';
+        const compiledGreeter = run(compile(GreeterMd));
+
+        const md = `
+export const who = "everyone";
+
+<Greeter>Hi {who}!</Greeter>`;
+        const html = renderToHtml(md, { components: { Greeter: compiledGreeter } });
+        expect(html).toContain('Hi everyone!');
+        expect(html).not.toContain('{who}');
+      });
+    });
+
+    describe('magic blocks', () => {
+      it('renders exports and a magic-block callout side-by-side', () => {
+        const md = `
+export const variable = 'exported variable';
+
+[block:callout]
+{ "type": "info", "title": "Note", "body": "Hello {variable}!" }
+[/block]`;
+        const html = renderToHtml(md);
+        expect(html).toContain('Hello exported variable!');
+      });
     });
   });
 });
