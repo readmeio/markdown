@@ -83,14 +83,16 @@ const collectJsxComponentNames = (declaration: Declaration): string[] => {
  * Evaluate `export const/function` declarations introduced by mdxjsEsm nodes.
  *
  * Walks each mdxjsEsm node's estree to gather all export declarations while
- * stripping the `export` statements. Then, evaluates the declarations at once
- * in a single sandboxed Function, so later exports can reference earlier ones
- * and supporting forward declarations.
+ * stripping the `export` statements. Then, all the declarations are evaluated at once
+ * in a single sandboxed Function. The declarations are evaluated together at once
+ * so that they can reference one another irrespective of the order of the declarations.
  *
  * Any evaluation error will be consumed, logged, and none of the expressions
- * using the exported declarations will be evaluated. This error handling
- * can be further improved to provide more detailed information, and potentially
- * not fail everything if some of the exports are not evaluatable.
+ * using the exported declarations will be evaluated. We don't throw
+ * an error since it's against the spirit of this engine to be more permissive.
+ *
+ * This error handling can be further improved to provide more detailed information,
+ * and potentially not fail everything if some of the exports are not evaluatable.
  */
 const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
