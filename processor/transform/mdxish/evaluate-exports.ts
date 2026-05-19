@@ -46,14 +46,15 @@ const collectExportNames = (declaration: Declaration): string[] => {
 /**
  * Evaluate `export const/function` declarations introduced by mdxjsEsm nodes.
  *
- * Walks each mdxjsEsm node's estree, strips the `export` keyword, transforms
- * any JSX in function bodies into `React.createElement` calls, then evaluates
- * the whole batch in a single sandboxed Function so later exports can
- * reference earlier ones.
+ * Walks each mdxjsEsm node's estree to gather all export declarations while
+ * stripping the `export` statements. Then, evaluates the declarations at once
+ * in a single sandboxed Function, so later exports can reference earlier ones
+ * and supporting forward declarations.
  *
- * The mdxjsEsm nodes are removed from the tree so they don't render as text.
- * On any failure (eval throws, malformed estree) the nodes are still removed
- * and downstream rendering continues with an empty scope.
+ * Any evaluation error will be consumed, logged, and none of the expressions
+ * using the exported declarations will be evaluated. This error handling
+ * can be further improved to provide more detailed information, and potentially
+ * not fail everything if some of the exports are not evaluatable.
  */
 const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
@@ -61,6 +62,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const jsxComponentNames = new Set<string>();
   const nodesToRemove: { index: number; parent: Root }[] = [];
 
+  // Get all export declarations and strip the `export` statements
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
     if (parent && typeof index === 'number') {
       nodesToRemove.push({ index, parent: parent as Root });
@@ -69,6 +71,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     const estreeBody = node.data?.estree?.body;
     if (!estreeBody) return;
 
+    // One mdxjsEsm node can contain multiple export declarations
     estreeBody.forEach(statement => {
       if (statement.type !== 'ExportNamedDeclaration' || !statement.declaration) return;
       const declaration = statement.declaration;
@@ -87,6 +90,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     });
   });
 
+  // Remove the mdxjsEsm nodes from the tree
   nodesToRemove
     .sort((a, b) => b.index - a.index)
     .forEach(({ index, parent }) => parent.children.splice(index, 1));
@@ -96,6 +100,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const scope: MdxishScope = { components: {}, values: {} };
 
   try {
+    // Build the full program body from all export declarations
     const program: Program = { type: 'Program', sourceType: 'module', body: programBody };
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
     const { value: source } = toJs(program);
@@ -107,6 +112,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
       { React },
     ) as Record<string, unknown>;
 
+    // Build the scope for later plugins & consumer to be aware of the exported declarations
     Object.entries(evaluatedExports).forEach(([name, value]) => {
       if (typeof value === 'function' && jsxComponentNames.has(name)) {
         scope.components[name] = value;
@@ -114,9 +120,11 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
         scope.values[name] = value;
       }
     });
-  } catch {
-    // Tokenizer succeeded but evaluation didn't — leave the (empty) scope and
-    // let downstream rendering proceed.
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[WARNING] Failed to evaluate exported declarations:', error);
+    // eslint-disable-next-line no-console
+    console.warn('[WARNING] Falling back to not evaluating exported declarations.');
   }
 
   file.data.mdxishScope = scope;
