@@ -1,5 +1,6 @@
 import type { CustomComponents, RMDXModule } from '../types';
 import type { Root } from 'hast';
+import type React from 'react';
 
 import { extractToc, tocToHast } from '../processor/plugin/toc';
 
@@ -31,6 +32,14 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
 
   const headings = extractToc(tree, components);
   const componentsForRehype = exportComponentsForRehype(components);
+
+  // Merge any in-document bindings collected at compile time. Local scope wins
+  // over caller-provided components
+  const localScope = tree.data?.mdxishScope ?? {};
+  Object.entries(localScope).forEach(([name, value]) => {
+    componentsForRehype[name] = value as React.ComponentType;
+  });
+
   const processor = createRehypeReactProcessor(componentsForRehype);
   const content = processor.stringify(tree) as React.ReactNode;
 
