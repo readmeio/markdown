@@ -26,6 +26,9 @@ interface EmbedProps {
 
 const IFRAME_DERIVABLE_TYPES = new Set(['youtube', 'jsfiddle', 'pdf']);
 
+// HTML width/height attrs accept bare numbers (interpreted as px), but CSS does not, convert.
+const toCssSize = (v: string | undefined, fallback: string) => (v ? (/^\d+$/.test(v) ? `${v}px` : v) : fallback);
+
 const Embed = ({
   lazy = true,
   url,
@@ -56,8 +59,6 @@ const Embed = ({
   }
 
   const { height, width, ...spreadAttrs } = attrs as { height?: string; width?: string };
-  // HTML width/height attrs accept bare numbers (interpreted as px), but CSS does not — convert.
-  const toCssSize = (v: string | undefined, fallback: string) => (v ? (/^\d+$/.test(v) ? `${v}px` : v) : fallback);
   const iframeStyle = {
     border: 'none',
     display: 'flex',
@@ -66,12 +67,11 @@ const Embed = ({
     height: toCssSize(height, '480px'),
   };
 
-  if (iframe) {
-    return <iframe {...spreadAttrs} src={url} style={iframeStyle} title={title} />;
-  }
-
   // Fall back to a direct iframe for URL-derivable embed types when html is missing.
-  if (!html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed)) {
+  const renderTypeAsIframe =
+    !html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed);
+
+  if (iframe || renderTypeAsIframe) {
     return <iframe {...spreadAttrs} src={url} style={iframeStyle} title={title} />;
   }
 
