@@ -33,12 +33,11 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
   const headings = extractToc(tree, components);
   const componentsForRehype = exportComponentsForRehype(components);
 
-  // Merge any in-document `export function` components collected at compile
-  // time. Local scope wins over caller-provided components so a doc can shadow
-  // a built-in component by re-declaring it.
-  const localComponents = tree.data?.mdxishScope?.components ?? {};
-  Object.entries(localComponents).forEach(([name, value]) => {
-    componentsForRehype[name] = value;
+  // Merge any in-document bindings collected at compile time. Local scope wins
+  // over caller-provided components
+  const localScope = tree.data?.mdxishScope ?? {};
+  Object.entries(localScope).forEach(([name, value]) => {
+    componentsForRehype[name] = value as React.ComponentType;
   });
 
   const processor = createRehypeReactProcessor(componentsForRehype);

@@ -1,4 +1,4 @@
-import type { Declaration, Program } from 'estree';
+import type { Declaration, Pattern, Program } from 'estree';
 import type { Root } from 'mdast';
 import type { MdxjsEsm } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
@@ -11,10 +11,7 @@ import { visit } from 'unist-util-visit';
 
 import { evaluate, isMDXEsm } from '../../utils';
 
-export interface MdxishScope {
-  components: Record<string, React.ComponentType>;
-  values: Record<string, unknown>;
-}
+export type MdxishScope = Record<string, unknown>;
 
 declare module 'vfile' {
   interface DataMap {
@@ -29,13 +26,31 @@ declare module 'hast' {
 }
 
 /**
- * Collect names introduced by an `export const/function/class` declaration
+ * Recursively extract all identifier names introduced by a binding pattern.
+ * Handles destructuring (`{ a, b }`, `[x, y]`), rest elements (`...rest`),
+ * and default values (`{ a = 1 }`).
+ */
+const namesFromPattern = (pattern: Pattern): string[] => {
+  if (pattern.type === 'Identifier') return [pattern.name];
+  if (pattern.type === 'ObjectPattern') {
+    return pattern.properties.flatMap(prop =>
+      prop.type === 'RestElement' ? namesFromPattern(prop.argument) : namesFromPattern(prop.value as Pattern),
+    );
+  }
+  if (pattern.type === 'ArrayPattern') {
+    return pattern.elements.flatMap(el => (el ? namesFromPattern(el) : []));
+  }
+  if (pattern.type === 'RestElement') return namesFromPattern(pattern.argument);
+  if (pattern.type === 'AssignmentPattern') return namesFromPattern(pattern.left);
+  return [];
+};
+
+/**
+ * Collect names introduced by an `export const/function/class` declaration.
  */
 const collectExportNames = (declaration: Declaration): string[] => {
   if (declaration.type === 'VariableDeclaration') {
-    return declaration.declarations
-      .map(dec => (dec.id.type === 'Identifier' ? dec.id.name : null))
-      .filter((name): name is string => Boolean(name));
+    return declaration.declarations.flatMap(dec => namesFromPattern(dec.id));
   }
   if ('id' in declaration && declaration.id?.type === 'Identifier') {
     return [declaration.id.name];
@@ -44,63 +59,22 @@ const collectExportNames = (declaration: Declaration): string[] => {
 };
 
 /**
- * Recursively walk an estree subtree, returning true on the first JSX node.
- *
- * Accepts `unknown` because recursion descends into arbitrary node fields —
- * arrays, child nodes, and primitive leaves (strings, numbers, null) — and the
- * function bottoms out on anything that isn't an object.
- */
-const containsJsx = (node: unknown): boolean => {
-  if (node === null || typeof node !== 'object') return false;
-  if ('type' in node && (node.type === 'JSXElement' || node.type === 'JSXFragment')) return true;
-  return Object.values(node).some(v => (Array.isArray(v) ? v.some(containsJsx) : containsJsx(v)));
-};
-
-
-/**
- * Collect names bound to a JSX-returning function (callable as `<Component />`).
- * Covers `function Foo() {…}`, `const Foo = () => …`, `const Foo = function () {…}`.
- */
-const collectJsxComponentNames = (declaration: Declaration): string[] => {
-  const names: string[] = [];
-  if (declaration.type === 'FunctionDeclaration' && declaration.id && containsJsx(declaration.body)) {
-    names.push(declaration.id.name);
-  } else if (declaration.type === 'VariableDeclaration') {
-    declaration.declarations.forEach(d => {
-      if (
-        d.id.type === 'Identifier' &&
-        (d.init?.type === 'ArrowFunctionExpression' || d.init?.type === 'FunctionExpression') &&
-        containsJsx(d.init.body)
-      ) {
-        names.push(d.id.name);
-      }
-    });
-  }
-  return names;
-};
-
-/**
  * Evaluate `export const/function` declarations introduced by mdxjsEsm nodes.
  *
  * Walks each mdxjsEsm node's estree to gather all export declarations while
- * stripping the `export` statements. Then, all the declarations are evaluated at once
- * in a single sandboxed Function. The declarations are evaluated together at once
- * so that they can reference one another irrespective of the order of the declarations.
+ * stripping the `export` statements. All declarations are then evaluated in a
+ * single sandboxed Function so that they can reference one another regardless
+ * of source order. Every resulting binding lands in a flat scope record —
+ * components, helpers, and plain values share the same map.
  *
- * Any evaluation error will be consumed, logged, and none of the expressions
- * using the exported declarations will be evaluated. We don't throw
- * an error since it's against the spirit of this engine to be more permissive.
- *
- * This error handling can be further improved to provide more detailed information,
- * and potentially not fail everything if some of the exports are not evaluatable.
+ * Any evaluation error is consumed and logged. We don't throw because it's
+ * against the spirit of this engine to be less permissive than MDX needs.
  */
 const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
   const exportNames: string[] = [];
-  const jsxComponentNames = new Set<string>();
   const nodesToRemove: { index: number; parent: Root }[] = [];
 
-  // Get all export declarations and strip the `export` statements
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
     if (parent && typeof index === 'number') {
       nodesToRemove.push({ index, parent: parent as Root });
@@ -109,15 +83,25 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     const estreeBody = node.data?.estree?.body;
     if (!estreeBody) return;
 
-    // One mdxjsEsm node can contain multiple export declarations
+    // One mdxjsEsm node can contain multiple export declarations.
+    // `export default function Foo()` and `export default class Foo {}` are
+    // handled the same as a named export — the inner declaration carries the
+    // binding name
     estreeBody.forEach(statement => {
-      if (statement.type !== 'ExportNamedDeclaration' || !statement.declaration) return;
-      const declaration = statement.declaration;
-      const declaredNames = collectExportNames(declaration);
-      programBody.push(declaration);
-      exportNames.push(...declaredNames);
+      let declaration: Declaration | null = null;
+      if (statement.type === 'ExportNamedDeclaration' && statement.declaration) {
+        declaration = statement.declaration;
+      } else if (
+        statement.type === 'ExportDefaultDeclaration' &&
+        (statement.declaration.type === 'FunctionDeclaration' || statement.declaration.type === 'ClassDeclaration') &&
+        statement.declaration.id
+      ) {
+        declaration = statement.declaration as Declaration;
+      }
+      if (!declaration) return;
 
-      collectJsxComponentNames(declaration).forEach(name => jsxComponentNames.add(name));
+      programBody.push(declaration);
+      exportNames.push(...collectExportNames(declaration));
     });
   });
 
@@ -128,9 +112,9 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
 
   if (!exportNames.length) return tree;
 
-  const scope: MdxishScope = { components: {}, values: {} };
+  const scope: MdxishScope = {};
 
-  // Build the full program body from all export declarations
+  // Evaluate the declarations together at once in a single sandboxed Function
   try {
     const program: Program = { type: 'Program', sourceType: 'module', body: programBody };
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
@@ -143,16 +127,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
       { React },
     ) as Record<string, unknown>;
 
-    // Build the scope for later plugins & consumer to be aware of the exported declarations
-    Object.entries(evaluatedExports).forEach(([name, value]) => {
-      if (typeof value === 'function' && jsxComponentNames.has(name)) {
-        // JSX sniff on the AST confirmed this function returns JSX, so it's
-        // safe to surface as a React component to downstream renderers.
-        scope.components[name] = value as React.ComponentType;
-      } else {
-        scope.values[name] = value;
-      }
-    });
+    Object.assign(scope, evaluatedExports);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.warn('[WARNING] Failed to evaluate exported declarations:', error);

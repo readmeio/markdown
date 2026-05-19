@@ -52,8 +52,7 @@ const createEvaluatedNode = (result: unknown, position: Position | undefined): H
  * Anything else falls through to the error branch and is kept as literal `{...}` text.
  */
 const evaluateExpressions: Plugin<[], Root> = () => (tree, file: VFile) => {
-  const { values = {}, components = {} } = file.data.mdxishScope ?? {};
-  const scope: Record<string, unknown> = { ...values, ...components, React };
+  const scope: Record<string, unknown> = { ...(file.data.mdxishScope ), React };
 
   visit(tree, ['mdxFlowExpression', 'mdxTextExpression'], (node, index, parent) => {
     if (!parent || index === null || index === undefined) return;

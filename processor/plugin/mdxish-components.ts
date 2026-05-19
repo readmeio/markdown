@@ -171,12 +171,10 @@ function normalizeProperties(node: Element): void {
  */
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {
-    // Merge any local components introduced by `export function` declarations
-    // (collected by the evaluate-exports transformer) into the lookup map. Only the
-    // keys matter here — the rehype-mdxish-components plugin keys off names to
-    // decide whether to keep a tag in the tree.
-    const localComponents = vfile.data.mdxishScope?.components ?? {};
-    const allComponents = { ...components, ...localComponents } as CustomComponents;
+    // Merge any local bindings introduced by `export const/function` declarations
+    // (collected by the evaluate-exports transformer) into the lookup map.
+    const localScope = vfile.data.mdxishScope ?? {};
+    const allComponents = { ...components, ...localScope } as CustomComponents;
 
     const nodesToRemove: { index: number; parent: Element | Root }[] = [];
 

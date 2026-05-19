@@ -6,6 +6,14 @@ import { describe, it, expect } from 'vitest';
 import { compile, mdxish, mix, renderMdxish, run } from '../../../lib';
 import { findElementByTagName } from '../../helpers';
 
+// Run the full mdxish → renderMdxish → React render pipeline and return the HTML.
+// Needed (instead of `mix`) so caller-provided / in-document components actually execute.
+const renderToHtml = (md: string, opts: Parameters<typeof mdxish>[1] = {}): string => {
+  const ast = mdxish(md, opts);
+  const { default: Content } = renderMdxish(ast);
+  return Content ? renderToStaticMarkup(React.createElement(Content)) : '';
+};
+
 describe('In-document MDX variable and function declarations', () => {
   it('throws on malformed export bodies', () => {
     // `export const x =;` is syntactically invalid
@@ -83,6 +91,21 @@ a = {a}`;
       const html = mix(md);
       expect(html).toContain('a = <strong>hello</strong>');
     });
+
+    it('binds names from object destructuring', () => {
+      const md = 'export const { a, b } = { a: 1, b: 2 };\n\na = {a}, b = {b}';
+      expect(mix(md)).toContain('a = 1, b = 2');
+    });
+
+    it('binds names from array destructuring', () => {
+      const md = 'export const [first, second] = [10, 20];\n\nFirst: {first}, Second: {second}';
+      expect(mix(md)).toContain('First: 10, Second: 20');
+    });
+
+    it('supports `export let` the same as `export const`', () => {
+      const md = 'export let counter = 7;\n\nCount: {counter}.';
+      expect(mix(md)).toContain('Count: 7.');
+    });
   });
 
   describe('function declarations', () => {
@@ -102,37 +125,6 @@ a = {a}`;
       const html = renderToStaticMarkup(Content ? React.createElement(Content) : null);
       expect(html).toContain('Hey Ho');
       expect(html).toContain('<div>Hey Ho</div>');
-    });
-
-    // Classification policy: `evaluate-exports` inspects each export's declaration
-    // AST and routes it based on whether the body contains JSX:
-    // - JSX-bearing functions  → scope.components (callable as <Component />)
-    // - Everything else        → scope.values     (callable from {...} exprs)
-    describe('classification of function exports', () => {
-      it('routes JSX-returning functions to scope.components', () => {
-        const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
-        const tree = mdxish(md);
-        expect(Object.keys(tree.data?.mdxishScope?.components ?? {})).toContain('Greeting');
-        expect(Object.keys(tree.data?.mdxishScope?.values ?? {})).not.toContain('Greeting');
-      });
-
-      it('routes value-returning functions to scope.values', () => {
-        // `add` has no JSX in its body — it's a pure value function, so it
-        // should be callable from `{add(2, 3)}` expression interpolation.
-        const md = 'export function add(a, b) {\n  return a + b;\n}\n\nResult: {add(2, 3)}.';
-        const tree = mdxish(md);
-        expect(Object.keys(tree.data?.mdxishScope?.values ?? {})).toContain('add');
-        expect(Object.keys(tree.data?.mdxishScope?.components ?? {})).not.toContain('add');
-
-        const html = mix(md);
-        expect(html).toContain('Result: 5.');
-      });
-
-      it('exposes value-returning functions and const values together in expressions', () => {
-        const md = 'export const base = 10;\nexport function bump(n) { return n + base; }\n\n{bump(5)}';
-        const html = mix(md);
-        expect(html).toContain('15');
-      });
     });
 
     it('renders component when called using <Component /> syntax', () => {
@@ -177,14 +169,43 @@ a = {a}`;
 export function wrap(s) { return "SHOUTED: " + shout(s); }
 
 {wrap("hello")}.`;
+      expect(renderToHtml(md)).toContain('SHOUTED: HELLO');
+    });
 
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
+    it('detects a component whose body returns JSX indirectly through a call', () => {
+      const md = `export const make = () => <strong>made</strong>;
+export const Maker = () => make();
 
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
+<Maker />`;
+      expect(renderToHtml(md)).toContain('<strong>made</strong>');
+    });
 
-      expect(html).toContain('SHOUTED: HELLO');
+    it('evaluates an `export default` function declaration', () => {
+      const md = `export default function Defaulted() {
+  return <div>default</div>;
+}
+
+<Defaulted />`;
+      expect(renderToHtml(md)).toContain('<div>default</div>');
+    });
+
+    it('supports mutually recursive function declarations', () => {
+      const md = `export function isEven(n) { return n === 0 ? true : isOdd(n - 1); }
+export function isOdd(n) { return n === 0 ? false : isEven(n - 1); }
+
+isEven(4) = {isEven(4)}.`;
+      expect(mix(md)).toContain('isEven(4) = true.');
+    });
+  });
+
+  describe('class declarations', () => {
+    it('exposes class declarations as values', () => {
+      const md = `export class MyClass {
+  greet() { return "hi"; }
+}
+
+Greeting: {new MyClass().greet()}.`;
+      expect(mix(md)).toContain('Greeting: hi.');
     });
   });
 
@@ -237,14 +258,6 @@ export function wrap(s) { return "SHOUTED: " + shout(s); }
   });
 
   describe('usage in components', () => {
-    // Run the full mdxish → renderMdxish → React render pipeline and return the HTML.
-    // Needed (instead of `mix`) so caller-provided / in-document components actually execute.
-    const renderToHtml = (md: string, opts: Parameters<typeof mdxish>[1] = {}): string => {
-      const ast = mdxish(md, opts);
-      const { default: Content } = renderMdxish(ast);
-      return Content ? renderToStaticMarkup(React.createElement(Content)) : '';
-    };
-
     describe('readme components', () => {
       it('resolves variable interpolations inside a Callout body', () => {
         const md = `export const product = "RDMD";
@@ -371,6 +384,29 @@ export function Card({ children }) { return (<section>{children}</section>); }
         expect(html).toContain('Hi everyone!');
         expect(html).not.toContain('{who}');
       });
+    });
+  });
+
+  describe('when evaluation is supposed to fail', () => {
+    it('falls back to literal text when a const forward-references another const', () => {
+      const md = `export const earlier = later + 1;
+export const later = 10;
+
+Earlier: {earlier}. Later: {later}.`;
+      const html = mix(md);
+      expect(html).toContain('{earlier}');
+      expect(html).toContain('{later}');
+    });
+
+    it('falls back to literal text when a name is redeclared in a later block', () => {
+      const md = `export const x = 1;
+
+Prose.
+
+export const x = 2;
+
+x = {x}.`;
+      expect(mix(md)).toContain('x = {x}');
     });
   });
 });
