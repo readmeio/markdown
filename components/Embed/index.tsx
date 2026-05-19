@@ -63,7 +63,7 @@ const Embed = ({
     display: 'flex',
     margin: 'auto',
     width: toCssSize(width, '100%'),
-    height: toCssSize(height, '300px'),
+    height: toCssSize(height, '480px'),
   };
 
   if (iframe) {

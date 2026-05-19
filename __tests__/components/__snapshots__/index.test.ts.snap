@@ -6,13 +6,13 @@ exports[`Components > Embed 1`] = `"<div class="embed embed_hasImg"><div class="
 
 exports[`Components > Embed 2`] = `"<iframe src="https://consent-manager.metomic.io/placeholder-demo.html?example=reddit" style="display: flex; margin: auto; width: 100%; height: 550px;"></iframe>"`;
 
-exports[`Components > Embed 3`] = `"<iframe src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m2!2m1!1sLos+Angeles" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
+exports[`Components > Embed 3`] = `"<iframe src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m2!2m1!1sLos+Angeles" style="display: flex; margin: auto; width: 100%; height: 480px;" title=""></iframe>"`;
 
-exports[`Components > Embed 4`] = `"<iframe src="https://www.youtube.com/embed/Ui6wtK1WkQo" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
+exports[`Components > Embed 4`] = `"<iframe src="https://www.youtube.com/embed/Ui6wtK1WkQo" style="display: flex; margin: auto; width: 100%; height: 480px;" title=""></iframe>"`;
 
-exports[`Components > Embed 5`] = `"<iframe src="https://example.com/doc.pdf" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
+exports[`Components > Embed 5`] = `"<iframe src="https://example.com/doc.pdf" style="display: flex; margin: auto; width: 100%; height: 480px;" title=""></iframe>"`;
 
-exports[`Components > Embed 6`] = `"<iframe src="https://jsfiddle.net/s6rhnpv7/embedded/" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
+exports[`Components > Embed 6`] = `"<iframe src="https://jsfiddle.net/s6rhnpv7/embedded/" style="display: flex; margin: auto; width: 100%; height: 480px;" title=""></iframe>"`;
 
 exports[`Components > Embed 7`] = `"<div class="embed "><a class="embed-link" href="https://gist.github.com/foo/abc123" rel="noopener noreferrer" target="_blank"><div class="embed-body"><b>View</b>: <span class="embed-body-url">https://gist.github.com/foo/abc123</span></div></a></div>"`;
 
