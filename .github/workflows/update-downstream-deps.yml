@@ -25,7 +25,6 @@ jobs:
           private-key: ${{ secrets.DEPLOYBERT_PRIVATE_KEY }}
           owner: readmeio
           repositories: readme
-      # Action in https://github.com/readmeio/update-downstream-deps-action
       - uses: readmeio/update-downstream-deps-action@v1
         with:
           package_name: '@readme/markdown'
