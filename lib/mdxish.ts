@@ -74,6 +74,7 @@ import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { mdxComponent } from './micromark/mdx-component';
+import hasEsmDeclarations from './utils/mdxish/check-for-esm-declarations';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -180,9 +181,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
 
-    // Tokenizer for MDX variable declarations
-    micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));
-    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
+    // Tokenizer for in document MDX variable declarations
+    if (hasEsmDeclarations(parserReadyContent)) {
+      micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));
+      fromMarkdownExts.push(mdxjsEsmFromMarkdown());
+    }
   }
 
   if (!safeMode) {

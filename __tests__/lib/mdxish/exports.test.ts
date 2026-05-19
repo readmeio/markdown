@@ -20,6 +20,30 @@ describe('In-document MDX variable and function declarations', () => {
     expect(html).not.toContain('export const');
   });
 
+  describe('optional ESM tokenizer behaviour', () => {
+    describe('given a line starts with export ', () => {
+      it('does not error out a line starts with export , but there is not actual ESM declaration', () => {
+        const md = 'export this delivery';
+        expect(() => mdxish(md)).not.toThrow();
+      });
+
+      it('will error when there is an actual ESM declaration', () => {
+        const md = 'export this delivery\nexport const foo = "hello";\n\nfoo = {foo}';
+        expect(() => mdxish(md)).toThrow(/unexpected|parse|syntax/i);
+      });
+
+      it('still does not error out when safeMode is enabled', () => {
+        const md = 'export this delivery\nexport const foo = "hello";\n\nfoo = {foo}';
+        expect(() => mdxish(md, { safeMode: true })).not.toThrow();
+      });
+    });
+
+    it('does not tokenize ESM declarations when there are no exports', () => {
+      const md = 'const foo = "hello";\n\nfoo = {foo}';
+      const html = mix(md);
+      expect(html).toContain('foo = {foo}');
+    });
+  });
 
   describe('when exports are not supposed to be evaluated', () => {
     it('does not evaluate exports when safeMode is enabled and keeps them as literal text', () => {
