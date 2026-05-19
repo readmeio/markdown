@@ -1,6 +1,98 @@
 Changelog
 ===
 
+## Version 14.2.6
+### 🛠 Fixes & Updates
+
+* **mdxish:** bail orphaned `<Tag>` openers before they eat sibling blocks ([#1474](https://github.com/readmeio/markdown/issues/1474)) ([55285f8](https://github.com/readmeio/markdown/commit/55285f86514e636eb2f51cf6078120cd0cd8b5d3))
+* **mdxish:** keep JSX Callout body in body slot only in roundtrip ([#1468](https://github.com/readmeio/markdown/issues/1468)) ([1b3fce1](https://github.com/readmeio/markdown/commit/1b3fce1e81c067928345c0ed9f23e348e4af2010))
+* **mdxish:** keep md images inline when in tableCells ([#1469](https://github.com/readmeio/markdown/issues/1469)) ([e7a2c64](https://github.com/readmeio/markdown/commit/e7a2c647460cfcb0bc114d3158a4030d28186410))
+* **mdxish:** skip variable resolution in Mermaid code blocks ([#1459](https://github.com/readmeio/markdown/issues/1459)) ([62d973a](https://github.com/readmeio/markdown/commit/62d973a261c1b0c8bb993000678338f10c9f4b5c))
+
+## Version 14.2.5
+### 🛠 Fixes & Updates
+
+* **mdxish:** support unclosed tags in JSX table cells ([#1465](https://github.com/readmeio/markdown/issues/1465)) ([c83a777](https://github.com/readmeio/markdown/commit/c83a777fe6af250758d1d397218d4cbabfa25b6a)), closes [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [create-response#createresponse](https://github.com/readmeio/create-response/issues/createresponse) [#x20](https://github.com/readmeio/markdown/issues/x20)
+
+## Version 14.2.4
+### 🛠 Fixes & Updates
+
+* dont normalize emphasis syntax within html code elements ([#1471](https://github.com/readmeio/markdown/issues/1471)) ([db1f88f](https://github.com/readmeio/markdown/commit/db1f88f09575e696ee522a3fb8c33bc394f61e17))
+* **mdxish:** render Image captions containing entity-encoded JSX ([#1461](https://github.com/readmeio/markdown/issues/1461)) ([d6c7e61](https://github.com/readmeio/markdown/commit/d6c7e61e88b53ecd598393417abae44aff4efaf1)), closes [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22) [#x22](https://github.com/readmeio/markdown/issues/x22)
+
+## Version 14.2.3
+### 🛠 Fixes & Updates
+
+* code elements stripped from td elements ([#1466](https://github.com/readmeio/markdown/issues/1466)) ([ac1a45d](https://github.com/readmeio/markdown/commit/ac1a45d8a5c8ab056e5f0c9abd85049b45ff2480))
+* don't parse content of <code> elements in table cells ([#1467](https://github.com/readmeio/markdown/issues/1467)) ([130fb0b](https://github.com/readmeio/markdown/commit/130fb0b01cdbfa959f623bbbd991792150550789))
+
+## Version 14.2.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** decode html entities in jsx attribute values ([#1462](https://github.com/readmeio/markdown/issues/1462)) ([0e202e1](https://github.com/readmeio/markdown/commit/0e202e150e4f6b35623452fc3ebd0ba5249d72c1)), closes [#128679](https://github.com/readmeio/markdown/issues/128679) [#128679](https://github.com/readmeio/markdown/issues/128679)
+* mdx resolves internal links server side ([#1456](https://github.com/readmeio/markdown/issues/1456)) ([5b9702b](https://github.com/readmeio/markdown/commit/5b9702bfe08a6e12feaa649daee23de723d6fef8))
+* **mdxish:** preserve attributes on raw <table> rows/cells ([#1463](https://github.com/readmeio/markdown/issues/1463)) ([98c9dbc](https://github.com/readmeio/markdown/commit/98c9dbc001d23b8f21a8cb130fa38fdd4cd6da9d)), closes [#1403](https://github.com/readmeio/markdown/issues/1403)
+
+## Version 14.2.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** table rendering fixes to reallow legacy variables, MDX error fallback, and headers without row ([#1458](https://github.com/readmeio/markdown/issues/1458)) ([94b587b](https://github.com/readmeio/markdown/commit/94b587b038e358f462b95d5893ac1ec4258872b1))
+
+## Version 14.2.0
+### ✨ New & Improved
+
+* **MDX:** add optional hard breaks option ([#1406](https://github.com/readmeio/markdown/issues/1406)) ([e1d80ef](https://github.com/readmeio/markdown/commit/e1d80eff139ebd5f24132048768cc175d100e51b))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** scope \n unescaping in HTMLBlock content ([#1457](https://github.com/readmeio/markdown/issues/1457)) ([4af0d2d](https://github.com/readmeio/markdown/commit/4af0d2de6a34e38f3c7a04e832b5490e70a215a4))
+
+## Version 14.1.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle lowercase <table> the same way as <Table> ([#1403](https://github.com/readmeio/markdown/issues/1403)) ([5582947](https://github.com/readmeio/markdown/commit/55829472acdf98cc60cdf5626aeea1dbffd25429))
+* **Callout:** only apply callout title style to headings ([#1454](https://github.com/readmeio/markdown/issues/1454)) ([98986fe](https://github.com/readmeio/markdown/commit/98986fe9c0f4d1f228cb8ee46f40927da3b908e3))
+* **mdxish:** render markdown after unclosed block-level HTML in table cells ([#1453](https://github.com/readmeio/markdown/issues/1453)) ([8cf6313](https://github.com/readmeio/markdown/commit/8cf6313a11d47e7035cc2c3c122c2b1006a6314a))
+
+## Version 14.1.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** consecutive magic blocks not rendering if they have html tags in their content ([#1452](https://github.com/readmeio/markdown/issues/1452)) ([4b2ffbf](https://github.com/readmeio/markdown/commit/4b2ffbf43d93fed9dc8d86c82f64cfda6c2006ce))
+
+## Version 14.1.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** gemoji & expressions not rendering in components ([#1449](https://github.com/readmeio/markdown/issues/1449)) ([1d6f315](https://github.com/readmeio/markdown/commit/1d6f315f871b92dfec9f43998d79a35154ec3ebf)), closes [#1447](https://github.com/readmeio/markdown/issues/1447)
+* **mdxish:** move node-level transformers after MDX component re-parse ([#1450](https://github.com/readmeio/markdown/issues/1450)) ([ea23e7e](https://github.com/readmeio/markdown/commit/ea23e7e05d7f5552ca0a37f695df62b4099a7c02)), closes [#1447](https://github.com/readmeio/markdown/issues/1447) [#1449](https://github.com/readmeio/markdown/issues/1449)
+* preserve target attribute on links ([#1443](https://github.com/readmeio/markdown/issues/1443)) ([6ae279e](https://github.com/readmeio/markdown/commit/6ae279e95cccdb9c52eb89a4ad76a010034b0536))
+
+## Version 14.1.1
+### 🛠 Fixes & Updates
+
+* DRY up some test helpers ([#1437](https://github.com/readmeio/markdown/issues/1437)) ([f761248](https://github.com/readmeio/markdown/commit/f7612485e5abe6181bef4a5013df29e79781d748))
+* **mdxish:** preserve multi-paragraph table cells ([#1445](https://github.com/readmeio/markdown/issues/1445)) ([c821b2d](https://github.com/readmeio/markdown/commit/c821b2d77ca3ddaf874c5a8516a69823a915cbb4))
+* use magic block tokenizer when parsing JSX component children ([#1447](https://github.com/readmeio/markdown/issues/1447)) ([51b22a9](https://github.com/readmeio/markdown/commit/51b22a94557a1641657d02fc3f68bde8b53be23b)), closes [#1429](https://github.com/readmeio/markdown/issues/1429)
+
+## Version 14.1.0
+### ⚠ BREAKING CHANGES
+
+* **mdxish:** AST nodes
+- We can't just use safeMode because we still need the inline
+expressions to be parsed as expression nodes, so there still needs to be
+an expression parsing
+
+## 🎯 What does this PR do?
+
+### ✨ New & Improved
+
+* **mdxish:** remove jsx attribute expression preprocessing ([#1429](https://github.com/readmeio/markdown/issues/1429)) ([9545472](https://github.com/readmeio/markdown/commit/954547277fc95719b0fab92510f4103a22c528a3)), closes [#1426](https://github.com/readmeio/markdown/issues/1426)
+
+### 🛠 Fixes & Updates
+
+* add readme components tests ([#1434](https://github.com/readmeio/markdown/issues/1434)) ([72ea080](https://github.com/readmeio/markdown/commit/72ea08051b368506989e293e467e3973da42d8a3)), closes [#1354](https://github.com/readmeio/markdown/issues/1354)
+* **deps:** bump actions/upload-artifact from 5 to 7 ([#1417](https://github.com/readmeio/markdown/issues/1417)) ([3ca6d32](https://github.com/readmeio/markdown/commit/3ca6d322831d257f87565bd3b0e82a39669cf0cb))
+* **mdxish:** legacy glossary syntax in callout title crashing ([#1441](https://github.com/readmeio/markdown/issues/1441)) ([9d1b18b](https://github.com/readmeio/markdown/commit/9d1b18bace4548288abd9c1b9e9937e3d8b7d394))
+
 ## Version 14.0.0
 ### ⚠ BREAKING CHANGES
 

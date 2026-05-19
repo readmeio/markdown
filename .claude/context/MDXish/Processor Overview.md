@@ -18,7 +18,7 @@ It applies four transforms in sequence:
    Inserts blank lines after standalone HTML elements (like `<div>...</div>`) when the next line is regular markdown. CommonMark's HTML flow rules only terminate on blank lines, so without this, the parser would swallow subsequent markdown content into the HTML block token.
 1. **`preprocessJSXExpressions()`** (skipped in safeMode)
 
-   Handles JSX attribute expressions (`href={someVar}`) and unbalanced braces before the MDX expression tokenizer sees them. It evaluates attribute expressions against jsxContext, converts style objects to CSS strings, and escapes stray braces that would cause MDX parse errors.
+   Handles unbalanced braces before the MDX expression tokenizer sees them. Attribute expressions now flow through the tokenizer as `mdxJsxAttributeValueExpression` nodes and are evaluated later by the hast handler; preprocessing only escapes stray braces that would cause MDX parse errors.
 1. **`processSnakeCaseComponent()`**
 
    Remark's parser rejects tag names containing underscores (e.g. `<my_component>`). This step replaces known snake_case component names with safe placeholder names (`<MDXishSnakeCase0>`) and returns a mapping so they can be restored later by the `restoreSnakeCaseComponentNames` transformer in the run phase.

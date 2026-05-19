@@ -1,6 +1,6 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Root as HastRoot } from 'hast';
-import type { Paragraph, Root, RootContent } from 'mdast';
+import type { Paragraph, Root, RootContent, Table, TableCell } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
@@ -96,10 +96,10 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
-        expect(imageNode.caption).toBe('With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used.');
+        expect(imageNode.caption).toBe('With **Default Handling** enabled, the `default` value "Buster" is used.');
         expect(imageNode.children).toHaveLength(1);
 
-        const paragraph = imageNode.children[0] as Paragraph;
+        const paragraph = imageNode.children![0] as Paragraph;
         expect(paragraph.type).toBe('paragraph');
         expect(paragraph.children[0]).toMatchObject({ type: 'text', value: 'With ' });
         expect(paragraph.children[1]).toMatchObject({ type: 'strong' });
@@ -132,6 +132,68 @@ This is a warning message.
         const calloutNode = ast.children[0] as Callout;
         expect(calloutNode.children).toBeDefined();
         expect(calloutNode.children.length).toBeGreaterThan(0);
+      });
+
+      it('should decode HTML numeric entities in Callout icon attribute', () => {
+        const md = `<Callout icon="&#128679;" theme="warn">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('\u{1F6A7}');
+      });
+
+      it('should decode HTML hex entities in Callout icon attribute', () => {
+        const md = `<Callout icon="&#x1F4D8;" theme="info">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('\u{1F4D8}');
+      });
+
+      it('should decode named HTML entities in JSX attributes', () => {
+        const md = `<Callout icon="&amp;" theme="info">
+   text
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.icon).toBe('&');
+      });
+
+      it('should prepend an empty title placeholder when body has no heading', () => {
+        const md = `<Callout icon="📘" theme="info">
+Content here
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.empty).toBe(true);
+        expect(calloutNode.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [{ type: 'text', value: '' }],
+        });
+        expect(calloutNode.children[1]).toMatchObject({
+          type: 'paragraph',
+          children: [{ type: 'text', value: 'Content here' }],
+        });
+      });
+
+      it('should leave children alone when callout already starts with a heading', () => {
+        const md = `<Callout icon="📘" theme="info">
+## My Title
+
+Body content
+</Callout>`;
+        const ast = processWithNewTypes(md);
+
+        const calloutNode = ast.children[0] as Callout;
+        expect(calloutNode.data?.hProperties?.empty).toBe(false);
+        expect(calloutNode.children[0]).toMatchObject({ type: 'heading', depth: 2 });
+        expect(calloutNode.children[1]).toMatchObject({ type: 'paragraph' });
       });
     });
 
@@ -557,6 +619,55 @@ Some callout content
       expect(imageNode.alt).toBe('Alt text');
     });
 
+  });
+
+  describe('magic-block image promotion in tableCells (RM-16543)', () => {
+    const cellMd = (cell: string) => `[block:parameters]
+{
+  "data": {
+    "h-0": "Header",
+    "0-0": ${JSON.stringify(cell)}
+  },
+  "cols": 1,
+  "rows": 1,
+  "align": ["left"]
+}
+[/block]`;
+
+    const findCell = (root: Root): TableCell => {
+      const table = root.children.find(c => c.type === 'table') as Table;
+      const bodyRow = table.children[1];
+      return bodyRow.children[0];
+    };
+
+    it('keeps `![](url)` alone in a tableCell as inline `image` (no image-block promotion)', () => {
+      // Magic-block image syntax in tableCells stays inline. Authors who want a
+      // captionable figure use `<Image caption="…" />` JSX instead.
+      const ast = processWithNewTypes(cellMd('![](https://example.com/img.png)'));
+      const cell = findCell(ast);
+      expect(cell.children).toHaveLength(1);
+      expect(cell.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` mixed with other inline content in a tableCell as inline `image`', () => {
+      const ast = processWithNewTypes(cellMd('![](https://example.com/img.png)<br><br>The **bold** word.'));
+      const cell = findCell(ast);
+      // Image stays as inline `image` so downstream consumers can put it in a paragraph.
+      expect(cell.children[0].type).toBe('image');
+      expect(cell.children.some(c => c.type === 'strong')).toBe(true);
+    });
+
+    it('still promotes `![](url)` at root level to image-block', () => {
+      const ast = processWithNewTypes('![](https://example.com/img.png)');
+      expect(ast.children[0].type).toBe(NodeTypes.imageBlock);
+    });
+
+    it('keeps `![](url)` in a GFM tableCell as inline `image`', () => {
+      const md = '| Header |\n| :-- |\n| ![](https://example.com/img.png)This is a cat |';
+      const ast = processWithNewTypes(md);
+      const cell = findCell(ast);
+      expect(cell.children[0].type).toBe('image');
+    });
   });
 
   describe('HTML figure reassembly', () => {

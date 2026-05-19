@@ -3,7 +3,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 
-import mdxishComponentBlocks from '../processor/transform/mdxish/mdxish-component-blocks';
+import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import { isMDXElement } from '../processor/utils';
 
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
@@ -16,7 +16,7 @@ const tags = (doc: string) => {
   const processor = remark()
     .data('micromarkExtensions', [magicBlock(), mdxComponent()])
     .data('fromMarkdownExtensions', [magicBlockFromMarkdown(), mdxComponentFromMarkdown()])
-    .use(mdxishComponentBlocks);
+    .use(mdxishMdxComponentBlocks);
   const tree = processor.parse(doc);
 
   visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {

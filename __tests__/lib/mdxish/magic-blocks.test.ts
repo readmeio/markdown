@@ -1,8 +1,9 @@
-import type { Element, Text } from 'hast';
+import type { Element, Parent, RootContent, Text } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
+import { findElementByTagName, parseMdxish } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -757,6 +758,71 @@ ${JSON.stringify(
       expect(underscoreEm).toBeDefined();
       expect(underscoreEm.tagName).toBe('em');
     });
+
+    it('should render markdown in a cell if it is under an unclosed HTML tag', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<div>**strong**',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      const body = findElementByTagName(ast, 'strong');
+      expect(body).not.toBeNull();
+    });
+
+    it('should render markdown after an unclosed block-level HTML tag with multiple inline marks', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<section>**bold** and _em_ and `code`',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      expect(findElementByTagName(ast, 'strong')).not.toBeNull();
+      expect(findElementByTagName(ast, 'em')).not.toBeNull();
+      expect(findElementByTagName(ast, 'code')).not.toBeNull();
+    });
+
+    it('should leave bare inline HTML tags untouched (no mangling to <i></i>)', () => {
+      const md = `[block:parameters]
+${JSON.stringify(
+  {
+    data: {
+      'h-0': 'Header',
+      '0-0': '<i>italic text</i>',
+    },
+    cols: 1,
+    rows: 1,
+  },
+  null,
+  2,
+)}
+[/block]`;
+
+      const ast = mdxish(md);
+      const i = findElementByTagName(ast, 'i');
+      expect(i).not.toBeNull();
+      expect(i!.children.length).toBeGreaterThan(0);
+    });
   });
 
   describe('recipe block', () => {
@@ -1008,7 +1074,7 @@ ${JSON.stringify(
       const ast = mdxish(md);
       const calloutElement = ast.children[0] as Element;
 
-      expect(calloutElement.properties.empty).toBe('true');
+      expect(calloutElement.properties.empty).toBe(true);
 
       // Should have 2 children: empty heading placeholder + body paragraph
       expect(calloutElement.children).toHaveLength(2);
@@ -1386,6 +1452,165 @@ ${JSON.stringify(
 
       const nestedUl = secondLi.children.find((c): c is Element => c.type === 'element' && c.tagName === 'ul');
       expect(nestedUl).toBeDefined();
+    });
+
+    it('should lift two consecutive magic blocks under a list item out of the paragraph in source order', () => {
+      const md = `- Item two
+[block:callout]
+{"type":"info","title":"first","body":"one"}
+[/block]
+[block:callout]
+{"type":"info","title":"second","body":"two"}
+[/block]`;
+
+      const tree = parseMdxish(md);
+
+      expect(tree.children).toHaveLength(1);
+      const list = tree.children[0] as RootContent;
+      expect(list.type).toBe('list');
+      expect((list as Parent).children).toHaveLength(1);
+
+      const li = (list as Parent).children[0] as Parent;
+      // listItem holds the leading paragraph and the two lifted Callouts in source order.
+      expect(li.children).toHaveLength(3);
+      expect(li.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'Item two\n' }],
+      });
+      expect(li.children[1]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        children: [
+          { type: 'heading', depth: 3, children: [{ type: 'text', value: 'first' }] },
+          { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+        ],
+      });
+      expect(li.children[2]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'Callout',
+        children: [
+          { type: 'heading', depth: 3, children: [{ type: 'text', value: 'second' }] },
+          { type: 'paragraph', children: [{ type: 'text', value: 'two' }] },
+        ],
+      });
+    });
+
+    it('should place trailing text after a magic block (not before it) when both share a list-item paragraph', () => {
+      const md = `- Item two
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+trailing text`;
+
+      const tree = parseMdxish(md);
+      expect(tree.children[0]).toMatchObject({
+        type: 'list',
+        children: [
+          {
+            type: 'listItem',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'Item two\n' }],
+              },
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Callout',
+              },
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: '\ntrailing text' }],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should lift mixed block types (callout + html-block) consecutively under a list item', () => {
+      const md = `- Item
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+[block:html]
+{"html":"<div>raw</div>"}
+[/block]`;
+
+      const tree = parseMdxish(md);
+      const li = (tree.children[0] as Parent).children[0] as Parent;
+
+      expect(li.children).toHaveLength(3);
+      expect(li.children[1]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Callout' });
+      expect(li.children[2]).toMatchObject({ type: 'html-block' });
+    });
+
+    it('should render mix of magic blocks and text interleaved under a list item', () => {
+      const md = `- first line
+[block:callout]
+{"type":"info","title":"first","body":"one"}
+[/block]
+second line
+[block:image]
+{"images":[{"image":["https://example.com/image.png",null,"Image"]}]}
+[/block]
+third line
+[block:image]
+{"images":[{"image":["https://example.com/image.png",null,"Image"]}]}
+[/block]
+fourth line
+`;
+
+      const ast = parseMdxish(md);
+      expect(ast.children[0]).toMatchObject({
+        type: 'list',
+        children: [
+          {
+            type: 'listItem',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ type: 'text', value: 'first line\n' }],
+              },
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Callout',
+              },
+              {
+                type: 'paragraph',
+                children: [
+                  { type: 'text', value: '\nsecond line\n' },
+                  { type: 'image', url: 'https://example.com/image.png' },
+                  { type: 'text', value: '\nthird line\n' },
+                  { type: 'image', url: 'https://example.com/image.png' },
+                  { type: 'text', value: '\nfourth line' },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+  });
+
+  describe('lifting magic blocks out of paragraphs at root', () => {
+    it('should split a paragraph around a lifted block, preserving leading and trailing text', () => {
+      const md = `before text
+[block:callout]
+{"type":"info","title":"hi","body":"body"}
+[/block]
+after text`;
+
+      const tree = parseMdxish(md);
+      expect(tree.children).toHaveLength(3);
+      expect(tree.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'before text' }],
+      });
+      expect(tree.children[1]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Callout' });
+      expect(tree.children[2]).toMatchObject({
+        type: 'paragraph',
+        children: [{ type: 'text', value: 'after text' }],
+      });
     });
   });
 
@@ -1944,6 +2169,182 @@ asdasdasd
       const ast = mdxish(apiHeader('[link](https://example.com)'));
       const heading = ast.children[0] as Element;
       expect(toHtml(heading)).toContain('<a href="https://example.com">link</a>');
+    });
+  });
+
+  describe('magic blocks inside JSX components', () => {
+    it('should parse image block inside a Tabs component child', () => {
+      const md = `
+<Tabs>
+<Tab title="Foo">
+
+[block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"],"align":"left","sizing":"50%"}]}[/block]
+
+</Tab>
+</Tabs>
+`;
+      const ast = mdxish(md);
+      const tabs = ast.children[0] as Element;
+      expect(tabs.tagName).toBe('Tabs');
+
+      const tab = tabs.children[0] as Element;
+      expect(tab.tagName).toBe('Tab');
+
+      const img = toHtml(tab);
+      expect(img).toContain('<img');
+      expect(img).toContain('example.com/image.png');
+      expect(img).not.toContain('[block:image]');
+    });
+
+    it('should parse image block indented under a list item (column 3) inside a Tabs component', () => {
+      const md = `<Tabs>
+<Tab title="Foo">
+3. Baz
+   [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+</Tab>
+</Tabs>`;
+      const ast = mdxish(md);
+
+      expect(ast.children[0]).toMatchObject({
+        type: 'element',
+        tagName: 'Tabs',
+        children: [
+          {
+            type: 'element',
+            tagName: 'Tab',
+            properties: { title: 'Foo' },
+            children: [
+              {
+                type: 'element',
+                tagName: 'ol',
+                properties: { start: 3 },
+                children: [
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                  {
+                    type: 'element',
+                    tagName: 'li',
+                    children: [
+                      {
+                        type: 'text',
+                        value: 'Baz\n',
+                      },
+                      {
+                        type: 'element',
+                        tagName: 'img',
+                        properties: { src: 'https://example.com/image.png', alt: 'Alt text', title: '' },
+                      },
+                      {
+                        type: 'text',
+                        value: '\n',
+                      },
+                    ],
+                  },
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should parse image block inside a blockquote inside a Tabs component', () => {
+      const md = `<Tabs>
+<Tab title="Foo">
+
+> [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+
+</Tab>
+</Tabs>`;
+      const ast = mdxish(md);
+
+      expect(ast.children[0]).toMatchObject({
+        type: 'element',
+        tagName: 'Tabs',
+        children: [
+          {
+            type: 'element',
+            tagName: 'Tab',
+            properties: { title: 'Foo' },
+            children: [
+              {
+                type: 'element',
+                tagName: 'blockquote',
+                children: [
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                  {
+                    type: 'element',
+                    tagName: 'img',
+                    properties: { src: 'https://example.com/image.png', alt: 'Alt text', title: '' },
+                  },
+                  {
+                    type: 'text',
+                    value: '\n',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('should parse image block indented under a list item inside a Callout component', () => {
+      const md = `<Callout icon="📘">
+
+3. Baz
+
+   [block:image]{"images":[{"image":["https://example.com/image.png","","Alt text"]}]}[/block]
+
+</Callout>`;
+      const ast = mdxish(md);
+      const callout = ast.children[0] as Element;
+      expect(callout.tagName).toBe('Callout');
+
+      const html = toHtml(callout);
+      expect(html).toContain('<img');
+      expect(html).toContain('example.com/image.png');
+      expect(html).not.toContain('[block:image]');
+    });
+  });
+
+  describe('multiple magic blocks', () => {
+    it('should parse consecutive magic blocks whose JSON bodies contain HTML tags', () => {
+      const md = `
+[block:parameters]
+{
+  "data": {
+    "h-0": "Heading",
+    "0-0": "<li>List item<li>"
+  },
+  "cols": 1,
+  "rows": 1
+}
+[/block]
+
+
+[block:html]
+{
+  "html": "<table><tbody><tr><td><ul><li>a</li><li>b</li></ul></td></tr></tbody></table>"
+}
+[/block]
+`;
+      const ast = mdxish(md);
+
+      const tableNode = findElementByTagName(ast, 'table');
+      expect(tableNode).not.toBeNull();
+
+      const htmlBlockNode = findElementByTagName(ast, 'html-block');
+      expect(htmlBlockNode).not.toBeNull();
     });
   });
 });

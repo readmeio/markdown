@@ -5,6 +5,7 @@ import { compileSync as mdxCompileSync } from '@mdx-js/mdx';
 import deepmerge from 'deepmerge';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
@@ -22,17 +23,23 @@ import { rehypePlugins as defaultRehypePlugins } from './ast-processor';
 export type CompileOpts = CompileOptions & {
   components?: Record<string, string>;
   copyButtons?: boolean;
+  hardBreaks?: boolean;
   missingComponents?: 'ignore' | 'throw';
   useTailwind?: boolean;
 };
 
 const sanitizeSchema = deepmerge(defaultSchema, {
-  protocols: ['doc', 'ref', 'blog', 'changelog', 'page'],
+  attributes: {
+    a: ['target'],
+  },
+  protocols: {
+    href: ['doc', 'ref', 'blog', 'changelog', 'page'],
+  },
 });
 
 const compile = (
   text: string,
-  { components = {}, missingComponents, copyButtons, useTailwind, ...opts }: CompileOpts = {},
+  { components = {}, missingComponents, copyButtons, useTailwind, hardBreaks, ...opts }: CompileOpts = {},
 ) => {
   // Destructure at runtime to avoid circular dependency issues
   const { codeTabsTransformer, ...transforms } = defaultTransforms;
@@ -40,6 +47,7 @@ const compile = (
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
+    ...(hardBreaks ? [remarkBreaks] : []),
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
     [

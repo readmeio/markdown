@@ -4,7 +4,7 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import mdxishInlineComponents from '../../processor/transform/mdxish/mdxish-inline-components';
+import mdxishInlineComponents from '../../processor/transform/mdxish/components/inline-mdx-blocks';
 import { collectNodes } from '../helpers';
 
 /**
@@ -25,7 +25,7 @@ const getAttr = (node: MdxJsxTextElement, name: string): string | null | undefin
   return attr && 'value' in attr ? (attr.value as string | null) : undefined;
 };
 
-describe('mdxish-inline-components', () => {
+describe('inline MDX blocks transformation', () => {
   describe('basic Anchor transformation', () => {
     it('should transform a simple Anchor to mdxJsxTextElement', () => {
       const markdown = '<Anchor href="https://example.com">Link</Anchor>';
@@ -106,7 +106,7 @@ describe('mdxish-inline-components', () => {
       const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(2);
       const hrefs = nodes.map(n => getAttr(n, 'href')).sort();
-      expect(hrefs).toEqual(['https://a.com', 'https://b.com']);
+      expect(hrefs).toStrictEqual(['https://a.com', 'https://b.com']);
     });
 
     it('should transform adjacent Anchors without text between', () => {
@@ -522,7 +522,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
 
       const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
-      expect(getAttr(nodes[0], 'href')).toBe('javascript:void(0)');
+      expect(getAttr(nodes[0], 'href')).toBe('javascript:void(0)'); // eslint-disable-line no-script-url
     });
 
     it('should handle Anchor with mailto URL', () => {
