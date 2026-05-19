@@ -14,7 +14,7 @@ const Favicon = ({ src, alt = 'favicon', ...attr }: FaviconProps) => (
 interface EmbedProps {
   favicon?: string;
   html?: string;
-  iframe?: boolean;
+  iframe?: boolean | string;
   image?: string;
   lazy?: boolean;
   providerName?: string;
@@ -23,6 +23,10 @@ interface EmbedProps {
   typeOfEmbed?: string;
   url: string;
 }
+
+// Embed types we trust to be iframe-renderable directly from the persisted url.
+// Editors that produce these embeds are responsible for normalizing the url to its iframe-ready form.
+const IFRAME_DERIVABLE_TYPES = new Set(['youtube', 'jsfiddle', 'pdf']);
 
 const Embed = ({
   lazy = true,
@@ -34,9 +38,11 @@ const Embed = ({
   iframe,
   image,
   favicon,
+  typeOfEmbed,
   ...attrs
 }: EmbedProps) => {
-  if (typeof iframe !== 'boolean') iframe = iframe === 'true';
+  const explicitOptOut = iframe === false || iframe === 'false';
+  if (typeof iframe !== 'boolean') iframe = iframe === 'true' || typeOfEmbed === 'iframe';
 
   if (html) {
     try {
@@ -52,6 +58,11 @@ const Embed = ({
   }
 
   if (iframe) {
+    return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} title={title} />;
+  }
+
+  // Fall back to a direct iframe for URL-derivable embed types when html is missing.
+  if (!html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed)) {
     return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} title={title} />;
   }
 
