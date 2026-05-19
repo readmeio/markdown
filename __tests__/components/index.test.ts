@@ -31,7 +31,7 @@ describe('Components', () => {
     ({ container } = render(React.createElement(component)));
 
     expect(container.innerHTML).toMatchInlineSnapshot(
-      `"<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p class="callout-heading empty"></p><p>Callout with no title.</p></blockquote>"`,
+      '"<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p class="callout-heading empty"></p><p>Callout with no title.</p></blockquote>"',
     );
 
     cleanup();
@@ -53,6 +53,31 @@ describe('Components', () => {
         favicon={null}
         iframe={true}
         height="550"
+      />`,
+      iframeFromType: `<Embed
+        title=""
+        typeOfEmbed="iframe"
+        url="https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1sLos+Angeles"
+      />`,
+      youtubeFromType: `<Embed
+        title=""
+        typeOfEmbed="youtube"
+        url="https://www.youtube.com/embed/Ui6wtK1WkQo"
+      />`,
+      pdfFromType: `<Embed
+        title=""
+        typeOfEmbed="pdf"
+        url="https://example.com/doc.pdf"
+      />`,
+      jsfiddleFromType: `<Embed
+        title=""
+        typeOfEmbed="jsfiddle"
+        url="https://jsfiddle.net/s6rhnpv7/embedded/"
+      />`,
+      githubFromTypeNoHtml: `<Embed
+        title=""
+        typeOfEmbed="github"
+        url="https://gist.github.com/foo/abc123"
       />`,
       meta: `<Embed
         html={false}
