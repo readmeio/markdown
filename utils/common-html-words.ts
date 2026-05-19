@@ -91,3 +91,25 @@ export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'html-blo
  * Uses the html-tags package, converted to a Set<string> for efficient lookups.
  */
 export const STANDARD_HTML_TAGS = new Set(htmlTags) as Set<string>;
+
+/**
+ * HTML void elements — elements that have no closing tag and no children.
+ *
+ * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+ */
+export const HTML_VOID_ELEMENTS = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'param',
+  'source',
+  'track',
+  'wbr',
+]);

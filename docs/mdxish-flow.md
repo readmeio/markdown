@@ -43,17 +43,18 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  STEP 3: Pre-process JSX Expressions                                        │
 │  ─────────────────────────────────────────────────────────────────────────  │
-│  preprocessJSXExpressions(content, jsxContext)                              │
+│  preprocessJSXExpressions(content)                                          │
 │                                                                             │
 │  0. Protect HTMLBlock content (base64 encode to prevent parser issues)      │
 │  1. Extract & protect code blocks (```...```) and inline code (`...`)       │
-│  2. Remove JSX comments: {/* comment */} → ""                               │
-│  3. Evaluate attribute expressions: href={baseUrl} → href="https://..."     │
-│  4. Escape unbalanced braces to prevent MDX expression parsing errors       │
-│  5. Restore protected code blocks                                           │
+│  2. Escape unbalanced braces to prevent MDX expression parsing errors       │
+│  3. Restore protected code blocks                                           │
 │                                                                             │
-│  Note: Inline expressions ({5 * 10}) are now parsed by mdast-util-mdx-      │
-│  expression and evaluated in the AST transformer (evaluateExpressions)      │
+│  Note: JSX attribute expressions (href={baseUrl}) are NOT rewritten here.   │
+│  They flow through the mdxComponent tokenizer as                            │
+│  `mdxJsxAttributeValueExpression` nodes and are evaluated at the hast       │
+│  handler step. Inline expressions ({5 * 10}) are parsed by mdast-util-mdx-  │
+│  expression and evaluated by the AST transformer (evaluateExpressions).     │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
@@ -132,15 +133,15 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 └────────────────────┘                │                             │
         │                             │                             │
         ▼                             │                             │
-┌────────────────────┐                │                             │
-│mdxishComponentBlocks                │                             │
-│  ───────────────── │                │                             │
-│  Re-wraps HTML     │                │                             │
-│  blocks like       │                │                             │
-│  <Callout>text     │                │                             │
-│  </Callout> into   │                │                             │
-│  mdxJsxFlowElement │                │                             │
-└────────────────────┘                │                             │
+┌────────────────────────┐            │                             │
+│mdxishMdxComponentBlocks│            │                             │
+│  ────────────────────  │            │                             │
+│  Re-wraps HTML         │            │                             │
+│  blocks like           │            │                             │
+│  <Callout>text         │            │                             │
+│  </Callout> into       │            │                             │
+│  mdxJsxFlowElement     │            │                             │
+└────────────────────────┘            │                             │
         │                             │                             │
         ▼                             │                             │
 ┌─────────────────────────┐           │                             │
@@ -183,11 +184,12 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 ┌─────────────────────┐               │                             │
 │evaluateExpressions  │               │                             │
 │  ─────────────────  │               │                             │
-│  Evaluates MDX      │               │                             │
+│  Evaluates self-    │               │                             │
+│  contained MDX      │               │                             │
 │  expressions        │               │                             │
 │  ({expression})     │               │                             │
-│  using jsxContext   │               │                             │
-│  and replaces with  │               │                             │
+│  (e.g. `{1+1}`) and │               │                             │
+│  replaces with      │               │                             │
 │  evaluated values   │               │                             │
 └─────────────────────┘               │                             │
         │                             │                             │
@@ -308,7 +310,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | Phase | Plugin | Purpose |
 |-------|--------|---------|
 | Pre-process | `normalizeTableSeparator` | Fix malformed table separators (`|: ---`, `|::---` → `| :---`) |
-| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, evaluate JSX attribute expressions (`href={baseUrl}`), escape unbalanced braces |
+| Pre-process | `preprocessJSXExpressions` | Protect HTMLBlock content, escape unbalanced braces (JSX attribute expressions are no longer rewritten — they're evaluated at the hast handler step) |
 | Pre-process | `processSnakeCaseComponent` | Replace snake_case component names with parser-safe placeholders |
 | MDAST | `remarkParse` + micromark extensions | Markdown → AST with `magicBlock()` and `mdxExpression()` (text construct only) tokenizers |
 | MDAST | `remarkFrontmatter` | Parse YAML frontmatter (metadata) |
@@ -316,11 +318,11 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 | MDAST | `magicBlockTransformer` | Transform parsed `magicBlock` nodes into final MDAST nodes (images, callouts, etc.) |
 | MDAST | `imageTransformer` | Transform images to image blocks, preserve magic block properties |
 | MDAST | `defaultTransformers` | Transform callouts, code tabs, gemojis, embeds |
-| MDAST | `mdxishComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
+| MDAST | `mdxishMdxComponentBlocks` | PascalCase HTML → `mdxJsxFlowElement` |
 | MDAST | `restoreSnakeCaseComponentNames` | Restore snake_case component names from placeholders |
 | MDAST | `mdxishTables` | `<Table>` JSX → markdown `table` nodes, re-parse markdown in cells |
 | MDAST | `mdxishHtmlBlocks` | `<HTMLBlock>{`...`}</HTMLBlock>` → `html-block` nodes |
-| MDAST | `evaluateExpressions` | Evaluate MDX expressions (`{expression}`) using `jsxContext` |
+| MDAST | `evaluateExpressions` | Evaluate self-contained MDX expressions (e.g. `{1+1}`, `{"hi".toUpperCase()}`); unresolved identifiers stay as literal text |
 | MDAST | `variablesTextTransformer` | `{user.*}` → `<Variable>` nodes (regex-based) |
 | MDAST | `tailwindTransformer` | Process Tailwind classes (conditional, if `useTailwind`) |
 | MDAST | `remarkGfm` | GitHub Flavored Markdown: tables, strikethrough, task lists, autolinks, footnotes |
@@ -349,7 +351,7 @@ The `mdxish` function processes markdown content with MDX-like syntax support, d
 │  magicBlockTransformer       ← Transform magicBlock nodes → MDAST │
 │  imageTransformer            ← Images → imageBlock nodes          │
 │  rehypeMdxishComponents      ← Core component detection/transform │
-│  mdxishComponentBlocks       ← PascalCase HTML → MDX elements     │
+│  mdxishMdxComponentBlocks    ← PascalCase HTML → MDX elements     │
 │  restoreSnakeCaseComponentNames ← Restore snake_case components   │
 │  mdxishTables                ← <Table> JSX → markdown tables      │
 │  mdxishHtmlBlocks            ← <HTMLBlock> → html-block nodes     │

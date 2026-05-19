@@ -1,5 +1,6 @@
 import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
 import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
+import type { Element } from 'hast';
 
 import Variable from '@readme/variable';
 import React from 'react';
@@ -8,45 +9,7 @@ import { unified } from 'unified';
 
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
-import { JSON_VALUE_MARKER } from '../../../processor/transform/mdxish/preprocess-jsx-expressions';
 import makeUseMDXComponents from '../makeUseMdxComponents';
-
-/**
- * Parse JSON-marked string values in props back to their original types.
- * This handles arrays and objects that were serialized during JSX preprocessing.
- */
-function parseJsonProps(props: Record<string, unknown> | null): Record<string, unknown> | null {
-  if (!props) return props;
-
-  const parsed: Record<string, unknown> = {};
-  Object.entries(props).forEach(([key, value]) => {
-    if (typeof value === 'string' && value.startsWith(JSON_VALUE_MARKER)) {
-      try {
-        parsed[key] = JSON.parse(value.slice(JSON_VALUE_MARKER.length));
-      } catch {
-        // If parsing fails, use the value without the marker
-        parsed[key] = value.slice(JSON_VALUE_MARKER.length);
-      }
-    } else {
-      parsed[key] = value;
-    }
-  });
-  return parsed;
-}
-
-/**
- * Custom createElement wrapper that parses JSON-marked string props.
- * This is needed because rehype-react converts HAST to React, but complex
- * types (arrays/objects) get serialized to strings during markdown parsing.
- */
-function createElementWithJsonProps(
-  type: React.ElementType,
-  props: Record<string, unknown> | null,
-  ...children: React.ReactNode[]
-): React.ReactElement {
-  const parsedProps = parseJsonProps(props);
-  return React.createElement(type, parsedProps, ...children);
-}
 
 export interface RenderOpts {
   baseUrl?: string;
@@ -91,13 +54,41 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
   return result;
 }
 
+/**
+ * Shape that rehype-react v6 produces when `passNode: true` is set: `props.node`
+ * points at the original hast element for any node matched by the components map.
+ * The rest of the props are whatever hast-to-hyperscript derived from attributes.
+ */
+type PropsWithHastNode = Record<string, unknown> & { node?: Element };
+
+/**
+ * Custom React.createElement wrapper that recovers real JS prop values for
+ * custom components. rehype-react v6 uses hast-to-hyperscript, which stringifies
+ * array-valued hast properties to space-separated strings (for className-style
+ * semantics). That breaks any component prop that is genuinely an array. With
+ * `passNode: true` we get the original hast node in `props.node` for components
+ * and can read the raw properties directly.
+ */
+function createElementPreservingHastProps(
+  type: React.ElementType,
+  props: PropsWithHastNode | null,
+  ...children: React.ReactNode[]
+): React.ReactElement {
+  if (props?.node?.properties) {
+    const { node, ...rest } = props;
+    return React.createElement(type, { ...rest, ...node.properties }, ...children);
+  }
+  return React.createElement(type, props, ...children);
+}
+
 /** Create a rehype-react processor */
 export function createRehypeReactProcessor(components: Record<string, React.ComponentType>) {
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
-    createElement: createElementWithJsonProps,
+    createElement: createElementPreservingHastProps,
     Fragment: React.Fragment,
     components,
+    passNode: true,
   });
 }
 

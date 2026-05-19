@@ -1,23 +1,7 @@
-import type { Element, Root, RootContent, Text } from 'hast';
+import type { Root, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-type HastNode = Root | RootContent;
-
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node;
-  }
-
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-
-  return null;
-}
+import { findElementByTagName } from '../../helpers';
 
 function getCodeText(tree: Root): string {
   const code = findElementByTagName(tree, 'code');
@@ -133,5 +117,16 @@ const name = 'Bearer ${variable}';
     });
 
     expect(getCodeText(tree)).toBe('{user.secret}');
+  });
+
+  it('does not resolve Mermaid sequence arrows as legacy variables', () => {
+    const tree = mdxish(`\`\`\`mermaid
+sequenceDiagram
+  Client <<-->> Server: Bidirectional dotted
+  Client <<->> Server: Bidirectional solid
+\`\`\``);
+
+    expect(getCodeText(tree)).toContain('Client <<-->> Server: Bidirectional dotted');
+    expect(getCodeText(tree)).toContain('Client <<->> Server: Bidirectional solid');
   });
 });

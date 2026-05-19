@@ -1,4 +1,5 @@
 import type { Callout } from '../../types';
+import type { Element } from 'hast';
 import type { Blockquote, Heading, List, Paragraph } from 'mdast';
 
 import remarkGfm from 'remark-gfm';
@@ -7,7 +8,9 @@ import { unified } from 'unified';
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../index';
+import { mdxish } from '../../lib/mdxish';
 import calloutTransformer from '../../processor/transform/callouts';
+import { findAllElementsByTagName, findElementByTagName } from '../helpers';
 
 const mdxishMdast = (md: string) => {
   const processor = unified().use(remarkParse).use(remarkGfm).use(calloutTransformer, { isMdxish: true });
@@ -763,6 +766,51 @@ describe('callouts transformer', () => {
           child.children?.some(c => c.type === 'image' && c.url === 'https://example.com/image.png'),
       );
       expect(hasImage).toBe(true);
+    });
+  });
+
+  describe('in mdxish', () => {
+    describe('inside MDX/JSX components', () => {
+      it('converts a blockquote callout inside <Tabs><Tab> to a <Callout> element', () => {
+        const tree = mdxish('<Tabs>\n<Tab title="x">\n\n> 📘 Note\n>\n> body text\n\n</Tab>\n</Tabs>');
+
+        const callout = findElementByTagName(tree, 'Callout');
+        expect(callout).toMatchObject({
+          type: 'element',
+          tagName: 'Callout',
+          properties: { icon: '📘', theme: 'info' },
+        });
+
+        // Title becomes <h3> inside the Callout
+        const heading = findElementByTagName(callout as Element, 'h3');
+        expect(heading).toMatchObject({
+          type: 'element',
+          tagName: 'h3',
+          children: [{ type: 'text', value: 'Note' }],
+        });
+      });
+
+      it('converts a blockquote callout inside a list item inside <Tabs>', () => {
+        const tree = mdxish(
+          '<Tabs>\n<Tab title="x">\n\n1. Step\n\n   > ❗️ Warning\n   >\n   > careful\n\n</Tab>\n</Tabs>',
+        );
+
+        const callout = findElementByTagName(tree, 'Callout');
+        expect(callout).toMatchObject({
+          type: 'element',
+          tagName: 'Callout',
+          properties: { icon: '❗️', theme: 'error' },
+        });
+      });
+
+      it('converts a blockquote callout inside another <Callout> wrapper', () => {
+        const tree = mdxish('<Callout icon="📘">\n\n> ❗️ Inner\n>\n> body\n\n</Callout>');
+
+        const callouts = findAllElementsByTagName(tree, 'Callout');
+        expect(callouts).toHaveLength(2);
+        expect(callouts[0].properties).toMatchObject({ icon: '📘' });
+        expect(callouts[1].properties).toMatchObject({ icon: '❗️', theme: 'error' });
+      });
     });
   });
 });

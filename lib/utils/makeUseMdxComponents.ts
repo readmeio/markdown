@@ -15,6 +15,7 @@ const makeUseMDXComponents = (more: ReturnType<UseMdxComponents> = {}): UseMdxCo
   const components = {
     ...Components,
     Variable,
+    a: Components.Anchor,
     code: Components.Code,
     embed: Components.Embed,
     img: Components.Image,

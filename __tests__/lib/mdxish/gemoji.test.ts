@@ -1,4 +1,8 @@
-import { mix } from '../../../lib';
+import type { Element } from 'hast';
+
+import { toHtml } from 'hast-util-to-html';
+
+import { mix, mdxish } from '../../../lib';
 
 describe('gemoji transformer', () => {
   it('should transform shortcodes back to emojis', () => {
@@ -393,6 +397,44 @@ describe('gemoji transformer', () => {
       expect(mix(md)).toMatchInlineSnapshot(
         '"<Callout icon="📘" theme="info"><h3 id="-">😁 <i class="fa-regular fa-rss-square"></i></h3><p>Hello <i class="fa-regular fa-rss-square"></i></p></Callout>"',
       );
+    });
+  });
+
+  describe('inside mdxish JSX components', () => {
+    it('should render emoji shortcodes inside a Tabs component child', () => {
+      const md = `
+<Tabs>
+<Tab title="Foo">
+
+Hello :grin::grin:
+
+</Tab>
+</Tabs>
+`;
+      const ast = mdxish(md);
+      const tabs = ast.children[0] as Element;
+      expect(tabs.tagName).toBe('Tabs');
+
+      const html = toHtml(tabs);
+      expect(html).toContain('😁😁');
+      expect(html).not.toContain(':grin:');
+    });
+
+    it('should render emoji shortcodes inside a Callout component', () => {
+      const md = `
+<Callout icon="📘">
+
+Hello :grin::grin:
+
+</Callout>
+`;
+      const ast = mdxish(md);
+      const callout = ast.children[0] as Element;
+      expect(callout.tagName).toBe('Callout');
+
+      const html = toHtml(callout);
+      expect(html).toContain('😁😁');
+      expect(html).not.toContain(':grin:');
     });
   });
 

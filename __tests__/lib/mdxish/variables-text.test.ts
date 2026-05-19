@@ -1,34 +1,7 @@
-import type { Element, Root, RootContent, Text } from 'hast';
+import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-type HastNode = Root | RootContent;
-
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node as Element;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-  return null;
-}
-
-function findAllElementsByTagName(node: HastNode, tagName: string): Element[] {
-  const results: Element[] = [];
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    results.push(node as Element);
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      results.push(...findAllElementsByTagName(child, tagName));
-    });
-  }
-  return results;
-}
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('variablesTextTransformer', () => {
   describe('mdxTextExpression nodes (safeMode: false)', () => {

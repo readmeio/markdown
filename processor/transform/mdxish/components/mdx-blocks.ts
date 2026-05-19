@@ -2,26 +2,12 @@ import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
+import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../lib/constants';
-import { emptyTaskListItemFromMarkdown } from '../../../lib/mdast-util/empty-task-list-item';
-import { legacyVariableFromMarkdown } from '../../../lib/mdast-util/legacy-variable';
-import { mdxComponentFromMarkdown } from '../../../lib/mdast-util/mdx-component';
-import { legacyVariable } from '../../../lib/micromark/legacy-variable';
-import { mdxComponent } from '../../../lib/micromark/mdx-component';
+import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
-const pascalCaseTagPattern = /^<([A-Z][A-Za-z0-9_]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>([\s\S]*)?$/;
-const tagAttributePattern =
-  /([a-zA-Z_:][-a-zA-Z0-9_:.]*)(?:\s*=\s*(\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`|\{(?:[^{}"'`]|"[^"]*"|'[^']*'|`[^`]*`)*\})*\}|"[^"]*"|'[^']*'|[^\s"'>]+))?/g;
-
-const inlineMdProcessor = unified()
-  .data('micromarkExtensions', [mdxComponent(), legacyVariable()])
-  .data('fromMarkdownExtensions', [mdxComponentFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown()])
-  .use(remarkParse)
-  .use(remarkGfm);
+export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 /**
  * Reduce leading whitespace on all lines just enough to prevent
@@ -52,54 +38,16 @@ function safeDeindent(text: string): string {
  * Dedents the content first to prevent indented component content
  * (from nested components) from being treated as code blocks.
  */
-const parseMdChildren = (value: string): RootContent[] => {
-  const parsed = inlineMdProcessor.parse(safeDeindent(value).trim());
+const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
+  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
   return parsed.children || [];
-};
-
-/**
- * Convert raw attribute string into mdxJsxAttribute entries.
- * Handles both key-value attributes (theme="info") and boolean attributes (empty).
- */
-export const parseAttributes = (raw: string): MdxJsxAttribute[] => {
-  const attributes: MdxJsxAttribute[] = [];
-  const attrString = raw.trim();
-  if (!attrString) return attributes;
-
-  tagAttributePattern.lastIndex = 0;
-  let match: RegExpExecArray | null = tagAttributePattern.exec(attrString);
-  while (match !== null) {
-    const [, attrName, attrValue] = match;
-    const value = attrValue ? attrValue.replace(/^['"]|['"]$/g, '') : null;
-    attributes.push({ type: 'mdxJsxAttribute', name: attrName, value });
-    match = tagAttributePattern.exec(attrString);
-  }
-
-  return attributes;
-};
-
-/**
- * Parse an HTML tag string into structured data.
- */
-export const parseTag = (value: string) => {
-  const match = value.match(pascalCaseTagPattern);
-  if (!match) return null;
-
-  const [, tag, attrString = '', selfClosing = '', contentAfterTag = ''] = match;
-  return {
-    tag,
-    attributes: parseAttributes(attrString),
-    selfClosing: !!selfClosing,
-    contentAfterTag,
-    attrString // Just for debugging purposes
-  };
 };
 
 /**
  * Parse substring content of a node and update the parent's children to include the new nodes.
  */
-const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string) => {
-  const siblingNodes = parseMdChildren(sibling) as Node[];
+const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+  const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   // The new sibling nodes might contain new components to be processed
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
@@ -160,8 +108,10 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
   const stack: Parent[] = [tree];
+  const safeMode = !!opts.safeMode;
+  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
@@ -174,13 +124,28 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
     // which means a potential unparsed MDX component
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
-    const parsed = parseTag(value.trim());
+
+    const parsed = parseTag(value.trim(), parseOpts);
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
+
+    const isPascal = isPascalCase(tag);
+
+    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
+    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
+    // them here so they stay as html for that pass; PascalCase components
+    // keep going through this transformer (they stay flow-level even when
+    // inline, which is how ReadMe's custom components are modeled).
+    if (!isPascal && parent.type === 'paragraph') return;
+
+    // Lowercase HTML tags are only eligible when the tokenizer claimed them
+    // for JSX-expression attributes. Plain HTML should stay as html nodes so
+    // rehype-raw handles it as normal.
+    if (!isPascal && !hasExpressionAttr(attributes)) return;
 
     const closingTagStr = `</${tag}>`;
 
@@ -197,7 +162,7 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       // Check and parse if there's relevant content after the current closing tag
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(stack, parent, index, remainingContent);
+        parseSibling(stack, parent, index, remainingContent, safeMode);
       }
       return;
     }
@@ -210,17 +175,26 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
       // normalize indentation before trimming
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
+        ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
+        : [];
+      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
+      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // phrasing content isn't spuriously block-wrapped.
+      if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+      }
       const componentNode = createComponentNode({
         tag,
         attributes,
-        children: componentInnerContent.trim() ? (parseMdChildren(componentInnerContent) as MdxJsxFlowElement['children']) : [],
+        children: parsedChildren,
         startPosition: node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
       // After the closing tag, there might be more content to be processed
       if (contentAfterClose) {
-        parseSibling(stack, parent, index, contentAfterClose);
+        parseSibling(stack, parent, index, contentAfterClose, safeMode);
       } else if (componentNode.children.length > 0) {
         // The content inside the component block might contain new components to be processed
         stack.push(componentNode as Parent);
@@ -241,4 +215,4 @@ const mdxishComponentBlocks: Plugin<[], Parent> = () => tree => {
   return tree;
 };
 
-export default mdxishComponentBlocks;
+export default mdxishMdxComponentBlocks;
