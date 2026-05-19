@@ -175,7 +175,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     // (collected by the evaluate-exports transformer) into the lookup map. Only the
     // keys matter here — the rehype-mdxish-components plugin keys off names to
     // decide whether to keep a tag in the tree.
-    const localComponents = (vfile.data.mdxishScope?.components ?? {}) as Record<string, unknown>;
+    const localComponents = vfile.data.mdxishScope?.components ?? {};
     const allComponents = { ...components, ...localComponents } as CustomComponents;
 
     const nodesToRemove: { index: number; parent: Element | Root }[] = [];

@@ -38,7 +38,7 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
   // a built-in component by re-declaring it.
   const localComponents = tree.data?.mdxishScope?.components ?? {};
   Object.entries(localComponents).forEach(([name, value]) => {
-    componentsForRehype[name] = value as React.ComponentType;
+    componentsForRehype[name] = value;
   });
 
   const processor = createRehypeReactProcessor(componentsForRehype);

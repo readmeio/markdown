@@ -8,10 +8,18 @@ import type {
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
 
+import { Parser } from 'acorn';
+import acornJsx from 'acorn-jsx';
 import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
+
+/**
+ * Single instance of acorn parser extended with `acorn-jsx`
+ * to parse expressions containing JSX.
+ */
+export const jsxAcornParser = Parser.extend(acornJsx());
 
 /**
  * Evaluate a JavaScript expression source and return its value.

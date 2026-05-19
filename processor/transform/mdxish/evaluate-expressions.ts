@@ -5,22 +5,19 @@ import type { Plugin } from 'unified';
 import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
-import { Parser } from 'acorn';
-import acornJsx from 'acorn-jsx';
 import { buildJsx } from 'estree-util-build-jsx';
 import { toJs } from 'estree-util-to-js';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { visit } from 'unist-util-visit';
 
-import { evaluate } from '../../utils';
+import { evaluate, jsxAcornParser } from '../../utils';
 
-const JsxParser = Parser.extend(acornJsx());
 const HAS_JSX = /<[A-Za-z]|<>/;
 
 /** The raw Function() can't parse JSX, so parse & convert it to a React element first so later we can get its HTML representation */
 const evalJsxExpression = (expression: string, scope: Record<string, unknown>) => {
-  const program = JsxParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
+  const program = jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
   buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
   const { value: source } = toJs(program);
   return evaluate(`(() => { return ${source.trim().replace(/;$/, '')}; })()`, scope);

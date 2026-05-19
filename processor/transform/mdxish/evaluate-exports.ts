@@ -12,7 +12,7 @@ import { visit } from 'unist-util-visit';
 import { evaluate, isMDXEsm } from '../../utils';
 
 export interface MdxishScope {
-  components: Record<string, ReturnType<typeof Function>>;
+  components: Record<string, React.ComponentType>;
   values: Record<string, unknown>;
 }
 
@@ -144,7 +144,9 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     // Build the scope for later plugins & consumer to be aware of the exported declarations
     Object.entries(evaluatedExports).forEach(([name, value]) => {
       if (typeof value === 'function' && jsxComponentNames.has(name)) {
-        scope.components[name] = value;
+        // JSX sniff on the AST confirmed this function returns JSX, so it's
+        // safe to surface as a React component to downstream renderers.
+        scope.components[name] = value as React.ComponentType;
       } else {
         scope.values[name] = value;
       }

@@ -4,8 +4,6 @@ import type { Root as MdastRoot } from 'mdast';
 import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
-import { Parser } from 'acorn';
-import acornJsx from 'acorn-jsx';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
@@ -61,6 +59,7 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
+import { jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
@@ -182,8 +181,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
 
     // Tokenizer for MDX variable declarations
-    const acorn = Parser.extend(acornJsx());
-    micromarkExts.push(mdxjsEsm({ acorn, addResult: true }));
+    micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));
     fromMarkdownExts.push(mdxjsEsmFromMarkdown());
   }
 
