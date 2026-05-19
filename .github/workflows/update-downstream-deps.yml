@@ -7,6 +7,10 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   update-dependencies:
     name: Update @readme/markdown in ${{ matrix.repo }}
