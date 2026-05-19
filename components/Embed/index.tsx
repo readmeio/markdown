@@ -24,8 +24,6 @@ interface EmbedProps {
   url: string;
 }
 
-// Embed types we trust to be iframe-renderable directly from the persisted url.
-// Editors that produce these embeds are responsible for normalizing the url to its iframe-ready form.
 const IFRAME_DERIVABLE_TYPES = new Set(['youtube', 'jsfiddle', 'pdf']);
 
 const Embed = ({
