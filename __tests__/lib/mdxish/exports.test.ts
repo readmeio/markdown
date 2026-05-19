@@ -62,6 +62,27 @@ describe('In-document MDX variable and function declarations', () => {
       const html = mix(md);
       expect(html).toContain('<strong>hello</strong>');
     });
+
+    it('is aware of previous exports', () => {
+      const md = `export const a = 5;
+export const b = a + 10;
+export const c = b * 2;
+
+Total: {c}.`;
+      const html = mix(md);
+      expect(html).toContain('Total: 30.');
+    });
+
+    it('resolves forwardly declared exports', () => {
+      const md = `export const a = Foo();
+export function Foo() {
+  return <strong>hello</strong>;
+}
+
+a = {a}`;
+      const html = mix(md);
+      expect(html).toContain('a = <strong>hello</strong>');
+    });
   });
 
   describe('function declarations', () => {
@@ -132,6 +153,38 @@ describe('In-document MDX variable and function declarations', () => {
       expect(Content).toBeDefined();
       const html = renderToStaticMarkup(React.createElement(Content));
       expect(html).toContain('<div>hello</div>');
+    });
+
+    it('detects & renders components defined with arrow functions', () => {
+      const md = `export const Arrow = () => <span>This is an arrow function component</span>;
+
+1. Tag: <Arrow />
+
+2. Expression: {<Arrow />}
+      `;
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+
+      expect(html).toContain('Tag: <span>This is an arrow function component</span>');
+      expect(html).toContain('Expression: <span>This is an arrow function component</span>');
+    });
+
+    it('aware of previous exports', () => {
+      const md = `export function shout(s) { return s.toUpperCase(); }
+export function wrap(s) { return "SHOUTED: " + shout(s); }
+
+{wrap("hello")}.`;
+
+      const ast = mdxish(md);
+      const { default: Content } = renderMdxish(ast);
+
+      expect(Content).toBeDefined();
+      const html = renderToStaticMarkup(React.createElement(Content));
+
+      expect(html).toContain('SHOUTED: HELLO');
     });
   });
 
