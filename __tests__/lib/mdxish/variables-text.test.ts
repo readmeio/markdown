@@ -1,34 +1,7 @@
-import type { Element, Root, RootContent, Text } from 'hast';
+import type { Element, Text } from 'hast';
 
 import { mdxish } from '../../../lib';
-
-type HastNode = Root | RootContent;
-
-function findElementByTagName(node: HastNode, tagName: string): Element | null {
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    return node as Element;
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.reduce<Element | null>((found, child) => {
-      if (found) return found;
-      return findElementByTagName(child, tagName);
-    }, null);
-  }
-  return null;
-}
-
-function findAllElementsByTagName(node: HastNode, tagName: string): Element[] {
-  const results: Element[] = [];
-  if ('type' in node && node.type === 'element' && 'tagName' in node && node.tagName === tagName) {
-    results.push(node as Element);
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      results.push(...findAllElementsByTagName(child, tagName));
-    });
-  }
-  return results;
-}
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('variablesTextTransformer', () => {
   describe('mdxTextExpression nodes (safeMode: false)', () => {
@@ -110,6 +83,69 @@ describe('variablesTextTransformer', () => {
       expect((para.children[0] as Text).value).toBe('Hi ');
       expect((para.children[2] as Text).value).toBe(', your email is ');
       expect((para.children[4] as Text).value).toBe('.');
+    });
+  });
+
+  describe('inside JSX table cells', () => {
+    it('parses {user.name} on its own line inside a <Table> cell', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{user.name}
+      </td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties?.name).toBe('name');
+    });
+
+    it('parses {user.name} in both <th> and <td> cells', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>
+        {user.name}
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+{user.email}
+      </td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(2);
+      expect(variables[0].properties?.name).toBe('name');
+      expect(variables[1].properties?.name).toBe('email');
+    });
+
+    it('parses inline {user.name} alongside text in a <Table> cell', () => {
+      const tree = mdxish(`<Table>
+  <thead>
+    <tr>
+      <th>Header</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hello {user.name}!</td>
+    </tr>
+  </tbody>
+</Table>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties?.name).toBe('name');
     });
   });
 

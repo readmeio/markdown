@@ -1,9 +1,5 @@
-import {
-  type ProtectedCode,
-  protectCodeBlocks,
-  restoreCodeBlocks,
-  restoreInlineCode,
-} from '../../../lib/utils/mdxish/protect-code-blocks';
+import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
+import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 // Base64 encode (Node.js + browser compatible)
 function base64Encode(str: string): string {
@@ -21,49 +17,9 @@ export function base64Decode(str: string): string {
   return decodeURIComponent(escape(atob(str)));
 }
 
-function escapeHtmlAttribute(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '&#10;');
-}
-
-// Marker prefix for JSON-serialized complex values (arrays/objects)
-// Using a prefix that won't conflict with regular string values
-export const JSON_VALUE_MARKER = '__MDXISH_JSON__';
-
 // Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
 export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
 export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
-
-/**
- * Pre-processes JSX-like expressions before markdown parsing.
- * Converts href={'value'} to href="value", evaluates {expressions}, etc.
- */
-export type JSXContext = Record<string, unknown>;
-
-/**
- * Evaluates a JavaScript expression using context variables.
- *
- * @param expression
- * @param context
- * @returns The evaluated result
- * @example
- * ```typescript
- * const context = { baseUrl: 'https://example.com', path: '/api' };
- * evaluateExpression('baseUrl + path', context)
- * // Returns: 'https://example.com/api'
- * ```
- */
-export function evaluateExpression(expression: string, context: JSXContext) {
-  const contextKeys = Object.keys(context);
-  const contextValues = Object.values(context);
-  // eslint-disable-next-line no-new-func
-  const func = new Function(...contextKeys, `return ${expression}`);
-  return func(...contextValues);
-}
 
 /**
  * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
@@ -99,64 +55,63 @@ function protectHTMLBlockContent(content: string): string {
  * ```
  */
 export function removeJSXComments(content: string): string {
-  return content.replace(/\{\s*\/\*[^*]*(?:\*(?!\/)[^*]*)*\*\/\s*\}/g, '');
+  return content.replace(JSX_COMMENT_REGEX, '');
 }
 
+const HTML_ELEM_PLACEHOLDER_PREFIX = '___MDXISH_HTML_ELEM_';
+const HTML_ELEM_PLACEHOLDER = new RegExp(`${HTML_ELEM_PLACEHOLDER_PREFIX}(\\d+)___`, 'g');
+// Matches an HTML element that starts at a line boundary and ends at a line boundary.
+// Allows optional leading indentation and lazily matches until the same closing tag.
+const BLOCK_HTML_RE = /(?<=^|\n)[ \t]*<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>[ \t]*(?=\n|$)/g;
+
 /**
- * Extracts content between balanced braces, handling nested braces.
+ * Hides line-anchored HTML elements from the brace-escaping pass so we don't leak `\{`
+ * into rendered output (rehypeRaw renders the `\` literally, e.g. `<div>{foo</div>`).
  *
- * @param content
- * @param start
- * @returns Object with extracted content and end position, or null if braces are unbalanced
- * @example
- * ```typescript
- * const input = 'foo{bar{baz}qux}end';
- * extractBalancedBraces(input, 3) // start at position 3 (after '{')
- * // Returns: { content: 'bar{baz}qux', end: 16 }
- * ```
+ * One carve-out: if an interior line at column 0 has bare text containing `{`, mdxish
+ * parses that line as a paragraph and the mdxExpression step would throw without an
+ * escape — so we leave that case to the brace balancer.
  */
-function extractBalancedBraces(content: string, start: number): { content: string; end: number } | null {
-  let depth = 1;
-  let pos = start;
+function protectHTMLElements(content: string): { htmlElements: string[]; protectedContent: string } {
+  const htmlElements: string[] = [];
+  const protectedContent = content.replace(BLOCK_HTML_RE, match => {
+    // Look at the lines between the open and close tags. If any of them starts
+    // at column 0 with bare text (not whitespace, not another tag) and contains
+    // `{`, mdxish will parse that line as a paragraph and the brace as an MDX
+    // expression, which would throw an error. So we let the brace balancer escape it.
+    // Otherwise, we need to extract the sequence to protect it from the brace escaping.
+    const interior = match.split('\n').slice(1, -1);
+    const hazard = interior.some(line => line.length > 0 && line[0] !== ' ' && line[0] !== '\t' && line[0] !== '<' && line.includes('{'));
+    if (hazard) return match;
 
-  while (pos < content.length && depth > 0) {
-    const char = content[pos];
-    if (char === '{') depth += 1;
-    else if (char === '}') depth -= 1;
-    pos += 1;
-  }
+    htmlElements.push(match);
+    return `${HTML_ELEM_PLACEHOLDER_PREFIX}${htmlElements.length - 1}___`;
+  });
+  return { htmlElements, protectedContent };
+}
 
-  if (depth !== 0) return null;
-  return { content: content.slice(start, pos - 1), end: pos };
+function restoreHTMLElements(content: string, htmlElements: string[]): string {
+  if (htmlElements.length === 0) return content;
+  return content.replace(HTML_ELEM_PLACEHOLDER, (_m, idx) => htmlElements[parseInt(idx, 10)]);
 }
 
 /**
- * Escapes problematic braces in content to prevent MDX expression parsing errors.
- * Handles three cases:
- * 1. Unbalanced braces (e.g., `{foo` without closing `}`)
- * 2. Paragraph-spanning expressions (e.g., `{\n\n}` where blank line splits paragraphs)
- * 3. Skips HTML elements to prevent backslashes appearing in output
- *
+ * Escapes unbalanced and paragraph-spanning braces so MDX doesn't trip on them.
  */
 function escapeProblematicBraces(content: string): string {
-  // Skip HTML elements — their content should never be escaped because
-  // rehypeRaw parses them into hast elements, making `\` literal text in output
-  const htmlElements: string[] = [];
-  const safe = content.replace(/<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>/g, match => {
-    const idx = htmlElements.length;
-    htmlElements.push(match);
-    return `___HTML_ELEM_${idx}___`;
-  });
+  const { htmlElements, protectedContent } = protectHTMLElements(content);
 
-  const toEscape = new Set<number>();
-  // Convert to array of Unicode code points to handle emojis and multi-byte characters correctly
-  const chars = Array.from(safe);
   let strDelim: string | null = null;
   let strEscaped = false;
-  // Stack of open braces with their state
-  const openStack: { hasBlankLine: boolean; pos: number }[] = [];
   // Track position of last newline (outside strings) to detect blank lines
-  let lastNewlinePos = -2; // -2 means no recent newline
+  // -2 means no recent newline
+  let lastNewlinePos = -2;
+
+  // Character state machine trackers
+  const toEscape = new Set<number>();
+  // Convert to array of Unicode code points so that emojis and multi-byte characters are correctly tracked
+  const chars = Array.from(protectedContent);
+  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; pos: number }[] = [];
 
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i];
@@ -175,24 +130,18 @@ function escapeProblematicBraces(content: string): string {
         // eslint-disable-next-line no-continue
         continue;
       }
-
-      // Track newlines to detect blank lines (paragraph boundaries)
       if (ch === '\n') {
-        // Check if this newline creates a blank line (only whitespace since last newline)
         if (lastNewlinePos >= 0) {
           const between = chars.slice(lastNewlinePos + 1, i).join('');
           if (/^[ \t]*$/.test(between)) {
-            // This is a blank line - mark all open expressions as paragraph-spanning
-            openStack.forEach(entry => {
-              entry.hasBlankLine = true;
-            });
+            openStack.forEach(entry => { entry.hasBlankLine = true; });
           }
         }
         lastNewlinePos = i;
       }
     }
 
-    // Skip already-escaped braces (count preceding backslashes)
+    // Skip already-escaped braces (odd run of preceding backslashes).
     if (ch === '{' || ch === '}') {
       let bs = 0;
       for (let j = i - 1; j >= 0 && chars[j] === '\\'; j -= 1) bs += 1;
@@ -203,144 +152,67 @@ function escapeProblematicBraces(content: string): string {
     }
 
     if (ch === '{') {
-      openStack.push({ pos: i, hasBlankLine: false });
-      lastNewlinePos = -2; // Reset newline tracking for new expression
+      // `=` (after whitespace) before `{` ⇒ JSX attribute expression. The
+      // mdxComponent tokenizer captures the whole component, so blank lines
+      // inside attribute values are harmless. Nested `{` inherits the flag.
+      let isAttrExpr = false;
+      for (let j = i - 1; j >= 0; j -= 1) {
+        const pc = chars[j];
+        if (pc === '=') { isAttrExpr = true; break; }
+        if (pc !== ' ' && pc !== '\t') break;
+      }
+      // Nested `{ ... }` inside an attribute value (e.g. `data={[{ ... }]}` or
+      // `data={{ a: { b: 1 } }}`) must inherit the same exemption; only the
+      // outer `{` is directly after `=`.
+      if (!isAttrExpr && openStack.length > 0 && openStack[openStack.length - 1].isAttrExpr) {
+        isAttrExpr = true;
+      }
+      openStack.push({ pos: i, hasBlankLine: false, isAttrExpr });
+      lastNewlinePos = -2;
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
-        // If expression spans paragraph boundary, escape both braces
-        if (entry.hasBlankLine) {
+        // Pure `{/* ... */}` comments are handled downstream by the jsxComment
+        // tokenizer — escaping their braces would prevent it from running.
+        const isPureJsxComment =
+          chars[entry.pos + 1] === '/' &&
+          chars[entry.pos + 2] === '*' &&
+          chars[i - 1] === '/' &&
+          chars[i - 2] === '*';
+        if (entry.hasBlankLine && !isPureJsxComment && !entry.isAttrExpr) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
       } else {
-        // Unbalanced closing brace (no matching open)
         toEscape.add(i);
       }
     }
   }
 
-  // Any remaining open braces are unbalanced
+  // Anything still open is unbalanced.
   openStack.forEach(entry => toEscape.add(entry.pos));
 
-  // If there are no problematic braces, return safe content as-is;
-  // otherwise, escape each problematic `{` or `}` so MDX doesn't treat them as expressions.
-  let result = toEscape.size === 0
-    ? safe
-    : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
-
-  // Restore HTML elements
-  if (htmlElements.length > 0) {
-    result = result.replace(/___HTML_ELEM_(\d+)___/g, (_m, idx) => htmlElements[parseInt(idx, 10)]);
-  }
-
-  return result;
+  // Reconstruct the content with the escaped braces.
+  const escapedContent = toEscape.size === 0 ? protectedContent : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
+  return restoreHTMLElements(escapedContent, htmlElements);
 }
 
 /**
- * Converts JSX attribute expressions (attribute={expression}) to HTML attributes (attribute="value").
- * Handles style objects (camelCase → kebab-case), className → class, and JSON stringifies objects.
+ * Preprocesses JSX-like markdown content before parsing.
+ *
+ * JSX attribute expressions (`href={baseUrl}`) are no longer rewritten here —
+ * they flow through the tokenizer as `mdxJsxAttributeValueExpression` nodes
+ * and are evaluated at the hast handler step.
  *
  * @param content
- * @param context
- * @returns Content with attribute expressions evaluated and converted to HTML attributes
- * @example
- * ```typescript
- * const context = { baseUrl: 'https://example.com' };
- * const input = '<a href={baseUrl}>Link</a>';
- * evaluateAttributeExpressions(input, context)
- * // Returns: '<a href="https://example.com">Link</a>'
- * ```
- */
-function evaluateAttributeExpressions(content: string, context: JSXContext, protectedCode?: ProtectedCode) {
-  const attrStartRegex = /(\w+)=\{/g;
-  let result = '';
-  let lastEnd = 0;
-  let match = attrStartRegex.exec(content);
-
-  while (match !== null) {
-    const attributeName = match[1];
-    const braceStart = match.index + match[0].length;
-
-    const extracted = extractBalancedBraces(content, braceStart);
-    if (extracted) {
-      // The expression might contain template literals in MDX component tag props
-      // E.g. <Component greeting={`Hello World!`} />
-      // that is marked as inline code. So we need to restore the inline codes
-      // in the expression to evaluate it
-      let expression = extracted.content;
-      if (protectedCode) {
-        expression = restoreInlineCode(expression, protectedCode);
-      }
-      const fullMatchEnd = extracted.end;
-
-      result += content.slice(lastEnd, match.index);
-
-      try {
-        const evalResult = evaluateExpression(expression, context);
-
-        if (typeof evalResult === 'object' && evalResult !== null) {
-          if (attributeName === 'style') {
-            const cssString = Object.entries(evalResult)
-              .map(([key, value]) => {
-                const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                return `${cssKey}: ${value}`;
-              })
-              .join('; ');
-            result += `style="${cssString}"`;
-          } else {
-            // These are arrays / objects attribute values
-            // Mark JSON-serialized values with a prefix so they can be parsed back correctly
-            const jsonValue = escapeHtmlAttribute(JSON_VALUE_MARKER + JSON.stringify(evalResult));
-            // Use double quotes so that multi-paragraph values are not split into multiple attributes by the processors
-            result += `${attributeName}="${jsonValue}"`;
-          }
-        } else if (attributeName === 'className') {
-          // Escape special characters so that it doesn't break and split the attribute value to nodes
-          // This will be restored later in the pipeline
-          result += `class="${escapeHtmlAttribute(String(evalResult))}"`;
-        } else {
-          result += `${attributeName}="${escapeHtmlAttribute(String(evalResult))}"`;
-        }
-      } catch (_error) {
-        result += content.slice(match.index, fullMatchEnd);
-      }
-
-      lastEnd = fullMatchEnd;
-      attrStartRegex.lastIndex = fullMatchEnd;
-    }
-    match = attrStartRegex.exec(content);
-  }
-  result += content.slice(lastEnd);
-  return result;
-}
-
-/**
- * Preprocesses JSX-like expressions in markdown before parsing.
- * Inline expressions are handled separately; attribute expressions are processed here.
- *
- * @param content
- * @param context
  * @returns Preprocessed content ready for markdown parsing
  */
-export function preprocessJSXExpressions(content: string, context: JSXContext = {}): string {
-  // Step 0: Base64 encode HTMLBlock content
+export function preprocessJSXExpressions(content: string): string {
   let processed = protectHTMLBlockContent(content);
-
-  // Step 1: Protect code blocks and inline code
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
 
-  // Step 2: Evaluate attribute expressions (JSX attribute syntax: href={baseUrl})
-  // For inline expressions, we use a library to parse the expression & evaluate it later
-  // For attribute expressions, it was difficult to use a library to parse them, so do it manually
-  processed = evaluateAttributeExpressions(protectedContent, context, protectedCode);
+  processed = escapeProblematicBraces(protectedContent);
 
-  // Step 3: Escape problematic braces to prevent MDX expression parsing errors
-  // This handles both unbalanced braces and paragraph-spanning expressions in one pass
-  processed = escapeProblematicBraces(processed);
-
-  // Step 4: Restore protected code blocks
   processed = restoreCodeBlocks(processed, protectedCode);
-
   return processed;
 }

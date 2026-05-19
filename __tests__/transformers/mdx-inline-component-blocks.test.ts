@@ -4,7 +4,8 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import mdxishInlineComponents from '../../processor/transform/mdxish/mdxish-inline-components';
+import mdxishInlineComponents from '../../processor/transform/mdxish/components/inline-mdx-blocks';
+import { collectNodes } from '../helpers';
 
 /**
  * Helper to parse markdown and apply only the mdxishInlineComponents plugin.
@@ -17,26 +18,6 @@ const parseWithPlugin = (markdown: string): Root => {
 };
 
 /**
- * Helper to find nodes by type in the tree.
- */
-const findNodesByType = <T extends Parent>(tree: Parent, type: string): T[] => {
-  const results: T[] = [];
-  const stack: Parent[] = [tree];
-
-  while (stack.length) {
-    const node = stack.pop()!;
-    if (node.type === type) {
-      results.push(node as T);
-    }
-    if ('children' in node && Array.isArray(node.children)) {
-      stack.push(...(node.children as Parent[]));
-    }
-  }
-
-  return results;
-};
-
-/**
  * Helper to get attribute value from mdxJsxTextElement
  */
 const getAttr = (node: MdxJsxTextElement, name: string): string | null | undefined => {
@@ -44,13 +25,13 @@ const getAttr = (node: MdxJsxTextElement, name: string): string | null | undefin
   return attr && 'value' in attr ? (attr.value as string | null) : undefined;
 };
 
-describe('mdxish-inline-components', () => {
+describe('inline MDX blocks transformation', () => {
   describe('basic Anchor transformation', () => {
     it('should transform a simple Anchor to mdxJsxTextElement', () => {
       const markdown = '<Anchor href="https://example.com">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0]).toMatchObject({
         type: 'mdxJsxTextElement',
@@ -63,7 +44,7 @@ describe('mdxish-inline-components', () => {
       const markdown = '<Anchor href="https://example.com">Click here</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0].children).toHaveLength(1);
       expect(nodes[0].children[0]).toMatchObject({
@@ -76,7 +57,7 @@ describe('mdxish-inline-components', () => {
       const markdown = '<Anchor href="https://example.com" target="_blank" title="Example">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('https://example.com');
       expect(getAttr(nodes[0], 'target')).toBe('_blank');
@@ -89,12 +70,12 @@ describe('mdxish-inline-components', () => {
       const markdown = 'Visit <Anchor href="https://example.com">our site</Anchor> today.';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0].name).toBe('Anchor');
 
       // Check paragraph still contains surrounding text
-      const paragraphs = findNodesByType<Parent>(tree, 'paragraph');
+      const paragraphs = collectNodes<Parent>(tree, 'paragraph');
       expect(paragraphs).toHaveLength(1);
       expect(paragraphs[0].children.length).toBeGreaterThanOrEqual(3);
     });
@@ -103,7 +84,7 @@ describe('mdxish-inline-components', () => {
       const markdown = '<Anchor href="https://example.com">Start</Anchor> of the sentence.';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -111,7 +92,7 @@ describe('mdxish-inline-components', () => {
       const markdown = 'End of the sentence <Anchor href="https://example.com">here</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
   });
@@ -122,17 +103,17 @@ describe('mdxish-inline-components', () => {
         'Visit <Anchor href="https://a.com">Site A</Anchor> or <Anchor href="https://b.com">Site B</Anchor>.';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(2);
       const hrefs = nodes.map(n => getAttr(n, 'href')).sort();
-      expect(hrefs).toEqual(['https://a.com', 'https://b.com']);
+      expect(hrefs).toStrictEqual(['https://a.com', 'https://b.com']);
     });
 
     it('should transform adjacent Anchors without text between', () => {
       const markdown = '<Anchor href="https://a.com">A</Anchor><Anchor href="https://b.com">B</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(2);
     });
 
@@ -142,7 +123,7 @@ describe('mdxish-inline-components', () => {
 Second <Anchor href="https://b.com">link</Anchor>.`;
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(2);
     });
   });
@@ -152,7 +133,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="doc:getting-started">Getting Started</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('doc:getting-started');
     });
@@ -161,7 +142,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="ref:api-endpoint">API Reference</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('ref:api-endpoint');
     });
 
@@ -169,7 +150,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="changelog:v2-release">Changelog</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('changelog:v2-release');
     });
 
@@ -177,7 +158,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="page:custom-page">Custom Page</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('page:custom-page');
     });
 
@@ -185,7 +166,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="doc:page#section">Section Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('doc:page#section');
     });
 
@@ -193,7 +174,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com?foo=bar&baz=qux">Query Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('https://example.com?foo=bar&baz=qux');
     });
 
@@ -201,7 +182,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="/docs/intro">Relative</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('/docs/intro');
     });
 
@@ -209,7 +190,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="#section">Jump to Section</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'href')).toBe('#section');
     });
   });
@@ -219,7 +200,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com"></Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0].children).toHaveLength(0);
     });
@@ -228,7 +209,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">   </Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -236,7 +217,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">日本語リンク</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0].children[0]).toMatchObject({
         type: 'text',
@@ -248,7 +229,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">🚀 Launch</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(nodes[0].children[0]).toMatchObject({
         type: 'text',
@@ -260,7 +241,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">Terms &amp; Conditions</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -268,7 +249,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">The `code` function</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       // Should have text, inlineCode, text as children
       expect(nodes[0].children.length).toBeGreaterThanOrEqual(1);
@@ -278,7 +259,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">Click **here**</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -286,7 +267,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">Click *here*</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
   });
@@ -296,7 +277,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = "<Anchor href='https://example.com'>Link</Anchor>";
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('https://example.com');
     });
@@ -305,7 +286,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com" title="Say &quot;Hello&quot;">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -313,7 +294,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com" title="A long title with spaces">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(getAttr(nodes[0], 'title')).toBe('A long title with spaces');
     });
 
@@ -321,7 +302,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com" title="Line1\nLine2">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       // Note: behavior depends on how parseAttributes handles this
       expect(nodes.length).toBeGreaterThanOrEqual(0);
     });
@@ -330,7 +311,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="">Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('');
     });
@@ -339,7 +320,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor>Link without href</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBeUndefined();
     });
@@ -348,7 +329,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="/file.pdf" download="report.pdf">Download</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'download')).toBe('report.pdf');
     });
@@ -357,7 +338,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="/page" data-tracking="click-event">Track</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'data-tracking')).toBe('click-event');
     });
@@ -366,7 +347,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://external.com" rel="noopener noreferrer">External</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'rel')).toBe('noopener noreferrer');
     });
@@ -377,7 +358,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">No closing tag';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
 
@@ -385,7 +366,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com">Text</Other>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
 
@@ -394,7 +375,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="https://example.com" />';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
 
@@ -402,7 +383,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<anchor href="https://example.com">lowercase</anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
 
@@ -419,7 +400,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const tree = parseWithPlugin(markdown);
 
       // First opening tag should remain unprocessed, second should transform
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
   });
@@ -429,7 +410,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<CustomInline attr="value">content</CustomInline>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
   });
@@ -439,7 +420,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '- Item with <Anchor href="https://example.com">link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -447,7 +428,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '> Quote with <Anchor href="https://example.com">link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -455,7 +436,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = 'Use `code` then <Anchor href="https://example.com">click here</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -463,7 +444,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = 'Click <Anchor href="https://example.com">here</Anchor> then use `code`';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -472,10 +453,10 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
         'A [markdown link](https://a.com) and <Anchor href="https://b.com">component link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
 
-      const links = findNodesByType<Parent>(tree, 'link');
+      const links = collectNodes<Parent>(tree, 'link');
       expect(links).toHaveLength(1);
     });
 
@@ -483,7 +464,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '**Bold <Anchor href="https://example.com">link</Anchor> text**';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
   });
@@ -493,7 +474,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor  href="https://example.com"  target="_blank" >Link</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -502,7 +483,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
 <Anchor href="https://b.com">B</Anchor>`;
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(2);
     });
 
@@ -510,7 +491,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = 'Click<Anchor href="https://example.com">here</Anchor>now';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -539,16 +520,16 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="javascript:void(0)">Click</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
-      expect(getAttr(nodes[0], 'href')).toBe('javascript:void(0)');
+      expect(getAttr(nodes[0], 'href')).toBe('javascript:void(0)'); // eslint-disable-line no-script-url
     });
 
     it('should handle Anchor with mailto URL', () => {
       const markdown = '<Anchor href="mailto:test@example.com">Email Us</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('mailto:test@example.com');
     });
@@ -557,7 +538,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = '<Anchor href="tel:+1234567890">Call Us</Anchor>';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe('tel:+1234567890');
     });
@@ -567,7 +548,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const tree = parseWithPlugin(markdown);
 
       // ANCHOR is not the same as Anchor
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(0);
     });
   });
@@ -581,7 +562,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = `Start ${anchors} end.`;
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(20);
     });
 
@@ -590,7 +571,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
         '***<Anchor href="https://example.com">bold italic link</Anchor>***';
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
 
@@ -599,7 +580,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = `<Anchor href="${longUrl}">Long URL</Anchor>`;
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
       expect(getAttr(nodes[0], 'href')).toBe(longUrl);
     });
@@ -609,7 +590,7 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
       const markdown = `<Anchor href="https://example.com">${longContent}</Anchor>`;
       const tree = parseWithPlugin(markdown);
 
-      const nodes = findNodesByType<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
       expect(nodes).toHaveLength(1);
     });
   });

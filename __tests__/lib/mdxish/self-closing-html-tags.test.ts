@@ -1,30 +1,12 @@
 import type { CustomComponents } from '../../../types';
-import type { Element, Root, RootContent } from 'hast';
+import type { Root, RootContent } from 'hast';
 
 import { mdxish } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
+import { findAllElementsByTagName } from '../../helpers';
 
 type HastNode = Root | RootContent;
 
-/**
- * Recursively finds all elements with a given tagName in a HAST tree.
- */
-function findAllByTagName(node: HastNode, tagName: string): Element[] {
-  const results: Element[] = [];
-  if (node.type === 'element' && node.tagName === tagName) {
-    results.push(node);
-  }
-  if ('children' in node && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      results.push(...findAllByTagName(child, tagName));
-    });
-  }
-  return results;
-}
-
-/**
- * Checks whether the given element contains a descendant with the specified tagName.
- */
 function hasDescendant(node: HastNode, tagName: string): boolean {
   if (node.type === 'element' && node.tagName === tagName) return true;
   if ('children' in node && Array.isArray(node.children)) {
@@ -52,7 +34,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
       const tree = mdxish('<i /> some text after');
 
       // The <i> should be empty; "some text after" should be a sibling, not a child
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -60,7 +42,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap text after a self-closing <b /> on the same line', () => {
       const tree = mdxish('<b /> some text after');
 
-      const bElements = findAllByTagName(tree, 'b');
+      const bElements = findAllElementsByTagName(tree, 'b');
       expect(bElements).toHaveLength(1);
       expect(extractText(bElements[0])).toBe('');
     });
@@ -68,7 +50,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap text after a self-closing <em /> on the same line', () => {
       const tree = mdxish('<em /> some text after');
 
-      const emElements = findAllByTagName(tree, 'em');
+      const emElements = findAllElementsByTagName(tree, 'em');
       expect(emElements).toHaveLength(1);
       expect(extractText(emElements[0])).toBe('');
     });
@@ -76,7 +58,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap text after a self-closing <span /> on the same line', () => {
       const tree = mdxish('<span /> some text after');
 
-      const spanElements = findAllByTagName(tree, 'span');
+      const spanElements = findAllElementsByTagName(tree, 'span');
       expect(spanElements).toHaveLength(1);
       expect(extractText(spanElements[0])).toBe('');
     });
@@ -84,7 +66,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap surrounding text when <i /> is mid-sentence', () => {
       const tree = mdxish('before <i /> after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -98,7 +80,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap the following paragraph when <i /> is on its own line', () => {
       const tree = mdxish('<i />\n\nsome text after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
       expect(extractText(iElements[0])).toBe('');
@@ -111,7 +93,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap content when <i /> appears between paragraphs', () => {
       const tree = mdxish('paragraph before\n\n<i />\n\nparagraph after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
       expect(extractText(iElements[0])).toBe('');
@@ -125,11 +107,11 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap a heading that follows a self-closing <i />', () => {
       const tree = mdxish('<i />\n\n## Heading after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'h2')).toBe(false);
 
-      const headings = findAllByTagName(tree, 'h2');
+      const headings = findAllElementsByTagName(tree, 'h2');
       expect(headings).toHaveLength(1);
       expect(extractText(headings[0])).toBe('Heading after');
     });
@@ -137,12 +119,12 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap content when <i /> follows a heading', () => {
       const tree = mdxish('# Heading\n\n<i />\n\nparagraph after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
       expect(extractText(iElements[0])).toBe('');
 
-      const headings = findAllByTagName(tree, 'h1');
+      const headings = findAllElementsByTagName(tree, 'h1');
       expect(headings).toHaveLength(1);
 
       const text = extractText(tree);
@@ -152,7 +134,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap content on the next line (soft break) after <i />', () => {
       const tree = mdxish('<i />\nsome text after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
       expect(extractText(iElements[0])).toBe('');
@@ -163,7 +145,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should handle multiple self-closing <i /> tags without wrapping', () => {
       const tree = mdxish('<i />\n\nparagraph\n\n<i />\n\nanother paragraph');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(2);
       // Neither <i> should contain paragraph content
       iElements.forEach(el => {
@@ -179,8 +161,8 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should handle mixed self-closing tags on the same line', () => {
       const tree = mdxish('<i /> and <b /> some text');
 
-      const iElements = findAllByTagName(tree, 'i');
-      const bElements = findAllByTagName(tree, 'b');
+      const iElements = findAllElementsByTagName(tree, 'i');
+      const bElements = findAllElementsByTagName(tree, 'b');
       expect(iElements).toHaveLength(1);
       expect(bElements).toHaveLength(1);
       expect(extractText(iElements[0])).not.toContain('some text');
@@ -191,7 +173,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap text after <i class="icon" />', () => {
       const tree = mdxish('<i class="icon" /> label text');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
       expect(iElements[0].properties?.className).toContain('icon');
@@ -200,7 +182,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should not wrap text after <span style="color:red" />', () => {
       const tree = mdxish('<span style="color:red" /> colored text');
 
-      const spanElements = findAllByTagName(tree, 'span');
+      const spanElements = findAllElementsByTagName(tree, 'span');
       expect(spanElements).toHaveLength(1);
       expect(extractText(spanElements[0])).toBe('');
     });
@@ -210,7 +192,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('<i></i> should NOT wrap subsequent text (baseline)', () => {
       const tree = mdxish('<i></i> some text after');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -218,7 +200,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('<i>content</i> should only wrap its own content', () => {
       const tree = mdxish('<i>italic</i> normal text');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('italic');
 
@@ -230,7 +212,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
   describe('void elements should still work (sanity checks)', () => {
     it('<br /> should render as a line break without wrapping', () => {
       const tree = mdxish('before<br />after');
-      const brElements = findAllByTagName(tree, 'br');
+      const brElements = findAllElementsByTagName(tree, 'br');
       expect(brElements).toHaveLength(1);
 
       const text = extractText(tree);
@@ -240,10 +222,10 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 
     it('<hr /> should render as a thematic break without wrapping', () => {
       const tree = mdxish('before\n\n<hr />\n\nafter');
-      const hrElements = findAllByTagName(tree, 'hr');
+      const hrElements = findAllElementsByTagName(tree, 'hr');
       expect(hrElements).toHaveLength(1);
 
-      const paragraphs = findAllByTagName(tree, 'p');
+      const paragraphs = findAllElementsByTagName(tree, 'p');
       expect(paragraphs).toHaveLength(2);
     });
   });
@@ -259,7 +241,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('<MyComponent /> with attributes should be left intact', () => {
       const MyComponent = {} as CustomComponents['MyComponent'];
       const tree = mdxish('<MyComponent theme="dark" />', { components: { MyComponent } });
-      const elements = findAllByTagName(tree, 'MyComponent');
+      const elements = findAllElementsByTagName(tree, 'MyComponent');
       expect(elements).toHaveLength(1);
     });
 
@@ -274,7 +256,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('<my-component /> should not be rewritten and should not wrap content', () => {
       const components = { 'my-component': {} as CustomComponents['my-component'] };
       const tree = mdxish('<my-component />', { components });
-      const elements = findAllByTagName(tree, 'my-component');
+      const elements = findAllElementsByTagName(tree, 'my-component');
       expect(elements).toHaveLength(1);
     });
   });
@@ -282,7 +264,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
   describe('properly closed tags should not be affected', () => {
     it('<i>text</i> should keep its content intact', () => {
       const tree = mdxish('<i>italic</i> and normal');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('italic');
     });
@@ -302,7 +284,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
   describe('self-closing tags inside markdown constructs', () => {
     it('should not wrap content inside blockquotes', () => {
       const tree = mdxish('> <i /> quoted text');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -312,7 +294,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 
     it('should not wrap content inside bold markdown', () => {
       const tree = mdxish('**<i /> bold text**');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -322,11 +304,11 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 
     it('should not wrap heading text when <i /> is in a heading', () => {
       const tree = mdxish('## Heading <i /> icon');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
-      const headings = findAllByTagName(tree, 'h2');
+      const headings = findAllElementsByTagName(tree, 'h2');
       expect(headings).toHaveLength(1);
       expect(extractText(headings[0])).toContain('Heading');
     });
@@ -335,14 +317,14 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
   describe('self-closing tags with no space before />', () => {
     it('<i/> should not wrap subsequent text', () => {
       const tree = mdxish('<i/> some text after');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
 
     it('<b/> should not wrap subsequent text', () => {
       const tree = mdxish('<b/> some text after');
-      const bElements = findAllByTagName(tree, 'b');
+      const bElements = findAllElementsByTagName(tree, 'b');
       expect(bElements).toHaveLength(1);
       expect(extractText(bElements[0])).toBe('');
     });
@@ -351,14 +333,14 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
   describe('nested self-closing tags inside HTML structures', () => {
     it('should handle <i /> nested inside a <div>', () => {
       const tree = mdxish('<div><i /></div>');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
 
     it('should handle <i /> inside a <div> with text', () => {
       const tree = mdxish('<div><i /> label</div>');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -386,7 +368,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
       // Inside code: preserved literally
       expect(text).toContain('<i />');
       // Outside code: <i> should be empty, not wrapping "text outside"
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -413,11 +395,11 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 <i /> icon label
 </MyComponent>`;
       const tree = mdxish(md, { components: { MyComponent } });
-      const component = findAllByTagName(tree, 'MyComponent');
+      const component = findAllElementsByTagName(tree, 'MyComponent');
       expect(component).toHaveLength(1);
 
       // The <i /> inside the component body should be converted and not wrap "icon label"
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -430,7 +412,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
       const text = extractText(tree);
       expect(text).toContain('Important info here');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -450,7 +432,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 | --- | --- |
 | <i /> icon | cell 2 |`;
       const tree = mdxish(md);
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -471,18 +453,18 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 {"type":"info","body":"This is important"}
 [/block]`;
       const tree = mdxish(md);
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
       // The callout should still render, not be swallowed by <i>
-      const callout = findAllByTagName(tree, 'Callout');
+      const callout = findAllElementsByTagName(tree, 'Callout');
       expect(callout).toHaveLength(1);
     });
 
     it('should handle <i /> alongside JSX expressions', () => {
-      const tree = mdxish('<i /> result: {5 * 10}', { jsxContext: {} });
-      const iElements = findAllByTagName(tree, 'i');
+      const tree = mdxish('<i /> result: {5 * 10}');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
 
@@ -492,7 +474,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 
     it('should handle <i /> alongside user variables', () => {
       const tree = mdxish('<i /> Hello {user.name}!');
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(extractText(iElements[0])).toBe('');
     });
@@ -502,7 +484,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
     it('should handle Font Awesome icon pattern: <i class="fa fa-home" /> Home', () => {
       const tree = mdxish('<i class="fa fa-home" /> Home');
 
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       // "Home" should NOT be inside the <i> tag
       expect(extractText(iElements[0])).toBe('');
@@ -517,7 +499,7 @@ describe('self-closing non-void HTML tags should not wrap subsequent content', (
 This is a warning message that should not be italicized.`;
 
       const tree = mdxish(md);
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(1);
       expect(hasDescendant(iElements[0], 'p')).toBe(false);
       expect(extractText(iElements[0])).toBe('');
@@ -532,7 +514,7 @@ This is a warning message that should not be italicized.`;
 - <i class="fa fa-times" /> Task 3`;
 
       const tree = mdxish(md);
-      const iElements = findAllByTagName(tree, 'i');
+      const iElements = findAllElementsByTagName(tree, 'i');
       expect(iElements).toHaveLength(3);
 
       // None of the <i> elements should contain the task text

@@ -334,4 +334,47 @@ export const D = () => <span className="level-d">leaf</span>;
       expect(container.querySelectorAll('.level-d')).toHaveLength(4);
     });
   })
+
+  describe('with various types of props', () => {
+    const exampleComponentCode = `
+export const ExampleComponent = ({ prop1, prop2, prop3 }) => {
+  return (
+    <div id="example-component">
+      <div id="prop1">{prop1}</div>
+      <div id="prop2">{prop2}</div>
+      <div id="prop3">{prop3}</div>
+    </div>
+  );
+};
+
+<ExampleComponent />
+    `;
+    const compiledExampleComponentCode = run(compile(exampleComponentCode));
+    const exampleComponents: Record<string, RMDXModule> = {
+      ExampleComponent: compiledExampleComponentCode,
+    };
+
+    it('should handle props with different types', () => {
+      const md = '<ExampleComponent prop1="Hello" prop2={123} prop3={[1, 2, 3]} />';
+
+      const tree = mdxish(md, { components: exampleComponents });
+      const mod = renderMdxish(tree, { components: exampleComponents });
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('#prop1')?.textContent).toBe('Hello');
+      expect(container.querySelector('#prop2')?.textContent).toBe('123');
+      expect(container.querySelector('#prop3')?.textContent).toBe('123');
+    });
+
+    it('should evalute attribute expressions on props', () => {
+      const md = '<ExampleComponent prop1={1+1} prop2={"hello".toUpperCase()} />';
+
+      const tree = mdxish(md, { components: exampleComponents });
+      const mod = renderMdxish(tree, { components: exampleComponents });
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('#prop1')?.textContent).toBe('2');
+      expect(container.querySelector('#prop2')?.textContent).toBe('HELLO');
+    });
+  });
 });

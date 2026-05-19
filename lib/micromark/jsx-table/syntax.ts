@@ -47,8 +47,7 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
   let codeSpanCloseSize = 0;
   let depth = 1;
 
-  const TABLE_NAME: Code[] = [codes.uppercaseT, codes.lowercaseA, codes.lowercaseB, codes.lowercaseL, codes.lowercaseE];
-  const ABLE_SUFFIX: Code[] = TABLE_NAME.slice(1);
+  const ABLE_SUFFIX: Code[] = [codes.lowercaseA, codes.lowercaseB, codes.lowercaseL, codes.lowercaseE];
 
   /** Build a state chain that matches a sequence of character codes. */
   function matchChars(chars: Code[], onMatch: State, onFail: (code: Code) => State | undefined): State {
@@ -69,7 +68,15 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
     effects.enter('jsxTable');
     effects.enter('jsxTableData');
     effects.consume(code);
-    return matchChars(TABLE_NAME, afterTagName, nok);
+    return afterLessThan;
+  }
+
+  function afterLessThan(code: Code): State | undefined {
+    if (code === codes.uppercaseT || code === codes.lowercaseT) {
+      effects.consume(code);
+      return matchChars(ABLE_SUFFIX, afterTagName, nok);
+    }
+    return nok(code);
   }
 
   function afterTagName(code: Code): State | undefined {
@@ -152,11 +159,19 @@ function tokenizeJsxTable(this: TokenizeContext, effects: Effects, ok: State, no
   function closeSlash(code: Code): State | undefined {
     if (code === codes.slash) {
       effects.consume(code);
-      return matchChars(TABLE_NAME, closeGt, body);
+      return closeTagFirstChar;
     }
-    if (code === codes.uppercaseT) {
+    if (code === codes.uppercaseT || code === codes.lowercaseT) {
       effects.consume(code);
       return matchChars(ABLE_SUFFIX, openAfterTagName, body);
+    }
+    return body(code);
+  }
+
+  function closeTagFirstChar(code: Code): State | undefined {
+    if (code === codes.uppercaseT || code === codes.lowercaseT) {
+      effects.consume(code);
+      return matchChars(ABLE_SUFFIX, closeGt, body);
     }
     return body(code);
   }
@@ -247,10 +262,10 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
 }
 
 /**
- * Micromark extension that tokenizes `<Table>...</Table>` as a single flow block.
+ * Micromark extension that tokenizes `<Table>...</Table>` and `<table>...</table>`
+ * as a single flow block.
  *
- * Prevents CommonMark HTML block type 6 from matching `<Table>` (case-insensitive
- * match against `table`) and fragmenting it at blank lines.
+ * Prevents CommonMark HTML block type 6 from fragmenting table blocks at blank lines.
  */
 export function jsxTable(): Extension {
   return {

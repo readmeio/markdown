@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { execute } from '../helpers';
+import { renderingEngines } from './utils';
 
 describe('Glossary', () => {
-  it('renders a glossary item', () => {
+  it.each(renderingEngines)('%s: renders a glossary item', (_label, renderContent) => {
     const md = '<Glossary>parliament</Glossary>';
-    const Content = execute(md);
+    const Content = renderContent(md);
     render(<Content />);
 
     expect(screen.getByText('parliament')).toBeVisible();

@@ -20,7 +20,7 @@ import type {
 } from './types';
 import type { MagicBlockNode } from '../../../../lib/mdast-util/magic-block/types';
 import type { Root as HastRoot, Text as HastText, Element as HastElement, ElementContent } from 'hast';
-import type { Root as MdastRoot, RootContent, Parent } from 'mdast';
+import type { Root as MdastRoot, RootContent, Parent, Paragraph, PhrasingContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -50,9 +50,9 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
   CLOSE_BLOCK_TAG_BOUNDARY_RE,
-  COMPLETE_HTML_ELEMENT_RE,
   HTML_ELEMENT_BLOCK_RE,
   HTML_TAG_RE,
+  HTML_TAG_STRIP_RE,
   NEWLINE_WITH_WHITESPACE_RE,
 } from './patterns';
 import {
@@ -63,6 +63,17 @@ import {
   EMPTY_TABLE_PLACEHOLDER,
   EMPTY_RECIPE_PLACEHOLDER,
 } from './placeholder';
+
+/**
+ * To be used when trying to lift a block node out of a paragraph
+ * since it can't be in a paragraph
+ */
+interface NodeLiftEvent {
+  childrenBlockNodes: RootContent[];
+  grandparent: Parent;
+  node: MagicBlockNode;
+  parent: Paragraph;
+}
 
 /**
  * Wraps a node in a "pinned" container if sidebar: true is set.
@@ -259,23 +270,25 @@ const parseTableCell = (text: string): MdastNode[] => {
   const processed = trimmedLines.join('\n');
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
-  // Process markdown inside complete HTML elements (e.g. _emphasis_ within <li>).
-  // Bare tags like "<i>" are left for rehypeRaw since rehype-parse would mangle them.
+  // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`
+  // or `<ul><li>_x_</li></ul>`). Pure bare tags like "<i>" or "<br>" are left for rehypeRaw
+  // since rehype-parse would mangle them (auto-closing void/inline elements).
   visit(tree, 'html', (node: { type: 'html'; value: string }) => {
-    if (COMPLETE_HTML_ELEMENT_RE.test(node.value)) {
+    const hasInnerText = node.value.replace(HTML_TAG_STRIP_RE, '').trim().length > 0;
+    if (hasInnerText) {
       node.value = processMarkdownInHtmlString(node.value);
     } else {
       node.value = escapeInvalidTags(node.value);
     }
   });
 
-  if (tree.children.length > 1) {
-    return tree.children as MdastNode[];
-  }
+  const result = tree.children.length > 1
+    ? (tree.children as MdastNode[])
+    : tree.children.flatMap(n =>
+        n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
+      );
 
-  return tree.children.flatMap(n =>
-    n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
-  );
+  return result;
 };
 
 const parseBlock = (text: string): MdastNode[] => {
@@ -516,7 +529,9 @@ function transformMagicBlock(
         return mapped;
       }, [] as string[][]);
 
-      const tokenizeCell = compatibilityMode ? textToBlock : parseTableCell;
+      const tokenizeCell = compatibilityMode
+        ? textToBlock
+        : parseTableCell;
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],
@@ -635,20 +650,22 @@ const blockTypes = [
  */
 const isBlockNode = (node: RootContent): boolean => blockTypes.includes(node.type);
 
+const isParagraph = (node: Parent): node is Paragraph => node.type === 'paragraph';
+
+/**
+ * True for phrasing content that contributes only whitespace at render time
+ * (a soft `break` node or a text node with no non-whitespace characters).
+ */
+const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
+  node.type === 'break' || (node.type === 'text' && !node.value.trim());
+
 /**
  * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
  */
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
   (options = {}) =>
   tree => {
-    const replacements: {
-      after: RootContent[];
-      before: RootContent[];
-      blockNodes: RootContent[];
-      container: Parent;
-      inlineNodes: RootContent[];
-      parent: Parent;
-    }[] = [];
+    const lifts: NodeLiftEvent[] = [];
 
     visitParents(tree, 'magicBlock', (node: MagicBlockNode, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]; // direct parent of the current node
@@ -669,53 +686,62 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         return;
       }
 
-      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs), lift them out
-      if (parent.type === 'paragraph' && children.some(child => isBlockNode(child))) {
+      // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs)
+      // it means we need to lift them out
+      if (isParagraph(parent) && children.some(isBlockNode)) {
         const blockNodes: RootContent[] = [];
-        const inlineNodes: RootContent[] = [];
-
         children.forEach(child => {
-          (isBlockNode(child) ? blockNodes : inlineNodes).push(child);
+          if (isBlockNode(child)) {
+            blockNodes.push(child);
+          }
         });
 
-        replacements.push({
-          container: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
+        lifts.push({
+          childrenBlockNodes: blockNodes,
+          grandparent: ancestors[ancestors.length - 2] || tree, // grandparent of the current node
+          node,
           parent,
-          blockNodes,
-          inlineNodes,
-          before: parent.children.slice(0, index) as RootContent[],
-          after: parent.children.slice(index + 1) as RootContent[],
         });
       } else {
         parent.children.splice(index, 1, ...children);
       }
     });
 
-    // Second pass: apply replacements that require lifting block nodes out of paragraphs
-    // Process in reverse order to maintain correct indices
-    for (let i = replacements.length - 1; i >= 0; i -= 1) {
-      const { after, before, blockNodes, container, inlineNodes, parent } = replacements[i];
-      const containerChildren = container.children as RootContent[];
-      const paraIndex = containerChildren.indexOf(parent as RootContent);
-
-      if (paraIndex === -1) {
-        parent.children.splice(before.length, 1, ...blockNodes, ...inlineNodes);
+    // Second pass: apply lifts that move block nodes, and the content after them, out of paragraphs.
+    // Operate on live state (find each node's current index now) and process in reverse so
+    // that container insertions don't disturb earlier paragraphs' positions.
+    for (let i = lifts.length - 1; i >= 0; i -= 1) {
+      const { childrenBlockNodes: blockNodes, grandparent, node, parent: parentParagraph } = lifts[i];
+      const nodePosition = parentParagraph.children.indexOf(node);
+      const parentPosition = grandparent.children.indexOf(parentParagraph);
+      if (nodePosition === -1 || parentPosition === -1) {
         // eslint-disable-next-line no-continue
         continue;
       }
 
-      if (inlineNodes.length > 0) {
-        parent.children = [...before, ...inlineNodes, ...after];
-        if (blockNodes.length > 0) {
-          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
-        }
-      } else if (before.length === 0 && after.length === 0) {
-        containerChildren.splice(paraIndex, 1, ...blockNodes);
+      // Snapshot live siblings to reconstruct the parent paragraph around the lifted node.
+      const parentSiblingsBefore = parentParagraph.children.slice(0, nodePosition);
+      const parentSiblingsAfter = parentParagraph.children.slice(nodePosition + 1);
+
+      // Remove split-edge whitespace so lifted blocks do not render with extra blank lines.
+      while (parentSiblingsBefore.length > 0 && isWhitespacePhrasing(parentSiblingsBefore[parentSiblingsBefore.length - 1])) parentSiblingsBefore.pop();
+      while (parentSiblingsAfter.length > 0 && isWhitespacePhrasing(parentSiblingsAfter[0])) parentSiblingsAfter.shift();
+
+      const splitOffContentFromParent: RootContent[] = [...blockNodes];
+      if (parentSiblingsAfter.length > 0) {
+        // Keep trailing inline content grouped under a paragraph sibling as it might be an inline node
+        // Even if it contains a block node, it will be hoisted out during its turn in the loop
+        const trailingParagraph: Paragraph = { type: 'paragraph', children: parentSiblingsAfter };
+        splitOffContentFromParent.push(trailingParagraph);
+      }
+
+      parentParagraph.children = [...parentSiblingsBefore];
+      // If the parent paragraph is empty, just replace it with the lifted block nodes
+      const shouldReplaceParent = parentParagraph.children.length === 0;
+      if (shouldReplaceParent) {
+        grandparent.children.splice(parentPosition, 1, ...splitOffContentFromParent);
       } else {
-        parent.children = [...before, ...after];
-        if (blockNodes.length > 0) {
-          containerChildren.splice(paraIndex + 1, 0, ...blockNodes);
-        }
+        grandparent.children.splice(parentPosition + 1, 0, ...splitOffContentFromParent);
       }
     }
   };

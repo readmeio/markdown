@@ -4,6 +4,7 @@ import type { Element } from 'hast';
 import fs from 'node:fs';
 
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 
 import { vi } from 'vitest';
 
@@ -540,7 +541,7 @@ hello **cat**
     expect(image.properties.align).toBe('center');
     expect(image.properties.width).toBe('300px');
     expect(image.properties.src).toBe('https://drastik.ch/wp-content/uploads/2023/06/blackcat.gif');
-    expect(image.properties.border).toBe('true');
+    expect(image.properties.border).toBe(true);
     // Caption text should be processed (but Image components don't support captions in mdxish)
   });
 

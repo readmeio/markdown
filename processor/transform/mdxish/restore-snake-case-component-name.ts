@@ -1,11 +1,11 @@
-import type { SnakeCaseMapping } from './mdxish-snake-case-components';
+import type { SnakeCaseMapping } from './components/snake-case-components';
 import type { Parent, Html } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { restoreSnakeCase } from './mdxish-snake-case-components';
+import { restoreSnakeCase } from './components/snake-case-components';
 
 interface Options {
   mapping: SnakeCaseMapping;

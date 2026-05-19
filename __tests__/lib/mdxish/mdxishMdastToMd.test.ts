@@ -1,4 +1,4 @@
-import type { Root as MdastRoot, RootContent } from 'mdast';
+import type { Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
@@ -176,7 +176,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -210,6 +210,77 @@ describe('mdxishMdastToMd', () => {
               </td>
             </tr>
           </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should serialize a table with newlines in cells to JSX <Table> and separate the lines with an empty line between them', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: ['left'],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          {
+                            type: 'text',
+                            value: 'Line 1'
+                          }
+                        ]
+                      },
+                      {
+                        type: 'paragraph',
+                        children: [
+                          {
+                            type: 'text',
+                            value: 'Line 2'
+                          }
+                        ]
+                      },
+                      {
+                        type: 'paragraph',
+                        children: [
+                          {
+                            type: 'text',
+                            value: 'Line 3'
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          } as Table
+        ]
+      };
+
+      const serialized = mdxishMdastToMd(mdast);
+      expect(serialized).toMatchInlineSnapshot(`
+        "<Table align={["left"]}>
+          <thead>
+            <tr>
+              <th>
+                Line 1
+
+                Line 2
+
+                Line 3
+              </th>
+            </tr>
+          </thead>
+
+          <tbody />
         </Table>
         "
       `);
@@ -251,7 +322,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -321,7 +392,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -399,7 +470,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -472,7 +543,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -548,7 +619,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -618,7 +689,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -656,7 +727,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -701,7 +772,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -768,7 +839,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 
@@ -808,7 +879,98 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('|');
+      expect(result).not.toContain('<Table>');
+    });
+
+    it('should keep tables with readme-variable nodes as GFM markdown', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          {
+                            type: NodeTypes.variable,
+                            data: { hName: 'Variable', hProperties: { name: 'WHOA' } },
+                            value: '{user.WHOA}',
+                          } as unknown as MdastRoot['children'][number],
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('|');
+      expect(result).not.toContain('<Table>');
+    });
+
+    it('should keep tables with readme-variable alongside text as GFM markdown', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [
+                      {
+                        type: 'paragraph',
+                        children: [
+                          { type: 'text', value: 'Hello ' },
+                          {
+                            type: NodeTypes.variable,
+                            data: { hName: 'Variable', hProperties: { name: 'name' } },
+                            value: '{user.name}',
+                          } as unknown as MdastRoot['children'][number],
+                        ],
+                      },
+                    ],
+                  },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'a' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'b' }] }] },
+                ],
+              },
+            ],
+          } as Table,
         ],
       };
 
@@ -840,7 +1002,7 @@ describe('mdxishMdastToMd', () => {
                 ],
               },
             ],
-          },
+          } as Table,
         ],
       };
 

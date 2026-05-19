@@ -1,27 +1,5 @@
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
-
-/**
- * HTML void elements that are legitimately self-closing per the HTML spec.
- * These should NOT be transformed.
- *
- * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements
- */
-const HTML_VOID_ELEMENTS = new Set([
-  'area',
-  'base',
-  'br',
-  'col',
-  'embed',
-  'hr',
-  'img',
-  'input',
-  'link',
-  'meta',
-  'param',
-  'source',
-  'track',
-  'wbr',
-]);
+import { HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 
 /**
  * Matches self-closing HTML tags: `<tagname/>` or `<tagname attr="val" />`
@@ -36,7 +14,7 @@ const HTML_VOID_ELEMENTS = new Set([
  *
  * Only matches lowercase tag names to avoid interfering with PascalCase
  * JSX custom components (e.g. `<MyComponent />`), which are handled
- * separately by mdxish-component-blocks.
+ * separately by components/mdx-blocks.
  */
 const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)?)?\s*\/>/g;
 

@@ -1,5 +1,5 @@
-import { componentTagPattern } from '../../../lib/constants';
-import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
+import { componentTagPattern } from '../../../../lib/constants';
+import { protectCodeBlocks, restoreCodeBlocks } from '../../../../lib/utils/mdxish/protect-code-blocks';
 
 export type SnakeCaseMapping = Record<string, string>;
 
