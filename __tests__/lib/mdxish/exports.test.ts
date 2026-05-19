@@ -119,32 +119,19 @@ a = {a}`;
 
     it('renders `export function` components to their JSX body', () => {
       const md = 'export function Greeting() {\n  return (<div>Hey Ho</div>);\n}\n\n<Greeting />\n';
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-
-      const html = renderToStaticMarkup(Content ? React.createElement(Content) : null);
+      const html = renderToHtml(md);
       expect(html).toContain('Hey Ho');
       expect(html).toContain('<div>Hey Ho</div>');
     });
 
     it('renders component when called using <Component /> syntax', () => {
       const md = 'export function Greeting() { return (<div>hello</div>); }\n\n<Greeting />.';
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
-      expect(html).toContain('hello');
+      expect(renderToHtml(md)).toContain('hello');
     });
 
     it('renders component when called using Component() syntax', () => {
       const md = 'export function Greeting() { return (<div>hello</div>); }\n\n{Greeting()}.';
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
-      expect(html).toContain('<div>hello</div>');
+      expect(renderToHtml(md)).toContain('<div>hello</div>');
     });
 
     it('detects & renders components defined with arrow functions', () => {
@@ -154,12 +141,7 @@ a = {a}`;
 
 2. Expression: {<Arrow />}
       `;
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
-
+      const html = renderToHtml(md);
       expect(html).toContain('Tag: <span>This is an arrow function component</span>');
       expect(html).toContain('Expression: <span>This is an arrow function component</span>');
     });
@@ -212,12 +194,7 @@ Greeting: {new MyClass().greet()}.`;
   describe('variable naming semantics', () => {
     it('accepts lowercase JSX function declarations as a component', () => {
       const md = 'export function greeting() { return (<div>hello</div>); }\n\n<greeting />';
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
-      expect(html).toContain('<div>hello</div>');
+      expect(renderToHtml(md)).toContain('<div>hello</div>');
     });
   });
 
@@ -238,20 +215,12 @@ Greeting: {new MyClass().greet()}.`;
 
     it('using <Component /> does not need to be wrapped in {...} expressions', () => {
       const md = 'export function Greeting() { return (<div>hello</div>); }\n\n<Greeting />';
-      const ast = mdxish(md);
-
-      const { default: Content } = renderMdxish(ast);
-      const html = renderToStaticMarkup(React.createElement(Content));
-      expect(html).toContain('<div>hello</div>');
+      expect(renderToHtml(md)).toContain('<div>hello</div>');
     });
 
     it('evaluates <Component /> when declared inside {...} expressions', () => {
       const md = 'export function Greeting() { return (<div>hello</div>); }\n\n{<Greeting />}.';
-
-      const ast = mdxish(md);
-      const { default: Content } = renderMdxish(ast);
-      expect(Content).toBeDefined();
-      const html = renderToStaticMarkup(React.createElement(Content));
+      const html = renderToHtml(md);
       expect(html).toContain('<div>hello</div>');
       expect(html).not.toContain('{<Greeting />}.');
     });
