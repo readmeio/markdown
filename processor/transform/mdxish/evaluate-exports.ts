@@ -44,6 +44,42 @@ const collectExportNames = (declaration: Declaration): string[] => {
 };
 
 /**
+ * Recursively walk an estree subtree, returning true on the first JSX node.
+ *
+ * Accepts `unknown` because recursion descends into arbitrary node fields —
+ * arrays, child nodes, and primitive leaves (strings, numbers, null) — and the
+ * function bottoms out on anything that isn't an object.
+ */
+const containsJsx = (node: unknown): boolean => {
+  if (node === null || typeof node !== 'object') return false;
+  if ('type' in node && (node.type === 'JSXElement' || node.type === 'JSXFragment')) return true;
+  return Object.values(node).some(v => (Array.isArray(v) ? v.some(containsJsx) : containsJsx(v)));
+};
+
+
+/**
+ * Collect names bound to a JSX-returning function (callable as `<Component />`).
+ * Covers `function Foo() {…}`, `const Foo = () => …`, `const Foo = function () {…}`.
+ */
+const collectJsxComponentNames = (declaration: Declaration): string[] => {
+  const names: string[] = [];
+  if (declaration.type === 'FunctionDeclaration' && declaration.id && containsJsx(declaration.body)) {
+    names.push(declaration.id.name);
+  } else if (declaration.type === 'VariableDeclaration') {
+    declaration.declarations.forEach(d => {
+      if (
+        d.id.type === 'Identifier' &&
+        (d.init?.type === 'ArrowFunctionExpression' || d.init?.type === 'FunctionExpression') &&
+        containsJsx(d.init.body)
+      ) {
+        names.push(d.id.name);
+      }
+    });
+  }
+  return names;
+};
+
+/**
  * Evaluate `export const/function` declarations introduced by mdxjsEsm nodes.
  *
  * Walks each mdxjsEsm node's estree to gather all export declarations while
@@ -79,14 +115,7 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
       programBody.push(declaration);
       exportNames.push(...declaredNames);
 
-      // Only function declarations can be invoked as `<Component />`. Cheap
-      // JSX sniff catches JSX anywhere in the function body.
-      if (
-        declaration.type === 'FunctionDeclaration' &&
-        /"type":"JSX(Element|Fragment)"/.test(JSON.stringify(declaration))
-      ) {
-        declaredNames.forEach(n => jsxComponentNames.add(n));
-      }
+      collectJsxComponentNames(declaration).forEach(name => jsxComponentNames.add(name));
     });
   });
 
@@ -99,8 +128,8 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
 
   const scope: MdxishScope = { components: {}, values: {} };
 
+  // Build the full program body from all export declarations
   try {
-    // Build the full program body from all export declarations
     const program: Program = { type: 'Program', sourceType: 'module', body: programBody };
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
     const { value: source } = toJs(program);
