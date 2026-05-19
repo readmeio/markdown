@@ -4,15 +4,15 @@ exports[`Components > Callout 1`] = `"<blockquote class="callout callout_error" 
 
 exports[`Components > Embed 1`] = `"<div class="embed embed_hasImg"><div class="embed-media"><iframe class="embedly-embed" src="//cdn.embedly.com/widgets/media.html?src=https://www.google.com/maps/embed/v1/place?center=37.829698%2C-122.258166&amp;key=AIzaSyD9HrlRuI1Ani0-MTZ7pvzxwxi4pgW0BCY&amp;zoom=16&amp;q=4126+Opal+St,+Oakland,+CA+94609&amp;display_name=Google+Maps&amp;url=https://www.google.com/maps/place/4126+Opal+St,+Oakland,+CA+94609/@37.829698,-122.258166,16z/data=!4m5!3m4!1s0x80857dfb145a04ff:0x96b17d967421636f!8m2!3d37.8296978!4d-122.2581661?hl=en&amp;image=http://maps-api-ssl.google.com/maps/api/staticmap?center=37.829698,-122.258166&amp;zoom=15&amp;size=250x250&amp;sensor=false&amp;key=02466f963b9b4bb8845a05b53d3235d7&amp;type=text/html&amp;schema=google" width="600" height="450" scrolling="no" title="Google Maps embed" frameborder="0" allow="autoplay; fullscreen" allowfullscreen="true"></iframe></div></div>"`;
 
-exports[`Components > Embed 2`] = `"<iframe height="550" src="https://consent-manager.metomic.io/placeholder-demo.html?example=reddit" style="display: flex; margin: auto;"></iframe>"`;
+exports[`Components > Embed 2`] = `"<iframe src="https://consent-manager.metomic.io/placeholder-demo.html?example=reddit" style="display: flex; margin: auto; width: 100%; height: 550px;"></iframe>"`;
 
-exports[`Components > Embed 3`] = `"<iframe src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m2!2m1!1sLos+Angeles" style="display: flex; margin: auto;" title=""></iframe>"`;
+exports[`Components > Embed 3`] = `"<iframe src="https://www.google.com/maps/embed?origin=mfe&amp;pb=!1m2!2m1!1sLos+Angeles" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
 
-exports[`Components > Embed 4`] = `"<iframe src="https://www.youtube.com/embed/Ui6wtK1WkQo" style="display: flex; margin: auto;" title=""></iframe>"`;
+exports[`Components > Embed 4`] = `"<iframe src="https://www.youtube.com/embed/Ui6wtK1WkQo" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
 
-exports[`Components > Embed 5`] = `"<iframe src="https://example.com/doc.pdf" style="display: flex; margin: auto;" title=""></iframe>"`;
+exports[`Components > Embed 5`] = `"<iframe src="https://example.com/doc.pdf" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
 
-exports[`Components > Embed 6`] = `"<iframe src="https://jsfiddle.net/s6rhnpv7/embedded/" style="display: flex; margin: auto;" title=""></iframe>"`;
+exports[`Components > Embed 6`] = `"<iframe src="https://jsfiddle.net/s6rhnpv7/embedded/" style="display: flex; margin: auto; width: 100%; height: 300px;" title=""></iframe>"`;
 
 exports[`Components > Embed 7`] = `"<div class="embed "><a class="embed-link" href="https://gist.github.com/foo/abc123" rel="noopener noreferrer" target="_blank"><div class="embed-body"><b>View</b>: <span class="embed-body-url">https://gist.github.com/foo/abc123</span></div></a></div>"`;
 

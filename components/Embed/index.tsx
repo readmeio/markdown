@@ -55,13 +55,24 @@ const Embed = ({
     }
   }
 
+  const { height, width, ...spreadAttrs } = attrs as { height?: string; width?: string };
+  // HTML width/height attrs accept bare numbers (interpreted as px), but CSS does not — convert.
+  const toCssSize = (v: string | undefined, fallback: string) => (v ? (/^\d+$/.test(v) ? `${v}px` : v) : fallback);
+  const iframeStyle = {
+    border: 'none',
+    display: 'flex',
+    margin: 'auto',
+    width: toCssSize(width, '100%'),
+    height: toCssSize(height, '300px'),
+  };
+
   if (iframe) {
-    return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} title={title} />;
+    return <iframe {...spreadAttrs} src={url} style={iframeStyle} title={title} />;
   }
 
   // Fall back to a direct iframe for URL-derivable embed types when html is missing.
   if (!html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed)) {
-    return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} title={title} />;
+    return <iframe {...spreadAttrs} src={url} style={iframeStyle} title={title} />;
   }
 
   if (!providerUrl && url)
