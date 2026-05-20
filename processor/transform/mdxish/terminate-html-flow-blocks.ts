@@ -10,6 +10,7 @@ const TABLE_STRUCTURE_TAGS = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 't
 
 // Tags whose contents must be preserved as is, inserting a blank line after the
 // opener corrupts the payload.
+// htmlRawNames here refer to <pre>, <textarea>, <script>, <style>
 const RAW_CONTENT_TAGS = [...htmlRawNames, ...TABLE_STRUCTURE_TAGS];
 
 function isLineHtml(line: string) {
