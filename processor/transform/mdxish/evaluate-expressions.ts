@@ -34,7 +34,7 @@ const evaluateExpressions: Plugin<[], Root> = () => tree => {
       } else if (typeof result === 'object') {
         textValue = JSON.stringify(result);
       } else {
-        textValue = String(result).replace(/\s+/g, ' ').trim();
+        textValue = String(result);
       }
 
       // Replace expression node with text node since the expression is conceptually a text

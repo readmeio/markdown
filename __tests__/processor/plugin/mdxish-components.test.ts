@@ -218,4 +218,40 @@ describe('smartCamelCase (prop normalization)', () => {
     expect(elements[0].properties).toHaveProperty('backgroundColor', 'white');
     expect(elements[0].properties).toHaveProperty('onClick', 'fn');
   });
+
+  describe('template literal children', () => {
+    it('passes a multi-line template literal as a raw text child, not as processed paragraphs', () => {
+      const Terminal = {} as CustomComponents[string];
+      const markdown = `<Terminal>{\`
+  $ npx run command
+  This is the response
+
+  $ inputs start with a dollar sign
+  outputs start with no prefix
+\`}</Terminal>`;
+
+      const hast = mdxish(markdown, { components: { Terminal } });
+      const elements = findElementsByTagName(hast, 'Terminal');
+      expect(elements).toHaveLength(1);
+
+      // Template literal content is stored as properties.children (a bare string)
+      // so hast-to-hyperscript passes it directly to React without array-wrapping,
+      // matching MDX engine behaviour where {`...`} is a JS value, not a HAST node.
+      expect(elements[0].children).toHaveLength(0);
+      expect(elements[0].properties).toHaveProperty('children');
+      expect(elements[0].properties!.children).toContain('$ npx run command');
+    });
+
+    it('still processes single-line non-expression text children through markdown', () => {
+      const Callout = {} as CustomComponents[string];
+      const markdown = '<Callout>**bold** text</Callout>';
+      const hast = mdxish(markdown, { components: { Callout } });
+      const elements = findElementsByTagName(hast, 'Callout');
+      expect(elements).toHaveLength(1);
+
+      // Single-line markdown content should still be processed
+      const html = elements[0].children.map(c => (c as Element).tagName ?? '').join(',');
+      expect(html).toContain('p');
+    });
+  });
 });

@@ -103,6 +103,20 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
+    // Text with embedded newlines arrived here from a template-literal JSX
+    // expression (e.g. <Terminal>{`...\n...`}</Terminal>) evaluated earlier in
+    // the pipeline. Regular markdown component bodies go through parseMdChildren
+    // first and reach this point as paragraph/element nodes, never as direct
+    // text nodes with literal newlines.
+    //
+    // Store the string as node.properties.children (empty HAST children) so
+    // hast-to-hyperscript passes it as a bare string prop instead of wrapping
+    // it in an array — matching MDX engine behaviour where {`...`} is a JS value.
+    if (child.value.includes('\n')) {
+      node.properties = { ...(node.properties || {}), children: child.value };
+      return [];
+    }
+
     const hast = processMarkdown(child.value.trim());
     const children = (hast.children ?? []).filter(isElementContentNode);
 
