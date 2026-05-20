@@ -4,7 +4,7 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
-import { collectNodes, findAllElementsByTagName, parseMdxishWithSource } from '../helpers';
+import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
@@ -920,5 +920,29 @@ describe('mdxish tables transformation', () => {
     const html = toHtml(mdxish(md));
     expect(html).toContain('<code>code</code>');
     expect(html).toContain('<strong>bold</strong>');
+  });
+
+  describe('<pre> formatting inside HTML table cells', () => {
+    it('preserves <pre> indentation when <pre> is at column 0 inside a table', () => {
+      const md = `<table>
+<tr>
+<td>
+<pre data-lang="json">
+{
+  "a": "x",
+  "b": {
+    "c": "y"
+  }
+}
+</pre>
+</td>
+</tr>
+</table>`;
+
+      const out = roundTripMdxish(md);
+      expect(out).toContain('"a": "x"');
+      expect(out).toContain('  "b"');
+      expect(out).toContain('    "c": "y"');
+    });
   });
 });
