@@ -14,7 +14,7 @@ const Favicon = ({ src, alt = 'favicon', ...attr }: FaviconProps) => (
 interface EmbedProps {
   favicon?: string;
   html?: string;
-  iframe?: boolean;
+  iframe?: boolean | string;
   image?: string;
   lazy?: boolean;
   providerName?: string;
@@ -23,6 +23,11 @@ interface EmbedProps {
   typeOfEmbed?: string;
   url: string;
 }
+
+const IFRAME_DERIVABLE_TYPES = new Set(['youtube', 'jsfiddle', 'pdf']);
+
+// HTML width/height attrs accept bare numbers (interpreted as px), but CSS does not, convert.
+const toCssSize = (v: string | undefined, fallback: string) => (v ? (/^\d+$/.test(v) ? `${v}px` : v) : fallback);
 
 const Embed = ({
   lazy = true,
@@ -34,9 +39,11 @@ const Embed = ({
   iframe,
   image,
   favicon,
+  typeOfEmbed,
   ...attrs
 }: EmbedProps) => {
-  if (typeof iframe !== 'boolean') iframe = iframe === 'true';
+  const explicitOptOut = iframe === false || iframe === 'false';
+  if (typeof iframe !== 'boolean') iframe = iframe === 'true' || typeOfEmbed === 'iframe';
 
   if (html) {
     try {
@@ -51,8 +58,21 @@ const Embed = ({
     }
   }
 
-  if (iframe) {
-    return <iframe {...attrs} src={url} style={{ border: 'none', display: 'flex', margin: 'auto' }} title={title} />;
+  const { height, width, ...spreadAttrs } = attrs as { height?: string; width?: string };
+  const iframeStyle = {
+    border: 'none',
+    display: 'flex',
+    margin: 'auto',
+    width: toCssSize(width, '100%'),
+    height: toCssSize(height, '480px'),
+  };
+
+  // Fall back to a direct iframe for URL-derivable embed types when html is missing.
+  const renderTypeAsIframe =
+    !html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed);
+
+  if (iframe || renderTypeAsIframe) {
+    return <iframe {...spreadAttrs} src={url} style={iframeStyle} title={title} />;
   }
 
   if (!providerUrl && url)
