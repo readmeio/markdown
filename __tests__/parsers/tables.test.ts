@@ -1,6 +1,7 @@
 import type { Element } from 'hast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
+import { toHtml } from 'hast-util-to-html';
 import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../lib';
@@ -236,9 +237,9 @@ const x = 1;
     <tr>
       <td>
 
-* one
-* two
-* three
+        * one
+        * two
+        * three
 
       </td>
     </tr>`,
@@ -249,9 +250,9 @@ const x = 1;
     <tr>
       <td>
 
-1. first
-2. second
-3. third
+        1. first
+        2. second
+        3. third
 
       </td>
     </tr>`,
@@ -305,12 +306,12 @@ const x = 1;
     <tr>
       <td>
 
-> quoted
+        > quoted
 
       </td>
       <td>
 
-* listed
+        * listed
 
       </td>
     </tr>`,
@@ -897,6 +898,186 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('jsx tables with bare cells (no <tr> wrapper)', () => {
+    it('renders header row when <thead> contains <th>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<th>Question</th>
+<th>Answer</th>
+</thead>
+<tbody>
+<tr>
+<td>q1</td>
+<td>a1</td>
+</tr>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"tagName":"th"');
+      expect(json).toContain('"value":"Question"');
+      expect(json).toContain('"value":"Answer"');
+    });
+
+    it('renders body row when <tbody> contains <td>s without an explicit <tr> wrapper', () => {
+      const doc = `<table>
+<thead>
+<tr>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<td>bare-cell</td>
+</tbody>
+</table>`;
+
+      const tree = mdxish(doc);
+      const json = JSON.stringify(tree);
+
+      expect(json).toContain('"value":"bare-cell"');
+    });
+
+    it('chunks bare <td>s into multiple body rows using the header column count', () => {
+      const doc = `<table>
+  <thead>
+    <td>Hi</td>
+    <td>World</td>
+  </thead>
+  <tbody>
+    <td>Hello</td>
+    <td>Globe</td>
+    <td>Hello</td>
+    <td>Globe</td>
+  </tbody>
+</table>`;
+
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
+        .filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+
+      expect(bodyRows).toStrictEqual([
+        ['Hello', 'Globe'],
+        ['Hello', 'Globe'],
+      ]);
+    });
+
+    it('preserves multiple <tr>s inside <tbody> when remarkMdx wraps them in a paragraph', () => {
+      const doc = `<Table>
+<thead><tr><th>L</th></tr></thead>
+<tbody>
+<tr><td>1</td></tr>
+<tr><td>2</td></tr>
+<tr><td>3</td></tr>
+</tbody>
+</Table>`;
+
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
+        .filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+
+      expect(bodyRows).toStrictEqual([['1'], ['2'], ['3']]);
+    });
+  });
+
+  describe('jsx tables with legacy variables', () => {
+    it('preserves <<variable>> when another cell triggers the malformed-retry path', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Hello <<NAME>>!</td>
+      <td>
+        <span style="color:red">unclosed span here
+
+        across paragraphs.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const variables = findAllElementsByTagName(tables[0], 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties).toMatchObject({ name: 'NAME', isLegacy: true });
+    });
+
+    it('does not treat <<string> as a phantom tag during malformed-retry', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>A</th><th>B</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>literal <<string> here</td>
+      <td>
+        <span style="color:red">unclosed span
+
+        more text.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+    });
+
+    it('parses markdown and <<variable>> syntax inside cells', () => {
+      const doc = '<table><tr><td>**bold** <<NAME>></td></tr></table>';
+
+      const tree = mdxish(doc);
+      removePosition(tree, { force: true });
+
+      expect(tree).toStrictEqual({
+        type: 'root',
+        children: [
+          {
+            type: 'element',
+            tagName: 'table',
+            properties: {},
+            children: [
+              {
+                type: 'element',
+                tagName: 'tr',
+                properties: {},
+                children: [
+                  {
+                    type: 'element',
+                    tagName: 'td',
+                    properties: {},
+                    children: [
+                      {
+                        type: 'element',
+                        tagName: 'strong',
+                        properties: {},
+                        children: [{ type: 'text', value: 'bold' }],
+                      },
+                      {
+                        type: 'element',
+                        tagName: 'variable',
+                        properties: { name: 'NAME', isLegacy: true },
+                        children: [],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        data: { quirksMode: false },
+      });
+    });
+  });
+
   describe('jsx tables with images', () => {
     it('parses jsx tables with images in cells', () => {
       const doc = `
@@ -920,6 +1101,73 @@ None of the following content will get rendered!`;
       removePosition(ast, { force: true });
 
       expect(ast).toMatchSnapshot();
+    });
+  });
+
+  describe('code content preservation in table cells', () => {
+    it('preserves <code> content containing {expression} patterns verbatim (RM-16556)', () => {
+      const doc = `<table>
+    <thead>
+        <th>Attribute</th>
+        <th>Description</th>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>action</code></td>
+            <td>Contains: <ul><li><code>deny_custom_{custom_deny_id}</code>. Custom action.</li></ul></td>
+        </tr>
+    </tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>deny_custom_{custom_deny_id}</code>');
+    });
+
+    it('does not apply emphasis to underscores inside <code> elements in table cells', () => {
+      const doc = `<table>
+    <thead><tr><th>Name</th><th>Type</th></tr></thead>
+    <tbody>
+        <tr>
+          <td>field</td>
+          <td>Contains: <ul><li><code>snake_case_value</code></li><li><code>another_name_here</code></li></ul></td>
+        </tr>
+    </tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>snake_case_value</code>');
+      expect(html).toContain('<code>another_name_here</code>');
+    });
+
+    it('preserves <code> content with underscores and {expression} in GFM-style markdown tables (RM-16575)', () => {
+      const doc = `|Attribute|Description|
+|---|---|
+|\`action\`|Action taken any time the penalty box is triggered. Contains: <ul><li><code>alert</code>. Event recorded.</li><li><code>deny</code>. Event blocked.</li><li><code>deny_custom_{custom_deny_id}</code>. Took your custom action against the event.</li><li><code>none</code>. No action taken.</li></ul>|
+|\`enabled\`|If **true**, penalty box protection is enabled.|`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>deny_custom_{custom_deny_id}</code>');
+      expect(html).toContain('<code>alert</code>');
+      expect(html).toContain('<code>deny</code>');
+      expect(html).toContain('<code>none</code>');
+    });
+
+    it('does not apply emphasis to underscores inside inline <code> elements in GFM tables', () => {
+      const doc = `|Name|Type|
+|---|---|
+|field|Contains: <ul><li><code>snake_case_value</code></li><li><code>another_name_here</code></li></ul>|`;
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).toContain('<code>snake_case_value</code>');
+      expect(html).toContain('<code>another_name_here</code>');
     });
   });
 });

@@ -353,15 +353,26 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
  */
 const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   const attrs = getAttrs<CalloutAttrs>(jsx);
-  const { empty = false, icon = '', theme = '' } = attrs;
+  const { empty: explicitEmpty = false, icon = '', theme = '' } = attrs;
+
+  // children[0] is the title slot. Prepend an empty-paragraph placeholder
+  // when JSX has no leading heading, otherwise the body round-trips into it.
+  const jsxChildren = jsx.children as Callout['children'];
+  const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
+  const children = hasHeadingFirst
+    ? jsxChildren
+    : ([
+        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
+        ...jsxChildren,
+      ] as Callout['children']);
 
   return {
     type: NodeTypes.callout,
-    children: jsx.children as Callout['children'],
+    children,
     data: {
       hName: 'Callout',
       hProperties: {
-        empty,
+        empty: explicitEmpty || !hasHeadingFirst,
         icon,
         theme,
       },
@@ -528,10 +539,47 @@ const isTableCell = (node: Node): node is MdxJsxFlowElement & { name: 'td' | 'th
   isMDXElement(node) && ['th', 'td'].includes((node as MdxJsxFlowElement).name);
 
 /**
+ * Wraps bare `<td>`/`<th>` cells directly inside `<thead>`/`<tbody>` with an
+ * implicit `<tr>`. remarkMdx may wrap inline JSX elements in paragraph nodes,
+ * so unwrap those first.
+ */
+const wrapBareCellsInRow = (node: Node): void => {
+  visit(node, isMDXElement, (section: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (section.name !== 'thead' && section.name !== 'tbody') return;
+
+    const children = section.children as Node[];
+    const hasRow = children.some(
+      c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
+    );
+    if (hasRow) return;
+
+    const unwrapped = children.flatMap(c => {
+      if (c.type === 'paragraph' && 'children' in c && Array.isArray(c.children)) {
+        return c.children as Node[];
+      }
+      return [c];
+    });
+
+    const cells = unwrapped.filter(c => isTableCell(c));
+    if (cells.length === 0) return;
+
+    const tr: MdxJsxFlowElement = {
+      type: 'mdxJsxFlowElement',
+      name: 'tr',
+      attributes: [],
+      children: cells as MdxJsxFlowElement['children'],
+    };
+    section.children = [tr] as typeof section.children;
+  });
+};
+
+/**
  * Converts a JSX <Table> element to an MDAST table node with alignment.
  * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+  wrapBareCellsInRow(jsx as Node);
+
   let hasThead = false;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
@@ -662,6 +710,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
   visit(tree, 'image', (node: MagicBlockImage, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return SKIP;
     if (parent.type === 'paragraph') return SKIP;
+
+    // `![](url)` in any tableCell stays inline. Authors who want a captioned figure use
+    // `<Image caption="…" />` JSX, which becomes `image-block` via `COMPONENT_MAP` above.
+    if (parent.type === 'tableCell') return SKIP;
 
     const newNode = transformMagicBlockImage(node);
     (parent.children as Node[])[index] = newNode;

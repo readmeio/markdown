@@ -75,18 +75,31 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
       records.forEach(record => {
         if (record.type === 'childList') {
           record.addedNodes.forEach(node => {
-            if (!(node instanceof HTMLElement) || !node.classList.contains(tailwindPrefix)) return;
+            if (!(node instanceof HTMLElement)) return;
 
-            traverse(node, addClasses);
-            shouldUpdate = true;
+            const sizeBefore = classesSet.current.size;
+
+            if (node.classList.contains(tailwindPrefix)) {
+              // traverse visits all descendants recursively, no need to querySelectorAll
+              traverse(node, addClasses);
+            } else {
+              // Node isn't a TailwindRoot itself — check descendants.
+              // React may insert a parent wrapper during navigation whose
+              // children contain TailwindRoot elements.
+              node.querySelectorAll(`.${tailwindPrefix}`).forEach(child => {
+                traverse(child, addClasses);
+              });
+            }
+
+            if (classesSet.current.size > sizeBefore) shouldUpdate = true;
           });
         } else if (record.type === 'attributes') {
           if (record.attributeName !== 'class' || !(record.target instanceof HTMLElement)) return;
 
+          const sizeBefore = classesSet.current.size;
           addClasses(record.target);
-          shouldUpdate = true;
+          if (classesSet.current.size > sizeBefore) shouldUpdate = true;
         }
-
       });
 
       if (shouldUpdate) {
