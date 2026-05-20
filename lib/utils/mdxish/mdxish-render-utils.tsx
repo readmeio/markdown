@@ -77,13 +77,9 @@ function createElementPreservingHastProps(
   if (props?.node?.properties) {
     const { node, ...rest } = props;
     const mergedProps = { ...rest, ...node.properties };
-    // rehype-react v6 passes `undefined` as the children arg when a node has no HAST
-    // children. When we've stored a template-literal string in node.properties.children,
-    // that `undefined` would override it — so skip the spread in that case.
-    if ('children' in node.properties && children.length === 1 && children[0] === undefined) {
-      return React.createElement(type, mergedProps);
-    }
-    return React.createElement(type, mergedProps, ...children);
+    // Strip undefined so positional args don't shadow node.properties.children
+    const definedChildren = children.filter(c => c !== undefined);
+    return React.createElement(type, mergedProps, ...definedChildren);
   }
   return React.createElement(type, props, ...children);
 }
