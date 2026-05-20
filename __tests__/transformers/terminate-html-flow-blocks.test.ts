@@ -397,7 +397,6 @@ Some text
     it('does not treat lookalike tags (<script-foo>) as a raw-content opener', () => {
       expect(terminateHtmlFlowBlocks('<script-foo>\n# heading')).toBe('<script-foo>\n\n# heading');
     });
-
   });
 
   describe('performance tests', () => {
