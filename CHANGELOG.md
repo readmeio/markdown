@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 14.3.0
+### ✨ New & Improved
+
+* **mdxish:** support MDX export declarations ([#1470](https://github.com/readmeio/markdown/issues/1470)) ([04d4e5e](https://github.com/readmeio/markdown/commit/04d4e5edb41967c1eaa90719ec999ed24024865f))
+
+### 🛠 Fixes & Updates
+
+* render iframe/youtube/pdf/jsfiddle embeds without embedly html ([#1476](https://github.com/readmeio/markdown/issues/1476)) ([2f651c6](https://github.com/readmeio/markdown/commit/2f651c6a6d4d19870791faf7106d9ed4e9e446e8))
+* **TailwindStyle:** skip redundant traversal and avoid unnecessary r… ([#1413](https://github.com/readmeio/markdown/issues/1413)) ([0a8c14a](https://github.com/readmeio/markdown/commit/0a8c14a34a87aee41c06b63c0aef9b36b1228235)), closes [#1404](https://github.com/readmeio/markdown/issues/1404)
+
 ## Version 14.2.6
 ### 🛠 Fixes & Updates
 
