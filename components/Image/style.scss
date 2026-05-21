@@ -70,23 +70,23 @@
   }
 
   .img-frame {
-    display: block;
-    padding: var(--sm, 8px);
     background: rgba(var(--color-bg-page-inverse-rgb), 0.05);
+    border-radius: var(--markdown-radius, 3px);
+    display: block;
+    padding: 8px;
 
     @include dark-mode($global: true) {
       background: rgba(var(--color-bg-page-inverse-rgb), 0.1);
     }
-    border-radius: var(--markdown-radius, 3px);
 
     .img {
       display: inline-block;
     }
 
     img {
+      border-radius: var(--markdown-radius, 3px);
       margin-left: 0;
       margin-right: 0;
-      border-radius: var(--markdown-radius, 3px);
     }
 
     &-left   { text-align: left; }

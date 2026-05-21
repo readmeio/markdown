@@ -18,7 +18,6 @@ interface ImageProps {
   width?: string;
 }
 
-
 /**
  * Renders lightbox overlay via a React portal to document.body so it escapes
  * any intermediate CSS stacking contexts and reliably covers all UI chrome.
@@ -79,6 +78,7 @@ const Image = (Props: ImageProps) => {
     setLightbox(!lightbox);
   };
 
+  // Framed images center the <img> itself; outer wrapper handles left/right alignment via text-align.
   const imgElement = (
     <img
       alt={alt}
@@ -89,6 +89,19 @@ const Image = (Props: ImageProps) => {
       title={title}
       width={width}
     />
+  );
+
+  const closedLightbox = (ariaLabel: string, content: React.ReactNode) => (
+    <span
+      aria-label={ariaLabel}
+      className="img lightbox closed"
+      onClick={toggle}
+      onKeyDown={handleKeyDown}
+      role={'button'}
+      tabIndex={0}
+    >
+      <span className="lightbox-inner">{content}</span>
+    </span>
   );
 
   const lightboxOverlay = lightbox ? (
@@ -114,25 +127,12 @@ const Image = (Props: ImageProps) => {
     </LightboxPortal>
   ) : null;
 
-  const frameClass = framed ? `img-frame img-frame-${align || 'center'}` : '';
-
   if (framed) {
-    const lightboxSpan = (
-      <span
-        aria-label={alt || 'Expand image'}
-        className="img lightbox closed"
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">{imgElement}</span>
-      </span>
-    );
+    const frameClass = `img-frame img-frame-${align || 'center'}`;
     if (children || caption) {
       return (
         <figure className={frameClass}>
-          {lightboxSpan}
+          {closedLightbox(alt || 'Expand image', imgElement)}
           {lightboxOverlay}
           <figcaption>{children || caption}</figcaption>
         </figure>
@@ -140,7 +140,7 @@ const Image = (Props: ImageProps) => {
     }
     return (
       <div className={frameClass}>
-        {lightboxSpan}
+        {closedLightbox(alt || 'Expand image', imgElement)}
         {lightboxOverlay}
       </div>
     );
@@ -149,19 +149,13 @@ const Image = (Props: ImageProps) => {
   if (children || caption) {
     return (
       <figure>
-        <span
-          aria-label={alt}
-          className="img lightbox closed"
-          onClick={toggle}
-          onKeyDown={handleKeyDown}
-          role={'button'}
-          tabIndex={0}
-        >
-          <span className="lightbox-inner">
+        {closedLightbox(
+          alt,
+          <>
             {imgElement}
             <figcaption>{children || caption}</figcaption>
-          </span>
-        </span>
+          </>,
+        )}
         {lightboxOverlay}
       </figure>
     );
@@ -169,16 +163,7 @@ const Image = (Props: ImageProps) => {
 
   return (
     <>
-      <span
-        aria-label="Expand image"
-        className="img lightbox closed"
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">{imgElement}</span>
-      </span>
+      {closedLightbox('Expand image', imgElement)}
       {lightboxOverlay}
     </>
   );
