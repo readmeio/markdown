@@ -82,7 +82,7 @@ export interface MagicBlockImage {
   data?: {
     hProperties?: {
       align?: string;
-      border?: string;
+      border?: boolean;
       width?: string;
     };
   };
