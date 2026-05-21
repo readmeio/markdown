@@ -5,6 +5,10 @@ import { applyInserts, type Insert, type RepairResult } from './utils';
 
 const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name.toLowerCase());
 
+// Intentionally simpler than htmlparser2: `[^>]*` does not honor `>` inside
+// quoted attribute values. That's acceptable here because the main walker
+// (htmlparser2) handles attribute parsing; this scan only needs to locate
+// orphan closers, which can't appear inside an attribute value anyway.
 const HTML_TAG_TOKEN_RE = /<(\/)?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g;
 
 /**
@@ -22,9 +26,10 @@ const findOrphanClosers = (html: string): { length: number; offset: number }[] =
   let match: RegExpExecArray | null;
   while ((match = HTML_TAG_TOKEN_RE.exec(masked)) !== null) {
     const name = match[2].toLowerCase();
-    if (!isStandardHtmlTag(name) || HTML_VOID_ELEMENTS.has(name)) {
-      // Skip; non-HTML names and void elements are handled by the main walker.
-    } else if (match[1] === '/') {
+    // Non-HTML names and void elements are handled by the main walker.
+    // eslint-disable-next-line no-continue
+    if (!isStandardHtmlTag(name) || HTML_VOID_ELEMENTS.has(name)) continue;
+    if (match[1] === '/') {
       const idx = stack.lastIndexOf(name);
       if (idx === -1) orphans.push({ offset: match.index, length: match[0].length });
       else stack.length = idx;
