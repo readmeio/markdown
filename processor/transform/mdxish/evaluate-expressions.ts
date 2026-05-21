@@ -40,7 +40,7 @@ const createEvaluatedNode = (result: unknown, position: Position | undefined): H
   } else if (typeof result === 'object') {
     return { type: 'text', value: JSON.stringify(result), position };
   }
-  return { type: 'text', value: String(result).replace(/\s+/g, ' ').trim(), position };
+  return { type: 'text', value: String(result), position };
 };
 
 /**
