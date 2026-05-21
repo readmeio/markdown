@@ -8,16 +8,26 @@ import type {
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
 
+import { Parser } from 'acorn';
+import acornJsx from 'acorn-jsx';
 import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 
 /**
+ * Single instance of acorn parser extended with `acorn-jsx`
+ * to parse expressions containing JSX.
+ */
+export const jsxAcornParser = Parser.extend(acornJsx());
+
+/**
  * Evaluate a JavaScript expression source and return its value.
  *
  * Wrapping in parens lets object literals (`{color: 'red'}`) parse as
- * expressions. Runs with no scope, so only self-contained literals resolve.
+ * expressions. Pass `scope` to expose named bindings (e.g. values introduced
+ * by an `export const`) to the expression; without it, only self-contained
+ * literals resolve.
  *
  * > ☢️ **Danger**: this `eval`s JavaScript. Only call when safeMode is off —
  * > safeMode's contract is that expression syntax is never evaluated, and the
@@ -26,9 +36,11 @@ import mdast from '../lib/mdast';
  *
  * Throws on parse/runtime error; callers decide the fallback.
  */
-export function evaluate(source: string) {
+export function evaluate(source: string, scope: Record<string, unknown> = {}) {
+  const names = Object.keys(scope);
+  const values = names.map(name => scope[name]);
   // eslint-disable-next-line no-new-func
-  return new Function(`return (${source})`)();
+  return new Function(...names, `return (${source})`)(...values);
 }
 
 /**
