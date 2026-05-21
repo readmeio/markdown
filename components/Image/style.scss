@@ -1,6 +1,7 @@
 /* stylelint-disable selector-max-compound-selectors */
 /* stylelint-disable no-descending-specificity */
 /* stylelint-disable font-family-no-missing-generic-family-keyword */
+@import '../../styles/mixins/dark-mode.scss';
 %img-align {
   &-right {
     float: right;
@@ -59,6 +60,38 @@
 
   figure {
     margin: 15px auto;
+
+    figcaption {
+      font-size: 0.93em;
+      font-style: italic;
+      margin-top: 8px;
+      text-align: center;
+    }
+  }
+
+  .img-frame {
+    display: block;
+    padding: var(--sm, 8px);
+    background: rgba(var(--color-bg-page-inverse-rgb), 0.05);
+
+    @include dark-mode($global: true) {
+      background: rgba(var(--color-bg-page-inverse-rgb), 0.1);
+    }
+    border-radius: var(--markdown-radius, 3px);
+
+    .img {
+      display: inline-block;
+    }
+
+    img {
+      margin-left: 0;
+      margin-right: 0;
+      border-radius: var(--markdown-radius, 3px);
+    }
+
+    &-left   { text-align: left; }
+    &-center { text-align: center; }
+    &-right  { text-align: right; }
 
     figcaption {
       font-size: 0.93em;

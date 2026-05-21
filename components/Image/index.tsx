@@ -9,12 +9,15 @@ interface ImageProps {
   caption?: string;
   children?: [React.ReactElement];
   className?: string;
+  // MDXish passes JSX expression values as strings (e.g., framed={false} becomes "false")
+  framed?: boolean | string;
   height?: string;
   lazy?: boolean;
   src: string;
   title?: string;
   width?: string;
 }
+
 
 /**
  * Renders lightbox overlay via a React portal to document.body so it escapes
@@ -32,6 +35,7 @@ const Image = (Props: ImageProps) => {
     border: borderProp = false,
     caption,
     className = '',
+    framed: framedProp = false,
     height = 'auto',
     src,
     title = '',
@@ -40,8 +44,9 @@ const Image = (Props: ImageProps) => {
     children,
   } = Props;
 
-  // Normalize border: MDXish passes {false} as the string "false", not a boolean
+  // Normalize border/framed: MDXish passes {false} as the string "false", not a boolean
   const border = borderProp === true || borderProp === 'true';
+  const framed = framedProp === true || framedProp === 'true';
 
   const [lightbox, setLightbox] = React.useState(false);
 
@@ -77,7 +82,7 @@ const Image = (Props: ImageProps) => {
   const imgElement = (
     <img
       alt={alt}
-      className={`img ${caption || children ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
+      className={`img ${caption || children || framed ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
       height={height}
       loading={lazy ? 'lazy' : 'eager'}
       src={src}
@@ -108,6 +113,38 @@ const Image = (Props: ImageProps) => {
       </div>
     </LightboxPortal>
   ) : null;
+
+  const frameClass = framed ? `img-frame img-frame-${align || 'center'}` : '';
+
+  if (framed) {
+    const lightboxSpan = (
+      <span
+        aria-label={alt || 'Expand image'}
+        className="img lightbox closed"
+        onClick={toggle}
+        onKeyDown={handleKeyDown}
+        role={'button'}
+        tabIndex={0}
+      >
+        <span className="lightbox-inner">{imgElement}</span>
+      </span>
+    );
+    if (children || caption) {
+      return (
+        <figure className={frameClass}>
+          {lightboxSpan}
+          {lightboxOverlay}
+          <figcaption>{children || caption}</figcaption>
+        </figure>
+      );
+    }
+    return (
+      <div className={frameClass}>
+        {lightboxSpan}
+        {lightboxOverlay}
+      </div>
+    );
+  }
 
   if (children || caption) {
     return (
