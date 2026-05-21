@@ -267,6 +267,12 @@
   ul {
     margin-bottom: round(1.3333em, 1px); // 20px at 15px base (condensed)
     margin-top: 0;
+
+    ol,
+    ul {
+      margin-bottom: 0;
+      margin-top: round(0.5333em, 1px); // 8px at 15px base (condensed)
+    }
   }
 
   blockquote {
@@ -291,14 +297,6 @@
   ol,
   ul {
     padding-left: 2em;
-  }
-
-  ol ol,
-  ol ul,
-  ul ol,
-  ul ul {
-    margin-bottom: 0;
-    margin-top: 0;
   }
 
   li {
