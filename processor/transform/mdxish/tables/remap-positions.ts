@@ -17,9 +17,10 @@ const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) =>
   // Pre-compute each insert's start in repaired-space.
   let acc = 0;
   const segments = inserts.map(ins => {
+    const consumes = ins.consumes ?? 0;
     const repairedStart = ins.offset + acc;
-    acc += ins.text.length;
-    return { origOffset: ins.offset, len: ins.text.length, repairedStart };
+    acc += ins.text.length - consumes;
+    return { origOffset: ins.offset, consumes, len: ins.text.length, repairedStart };
   });
 
   return (repaired: number): number => {
@@ -27,7 +28,10 @@ const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) =>
     // clamp to the insert's anchor so consumers slice a real boundary.
     const hit = segments.find(seg => seg.repairedStart < repaired && repaired < seg.repairedStart + seg.len);
     if (hit) return hit.origOffset;
-    const shift = segments.reduce((acc2, seg) => (seg.repairedStart < repaired ? acc2 + seg.len : acc2), 0);
+    const shift = segments.reduce(
+      (acc2, seg) => (seg.repairedStart < repaired ? acc2 + seg.len - seg.consumes : acc2),
+      0,
+    );
     return repaired - shift;
   };
 };
