@@ -99,6 +99,74 @@ Next content`;
 Next content`);
     });
 
+    it('inserts blank line after opening HTML tag when next line is a list', () => {
+      const input = `<div>
+- item one
+- item two`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+- item one
+- item two`);
+    });
+
+    it('inserts blank line after opening HTML tag when next line is a blockquote', () => {
+      const input = `<div>
+> quoted text`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+> quoted text`);
+    });
+
+    it('inserts blank line after opening HTML tag when next line is a fenced code block', () => {
+      const input = `<div>
+\`\`\`js
+const x = 1;
+\`\`\``;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+\`\`\`js
+const x = 1;
+\`\`\``);
+    });
+
+    it('inserts blank line after opening HTML tag when next line is an ordered list', () => {
+      const input = `<div>
+1. first
+2. second`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+1. first
+2. second`);
+    });
+
+    it('inserts blank line after opening HTML tag when next line is a thematic break', () => {
+      const input = `<div>
+---`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+---`);
+    });
+
+    it('inserts blank line after opening HTML tag when next line is a closing block marker', () => {
+      const input = `<div>
+[/block]`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+[/block]`);
+    });
+
     it('inserts blank line when HTML line has text content between and after tags', () => {
       const input = `<div><p>Inner text</p></div>Outer text
 [block:callout]
@@ -241,6 +309,32 @@ there
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
+    it('does not insert blank line after nested table opening tags when next line is plain content', () => {
+      const input = `<table><tr><td>
+Cell content stays put`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it.each([
+      'pre',
+      'script',
+      'style',
+      'textarea',
+      'table',
+      'thead',
+      'tbody',
+      'tfoot',
+      'tr',
+      'td',
+      'th',
+      'caption',
+      'colgroup',
+    ])('does not insert blank line after an unclosed <%s> opener with plain content', tag => {
+      const input = `<${tag}>\nplain content stays put`;
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
     it('does not modify HTML inside fenced code blocks but still terminates HTML outside them', () => {
       const input = `\`\`\`html
 <div></div>
@@ -261,6 +355,47 @@ Some text
 \`\`\`
 <p></p>
 \`\`\``);
+    });
+  });
+
+  describe('CommonMark type-1 HTML openers (<pre>, <script>, <style>, <textarea>)', () => {
+    it('does not insert blank line after a <pre> opener with attributes', () => {
+      const input = `<pre data-lang="json">
+{
+  "conditionOperator": "AND"
+}
+</pre>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert blank line after <pre> opener even when next line looks like a heading', () => {
+      const input = `<pre>
+# this is preformatted, not a heading
+</pre>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert blank line after <pre> opener even when next line looks like a magic block', () => {
+      const input = `<pre>
+[block:callout]
+{"type":"info","body":"verbatim"}
+[/block]
+</pre>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('treats self-closed <pre /> as closed', () => {
+      const input = `<pre />
+# Heading`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe('<pre />\n\n# Heading');
+    });
+
+    it('does not treat lookalike tags (<script-foo>) as a raw-content opener', () => {
+      expect(terminateHtmlFlowBlocks('<script-foo>\n# heading')).toBe('<script-foo>\n\n# heading');
     });
   });
 
