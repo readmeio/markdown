@@ -95,6 +95,58 @@ function restoreHTMLElements(content: string, htmlElements: string[]): string {
   return content.replace(HTML_ELEM_PLACEHOLDER, (_m, idx) => htmlElements[parseInt(idx, 10)]);
 }
 
+const ESM_PLACEHOLDER_PREFIX = '___MDXISH_ESM_';
+const ESM_PLACEHOLDER = new RegExp(`${ESM_PLACEHOLDER_PREFIX}(\\d+)___`, 'g');
+
+/**
+ * Hides column-0 `export`/`import` statements (including multi-line bodies and
+ * blank lines inside them) from brace escaping. The mdxjs-esm tokenizer handles
+ * these natively, so we just need to keep our hands off — otherwise JS braces
+ * like `() => { … }` get rewritten to `\{ … \}` and acorn chokes.
+ */
+function protectESMBlocks(content: string): { esmBlocks: string[]; protectedContent: string } {
+  const esmBlocks: string[] = [];
+  const lines = content.split('\n');
+  const out: string[] = [];
+
+  for (let i = 0; i < lines.length; i += 1) {
+    if (/^(?:export|import)\b/.test(lines[i])) {
+      // Accumulate lines until brackets balance (ignoring quoted regions).
+      const collected: string[] = [];
+      let depth = 0;
+      let quote: string | null = null;
+      let esc = false;
+      while (i < lines.length) {
+        const line = lines[i];
+        collected.push(line);
+        for (let j = 0; j < line.length; j += 1) {
+          const c = line[j];
+          if (quote) {
+            if (esc) esc = false;
+            else if (c === '\\') esc = true;
+            else if (c === quote) quote = null;
+          } else if (c === '"' || c === "'" || c === '`') quote = c;
+          else if (c === '{' || c === '(' || c === '[') depth += 1;
+          else if (c === '}' || c === ')' || c === ']') depth -= 1;
+        }
+        if (depth <= 0 && !quote) break;
+        i += 1;
+      }
+      esmBlocks.push(collected.join('\n'));
+      out.push(`${ESM_PLACEHOLDER_PREFIX}${esmBlocks.length - 1}___`);
+    } else {
+      out.push(lines[i]);
+    }
+  }
+
+  return { esmBlocks, protectedContent: out.join('\n') };
+}
+
+function restoreESMBlocks(content: string, esmBlocks: string[]): string {
+  if (esmBlocks.length === 0) return content;
+  return content.replace(ESM_PLACEHOLDER, (_m, idx) => esmBlocks[parseInt(idx, 10)]);
+}
+
 /**
  * Escapes unbalanced and paragraph-spanning braces so MDX doesn't trip on them.
  */
@@ -210,9 +262,11 @@ function escapeProblematicBraces(content: string): string {
 export function preprocessJSXExpressions(content: string): string {
   let processed = protectHTMLBlockContent(content);
   const { protectedCode, protectedContent } = protectCodeBlocks(processed);
+  const { esmBlocks, protectedContent: withoutEsm } = protectESMBlocks(protectedContent);
 
-  processed = escapeProblematicBraces(protectedContent);
+  processed = escapeProblematicBraces(withoutEsm);
 
+  processed = restoreESMBlocks(processed, esmBlocks);
   processed = restoreCodeBlocks(processed, protectedCode);
   return processed;
 }

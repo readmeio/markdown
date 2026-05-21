@@ -178,6 +178,79 @@ export function isOdd(n) { return n === 0 ? false : isEven(n - 1); }
 isEven(4) = {isEven(4)}.`;
       expect(mix(md)).toContain('isEven(4) = true.');
     });
+
+    it('spaces inside the function body do not crash the parser', () => {
+      const md = `export const Foo = () => {
+
+  return "foobar";
+}
+
+<Foo />`;
+      expect(() => mix(md)).not.toThrow();
+    });
+
+    it('handles multiple blank lines inside an arrow function body', () => {
+      const md = `export const Foo = () => {
+
+
+  return <span>multi-blank</span>;
+
+
+}
+
+<Foo />`;
+      expect(() => renderToHtml(md)).not.toThrow();
+      expect(renderToHtml(md)).toContain('<span>multi-blank</span>');
+    });
+
+    it('handles blank lines inside an `export function` body', () => {
+      const md = `export function Greeter() {
+
+  const target = "world";
+
+  return <em>hi {target}</em>;
+}
+
+<Greeter />`;
+      expect(renderToHtml(md)).toContain('<em>hi world</em>');
+    });
+
+    it('treats whitespace-only lines inside a body like blank lines', () => {
+      // The middle line is spaces + tab only — still a "blank line" to micromark.
+      const md = 'export const Foo = () => {\n   \t  \n  return <b>ws</b>;\n}\n\n<Foo />';
+      expect(renderToHtml(md)).toContain('<b>ws</b>');
+    });
+
+    it('handles blank lines inside an object literal on the right side of an export', () => {
+      const md = `export const config = {
+  name: "rdmd",
+
+  version: 1,
+
+  enabled: true,
+};
+
+Name: {config.name}, Version: {config.version}, Enabled: {String(config.enabled)}.`;
+      const html = mix(md);
+      expect(html).toContain('Name: rdmd, Version: 1, Enabled: true.');
+    });
+
+    it('keeps two adjacent exports with blank-line bodies independently evaluable', () => {
+      const md = `export const Foo = () => {
+
+  return <span>foo</span>;
+}
+
+export const Bar = () => {
+
+  return <span>bar</span>;
+}
+
+<Foo /> and <Bar />`;
+      const html = renderToHtml(md);
+      expect(html).toContain('<span>foo</span>');
+      expect(html).toContain('<span>bar</span>');
+    });
   });
 
   describe('class declarations', () => {
