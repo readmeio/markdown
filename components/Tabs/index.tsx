@@ -7,17 +7,19 @@ export const Tab = ({ children }: React.PropsWithChildren) => {
 };
 
 interface TabsProps {
-  children?: React.ReactElement[];
+  children?: React.ReactNode;
 }
 
 const Tabs = ({ children }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
+  // React passes `children` as a single element when there's only one child, so normalize.
+  const tabs = React.Children.toArray(children) as React.ReactElement[];
 
   return (
     <div className="TabGroup">
       <header>
         <nav className="TabGroup-nav">
-          {children?.map((tab, index: number) => (
+          {tabs.map((tab, index: number) => (
             <button
               key={tab.props.title}
               className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
@@ -34,7 +36,7 @@ const Tabs = ({ children }: TabsProps) => {
           ))}
         </nav>
       </header>
-      <section>{children && children[activeTab]}</section>
+      <section>{tabs[activeTab]}</section>
     </div>
   );
 };
