@@ -13,18 +13,21 @@ const TABLE_STRUCTURE_TAGS = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 't
 // htmlRawNames here refer to <pre>, <textarea>, <script>, <style>
 const RAW_CONTENT_TAGS = [...htmlRawNames, ...TABLE_STRUCTURE_TAGS];
 
+// The `(?=[\s/>])` lookahead avoids false matches on lookalike names like `<script-foo>`.
+const RAW_CONTENT_TAG_MATCHERS = RAW_CONTENT_TAGS.map(tag => ({
+  open: new RegExp(`<${tag}(?=[\\s/>])[^>]*?(?<!/)>`, 'gi'),
+  close: new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'gi'),
+}));
+
 function isLineHtml(line: string) {
   return STANDALONE_HTML_LINE_REGEX.test(line) || HTML_LINE_WITH_CONTENT_REGEX.test(line);
 }
 
 // True if any RAW_CONTENT_TAGS opener on this line is not closed on the same line.
-// The `(?=[\s/>])` lookahead avoids false matches on lookalike names like `<script-foo>`.
 function hasUnclosedRawContentOpener(line: string): boolean {
-  return RAW_CONTENT_TAGS.some(tag => {
-    const openRegex = new RegExp(`<${tag}(?=[\\s/>])[^>]*?(?<!/)>`, 'gi');
-    const closeRegex = new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'gi');
-    const opens = (line.match(openRegex) ?? []).length;
-    const closes = (line.match(closeRegex) ?? []).length;
+  return RAW_CONTENT_TAG_MATCHERS.some(({ open, close }) => {
+    const opens = (line.match(open) ?? []).length;
+    const closes = (line.match(close) ?? []).length;
     return opens > closes;
   });
 }
