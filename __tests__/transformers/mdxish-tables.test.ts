@@ -524,6 +524,103 @@ describe('mdxish tables transformation', () => {
       expect(html).not.toContain('&lt;/li>');
     });
 
+    it('preserves an HTML comment containing tag-like text in a cell', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><!-- TODO: handle </li> case --> body text</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('body text');
+      expect(html).toContain('<!-- TODO: handle </li> case -->');
+    });
+
+    it('preserves attribute values that contain a > character', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><a title="a > b" href="https://example.com">link</a> after</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const anchors = findAllElementsByTagName(tables[0], 'a');
+      expect(anchors).toHaveLength(1);
+      expect(anchors[0].properties).toMatchObject({
+        href: 'https://example.com',
+        title: 'a > b',
+      });
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('after');
+    });
+
+    it('normalizes interleaved misnesting like <b><i>x</b></i>', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b><i>x</b></i> after</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const bolds = findAllElementsByTagName(tables[0], 'b');
+      const italics = findAllElementsByTagName(tables[0], 'i');
+      expect(bolds).toHaveLength(1);
+      expect(italics).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('x');
+      expect(html).toContain('after');
+      // No stray closers should leak through as escaped text.
+      expect(html).not.toContain('&#x3C;/');
+      expect(html).not.toContain('&lt;/');
+    });
+
+    it('preserves an HTML comment when the orphan-closer scanner is forced to run', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><!-- handle </li> case --> body <ul><li>x</ul></li></td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const lists = findAllElementsByTagName(tables[0], 'ul');
+      expect(lists).toHaveLength(1);
+      const items = findAllElementsByTagName(lists[0], 'li');
+      expect(items).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('<!-- handle </li> case -->');
+      expect(html).toContain('body');
+      // The trailing orphan </li> after </ul> should not survive as escaped text.
+      expect(html).not.toContain('&#x3C;/li>');
+      expect(html).not.toContain('&lt;/li>');
+    });
+
     it('escapes a non-HTML tag name instead of trying to close it', () => {
       const doc = `<Table>
   <thead><tr><th>A</th><th>B</th></tr></thead>
