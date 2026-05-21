@@ -521,7 +521,7 @@ describe('mdxish tables transformation', () => {
 
       const html = toHtml(tables[0]);
       expect(html).not.toContain('&#x3C;/li>');
-      expect(html).not.toContain('</li>'.replace('<', '&lt;'));
+      expect(html).not.toContain('&lt;/li>');
     });
 
     it('escapes a non-HTML tag name instead of trying to close it', () => {
