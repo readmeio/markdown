@@ -258,7 +258,6 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  console.log('ZZZ')
   const { components: userComponents = {}, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {

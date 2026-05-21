@@ -551,7 +551,8 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
       expect(mdxNodes[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Terminal' });
     });
 
-    it('should handle template literal with ${...} interpolation in body', () => {
+    it('should handle template literal with interpolation in body', () => {
+      // eslint-disable-next-line no-template-curly-in-string
       const markdown = '<Terminal>{`Hello ${name}!`}</Terminal>';
       const tree = parseWithPlugin(markdown);
 
@@ -611,6 +612,43 @@ Some text with <Anchor href="https://readme.com">link</Anchor> inline.`;
 
       const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should not be fooled by a literal closing tag string inside a template literal', () => {
+      const markdown = '<Terminal>{`</Terminal>`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Terminal' });
+    });
+
+    it('should not enter interpolation for escaped dollar-brace inside a template literal', () => {
+      // eslint-disable-next-line no-template-curly-in-string
+      const markdown = '<Terminal>{`price \\${x}`}</Terminal>';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+    });
+
+    it('should handle a multi-line template literal in an attribute value', () => {
+      const markdown = `<Terminal value={\`first
+second
+third\`} />`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Terminal' });
+    });
+
+    it('should not produce a flow element when a template literal is unterminated at EOF', () => {
+      const markdown = '<Terminal>{`unterminated\nstill going';
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(0);
     });
   });
 
