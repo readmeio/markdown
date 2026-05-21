@@ -650,6 +650,29 @@ third\`} />`;
       const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
       expect(mdxNodes).toHaveLength(0);
     });
+
+    describe('regression risks introduced by body-brace tracking', () => {
+      it('literal { in body prose should not swallow the closing tag', () => {
+        const markdown = `<MyComponent>The config uses { brace syntax in prose</MyComponent>
+
+  # Following heading should still parse`;
+        const tree = parseWithPlugin(markdown);
+
+        // Either the component recognizes (with the brace as text) OR it degrades to
+        // not being a flow element — but the heading MUST survive in either case.
+        const headings = collectNodes<Heading>(tree, 'heading');
+        expect(headings).toHaveLength(1);
+      });
+
+      it('paired {expr} in body prose should still recognize the component', () => {
+        const markdown = '<MyComponent>price is {5} dollars</MyComponent>';
+        const tree = parseWithPlugin(markdown);
+
+        const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+        expect(mdxNodes).toHaveLength(1);
+        expect(mdxNodes[0]).toMatchObject({ name: 'MyComponent' });
+      });
+    })
   });
 
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {
