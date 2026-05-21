@@ -1,9 +1,39 @@
 import { HTML_VOID_ELEMENTS, STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 
-import { walkTags } from './tag-walker';
+import { maskNonTagRegions, walkTags } from './tag-walker';
 import { applyInserts, type Insert, type RepairResult } from './utils';
 
 const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name.toLowerCase());
+
+const HTML_TAG_TOKEN_RE = /<(\/)?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g;
+
+/**
+ * htmlparser2 silently drops closing tags that have no matching opener
+ * (e.g. the trailing `</li>` in `<ul><li>x</ul></li>`), leaving them in the
+ * source makes mdxjs choke on the dangling closer. Scan the masked
+ * source for `</name>` tokens that don't pair with any prior unmatched
+ * `<name>` and return their spans so the caller can drop them.
+ */
+const findOrphanClosers = (html: string): { length: number; offset: number }[] => {
+  const masked = maskNonTagRegions(html);
+  const stack: string[] = [];
+  const orphans: { length: number; offset: number }[] = [];
+  HTML_TAG_TOKEN_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = HTML_TAG_TOKEN_RE.exec(masked)) !== null) {
+    const name = match[2].toLowerCase();
+    if (!isStandardHtmlTag(name) || HTML_VOID_ELEMENTS.has(name)) {
+      // Skip; non-HTML names and void elements are handled by the main walker.
+    } else if (match[1] === '/') {
+      const idx = stack.lastIndexOf(name);
+      if (idx === -1) orphans.push({ offset: match.index, length: match[0].length });
+      else stack.length = idx;
+    } else if (!match[0].endsWith('/>')) {
+      stack.push(name);
+    }
+  }
+  return orphans;
+};
 
 /**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
@@ -59,6 +89,10 @@ export const repairUnclosedTags = (html: string): RepairResult => {
       inserts.push({ offset: findOffsetToPlaceCloser(html, openTag.end, start), text: `</${name}>` });
     },
   });
+
+  findOrphanClosers(html).forEach(({ offset, length }) =>
+    inserts.push({ offset, text: '', consumes: length }),
+  );
 
   return applyInserts(html, inserts);
 };
