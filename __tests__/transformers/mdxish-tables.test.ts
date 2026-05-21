@@ -226,19 +226,11 @@ describe('mdxish tables transformation', () => {
 </tbody>
 </table>`;
 
-    it('splits the html node so fenced code blocks become code mdast nodes', () => {
+    it('parses fenced code blocks inside the cell as code mdast nodes', () => {
       const ast = astProcessor(malformed);
-
-      expect(ast).toMatchObject({
-        type: 'root',
-        children: expect.arrayContaining([
-          expect.objectContaining({
-            type: 'code',
-            value: '2.16.0.0/13',
-          }),
-          expect.objectContaining({ type: 'html' }),
-        ]),
-      });
+      const codes = collectNodes(ast, 'code');
+      expect(codes).toHaveLength(1);
+      expect(codes[0]).toMatchObject({ type: 'code', value: '2.16.0.0/13' });
     });
 
     it('renders fenced code blocks as <pre><code> HTML rather than raw backticks', () => {
@@ -488,6 +480,48 @@ describe('mdxish tables transformation', () => {
 
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(1);
+    });
+
+    it('strips orphan closing tags that have no matching opener', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Status</td>
+      <td>
+        Current state.
+
+        Values:<ul><li>**active**. running. <li>**inactive**. stopped.</ul></li>
+      </td>
+    </tr>
+    <tr>
+      <td>Type</td>
+      <td>Normal value here.</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(4);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs.length).toBeGreaterThanOrEqual(2);
+      const strongText = strongs.map(s => JSON.stringify(s)).join(' ');
+      expect(strongText).toContain('active');
+      expect(strongText).toContain('inactive');
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain('&#x3C;/li>');
+      expect(html).not.toContain('</li>'.replace('<', '&lt;'));
     });
 
     it('escapes a non-HTML tag name instead of trying to close it', () => {
