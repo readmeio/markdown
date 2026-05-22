@@ -73,7 +73,7 @@
     background: rgba(var(--color-bg-page-inverse-rgb), 0.05);
     border-radius: var(--markdown-radius, 3px);
     display: block;
-    padding: 8px;
+    padding: var(--size-12);
 
     @include dark-mode($global: true) {
       background: rgba(var(--color-bg-page-inverse-rgb), 0.1);

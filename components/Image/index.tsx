@@ -150,7 +150,7 @@ const Image = (Props: ImageProps) => {
     return (
       <figure>
         {closedLightbox(
-          alt,
+          alt || 'Expand image',
           <>
             {imgElement}
             <figcaption>{children || caption}</figcaption>
