@@ -1,11 +1,35 @@
+import { htmlRawNames } from 'micromark-util-html-tag-name';
+
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
 
+const TABLE_STRUCTURE_TAGS = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup'];
+
+// Tags whose contents must be preserved as is, inserting a blank line after the
+// opener corrupts the payload.
+// htmlRawNames here refer to <pre>, <textarea>, <script>, <style>
+const RAW_CONTENT_TAGS = [...htmlRawNames, ...TABLE_STRUCTURE_TAGS];
+
+// The `(?=[\s/>])` lookahead avoids false matches on lookalike names like `<script-foo>`.
+const RAW_CONTENT_TAG_MATCHERS = RAW_CONTENT_TAGS.map(tag => ({
+  open: new RegExp(`<${tag}(?=[\\s/>])[^>]*?(?<!/)>`, 'gi'),
+  close: new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'gi'),
+}));
+
 function isLineHtml(line: string) {
   return STANDALONE_HTML_LINE_REGEX.test(line) || HTML_LINE_WITH_CONTENT_REGEX.test(line);
+}
+
+// True if any RAW_CONTENT_TAGS opener on this line is not closed on the same line.
+function hasUnclosedRawContentOpener(line: string): boolean {
+  return RAW_CONTENT_TAG_MATCHERS.some(({ open, close }) => {
+    const opens = (line.match(open) ?? []).length;
+    const closes = (line.match(close) ?? []).length;
+    return opens > closes;
+  });
 }
 
 /**
@@ -18,15 +42,16 @@ function isLineHtml(line: string) {
  *
  * @link https://spec.commonmark.org/0.29/#html-blocks
  *
- * This preprocessor inserts a blank line after standalone HTML lines when the
- * next line is non-blank and not an HTML construct (because they still might be part of the HTML flow),
- * ensuring micromark's HTML flow tokenizer terminates and subsequent content is parsed independently.
+ * This preprocessor inserts a blank line after standalone HTML lines when the next
+ * line is non-blank and not an HTML construct, ensuring micromark's HTML flow
+ * tokenizer terminates and subsequent content is parsed independently.
  *
  * Conditions:
- * 1. Only targets non-indented lines with lowercase tag names. Uppercase tags
- * (e.g., `<Table>`, `<MyComponent>`) are JSX custom components and don't
- * trigger CommonMark HTML blocks, so they are left untouched.
- * 2. Lines inside protected blocks (e.g., code blocks) should be left untouched.
+ * 1. Only non-indented lines with lowercase tag names are considered. Uppercase tags
+ *    (e.g. `<Table>`, `<MyComponent>`) are JSX custom components and don't trigger
+ *    CommonMark HTML blocks.
+ * 2. Lines inside protected blocks (e.g. fenced code) are left untouched.
+ * 3. Lines with an unclosed RAW_CONTENT_TAGS opener are exempted.
  */
 export function terminateHtmlFlowBlocks(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
@@ -45,7 +70,7 @@ export function terminateHtmlFlowBlocks(content: string) {
 
     const isCurrentLineHtml = isLineHtml(lines[i]);
     const isNextLineHtml = isLineHtml(lines[i + 1]);
-    if (isCurrentLineHtml && !isNextLineHtml) {
+    if (isCurrentLineHtml && !isNextLineHtml && !hasUnclosedRawContentOpener(lines[i])) {
       result.push('');
     }
   }

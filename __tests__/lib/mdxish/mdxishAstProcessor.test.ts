@@ -1,6 +1,7 @@
 import type { Root, Table } from 'mdast';
 
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
+import { roundTripMdxish } from '../../helpers';
 
 describe('mdxishAstProcessor', () => {
   describe('deferred processing (handled by mdxish rendering pipeline)', () => {
@@ -296,9 +297,7 @@ Content here
 </Callout>
 `;
 
-      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
-      const tree = processor.runSync(processor.parse(parserReadyContent)) as Root;
-      const out = mdxishMdastToMd(tree);
+      const out = roundTripMdxish(md, { newEditorTypes: true });
 
       expect(out).not.toMatch(/^>\s*📘\s+Content here/);
 

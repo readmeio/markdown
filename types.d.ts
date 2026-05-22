@@ -136,6 +136,7 @@ export interface ImageBlockAttrs {
   caption?: string;
   children?: RootContent[];
   className?: string;
+  framed?: boolean;
   height?: string;
   lazy?: boolean;
   sizing?: string;
