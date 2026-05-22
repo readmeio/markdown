@@ -85,10 +85,23 @@
     border-bottom: 1px solid var(--markdown-edge, #dfe2e5);
     border-width: 0 0 1px;
     box-sizing: content-box;
-    clear: both;
     height: 0;
     margin: 15px 0;
     overflow: hidden;
+  }
+
+  // Direct-child only, top-level headings/hr act as section breaks that
+  // clear preceding floats (e.g. `<Image align="left|right">`). Nested
+  // headings (inside Callout, Cards, etc.) keep wrapping behavior so the
+  // component's own layout (e.g. callout icon float) isn't disrupted.
+  > h1,
+  > h2,
+  > h3,
+  > h4,
+  > h5,
+  > h6,
+  > hr {
+    clear: both;
   }
 
   input {
@@ -129,7 +142,6 @@
   h4,
   h5,
   h6 {
-    clear: both;
     color: var(--markdown-title);
     font-family: var(--markdown-title-font);
     font-size: var(--markdown-title-size);
