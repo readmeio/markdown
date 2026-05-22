@@ -85,6 +85,7 @@
     border-bottom: 1px solid var(--markdown-edge, #dfe2e5);
     border-width: 0 0 1px;
     box-sizing: content-box;
+    clear: both;
     height: 0;
     margin: 15px 0;
     overflow: hidden;
@@ -128,6 +129,7 @@
   h4,
   h5,
   h6 {
+    clear: both;
     color: var(--markdown-title);
     font-family: var(--markdown-title-font);
     font-size: var(--markdown-title-size);
