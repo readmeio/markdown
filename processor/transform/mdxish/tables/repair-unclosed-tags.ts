@@ -18,22 +18,39 @@ const HTML_TAG_TOKEN_RE = /<(\/)?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g;
  * source for `</name>` tokens that don't pair with any prior unmatched
  * `<name>` and return their spans so the caller can drop them.
  */
-const findOrphanClosers = (html: string): { length: number; offset: number }[] => {
+interface OrphanCloser {
+  length: number;
+  offset: number;
+}
+
+const findOrphanClosers = (html: string): OrphanCloser[] => {
   const masked = maskNonTagRegions(html);
   const stack: string[] = [];
-  const orphans: { length: number; offset: number }[] = [];
+  const orphans: OrphanCloser[] = [];
   HTML_TAG_TOKEN_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = HTML_TAG_TOKEN_RE.exec(masked)) !== null) {
     const name = match[2].toLowerCase();
-    // Non-HTML names and void elements are handled by the main walker.
     // eslint-disable-next-line no-continue
-    if (!isStandardHtmlTag(name) || HTML_VOID_ELEMENTS.has(name)) continue;
+    if (!isStandardHtmlTag(name)) continue;
+    // `br` orphan closers are owned by the walker's onOpen path — htmlparser2
+    // normalizes them to opener events per HTML5 spec, and the walker rewrites
+    // them to `<br/>` there. Skip here to avoid a double-write collision.
+    // eslint-disable-next-line no-continue
+    if (name === 'br' && match[1] === '/') continue;
+    const isVoid = HTML_VOID_ELEMENTS.has(name);
     if (match[1] === '/') {
+      // Other void closers (`</hr>`, `</img>`, ...) have no HTML5 rewrite rule
+      // and must be stripped before the strict mdxjs parse runs.
+      if (isVoid) {
+        orphans.push({ offset: match.index, length: match[0].length });
+        // eslint-disable-next-line no-continue
+        continue;
+      }
       const idx = stack.lastIndexOf(name);
       if (idx === -1) orphans.push({ offset: match.index, length: match[0].length });
       else stack.length = idx;
-    } else if (!match[0].endsWith('/>')) {
+    } else if (!isVoid && !match[0].endsWith('/>')) {
       stack.push(name);
     }
   }
@@ -69,7 +86,7 @@ export const repairUnclosedTags = (html: string): RepairResult => {
   const openTags: { end: number; name: string; start: number }[] = [];
 
   walkTags(html, {
-    onOpen({ name, start, end }) {
+    onOpen({ name, start, end, isSelfClosing, isStrayCloser }) {
       // Escape non-HTML names (custom components, typos, `<arbitrary-tag>`)
       // so MDX treats them as literal text instead of expecting a closer
       if (!isStandardHtmlTag(name)) {
@@ -77,11 +94,15 @@ export const repairUnclosedTags = (html: string): RepairResult => {
         return;
       }
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) {
+        if (isStrayCloser) {
+          // htmlparser2 normalizes stray closers like `</br>` into opener
+          // events per the HTML5 spec; mirror that by rewriting the bytes
+          // into a valid self-closed tag so mdxjs accepts them.
+          inserts.push({ offset: start, text: `<${name}/>`, consumes: end - start });
+          return;
+        }
         // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
-        // If the source open tag doesn't end with `/`, inject one before the
-        // `>` so it parses. `end` is one past `>`, so `end - 2` is the char
-        // immediately before `>`.
-        if (html[end - 2] !== '/') inserts.push({ offset: end - 1, text: '/' });
+        if (!isSelfClosing) inserts.push({ offset: end - 1, text: '/' });
         return;
       }
       openTags.push({ name, start, end });
