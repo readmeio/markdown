@@ -32,7 +32,8 @@ const buildInlineMdProcessor = (safeMode: boolean) => {
   // Since evaluating expressions can be dangerous, do so only when safeMode is off
   if (!safeMode) {
     const mdxExprExt = mdxExpression({ allowEmpty: true });
-    micromarkExts.push({ text: mdxExprExt.text });
+    // We include both flow and text extensions to support both single-line and multi-line expressions
+    micromarkExts.push({ flow: mdxExprExt.flow, text: mdxExprExt.text });
     fromMarkdownExts.push(mdxExpressionFromMarkdown());
   }
 
