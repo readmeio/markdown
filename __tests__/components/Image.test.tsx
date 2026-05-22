@@ -32,7 +32,7 @@ describe('Image', () => {
 
     expect(screen.getByRole('button')).toMatchInlineSnapshot(`
       <span
-        aria-label=""
+        aria-label="Expand image"
         class="img lightbox closed"
         role="button"
         tabindex="0"
