@@ -1,0 +1,1 @@
+export { mdxComponent } from './syntax';
