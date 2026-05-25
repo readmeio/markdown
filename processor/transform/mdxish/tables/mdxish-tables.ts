@@ -22,8 +22,9 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
+import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import { tableTags, unwrapSoleParagraph, type Insert } from './utils';
+import { tableTags, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -318,25 +319,21 @@ const mdxishTables = (): Transform => tree => {
     // To get around that, we have some fallback logics after trying to repair the table content
     let parsed = parseTableNode(tableNodeProcessor, node);
     if (!parsed) {
-      // First common error is unclosed HTML tags
-      const repaired = repairUnclosedTags(node.value);
-      if (repaired.value !== node.value) {
-        parsed = parseTableNode(
-          tableNodeProcessor,
-          { ...node, value: repaired.value },
-          { inserts: repaired.inserts, originalSource: node.value },
-        );
-      }
-      if (!parsed) {
-        // Second common error is having a line with text and an opening tag
-        // E.g. text <div> \n <div> text
-        const normalized = normalizeTagSpacing(node.value);
-        if (normalized.value !== node.value) {
-          parsed = parseTableNode(
-            tableNodeProcessor,
-            { ...node, value: normalized.value },
-            { inserts: normalized.inserts, originalSource: node.value },
-          );
+      // mdxjs is strict, so try a sequence of targeted repairs and re-parse
+      // after each, stopping at the first that yields a parseable tree:
+      //  - repairUnclosedTags:       unclosed/orphan HTML tags
+      //  - normalizeTagSpacing:      a line mixing text and an opening tag
+      //                              (e.g. `text <div> \n <div> text`)
+      //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
+      const repairs: ((html: string) => RepairResult)[] = [
+        repairUnclosedTags,
+        normalizeTagSpacing,
+        repairExpressionEscapes,
+      ];
+      for (let i = 0; i < repairs.length && !parsed; i += 1) {
+        const { value, inserts } = repairs[i](node.value);
+        if (value !== node.value) {
+          parsed = parseTableNode(tableNodeProcessor, { ...node, value }, { inserts, originalSource: node.value });
         }
       }
     }
