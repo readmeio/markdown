@@ -4,7 +4,7 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
-import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish, mdastV6Wrapper } from '../helpers';
+import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
