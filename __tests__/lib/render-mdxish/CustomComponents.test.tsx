@@ -377,4 +377,28 @@ export const ExampleComponent = ({ prop1, prop2, prop3 }) => {
       expect(container.querySelector('#prop2')?.textContent).toBe('HELLO');
     });
   });
+
+  describe('template literal children', () => {
+    it('passes template literal content as a bare string to the component (matching MDX behaviour)', () => {
+      let receivedChildren: unknown;
+      const Terminal = {
+        default: function TerminalComponent({ children }: { children?: unknown }) {
+          receivedChildren = children;
+          return React.createElement('pre', null, typeof children === 'string' ? children.trim() : 'ERROR');
+        },
+      } as unknown as RMDXModule;
+
+      const markdown = `<Terminal>{\`
+$ npx run command
+This is the response
+\`}</Terminal>`;
+
+      const tree = mdxish(markdown, { components: { Terminal } });
+      const mod = renderMdxish(tree, { components: { Terminal } });
+      render(<mod.default />);
+
+      expect(typeof receivedChildren).toBe('string');
+      expect(receivedChildren as string).toContain('$ npx run command');
+    });
+  });
 });

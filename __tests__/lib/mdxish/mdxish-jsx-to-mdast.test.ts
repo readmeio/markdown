@@ -91,6 +91,33 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(imageNode.data?.hProperties?.border).toBeUndefined();
       });
 
+      it('should handle framed="true" attribute', () => {
+        const md = '<Image src="test.png" alt="Test" framed="true" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.data?.hProperties?.framed).toBe(true);
+        expect(imageNode.framed).toBe(true);
+      });
+
+      it('should normalize framed="false" to boolean false', () => {
+        const md = '<Image src="test.png" alt="Test" framed="false" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.framed).toBe(false);
+        expect(imageNode.data?.hProperties?.framed).toBe(false);
+      });
+
+      it('should leave framed undefined when not specified', () => {
+        const md = '<Image src="test.png" alt="Test" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.framed).toBeUndefined();
+        expect(imageNode.data?.hProperties?.framed).toBeUndefined();
+      });
+
       it('should parse caption with markdown and HTML entities into children', () => {
         const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);
