@@ -524,6 +524,116 @@ describe('mdxish tables transformation', () => {
       expect(html).not.toContain('&lt;/li>');
     });
 
+    // Special case for void tag <br>: In legacy magic blocks, orphan </br> is treated
+    // as a legit line break and not stripped like other void tags like </hr> or </img>.
+    it('considers orphan </br> as a line break and not have it break the table', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**Instant Failover**</td>
+      <td>
+        Select one of these options:
+
+        - **First**.
+        - **Second**.
+        - **Third**. Disabled<br /><br />Second paragraph</br><br />Third paragraph</br>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(2);
+
+      const lists = findAllElementsByTagName(tables[0], 'ul');
+      expect(lists).toHaveLength(1);
+      const items = findAllElementsByTagName(lists[0], 'li');
+      expect(items).toHaveLength(3);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      const strongText = strongs.map(s => JSON.stringify(s)).join(' ');
+      expect(strongText).toContain('Instant Failover');
+      expect(strongText).toContain('First');
+      expect(strongText).toContain('Second');
+      expect(strongText).toContain('Third');
+
+      // Per HTML5 spec, a lone </br> is rewritten as a <br> break — not stripped.
+      const breaks = findAllElementsByTagName(tables[0], 'br');
+      expect(breaks).toHaveLength(5);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('Disabled<br><br>Second paragraph<br><br>Third paragraph<br>');
+      expect(html).not.toContain('&#x3C;/br>');
+      expect(html).not.toContain('&lt;/br>');
+      expect(html).not.toContain('</br>');
+      expect(html).not.toContain('Second paragraph/');
+    });
+
+    it.each([
+      ['hr', '<hr>'],
+      ['img', '<img src="x.png" alt="x">'],
+      ['input', '<input type="text">'],
+    ])('strips an orphan </%s> closer for void element', (tag, opener) => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>before ${opener} middle </${tag}> after **bold**</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain(`&#x3C;/${tag}>`);
+      expect(html).not.toContain(`&lt;/${tag}>`);
+      expect(html).not.toContain('**bold**');
+    });
+
+    it('strips multiple orphan void closers mixed with valid markdown', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>line one</br> line two</hr> [link](https://example.com) tail</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const anchors = findAllElementsByTagName(tables[0], 'a');
+      expect(anchors).toHaveLength(1);
+      expect(anchors[0].properties).toMatchObject({ href: 'https://example.com' });
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain('&#x3C;/br>');
+      expect(html).not.toContain('&lt;/br>');
+      expect(html).not.toContain('&#x3C;/hr>');
+      expect(html).not.toContain('&lt;/hr>');
+    });
+
     it('preserves an HTML comment containing tag-like text in a cell', () => {
       const doc = `<Table>
   <thead><tr><th>A</th></tr></thead>

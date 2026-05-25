@@ -19,6 +19,17 @@ interface TagEvent {
   start: number;
 }
 
+/**
+ * `isSelfClosing` — source ends with `/>`.
+ * `isStrayCloser` — source starts with `</`. htmlparser2 follows the HTML5
+ *   spec and rewrites stray void closers (`</br>`, `</p>`) into `onopentag`
+ *   events; this flag lets consumers tell that apart from a real opener.
+ */
+interface OpenEvent extends TagEvent {
+  isSelfClosing: boolean;
+  isStrayCloser: boolean;
+}
+
 // Implicit means the tag was opened but not closed
 interface CloseEvent extends TagEvent {
   implicit: boolean;
@@ -26,7 +37,7 @@ interface CloseEvent extends TagEvent {
 
 interface TagWalkHandlers {
   onClose?: (event: CloseEvent) => void;
-  onOpen?: (event: TagEvent) => void;
+  onOpen?: (event: OpenEvent) => void;
 }
 
 /**
@@ -43,7 +54,15 @@ export const walkTags = (html: string, handlers: TagWalkHandlers)=> {
   const parser: Parser = new Parser(
     {
       onopentag(name) {
-        handlers.onOpen?.({ name, start: parser.startIndex, end: tagEnd(parser) });
+        const start = parser.startIndex;
+        const end = tagEnd(parser);
+        handlers.onOpen?.({
+          name,
+          start,
+          end,
+          isSelfClosing: html[end - 2] === '/',
+          isStrayCloser: html[start + 1] === '/',
+        });
       },
       onclosetag(name, implicit) {
         handlers.onClose?.({ name, start: parser.startIndex, end: tagEnd(parser), implicit });
