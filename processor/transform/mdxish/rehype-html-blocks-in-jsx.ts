@@ -12,7 +12,7 @@ const endEscaped = HTML_BLOCK_CONTENT_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // Marker emitted as an HTML comment by preprocessJSXExpressions. rehypeRaw parses
 // the comment body (sans <!-- -->), so we match the inner form here.
 const COMMENT_MARKER_RE = new RegExp(
-  `^${startEscaped.replace(/^<!--/, '')}([A-Za-z0-9+/=]+)${endEscaped.replace(/-->$/, '')}$`,
+  `^${startEscaped.replace(/^<!--/, '')}([A-Za-z0-9+/=]+)${endEscaped.replace(/--!?>$/, '')}$`,
 );
 
 const KNOWN_HTML_BLOCK_PROPS: Record<string, string> = {
