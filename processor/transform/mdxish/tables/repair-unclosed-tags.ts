@@ -31,13 +31,15 @@ const findOrphanClosers = (html: string): OrphanCloser[] => {
   let match: RegExpExecArray | null;
   while ((match = HTML_TAG_TOKEN_RE.exec(masked)) !== null) {
     const name = match[2].toLowerCase();
+
     // eslint-disable-next-line no-continue
     if (!isStandardHtmlTag(name)) continue;
-    // `br` orphan closers are owned by the walker's onOpen path — htmlparser2
-    // normalizes them to opener events per HTML5 spec, and the walker rewrites
-    // them to `<br/>` there. Skip here to avoid a double-write collision.
+
+    // Special case for <br>: htmlparser2 will normalize orphan </br> to <br>
+    // so we don't need to handle it here.
     // eslint-disable-next-line no-continue
     if (name === 'br' && match[1] === '/') continue;
+
     const isVoid = HTML_VOID_ELEMENTS.has(name);
     if (match[1] === '/') {
       // Other void closers (`</hr>`, `</img>`, ...) have no HTML5 rewrite rule
@@ -94,15 +96,18 @@ export const repairUnclosedTags = (html: string): RepairResult => {
         return;
       }
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) {
+        // MDX requires void elements to be self-closing (`<br/>`, not `<br>`)
+        // so we need to rewrite them to self closing tags.
         if (isStrayCloser) {
-          // htmlparser2 normalizes stray closers like `</br>` into opener
-          // events per the HTML5 spec; mirror that by rewriting the bytes
-          // into a valid self-closed tag so mdxjs accepts them.
+          // htmlparser2 may normalize some stray closers like `</br>` into opener
+          // events <br> per the HTML5 spec. In this case remove the closing /
+          // and fully rewrite the tag to self closing.
           inserts.push({ offset: start, text: `<${name}/>`, consumes: end - start });
           return;
+        } else if (!isSelfClosing) {
+          // Slots in the / right before the closing >
+          inserts.push({ offset: end - 1, text: '/' });
         }
-        // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
-        if (!isSelfClosing) inserts.push({ offset: end - 1, text: '/' });
         return;
       }
       openTags.push({ name, start, end });
