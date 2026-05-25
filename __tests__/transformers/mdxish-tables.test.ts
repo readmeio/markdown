@@ -342,6 +342,80 @@ describe('mdxish tables transformation', () => {
       const tableNode = collectNodes(tree, 'table');
       expect(tableNode).toHaveLength(1);
     });
+
+    it('should not break when there is a lone < in a table cell', () => {
+      const doc = `<Table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**loginPolicy**</td>
+      <td>
+    hi <
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
+
+    it('should not break when there is an unclosed opening tag <unclosed and display it raw', () => {
+      const doc = `<Table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**loginPolicy**</td>
+      <td>
+    hi <unclosed
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+
+      const cells = collectNodes(tableNode[0], 'tableCell');
+      expect(cells).toHaveLength(4);
+      expect(cells[3]).toMatchObject({ type: 'tableCell', children: [{ type: 'text', value: 'hi <unclosed' }] });
+
+    });
+
+    it('should not break when there is <> in a table cell', () => {
+      const doc = `<Table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**loginPolicy**</td>
+      <td>
+    hi <> there
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
   });
 
   describe('given unclosed tags inside cells that is not MDX valid', () => {
