@@ -1,9 +1,21 @@
 import type { Element } from 'hast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 
 import { mdxish } from '../../../lib';
-import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
+import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxishWithSource } from '../../helpers';
 
-describe('mdxish HTMLBlock', () => {
+function ensureJsxTableIsParsed(md: string) {
+  const { tree: mdastTree } = parseMdxishWithSource(md);
+  // A table containing an <HTMLBlock> carries block-level content, so it is kept
+  // as a JSX <Table> (mdxJsxFlowElement) rather than collapsed to a markdown table.
+  const tableNodes = collectNodes(
+    mdastTree,
+    node => node.type === 'mdxJsxFlowElement' && (node as MdxJsxFlowElement).name === 'Table',
+  );
+  expect(tableNodes).toHaveLength(1);
+}
+
+describe('<HTMLBlock> in mdxish', () => {
   describe('standalone', () => {
     it('renders as <html-block> with the decoded html prop', () => {
       const tree = mdxish('<HTMLBlock>{`<div style="color: red;">Hello</div>`}</HTMLBlock>');
@@ -18,7 +30,20 @@ describe('mdxish HTMLBlock', () => {
     });
   });
 
-  describe('nested inside JSX blocks (RM-16726)', () => {
+  it('renders inside a generic JSX block as <html-block> with the decoded html prop', () => {
+    const md = '<div><HTMLBlock>{`<p>nested</p>`}</HTMLBlock></div>';
+
+    const tree = mdxish(md);
+
+    const htmlBlock = findElementByTagName(tree, 'html-block');
+    expect(htmlBlock).toMatchObject({
+      type: 'element',
+      tagName: 'html-block',
+      properties: { html: '<p>nested</p>' },
+    });
+  });
+
+  describe('inside <Table> cells', () => {
     it('renders inside a <Table> cell as <html-block> with the decoded html prop', () => {
       const md = `<Table>
   <thead>
@@ -31,6 +56,8 @@ describe('mdxish HTMLBlock', () => {
     </tr>
   </tbody>
 </Table>`;
+
+      ensureJsxTableIsParsed(md);
 
       const tree = mdxish(md);
 
@@ -46,19 +73,6 @@ describe('mdxish HTMLBlock', () => {
       });
     });
 
-    it('renders inside a generic JSX block as <html-block> with the decoded html prop', () => {
-      const md = '<div><HTMLBlock>{`<p>nested</p>`}</HTMLBlock></div>';
-
-      const tree = mdxish(md);
-
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        type: 'element',
-        tagName: 'html-block',
-        properties: { html: '<p>nested</p>' },
-      });
-    });
-
     it('preserves safeMode and runScripts attributes when nested', () => {
       const md = `<Table>
   <tbody>
@@ -68,8 +82,9 @@ describe('mdxish HTMLBlock', () => {
   </tbody>
 </Table>`;
 
-      const tree = mdxish(md);
+      ensureJsxTableIsParsed(md);
 
+      const tree = mdxish(md);
       const htmlBlock = findElementByTagName(tree, 'html-block');
       expect(htmlBlock).toMatchObject({
         type: 'element',
@@ -92,6 +107,8 @@ describe('mdxish HTMLBlock', () => {
   </tbody>
 </Table>`;
 
+      ensureJsxTableIsParsed(md);
+
       const tree = mdxish(md);
 
       const htmlBlocks = findAllElementsByTagName(tree, 'html-block');
@@ -110,6 +127,8 @@ describe('mdxish HTMLBlock', () => {
     </tr>
   </tbody>
 </Table>`;
+
+      ensureJsxTableIsParsed(md);
 
       const tree = mdxish(md);
       const serialized = JSON.stringify(tree);

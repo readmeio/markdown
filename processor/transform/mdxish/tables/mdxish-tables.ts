@@ -10,6 +10,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
+import { NodeTypes } from '../../../../enums';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
@@ -20,6 +21,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { convertHtmlBlockElements, neutralizeHtmlBlockComments } from './html-blocks-in-table';
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairUnclosedTags } from './repair-unclosed-tags';
@@ -146,6 +148,13 @@ const processTableNode = (
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   let tableHasFlowContent = false;
+
+  // An `html-block` (a converted `<HTMLBlock>`) is block-level content that a
+  // markdown table cell can't represent, so keep the table as a JSX `<Table>`.
+  visit(node as Node, NodeTypes.htmlBlock, () => {
+    tableHasFlowContent = true;
+    return EXIT;
+  });
 
   // Re-parse text-only cells through markdown and detect flow content
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
@@ -312,36 +321,48 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
+    // A protected `<HTMLBlock>` payload is an HTML comment, which is invalid MDX
+    // and makes the re-parse below throw. Rewrite it to an MDX comment (a
+    // length-preserving swap, so offsets stay aligned) and parse against that
+    // copy, leaving the original node intact for the failure fallback.
+    const neutralizedValue = neutralizeHtmlBlockComments(node.value);
+    const parseNode = neutralizedValue === node.value ? node : { ...node, value: neutralizedValue };
+
     // Main logic to transform table node to its parts
     // Because the processor uses remarkMdx, it is stricter in what it accepts
     // and only accepts valid MDX syntax. in the table node.
     // To get around that, we have some fallback logics after trying to repair the table content
-    let parsed = parseTableNode(tableNodeProcessor, node);
+    let parsed = parseTableNode(tableNodeProcessor, parseNode);
     if (!parsed) {
       // First common error is unclosed HTML tags
-      const repaired = repairUnclosedTags(node.value);
-      if (repaired.value !== node.value) {
+      const repaired = repairUnclosedTags(parseNode.value);
+      if (repaired.value !== parseNode.value) {
         parsed = parseTableNode(
           tableNodeProcessor,
-          { ...node, value: repaired.value },
-          { inserts: repaired.inserts, originalSource: node.value },
+          { ...parseNode, value: repaired.value },
+          { inserts: repaired.inserts, originalSource: parseNode.value },
         );
       }
       if (!parsed) {
         // Second common error is having a line with text and an opening tag
         // E.g. text <div> \n <div> text
-        const normalized = normalizeTagSpacing(node.value);
-        if (normalized.value !== node.value) {
+        const normalized = normalizeTagSpacing(parseNode.value);
+        if (normalized.value !== parseNode.value) {
           parsed = parseTableNode(
             tableNodeProcessor,
-            { ...node, value: normalized.value },
-            { inserts: normalized.inserts, originalSource: node.value },
+            { ...parseNode, value: normalized.value },
+            { inserts: normalized.inserts, originalSource: parseNode.value },
           );
         }
       }
     }
 
     if (parsed) {
+      // Re-parsed `<HTMLBlock>` elements (now MDX comments) become `html-block`
+      // MDAST nodes here; the mdast-level `mdxishHtmlBlocks` never sees them
+      // because they are nested inside the JSX `<Table>`.
+      convertHtmlBlockElements(parsed as Node);
+
       // If the table is parsed successfully, we can now process it further
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
