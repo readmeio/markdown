@@ -884,6 +884,28 @@ describe('mdxish tables transformation', () => {
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(2);
     });
+
+    it('handles where there is asymmety both in the opener and the closer', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>Icon</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <div style="text-align:center; color:red">hi
+
+        there</div>
+      </td>
+      <td>**Enabled**. The device is active.</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const tree = parseMdxishWithSource(doc);
+      const tableNodes = collectNodes(tree.tree, 'table');
+      expect(tableNodes).toHaveLength(1);
+    });
   });
 
   describe('given HTML attributes on structural table HTML children', () => {
