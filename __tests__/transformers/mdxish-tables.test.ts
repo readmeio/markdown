@@ -240,6 +240,108 @@ describe('mdxish tables transformation', () => {
       expect(html).toContain('2.16.0.0/13');
       expect(html).not.toContain('```');
     });
+
+    describe('given backslash escapes inside a {…} expression', () => {
+      // mdxjs hands `{…}` to acorn as JS; a markdown-style escape like `\_` is
+      // invalid JS and would otherwise drop parsing for the whole <Table>.
+      it('parses the table and strips the escape inside the expression', () => {
+        const doc = `<Table align={["left","left"]}>
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>**loginPolicy**</td>
+        <td>
+  the /{customer\\_id}/config/clients operation
+        </td>
+      </tr>
+    </tbody>
+  </Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        // Markdown inside cells is parsed (not left as raw HTML).
+        const strongs = findAllElementsByTagName(tables[0], 'strong');
+        expect(strongs.length).toBeGreaterThan(0);
+        expect(JSON.stringify(strongs[0])).toContain('loginPolicy');
+
+        // The align attribute is evaluated, not rendered verbatim.
+        const headers = findAllElementsByTagName(tables[0], 'th');
+        expect(headers[0].properties?.align).toBe('left');
+
+        // The escape is dropped, leaving the literal path text.
+        const cells = findAllElementsByTagName(tables[0], 'td');
+        expect(JSON.stringify(cells)).toContain('/{customer_id}/config/clients');
+      });
+
+      it('preserves a valid backslash escape inside a string literal', () => {
+        // The `\t` lives inside a JS string, so it is a valid escape and must
+        // survive — only code-position backslashes are stripped.
+        const doc = `<Table align={["a\\tb"]}>
+  <thead><tr><th>H</th></tr></thead>
+  <tbody><tr><td>x</td></tr></tbody>
+  </Table>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const headers = findAllElementsByTagName(tables[0], 'th');
+        expect(headers[0].properties?.align).toBe('a\tb');
+      });
+    });
+
+    it('should not break Table when a lone { is present', () => {
+      const doc = `<Table>
+<thead>
+  <tr>
+    <th>Header 1</th>
+    <th>Header 2</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>**loginPolicy**</td>
+    <td>
+  hi { gwr
+    </td>
+  </tr>
+</tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
+
+    it('should not break when there is a / inside a curly brace expression', () => {
+      const doc = `<Table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**loginPolicy**</td>
+      <td>
+    hi {/}
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const { tree } = parseMdxishWithSource(doc);
+      const tableNode = collectNodes(tree, 'table');
+      expect(tableNode).toHaveLength(1);
+    });
   });
 
   describe('given unclosed tags inside cells that is not MDX valid', () => {
@@ -883,62 +985,6 @@ describe('mdxish tables transformation', () => {
 
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(2);
-    });
-  });
-
-  describe('given backslash escapes inside a {…} expression (RM-16791)', () => {
-    // mdxjs hands `{…}` to acorn as JS; a markdown-style escape like `\_` is
-    // invalid JS and would otherwise drop parsing for the whole <Table>.
-    it('parses the table and strips the escape inside the expression', () => {
-      const doc = `<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>Key</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>**loginPolicy**</td>
-      <td>
-the /{customer\\_id}/config/clients operation
-      </td>
-    </tr>
-  </tbody>
-</Table>`;
-
-      const hast = mdxish(doc);
-      const tables = findAllElementsByTagName(hast, 'table');
-      expect(tables).toHaveLength(1);
-
-      // Markdown inside cells is parsed (not left as raw HTML).
-      const strongs = findAllElementsByTagName(tables[0], 'strong');
-      expect(strongs.length).toBeGreaterThan(0);
-      expect(JSON.stringify(strongs[0])).toContain('loginPolicy');
-
-      // The align attribute is evaluated, not rendered verbatim.
-      const headers = findAllElementsByTagName(tables[0], 'th');
-      expect(headers[0].properties?.align).toBe('left');
-
-      // The escape is dropped, leaving the literal path text.
-      const cells = findAllElementsByTagName(tables[0], 'td');
-      expect(JSON.stringify(cells)).toContain('/{customer_id}/config/clients');
-    });
-
-    it('preserves a valid backslash escape inside a string literal', () => {
-      // The `\t` lives inside a JS string, so it is a valid escape and must
-      // survive — only code-position backslashes are stripped.
-      const doc = `<Table align={["a\\tb"]}>
-<thead><tr><th>H</th></tr></thead>
-<tbody><tr><td>x</td></tr></tbody>
-</Table>`;
-
-      const hast = mdxish(doc);
-      const tables = findAllElementsByTagName(hast, 'table');
-      expect(tables).toHaveLength(1);
-
-      const headers = findAllElementsByTagName(tables[0], 'th');
-      expect(headers[0].properties?.align).toBe('a\tb');
     });
   });
 

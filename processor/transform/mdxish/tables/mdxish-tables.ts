@@ -22,6 +22,7 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
+import { repairBrokenExpressions } from './repair-broken-expressions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
 import { tableTags, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
@@ -325,10 +326,12 @@ const mdxishTables = (): Transform => tree => {
       //  - normalizeTagSpacing:      a line mixing text and an opening tag
       //                              (e.g. `text <div> \n <div> text`)
       //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
+      //  - repairBrokenExpressions:  an unterminated or unparseable `{…}` expression
       const repairs: ((html: string) => RepairResult)[] = [
         repairUnclosedTags,
         normalizeTagSpacing,
         repairExpressionEscapes,
+        repairBrokenExpressions,
       ];
       for (let i = 0; i < repairs.length && !parsed; i += 1) {
         const { value, inserts } = repairs[i](node.value);
