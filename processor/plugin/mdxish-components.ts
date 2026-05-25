@@ -103,6 +103,13 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
+    // Store multiline template-literal children (e.g. {`...\n...`}) as a bare string prop
+    // via node.properties.children so hast-to-hyperscript doesn't wrap them in an array.
+    if (child.value.includes('\n')) {
+      node.properties = { ...node.properties, children: child.value };
+      return [];
+    }
+
     const hast = processMarkdown(child.value.trim());
     const children = (hast.children ?? []).filter(isElementContentNode);
 

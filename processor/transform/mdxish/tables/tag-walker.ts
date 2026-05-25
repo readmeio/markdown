@@ -3,7 +3,7 @@ import { Parser } from 'htmlparser2';
 /**
  * Skip certain regions / parts of the content that htmlparser2 should not handle
  */
-const maskNonTagRegions = (html: string): string =>
+export const maskNonTagRegions = (html: string): string =>
   html
     .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
     // `<<NAME>>` is legacy variable syntax — without masking,

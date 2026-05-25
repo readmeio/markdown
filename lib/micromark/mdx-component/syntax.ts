@@ -115,6 +115,151 @@ function createTokenize(mode: 'flow' | 'text') {
         ? code >= codes.lowercaseA && code <= codes.lowercaseZ
         : code >= codes.uppercaseA && code <= codes.uppercaseZ;
 
+    // Shared brace-expression state machine. The two call sites differ only in where
+    // to continue after a line ending and where to return when braceDepth reaches zero.
+    function createBraceExprStates(continuationStart: State, afterBraceClose: State) {
+      function braceExpr(code: Code): State | undefined {
+        if (code === null) return nok(code);
+
+        if (markdownLineEnding(code)) {
+          if (!isFlow) return nok(code);
+          effects.exit('mdxComponentData');
+          return continuationStart(code);
+        }
+
+        if (code === codes.quotationMark || code === codes.apostrophe) {
+          quoteChar = code;
+          effects.consume(code);
+          return braceString;
+        }
+
+        if (code === codes.graveAccent) {
+          inTemplateLit = true;
+          effects.consume(code);
+          return braceTemplateLiteral;
+        }
+
+        if (code === codes.leftCurlyBrace) {
+          braceDepth += 1;
+          effects.consume(code);
+          return braceExpr;
+        }
+
+        if (code === codes.rightCurlyBrace) {
+          braceDepth -= 1;
+          effects.consume(code);
+
+          if (templateStack.length > 0 && braceDepth === templateStack[templateStack.length - 1]) {
+            templateStack.pop();
+            inTemplateLit = true;
+            return braceTemplateLiteral;
+          }
+
+          if (braceDepth === 0) {
+            return afterBraceClose;
+          }
+          return braceExpr;
+        }
+
+        effects.consume(code);
+        return braceExpr;
+      }
+
+      function braceString(code: Code): State | undefined {
+        if (code === null) return nok(code);
+
+        if (markdownLineEnding(code)) {
+          if (!isFlow) return nok(code);
+          effects.exit('mdxComponentData');
+          return continuationStart(code);
+        }
+
+        if (code === codes.backslash) {
+          effects.consume(code);
+          return braceStringEscape;
+        }
+
+        if (code === quoteChar) {
+          effects.consume(code);
+          quoteChar = null;
+          return braceExpr;
+        }
+
+        effects.consume(code);
+        return braceString;
+      }
+
+      function braceStringEscape(code: Code): State | undefined {
+        if (code === null || markdownLineEnding(code)) {
+          return braceString(code);
+        }
+        effects.consume(code);
+        return braceString;
+      }
+
+      function braceTemplateLiteral(code: Code): State | undefined {
+        if (code === null) return nok(code);
+
+        if (markdownLineEnding(code)) {
+          if (!isFlow) return nok(code);
+          effects.exit('mdxComponentData');
+          return continuationStart(code);
+        }
+
+        if (code === codes.graveAccent) {
+          inTemplateLit = false;
+          effects.consume(code);
+          return braceExpr;
+        }
+
+        if (code === codes.backslash) {
+          effects.consume(code);
+          return braceTemplateLiteralEscape;
+        }
+
+        if (code === codes.dollarSign) {
+          effects.consume(code);
+          return braceTemplateLiteralDollar;
+        }
+
+        effects.consume(code);
+        return braceTemplateLiteral;
+      }
+
+      function braceTemplateLiteralEscape(code: Code): State | undefined {
+        if (code === null || markdownLineEnding(code)) {
+          return braceTemplateLiteral(code);
+        }
+        effects.consume(code);
+        return braceTemplateLiteral;
+      }
+
+      function braceTemplateLiteralDollar(code: Code): State | undefined {
+        if (code === codes.leftCurlyBrace) {
+          templateStack.push(braceDepth);
+          braceDepth += 1;
+          inTemplateLit = false;
+          effects.consume(code);
+          return braceExpr;
+        }
+        return braceTemplateLiteral(code);
+      }
+
+      return { braceExpr, braceString, braceTemplateLiteral };
+    }
+
+    const {
+      braceExpr: inBraceExpr,
+      braceString: inBraceString,
+      braceTemplateLiteral: inBraceTemplateLiteral,
+    } = createBraceExprStates(openTagContinuationStart, afterOpenTagName);
+
+    const {
+      braceExpr: inBodyBraceExpr,
+      braceString: inBodyBraceString,
+      braceTemplateLiteral: inBodyBraceTemplateLiteral,
+    } = createBraceExprStates(bodyContinuationStart, body);
+
     return start;
 
     // ── Start ──────────────────────────────────────────────────────────────
@@ -252,144 +397,6 @@ function createTokenize(mode: 'flow' | 'text') {
       return inQuotedAttr;
     }
 
-    function inBraceExpr(code: Code): State | undefined {
-      if (code === null) return nok(code);
-
-      if (markdownLineEnding(code)) {
-        if (!isFlow) return nok(code);
-        effects.exit('mdxComponentData');
-        return openTagContinuationStart(code);
-      }
-
-      // Handle strings inside braces
-      if (code === codes.quotationMark || code === codes.apostrophe) {
-        quoteChar = code;
-        effects.consume(code);
-        return inBraceString;
-      }
-
-      // Handle template literals inside braces
-      if (code === codes.graveAccent) {
-        inTemplateLit = true;
-        effects.consume(code);
-        return inBraceTemplateLiteral;
-      }
-
-      if (code === codes.leftCurlyBrace) {
-        braceDepth += 1;
-        effects.consume(code);
-        return inBraceExpr;
-      }
-
-      if (code === codes.rightCurlyBrace) {
-        braceDepth -= 1;
-        effects.consume(code);
-
-        // Check if this } closes a ${...} interpolation
-        if (templateStack.length > 0 && braceDepth === templateStack[templateStack.length - 1]) {
-          templateStack.pop();
-          inTemplateLit = true; // back inside the template literal
-          return inBraceTemplateLiteral;
-        }
-
-        if (braceDepth === 0) {
-          return afterOpenTagName;
-        }
-        return inBraceExpr;
-      }
-
-      effects.consume(code);
-      return inBraceExpr;
-    }
-
-    function inBraceString(code: Code): State | undefined {
-      if (code === null) return nok(code);
-
-      if (markdownLineEnding(code)) {
-        if (!isFlow) return nok(code);
-        effects.exit('mdxComponentData');
-        return openTagContinuationStart(code);
-      }
-
-      if (code === codes.backslash) {
-        effects.consume(code);
-        return inBraceStringEscape;
-      }
-
-      if (code === quoteChar) {
-        effects.consume(code);
-        quoteChar = null;
-        return inBraceExpr;
-      }
-
-      effects.consume(code);
-      return inBraceString;
-    }
-
-    function inBraceStringEscape(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) {
-        return inBraceString(code);
-      }
-      effects.consume(code);
-      return inBraceString;
-    }
-
-    // ── Template literal handling inside brace expressions ─────────────────
-
-    function inBraceTemplateLiteral(code: Code): State | undefined {
-      if (code === null) return nok(code);
-
-      if (markdownLineEnding(code)) {
-        if (!isFlow) return nok(code);
-        effects.exit('mdxComponentData');
-        return openTagContinuationStart(code);
-      }
-
-      // Closing backtick ends the template literal
-      if (code === codes.graveAccent) {
-        inTemplateLit = false;
-        effects.consume(code);
-        return inBraceExpr;
-      }
-
-      // Backslash escape (e.g., \` or \$)
-      if (code === codes.backslash) {
-        effects.consume(code);
-        return inBraceTemplateLiteralEscape;
-      }
-
-      // ${ starts an interpolation
-      if (code === codes.dollarSign) {
-        effects.consume(code);
-        return inBraceTemplateLiteralDollar;
-      }
-
-      effects.consume(code);
-      return inBraceTemplateLiteral;
-    }
-
-    function inBraceTemplateLiteralEscape(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) {
-        return inBraceTemplateLiteral(code);
-      }
-      effects.consume(code);
-      return inBraceTemplateLiteral;
-    }
-
-    function inBraceTemplateLiteralDollar(code: Code): State | undefined {
-      if (code === codes.leftCurlyBrace) {
-        // Enter ${...} interpolation. Save current braceDepth so we know
-        // when the matching } returns us to this template literal.
-        templateStack.push(braceDepth);
-        braceDepth += 1;
-        inTemplateLit = false; // now inside interpolation expression
-        effects.consume(code);
-        return inBraceExpr;
-      }
-      // Just a $ not followed by { — back to template literal
-      return inBraceTemplateLiteral(code);
-    }
-
     function selfCloseGt(code: Code): State | undefined {
       if (code === codes.greaterThan) {
         effects.consume(code);
@@ -464,6 +471,16 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === codes.graveAccent) {
         codeSpanOpenSize = 0;
         return countOpenTicks(code);
+      }
+
+      // JSX expression child — track braces/template literals so the closing
+      // backtick of `{`...`}` is not misread as a code span opener
+      if (code === codes.leftCurlyBrace) {
+        braceDepth = 1;
+        inTemplateLit = false;
+        effects.consume(code);
+        atLineStart = false;
+        return inBodyBraceExpr;
       }
 
       effects.consume(code);
@@ -753,6 +770,13 @@ function createTokenize(mode: 'flow' | 'text') {
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');
+
+      // Resume inside a body brace expression if a line ending interrupted one
+      if (braceDepth > 0) {
+        if (inTemplateLit) return inBodyBraceTemplateLiteral(code);
+        if (quoteChar !== null) return inBodyBraceString(code);
+        return inBodyBraceExpr(code);
+      }
 
       // Detect tilde fences at line start
       if (atLineStart && code === codes.tilde) {

@@ -76,7 +76,10 @@ function createElementPreservingHastProps(
 ): React.ReactElement {
   if (props?.node?.properties) {
     const { node, ...rest } = props;
-    return React.createElement(type, { ...rest, ...node.properties }, ...children);
+    const mergedProps = { ...rest, ...node.properties };
+    // Strip undefined so positional args don't shadow node.properties.children
+    const definedChildren = children.filter(c => c !== undefined);
+    return React.createElement(type, mergedProps, ...definedChildren);
   }
   return React.createElement(type, props, ...children);
 }

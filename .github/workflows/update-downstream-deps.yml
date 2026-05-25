@@ -1,0 +1,39 @@
+name: Update Downstream Dependencies
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  update-dependencies:
+    name: Update @readme/markdown in ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - readmeio/readme
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ secrets.DEPLOYBERT_APP_ID }}
+          private-key: ${{ secrets.DEPLOYBERT_PRIVATE_KEY }}
+          owner: readmeio
+          repositories: readme
+      - uses: readmeio/update-downstream-deps-action@v1
+        with:
+          package_name: '@readme/markdown'
+          repository: ${{ matrix.repo }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          npm_token: ${{ secrets.GITHUB_TOKEN }}
+          git_user_name: 'deploy-markdown[bot]'
+          git_user_email: 'deploy-markdown[bot]@users.noreply.github.com'

@@ -1,6 +1,19 @@
 Changelog
 ===
 
+## Version 14.4.0
+### ✨ New & Improved
+
+* add image frame ([#1478](https://github.com/readmeio/markdown/issues/1478)) ([a752a8b](https://github.com/readmeio/markdown/commit/a752a8bb534b9080650b0a59bf6fe9b6ab20b37f))
+* add new update downstream deps workflow ([#1475](https://github.com/readmeio/markdown/issues/1475)) ([94f9ded](https://github.com/readmeio/markdown/commit/94f9ded3fbdbf8a53a0ef607a9236ab402224b88))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** preserve raw-content HTML tags when unclosed on a line ([#1477](https://github.com/readmeio/markdown/issues/1477)) ([56df062](https://github.com/readmeio/markdown/commit/56df06261dd268d2b3ae6f055bad4e231a7c1d3d))
+* **mdx:** prevent mdx from crashing when Tabs is given only 1 child ([#1479](https://github.com/readmeio/markdown/issues/1479)) ([363ba7c](https://github.com/readmeio/markdown/commit/363ba7cadb1a028e2dbe91ef44034469bd53efb1))
+* **mdxish:** stop orphan closer tags from breaking table parsing ([#1480](https://github.com/readmeio/markdown/issues/1480)) ([b6afc85](https://github.com/readmeio/markdown/commit/b6afc8588f926f5c4d73760e7863144b05d4b7d4)), closes [#1465](https://github.com/readmeio/markdown/issues/1465)
+* **mdxish:** terminal custom component breaks page rendering ([#1455](https://github.com/readmeio/markdown/issues/1455)) ([ec3962f](https://github.com/readmeio/markdown/commit/ec3962f1a16bb6ede8e0b275e3707ea0d40fecb2))
+
 ## Version 14.3.0
 ### ✨ New & Improved
 
