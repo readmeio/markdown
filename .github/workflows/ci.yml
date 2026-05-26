@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Verify subpath exports (build + dist-grep + self-ref probes)
+        run: npm run build:verify
+
   visual:
     name: 'Visual Tests'
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
