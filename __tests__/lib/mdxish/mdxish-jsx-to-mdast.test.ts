@@ -373,6 +373,26 @@ Body content
         expect(recipeNode.emoji).toBe('🍳');
         expect(recipeNode.backgroundColor).toBe('#fff');
       });
+
+      it('should preserve emoji when backgroundColor is omitted', () => {
+        const md = '<Recipe slug="emoji-only" title="Emoji Only" emoji="🦉" />';
+        const ast = processWithNewTypes(md);
+
+        const recipeNode = ast.children[0] as Recipe;
+        expect(recipeNode.slug).toBe('emoji-only');
+        expect(recipeNode.emoji).toBe('🦉');
+        expect(recipeNode.backgroundColor).toBeFalsy();
+      });
+
+      it('should preserve backgroundColor when emoji is omitted', () => {
+        const md = '<Recipe slug="bg-only" title="Background Only" backgroundColor="#018ef5" />';
+        const ast = processWithNewTypes(md);
+
+        const recipeNode = ast.children[0] as Recipe;
+        expect(recipeNode.slug).toBe('bg-only');
+        expect(recipeNode.backgroundColor).toBe('#018ef5');
+        expect(recipeNode.emoji).toBeFalsy();
+      });
     });
 
     describe('unknown components', () => {

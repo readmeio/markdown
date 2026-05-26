@@ -22,7 +22,31 @@ describe('readme-to-mdx transformer', () => {
     };
 
     expect(mdx(ast)).toMatchInlineSnapshot(`
-      "<Recipe slug="test-id" title="Test" />
+      "<Recipe backgroundColor="red" emoji="🦉" slug="test-id" title="Test" />
+      "
+    `);
+  });
+
+  it('preserves emoji and backgroundColor on the Recipe JSX', () => {
+    const markdown = '<Recipe slug="test-id" title="Test" emoji="🦉" backgroundColor="#018ef5" />';
+    expect(mdx(mdast(markdown))).toMatchInlineSnapshot(`
+      "<Recipe slug="test-id" title="Test" emoji="🦉" backgroundColor="#018ef5" />
+      "
+    `);
+  });
+
+  it('preserves emoji on Recipe JSX when backgroundColor is omitted', () => {
+    const markdown = '<Recipe slug="emoji-only" title="Emoji Only" emoji="🦉" />';
+    expect(mdx(mdast(markdown))).toMatchInlineSnapshot(`
+      "<Recipe slug="emoji-only" title="Emoji Only" emoji="🦉" />
+      "
+    `);
+  });
+
+  it('preserves backgroundColor on Recipe JSX when emoji is omitted', () => {
+    const markdown = '<Recipe slug="bg-only" title="Background Only" backgroundColor="#018ef5" />';
+    expect(mdx(mdast(markdown))).toMatchInlineSnapshot(`
+      "<Recipe slug="bg-only" title="Background Only" backgroundColor="#018ef5" />
       "
     `);
   });

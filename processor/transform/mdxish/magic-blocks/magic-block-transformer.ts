@@ -602,7 +602,7 @@ function transformMagicBlock(
       const recipeNode: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: 'Recipe',
-        attributes: toAttributes(recipeJson, ['slug', 'title']),
+        attributes: toAttributes(recipeJson, ['slug', 'title', 'emoji', 'backgroundColor']),
         children: [],
         position: undefined,
       };

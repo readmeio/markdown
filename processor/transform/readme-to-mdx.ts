@@ -12,6 +12,7 @@ import { NodeTypes } from '../../enums';
 import { toAttributes } from '../utils';
 
 const imageAttrs = ['align', 'alt', 'caption', 'border', 'height', 'src', 'title', 'width', 'lazy', 'className'];
+const recipeJsxAttrs = ['slug', 'title', 'emoji', 'backgroundColor'];
 
 const readmeToMdx = (): Transform => tree => {
   // Unwrap pinned nodes, replace rdme-pin with its child node
@@ -59,7 +60,7 @@ const readmeToMdx = (): Transform => tree => {
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
       name: 'Recipe',
-      attributes: toAttributes(attrs, ['slug', 'title']),
+      attributes: toAttributes(attrs, recipeJsxAttrs),
       children: [],
     });
   });
@@ -70,7 +71,7 @@ const readmeToMdx = (): Transform => tree => {
     parent.children.splice(index, 1, {
       type: 'mdxJsxFlowElement',
       name: 'Recipe',
-      attributes: toAttributes(attrs, ['slug', 'title']),
+      attributes: toAttributes(attrs, recipeJsxAttrs),
       children: [],
     });
   });

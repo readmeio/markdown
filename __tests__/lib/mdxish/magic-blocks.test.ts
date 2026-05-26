@@ -826,10 +826,11 @@ ${JSON.stringify(
   });
 
   describe('recipe block', () => {
-    it('should restore tutorial-tile block to Recipe component', () => {
+    it('should restore tutorial-tile block to Recipe component with display attrs', () => {
       const md = `[block:tutorial-tile]
 {
   "emoji": "🦉",
+  "backgroundColor": "#018ef5",
   "slug": "whoaaa",
   "title": "WHOAAA"
 }
@@ -843,14 +844,15 @@ ${JSON.stringify(
       expect(recipeElement.tagName).toBe('Recipe');
       expect(recipeElement.properties.slug).toBe('whoaaa');
       expect(recipeElement.properties.title).toBe('WHOAAA');
+      expect(recipeElement.properties.emoji).toBe('🦉');
+      expect(recipeElement.properties.backgroundColor).toBe('#018ef5');
     });
 
-    it('should restore recipe block to Recipe component', () => {
+    it('should restore recipe block to Recipe component without display attrs', () => {
       const md = `[block:recipe]
 {
   "slug": "test-recipe",
-  "title": "Test Recipe",
-  "emoji": "👉"
+  "title": "Test Recipe"
 }
 [/block]`;
 
@@ -862,6 +864,42 @@ ${JSON.stringify(
       expect(recipeElement.tagName).toBe('Recipe');
       expect(recipeElement.properties.slug).toBe('test-recipe');
       expect(recipeElement.properties.title).toBe('Test Recipe');
+      expect(recipeElement.properties.emoji).toBeUndefined();
+      expect(recipeElement.properties.backgroundColor).toBeUndefined();
+    });
+
+    it('should restore a recipe block with emoji but no backgroundColor', () => {
+      const md = `[block:tutorial-tile]
+{
+  "slug": "emoji-only",
+  "title": "Emoji Only",
+  "emoji": "🦉"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      const recipeElement = ast.children[0] as Element;
+      expect(recipeElement.tagName).toBe('Recipe');
+      expect(recipeElement.properties.slug).toBe('emoji-only');
+      expect(recipeElement.properties.emoji).toBe('🦉');
+      expect(recipeElement.properties.backgroundColor).toBeUndefined();
+    });
+
+    it('should restore a recipe block with backgroundColor but no emoji', () => {
+      const md = `[block:tutorial-tile]
+{
+  "slug": "bg-only",
+  "title": "Background Only",
+  "backgroundColor": "#018ef5"
+}
+[/block]`;
+
+      const ast = mdxish(md);
+      const recipeElement = ast.children[0] as Element;
+      expect(recipeElement.tagName).toBe('Recipe');
+      expect(recipeElement.properties.slug).toBe('bg-only');
+      expect(recipeElement.properties.backgroundColor).toBe('#018ef5');
+      expect(recipeElement.properties.emoji).toBeUndefined();
     });
   });
 

@@ -30,12 +30,12 @@ Or on a line by itself:
       <Callout icon="🚀" theme="default">
         ### Launch Example Code:
 
-        <Recipe slug="amend-modify-receviers-name-headers" title="Amend - Modify Recevier's Name - Headers" />
+        <Recipe backgroundColor="#0b1c36" emoji="👉" slug="amend-modify-receviers-name-headers" title="Amend - Modify Recevier's Name - Headers" />
       </Callout>
 
       Or on a line by itself:
 
-      <Recipe slug="amend-modify-receviers-name-headers" title="Amend - Modify Recevier's Name - Headers" />
+      <Recipe backgroundColor="#0b1c36" emoji="👉" slug="amend-modify-receviers-name-headers" title="Amend - Modify Recevier's Name - Headers" />
       "
     `);
   });
