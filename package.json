@@ -16,6 +16,10 @@
     "./render-diff": {
       "types": "./dist/lib/render-diff/index.d.ts",
       "default": "./dist/render-diff.node.js"
+    },
+    "./render-fixture": {
+      "types": "./dist/lib/render-fixture/index.d.ts",
+      "default": "./dist/render-fixture.node.js"
     }
   },
   "files": [
@@ -36,7 +40,7 @@
     "test": "vitest",
     "test.ui": "vitest --ui",
     "test.browser": "jest",
-    "verify-exports": "node scripts/verify-render-diff.cjs",
+    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {
@@ -196,6 +200,10 @@
       {
         "path": "dist/render-diff.node.js",
         "maxSize": "185KB"
+      },
+      {
+        "path": "dist/render-fixture.node.js",
+        "maxSize": "4.5MB"
       }
     ]
   },
