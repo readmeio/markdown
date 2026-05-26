@@ -14,10 +14,12 @@
   padding: $l-offset;
 
   &_default {
-    // legacy variables
-    --background: #{lighten(#dfe2e5, 8.75%)};
-    --border: #{lighten(#6a737d, 12.5%)};
-    --title: var(--text, var(--color-text-default));
+    // Set the prefixed --Callout-* variables directly (matching the convention used by
+    // info/warn/okay/error themes) so the legacy unscoped --background / --border / --title
+    // don't leak into descendants and override nested callouts' own theme variables.
+    --Callout-bg: var(--background, #{lighten(#dfe2e5, 8.75%)});
+    --Callout-border: var(--border, #{lighten(#6a737d, 12.5%)});
+    --Callout-title: var(--title, var(--text, var(--color-text-default)));
 
     @include dark-mode {
       --Callout-bg: rgba(var(--gray100-rgb), 0.05);
