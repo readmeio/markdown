@@ -89,3 +89,17 @@ With Markdown support.
 
 This text should wrap around the left-aligned image inside the MDX callout.
 </Callout>
+
+<Callout theme="default" icon="📘">
+### Default outer with nested colored callouts
+
+<Callout theme="info" icon="📘">
+### Inner Info should keep its blue background
+
+<Callout theme="warn" icon="🚧">
+### Innermost Warn should keep its yellow background
+</Callout>
+
+</Callout>
+
+</Callout>
