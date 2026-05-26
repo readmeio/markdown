@@ -277,7 +277,7 @@ interface TocList extends Element {
 
 interface Variables {
   defaults: { default: string; name: string }[];
-  user: Record<string, string>;
+  user: Record<string, unknown>;
 }
 
 interface TocListItem extends Element {
