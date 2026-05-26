@@ -34,4 +34,13 @@ export const Hello = () => <p>{user.name}</p>;
 
     expect(screen.getByText('Owlbert')).toBeVisible();
   });
+
+  it('supports structured user variables', () => {
+    const md = '{user.keys.length}';
+    const Content = execute(md, {}, { variables: { user: { keys: [{ apiKey: 'rdme_123' }] } } });
+
+    render(<Content />);
+
+    expect(screen.getByText('1')).toBeVisible();
+  });
 });
