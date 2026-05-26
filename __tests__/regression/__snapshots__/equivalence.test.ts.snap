@@ -1,0 +1,390 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Suite B: MDX↔MDXish equivalence > callouts-and-glossary 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "aria-label",
+      "kind": "attr",
+      "left": "Skip link to [object Object], Blockquote callout with FA emoji",
+      "path": "/blockquote[1]/h3[1]/a[2]",
+      "right": "Skip link to ,[object Object], Blockquote callout with FA emoji",
+      "severity": "cosmetic",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[3]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/p[4]",
+      "right": "<p></p>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > compact-headings 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "p",
+      "path": "/p[0]",
+      "right": "h1",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "h1",
+      "path": "/h1[1]",
+      "right": "h2",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "h2",
+      "path": "/h2[2]",
+      "right": "h3",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "h3",
+      "path": "/h3[3]",
+      "right": "h1",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/h2[4]",
+      "right": "<h2 class="header-scroll heading heading-2">…(3 children)…</h2>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/h3[5]",
+      "right": "<h3 class="header-scroll heading heading-3">…(3 children)…</h3>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
+{
+  "changes": [
+    {
+      "kind": "text",
+      "left": "Consecutive gemojis: 😁 :grin: should both render side by side.",
+      "path": "/p[1]/#text[0]",
+      "right": "Consecutive gemojis: 😁😁 should both render side by side.",
+      "severity": "content",
+    },
+    {
+      "attrName": "aria-label",
+      "kind": "attr",
+      "left": "Skip link to [object Object], Blockquote callout with FA in header",
+      "path": "/blockquote[3]/h3[1]/a[2]",
+      "right": "Skip link to ,[object Object], Blockquote callout with FA in header",
+      "severity": "cosmetic",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[4]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > convergent 1`] = `
+{
+  "status": "match",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > divergent 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "pre",
+      "path": "/pre[0]",
+      "right": "p",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > embeds 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "iframe",
+      "path": "/iframe[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "iframe",
+      "path": "/iframe[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "iframe",
+      "path": "/iframe[3]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "iframe",
+      "path": "/iframe[4]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "div",
+      "path": "/div[1]",
+      "right": "p",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "figure",
+      "path": "/figure[3]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > magic-blocks-table 1`] = `
+{
+  "changes": [
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/div[1]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/div[2]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > rich 1`] = `
+{
+  "changes": [
+    {
+      "kind": "text",
+      "left": "Bearer <<apiKey>>",
+      "path": "/p[1]/code[1]/#text[0]",
+      "right": "Bearer APIKEY",
+      "severity": "content",
+    },
+    {
+      "kind": "text",
+      "left": "<<region>>",
+      "path": "/p[1]/code[3]/#text[0]",
+      "right": "REGION",
+      "severity": "content",
+    },
+    {
+      "kind": "text",
+      "left": "<<name>>",
+      "path": "/div[3]/blockquote[0]/p[1]/code[1]/#text[0]",
+      "right": "NAME",
+      "severity": "content",
+    },
+    {
+      "kind": "text",
+      "left": "{user.region}",
+      "path": "/div[3]/blockquote[0]/p[1]/code[3]/#text[0]",
+      "right": "USER.REGION",
+      "severity": "content",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/div[3]/blockquote[0]/p[1]/br[4]",
+      "right": "<br>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > tables-with-html 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "table",
+      "path": "/table[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > unclosed-tags 1`] = `
+{
+  "changes": [
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`Suite B: MDX↔MDXish equivalence > variables-everywhere 1`] = `
+{
+  "changes": [
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/p[1]",
+      "right": "<p>…(5 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/p[2]",
+      "right": "<p>…(1 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/div[3]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/p[4]",
+      "right": "<p>…(7 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/pre[5]",
+      "right": "<pre class="mermaid-render mermaid_single">…(1 children)…</pre>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": null,
+      "path": "/p[6]",
+      "right": "<p>…(3 children)…</p>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;

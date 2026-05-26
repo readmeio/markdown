@@ -1,0 +1,226 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Suite A: per-engine > callouts-and-glossary (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to [object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote>
+<!-- -->
+<p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Suite A: per-engine > callouts-and-glossary (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote></div>
+<p></p>
+<p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Suite A: per-engine > compact-headings (mdx) 1`] = `
+"<p>#Compact h1 with no space after hash
+##Compact h2 with no space
+###Compact h3 with no space</p>
+<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h1-with-space"></div><div class="heading-text">Normal h1 with space</div><a aria-label="Skip link to Normal h1 with space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h1-with-space"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h2"></div><div class="heading-text">Normal h2</div><a aria-label="Skip link to Normal h2" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h2"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
+`;
+
+exports[`Suite A: per-engine > compact-headings (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h1-with-no-space-after-hash"></div><div class="heading-text">Compact h1 with no space after hash</div><a aria-label="Skip link to Compact h1 with no space after hash" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h1-with-no-space-after-hash"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h2-with-no-space"></div><div class="heading-text">Compact h2 with no space</div><a aria-label="Skip link to Compact h2 with no space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h2-with-no-space"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h3-with-no-space"></div><div class="heading-text">Compact h3 with no space</div><a aria-label="Skip link to Compact h3 with no space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h3-with-no-space"></a></h3>
+<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h1-with-space"></div><div class="heading-text">Normal h1 with space</div><a aria-label="Skip link to Normal h1 with space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h1-with-space"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h2"></div><div class="heading-text">Normal h2</div><a aria-label="Skip link to Normal h2" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h2"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
+`;
+
+exports[`Suite A: per-engine > consecutive-emojis-fa (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
+<p>Consecutive gemojis: <!-- -->😁<!-- -->:grin: should both render side by side.</p>
+<p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to [object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and <!-- -->😁<!-- --> together.</p></blockquote>"
+`;
+
+exports[`Suite A: per-engine > consecutive-emojis-fa (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
+<p>Consecutive gemojis: 😁😁 should both render side by side.</p>
+<p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and 😁 together.</p></blockquote></div>"
+`;
+
+exports[`Suite A: per-engine > convergent (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="convergent-fixture"></div><div class="heading-text">Convergent Fixture</div><a aria-label="Skip link to Convergent Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#convergent-fixture"></a></h1>
+<p>This is a simple convergent fixture with plain Markdown.</p>
+<p>Both engines should render this identically.</p>"
+`;
+
+exports[`Suite A: per-engine > convergent (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="convergent-fixture"></div><div class="heading-text">Convergent Fixture</div><a aria-label="Skip link to Convergent Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#convergent-fixture"></a></h1>
+<p>This is a simple convergent fixture with plain Markdown.</p>
+<p>Both engines should render this identically.</p>"
+`;
+
+exports[`Suite A: per-engine > divergent (mdx) 1`] = `
+"<pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre>
+<p>Some prose after the HTML block.</p>"
+`;
+
+exports[`Suite A: per-engine > divergent (mdxish) 1`] = `
+"<p><pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre></p>
+<p>Some prose after the HTML block.</p>"
+`;
+
+exports[`Suite A: per-engine > embeds (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
+<iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>"
+`;
+
+exports[`Suite A: per-engine > embeds (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
+<div class="readme-tailwind"><iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>"
+`;
+
+exports[`Suite A: per-engine > htmlblock-with-script (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-no-script-execution"></div><div class="heading-text">HTMLBlock (no script execution)</div><a aria-label="Skip link to HTMLBlock (no script execution)" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-no-script-execution"></a></h1>
+<div class="rdmd-html">
+<div class="example-card">
+  <h3>Plain HTML inside HTMLBlock</h3>
+  <p>Content with <strong>nested tags</strong> and an entity: &amp;.</p>
+</div>
+</div>
+<p>Trailing paragraph after the HTMLBlock.</p>"
+`;
+
+exports[`Suite A: per-engine > htmlblock-with-script (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-no-script-execution"></div><div class="heading-text">HTMLBlock (no script execution)</div><a aria-label="Skip link to HTMLBlock (no script execution)" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-no-script-execution"></a></h1>
+<p><div class="rdmd-html"><div class="example-card">
+  <h3>Plain HTML inside HTMLBlock</h3>
+  <p>Content with <strong>nested tags</strong> and an entity: &amp;.</p>
+</div></div></p>
+<p>Trailing paragraph after the HTMLBlock.</p>"
+`;
+
+exports[`Suite A: per-engine > jsx-attribute-entities (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote>
+<figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></span></span></figure>"
+`;
+
+exports[`Suite A: per-engine > jsx-attribute-entities (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote></div>
+<div class="readme-tailwind"><figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></span></span></figure></div>"
+`;
+
+exports[`Suite A: per-engine > magic-blocks-table (mdx) 1`] = `""`;
+
+exports[`Suite A: per-engine > magic-blocks-table (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="magic-block-tables"></div><div class="heading-text">Magic-block tables</div><a aria-label="Skip link to Magic-block tables" class="heading-anchor-icon fa fa-regular fa-anchor" href="#magic-block-tables"></a></h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">name</td><td style="text-align:left"><li>String</li></td></tr></tbody></table></div></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">id</td><td style="text-align:left"><p>Number</p></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Suite A: per-engine > rich (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
+<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer &lt;&lt;apiKey&gt;&gt;</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;region&gt;&gt;</code> region.</p>
+<p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;name&gt;&gt;</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">{user.region}</code>
+interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
+<p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
+`;
+
+exports[`Suite A: per-engine > rich (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
+<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer APIKEY</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">REGION</code> region.</p>
+<p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">USER.REGION</code><br/>
+interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
+<p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
+`;
+
+exports[`Suite A: per-engine > tables-with-html (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-inline-html"></div><div class="heading-text">Tables with inline HTML</div><a aria-label="Skip link to Tables with inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-inline-html"></a></h1>
+<table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody><tr><td colspan="2" class="hl"><code>action_name</code></td></tr><tr><td><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="cat" class="img  " height="auto" loading="lazy" src="https://example.com/cat.png" title="" width="auto"/></span></span>inline image</td><td><strong>bold</strong> after a <span>nested</span> tag</td></tr></tbody></table>"
+`;
+
+exports[`Suite A: per-engine > tables-with-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-inline-html"></div><div class="heading-text">Tables with inline HTML</div><a aria-label="Skip link to Tables with inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-inline-html"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody><tr><td colSpan="2" class="hl"><code class="rdmd-code lang-undefined theme-undefined">action_name</code></td></tr><tr><td><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="cat" class="img  " height="auto" loading="lazy" src="https://example.com/cat.png" title="" width="auto"/></span></span>inline image</td><td><strong>bold</strong> after a <span>nested</span> tag</td></tr></tbody></table></div></div>"
+`;
+
+exports[`Suite A: per-engine > unclosed-tags (mdx) 1`] = `""`;
+
+exports[`Suite A: per-engine > unclosed-tags (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="unclosed-and-orphan-tags"></div><div class="heading-text">Unclosed and orphan tags</div><a aria-label="Skip link to Unclosed and orphan tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#unclosed-and-orphan-tags"></a></h1>
+"
+`;
+
+exports[`Suite A: per-engine > variables-everywhere (mdx) 1`] = `""`;
+
+exports[`Suite A: per-engine > variables-everywhere (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-many-contexts"></div><div class="heading-text">Variables in many contexts</div><a aria-label="Skip link to Variables in many contexts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-many-contexts"></a></h1>
+<p>Inline code: <code class="rdmd-code lang-undefined theme-undefined">Bearer APIKEY</code> and <code class="rdmd-code lang-undefined theme-undefined">USER.REGION</code>.</p>
+<p>Standalone variable in a table cell:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>API key</td><td><span>sk_test_abc123</span></td></tr><tr><td>Region</td><td><span>us-east-1</span></td></tr></tbody></table></div></div>
+<p>Mermaid sequence diagram — <code class="rdmd-code lang-undefined theme-undefined">--</code> and <code class="rdmd-code lang-undefined theme-undefined">-</code> must NOT be substituted<br/>
+as legacy variables:</p>
+<pre class="mermaid-render mermaid_single">sequenceDiagram
+  Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
+  Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
+<p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
