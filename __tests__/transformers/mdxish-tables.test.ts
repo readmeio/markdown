@@ -940,6 +940,27 @@ the /{customer\\_id}/config/clients operation
       const headers = findAllElementsByTagName(tables[0], 'th');
       expect(headers[0].properties?.align).toBe('a\tb');
     });
+
+    it('does not strip a backslash from within a JSX-style comment', () => {
+      // The cell holds a code-position escape (forcing the repair pass) plus a
+      // JSX comment containing its own backslash. The repair must strip only the
+      // code-position escape, leaving the comment — and thus the table — intact.
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>{customer\\_id /* keep this \\_ */}</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headers = findAllElementsByTagName(tables[0], 'th');
+      expect(headers[0].properties?.align).toBe('left');
+    });
   });
 
   describe('given HTML attributes on structural table HTML children', () => {
