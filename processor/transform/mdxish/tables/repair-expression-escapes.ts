@@ -8,32 +8,20 @@ import { applyInserts, type Insert, type RepairResult } from './utils';
  * acorn", which drops parsing for the whole surrounding `<Table>`.
  *
  * This pass deletes backslashes that sit in JS *code* position inside a `{…}`
- * expression. Backslashes within a '…', "…" or `…` literal are valid escapes,
- * and backslashes within a block or line comment (e.g. a JSX-style comment) are
- * ignored by acorn — both are left untouched. Scoped to the malformed-retry
- * path; the happy path never runs it.
+ * expression. Backslashes within a '…', "…" or `…` literal are valid escapes
+ * and are left untouched. Scoped to the malformed-retry path; the happy path
+ * never runs it.
  */
 export const repairExpressionEscapes = (html: string): RepairResult => {
   const inserts: Insert[] = [];
   let braceDepth = 0;
   // Active string/template delimiter while scanning inside an expression, or null.
   let stringChar: string | null = null;
-  // Active comment style while scanning inside an expression: 'block', 'line', or null.
-  let commentStyle: 'block' | 'line' | null = null;
 
   for (let i = 0; i < html.length; i += 1) {
     const ch = html[i];
 
-    if (commentStyle === 'block') {
-      // A closing `*` + `/` ends a block comment; backslashes within are left untouched.
-      if (ch === '*' && html[i + 1] === '/') {
-        i += 1;
-        commentStyle = null;
-      }
-    } else if (commentStyle === 'line') {
-      // A newline ends a line comment; backslashes within are left untouched.
-      if (ch === '\n') commentStyle = null;
-    } else if (stringChar) {
+    if (stringChar) {
       // Inside a JS string/template literal a backslash escapes the next char
       // and is valid, so skip the pair untouched (this also prevents an escaped
       // quote from prematurely closing the literal).
@@ -42,11 +30,6 @@ export const repairExpressionEscapes = (html: string): RepairResult => {
       } else if (ch === stringChar) {
         stringChar = null;
       }
-    } else if (braceDepth > 0 && ch === '/' && (html[i + 1] === '*' || html[i + 1] === '/')) {
-      // A JSX-style block comment, or a `// …` line comment, inside an
-      // expression. acorn ignores backslashes here, so leave the comment intact.
-      commentStyle = html[i + 1] === '*' ? 'block' : 'line';
-      i += 1;
     } else if (braceDepth > 0 && (ch === '"' || ch === "'" || ch === '`')) {
       stringChar = ch;
     } else if (ch === '{') {

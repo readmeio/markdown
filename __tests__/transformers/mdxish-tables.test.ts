@@ -1,5 +1,5 @@
 import type { Root, Text } from 'mdast';
-import type { MdxJsxTextElement } from 'mdast-util-mdx';
+import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
@@ -886,7 +886,7 @@ describe('mdxish tables transformation', () => {
     });
   });
 
-  describe('given backslash escapes inside a {…} expression (RM-16791)', () => {
+  describe('given backslash escapes inside a {…} expression', () => {
     // mdxjs hands `{…}` to acorn as JS; a markdown-style escape like `\_` is
     // invalid JS and would otherwise drop parsing for the whole <Table>.
     it('parses the table and strips the escape inside the expression', () => {
@@ -960,6 +960,52 @@ the /{customer\\_id}/config/clients operation
 
       const headers = findAllElementsByTagName(tables[0], 'th');
       expect(headers[0].properties?.align).toBe('left');
+    });
+  });
+
+  describe('given JSX-style comments inside a table cell', () => {
+    it('preserves the comment as is and it does not break the table parsing', () => {
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+      {/* keep this comment */}
+      **content here**
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const { tree } = parseMdxishWithSource(doc);
+
+      const mdxFlowExpression = collectNodes(tree, 'mdxFlowExpression');
+      expect(mdxFlowExpression).toHaveLength(1);
+      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe('/* keep this comment */');
+
+      const strong = collectNodes(tree, 'strong');
+      expect(strong).toHaveLength(1);
+    });
+
+    it('special characters in a comment are not stripped', () => {
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+      {/* keep this comment \\_ and * / / and < and > */}
+      **content here**
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const { tree } = parseMdxishWithSource(doc);
+
+      const mdxFlowExpression = collectNodes(tree, 'mdxFlowExpression');
+      expect(mdxFlowExpression).toHaveLength(1);
+      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe('/* keep this comment \\_ and * / / and < and > */');
+
+      const strong = collectNodes(tree, 'strong');
+      expect(strong).toHaveLength(1);
     });
   });
 

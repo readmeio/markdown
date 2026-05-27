@@ -330,7 +330,7 @@ const mdxishTables = (): Transform => tree => {
         normalizeTagSpacing,
         repairExpressionEscapes,
       ];
-      // `.some` stops at the first repair that yields a parseable tree.
+      // Stops at the first repair that yields a parseable tree
       repairs.some(repair => {
         const { value, inserts } = repair(node.value);
         if (value !== node.value) {
