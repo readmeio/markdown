@@ -47,6 +47,21 @@
       @extend %img-align-center;
     }
 
+    // Suppresses the float for left/right-aligned images while keeping the
+    // image hugging the same edge. Wins via order (declared last) and matching
+    // single-class specificity against the float-setting rules above.
+    &.img-no-wrap {
+      clear: both;
+      float: none;
+      display: block;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &.img-align-right.img-no-wrap {
+      margin-left: auto;
+    }
+
     &[width='smart'] {
       max-height: 450px;
       max-width: 100%;
@@ -122,6 +137,21 @@
     &-center {
       clear: both;
       margin-inline: auto;
+    }
+
+    &.img-no-wrap {
+      clear: both;
+      float: none;
+    }
+
+    &-left.img-no-wrap {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &-right.img-no-wrap {
+      margin-left: auto;
+      margin-right: 0;
     }
 
     figcaption {

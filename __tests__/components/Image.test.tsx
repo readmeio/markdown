@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -129,5 +130,29 @@ describe('Image', () => {
         </figcaption>
       </figure>
     `);
+  });
+
+  it('should add img-no-wrap to the frame wrapper when wrap is disabled for left/right alignment', () => {
+    const { container } = render(
+      <Image align="right" framed="true" src="https://files.readme.io/b8674d6-pizzabro.jpg" wrap={false} />,
+    );
+
+    expect(container.querySelector('.img-frame')).toHaveClass('img-no-wrap');
+  });
+
+  it('should not add img-no-wrap when wrap is omitted (backwards compatible)', () => {
+    const { container } = render(
+      <Image align="right" framed="true" src="https://files.readme.io/b8674d6-pizzabro.jpg" />,
+    );
+
+    expect(container.querySelector('.img-frame')).not.toHaveClass('img-no-wrap');
+  });
+
+  it('should not add img-no-wrap for center alignment even when wrap is false', () => {
+    const { container } = render(
+      <Image align="center" framed="true" src="https://files.readme.io/b8674d6-pizzabro.jpg" wrap={false} />,
+    );
+
+    expect(container.querySelector('.img-frame')).not.toHaveClass('img-no-wrap');
   });
 });
