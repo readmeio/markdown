@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.4.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle orphan void closers in JSX table cells ([#1482](https://github.com/readmeio/markdown/issues/1482)) ([f6ac7e7](https://github.com/readmeio/markdown/commit/f6ac7e769eaba565575352a96fb0a2665c6b5fda)), closes [#1480](https://github.com/readmeio/markdown/issues/1480) [post-#1480](https://github.com/readmeio/post-/issues/1480) [#1480](https://github.com/readmeio/markdown/issues/1480)
+* **mdxish:** skip image block promotion inside inline only parents ([#1481](https://github.com/readmeio/markdown/issues/1481)) ([db44e72](https://github.com/readmeio/markdown/commit/db44e723cf9c48100b9c15fe25ba7decc0de6901))
+* **callouts:** stop default theme from polluting nested callout styles ([#1487](https://github.com/readmeio/markdown/issues/1487)) ([5c807b1](https://github.com/readmeio/markdown/commit/5c807b15dc86667b9e9d5a6aa1c24eef4472409f))
+
 ## Version 14.4.0
 ### ✨ New & Improved
 
