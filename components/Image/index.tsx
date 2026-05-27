@@ -129,10 +129,11 @@ const Image = (Props: ImageProps) => {
 
   if (framed) {
     const frameClass = `img-frame img-frame-${align || 'center'}`;
-    // Percentage widths can't resolve against a shrink-to-fit frame parent, so
-    // hoist them onto the frame wrapper and let the inner <img> fill
+    // Left/right frames shrink to fit, so percentage widths can't resolve
+    // against the parent, hoist onto the wrapper. Center frames are full-width.
+    const isClamped = align === 'left' || align === 'right';
     const frameStyle: React.CSSProperties | undefined =
-      typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
+      isClamped && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     if (children || caption) {
       return (
         <figure className={frameClass} style={frameStyle}>
