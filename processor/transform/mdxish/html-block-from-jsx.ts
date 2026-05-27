@@ -12,8 +12,7 @@ type HtmlBlockJsx = MdxJsxFlowElement | MdxJsxTextElement;
 
 // `<HTMLBlock …>{`…`}</HTMLBlock>` embedded inside a raw HTML block (e.g. a
 // single-line `<div>…</div>`). CommonMark slurps the whole div as one `html`
-// node, so the tokenizer never sees the HTMLBlock — we recover it here before
-// rehypeRaw hands the blob to parse5 (which would mangle the template literal).
+// node, so the tokenizer never sees the HTMLBlock — we recover it here
 const RAW_HTML_BLOCK_RE = /<HTMLBlock\b([^>]*)>\s*\{\s*`((?:[^`\\]|\\.)*)`\s*\}\s*<\/HTMLBlock>/g;
 
 const stringAttr = (attrs: string, name: string): string | undefined => {
@@ -31,33 +30,28 @@ const toRunScripts = (raw: string | undefined): boolean | string | undefined =>
  * Splits a raw `html` node that embeds an `<HTMLBlock>` into
  * `[html before, html-block, html after, …]`. Returns null when there is no
  * HTMLBlock to extract, so the caller can leave the node untouched.
+ *
+ * `String.split` on a regex with capture groups interleaves the captures into
+ * the result, so segments arrive as `[text, attrs, body, text, attrs, body, …]`.
  */
 const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
-  const { value } = node;
-  RAW_HTML_BLOCK_RE.lastIndex = 0;
-  if (!RAW_HTML_BLOCK_RE.exec(value)) return null;
+  const segments = node.value.split(RAW_HTML_BLOCK_RE);
+  if (segments.length === 1) return null; // no <HTMLBlock> present
 
   const parts: RootContent[] = [];
-  let lastIndex = 0;
-  RAW_HTML_BLOCK_RE.lastIndex = 0;
-  let match: RegExpExecArray | null;
-  while ((match = RAW_HTML_BLOCK_RE.exec(value)) !== null) {
-    const [full, attrs, body] = match;
-    if (match.index > lastIndex) {
-      parts.push({ type: 'html', value: value.slice(lastIndex, match.index) });
+  for (let i = 0; i < segments.length; i += 3) {
+    const [text, attrs, body] = segments.slice(i, i + 3);
+    if (text) parts.push({ type: 'html', value: text });
+    if (body !== undefined) {
+      parts.push(
+        createHTMLBlockNode(
+          formatHtmlForMdxish(body),
+          node.position,
+          toRunScripts(stringAttr(attrs, 'runScripts')),
+          stringAttr(attrs, 'safeMode'),
+        ),
+      );
     }
-    parts.push(
-      createHTMLBlockNode(
-        formatHtmlForMdxish(extractTemplateLiteral(`\`${body}\``)),
-        node.position,
-        toRunScripts(stringAttr(attrs, 'runScripts')),
-        stringAttr(attrs, 'safeMode'),
-      ),
-    );
-    lastIndex = match.index + full.length;
-  }
-  if (lastIndex < value.length) {
-    parts.push({ type: 'html', value: value.slice(lastIndex) });
   }
   return parts;
 };
@@ -78,12 +72,6 @@ const attrValue = (element: HtmlBlockJsx, name: string): string | undefined => {
  * Converts an `<HTMLBlock>` captured by the mdxComponent tokenizer as a JSX
  * element into the canonical `html-block` MDAST node, reading the body straight
  * out of its template-literal expression child.
- *
- * Runs *before* `mdxishTables` so a table cell containing an `<HTMLBlock>` is
- * seen as block-level content and kept as a JSX `<Table>`. This replaces the
- * base64-comment marker machinery: the #1455 tokenizer already hands the body
- * over as a parsed `mdxFlowExpression`/`mdxTextExpression`, so there is nothing
- * to protect or decode.
  */
 const htmlBlockFromJsx = (): Transform => tree => {
   visit(
@@ -99,9 +87,7 @@ const htmlBlockFromJsx = (): Transform => tree => {
       const html = formatHtmlForMdxish(extractTemplateLiteral(exprChild?.value));
 
       const safeMode = attrValue(element, 'safeMode');
-      const runScriptsRaw = attrValue(element, 'runScripts');
-      const runScripts =
-        runScriptsRaw === 'true' ? true : runScriptsRaw === 'false' ? false : runScriptsRaw;
+      const runScripts = toRunScripts(attrValue(element, 'runScripts'));
 
       parent.children[index] = createHTMLBlockNode(html, element.position, runScripts, safeMode);
     },
