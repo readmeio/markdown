@@ -20,7 +20,9 @@
     "./render-fixture": {
       "types": "./dist/lib/render-fixture/index.d.ts",
       "default": "./dist/render-fixture.node.js"
-    }
+    },
+    "./package.json": "./package.json",
+    "./*": "./*"
   },
   "files": [
     "styles",
