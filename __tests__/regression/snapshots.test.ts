@@ -10,7 +10,7 @@ import { loadFixture, renderFixture } from '../../lib/render-fixture';
 
 const FIXTURES_DIR = join(__dirname, 'fixtures');
 
-describe('Suite A: per-engine', () => {
+describe('Render engine regressions tests', () => {
   const fixtures = readdirSync(FIXTURES_DIR, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => entry.name);
