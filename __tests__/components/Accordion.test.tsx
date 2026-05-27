@@ -37,7 +37,7 @@ describe('Accordion', () => {
   });
 
   describe('icon prop', () => {
-    it('renders a Font Awesome icon as an <i> element', () => {
+    it('renders a bare fa- icon with the fad duotone fallback', () => {
       const { container } = render(
         <Accordion icon="fa-book" title="Section">
           content
@@ -45,7 +45,31 @@ describe('Accordion', () => {
       );
       const icon = container.querySelector('i.Accordion-icon');
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('fa-duotone', 'fa-solid', 'fa-book');
+      expect(icon).toHaveClass('fad', 'fa-book');
+    });
+
+    it('renders a prefixed far icon without adding fad', () => {
+      const { container } = render(
+        <Accordion icon="far fa-book" title="Section">
+          content
+        </Accordion>,
+      );
+      const icon = container.querySelector('i.Accordion-icon');
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveClass('far', 'fa-book');
+      expect(icon).not.toHaveClass('fad');
+    });
+
+    it('renders a prefixed fad icon without doubling the prefix', () => {
+      const { container } = render(
+        <Accordion icon="fad fa-book" title="Section">
+          content
+        </Accordion>,
+      );
+      const icon = container.querySelector('i.Accordion-icon');
+      expect(icon).toBeInTheDocument();
+      expect(icon).toHaveClass('fad', 'fa-book');
+      expect(icon?.className.match(/fad/g)).toHaveLength(1);
     });
 
     it('applies iconColor to a Font Awesome icon', () => {
