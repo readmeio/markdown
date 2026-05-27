@@ -202,7 +202,7 @@ describe('<HTMLBlock> in mdxish', () => {
       });
     });
 
-    it('still renders markdown in a sibling text cell (RM-16726 regression)', () => {
+    it('still renders markdown in a sibling text cell', () => {
       const md = `<Table>
   <thead>
     <tr><th>A</th><th>B</th></tr>
@@ -280,7 +280,7 @@ describe('<HTMLBlock> in mdxish', () => {
         properties: {
           html: '<div>raw</div>',
           safeMode: 'true',
-          runScripts: 'false',
+          runScripts: false,
         },
       });
     });

@@ -4,7 +4,7 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import { TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -312,7 +312,7 @@ function createTokenize(mode: 'flow' | 'text') {
       }
 
       // Tag name complete — check exclusions
-      if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
+      if (TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
         return nok(code);
       }
 

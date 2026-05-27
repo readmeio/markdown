@@ -36,6 +36,7 @@ import { processSnakeCaseComponent } from '../processor/transform/mdxish/compone
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
+import htmlBlockFromJsx from '../processor/transform/mdxish/html-block-from-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
@@ -47,7 +48,6 @@ import {
   preprocessJSXExpressions,
   removeJSXComments,
 } from '../processor/transform/mdxish/preprocess-jsx-expressions';
-import rehypeHtmlBlocksInJsx from '../processor/transform/mdxish/rehype-html-blocks-in-jsx';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
   preserveBooleanProperties,
@@ -202,6 +202,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
+    // After tables: the table cell re-parse (remarkMdx) turns multiline HTMLBlock
+    // bodies into clean JSX nodes, so convert them here once tables are settled.
+    .use(htmlBlockFromJsx) // Convert tokenized <HTMLBlock> JSX → html-block
     .use(mdxishHtmlBlocks)
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies
@@ -283,7 +286,6 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip
     .use(restoreBooleanProperties)
     .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
-    .use(rehypeHtmlBlocksInJsx) // Reattach HTMLBlock contents that survived rehypeRaw nested inside JSX blocks
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
