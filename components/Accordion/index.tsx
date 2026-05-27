@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 
 import './style.scss';
 
@@ -8,7 +8,6 @@ const Accordion = ({ children, icon, iconColor, title }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const isFontAwesome = icon?.startsWith('fa-');
-  const colorStyle = useMemo(() => ({ color: `${iconColor}` } as React.CSSProperties), [iconColor]);
 
   return (
     <details className="Accordion" onToggle={() => setIsOpen(!isOpen)}>
@@ -16,7 +15,7 @@ const Accordion = ({ children, icon, iconColor, title }: Props) => {
         <i className={`Accordion-toggleIcon${isOpen ? '_opened' : ''} fa fa-regular fa-chevron-right`}></i>
         {icon &&
           (isFontAwesome ? (
-            <i className={`Accordion-icon fa-duotone fa-solid ${icon}`} style={colorStyle}></i>
+            <i className={`Accordion-icon fa-duotone fa-solid ${icon}`} style={ iconColor ? { color: iconColor } : undefined}></i>
           ) : (
             <span className="Accordion-icon">{icon}</span>
           ))}
