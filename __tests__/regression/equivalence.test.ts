@@ -8,7 +8,7 @@ import { loadFixture, renderFixture } from '../../lib/render-fixture';
 
 const FIXTURES_DIR = join(__dirname, 'fixtures');
 
-describe('Suite B: MDX↔MDXish equivalence', () => {
+describe('MDX↔MDXish equivalence', () => {
   const fixtures = readdirSync(FIXTURES_DIR, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => entry.name);

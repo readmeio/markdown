@@ -338,7 +338,7 @@ function alignChildren(
 
     // Lookahead: is a[i] missing in b (b[j] matches a[i+1])?
     if (i + 1 < aChildren.length && aChildren[i + 1].hash === b.hash) {
-      changes.push(missingOrExtra('extra', a, `${parentPath}/${describeNode(a, i)}`));
+      changes.push(missingOrExtra('missing', a, `${parentPath}/${describeNode(a, i)}`));
       i += 1;
       // oxlint-disable-next-line no-continue
       continue;
@@ -346,7 +346,7 @@ function alignChildren(
 
     // Lookahead: is b[j] extra (a[i] matches b[j+1])?
     if (j + 1 < bChildren.length && a.hash === bChildren[j + 1].hash) {
-      changes.push(missingOrExtra('missing', b, `${parentPath}/${describeNode(b, j)}`));
+      changes.push(missingOrExtra('extra', b, `${parentPath}/${describeNode(b, j)}`));
       j += 1;
       // oxlint-disable-next-line no-continue
       continue;
@@ -358,21 +358,21 @@ function alignChildren(
     j += 1;
   }
 
-  // Trailing extras / missings
+  // Trailing missings / extras
   while (i < aChildren.length) {
     const a = aChildren[i];
-    changes.push(missingOrExtra('extra', a, `${parentPath}/${describeNode(a, i)}`));
+    changes.push(missingOrExtra('missing', a, `${parentPath}/${describeNode(a, i)}`));
     i += 1;
   }
   while (j < bChildren.length) {
     const b = bChildren[j];
-    changes.push(missingOrExtra('missing', b, `${parentPath}/${describeNode(b, j)}`));
+    changes.push(missingOrExtra('extra', b, `${parentPath}/${describeNode(b, j)}`));
     j += 1;
   }
 }
 
 function missingOrExtra(kind: 'extra' | 'missing', node: CanonNode, pathStr: string): Change {
-  // 'extra' = present in left, missing in right; 'missing' = the reverse.
+  // 'missing' = present in left, absent in right; 'extra' = present in right, absent in left.
   const isText = node.type === 'text';
   const severity: Severity = isText ? 'content' : 'structural';
   const repr =
@@ -381,8 +381,8 @@ function missingOrExtra(kind: 'extra' | 'missing', node: CanonNode, pathStr: str
     path: pathStr,
     kind,
     severity,
-    left: kind === 'extra' ? repr : null,
-    right: kind === 'missing' ? repr : null,
+    left: kind === 'missing' ? repr : null,
+    right: kind === 'extra' ? repr : null,
   };
 }
 

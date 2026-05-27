@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Suite B: MDX↔MDXish equivalence > callouts-and-glossary 1`] = `
+exports[`MDX↔MDXish equivalence > callouts-and-glossary 1`] = `
 {
   "changes": [
     {
@@ -26,7 +26,7 @@ exports[`Suite B: MDX↔MDXish equivalence > callouts-and-glossary 1`] = `
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/p[4]",
       "right": "<p></p>",
@@ -38,7 +38,7 @@ exports[`Suite B: MDX↔MDXish equivalence > callouts-and-glossary 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > compact-headings 1`] = `
+exports[`MDX↔MDXish equivalence > compact-headings 1`] = `
 {
   "changes": [
     {
@@ -70,14 +70,14 @@ exports[`Suite B: MDX↔MDXish equivalence > compact-headings 1`] = `
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/h2[4]",
       "right": "<h2 class="header-scroll heading heading-2">…(3 children)…</h2>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/h3[5]",
       "right": "<h3 class="header-scroll heading heading-3">…(3 children)…</h3>",
@@ -89,7 +89,7 @@ exports[`Suite B: MDX↔MDXish equivalence > compact-headings 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
+exports[`MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
 {
   "changes": [
     {
@@ -120,13 +120,13 @@ exports[`Suite B: MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > convergent 1`] = `
+exports[`MDX↔MDXish equivalence > convergent 1`] = `
 {
   "status": "match",
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > divergent 1`] = `
+exports[`MDX↔MDXish equivalence > divergent 1`] = `
 {
   "changes": [
     {
@@ -142,7 +142,7 @@ exports[`Suite B: MDX↔MDXish equivalence > divergent 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > embeds 1`] = `
+exports[`MDX↔MDXish equivalence > embeds 1`] = `
 {
   "changes": [
     {
@@ -179,7 +179,7 @@ exports[`Suite B: MDX↔MDXish equivalence > embeds 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
+exports[`MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
 {
   "changes": [
     {
@@ -195,7 +195,7 @@ exports[`Suite B: MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
+exports[`MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 {
   "changes": [
     {
@@ -225,25 +225,25 @@ exports[`Suite B: MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > magic-blocks-table 1`] = `
+exports[`MDX↔MDXish equivalence > magic-blocks-table 1`] = `
 {
   "changes": [
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/h1[0]",
       "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/div[1]",
       "right": "<div class="rdmd-table">…(1 children)…</div>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/div[2]",
       "right": "<div class="rdmd-table">…(1 children)…</div>",
@@ -255,7 +255,7 @@ exports[`Suite B: MDX↔MDXish equivalence > magic-blocks-table 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > rich 1`] = `
+exports[`MDX↔MDXish equivalence > rich 1`] = `
 {
   "changes": [
     {
@@ -287,7 +287,7 @@ exports[`Suite B: MDX↔MDXish equivalence > rich 1`] = `
       "severity": "content",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/div[3]/blockquote[0]/p[1]/br[4]",
       "right": "<br>",
@@ -299,7 +299,7 @@ exports[`Suite B: MDX↔MDXish equivalence > rich 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > tables-with-html 1`] = `
+exports[`MDX↔MDXish equivalence > tables-with-html 1`] = `
 {
   "changes": [
     {
@@ -315,11 +315,11 @@ exports[`Suite B: MDX↔MDXish equivalence > tables-with-html 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > unclosed-tags 1`] = `
+exports[`MDX↔MDXish equivalence > unclosed-tags 1`] = `
 {
   "changes": [
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/h1[0]",
       "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
@@ -331,53 +331,53 @@ exports[`Suite B: MDX↔MDXish equivalence > unclosed-tags 1`] = `
 }
 `;
 
-exports[`Suite B: MDX↔MDXish equivalence > variables-everywhere 1`] = `
+exports[`MDX↔MDXish equivalence > variables-everywhere 1`] = `
 {
   "changes": [
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/h1[0]",
       "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/p[1]",
       "right": "<p>…(5 children)…</p>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/p[2]",
       "right": "<p>…(1 children)…</p>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/div[3]",
       "right": "<div class="rdmd-table">…(1 children)…</div>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/p[4]",
       "right": "<p>…(7 children)…</p>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/pre[5]",
       "right": "<pre class="mermaid-render mermaid_single">…(1 children)…</pre>",
       "severity": "structural",
     },
     {
-      "kind": "missing",
+      "kind": "extra",
       "left": null,
       "path": "/p[6]",
       "right": "<p>…(3 children)…</p>",

@@ -63,8 +63,22 @@ describe('diff()', () => {
       expect(result.status).toBe('differ');
       if (result.status !== 'differ') throw new Error('unreachable');
       expect(result.changes.length).toBeGreaterThan(0);
-      const extraChange = result.changes.find(c => c.kind === 'extra' || c.kind === 'missing');
+      const extraChange = result.changes.find(c => c.kind === 'extra');
       expect(extraChange).toBeDefined();
+      expect(extraChange?.left).toBeNull();
+      expect(extraChange?.right).toContain('<em');
+    });
+
+    it('returns status: "differ" with a "missing"-kind change when the left input has an extra element', () => {
+      const leftHtml = '<div><span>x</span><em>y</em></div>';
+      const rightHtml = '<div><span>x</span></div>';
+      const result = diff(leftHtml, rightHtml);
+      expect(result.status).toBe('differ');
+      if (result.status !== 'differ') throw new Error('unreachable');
+      const missingChange = result.changes.find(c => c.kind === 'missing');
+      expect(missingChange).toBeDefined();
+      expect(missingChange?.right).toBeNull();
+      expect(missingChange?.left).toContain('<em');
     });
 
     it('returns status: "differ" with a text-kind change of severity "content" for text differences', () => {
