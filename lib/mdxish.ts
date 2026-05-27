@@ -36,7 +36,6 @@ import { processSnakeCaseComponent } from '../processor/transform/mdxish/compone
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
-import htmlBlockFromJsx from '../processor/transform/mdxish/html-block-from-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
@@ -202,10 +201,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
-    // After tables: the table cell re-parse (remarkMdx) turns multiline HTMLBlock
-    // bodies into clean JSX nodes, so convert them here once tables are settled.
-    .use(htmlBlockFromJsx) // Convert tokenized <HTMLBlock> JSX → html-block
-    .use(mdxishHtmlBlocks)
+    .use(mdxishHtmlBlocks) // Convert every <HTMLBlock> shape → html-block
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies
     // (e.g. code/image/embed inside <Tabs>) get visited too
