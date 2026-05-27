@@ -129,9 +129,13 @@ const Image = (Props: ImageProps) => {
 
   if (framed) {
     const frameClass = `img-frame img-frame-${align || 'center'}`;
+    // Percentage widths can't resolve against a shrink-to-fit frame parent, so
+    // hoist them onto the frame wrapper and let the inner <img> fill
+    const frameStyle: React.CSSProperties | undefined =
+      typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     if (children || caption) {
       return (
-        <figure className={frameClass}>
+        <figure className={frameClass} style={frameStyle}>
           {closedLightbox(alt || 'Expand image', imgElement)}
           {lightboxOverlay}
           <figcaption>{children || caption}</figcaption>
@@ -139,7 +143,7 @@ const Image = (Props: ImageProps) => {
       );
     }
     return (
-      <div className={frameClass}>
+      <div className={frameClass} style={frameStyle}>
         {closedLightbox(alt || 'Expand image', imgElement)}
         {lightboxOverlay}
       </div>

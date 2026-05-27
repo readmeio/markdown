@@ -74,6 +74,8 @@
     border-radius: var(--markdown-radius, 3px);
     display: block;
     padding: var(--size-12);
+    width: fit-content;
+    max-width: 100%;
 
     @include dark-mode($global: true) {
       background: rgba(var(--color-bg-page-inverse-rgb), 0.1);
@@ -89,9 +91,38 @@
       margin-right: 0;
     }
 
-    &-left   { text-align: left; }
-    &-center { text-align: center; }
-    &-right  { text-align: right; }
+    // Percentage widths set on the frame wrapper.
+    &[style*='width'] {
+      .img,
+      .lightbox-inner {
+        display: block;
+        width: 100%;
+      }
+
+      img {
+        height: auto !important;
+        width: 100% !important;
+      }
+    }
+
+    // The frame shrinks to its content, so positioning is done on the wrapper
+    // via floats (left/right) or auto margins (center)
+    &-left {
+      clear: left;
+      float: left;
+      margin-right: 0.75rem;
+    }
+
+    &-right {
+      clear: right;
+      float: right;
+      margin-left: 0.75rem;
+    }
+
+    &-center {
+      clear: both;
+      margin-inline: auto;
+    }
 
     figcaption {
       font-size: 0.93em;
