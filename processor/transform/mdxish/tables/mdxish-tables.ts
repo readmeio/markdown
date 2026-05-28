@@ -42,6 +42,9 @@ const tableTypes = {
 // register them manually so we control ordering against our other tokenizers.
 // The fallback omits these so blank-line-separated markdown inside cells still
 // parses when mdxjs throws on malformed JSX.
+//
+// mdx parsing is used because it heavily simplifies the parsing of the table structure;
+// it can identify the rows and cells. The heavy lifting is done by it
 const buildTableNodeProcessor = (withMdx: boolean) =>
   unified()
     .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
@@ -316,15 +319,16 @@ const mdxishTables = (): Transform => tree => {
     // Main logic to transform table node to its parts
     // Because the processor uses remarkMdx, it is stricter in what it accepts
     // and only accepts valid MDX syntax. in the table node.
-    // To get around that, we have some fallback logics after trying to repair the table content
+    // To get around that, we have some fallback logics after trying to repair the table content.
     let parsed = parseTableNode(tableNodeProcessor, node);
     if (!parsed) {
-      // mdxjs is strict, so try a sequence of targeted repairs and re-parse
+      // Try a sequence of targeted repairs and re-parse
       // after each, stopping at the first that yields a parseable tree:
       //  - repairUnclosedTags:       unclosed/orphan HTML tags
       //  - normalizeTagSpacing:      a line mixing text and an opening tag
       //                              (e.g. `text <div> \n <div> text`)
       //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
+      // These repairs are created after seeing real customer content that has failed to parse
       const repairs: ((html: string) => RepairResult)[] = [
         repairUnclosedTags,
         normalizeTagSpacing,
@@ -356,6 +360,8 @@ const mdxishTables = (): Transform => tree => {
       if (!fallback || fallback.children.length <= 1) return;
       parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
     }
+    // Otherwise, there's no point in trying to parse the table content further
+    // More repairs are needed in that case
   });
 
   return tree;
