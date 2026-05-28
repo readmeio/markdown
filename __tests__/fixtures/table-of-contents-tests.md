@@ -119,6 +119,9 @@ Your endpoint must respond with a `2xx` status code within 10 seconds, or the de
 ## Event Types
 
 - `page.created` — A new page was published
+  - Nested list item
+    - Even more nested
+  - Nested list item 2
 - `page.updated` — An existing page was modified
 - `page.deleted` — A page was removed
 - `version.created` — A new version was created

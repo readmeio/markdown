@@ -86,7 +86,7 @@
     border-width: 0 0 1px;
     box-sizing: content-box;
     height: 0;
-    margin: 15px 0;
+    margin: var(--markdown-spacing, 15px) 0;
     overflow: hidden;
   }
 
@@ -147,8 +147,19 @@
     font-size: var(--markdown-title-size);
     font-weight: var(--markdown-title-weight, 600);
     line-height: 1.25;
-    margin-bottom: var(--markdown-title-marginBottom, 1rem);
+    margin-bottom: var(--markdown-title-marginBottom, var(--markdown-spacing, 15px));
     margin-top: var(--markdown-title-marginTop, 1em);
+
+    &:has(+ h1, + h2, + h3, + h4, + h5, + h6, + p) {
+      margin-bottom: calc(var(--markdown-spacing, 15px) / 2);
+    }
+  }
+
+  // Tighten the gap when a heading immediately follows another heading
+  // (e.g. h1 + h2 as title/subtitle). Lets the preceding heading's margin-bottom
+  // define the gap instead of the following heading's larger margin-top.
+  :is(h1, h2, h3, h4, h5, h6) + :is(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0;
   }
 
   h1 {
@@ -259,13 +270,23 @@
 
   blockquote,
   dl,
-  ol,
   p,
   pre,
-  table,
-  ul {
-    margin-bottom: 15px;
+  table {
+    margin-bottom: var(--markdown-spacing, 15px);
     margin-top: 0;
+  }
+
+  ol,
+  ul {
+    margin-bottom: round(1.3333em, 1px); // 20px at 15px base (condensed)
+    margin-top: 0;
+
+    ol,
+    ul {
+      margin-bottom: 0;
+      margin-top: round(0.5333em, 1px); // 8px at 15px base (condensed)
+    }
   }
 
   blockquote {
@@ -292,14 +313,6 @@
     padding-left: 2em;
   }
 
-  ol ol,
-  ol ul,
-  ul ol,
-  ul ul {
-    margin-bottom: 0;
-    margin-top: 0;
-  }
-
   li {
     clear: both;
     word-wrap: break-all;
@@ -310,7 +323,7 @@
   }
 
   li + li {
-    margin-top: 0.25em;
+    margin-top: round(0.5333em, 1px); // 8px at 15px base (condensed)
   }
 
   dl {
@@ -328,6 +341,10 @@
   dl dd {
     margin-bottom: 1em;
     padding: 0 1em;
+  }
+
+  .img {
+    margin: round(calc(var(--markdown-img-margin, var(--markdown-spacing, 15px)) * 1.33), 1px) 0;
   }
 
   :checked + .radio-label {
@@ -355,19 +372,14 @@
 }
 
 @mixin markdown-overrides {
-  h5,
-  h6 {
-    font-size: 0.9em;
-  }
-
   blockquote h1:last-child,
   blockquote h2:last-child {
     border-bottom: 0;
   }
 
   > * {
-    margin-bottom: 15px !important;
-    margin-top: 15px;
+    margin-bottom: var(--markdown-spacing, 15px);
+    margin-top: var(--markdown-spacing, 15px);
   }
 
   .task-list-item input {
