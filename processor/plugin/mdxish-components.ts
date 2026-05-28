@@ -103,6 +103,13 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
   node.children = node.children.flatMap(child => {
     if (child.type !== 'text' || !child.value.trim()) return [child];
 
+    // Store multiline template-literal children (e.g. {`...\n...`}) as a bare string prop
+    // via node.properties.children so hast-to-hyperscript doesn't wrap them in an array.
+    if (child.value.includes('\n')) {
+      node.properties = { ...node.properties, children: child.value };
+      return [];
+    }
+
     const hast = processMarkdown(child.value.trim());
     const children = (hast.children ?? []).filter(isElementContentNode);
 
@@ -171,6 +178,11 @@ function normalizeProperties(node: Element): void {
  */
 export const rehypeMdxishComponents = ({ components, processMarkdown }: Options): Transformer<Root, Root> => {
   return (tree: Root, vfile: VFile) => {
+    // Merge any local bindings introduced by `export const/function` declarations
+    // (collected by the evaluate-exports transformer) into the lookup map.
+    const localScope = vfile.data.mdxishScope ?? {};
+    const allComponents = { ...components, ...localScope } as CustomComponents;
+
     const nodesToRemove: { index: number; parent: Element | Root }[] = [];
 
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
@@ -196,7 +208,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
         if (isActualHtmlTag(node.tagName, original)) return;
       }
 
-      const componentName = getComponentName(node.tagName, components);
+      const componentName = getComponentName(node.tagName, allComponents);
       if (!componentName) {
         nodesToRemove.push({ index, parent });
         return;
@@ -204,7 +216,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown, components);
+      parseTextChildren(node, processMarkdown, allComponents);
     });
 
     // Remove unknown components in reverse order to preserve indices

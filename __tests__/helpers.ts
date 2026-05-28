@@ -2,13 +2,12 @@ import type { Element, Nodes as HastNode, Root as HastRoot } from 'hast';
 import type { Node, Root as MdastRoot } from 'mdast';
 
 import * as rdmd from '@readme/markdown-legacy';
-
 import { visit } from 'unist-util-visit';
 
 import { vi } from 'vitest';
 
 import { run, compile, migrate as baseMigrate, mdastV6 } from '../index';
-import { mdxishAstProcessor, type MdxishOpts } from '../lib/mdxish';
+import { mdxishAstProcessor, mdxishMdastToMd, type MdxishOpts } from '../lib/mdxish';
 
 export const silenceConsole =
   (prop: keyof Console = 'error', impl = () => {}) =>
@@ -92,6 +91,12 @@ export const parseMdxishWithSource = (
  */
 export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
   parseMdxishWithSource(doc, opts).tree;
+
+/**
+ * Round-trips markdown: parse → MDAST → serialize back to markdown.
+ */
+export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
+  mdxishMdastToMd(parseMdxish(doc, opts));
 
 /**
  * Walks a unist tree (mdast or hast) and returns every node that matches.

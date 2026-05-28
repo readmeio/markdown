@@ -4,7 +4,7 @@ import type { MdxJsxTextElement } from 'mdast-util-mdx';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
-import { collectNodes, findAllElementsByTagName, parseMdxishWithSource } from '../helpers';
+import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
@@ -226,19 +226,11 @@ describe('mdxish tables transformation', () => {
 </tbody>
 </table>`;
 
-    it('splits the html node so fenced code blocks become code mdast nodes', () => {
+    it('parses fenced code blocks inside the cell as code mdast nodes', () => {
       const ast = astProcessor(malformed);
-
-      expect(ast).toMatchObject({
-        type: 'root',
-        children: expect.arrayContaining([
-          expect.objectContaining({
-            type: 'code',
-            value: '2.16.0.0/13',
-          }),
-          expect.objectContaining({ type: 'html' }),
-        ]),
-      });
+      const codes = collectNodes(ast, 'code');
+      expect(codes).toHaveLength(1);
+      expect(codes[0]).toMatchObject({ type: 'code', value: '2.16.0.0/13' });
     });
 
     it('renders fenced code blocks as <pre><code> HTML rather than raw backticks', () => {
@@ -488,6 +480,255 @@ describe('mdxish tables transformation', () => {
 
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(1);
+    });
+
+    it('strips orphan closing tags that have no matching opener', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Status</td>
+      <td>
+        Current state.
+
+        Values:<ul><li>**active**. running. <li>**inactive**. stopped.</ul></li>
+      </td>
+    </tr>
+    <tr>
+      <td>Type</td>
+      <td>Normal value here.</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(4);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs.length).toBeGreaterThanOrEqual(2);
+      const strongText = strongs.map(s => JSON.stringify(s)).join(' ');
+      expect(strongText).toContain('active');
+      expect(strongText).toContain('inactive');
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain('&#x3C;/li>');
+      expect(html).not.toContain('&lt;/li>');
+    });
+
+    // Special case for void tag <br>: In legacy magic blocks, orphan </br> is treated
+    // as a legit line break and not stripped like other void tags like </hr> or </img>.
+    it('considers orphan </br> as a line break and not have it break the table', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**Instant Failover**</td>
+      <td>
+        Select one of these options:
+
+        - **First**.
+        - **Second**.
+        - **Third**. Disabled<br /><br />Second paragraph</br><br />Third paragraph</br>
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(2);
+
+      const lists = findAllElementsByTagName(tables[0], 'ul');
+      expect(lists).toHaveLength(1);
+      const items = findAllElementsByTagName(lists[0], 'li');
+      expect(items).toHaveLength(3);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      const strongText = strongs.map(s => JSON.stringify(s)).join(' ');
+      expect(strongText).toContain('Instant Failover');
+      expect(strongText).toContain('First');
+      expect(strongText).toContain('Second');
+      expect(strongText).toContain('Third');
+
+      // Per HTML5 spec, a lone </br> is rewritten as a <br> break — not stripped.
+      const breaks = findAllElementsByTagName(tables[0], 'br');
+      expect(breaks).toHaveLength(5);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('Disabled<br><br>Second paragraph<br><br>Third paragraph<br>');
+      expect(html).not.toContain('&#x3C;/br>');
+      expect(html).not.toContain('&lt;/br>');
+      expect(html).not.toContain('</br>');
+      expect(html).not.toContain('Second paragraph/');
+    });
+
+    it.each([
+      ['hr', '<hr>'],
+      ['img', '<img src="x.png" alt="x">'],
+      ['input', '<input type="text">'],
+    ])('strips an orphan </%s> closer for void element', (tag, opener) => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>before ${opener} middle </${tag}> after **bold**</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain(`&#x3C;/${tag}>`);
+      expect(html).not.toContain(`&lt;/${tag}>`);
+      expect(html).not.toContain('**bold**');
+    });
+
+    it('strips multiple orphan void closers mixed with valid markdown', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>line one</br> line two</hr> [link](https://example.com) tail</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const anchors = findAllElementsByTagName(tables[0], 'a');
+      expect(anchors).toHaveLength(1);
+      expect(anchors[0].properties).toMatchObject({ href: 'https://example.com' });
+
+      const html = toHtml(tables[0]);
+      expect(html).not.toContain('&#x3C;/br>');
+      expect(html).not.toContain('&lt;/br>');
+      expect(html).not.toContain('&#x3C;/hr>');
+      expect(html).not.toContain('&lt;/hr>');
+    });
+
+    it('preserves an HTML comment containing tag-like text in a cell', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><!-- TODO: handle </li> case --> body text</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('body text');
+      expect(html).toContain('<!-- TODO: handle </li> case -->');
+    });
+
+    it('preserves attribute values that contain a > character', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><a title="a > b" href="https://example.com">link</a> after</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const anchors = findAllElementsByTagName(tables[0], 'a');
+      expect(anchors).toHaveLength(1);
+      expect(anchors[0].properties).toMatchObject({
+        href: 'https://example.com',
+        title: 'a > b',
+      });
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('after');
+    });
+
+    it('normalizes interleaved misnesting like <b><i>x</b></i>', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b><i>x</b></i> after</td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const bolds = findAllElementsByTagName(tables[0], 'b');
+      const italics = findAllElementsByTagName(tables[0], 'i');
+      expect(bolds).toHaveLength(1);
+      expect(italics).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('x');
+      expect(html).toContain('after');
+      // No stray closers should leak through as escaped text.
+      expect(html).not.toContain('&#x3C;/');
+      expect(html).not.toContain('&lt;/');
+    });
+
+    it('preserves an HTML comment when the orphan-closer scanner is forced to run', () => {
+      const doc = `<Table>
+  <thead><tr><th>A</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><!-- handle </li> case --> body <ul><li>x</ul></li></td>
+    </tr>
+  </tbody>
+</Table>`;
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const lists = findAllElementsByTagName(tables[0], 'ul');
+      expect(lists).toHaveLength(1);
+      const items = findAllElementsByTagName(lists[0], 'li');
+      expect(items).toHaveLength(1);
+
+      const html = toHtml(tables[0]);
+      expect(html).toContain('<!-- handle </li> case -->');
+      expect(html).toContain('body');
+      // The trailing orphan </li> after </ul> should not survive as escaped text.
+      expect(html).not.toContain('&#x3C;/li>');
+      expect(html).not.toContain('&lt;/li>');
     });
 
     it('escapes a non-HTML tag name instead of trying to close it', () => {
@@ -920,5 +1161,29 @@ describe('mdxish tables transformation', () => {
     const html = toHtml(mdxish(md));
     expect(html).toContain('<code>code</code>');
     expect(html).toContain('<strong>bold</strong>');
+  });
+
+  describe('<pre> formatting inside HTML table cells', () => {
+    it('preserves <pre> indentation when <pre> is at column 0 inside a table', () => {
+      const md = `<table>
+<tr>
+<td>
+<pre data-lang="json">
+{
+  "a": "x",
+  "b": {
+    "c": "y"
+  }
+}
+</pre>
+</td>
+</tr>
+</table>`;
+
+      const out = roundTripMdxish(md);
+      expect(out).toContain('"a": "x"');
+      expect(out).toContain('  "b"');
+      expect(out).toContain('    "c": "y"');
+    });
   });
 });

@@ -1,9 +1,63 @@
 import { HTML_VOID_ELEMENTS, STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 
-import { walkTags } from './tag-walker';
+import { maskNonTagRegions, walkTags } from './tag-walker';
 import { applyInserts, type Insert, type RepairResult } from './utils';
 
 const isStandardHtmlTag = (name: string): boolean => STANDARD_HTML_TAGS.has(name.toLowerCase());
+
+// Intentionally simpler than htmlparser2: `[^>]*` does not honor `>` inside
+// quoted attribute values. That's acceptable here because the main walker
+// (htmlparser2) handles attribute parsing; this scan only needs to locate
+// orphan closers, which can't appear inside an attribute value anyway.
+const HTML_TAG_TOKEN_RE = /<(\/)?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g;
+
+/**
+ * htmlparser2 silently drops closing tags that have no matching opener
+ * (e.g. the trailing `</li>` in `<ul><li>x</ul></li>`), leaving them in the
+ * source makes mdxjs choke on the dangling closer. Scan the masked
+ * source for `</name>` tokens that don't pair with any prior unmatched
+ * `<name>` and return their spans so the caller can drop them.
+ */
+interface OrphanCloser {
+  length: number;
+  offset: number;
+}
+
+const findOrphanClosers = (html: string): OrphanCloser[] => {
+  const masked = maskNonTagRegions(html);
+  const stack: string[] = [];
+  const orphans: OrphanCloser[] = [];
+  HTML_TAG_TOKEN_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = HTML_TAG_TOKEN_RE.exec(masked)) !== null) {
+    const name = match[2].toLowerCase();
+
+    // eslint-disable-next-line no-continue
+    if (!isStandardHtmlTag(name)) continue;
+
+    // Special case for <br>: htmlparser2 will normalize orphan </br> to <br>
+    // so we don't need to handle it here.
+    // eslint-disable-next-line no-continue
+    if (name === 'br' && match[1] === '/') continue;
+
+    const isVoid = HTML_VOID_ELEMENTS.has(name);
+    if (match[1] === '/') {
+      // Other void closers (`</hr>`, `</img>`, ...) have no HTML5 rewrite rule
+      // and must be stripped before the strict mdxjs parse runs.
+      if (isVoid) {
+        orphans.push({ offset: match.index, length: match[0].length });
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      const idx = stack.lastIndexOf(name);
+      if (idx === -1) orphans.push({ offset: match.index, length: match[0].length });
+      else stack.length = idx;
+    } else if (!isVoid && !match[0].endsWith('/>')) {
+      stack.push(name);
+    }
+  }
+  return orphans;
+};
 
 /**
  * MDX requires a JSX inline tag and its closer to live on the same line — not
@@ -34,7 +88,7 @@ export const repairUnclosedTags = (html: string): RepairResult => {
   const openTags: { end: number; name: string; start: number }[] = [];
 
   walkTags(html, {
-    onOpen({ name, start, end }) {
+    onOpen({ name, start, end, isSelfClosing, isStrayCloser }) {
       // Escape non-HTML names (custom components, typos, `<arbitrary-tag>`)
       // so MDX treats them as literal text instead of expecting a closer
       if (!isStandardHtmlTag(name)) {
@@ -42,11 +96,18 @@ export const repairUnclosedTags = (html: string): RepairResult => {
         return;
       }
       if (HTML_VOID_ELEMENTS.has(name.toLowerCase())) {
-        // MDX requires void elements to be self-closing (`<br/>`, not `<br>`).
-        // If the source open tag doesn't end with `/`, inject one before the
-        // `>` so it parses. `end` is one past `>`, so `end - 2` is the char
-        // immediately before `>`.
-        if (html[end - 2] !== '/') inserts.push({ offset: end - 1, text: '/' });
+        // MDX requires void elements to be self-closing (`<br/>`, not `<br>`)
+        // so we need to rewrite them to self closing tags.
+        if (isStrayCloser) {
+          // htmlparser2 may normalize some stray closers like `</br>` into opener
+          // events <br> per the HTML5 spec. In this case remove the closing /
+          // and fully rewrite the tag to self closing.
+          inserts.push({ offset: start, text: `<${name}/>`, consumes: end - start });
+          return;
+        } else if (!isSelfClosing) {
+          // Slots in the / right before the closing >
+          inserts.push({ offset: end - 1, text: '/' });
+        }
         return;
       }
       openTags.push({ name, start, end });
@@ -59,6 +120,10 @@ export const repairUnclosedTags = (html: string): RepairResult => {
       inserts.push({ offset: findOffsetToPlaceCloser(html, openTag.end, start), text: `</${name}>` });
     },
   });
+
+  findOrphanClosers(html).forEach(({ offset, length }) =>
+    inserts.push({ offset, text: '', consumes: length }),
+  );
 
   return applyInserts(html, inserts);
 };

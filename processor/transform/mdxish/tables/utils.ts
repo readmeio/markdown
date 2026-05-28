@@ -1,6 +1,7 @@
 import type { Node } from 'mdast';
 
 export interface Insert {
+  consumes?: number;
   offset: number;
   text: string;
 }
@@ -53,13 +54,14 @@ export const applyInserts = (html: string, inserts: Insert[]): RepairResult => {
 
   let out = '';
   let cursor = 0;
-  sorted.forEach(({ offset, text }) => {
+  sorted.forEach(({ offset, text, consumes = 0 }) => {
     const clamped = Math.min(Math.max(offset, cursor), html.length);
     if (clamped > cursor) {
       out += html.slice(cursor, clamped);
       cursor = clamped;
     }
     out += text;
+    cursor = Math.min(cursor + consumes, html.length);
   });
   return { value: out + html.slice(cursor), inserts: sorted };
 };

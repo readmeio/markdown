@@ -9,6 +9,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { mdast } from '../../../lib';
+import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
 import { unwrapSoleParagraph } from './tables/utils';
@@ -240,6 +241,7 @@ interface ImageAttrs {
   border?: boolean | string;
   caption?: string;
   className?: string;
+  framed?: boolean | string;
   height?: number | string;
   lazy?: boolean;
   src?: string;
@@ -307,7 +309,7 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
  */
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
-  const { align, alt = '', border, caption, className, height, lazy, src = '', title = '', width } = attrs;
+  const { align, alt = '', border, caption, className, framed, height, lazy, src = '', title = '', width } = attrs;
 
   const validAlign = toImageAlign(align);
   const sizing = width !== undefined ? String(width) : undefined;
@@ -320,6 +322,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     ...(border !== undefined && { border: toBool(border) }),
     ...(caption && { caption }),
     ...(className && { className }),
+    ...(framed !== undefined && { framed: toBool(framed) }),
     ...(height !== undefined && { height: String(height) }),
     ...(lazy !== undefined && { lazy: toBool(lazy) }),
     ...(sizing && { sizing }),
@@ -334,6 +337,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     caption,
     children: caption ? mdast(caption).children : [],
     className,
+    framed: toBool(framed),
     height: height !== undefined ? String(height) : undefined,
     lazy: toBool(lazy),
     sizing,
@@ -705,15 +709,11 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     }
   });
 
-  // Transform magic block images (type: 'image') to image-block
-  // Images inside paragraphs are standard markdown — handled by imageTransformer, normalized below
+  // Promote magic-block images (type: 'image') to image-block, except inside inline-only
+  // parents where the image must stay inline (authors use `<Image caption="…" />` instead).
   visit(tree, 'image', (node: MagicBlockImage, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return SKIP;
-    if (parent.type === 'paragraph') return SKIP;
-
-    // `![](url)` in any tableCell stays inline. Authors who want a captioned figure use
-    // `<Image caption="…" />` JSX, which becomes `image-block` via `COMPONENT_MAP` above.
-    if (parent.type === 'tableCell') return SKIP;
+    if (INLINE_ONLY_PARENT_TYPES.has(parent.type)) return SKIP;
 
     const newNode = transformMagicBlockImage(node);
     (parent.children as Node[])[index] = newNode;
@@ -780,6 +780,14 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
       hProps.border = val;
     } else if (node.border !== undefined) {
       node.border = toBool(node.border as boolean | string);
+    }
+
+    if (hProps.framed !== undefined) {
+      const val = toBool(hProps.framed as boolean | string);
+      node.framed = val;
+      hProps.framed = val;
+    } else if (node.framed !== undefined) {
+      node.framed = toBool(node.framed as boolean | string);
     }
 
     // Validate align
