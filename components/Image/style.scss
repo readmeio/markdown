@@ -89,9 +89,44 @@
       margin-right: 0;
     }
 
-    &-left   { text-align: left; }
-    &-center { text-align: center; }
-    &-right  { text-align: right; }
+    // Percentage widths set on the frame wrapper (left/right only).
+    &[style*='width'] {
+      .img,
+      .lightbox-inner {
+        display: block;
+        width: 100%;
+      }
+
+      img {
+        height: auto !important;
+        width: 100% !important;
+      }
+    }
+
+    // Left/right frames clamp to image size and float for inline flow.
+    // Center frames span the full parent width so the frame anchors the image.
+    &-left,
+    &-right {
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    &-left {
+      clear: left;
+      float: left;
+      margin-right: 0.75rem;
+    }
+
+    &-right {
+      clear: right;
+      float: right;
+      margin-left: 0.75rem;
+    }
+
+    &-center {
+      clear: both;
+      text-align: center;
+    }
 
     figcaption {
       font-size: 0.93em;
