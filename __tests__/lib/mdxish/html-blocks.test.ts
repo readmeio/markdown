@@ -154,6 +154,7 @@ there`;
     it('handles template literal with variables', () => {
       // eslint-disable-next-line quotes
       const tree = mdxish(`<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`);
+      // eslint-disable-next-line no-template-curly-in-string
       expect(htmlBlockPayloads(tree)).toStrictEqual(['<code>const x = ${variable}</code>']);
     });
 

@@ -46,9 +46,10 @@ const createHtmlBlockNode = (
  */
 const extractTemplateLiteral = (value: string | undefined): string => {
   if (!value) return '';
-  const trimmed = value.trim();
-  const match = trimmed.match(/^`([\s\S]*)`$/);
-  return match ? match[1] : trimmed;
+  const match = value.trim().match(/^`([\s\S]*)`$/);
+  // Non-template-literal bodies (e.g. `{someVar}`) are malformed mdxish input;
+  // returning '' beats shipping JS identifier source as an HTML payload.
+  return match ? match[1] : '';
 };
 
 const toRunScripts = (raw: string | undefined): boolean | string | undefined =>
@@ -159,11 +160,15 @@ const mdxishHtmlBlocks = (): Transform => tree => {
 
       const body = children
         .slice(i + 1, closeIdx)
-        .map(child =>
-          child.type === 'mdxTextExpression' || child.type === 'mdxFlowExpression'
-            ? extractTemplateLiteral(child.value)
-            : '',
-        )
+        .map(child => {
+          if (child.type === 'mdxTextExpression' || child.type === 'mdxFlowExpression') {
+            return extractTemplateLiteral(child.value);
+          }
+          // Preserve raw text from any other phrasing sibling (e.g. stray
+          // whitespace or content the tokenizer didn't claim) so it isn't
+          // silently dropped from the html payload.
+          return 'value' in child && typeof child.value === 'string' ? child.value : '';
+        })
         .join('');
 
       children.splice(i, closeIdx - i + 1, htmlBlockFromRaw(openMatch[1], body, open.position));
