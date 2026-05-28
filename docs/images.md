@@ -59,3 +59,23 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 <Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" framed="true" align="right" width="200px" wrap={false} />
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+## Floated alignment
+
+The next two cases verify that a heading after a floated `<Image>` starts on its own line instead of wrapping alongside the image.
+
+<Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="right" width="200px" />
+
+Body text that flows next to the floated image on the left.
+
+### Heading after a right-floated image
+
+Body text under the new heading.
+
+<Image src="https://files.readme.io/6f52e22-man-eating-pizza-and-making-an-ok-gesture.jpg" align="left" width="200px" />
+
+Body text that flows next to the floated image on the right.
+
+### Heading after a left-floated image
+
+Body text under the new heading.
