@@ -4,7 +4,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx';
 import { mdxish } from '../../../lib';
 import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxishWithSource } from '../../helpers';
 
-function ensureJsxTableIsParsed(md: string) {
+function expectJsxTableIsParsed(md: string) {
   const { tree: mdastTree } = parseMdxishWithSource(md);
   // A table containing an <HTMLBlock> carries block-level content, so it is kept
   // as a JSX <Table> (mdxJsxFlowElement) rather than collapsed to a markdown table.
@@ -31,13 +31,7 @@ describe('<HTMLBlock> parsing', () => {
     it('renders as <html-block> with the decoded html prop', () => {
       const tree = mdxish('<HTMLBlock>{`<div style="color: red;">Hello</div>`}</HTMLBlock>');
 
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        type: 'element',
-        tagName: 'html-block',
-        properties: { html: '<div style="color: red;">Hello</div>' },
-        children: [],
-      });
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div style="color: red;">Hello</div>']);
     });
 
     it('renders between surrounding paragraphs', () => {
@@ -85,14 +79,15 @@ const foo = () => {
 \`}</HTMLBlock>`;
 
       const tree = mdxish(markdown);
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
+      expect(htmlBlockPayloads(tree)).toStrictEqual([`<pre><code>
+const foo = () => {
+  const bar = {
+    baz: 'blammo'
+  }
 
-      const htmlProp = htmlBlock?.properties?.html as string;
-      expect(htmlProp).toContain('<pre><code>');
-      expect(htmlProp).toContain('const foo = () => {');
-      expect(htmlProp).toContain("baz: 'blammo'");
-      expect(htmlProp).toContain('</code></pre>');
+  return bar
+}
+</code></pre>`]);
     });
 
     it('handles standalone multiline HTMLBlock with surrounding paragraphs', () => {
@@ -104,16 +99,12 @@ const foo = () => {
 
 there`;
       const tree = mdxish(markdown);
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
-      expect(htmlBlock?.properties?.html).toContain('Hello</strong>, World!</p>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<p><strong">Hello</strong>, World!</p>']);
     });
 
     it('handles nested HTMLBlock tags in content', () => {
       const tree = mdxish('<HTMLBlock>{`<HTMLBlock>{<strong>Hello</strong>}</HTMLBlock>`}</HTMLBlock>');
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({ tagName: 'html-block' });
-      expect(htmlBlock?.properties?.html).toContain('<HTMLBlock>{<strong>Hello</strong>}</HTMLBlock>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<HTMLBlock>{<strong>Hello</strong>}</HTMLBlock>']);
     });
   });
 
@@ -146,59 +137,34 @@ there`;
     });
 
     it('adds newlines for readability', () => {
-      const hast = mdxish('<HTMLBlock>{`<p><strong">Hello</strong>, World!</p>`}</HTMLBlock>');
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { html: '<p><strong">Hello</strong>, World!</p>' },
-      });
+      const tree = mdxish('<HTMLBlock>{`<p><strong">Hello</strong>, World!</p>`}</HTMLBlock>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<p><strong">Hello</strong>, World!</p>']);
     });
 
     it('unescapes backticks in HTML content', () => {
-      const hast = mdxish('<HTMLBlock>{`<code>\\`example\\`</code>`}</HTMLBlock>');
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { html: '<code>`example`</code>' },
-      });
+      const tree = mdxish('<HTMLBlock>{`<code>\\`example\\`</code>`}</HTMLBlock>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<code>`example`</code>']);
     });
 
     it('passes safeMode property correctly', () => {
-      const hast = mdxish('<HTMLBlock safeMode={true}>{`<script>alert("XSS")</script><p>Content</p>`}</HTMLBlock>');
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { safeMode: 'true', html: '<script>alert("XSS")</script><p>Content</p>' },
-      });
+      const tree = mdxish('<HTMLBlock safeMode={true}>{`<script>alert("XSS")</script><p>Content</p>`}</HTMLBlock>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<script>alert("XSS")</script><p>Content</p>']);
     });
 
     it('handles template literal with variables', () => {
       // eslint-disable-next-line quotes
-      const hast = mdxish(`<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`);
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        // eslint-disable-next-line no-template-curly-in-string
-        properties: { html: '<code>const x = ${variable}</code>' },
-      });
+      const tree = mdxish(`<HTMLBlock>{\`<code>const x = \${variable}</code>\`}</HTMLBlock>`);
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<code>const x = ${variable}</code>']);
     });
 
     it('handles nested template literals', () => {
-      const hast = mdxish('<HTMLBlock>{`<pre>\\`\\`\\`javascript\\nconst x = 1;\\n\\`\\`\\`</pre>`}</HTMLBlock>');
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { html: '<pre>```javascript\nconst x = 1;\n```</pre>' },
-      });
+      const tree = mdxish('<HTMLBlock>{`<pre>\\`\\`\\`javascript\\nconst x = 1;\\n\\`\\`\\`</pre>`}</HTMLBlock>');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<pre>```javascript\nconst x = 1;\n```</pre>']);
     });
 
     it('handles trailing whitespace after closing tag', () => {
-      const hast = mdxish('<HTMLBlock>{`<div>hello</div>`}</HTMLBlock>   ');
-      const htmlBlock = findElementByTagName(hast, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { html: '<div>hello</div>' },
-      });
+      const tree = mdxish('<HTMLBlock>{`<div>hello</div>`}</HTMLBlock>   ');
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div>hello</div>']);
     });
   });
 
@@ -206,12 +172,7 @@ there`;
     it('renders inside a <div> with the decoded html prop', () => {
       const tree = mdxish('<div><HTMLBlock>{`<p>nested</p>`}</HTMLBlock></div>');
 
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        type: 'element',
-        tagName: 'html-block',
-        properties: { html: '<p>nested</p>' },
-      });
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<p>nested</p>']);
       expect(findElementByTagName(tree, 'div')).not.toBeNull();
     });
 
@@ -248,11 +209,7 @@ there`;
 
       expect(callout.tagName).toBe('Callout');
 
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        tagName: 'html-block',
-        properties: { html: '  <strong style="color: olive">Hello, World!</strong>' },
-      });
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['  <strong style="color: olive">Hello, World!</strong>']);
     });
 
     it('does not render inside code blocks', () => {
@@ -271,14 +228,10 @@ there`;
 >
 > <HTMLBlock>{\`<p>body only</p>\`}</HTMLBlock>`;
 
-        const hast = mdxish(markdown);
-        expect((hast.children[0] as Element).tagName).toBe('Callout');
+        const tree = mdxish(markdown);
+        expect((tree.children[0] as Element).tagName).toBe('Callout');
 
-        const htmlBlock = findElementByTagName(hast, 'html-block');
-        expect(htmlBlock).toMatchObject({
-          tagName: 'html-block',
-          properties: { html: '<p>body only</p>' },
-        });
+        expect(htmlBlockPayloads(tree)).toStrictEqual(['<p>body only</p>']);
       });
 
       it('renders inside a <Callout>', () => {
@@ -331,7 +284,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
 
       const tree = mdxish(md);
 
@@ -340,13 +293,7 @@ there`;
 
       // Newlines (including the blank line) inside the content must survive the
       // table re-parse and not fragment the HTMLBlock.
-      const htmlBlock = findElementByTagName(tree, 'html-block');
-      expect(htmlBlock).toMatchObject({
-        type: 'element',
-        tagName: 'html-block',
-        properties: { html: '<div style="color: red;">\n  <p>Hello</p>\n\n  <p>World</p>\n</div>' },
-        children: [],
-      });
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div style="color: red;">\n  <p>Hello</p>\n\n  <p>World</p>\n</div>']);
     });
 
     it('still renders markdown in a sibling text cell', () => {
@@ -366,7 +313,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
 
       const tree = mdxish(md);
       // The sibling cell's markdown must still be processed into a <strong>.
@@ -403,7 +350,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
       const tree = mdxish(md);
       expect(htmlBlockPayloads(tree)).toStrictEqual(['<div>{notTemplate}</div>']);
     });
@@ -417,7 +364,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
 
       const tree = mdxish(md);
       const htmlBlock = findElementByTagName(tree, 'html-block');
@@ -446,7 +393,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
 
       const tree = mdxish(md);
 
@@ -469,7 +416,7 @@ there`;
   </tbody>
 </Table>`;
 
-      ensureJsxTableIsParsed(md);
+      expectJsxTableIsParsed(md);
 
       const tree = mdxish(md);
       const serialized = JSON.stringify(tree);
