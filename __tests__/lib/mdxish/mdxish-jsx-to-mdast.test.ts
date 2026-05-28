@@ -1,6 +1,6 @@
 import type { Anchor, Callout, EmbedBlock, ImageBlock, Recipe } from '../../../types';
 import type { Root as HastRoot } from 'hast';
-import type { Paragraph, Root, RootContent, Table, TableCell } from 'mdast';
+import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
@@ -89,6 +89,33 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         const imageNode = ast.children[0] as ImageBlock;
         expect(imageNode.border).toBeUndefined();
         expect(imageNode.data?.hProperties?.border).toBeUndefined();
+      });
+
+      it('should handle framed="true" attribute', () => {
+        const md = '<Image src="test.png" alt="Test" framed="true" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.data?.hProperties?.framed).toBe(true);
+        expect(imageNode.framed).toBe(true);
+      });
+
+      it('should normalize framed="false" to boolean false', () => {
+        const md = '<Image src="test.png" alt="Test" framed="false" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.framed).toBe(false);
+        expect(imageNode.data?.hProperties?.framed).toBe(false);
+      });
+
+      it('should leave framed undefined when not specified', () => {
+        const md = '<Image src="test.png" alt="Test" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.framed).toBeUndefined();
+        expect(imageNode.data?.hProperties?.framed).toBeUndefined();
       });
 
       it('should parse caption with markdown and HTML entities into children', () => {
@@ -667,6 +694,75 @@ Some callout content
       const ast = processWithNewTypes(md);
       const cell = findCell(ast);
       expect(cell.children[0].type).toBe('image');
+    });
+  });
+
+  describe('magic-block image promotion is skipped inside inline-only parents', () => {
+    const findFirst = <T extends RootContent>(root: Root, predicate: (n: RootContent) => n is T): T | undefined => {
+      const stack: RootContent[] = [...root.children];
+      while (stack.length) {
+        const node = stack.shift()!;
+        if (predicate(node)) return node;
+        if ('children' in node && Array.isArray((node as { children?: unknown[] }).children)) {
+          stack.push(...((node as { children: RootContent[] }).children));
+        }
+      }
+      return undefined;
+    };
+
+    it('keeps `![](url)` alone in a heading as inline `image`', () => {
+      const ast = processWithNewTypes('## ![Logo](https://example.com/logo.png)');
+      const heading = ast.children[0] as Heading;
+      expect(heading.type).toBe('heading');
+      expect(heading.children).toHaveLength(1);
+      expect(heading.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` mixed with text in a heading as inline `image`', () => {
+      const ast = processWithNewTypes('## What? ![Logo](https://example.com/logo.png)');
+      const heading = ast.children[0] as Heading;
+      expect(heading.type).toBe('heading');
+      expect(heading.children.some(c => c.type === 'image')).toBe(true);
+      expect(heading.children.some(c => c.type === 'text')).toBe(true);
+    });
+
+    it('keeps `![](url)` inside a link as inline `image`', () => {
+      const ast = processWithNewTypes('[![Logo](https://example.com/logo.png)](https://example.com)');
+      const link = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'link' } => n.type === 'link');
+      expect(link).toBeDefined();
+      expect(link!.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` inside emphasis as inline `image`', () => {
+      const ast = processWithNewTypes('*![Logo](https://example.com/logo.png)*');
+      const em = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'emphasis' } => n.type === 'emphasis');
+      expect(em).toBeDefined();
+      expect(em!.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` inside strong as inline `image`', () => {
+      const ast = processWithNewTypes('**![Logo](https://example.com/logo.png)**');
+      const strong = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'strong' } => n.type === 'strong');
+      expect(strong).toBeDefined();
+      expect(strong!.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` inside delete (GFM strikethrough) as inline `image`', () => {
+      const ast = processWithNewTypes('~~![Logo](https://example.com/logo.png)~~');
+      const del = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'delete' } => n.type === 'delete');
+      expect(del).toBeDefined();
+      expect(del!.children[0].type).toBe('image');
+    });
+
+    it('keeps `![](url)` inside a linkReference as inline `image`', () => {
+      const md = '[![Logo](https://example.com/logo.png)][ref]\n\n[ref]: https://example.com';
+      const ast = processWithNewTypes(md);
+      const linkRef = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'linkReference' } => n.type === 'linkReference',
+      );
+      expect(linkRef).toBeDefined();
+      expect(linkRef!.children[0].type).toBe('image');
     });
   });
 

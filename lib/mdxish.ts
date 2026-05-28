@@ -6,7 +6,9 @@ import type { PluggableList } from 'unified';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
@@ -31,6 +33,7 @@ import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
+import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -56,6 +59,7 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
+import { jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
@@ -175,6 +179,10 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // Insert mdx expression (text-only, no flow) after gemoji at index 3
     micromarkExts.splice(3, 0, mdxExprTextOnly);
     fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+
+    // Tokenizer for MDX variable declarations
+    micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));
+    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
   }
 
   if (!safeMode) {
@@ -265,8 +273,9 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
+    .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
+    .use(remarkBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
-    .use(remarkBreaks)
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
@@ -282,10 +291,18 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     });
 
   const vfile = new VFile({ value: parserReadyContent });
-  const hast = processor.runSync(processor.parse(parserReadyContent), vfile) as Root;
+  const mdast = processor.parse(parserReadyContent);
+  const hast = processor.runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
+  }
+
+  // Stash the in-document exported components on the tree
+  // so that the renderer consumer knows & renders them.
+  // Required for exported components to get rendered.
+  if (vfile.data.mdxishScope) {
+    hast.data = { ...hast.data, mdxishScope: vfile.data.mdxishScope };
   }
 
   return hast;

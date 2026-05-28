@@ -1,6 +1,36 @@
 Changelog
 ===
 
+## Version 14.4.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** handle orphan void closers in JSX table cells ([#1482](https://github.com/readmeio/markdown/issues/1482)) ([f6ac7e7](https://github.com/readmeio/markdown/commit/f6ac7e769eaba565575352a96fb0a2665c6b5fda)), closes [#1480](https://github.com/readmeio/markdown/issues/1480) [post-#1480](https://github.com/readmeio/post-/issues/1480) [#1480](https://github.com/readmeio/markdown/issues/1480)
+* **mdxish:** skip image block promotion inside inline only parents ([#1481](https://github.com/readmeio/markdown/issues/1481)) ([db44e72](https://github.com/readmeio/markdown/commit/db44e723cf9c48100b9c15fe25ba7decc0de6901))
+* **callouts:** stop default theme from polluting nested callout styles ([#1487](https://github.com/readmeio/markdown/issues/1487)) ([5c807b1](https://github.com/readmeio/markdown/commit/5c807b15dc86667b9e9d5a6aa1c24eef4472409f))
+
+## Version 14.4.0
+### ✨ New & Improved
+
+* add image frame ([#1478](https://github.com/readmeio/markdown/issues/1478)) ([a752a8b](https://github.com/readmeio/markdown/commit/a752a8bb534b9080650b0a59bf6fe9b6ab20b37f))
+* add new update downstream deps workflow ([#1475](https://github.com/readmeio/markdown/issues/1475)) ([94f9ded](https://github.com/readmeio/markdown/commit/94f9ded3fbdbf8a53a0ef607a9236ab402224b88))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** preserve raw-content HTML tags when unclosed on a line ([#1477](https://github.com/readmeio/markdown/issues/1477)) ([56df062](https://github.com/readmeio/markdown/commit/56df06261dd268d2b3ae6f055bad4e231a7c1d3d))
+* **mdx:** prevent mdx from crashing when Tabs is given only 1 child ([#1479](https://github.com/readmeio/markdown/issues/1479)) ([363ba7c](https://github.com/readmeio/markdown/commit/363ba7cadb1a028e2dbe91ef44034469bd53efb1))
+* **mdxish:** stop orphan closer tags from breaking table parsing ([#1480](https://github.com/readmeio/markdown/issues/1480)) ([b6afc85](https://github.com/readmeio/markdown/commit/b6afc8588f926f5c4d73760e7863144b05d4b7d4)), closes [#1465](https://github.com/readmeio/markdown/issues/1465)
+* **mdxish:** terminal custom component breaks page rendering ([#1455](https://github.com/readmeio/markdown/issues/1455)) ([ec3962f](https://github.com/readmeio/markdown/commit/ec3962f1a16bb6ede8e0b275e3707ea0d40fecb2))
+
+## Version 14.3.0
+### ✨ New & Improved
+
+* **mdxish:** support MDX export declarations ([#1470](https://github.com/readmeio/markdown/issues/1470)) ([04d4e5e](https://github.com/readmeio/markdown/commit/04d4e5edb41967c1eaa90719ec999ed24024865f))
+
+### 🛠 Fixes & Updates
+
+* render iframe/youtube/pdf/jsfiddle embeds without embedly html ([#1476](https://github.com/readmeio/markdown/issues/1476)) ([2f651c6](https://github.com/readmeio/markdown/commit/2f651c6a6d4d19870791faf7106d9ed4e9e446e8))
+* **TailwindStyle:** skip redundant traversal and avoid unnecessary r… ([#1413](https://github.com/readmeio/markdown/issues/1413)) ([0a8c14a](https://github.com/readmeio/markdown/commit/0a8c14a34a87aee41c06b63c0aef9b36b1228235)), closes [#1404](https://github.com/readmeio/markdown/issues/1404)
+
 ## Version 14.2.6
 ### 🛠 Fixes & Updates
 

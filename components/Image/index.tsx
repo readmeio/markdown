@@ -9,6 +9,8 @@ interface ImageProps {
   caption?: string;
   children?: [React.ReactElement];
   className?: string;
+  // MDXish passes JSX expression values as strings (e.g., framed={false} becomes "false")
+  framed?: boolean | string;
   height?: string;
   lazy?: boolean;
   src: string;
@@ -32,6 +34,7 @@ const Image = (Props: ImageProps) => {
     border: borderProp = false,
     caption,
     className = '',
+    framed: framedProp = false,
     height = 'auto',
     src,
     title = '',
@@ -40,8 +43,9 @@ const Image = (Props: ImageProps) => {
     children,
   } = Props;
 
-  // Normalize border: MDXish passes {false} as the string "false", not a boolean
+  // Normalize border/framed: MDXish passes {false} as the string "false", not a boolean
   const border = borderProp === true || borderProp === 'true';
+  const framed = framedProp === true || framedProp === 'true';
 
   const [lightbox, setLightbox] = React.useState(false);
 
@@ -74,16 +78,30 @@ const Image = (Props: ImageProps) => {
     setLightbox(!lightbox);
   };
 
+  // Framed images center the <img> itself; outer wrapper handles left/right alignment via text-align.
   const imgElement = (
     <img
       alt={alt}
-      className={`img ${caption || children ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
+      className={`img ${caption || children || framed ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
       height={height}
       loading={lazy ? 'lazy' : 'eager'}
       src={src}
       title={title}
       width={width}
     />
+  );
+
+  const closedLightbox = (ariaLabel: string, content: React.ReactNode) => (
+    <span
+      aria-label={ariaLabel}
+      className="img lightbox closed"
+      onClick={toggle}
+      onKeyDown={handleKeyDown}
+      role={'button'}
+      tabIndex={0}
+    >
+      <span className="lightbox-inner">{content}</span>
+    </span>
   );
 
   const lightboxOverlay = lightbox ? (
@@ -109,22 +127,40 @@ const Image = (Props: ImageProps) => {
     </LightboxPortal>
   ) : null;
 
+  if (framed) {
+    const frameClass = `img-frame img-frame-${align || 'center'}`;
+    // Left/right frames shrink to fit, so percentage widths can't resolve
+    // against the parent, hoist onto the wrapper. Center frames are full-width.
+    const isClamped = align === 'left' || align === 'right';
+    const frameStyle: React.CSSProperties | undefined =
+      isClamped && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
+    if (children || caption) {
+      return (
+        <figure className={frameClass} style={frameStyle}>
+          {closedLightbox(alt || 'Expand image', imgElement)}
+          {lightboxOverlay}
+          <figcaption>{children || caption}</figcaption>
+        </figure>
+      );
+    }
+    return (
+      <div className={frameClass} style={frameStyle}>
+        {closedLightbox(alt || 'Expand image', imgElement)}
+        {lightboxOverlay}
+      </div>
+    );
+  }
+
   if (children || caption) {
     return (
       <figure>
-        <span
-          aria-label={alt}
-          className="img lightbox closed"
-          onClick={toggle}
-          onKeyDown={handleKeyDown}
-          role={'button'}
-          tabIndex={0}
-        >
-          <span className="lightbox-inner">
+        {closedLightbox(
+          alt || 'Expand image',
+          <>
             {imgElement}
             <figcaption>{children || caption}</figcaption>
-          </span>
-        </span>
+          </>,
+        )}
         {lightboxOverlay}
       </figure>
     );
@@ -132,16 +168,7 @@ const Image = (Props: ImageProps) => {
 
   return (
     <>
-      <span
-        aria-label="Expand image"
-        className="img lightbox closed"
-        onClick={toggle}
-        onKeyDown={handleKeyDown}
-        role={'button'}
-        tabIndex={0}
-      >
-        <span className="lightbox-inner">{imgElement}</span>
-      </span>
+      {closedLightbox('Expand image', imgElement)}
       {lightboxOverlay}
     </>
   );
