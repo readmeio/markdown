@@ -134,10 +134,11 @@ const Image = (Props: ImageProps) => {
 
   if (framed) {
     const frameClass = `img-frame img-frame-${align || 'center'}${noWrap ? ' img-no-wrap' : ''}`;
-    // Percentage widths can't resolve against a shrink-to-fit frame parent, so
-    // hoist them onto the frame wrapper and let the inner <img> fill
+    // Only left/right wrapping frames shrink to fit; for those, hoist percentage
+    // widths onto the wrapper since they can't resolve against a shrink-to-fit parent.
+    const isClamped = (align === 'left' || align === 'right') && !noWrap;
     const frameStyle: React.CSSProperties | undefined =
-      typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
+      isClamped && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     if (children || caption) {
       return (
         <figure className={frameClass} style={frameStyle}>

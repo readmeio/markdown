@@ -89,7 +89,6 @@
     border-radius: var(--markdown-radius, 3px);
     display: block;
     padding: var(--size-12);
-    width: fit-content;
     max-width: 100%;
 
     @include dark-mode($global: true) {
@@ -106,7 +105,7 @@
       margin-right: 0;
     }
 
-    // Percentage widths set on the frame wrapper.
+    // Percentage widths set on the frame wrapper (left/right wrapping frames only).
     &[style*='width'] {
       .img,
       .lightbox-inner {
@@ -120,8 +119,14 @@
       }
     }
 
-    // The frame shrinks to its content, so positioning is done on the wrapper
-    // via floats (left/right) or auto margins (center)
+    // Left/right wrapping frames clamp to image size and float for inline flow.
+    // Center frames (and non-wrapping left/right) span the full parent width.
+    &-left,
+    &-right {
+      width: fit-content;
+      max-width: 100%;
+    }
+
     &-left {
       clear: left;
       float: left;
@@ -136,21 +141,16 @@
 
     &-center {
       clear: both;
-      margin-inline: auto;
+      text-align: center;
     }
 
-    &.img-no-wrap {
+    // wrap=false on a non-center frame: fill the row instead of floating
+    &-left.img-no-wrap,
+    &-right.img-no-wrap {
       clear: both;
       float: none;
-    }
-
-    &-left.img-no-wrap {
+      width: auto;
       margin-left: 0;
-      margin-right: 0;
-    }
-
-    &-right.img-no-wrap {
-      margin-left: auto;
       margin-right: 0;
     }
 
