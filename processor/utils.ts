@@ -161,18 +161,12 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
  * and unindents the HTML.
  *
- * @param {string} html - HTML content from template literal
+ * @param {string} html - cooked HTML payload (callers strip any template-literal backticks first)
  * @returns {string} processed HTML
  */
 export function formatHtmlForMdxish(html: string): string {
-  // Remove leading/trailing backticks if present, since they're used to keep the HTML
-  // from being parsed prematurely
-  let processed = html;
-  if (processed.startsWith('`') && processed.endsWith('`')) {
-    processed = processed.slice(1, -1);
-  }
   // Removes the leading/trailing newlines
-  let cleaned = processed.replace(/^\s*\n|\n\s*$/g, '');
+  let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
   // Convert literal \n sequences to actual newlines only inside <pre> and <code>.
   // Because <pre> needs to respect the newline visual and

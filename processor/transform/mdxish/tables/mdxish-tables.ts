@@ -149,7 +149,7 @@ const processTableNode = (
   let tableHasFlowContent = false;
 
   // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
-  // `htmlBlockFromJsx` after this transformer) is block-level content that a
+  // `mdxishHtmlBlocks` after this transformer) is block-level content that a
   // markdown table cell can't represent, so keep the table as a JSX `<Table>`.
   visit(
     node as Node,

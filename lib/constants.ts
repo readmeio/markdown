@@ -50,9 +50,10 @@ export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
 /**
  * Tags the micromark `mdxComponent` tokenizer must not claim. Unlike the remark
  * transforms, the tokenizer *does* claim `<HTMLBlock>` so its brace-aware body
- * states capture multiline template literals (e.g. `{`<div>…\n…</div>`}`); the
- * raw single-line form is left to `htmlBlockFromJsx` to recover instead. Only
- * `<Table>` (dedicated jsxTable tokenizer) and the inline tags stay excluded.
+ * states capture multiline template literals (e.g. `{`<div>…\n…</div>`}`); any
+ * raw-HTML shape that slips past the tokenizer is recovered later by the
+ * `mdxishHtmlBlocks` remark transform. Only `<Table>` (dedicated jsxTable
+ * tokenizer) and the inline tags stay excluded.
  */
 export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
   'Table',
