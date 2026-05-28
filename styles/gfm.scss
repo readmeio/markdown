@@ -90,6 +90,20 @@
     overflow: hidden;
   }
 
+  // Direct-child only, top-level headings/hr act as section breaks that
+  // clear preceding floats (e.g. `<Image align="left|right">`). Nested
+  // headings (inside Callout, Cards, etc.) keep wrapping behavior so the
+  // component's own layout (e.g. callout icon float) isn't disrupted.
+  > h1,
+  > h2,
+  > h3,
+  > h4,
+  > h5,
+  > h6,
+  > hr {
+    clear: both;
+  }
+
   input {
     font: inherit;
     margin: 0;
