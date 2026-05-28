@@ -90,6 +90,43 @@ describe('Image', () => {
     `);
   });
 
+  it('should hoist percentage width onto a left-aligned framed wrapper', () => {
+    const { container } = render(
+      <Image align="left" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+    );
+
+    const frame = container.querySelector('.img-frame');
+    expect(frame).toHaveAttribute('style', 'width: 50%;');
+  });
+
+  it('should hoist percentage width onto a right-aligned framed wrapper', () => {
+    const { container } = render(
+      <Image align="right" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+    );
+
+    const frame = container.querySelector('.img-frame');
+    expect(frame).toHaveAttribute('style', 'width: 50%;');
+  });
+
+  it('should leave a center-aligned framed wrapper full width (no hoisted percentage width)', () => {
+    const { container } = render(
+      <Image align="center" framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+    );
+
+    const frame = container.querySelector('.img-frame');
+    expect(frame).not.toHaveAttribute('style');
+  });
+
+  it('should leave a default-aligned framed wrapper full width (no hoisted percentage width)', () => {
+    const { container } = render(
+      <Image framed="true" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" width="50%" />
+    );
+
+    const frame = container.querySelector('.img-frame');
+    expect(frame).toHaveClass('img-frame-center');
+    expect(frame).not.toHaveAttribute('style');
+  });
+
   it('should wrap in an img-frame figure with a sibling figcaption when framed with a caption', () => {
     const { container } = render(
       <Image

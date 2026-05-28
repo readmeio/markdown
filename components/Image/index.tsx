@@ -129,9 +129,14 @@ const Image = (Props: ImageProps) => {
 
   if (framed) {
     const frameClass = `img-frame img-frame-${align || 'center'}`;
+    // Left/right frames shrink to fit, so percentage widths can't resolve
+    // against the parent, hoist onto the wrapper. Center frames are full-width.
+    const isClamped = align === 'left' || align === 'right';
+    const frameStyle: React.CSSProperties | undefined =
+      isClamped && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     if (children || caption) {
       return (
-        <figure className={frameClass}>
+        <figure className={frameClass} style={frameStyle}>
           {closedLightbox(alt || 'Expand image', imgElement)}
           {lightboxOverlay}
           <figcaption>{children || caption}</figcaption>
@@ -139,7 +144,7 @@ const Image = (Props: ImageProps) => {
       );
     }
     return (
-      <div className={frameClass}>
+      <div className={frameClass} style={frameStyle}>
         {closedLightbox(alt || 'Expand image', imgElement)}
         {lightboxOverlay}
       </div>
