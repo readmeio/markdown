@@ -3,9 +3,10 @@ import type { Plugin } from 'unified';
 /**
  * AST transformer to evaluate MDX expressions.
  * Replaces mdxFlowExpression and mdxTextExpression nodes with their evaluated values.
- * Runs with no scope, so only self-contained expressions resolve
- * (e.g. `{1+1}`, `{"hi".toUpperCase()}`); anything that references an external
- * identifier falls through to the error branch and is kept as literal `{...}` text.
+ * Self-contained expressions resolve directly (e.g. `{1+1}`); expressions that
+ * reference identifiers can resolve if those identifiers were introduced by an
+ * earlier `export const/function` (collected onto `file.data.mdxishScope`).
+ * Anything else falls through to the error branch and is kept as literal `{...}` text.
  */
 declare const evaluateExpressions: Plugin<[], Root>;
 export default evaluateExpressions;

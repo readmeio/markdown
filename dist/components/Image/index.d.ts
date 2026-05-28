@@ -6,6 +6,7 @@ interface ImageProps {
     caption?: string;
     children?: [React.ReactElement];
     className?: string;
+    framed?: boolean | string;
     height?: string;
     lazy?: boolean;
     src: string;

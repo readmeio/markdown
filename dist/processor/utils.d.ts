@@ -2,11 +2,19 @@ import type { Root as HastRoot } from 'hast';
 import type { Node, Root as MdastRoot, Root } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxjsEsm } from 'mdast-util-mdx';
 import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
+import { Parser } from 'acorn';
+/**
+ * Single instance of acorn parser extended with `acorn-jsx`
+ * to parse expressions containing JSX.
+ */
+export declare const jsxAcornParser: typeof Parser;
 /**
  * Evaluate a JavaScript expression source and return its value.
  *
  * Wrapping in parens lets object literals (`{color: 'red'}`) parse as
- * expressions. Runs with no scope, so only self-contained literals resolve.
+ * expressions. Pass `scope` to expose named bindings (e.g. values introduced
+ * by an `export const`) to the expression; without it, only self-contained
+ * literals resolve.
  *
  * > ☢️ **Danger**: this `eval`s JavaScript. Only call when safeMode is off —
  * > safeMode's contract is that expression syntax is never evaluated, and the
@@ -15,7 +23,7 @@ import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
  *
  * Throws on parse/runtime error; callers decide the fallback.
  */
-export declare function evaluate(source: string): any;
+export declare function evaluate(source: string, scope?: Record<string, unknown>): any;
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
  * This currently sets all the values to a string since we process/compile the MDX on the fly

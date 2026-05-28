@@ -1,5 +1,6 @@
 import type { Node } from 'mdast';
 export interface Insert {
+    consumes?: number;
     offset: number;
     text: string;
 }

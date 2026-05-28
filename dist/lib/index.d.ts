@@ -1,5 +1,5 @@
 export type { MdastOpts } from './ast-processor';
-export { componentTagPattern, FLOW_TYPES } from './constants';
+export { componentTagPattern, FLOW_TYPES, INLINE_ONLY_PARENT_TYPES } from './constants';
 export { default as astProcessor, remarkPlugins } from './ast-processor';
 export { default as compile } from './compile';
 export { default as exports } from './exports';

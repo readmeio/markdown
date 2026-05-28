@@ -2,7 +2,7 @@ import React from 'react';
 interface EmbedProps {
     favicon?: string;
     html?: string;
-    iframe?: boolean;
+    iframe?: boolean | string;
     image?: string;
     lazy?: boolean;
     providerName?: string;
@@ -11,5 +11,5 @@ interface EmbedProps {
     typeOfEmbed?: string;
     url: string;
 }
-declare const Embed: ({ lazy, url, html, providerName, providerUrl, title, iframe, image, favicon, ...attrs }: EmbedProps) => React.JSX.Element;
+declare const Embed: ({ lazy, url, html, providerName, providerUrl, title, iframe, image, favicon, typeOfEmbed, ...attrs }: EmbedProps) => React.JSX.Element;
 export default Embed;
