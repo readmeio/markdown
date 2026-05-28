@@ -20,6 +20,35 @@ export const FLOW_TYPES = new Set([
   'thematicBreak',
 ]);
 
+/**
+ * MDAST parent types whose children are restricted to inline content. A block-level
+ * node placed inside any of these violates the parent's content model and breaks
+ * downstream consumers
+ *
+ * Derived from the mdast spec. Seven of these are direct "phrasing content" parents:
+ *   - paragraph, heading, link, linkReference, emphasis, strong
+ *   - tableCell (phrasing minus Break)
+ *
+ * @link {https://github.com/syntax-tree/mdast}
+ *
+ * `delete` is GFM and has *transparent* content, see:
+ * @link {https://github.com/syntax-tree/mdast-util-gfm-strikethrough}
+ *
+ * its children must also be phrasing, so it belongs here too.
+ *
+ * NOTE: exported so downstream consumers can reuse and not drift away
+ */
+export const INLINE_ONLY_PARENT_TYPES = new Set([
+  'paragraph',
+  'heading',
+  'tableCell',
+  'link',
+  'linkReference',
+  'emphasis',
+  'strong',
+  'delete',
+]);
+
 // HELPER CONSTANTS FOR MDXISH RENDERING
 
 /**
