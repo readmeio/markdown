@@ -23,10 +23,12 @@ Legacy `<<varname>>` syntax is MDXish-specific. Strict MDX rejects the
 input wholesale, so the committed `variables-everywhere (mdx) 1` snapshot
 is `""`. The MDXish-side snapshot is the real regression contract.
 
-## Known wiring gap
+## Substitution coverage
 
-`renderFixture.ts` passes `variables` only to `renderMdxish()`, not to
-`mdxish()` where the legacy-variable transform runs. So `<<apiKey>>` and
-similar will currently render as the uppercase-missing fallback on the
-MDXish side (`APIKEY`, not `sk_test_abc123`). This is documented behavior
-of the test render helper — committed snapshots lock in the current state.
+`renderFixture.ts` passes `variables` to both `mdxish()` and `renderMdxish()`,
+so the snapshot exercises real end-to-end substitution: `<<apiKey>>` and
+`{user.region}` inside inline/fenced code resolve through
+`variablesCodeResolver` at parse time, while variables outside code resolve
+through the render-stage path. Both must match the fixture's `context.json`
+values for the snapshot to lock; regressing either resolution path will
+flip the snapshot.

@@ -118,10 +118,14 @@ export function renderFixture(
       }
 
       const modules = buildModules(ctx.components);
-      // components MUST be passed to both mdxish() and renderMdxish()
+      // components AND variables MUST be passed to mdxish() — components for
+      // custom-block resolution, variables for the variablesCodeResolver pass
+      // that resolves <<...>> and {user.*} inside inline/fenced code at parse
+      // time. renderMdxish() also needs them for non-code-context resolution.
       const tree = mdxish(body, {
         useTailwind: true,
         components: modules,
+        variables: ctx.variables,
       });
       const mod = renderMdxish(tree, {
         components: modules,

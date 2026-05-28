@@ -169,9 +169,9 @@ interpolation should resolve from <code class="rdmd-code lang-undefined theme-un
 
 exports[`Render engine regressions tests > rich (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
-<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer APIKEY</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">REGION</code> region.</p>
+<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer sk_test_abc123</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code> region.</p>
 <p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">USER.REGION</code><br/>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code><br/>
 interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
 <p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
 `;
@@ -197,7 +197,7 @@ exports[`Render engine regressions tests > variables-everywhere (mdx) 1`] = `""`
 
 exports[`Render engine regressions tests > variables-everywhere (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-many-contexts"></div><div class="heading-text">Variables in many contexts</div><a aria-label="Skip link to Variables in many contexts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-many-contexts"></a></h1>
-<p>Inline code: <code class="rdmd-code lang-undefined theme-undefined">Bearer APIKEY</code> and <code class="rdmd-code lang-undefined theme-undefined">USER.REGION</code>.</p>
+<p>Inline code: <code class="rdmd-code lang-undefined theme-undefined">Bearer sk_test_abc123</code> and <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code>.</p>
 <p>Standalone variable in a table cell:</p>
 
 

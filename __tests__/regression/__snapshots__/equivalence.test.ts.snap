@@ -262,14 +262,14 @@ exports[`MDX↔MDXish equivalence > rich 1`] = `
       "kind": "text",
       "left": "Bearer <<apiKey>>",
       "path": "/p[1]/code[1]/#text[0]",
-      "right": "Bearer APIKEY",
+      "right": "Bearer sk_test_abc123",
       "severity": "content",
     },
     {
       "kind": "text",
       "left": "<<region>>",
       "path": "/p[1]/code[3]/#text[0]",
-      "right": "REGION",
+      "right": "us-east-1",
       "severity": "content",
     },
     {
@@ -283,7 +283,7 @@ exports[`MDX↔MDXish equivalence > rich 1`] = `
       "kind": "text",
       "left": "{user.region}",
       "path": "/div[3]/blockquote[0]/p[1]/code[3]/#text[0]",
-      "right": "USER.REGION",
+      "right": "us-east-1",
       "severity": "content",
     },
     {
