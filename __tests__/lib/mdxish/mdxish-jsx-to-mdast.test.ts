@@ -118,6 +118,33 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(imageNode.data?.hProperties?.framed).toBeUndefined();
       });
 
+      it('should handle wrap={true} attribute', () => {
+        const md = '<Image src="test.png" alt="Test" align="left" wrap={true} />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.wrap).toBe(true);
+        expect(imageNode.data?.hProperties?.wrap).toBe(true);
+      });
+
+      it('should normalize wrap={false} to boolean false', () => {
+        const md = '<Image src="test.png" alt="Test" align="left" wrap={false} />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.wrap).toBe(false);
+        expect(imageNode.data?.hProperties?.wrap).toBe(false);
+      });
+
+      it('should leave wrap undefined when not specified', () => {
+        const md = '<Image src="test.png" alt="Test" align="left" />';
+        const ast = processWithNewTypes(md);
+
+        const imageNode = ast.children[0] as ImageBlock;
+        expect(imageNode.wrap).toBeUndefined();
+        expect(imageNode.data?.hProperties?.wrap).toBeUndefined();
+      });
+
       it('should parse caption with markdown and HTML entities into children', () => {
         const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);

@@ -16,6 +16,7 @@ interface ImageProps {
   src: string;
   title?: string;
   width?: string;
+  wrap?: boolean | string;
 }
 
 /**
@@ -41,11 +42,14 @@ const Image = (Props: ImageProps) => {
     width = 'auto',
     lazy = true,
     children,
+    wrap: wrapProp,
   } = Props;
 
   // Normalize border/framed: MDXish passes {false} as the string "false", not a boolean
   const border = borderProp === true || borderProp === 'true';
   const framed = framedProp === true || framedProp === 'true';
+  // Default (undefined) keeps legacy behavior: left/right images float and wrap text.
+  const noWrap = (align === 'left' || align === 'right') && (wrapProp === false || wrapProp === 'false');
 
   const [lightbox, setLightbox] = React.useState(false);
 
@@ -79,10 +83,11 @@ const Image = (Props: ImageProps) => {
   };
 
   // Framed images center the <img> itself; outer wrapper handles left/right alignment via text-align.
+  const imgClass = `img ${caption || children || framed ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}${noWrap ? ' img-no-wrap' : ''}`;
   const imgElement = (
     <img
       alt={alt}
-      className={`img ${caption || children || framed ? 'img-align-center' : align ? `img-align-${align}` : ''} ${border ? 'border' : ''}`}
+      className={imgClass}
       height={height}
       loading={lazy ? 'lazy' : 'eager'}
       src={src}
@@ -128,10 +133,10 @@ const Image = (Props: ImageProps) => {
   ) : null;
 
   if (framed) {
-    const frameClass = `img-frame img-frame-${align || 'center'}`;
-    // Left/right frames shrink to fit, so percentage widths can't resolve
-    // against the parent, hoist onto the wrapper. Center frames are full-width.
-    const isClamped = align === 'left' || align === 'right';
+    const frameClass = `img-frame img-frame-${align || 'center'}${noWrap ? ' img-no-wrap' : ''}`;
+    // Only left/right wrapping frames shrink to fit; for those, hoist percentage
+    // widths onto the wrapper since they can't resolve against a shrink-to-fit parent.
+    const isClamped = (align === 'left' || align === 'right') && !noWrap;
     const frameStyle: React.CSSProperties | undefined =
       isClamped && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     if (children || caption) {

@@ -47,6 +47,21 @@
       @extend %img-align-center;
     }
 
+    // Suppresses the float for left/right-aligned images while keeping the
+    // image hugging the same edge. Wins via order (declared last) and matching
+    // single-class specificity against the float-setting rules above.
+    &.img-no-wrap {
+      clear: both;
+      float: none;
+      display: block;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &.img-align-right.img-no-wrap {
+      margin-left: auto;
+    }
+
     &[width='smart'] {
       max-height: 450px;
       max-width: 100%;
@@ -71,9 +86,10 @@
 
   .img-frame {
     background: rgba(var(--color-bg-page-inverse-rgb), 0.05);
-    border-radius: var(--markdown-radius, 3px);
+    border-radius: var(--border-radius-lg);
     display: block;
     padding: var(--size-12);
+    max-width: 100%;
 
     @include dark-mode($global: true) {
       background: rgba(var(--color-bg-page-inverse-rgb), 0.1);
@@ -84,12 +100,12 @@
     }
 
     img {
-      border-radius: var(--markdown-radius, 3px);
+      border-radius: var(--border-radius-lg);
       margin-left: 0;
       margin-right: 0;
     }
 
-    // Percentage widths set on the frame wrapper (left/right only).
+    // Percentage widths set on the frame wrapper (left/right wrapping frames only).
     &[style*='width'] {
       .img,
       .lightbox-inner {
@@ -103,8 +119,8 @@
       }
     }
 
-    // Left/right frames clamp to image size and float for inline flow.
-    // Center frames span the full parent width so the frame anchors the image.
+    // Left/right wrapping frames clamp to image size and float for inline flow.
+    // Center frames (and non-wrapping left/right) span the full parent width.
     &-left,
     &-right {
       width: fit-content;
@@ -126,6 +142,20 @@
     &-center {
       clear: both;
       text-align: center;
+    }
+
+    // wrap=false on a non-center frame: fill the row instead of floating
+    &-left.img-no-wrap,
+    &-right.img-no-wrap {
+      clear: both;
+      float: none;
+      width: auto;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    &-right.img-no-wrap {
+      text-align: right;
     }
 
     figcaption {
