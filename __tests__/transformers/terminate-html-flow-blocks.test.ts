@@ -167,6 +167,42 @@ const x = 1;
 [/block]`);
     });
 
+    it('inserts blank line after an opening HTML tag with trailing text', () => {
+      const input = `<li> test
+[block:parameters]
+{
+  "data": {
+    "h-0": "Heading",
+    "0-0": "Content"
+  },
+  "cols": 1,
+  "rows": 1,
+  "align": [
+    "left",
+    "left"
+  ]
+}
+[/block]`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<li> test
+
+[block:parameters]
+{
+  "data": {
+    "h-0": "Heading",
+    "0-0": "Content"
+  },
+  "cols": 1,
+  "rows": 1,
+  "align": [
+    "left",
+    "left"
+  ]
+}
+[/block]`);
+    });
+
     it('inserts blank line when HTML line has text content between and after tags', () => {
       const input = `<div><p>Inner text</p></div>Outer text
 [block:callout]

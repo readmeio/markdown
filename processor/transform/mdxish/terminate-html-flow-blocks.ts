@@ -6,6 +6,10 @@ const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
 
+// Tag at start of line + trailing text, no closer (e.g. `<li> test`). CommonMark
+// still opens an HTML block here, so we terminate it.
+const HTML_LINE_WITH_TRAILING_CONTENT_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)\s*\S/;
+
 const TABLE_STRUCTURE_TAGS = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup'];
 
 // Tags whose contents must be preserved as is, inserting a blank line after the
@@ -20,7 +24,11 @@ const RAW_CONTENT_TAG_MATCHERS = RAW_CONTENT_TAGS.map(tag => ({
 }));
 
 function isLineHtml(line: string) {
-  return STANDALONE_HTML_LINE_REGEX.test(line) || HTML_LINE_WITH_CONTENT_REGEX.test(line);
+  return (
+    STANDALONE_HTML_LINE_REGEX.test(line) ||
+    HTML_LINE_WITH_CONTENT_REGEX.test(line) ||
+    HTML_LINE_WITH_TRAILING_CONTENT_REGEX.test(line)
+  );
 }
 
 // True if any RAW_CONTENT_TAGS opener on this line is not closed on the same line.
