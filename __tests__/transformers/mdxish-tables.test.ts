@@ -885,7 +885,7 @@ describe('mdxish tables transformation', () => {
       expect(cells).toHaveLength(2);
     });
 
-    it('handles where there is asymmety both in the opener and the closer', () => {
+    it('handles where there is asymmetry both in the opener and the closer', () => {
       const doc = `<Table>
   <thead>
     <tr><th>Icon</th><th>Status</th></tr>
