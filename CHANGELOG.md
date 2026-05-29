@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 14.5.0
+### ✨ New & Improved
+
+* updated typography ([#1440](https://github.com/readmeio/markdown/issues/1440)) ([4d16039](https://github.com/readmeio/markdown/commit/4d16039973929fc0974a889407b0614afc798704))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** escape backslashes in expressions in table cells ([#1485](https://github.com/readmeio/markdown/issues/1485)) ([0f9caf4](https://github.com/readmeio/markdown/commit/0f9caf4f63dcf6923665bf2844904931fce62073))
+* make heading clear floating align properties ([#1483](https://github.com/readmeio/markdown/issues/1483)) ([e1c6853](https://github.com/readmeio/markdown/commit/e1c68530c710793fd2be636b8f686540c8d1811b))
+* **images:** properly clamp framed images ([#1490](https://github.com/readmeio/markdown/issues/1490)) ([78267f6](https://github.com/readmeio/markdown/commit/78267f62df6a581d1bf94df59803932442bafa6e))
+
 ## Version 14.4.1
 ### 🛠 Fixes & Updates
 
