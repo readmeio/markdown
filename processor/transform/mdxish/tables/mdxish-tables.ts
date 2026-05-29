@@ -38,6 +38,19 @@ const tableTypes = {
   td: 'tableCell',
 };
 
+const CELL_OPEN_TAG_RE = /^<(td|th)(?:\s[^>]*)?>/i;
+const LEADING_ESCAPED_MARKER_RE = /^\s*\\(?:[-*+](?=[ \t]|<|$|\n)|#)/;
+
+/**
+ * True when the cell's source begins with a backslash-escaped list/heading marker
+ * Used to restore the `\` stripped by the outer parse.
+ */
+const cellSourceHasEscapedMarker = (cellSrc: string): boolean => {
+  const open = cellSrc.match(CELL_OPEN_TAG_RE);
+  if (!open) return false;
+  return LEADING_ESCAPED_MARKER_RE.test(cellSrc.slice(open[0].length));
+};
+
 // `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
 // register them manually so we control ordering against our other tokenizers.
 // The fallback omits these so blank-line-separated markdown inside cells still
@@ -142,6 +155,7 @@ const processTableNode = (
   index: number,
   parent: Parents,
   documentPosition?: Node['position'],
+  tableSource?: string,
 ): void => {
   if (node.name !== 'Table' && node.name !== 'table') return;
 
@@ -150,13 +164,26 @@ const processTableNode = (
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   let tableHasFlowContent = false;
+  const tableBaseOffset = position?.start?.offset ?? 0;
 
   // Re-parse text-only cells through markdown and detect flow content
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
     if (!isTextOnly(cell.children as unknown[])) return;
 
-    const textContent = extractTextFromChildren(cell.children as unknown[]);
+    let textContent = extractTextFromChildren(cell.children as unknown[]);
     if (!textContent.trim()) return;
+
+    // Re-add the backslash escape stripped by the outer parse so the inner re-parse
+    // doesn't (re)tokenize a lone `- foo` cell as a bullet list.
+    if (tableSource && cell.position?.start?.offset != null && cell.position?.end?.offset != null) {
+      const cellSrc = tableSource.slice(
+        cell.position.start.offset - tableBaseOffset,
+        cell.position.end.offset - tableBaseOffset,
+      );
+      if (cellSourceHasEscapedMarker(cellSrc)) {
+        textContent = `\\${textContent}`;
+      }
+    }
 
     // Since now we are using remarkMdx, which can fail and error, we need to
     // gate this behind a try/catch to ensure that malformed syntaxes do not
@@ -349,7 +376,7 @@ const mdxishTables = (): Transform => tree => {
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-        processTableNode(tableNode, index, parent as Parents, node.position);
+        processTableNode(tableNode, index, parent as Parents, node.position, node.value);
         return EXIT;
       });
     } else if (node.value.startsWith('<table')) {
