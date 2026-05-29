@@ -27,6 +27,7 @@ import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
+import mdxishCalloutToJsx from '../processor/transform/mdxish/callout-to-jsx';
 import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
 import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
 import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
@@ -241,6 +242,7 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
 export function mdxishMdastToMd(mdast: MdastRoot) {
   const processor = unified()
     .use(remarkGfm)
+    .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
