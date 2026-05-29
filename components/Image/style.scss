@@ -86,7 +86,7 @@
 
   .img-frame {
     background: rgba(var(--color-bg-page-inverse-rgb), 0.05);
-    border-radius: var(--markdown-radius, 3px);
+    border-radius: var(--border-radius-lg);
     display: block;
     padding: var(--size-12);
     max-width: 100%;
@@ -100,7 +100,7 @@
     }
 
     img {
-      border-radius: var(--markdown-radius, 3px);
+      border-radius: var(--border-radius-lg);
       margin-left: 0;
       margin-right: 0;
     }
