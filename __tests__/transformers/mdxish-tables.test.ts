@@ -299,6 +299,83 @@ describe('mdxish tables transformation', () => {
       expect(html).not.toMatch(/<h2[^>]*>/);
       expect(html).toContain('## subheading');
     });
+
+    it.each([
+      ['-', '-'],
+      ['*', '*'],
+      ['+', '+'],
+      ['#', '#'],
+      ['##', '##'],
+      ['###', '###'],
+    ])('flattens a standalone "%s" cell to literal text instead of an empty list/heading', (marker, expected) => {
+      const doc = `<table>
+<thead><tr><th>${marker}</th></tr></thead>
+<tbody><tr><td>body</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<ul>');
+      expect(html).not.toMatch(/<h[1-6][^>]*><\/h[1-6]>/);
+      expect(html).toContain(`<th>${expected}</th>`);
+    });
+
+    it('keeps a list when the cell has actual content after the marker', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>- foo</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<ul>');
+      expect(html).toContain('<li>foo</li>');
+    });
+
+    it('keeps a heading when the cell has actual content after the hash', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td># heading</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toMatch(/<h1[^>]*>heading<\/h1>/);
+    });
+
+    it('flattens a standalone `>` blockquote marker to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>></th></tr></thead>
+<tbody><tr><td>body</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toMatch(/<blockquote/);
+      expect(html).toMatch(/<th>(>|&gt;|&#x3E;)<\/th>/);
+    });
+
+    it('flattens a standalone `---` thematic break to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>---</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<hr');
+      expect(html).toContain('---');
+    });
+
+    it('flattens a standalone `***` thematic break to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>***</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<hr');
+      expect(html).toContain('***');
+    });
+
+    it('keeps a blockquote when the cell has actual content after the marker', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>> quote</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<blockquote');
+      expect(html).toContain('quote');
+    });
   });
 
   describe('given malformed JSX inside <table>', () => {
