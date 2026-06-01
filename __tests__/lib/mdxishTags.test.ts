@@ -127,4 +127,30 @@ This is phrasing: <Inline />
       expect(mdxishTags(mdx)).toStrictEqual(['Component']);
     });
   });
+
+  describe('inside tables', () => {
+    it('captures components inside <Table> blocks', () => {
+      const mdx = `<Table>
+    <tbody>
+      <tr>
+        <td><TableBlock /></td>
+      </tr>
+    </tbody>
+  </Table>`;
+
+      expect(mdxishTags(mdx)).toContain('TableBlock');
+    });
+
+    it('does not capture components inside <table> blocks', () => {
+      const mdx = `<table>
+    <tbody>
+      <tr>
+        <td><TableBlock /></td>
+      </tr>
+    </tbody>
+  </table>`;
+
+      expect(mdxishTags(mdx)).toStrictEqual(['TableBlock']);
+    });
+  });
 });

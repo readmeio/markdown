@@ -34,4 +34,16 @@ This is phrasing: <Inline />
 
     expect(tags(mdx)).toStrictEqual(['Block']);
   });
+
+  it('captures components inside <Table> blocks', () => {
+    const mdx = `<Table>
+  <tbody>
+    <tr>
+      <td><TableBlock /></td>
+    </tr>
+  </tbody>
+</Table>`;
+
+    expect(tags(mdx)).toStrictEqual(['TableBlock']);
+  });
 });
