@@ -53,6 +53,20 @@ const variables = {
   ],
 };
 
+interface StripState {
+  error: string | null;
+  stripped: string | null;
+}
+
+type PipelineKey = 'legacy' | 'mdxish' | 'rmdx';
+
+const EMPTY_STRIP_STATE: StripState = { error: null, stripped: null };
+const EMPTY_STRIP_STATE_MAP: Record<PipelineKey, StripState> = {
+  legacy: EMPTY_STRIP_STATE,
+  mdxish: EMPTY_STRIP_STATE,
+  rmdx: EMPTY_STRIP_STATE,
+};
+
 const Doc = () => {
   const { fixture } = useParams();
   const [searchParams] = useSearchParams();
@@ -61,7 +75,6 @@ const Doc = () => {
   const mdxish = searchParams.has('mdxish');
   const showRmdx = searchParams.has('rmdx');
 
-  type PipelineKey = 'legacy' | 'mdxish' | 'rmdx';
   const selectedPipelines: PipelineKey[] = [];
   if (showRmdx) selectedPipelines.push('rmdx');
   if (legacy) selectedPipelines.push('legacy');
@@ -88,8 +101,8 @@ const Doc = () => {
   const [rmdxHast, setRmdxHast] = useState<object | null>(null);
   const [mdxishMdast, setMdxishMdast] = useState<object | null>(null);
   const [mdxishHast, setMdxishHast] = useState<object | null>(null);
-  const [strippedMarkdown, setStrippedMarkdown] = useState<string | null>(null);
-  const [stripError, setStripError] = useState<string | null>(null);
+  const [stripByPipeline, setStripByPipeline] = useState<Record<PipelineKey, StripState>>(EMPTY_STRIP_STATE_MAP);
+  const hasAnyStripped = Object.values(stripByPipeline).some(s => s.stripped !== null);
   const [view, setView] = useState<'hast' | 'markdown' | 'mdast' | 'rendered'>('rendered');
   const showToc = fixture === 'tableOfContentsTests';
 
@@ -101,8 +114,7 @@ const Doc = () => {
   useEffect(() => {
     const sanitize = async (mode: PipelineKey) => {
       if (!stripComments) {
-        setStrippedMarkdown(null);
-        setStripError(null);
+        setStripByPipeline(prev => ({ ...prev, [mode]: EMPTY_STRIP_STATE }));
         return doc;
       }
       try {
@@ -110,15 +122,13 @@ const Doc = () => {
           mdx: mode === 'rmdx',
           mdxish: mode === 'mdxish',
         });
-        setStrippedMarkdown(sanitized);
-        setStripError(null);
+        setStripByPipeline(prev => ({ ...prev, [mode]: { stripped: sanitized, error: null } }));
         return sanitized;
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error(e);
         const message = e instanceof Error ? e.message : String(e);
-        setStripError(message);
-        setStrippedMarkdown(null);
+        setStripByPipeline(prev => ({ ...prev, [mode]: { stripped: null, error: message } }));
         return null;
       }
     };
@@ -261,7 +271,7 @@ const Doc = () => {
     <div className="rdmd-demo--display">
       <section id="hub-content">
         {!ci && <h2 className="rdmd-demo--markdown-header">{name}</h2>}
-        {(strippedMarkdown !== null || showAst) && (
+        {(hasAnyStripped || showAst) && (
           <div className="rdmd-demo--view-toggle">
             <button
               className={view === 'rendered' ? 'active' : ''}
@@ -270,7 +280,7 @@ const Doc = () => {
             >
               Rendered
             </button>
-            {strippedMarkdown !== null && (
+            {hasAnyStripped && (
               <button
                 className={view === 'markdown' ? 'active' : ''}
                 onClick={() => setView('markdown')}
@@ -299,13 +309,27 @@ const Doc = () => {
             )}
           </div>
         )}
-        {stripError && (
-          <div className="rdmd-demo--strip-error">
-            <strong>stripComments error:</strong> {stripError}
+        {view === 'markdown' && hasAnyStripped ? (
+          <div className="rdmd-demo--panels">
+            {activePipelines.map(p => {
+              const { error, stripped } = stripByPipeline[p];
+              return (
+                <div key={p} className="rdmd-demo--panel">
+                  <div className="rdmd-demo--panel-label">{pipelineLabels[p]}</div>
+                  {error && (
+                    <div className="rdmd-demo--strip-error">
+                      <strong>stripComments error:</strong> {error}
+                    </div>
+                  )}
+                  {stripped !== null ? (
+                    <pre className="rdmd-demo--stripped-output">{stripped}</pre>
+                  ) : (
+                    !error && <div className="rdmd-demo--empty">No stripped output for this pipeline</div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
-        {view === 'markdown' && strippedMarkdown !== null ? (
-          <pre className="rdmd-demo--stripped-output">{strippedMarkdown}</pre>
         ) : (view === 'mdast' || view === 'hast') && showAst ? (
           <div className="rdmd-demo--panels">
             {activePipelines.map(p => {
