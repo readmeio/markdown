@@ -1,6 +1,7 @@
 import { afterEach, vi } from 'vitest';
 
-import * as RDMD from '../../lib';
+import * as RDMD from '../../../lib';
+import { extractMagicBlocks, MAGIC_BLOCK_REGEX } from '../../../lib/utils/extractMagicBlocks';
 
 const { translateMagicBlocks } = RDMD;
 
@@ -27,10 +28,9 @@ describe('translateMagicBlocks', () => {
 
     const output = translateMagicBlocks(input);
 
-    expect(output).toContain(
-      '<Image align="center" alt="Example alt text" border={true} title="Example title" width="100%" src="https://example.com/image.png" />',
+    expect(output).toBe(
+      '<Image align="center" alt="Example alt text" border={true} title="Example title" width="100%" src="https://example.com/image.png" />\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n',
     );
-    expect(lineCount(output)).toBe(lineCount(input));
   });
 
   it('translates captioned image magic blocks without losing the caption', () => {
@@ -71,6 +71,18 @@ describe('translateMagicBlocks', () => {
     const output = translateMagicBlocks(input);
 
     expect(output).toContain('<Image alt="" src="https://example.com/missing-alt.png" />');
+    expect(lineCount(output)).toBe(lineCount(input));
+  });
+
+  it('preserves border false after magic block image transformation', () => {
+    const input = imageBlock({
+      border: false,
+      image: ['https://example.com/no-border.png', '', 'No border'],
+    });
+
+    const output = translateMagicBlocks(input);
+
+    expect(output).toContain('<Image alt="No border" border={false} src="https://example.com/no-border.png" />');
     expect(lineCount(output)).toBe(lineCount(input));
   });
 
@@ -123,6 +135,40 @@ describe('translateMagicBlocks', () => {
     expect(lineCount(output)).toBe(lineCount(input));
   });
 
+  it('translates two image blocks in one document', () => {
+    const first = imageBlock({
+      image: ['https://example.com/first.png', '', 'First alt'],
+    });
+    const second = imageBlock({
+      image: ['https://example.com/second.png', '', 'Second alt'],
+    });
+    const input = [first, second].join('\n\n');
+
+    const output = translateMagicBlocks(input);
+
+    expect(output).toContain('<Image alt="First alt" src="https://example.com/first.png" />');
+    expect(output).toContain('<Image alt="Second alt" src="https://example.com/second.png" />');
+    expect(lineCount(output)).toBe(lineCount(input));
+  });
+
+  it('translates supported image blocks while passing unsupported blocks through', () => {
+    const first = imageBlock({
+      image: ['https://example.com/first.png', '', 'First alt'],
+    });
+    const unsupported = '[block:callout]\n{\n  "type": "info",\n  "body": "Keep me raw"\n}\n[/block]';
+    const second = imageBlock({
+      image: ['https://example.com/second.png', '', 'Second alt'],
+    });
+    const input = [first, unsupported, second].join('\n\n');
+
+    const output = translateMagicBlocks(input);
+
+    expect(output).toContain('<Image alt="First alt" src="https://example.com/first.png" />');
+    expect(output).toContain(unsupported);
+    expect(output).toContain('<Image alt="Second alt" src="https://example.com/second.png" />');
+    expect(lineCount(output)).toBe(lineCount(input));
+  });
+
   it('leaves malformed image magic blocks unchanged', () => {
     const input = '[block:image]\n{not json}\n[/block]';
 
@@ -131,6 +177,47 @@ describe('translateMagicBlocks', () => {
 
   it('leaves unsupported magic block types unchanged', () => {
     const input = '[block:callout]\n{\n  "type": "info",\n  "body": "Keep me raw"\n}\n[/block]';
+
+    expect(translateMagicBlocks(input)).toBe(input);
+  });
+
+  it.each(['table', 'tutorial-tile'])('leaves %s magic blocks unchanged', blockType => {
+    const input = `[block:${blockType}]\n{\n  "body": "Keep me raw"\n}\n[/block]`;
+
+    expect(translateMagicBlocks(input)).toBe(input);
+  });
+
+  it('dispatches through the public entry without exposing the translator registry', () => {
+    const unsupported = '[block:callout]\n{\n  "type": "info"\n}\n[/block]';
+    const supported = imageBlock({
+      image: ['https://example.com/public-entry.png', '', 'Public entry'],
+    });
+
+    expect(translateMagicBlocks(unsupported)).toBe(unsupported);
+    expect(translateMagicBlocks(supported)).toContain(
+      '<Image alt="Public entry" src="https://example.com/public-entry.png" />',
+    );
+  });
+
+  it('resets MAGIC_BLOCK_REGEX lastIndex before translating', () => {
+    const input = imageBlock({
+      image: ['https://example.com/last-index.png', '', 'Last index'],
+    });
+
+    MAGIC_BLOCK_REGEX.lastIndex = 42;
+
+    const output = translateMagicBlocks(input);
+    const extracted = extractMagicBlocks(input);
+
+    expect(output).toContain('<Image alt="Last index" src="https://example.com/last-index.png" />');
+    expect(extracted.blocks).toHaveLength(1);
+    expect(extracted.blocks[0]?.raw).toBe(input);
+  });
+
+  it('leaves image blocks unchanged when precheck passes but no usable image node is produced', () => {
+    const input = imageBlock({
+      image: ['', '', 'Missing source'],
+    });
 
     expect(translateMagicBlocks(input)).toBe(input);
   });
