@@ -141,6 +141,12 @@ This is phrasing: <Inline />
       expect(mdxishTags(mdx)).toContain('TableBlock');
     });
 
+    it('captures components inside GFM table blocks', () => {
+      const mdx = '| Header |\n| --- |\n| <TableBlock /> | <TableBlock2 /> |';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['TableBlock', 'TableBlock2']);
+    });
+
     it('does not capture components inside <table> blocks', () => {
       const mdx = `<table>
     <tbody>
