@@ -61,13 +61,11 @@ const buildTableNodeProcessor = (withMdx: boolean) =>
 const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
-const BLANK_LINE_REGEX = /(\r?\n)[ \t]*\r?\n/g;
+const BLANK_LINE_REGEX = /(\r?\n)[ \t]*\r?\n(?![ \t]*\r?\n)/g;
 
 /**
- * Collapses a single blank line (empty or whitespace-only) per match so it
- * doesn't terminate the CommonMark type-6 block when the fallback parser
- * sees it. Non-greedy: only one blank line per run is consumed, so authorial
- * sequences of multiple blank lines are mostly preserved.
+ * Collapses one blank line per match so it doesn't terminate the CommonMark
+ * type-6 block. Non-greedy: runs of multiple blank lines lose just one.
  */
 export const collapseBlankLines = (value: string): string =>
   value.replace(BLANK_LINE_REGEX, '$1');

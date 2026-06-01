@@ -356,6 +356,51 @@ end"`);
     expect(output).toContain('A name field');
   });
 
+  it('does not break an HTML block when an inner comment occupies a whole line', async () => {
+    const input = `<table>
+  <tbody>
+    <tr><td>Row 1</td></tr>
+    <!-- <tr><td>Row 2</td></tr> -->
+    <tr><td>Row 3</td></tr>
+  </tbody>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).not.toContain('<!--');
+    expect(output).not.toMatch(/\n[ \t]+\n/);
+    expect(output).toContain('<tr><td>Row 1</td></tr>');
+    expect(output).toContain('<tr><td>Row 3</td></tr>');
+  });
+
+  it('removes only the comment line and preserves authorial blank lines around it', async () => {
+    const input = `<table>
+    <tbody>
+        <tr><td>row 1</td></tr>
+        <!-- <tr><td>commented out</td></tr> -->
+
+        <tr><td>row 2</td></tr>
+
+
+        <!-- <tr><td>another commented out</td></tr> -->
+        <tr><td>row 3</td></tr>
+    </tbody>
+</table>`;
+
+    const expected = `<table>
+    <tbody>
+        <tr><td>row 1</td></tr>
+
+        <tr><td>row 2</td></tr>
+
+
+        <tr><td>row 3</td></tr>
+    </tbody>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(expected);
+  });
+
   it('strips comments inside jsx tables in mdxish mode', async () => {
     const input = `<!-- top comment -->
 
