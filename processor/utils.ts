@@ -170,9 +170,18 @@ export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string 
   // Removes the leading/trailing newlines
   let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
 
-  // Strip up lines relative to the opening HTMLBlock tag's indentation
+  // Strip / deindent the lines in the HTML string so that the indents are relative
+  // to the opening HTMLBlock tag, not the literal line start
+  // Keep any deeper indent
   if (openingTagIndent > 0) {
-    cleaned = cleaned.replace(new RegExp(`^[ \\t]{1,${openingTagIndent}}`, 'gm'), '');
+    cleaned = cleaned
+      .split('\n')
+      .map(line => {
+        let i = 0;
+        while (i < openingTagIndent && (line[i] === ' ' || line[i] === '\t')) i += 1;
+        return line.slice(i);
+      })
+      .join('\n');
   }
 
   // Convert literal \n sequences to actual newlines only inside <pre> and <code>.

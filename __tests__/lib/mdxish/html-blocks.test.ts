@@ -280,7 +280,8 @@ there`;
 <p>Hello</p>
 
 <p>World</p>
-</div>\`}</HTMLBlock></td>
+</div>
+\`}</HTMLBlock></td>
     </tr>
   </tbody>
 </Table>`;
@@ -307,8 +308,10 @@ there`;
       <td>**bold** here</td>
       <td><HTMLBlock>{\`<ul>
 <li>one</li>
+
 <li>two</li>
-</ul>\`}</HTMLBlock></td>
+</ul>
+\`}</HTMLBlock></td>
     </tr>
   </tbody>
 </Table>`;
@@ -320,7 +323,7 @@ there`;
       const strongs = findAllElementsByTagName(tree, 'strong');
       expect(strongs.length).toBeGreaterThan(0);
       expect(JSON.stringify(strongs[0])).toContain('bold');
-      expect(htmlBlockPayloads(tree)).toStrictEqual(['<ul>\n<li>one</li>\n<li>two</li>\n</ul>']);
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<ul>\n<li>one</li>\n\n<li>two</li>\n</ul>']);
     });
 
     it('renders inside a lowercase <table> cell', () => {
@@ -331,7 +334,8 @@ there`;
 <p>a</p>
 
 <p>b</p>
-</section>\`}</HTMLBlock></td>
+</section>
+\`}</HTMLBlock></td>
     </tr>
   </tbody>
 </table>`;
@@ -387,7 +391,8 @@ there`;
 <span>one</span>
 
 <span>uno</span>
-</div>\`}</HTMLBlock></td>
+</div>
+\`}</HTMLBlock></td>
       <td><HTMLBlock>{\`<span>two</span>\`}</HTMLBlock></td>
     </tr>
   </tbody>
