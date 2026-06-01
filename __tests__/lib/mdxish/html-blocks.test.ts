@@ -277,9 +277,9 @@ there`;
     <tr>
       <td>Custom</td>
       <td><HTMLBlock>{\`<div style="color: red;">
-  <p>Hello</p>
+<p>Hello</p>
 
-  <p>World</p>
+<p>World</p>
 </div>\`}</HTMLBlock></td>
     </tr>
   </tbody>
@@ -294,7 +294,7 @@ there`;
 
       // Newlines (including the blank line) inside the content must survive the
       // table re-parse and not fragment the HTMLBlock.
-      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div style="color: red;">\n  <p>Hello</p>\n\n  <p>World</p>\n</div>']);
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<div style="color: red;">\n<p>Hello</p>\n\n<p>World</p>\n</div>']);
     });
 
     it('still renders markdown in a sibling text cell', () => {
@@ -306,9 +306,8 @@ there`;
     <tr>
       <td>**bold** here</td>
       <td><HTMLBlock>{\`<ul>
-  <li>one</li>
-
-  <li>two</li>
+<li>one</li>
+<li>two</li>
 </ul>\`}</HTMLBlock></td>
     </tr>
   </tbody>
@@ -321,7 +320,7 @@ there`;
       const strongs = findAllElementsByTagName(tree, 'strong');
       expect(strongs.length).toBeGreaterThan(0);
       expect(JSON.stringify(strongs[0])).toContain('bold');
-      expect(htmlBlockPayloads(tree)).toStrictEqual(['<ul>\n  <li>one</li>\n\n  <li>two</li>\n</ul>']);
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<ul>\n<li>one</li>\n<li>two</li>\n</ul>']);
     });
 
     it('renders inside a lowercase <table> cell', () => {
@@ -329,16 +328,16 @@ there`;
   <tbody>
     <tr>
       <td><HTMLBlock>{\`<section>
-  <p>a</p>
+<p>a</p>
 
-  <p>b</p>
+<p>b</p>
 </section>\`}</HTMLBlock></td>
     </tr>
   </tbody>
 </table>`;
 
       const tree = mdxish(md);
-      expect(htmlBlockPayloads(tree)).toStrictEqual(['<section>\n  <p>a</p>\n\n  <p>b</p>\n</section>']);
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<section>\n<p>a</p>\n\n<p>b</p>\n</section>']);
       expectFullyConverted(tree);
     });
 
@@ -385,9 +384,9 @@ there`;
   <tbody>
     <tr>
       <td><HTMLBlock>{\`<div>
-  <span>one</span>
+<span>one</span>
 
-  <span>uno</span>
+<span>uno</span>
 </div>\`}</HTMLBlock></td>
       <td><HTMLBlock>{\`<span>two</span>\`}</HTMLBlock></td>
     </tr>
@@ -401,7 +400,7 @@ there`;
       const htmlBlocks = findAllElementsByTagName(tree, 'html-block');
       expect(htmlBlocks).toHaveLength(2);
       expect(htmlBlocks[0].properties).toMatchObject({
-        html: '<div>\n  <span>one</span>\n\n  <span>uno</span>\n</div>',
+        html: '<div>\n<span>one</span>\n\n<span>uno</span>\n</div>',
       });
       expect(htmlBlocks[1].properties).toMatchObject({ html: '<span>two</span>' });
     });

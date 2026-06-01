@@ -100,6 +100,20 @@ describe('mdxish html blocks transformer', () => {
         properties: { html: '<ul>\n  <li>one</li>\n  <li>two</li>\n</ul>' },
       });
     });
+
+    it('starts indent relative to the HTMLBlock opening tag', () => {
+      const markdown = `
+  <HTMLBlock>{\`first
+second
+   third
+  fourth
+  \`}</HTMLBlock>`;
+      const tree = mdxish(markdown);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: 'first\nsecond\n third\nfourth' },
+      });
+    });
   });
 
   describe('node structure', () => {
