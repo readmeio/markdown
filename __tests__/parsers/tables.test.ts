@@ -1193,7 +1193,29 @@ None of the following content will get rendered!`;
       expect(html).toContain('{not valid jsx}');
     });
 
-    it('collapseBlankLines: removes exactly one blank line per run, leaves every other line byte-identical', () => {
+    it('keeps a block-with-many-blank-lines intact', () => {
+      const doc = [
+        '<table>',
+        '    <tr>',
+        '        <td>{not valid jsx}</td>',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '    </tr>',
+        '</table>',
+      ].join('\n');
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre>');
+      expect(html).toContain('{not valid jsx}');
+    });
+
+    it('collapseBlankLines: removes every blank line, leaves every other line byte-identical', () => {
       const input = [
         '<table>',
         '    <tr>',
@@ -1213,9 +1235,10 @@ None of the following content will get rendered!`;
       expect(output.split('\n')).toStrictEqual(nonBlankInputLines);
     });
 
-    it('collapseBlankLines: only consumes one blank line per run (consecutive blanks are mostly preserved)', () => {
-      expect(collapseBlankLines('a\n\n\nb')).toBe('a\n\nb');
-      expect(collapseBlankLines('a\n   \n   \nb')).toBe('a\n   \nb');
+    it('collapseBlankLines: collapses any run of consecutive blank lines to a single newline', () => {
+      expect(collapseBlankLines('a\n\n\nb')).toBe('a\nb');
+      expect(collapseBlankLines('a\n\n\n\n\n\n\nb')).toBe('a\nb');
+      expect(collapseBlankLines('a\n   \n   \nb')).toBe('a\nb');
     });
 
     it('collapseBlankLines: does not strip trailing whitespace on non-empty lines', () => {
