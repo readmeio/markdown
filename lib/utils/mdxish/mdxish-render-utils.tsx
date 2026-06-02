@@ -68,6 +68,9 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
  * semantics). That breaks any component prop that is genuinely an array. With
  * `passNode: true` we get the original hast node in `props.node` for components
  * and can read the raw properties directly.
+ *
+ * Only arrays win over `rest`, overwriting other shapes would undo correct
+ * React conversions like `style="color:red"` → `{ color: 'red' }`.
  */
 function createElementPreservingHastProps(
   type: React.ElementType,
@@ -76,7 +79,10 @@ function createElementPreservingHastProps(
 ): React.ReactElement {
   if (props?.node?.properties) {
     const { node, ...rest } = props;
-    const mergedProps = { ...rest, ...node.properties };
+    const mergedProps: Record<string, unknown> = { ...rest };
+    Object.entries(node.properties).forEach(([key, value]) => {
+      if (Array.isArray(value)) mergedProps[key] = value;
+    });
     // Strip undefined so positional args don't shadow node.properties.children
     const definedChildren = children.filter(c => c !== undefined);
     return React.createElement(type, mergedProps, ...definedChildren);
