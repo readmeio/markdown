@@ -13,8 +13,12 @@
     margin-right: 0.75rem;
   }
 
+  // margin auto on img.img-align-center (specificity 0,2,1) beats the gfm
+  // `.markdown-body .img { margin: x 0 }` rule (0,2,0) that zeros side margins.
   &-center {
     display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
