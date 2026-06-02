@@ -4,6 +4,8 @@ import React from 'react';
 
 import Image from '../../components/Image';
 
+import { captureMdxishProps, renderingEngines } from './utils';
+
 describe('Image', () => {
   it('should render', () => {
     render(<Image align="center" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />);
@@ -191,5 +193,17 @@ describe('Image', () => {
     );
 
     expect(container.querySelector('.img-frame')).not.toHaveClass('img-no-wrap');
+  });
+
+  it('mdxish: <Image style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Image src="https://files.readme.io/x.jpg" alt="x" style="color: red" />';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'img');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 });

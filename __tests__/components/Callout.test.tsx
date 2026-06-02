@@ -9,7 +9,7 @@ import { expect } from 'vitest';
 import Callout from '../../components/Callout';
 import { mdxish } from '../../lib';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Callout', () => {
   describe('general component rendering', () => {
@@ -120,6 +120,18 @@ Body with **markdown** support.
 
       expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
     });
+  });
+
+  it('mdxish: <Callout style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Callout theme="info" icon="📘" style="color: red">\n\nBody\n\n</Callout>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'Callout');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 
   describe('mdxish-specific behaviours', () => {

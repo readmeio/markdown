@@ -152,5 +152,16 @@ export const CompWithArray = ({ array }) => {
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
-  })
+  });
+
+  it('renders an intrinsic <div> with a CSS-string style attribute', () => {
+    const md = '<div style="color: rgb(0, 0, 255)">block</div>';
+    const tree = mdxish(md);
+    const mod = renderMdxish(tree);
+
+    const { container } = render(<mod.default />);
+    const div = container.querySelector('div[style]');
+    expect(div).not.toBeNull();
+    expect(div).toHaveStyle({ color: 'rgb(0, 0, 255)' });
+  });
 });
