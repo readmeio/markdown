@@ -100,7 +100,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
           nav.style.setProperty('--ToC-border-active-height', `${linkRect.height}px`);
           nav.style.setProperty('--ToC-border-active-top', `${linkRect.top - navRect.top}px`);
 
-          link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          link.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
         }
       }
     };
