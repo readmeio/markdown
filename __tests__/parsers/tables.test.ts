@@ -1170,4 +1170,24 @@ None of the following content will get rendered!`;
       expect(html).toContain('<code>another_name_here</code>');
     });
   });
+
+  describe('tables with no <tbody> wrapper', () => {
+    it.each([['Table'], ['table']])(
+      'still renders all the rows in a <%s> with no <tbody> wrapper',
+      tag => {
+        const doc = `<${tag}>
+  <thead><tr><th>col</th></tr></thead>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const rows = findAllElementsByTagName(tables[0], 'tr');
+        expect(rows).toHaveLength(3);
+      },
+    );
+  });
 });
