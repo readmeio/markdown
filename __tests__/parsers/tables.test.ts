@@ -1173,7 +1173,7 @@ None of the following content will get rendered!`;
 
   describe('tables with no <tbody> wrapper', () => {
     it.each([['Table'], ['table']])(
-      'still renders all the rows in a <%s> with no <tbody> wrapper',
+      'still renders all the body rows in a <%s> but <thead> exists',
       tag => {
         const doc = `<${tag}>
   <thead><tr><th>col</th></tr></thead>
@@ -1189,11 +1189,9 @@ None of the following content will get rendered!`;
         expect(rows).toHaveLength(3);
       },
     );
-  });
 
-  describe('tables with no <thead> wrapper', () => {
     it.each([['Table'], ['table']])(
-      'still renders all the rows in a <%s> with no <thead> wrapper',
+      'still renders all the body rows in a <%s> when <thead> also does not exist',
       tag => {
         const doc = `<${tag}>
   <tr><th>col</th></tr>
