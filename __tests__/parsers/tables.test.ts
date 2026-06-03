@@ -1190,4 +1190,27 @@ None of the following content will get rendered!`;
       },
     );
   });
+
+  describe('tables with no <thead> wrapper', () => {
+    it.each([['Table'], ['table']])(
+      'still renders all the rows in a <%s> with no <thead> wrapper',
+      tag => {
+        const doc = `<${tag}>
+  <tr><th>col</th></tr>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const rows = findAllElementsByTagName(tables[0], 'tr');
+        expect(rows).toHaveLength(3);
+
+        const headerRow = findAllElementsByTagName(tables[0], 'th');
+        expect(headerRow).toHaveLength(1);
+      },
+    );
+  });
 });
