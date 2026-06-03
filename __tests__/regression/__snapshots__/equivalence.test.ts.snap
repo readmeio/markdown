@@ -94,7 +94,7 @@ exports[`MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
   "changes": [
     {
       "kind": "text",
-      "left": "Consecutive gemojis: 😁 :grin: should both render side by side.",
+      "left": "Consecutive gemojis: 😁:grin: should both render side by side.",
       "path": "/p[1]/#text[0]",
       "right": "Consecutive gemojis: 😁😁 should both render side by side.",
       "severity": "content",

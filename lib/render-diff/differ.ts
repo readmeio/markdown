@@ -72,6 +72,52 @@ const NOISE_ATTRS = new Set(['data-reactroot', 'data-testid', 'suppresshydration
 
 const CONTENT_ATTRS = new Set(['href', 'src', 'id', 'value', 'alt', 'title']);
 
+// Inline-level tags whose adjacent whitespace is significant relative to
+// surrounding siblings — e.g. the space in `a <em>b</em> c` lives at the edges
+// of the text nodes around <em>, and the space before/after an inline <br> or
+// <img> is a real rendered space. normalizeBoundaryWhitespace() treats a text
+// node's edge as a block boundary (and trims it) only when the neighbour is
+// block-level; inline neighbours (and inline element edges) keep their
+// whitespace. Includes the inline-level void/replaced elements (br, wbr, img,
+// input) so whitespace around them is preserved. Bare <span>s are flattened
+// into their parent before normalization, so their edge whitespace flows up
+// intact regardless.
+const INLINE_TAGS = new Set([
+  'a',
+  'abbr',
+  'b',
+  'bdi',
+  'bdo',
+  'br',
+  'cite',
+  'code',
+  'data',
+  'del',
+  'dfn',
+  'em',
+  'i',
+  'img',
+  'input',
+  'ins',
+  'kbd',
+  'mark',
+  'q',
+  'rp',
+  'rt',
+  'ruby',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'time',
+  'u',
+  'var',
+  'wbr',
+]);
+
 /* ---------- canonicalization ---------- */
 
 function hashText(value: string): string {
@@ -86,9 +132,14 @@ function hashElement(tag: string, attrs: Record<string, string>, children: Canon
 }
 
 function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean): CanonNode {
-  // Text node
+  // Text node — collapse internal whitespace runs to a single space but do NOT
+  // trim. Boundary whitespace is significant at inline boundaries: the space in
+  // `hello <strong>world</strong>` lives at the trailing edge of the "hello "
+  // text node, so trimming here would make `hello world` and `helloworld`
+  // canonicalize identically (a false match). Insignificant edge whitespace at
+  // *block* content boundaries is removed later by normalizeBoundaryWhitespace().
   if (node.type === ElementType.Text) {
-    const collapsed = (node as Text).data.replace(/\s+/g, ' ').trim();
+    const collapsed = (node as Text).data.replace(/\s+/g, ' ');
     return { type: 'text', value: collapsed, hash: hashText(collapsed) };
   }
 
@@ -99,14 +150,26 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
     return { type: 'text', value: '', hash: hashText('') };
   }
 
-  // Root node (Document type = 'root') or element
-  const tag = isRoot ? '#root' : (node as Element).name;
+  // Root node (Document type = 'root') or element. HTML tag names are
+  // case-insensitive, but htmlparser2's xmlMode preserves the source casing, so
+  // lowercase here — exactly as attribute names are lowercased below. Otherwise
+  // an uppercase tag would miss VOID_TAGS / INLINE_TAGS / heading-id
+  // classification and case-only tag differences (`<DIV>` vs `<div>`) would
+  // surface as spurious structural diffs.
+  const tag = isRoot ? '#root' : (node as Element).name.toLowerCase();
 
   // Attributes: domhandler gives plain Record<string,string> — not a {name,value}[] array
   const rawAttrs: Record<string, string> = isRoot ? {} : ((node as Element).attribs ?? {});
   const attrs: Record<string, string> = {};
 
-  for (const [name, value] of Object.entries(rawAttrs)) {
+  for (const [rawName, value] of Object.entries(rawAttrs)) {
+    // HTML attribute names are case-insensitive, but htmlparser2's xmlMode
+    // (used by canonicalize) preserves the source casing. Lowercase before every
+    // set-membership / literal check below — and use it as the stored key — so
+    // noise-drop, attrIgnore, class/style/id and aria-hidden normalization apply
+    // regardless of source casing, and case-only differences never surface as
+    // spurious attr diffs (e.g. `DATA-TESTID` must drop like `data-testid`).
+    const name = rawName.toLowerCase();
     // oxlint-disable-next-line no-continue
     if (NOISE_ATTRS.has(name)) continue;
     // oxlint-disable-next-line no-continue
@@ -165,8 +228,12 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
   }
 
   // Void elements never have children; force-empty for stability.
-  // For everything else, normalize text-equivalent structure differences.
-  const finalChildren = VOID_TAGS.has(tag) ? [] : normalizeTextEquivalent(children, opts);
+  // For everything else, normalize text-equivalent structure differences, then
+  // drop whitespace that is insignificant at block boundaries (block content
+  // edges + between block siblings) while keeping whitespace that is a real
+  // rendered space at inline boundaries (see normalizeBoundaryWhitespace).
+  const normalized = VOID_TAGS.has(tag) ? [] : normalizeTextEquivalent(children, opts);
+  const finalChildren = normalizeBoundaryWhitespace(normalized, INLINE_TAGS.has(tag));
 
   // Bottom-up hash — recomputed after children are in their final form
   const hash = hashElement(tag, attrs, finalChildren);
@@ -192,10 +259,13 @@ function canonicalize(html: string, opts: DiffOptions): CanonNode {
  *      JSX text fragments which canonicalization drops to empty text, leaving
  *      runs of adjacent text nodes that MDXish would render as a single text.
  *
- * Joins on `' '` because in the source HTML there is virtually always
- * whitespace surrounding MDX's inline boundary markers; HTML's adjacent-text
- * rendering rules collapse that to a single space. The re-collapse + trim
- * keeps the merged value canonical.
+ * Adjacent text is concatenated VERBATIM (no inserted separator). Significant
+ * boundary whitespace around MDX's inline markers is preserved on the text
+ * nodes themselves by walkAndCanonicalize, so the merge reproduces the rendered
+ * text exactly: `foo ` + `bar` → "foo bar", `foo` + `bar` → "foobar". Inserting
+ * a space unconditionally (as a previous version did) fabricated "foo bar" from
+ * "foobar", masking real content differences. The re-collapse keeps the merged
+ * value canonical when both sides contributed boundary whitespace.
  */
 function normalizeTextEquivalent(children: CanonNode[], opts: DiffOptions): CanonNode[] {
   // Span-flatten and adjacent-text-merge are engine-bridging transforms: they
@@ -214,18 +284,120 @@ function normalizeTextEquivalent(children: CanonNode[], opts: DiffOptions): Cano
     }
   }
 
-  // Pass 2: merge adjacent text children.
+  // Pass 2: merge adjacent text children by concatenating verbatim. Boundary
+  // whitespace already lives on the fragments (walkAndCanonicalize no longer
+  // trims it), so a dropped `<!---->` between `foo ` and `bar` reconstructs
+  // "foo bar", while between `foo` and `bar` it stays "foobar". The re-collapse
+  // folds any doubled space (e.g. `foo ` + ` bar`) back to a single space.
   const merged: CanonNode[] = [];
   for (const c of flat) {
     const last = merged[merged.length - 1];
     if (c.type === 'text' && last && last.type === 'text') {
-      const combined = `${last.value} ${c.value}`.replace(/\s+/g, ' ').trim();
+      const combined = `${last.value}${c.value}`.replace(/\s+/g, ' ');
       merged[merged.length - 1] = { type: 'text', value: combined, hash: hashText(combined) };
     } else {
       merged.push(c);
     }
   }
   return merged;
+}
+
+/**
+ * A canonical node is "block-level" if it is an element whose tag is not in
+ * INLINE_TAGS. Text nodes and inline elements are inline-level. Unknown tags
+ * are treated as block (the conservative choice — block boundaries strip more
+ * whitespace, matching how custom block components render).
+ */
+function isBlockLevel(node: CanonNode): boolean {
+  return node.type === 'element' && !INLINE_TAGS.has(node.tag);
+}
+
+/**
+ * Trim whitespace at one content edge (`leading` = start, `trailing` = end) of
+ * a node that sits at a block boundary, reaching *through* inline-element
+ * wrappers to the actual edge text node. CSS collapses whitespace at the
+ * start/end of a block's inline formatting context even when it is nested
+ * inside inline elements — the trailing space in `<p><strong>hi </strong></p>`
+ * does not render — so the trim must descend through `<strong>`/`<em>`/`<a>`/…
+ * to the edge text. Block-level nodes own their own edges (already normalized
+ * when they were canonicalized) and are returned untouched, which is what stops
+ * the descent from crossing into an unrelated block subtree.
+ *
+ * Returns the same node reference when nothing changed (so callers can detect a
+ * no-op), a rebuilt node when an edge was trimmed, or `null` when the node is a
+ * text node the trim empties (signalling the caller to drop it). An inline
+ * element is never returned as `null` — empty inline elements are preserved,
+ * matching how empty elements are kept elsewhere.
+ */
+function trimInlineEdge(node: CanonNode, side: 'leading' | 'trailing'): CanonNode | null {
+  if (node.type === 'text') {
+    const value = side === 'leading' ? node.value.replace(/^\s+/, '') : node.value.replace(/\s+$/, '');
+    if (value === node.value) return node; // unchanged
+    if (value === '') return null; // emptied → drop
+    return { type: 'text', value, hash: hashText(value) };
+  }
+
+  // Only reach through inline elements; block elements own their edges.
+  if (!INLINE_TAGS.has(node.tag) || node.children.length === 0) return node;
+
+  const idx = side === 'leading' ? 0 : node.children.length - 1;
+  const edge = node.children[idx];
+  const trimmed = trimInlineEdge(edge, side);
+  if (trimmed === edge) return node; // nothing changed deeper down
+
+  const newChildren =
+    trimmed === null
+      ? node.children.filter((_, i) => i !== idx)
+      : node.children.map((c, i) => (i === idx ? trimmed : c));
+  return {
+    type: 'element',
+    tag: node.tag,
+    attrs: node.attrs,
+    children: newChildren,
+    hash: hashElement(node.tag, node.attrs, newChildren),
+  };
+}
+
+/**
+ * Drop whitespace that does not survive rendering, while preserving whitespace
+ * that does. Mirrors the CSS whitespace model at the granularity this differ
+ * needs:
+ *
+ *   - Whitespace at a *block boundary* — the content edge of a block element,
+ *     or the side of a node that abuts a block-level sibling — collapses away in
+ *     rendered output, so it is trimmed. The trim reaches through inline
+ *     wrappers at the edge (see trimInlineEdge), and a whitespace-only text node
+ *     between two blocks is emptied and dropped entirely.
+ *   - Whitespace at an *inline boundary* — between text and an inline element,
+ *     or between two inline siblings — is a real rendered space (the space in
+ *     "hello world") and is kept. Trimming it is what previously made
+ *     `hello world` and `helloworld` canonicalize identically.
+ *
+ * `selfInline` is the block/inline-ness of the element these children belong
+ * to: it decides the *outer* edges. A block element trims its first child's
+ * leading and last child's trailing whitespace; an inline element does not
+ * (its edge whitespace is significant relative to its own siblings one level
+ * up, and is handled when that ancestor block is normalized). Interior edges
+ * are decided by each node's immediate siblings.
+ */
+function normalizeBoundaryWhitespace(children: CanonNode[], selfInline: boolean): CanonNode[] {
+  if (children.length === 0) return children;
+
+  const out: CanonNode[] = [];
+  for (let k = 0; k < children.length; k += 1) {
+    const leftIsBlockBoundary = k === 0 ? !selfInline : isBlockLevel(children[k - 1]);
+    const rightIsBlockBoundary =
+      k === children.length - 1 ? !selfInline : isBlockLevel(children[k + 1]);
+
+    let node: CanonNode | null = children[k];
+    if (leftIsBlockBoundary) node = trimInlineEdge(node, 'leading');
+    if (node !== null && rightIsBlockBoundary) node = trimInlineEdge(node, 'trailing');
+
+    // oxlint-disable-next-line no-continue
+    if (node === null) continue; // whitespace fully absorbed at a block boundary
+    out.push(node);
+  }
+  return out;
 }
 
 /* ---------- diff walker ---------- */

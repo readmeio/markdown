@@ -236,12 +236,32 @@ describe('diff()', () => {
       expect(result.status).toBe('differ');
     });
 
-    it('cross-engine preset: adjacent text nodes from dropped comment merge', () => {
-      // comment is dropped, adjacent text nodes merge → match
-      const a = '<p>foo<!---->bar</p>';
+    it('cross-engine preset: comment-split fragments with surrounding whitespace merge to the spaced text', () => {
+      // The space lives on the "foo " fragment; the dropped comment leaves
+      // "foo " + "bar" which merges verbatim to "foo bar" → match.
+      const a = '<p>foo <!---->bar</p>';
       const b = '<p>foo bar</p>';
       const result = diff(a, b, { preset: 'cross-engine' });
       expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('cross-engine preset: comment-split fragments with NO surrounding whitespace stay joined (no fabricated space)', () => {
+      // Regression: a previous version inserted a space when merging adjacent
+      // text, so "foobar" (foo<!---->bar) falsely matched "foo bar". The merge
+      // is now verbatim, so the two differ in rendered text.
+      const joined = '<p>foo<!---->bar</p>'; // renders "foobar"
+      const spaced = '<p>foo bar</p>'; // renders "foo bar"
+      const result = diff(joined, spaced, { preset: 'cross-engine' });
+      expect(result.status).toBe('differ');
+      if (result.status !== 'differ') throw new Error('unreachable');
+      const textChange = result.changes.find(c => c.kind === 'text');
+      expect(textChange?.left).toBe('foobar');
+      expect(textChange?.right).toBe('foo bar');
+
+      // ...and the verbatim join genuinely matches the no-space rendering.
+      expect(diff(joined, '<p>foobar</p>', { preset: 'cross-engine' })).toStrictEqual({
+        status: 'match',
+      });
     });
 
     it('minimal preset: adjacent text nodes from dropped comment stay separate', () => {
@@ -256,6 +276,120 @@ describe('diff()', () => {
       const noisy = '<div data-reactroot="" class="beta alpha"><h2 id="intro-2">  heading  </h2></div>';
       const clean = '<div class="alpha beta"><h2 id="intro">heading</h2></div>';
       const result = diff(noisy, clean, { preset: 'minimal' });
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+  });
+
+  describe('significant boundary whitespace', () => {
+    it('detects a dropped space between text and an inline element', () => {
+      // Renders "hello world" vs "helloworld" — a real content change that
+      // per-text-node trimming previously masked.
+      const withSpace = '<p>hello <strong>world</strong></p>';
+      const noSpace = '<p>hello<strong>world</strong></p>';
+      const result = diff(withSpace, noSpace);
+      expect(result.status).toBe('differ');
+      if (result.status !== 'differ') throw new Error('unreachable');
+      expect(result.changes.some(c => c.kind === 'text')).toBe(true);
+    });
+
+    it('detects a dropped space between two adjacent inline elements (after span-flatten)', () => {
+      // Renders "a b" vs "ab".
+      const withSpace = '<span>a</span> <span>b</span>';
+      const noSpace = '<span>a</span><span>b</span>';
+      const result = diff(withSpace, noSpace);
+      expect(result.status).toBe('differ');
+    });
+
+    it('still trims insignificant whitespace at block content edges (no false positive)', () => {
+      // Leading/trailing whitespace inside a block collapses in rendering, so
+      // these are equivalent.
+      const a = '<p>  hello <strong>world</strong>  </p>';
+      const b = '<p>hello <strong>world</strong></p>';
+      const result = diff(a, b);
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('does not flag identical inline-boundary whitespace (no false positive)', () => {
+      const html = '<p>hello <strong>world</strong> again</p>';
+      const result = diff(html, html);
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('keeps a real inline-boundary space that the other input lacks (preservation guard)', () => {
+      // Distinct inputs, not a self-diff: the space between two inline links is
+      // significant ("x y" vs "xy"), so it must surface.
+      const result = diff('<p><a>x</a> <a>y</a></p>', '<p><a>x</a><a>y</a></p>');
+      expect(result.status).toBe('differ');
+    });
+
+    it('trims insignificant whitespace inside an inline element at a block edge (no false positive)', () => {
+      // Trailing/leading whitespace inside <strong> at the start/end of a block
+      // collapses in rendering, so reaching through the inline wrapper must trim
+      // it — both render "hello".
+      expect(diff('<p><strong>hello </strong></p>', '<p><strong>hello</strong></p>')).toStrictEqual({
+        status: 'match',
+      });
+      expect(diff('<p><strong> hello</strong></p>', '<p><strong>hello</strong></p>')).toStrictEqual({
+        status: 'match',
+      });
+    });
+
+    it('still flags an inline element edge space that is mid-block (significant)', () => {
+      // The trailing space inside <strong> here sits between "a" and "b" → "a b"
+      // vs "ab", a real difference that must NOT be trimmed away.
+      const result = diff('<p>x<strong>a </strong>b</p>', '<p>x<strong>a</strong>b</p>');
+      expect(result.status).toBe('differ');
+    });
+  });
+
+  describe('tag name case-insensitivity', () => {
+    it('treats case-only tag-name differences as equal (xmlMode preserves source case)', () => {
+      const result = diff('<DIV><P>x</P></DIV>', '<div><p>x</p></div>');
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('classifies an uppercase inline tag as inline (keeps significant boundary space)', () => {
+      // Renders "hello world" vs "helloworld"; <STRONG> must be recognized as
+      // inline so the boundary space is preserved and the difference surfaces.
+      const result = diff('<P>hello <STRONG>world</STRONG></P>', '<P>hello<STRONG>world</STRONG></P>');
+      expect(result.status).toBe('differ');
+    });
+
+    it('strips heading id counters regardless of tag-name case', () => {
+      const a = '<H2 id="intro-1">t</H2>';
+      const b = '<h2 id="intro-2">t</h2>';
+      const result = diff(a, b);
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+  });
+
+  describe('attribute name case-insensitivity', () => {
+    it('drops uppercase noise attrs (xmlMode preserves source case)', () => {
+      const a = '<div DATA-TESTID="x"><p>t</p></div>';
+      const b = '<div><p>t</p></div>';
+      const result = diff(a, b);
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('normalizes (sorts) class regardless of attribute-name case', () => {
+      const a = '<div CLASS="beta alpha">t</div>';
+      const b = '<div class="alpha beta">t</div>';
+      const result = diff(a, b);
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('matches attrIgnore entries against the lowercased attribute name', () => {
+      const a = '<div Custom-Attr="foo">t</div>';
+      const b = '<div>t</div>';
+      // User supplies the lowercased name, HTML carries mixed case.
+      const result = diff(a, b, { attrIgnore: new Set(['custom-attr']) });
+      expect(result).toStrictEqual({ status: 'match' });
+    });
+
+    it('treats case-only attribute-name differences as equal', () => {
+      const a = '<div DATA-FOO="x">t</div>';
+      const b = '<div data-foo="x">t</div>';
+      const result = diff(a, b);
       expect(result).toStrictEqual({ status: 'match' });
     });
   });
