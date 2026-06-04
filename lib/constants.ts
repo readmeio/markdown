@@ -63,6 +63,7 @@ export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
 /**
  * PascalCase tags that have their own dedicated tokenizer / transformer
  * and must not be claimed by the generic `mdxComponent` construct.
+ * Subject to change as we add more dedicated tokenizers.
  */
 const DEDICATED_COMPONENT_TAGS = ['HTMLBlock', 'Table'] as const;
 
@@ -72,6 +73,15 @@ const DEDICATED_COMPONENT_TAGS = ['HTMLBlock', 'Table'] as const;
  */
 export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
   ...DEDICATED_COMPONENT_TAGS,
+  ...INLINE_COMPONENT_TAGS,
+]);
+
+/**
+ * Tags the micromark `mdxComponent` tokenizer must not claim, which
+ * are inline components and those that have their own dedicated tokenizer
+ */
+export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
+  'Table',
   ...INLINE_COMPONENT_TAGS,
 ]);
 
