@@ -74,8 +74,18 @@ const jsxAttr = (element: HtmlBlockJsx, name: string): string | undefined => {
 };
 
 /** Builds an `html-block` from a raw attribute string and (unparsed) body. */
-const htmlBlockFromRaw = (attrs: string, html: string, position: HTMLBlock['position']): HTMLBlock =>
-  createHtmlBlockNode(formatHtmlForMdxish(html), position, toRunScripts(rawAttr(attrs, 'runScripts')), rawAttr(attrs, 'safeMode'));
+const htmlBlockFromRaw = (
+  attrs: string,
+  html: string,
+  position: HTMLBlock['position'],
+  openingTagIndent = 0,
+): HTMLBlock =>
+  createHtmlBlockNode(
+    formatHtmlForMdxish(html, openingTagIndent),
+    position,
+    toRunScripts(rawAttr(attrs, 'runScripts')),
+    rawAttr(attrs, 'safeMode'),
+  );
 
 /**
  * Splits a raw `html` node that embeds one or more `<HTMLBlock>`s into
@@ -92,7 +102,12 @@ const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
   for (let i = 0; i < segments.length; i += 3) {
     const [text, attrs, body] = segments.slice(i, i + 3);
     if (text) parts.push({ type: 'html', value: text });
-    if (body !== undefined) parts.push(htmlBlockFromRaw(attrs, body, node.position));
+    if (body !== undefined) {
+      // The opening tag's column equals the length of the line it starts on
+      // (the text run since the previous newline preceding the match).
+      const openingTagIndent = text.slice(text.lastIndexOf('\n') + 1).length;
+      parts.push(htmlBlockFromRaw(attrs, body, node.position, openingTagIndent));
+    }
   }
   return parts;
 };
@@ -126,8 +141,9 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         child => child.type === 'mdxFlowExpression' || child.type === 'mdxTextExpression',
       ) as { value?: string } | undefined;
 
+      const openingTagIndent = (element.position?.start.column ?? 1) - 1;
       parent.children[index] = createHtmlBlockNode(
-        formatHtmlForMdxish(extractTemplateLiteral(exprChild?.value)),
+        formatHtmlForMdxish(extractTemplateLiteral(exprChild?.value), openingTagIndent),
         element.position,
         toRunScripts(jsxAttr(element, 'runScripts')),
         jsxAttr(element, 'safeMode'),
@@ -171,7 +187,8 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         })
         .join('');
 
-      children.splice(i, closeIdx - i + 1, htmlBlockFromRaw(openMatch[1], body, open.position));
+      const openingTagIndent = (open.position?.start.column ?? 1) - 1;
+      children.splice(i, closeIdx - i + 1, htmlBlockFromRaw(openMatch[1], body, open.position, openingTagIndent));
     }
   });
 };

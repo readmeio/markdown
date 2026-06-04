@@ -162,11 +162,27 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
  * and unindents the HTML.
  *
  * @param {string} html - cooked HTML payload (callers strip any template-literal backticks first)
+ * @param {number} [openingTagIndent=0] - column the `<HTMLBlock>` opening tag sits at, used to
+ *   dedent each content line so its indentation reads relative to the tag, not the line start
  * @returns {string} processed HTML
  */
-export function formatHtmlForMdxish(html: string): string {
+export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string {
   // Removes the leading/trailing newlines
   let cleaned = html.replace(/^\s*\n|\n\s*$/g, '');
+
+  // Strip / deindent the lines in the HTML string so that the indents are relative
+  // to the opening HTMLBlock tag, not the literal line start
+  // Keep any deeper indent
+  if (openingTagIndent > 0) {
+    cleaned = cleaned
+      .split('\n')
+      .map(line => {
+        let i = 0;
+        while (i < openingTagIndent && (line[i] === ' ' || line[i] === '\t')) i += 1;
+        return line.slice(i);
+      })
+      .join('\n');
+  }
 
   // Convert literal \n sequences to actual newlines only inside <pre> and <code>.
   // Because <pre> needs to respect the newline visual and
