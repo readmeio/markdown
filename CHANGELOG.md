@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** render table body rows when there's no <tbody> wrapper ([#1505](https://github.com/readmeio/markdown/issues/1505)) ([2e199a4](https://github.com/readmeio/markdown/commit/2e199a4384753d26827ea43e7bc9e5cbdd48e193))
+
 ## Version 14.7.0
 ### ✨ New & Improved
 
