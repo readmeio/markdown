@@ -382,6 +382,52 @@ end"`);
     expect(output).not.toContain('<!-- bottom comment -->');
   });
 
+  describe('HTMLBlock handling in mdxish mode', () => {
+    it('does not crash on multiline HTMLBlock content', async () => {
+      const input = `<HTMLBlock>{\`
+<div>hello</div>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+      expect(output).toContain('<div>hello</div>');
+    });
+
+    it('preserves HTMLBlock with attributes', async () => {
+      const input = `<HTMLBlock id="test">{\`
+<p>content</p>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock');
+      expect(output).toContain('<p>content</p>');
+    });
+
+    it('strips comments outside HTMLBlocks while preserving the block', async () => {
+      const input = `<!-- top comment -->
+
+<HTMLBlock>{\`
+<div>hello</div>
+\`}</HTMLBlock>
+
+<!-- bottom comment -->`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+      expect(output).not.toContain('<!-- top comment -->');
+      expect(output).not.toContain('<!-- bottom comment -->');
+    });
+
+    it('handles nested HTMLBlocks', async () => {
+      const input = `<HTMLBlock>{\`
+<HTMLBlock>{\`<div>nested</div>\`}</HTMLBlock>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+    });
+  });
+
   describe('strip comments edge cases', () => {
     it.each([
       ['should return empty for empty string', '', undefined, ''],
