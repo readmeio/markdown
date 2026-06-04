@@ -247,6 +247,7 @@ interface ImageAttrs {
   src?: string;
   title?: string;
   width?: number | string;
+  wrap?: boolean | string;
 }
 
 interface CalloutAttrs {
@@ -309,7 +310,20 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
  */
 const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
-  const { align, alt = '', border, caption, className, framed, height, lazy, src = '', title = '', width } = attrs;
+  const {
+    align,
+    alt = '',
+    border,
+    caption,
+    className,
+    framed,
+    height,
+    lazy,
+    src = '',
+    title = '',
+    width,
+    wrap,
+  } = attrs;
 
   const validAlign = toImageAlign(align);
   const sizing = width !== undefined ? String(width) : undefined;
@@ -327,6 +341,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     ...(lazy !== undefined && { lazy: toBool(lazy) }),
     ...(sizing && { sizing }),
     ...(sizing && { width: sizing }),
+    ...(wrap !== undefined && { wrap: toBool(wrap) }),
   };
 
   return {
@@ -344,6 +359,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     src,
     title,
     width: sizing,
+    ...(wrap !== undefined && { wrap: toBool(wrap) }),
     data: {
       hName: 'img',
       hProperties,
