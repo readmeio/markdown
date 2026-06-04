@@ -157,16 +157,22 @@ const Image = (Props: ImageProps) => {
   }
 
   if (children || caption) {
+    // Mirrors the framed pattern: left/right captioned figures float and shrink
+    // to fit so a long caption doesn't widen the float past the image.
+    const isFloating = (align === 'left' || align === 'right') && !noWrap;
+    const figureClass = [
+      (align === 'left' || align === 'right') && `img-figure-${align}`,
+      noWrap && 'img-no-wrap',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const figureStyle: React.CSSProperties | undefined =
+      isFloating && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     return (
-      <figure>
-        {closedLightbox(
-          alt || 'Expand image',
-          <>
-            {imgElement}
-            <figcaption>{children || caption}</figcaption>
-          </>,
-        )}
+      <figure className={figureClass || undefined} style={figureStyle}>
+        {closedLightbox(alt || 'Expand image', imgElement)}
         {lightboxOverlay}
+        <figcaption>{children || caption}</figcaption>
       </figure>
     );
   }
