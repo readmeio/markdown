@@ -356,6 +356,89 @@ end"`);
     expect(output).toContain('A name field');
   });
 
+  it('does not break an HTML block when an inner comment occupies a whole line', async () => {
+    const input = `<table>
+  <tbody>
+    <tr><td>Row 1</td></tr>
+    <!-- <tr><td>Row 2</td></tr> -->
+    <tr><td>Row 3</td></tr>
+  </tbody>
+</table>`;
+
+    const expected = `<table>
+  <tbody>
+    <tr><td>Row 1</td></tr>
+    <tr><td>Row 3</td></tr>
+  </tbody>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(expected);
+  });
+
+  it('removes only the comment line and preserves authorial blank lines around it', async () => {
+    const input = `<table>
+    <tbody>
+        <tr><td>row 1</td></tr>
+        <!-- <tr><td>commented out</td></tr> -->
+
+        <tr><td>row 2</td></tr>
+
+
+        <!-- <tr><td>another commented out</td></tr> -->
+        <tr><td>row 3</td></tr>
+    </tbody>
+</table>`;
+
+    const expected = `<table>
+    <tbody>
+        <tr><td>row 1</td></tr>
+
+        <tr><td>row 2</td></tr>
+
+
+        <tr><td>row 3</td></tr>
+    </tbody>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(expected);
+  });
+
+  it('preserves authorial blank lines inside a table cell', async () => {
+    const input = `<table>
+    <tr>
+        <td>
+            line 1
+
+            line 2
+        </td>
+    </tr>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+  });
+
+  it('preserves a fenced code block (with internal blank lines) inside a table cell', async () => {
+    const input = `<table>
+    <tr>
+        <td>
+
+\`\`\`js
+const a = 1;
+
+const b = 2;
+\`\`\`
+
+        </td>
+    </tr>
+</table>`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+  });
+
   it('strips comments inside jsx tables in mdxish mode', async () => {
     const input = `<!-- top comment -->
 

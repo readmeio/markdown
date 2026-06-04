@@ -6,6 +6,7 @@ import { removePosition } from 'unist-util-remove-position';
 
 import { mdast } from '../../lib';
 import { mdxish } from '../../lib/mdxish';
+import { collapseBlankLines } from '../../processor/transform/mdxish/tables/mdxish-tables';
 import { collectNodes, findAllElementsByTagName, parseMdxishWithSource } from '../helpers';
 
 describe('table parser', () => {
@@ -1168,6 +1169,81 @@ None of the following content will get rendered!`;
 
       expect(html).toContain('<code>snake_case_value</code>');
       expect(html).toContain('<code>another_name_here</code>');
+    });
+  });
+
+  describe('lowercase <table> fallback path', () => {
+    it('keeps a block-with-whitespace-only-line intact when the mdx-aware parser throws on a cell expression', () => {
+      const doc = ['<table>', '    <tr>', '        <td>{not valid jsx}</td>', '    ', '    </tr>', '</table>'].join('\n');
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre>');
+      expect(html).toContain('{not valid jsx}');
+    });
+
+    it('keeps a block-with-empty-line intact when the mdx-aware parser throws on a cell expression', () => {
+      const doc = ['<table>', '    <tr>', '        <td>{not valid jsx}</td>', '', '    </tr>', '</table>'].join('\n');
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre>');
+      expect(html).toContain('{not valid jsx}');
+    });
+
+    it('keeps a block-with-many-blank-lines intact', () => {
+      const doc = [
+        '<table>',
+        '    <tr>',
+        '        <td>{not valid jsx}</td>',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '    </tr>',
+        '</table>',
+      ].join('\n');
+
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre>');
+      expect(html).toContain('{not valid jsx}');
+    });
+
+    it('collapseBlankLines: removes every blank line, leaves every other line byte-identical', () => {
+      const input = [
+        '<table>',
+        '    <tr>',
+        '        <td>row 1</td>',
+        '    ',
+        '        <td>row 2</td>',
+        '',
+        '        <td>row 3</td>',
+        '    </tr>',
+        '</table>',
+      ].join('\n');
+
+      const output = collapseBlankLines(input);
+      const inputLines = input.split('\n');
+      const nonBlankInputLines = inputLines.filter(line => !/^[ \t]*$/.test(line));
+
+      expect(output.split('\n')).toStrictEqual(nonBlankInputLines);
+    });
+
+    it('collapseBlankLines: collapses any run of consecutive blank lines to a single newline', () => {
+      expect(collapseBlankLines('a\n\n\nb')).toBe('a\nb');
+      expect(collapseBlankLines('a\n\n\n\n\n\n\nb')).toBe('a\nb');
+      expect(collapseBlankLines('a\n   \n   \nb')).toBe('a\nb');
+    });
+
+    it('collapseBlankLines: does not strip trailing whitespace on non-empty lines', () => {
+      const input = 'a   \nb';
+      expect(collapseBlankLines(input)).toBe(input);
     });
   });
 });

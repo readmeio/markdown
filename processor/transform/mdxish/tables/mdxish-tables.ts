@@ -62,6 +62,15 @@ const buildTableNodeProcessor = (withMdx: boolean) =>
 const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
+const BLANK_LINE_REGEX = /(\r?\n)(?:[ \t]*\r?\n)+/g;
+
+/**
+ * Collapses any run of blank lines (empty or whitespace-only) to a single
+ * newline so the CommonMark type-6 block isn't terminated mid-table.
+ */
+export const collapseBlankLines = (value: string): string =>
+  value.replace(BLANK_LINE_REGEX, '$1');
+
 /**
  * Parse the HTML node that contains the full table substring
  * into the table parts (headers, rows, cells).
@@ -371,8 +380,9 @@ const mdxishTables = (): Transform => tree => {
     } else if (node.value.startsWith('<table')) {
       // If the parsing still fails, give an opportunity to the fallback parser
       // without remarkMdx to process lowercase tables as it's likely to not
-      // have needed MDX parsing anyway
-      const fallback = parseTableNode(fallbackTableNodeProcessor, node);
+      // have needed MDX parsing anyway.
+      const sanitizedValue = collapseBlankLines(node.value);
+      const fallback = parseTableNode(fallbackTableNodeProcessor, { ...node, value: sanitizedValue });
       if (!fallback || fallback.children.length <= 1) return;
       parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
     }
