@@ -1,48 +1,6 @@
 import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
-// Base64 encode (Node.js + browser compatible)
-function base64Encode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'utf-8').toString('base64');
-  }
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-// Base64 decode (Node.js + browser compatible)
-export function base64Decode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'base64').toString('utf-8');
-  }
-  return decodeURIComponent(escape(atob(str)));
-}
-
-// Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
-export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
-export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
-
-/**
- * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
- *
- * @param content
- * @returns Content with HTMLBlock template literals base64 encoded in HTML comments
- * @example
- * ```typescript
- * const input = '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>';
- * protectHTMLBlockContent(input)
- * // Returns: '<HTMLBlock><!--RDMX_HTMLBLOCK:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RDMX_HTMLBLOCK--></HTMLBlock>'
- * ```
- */
-function protectHTMLBlockContent(content: string): string {
-  return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g,
-    (_match, openTag: string, templateContent: string, closeTag: string) => {
-      const encoded = base64Encode(templateContent);
-      return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
-    },
-  );
-}
-
 /**
  * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
  *
@@ -208,10 +166,9 @@ function escapeProblematicBraces(content: string): string {
  * @returns Preprocessed content ready for markdown parsing
  */
 export function preprocessJSXExpressions(content: string): string {
-  let processed = protectHTMLBlockContent(content);
-  const { protectedCode, protectedContent } = protectCodeBlocks(processed);
+  const { protectedCode, protectedContent } = protectCodeBlocks(content);
 
-  processed = escapeProblematicBraces(protectedContent);
+  let processed = escapeProblematicBraces(protectedContent);
 
   processed = restoreCodeBlocks(processed, protectedCode);
   return processed;
