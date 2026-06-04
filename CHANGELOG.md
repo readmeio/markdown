@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 14.6.0
+### ✨ New & Improved
+
+* **images:** add wrap attr to control text wrapping ([#1491](https://github.com/readmeio/markdown/issues/1491)) ([c59f990](https://github.com/readmeio/markdown/commit/c59f990906501ba84da5b5fe255d1b4784121629))
+
+### 🛠 Fixes & Updates
+
+* margins for inline images ([#1508](https://github.com/readmeio/markdown/issues/1508)) ([7c9bf70](https://github.com/readmeio/markdown/commit/7c9bf703f4ad3a53eb56d8f6291edefe93dedce1)), closes [#1440](https://github.com/readmeio/markdown/issues/1440)
+
 ## Version 14.5.0
 ### ✨ New & Improved
 

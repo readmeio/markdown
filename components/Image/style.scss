@@ -13,8 +13,12 @@
     margin-right: 0.75rem;
   }
 
+  // margin auto on img.img-align-center (specificity 0,2,1) beats the gfm
+  // `.markdown-body .img { margin: x 0 }` rule (0,2,0) that zeros side margins.
   &-center {
     display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
@@ -81,6 +85,58 @@
       font-style: italic;
       margin-top: 8px;
       text-align: center;
+    }
+
+    // Left/right captioned figures clamp to image size and float for inline flow.
+    &.img-figure-left,
+    &.img-figure-right {
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    &.img-figure-left {
+      clear: left;
+      float: left;
+      margin-right: 0.75rem;
+    }
+
+    &.img-figure-right {
+      clear: right;
+      float: right;
+      margin-left: 0.75rem;
+    }
+
+    // wrap=false on a non-center captioned figure: fill the row instead of floating.
+    &.img-figure-left.img-no-wrap,
+    &.img-figure-right.img-no-wrap {
+      clear: both;
+      float: none;
+      width: auto;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    // Percentage widths set on the figure wrapper (left/right floating only).
+    &.img-figure-left[style*='width'],
+    &.img-figure-right[style*='width'] {
+      .img,
+      .lightbox-inner {
+        display: block;
+        width: 100%;
+      }
+
+      img {
+        height: auto !important;
+        width: 100% !important;
+      }
+    }
+
+    // Zero intrinsic width so a long caption doesn't widen the float past the
+    // image; min-width:100% re-fills the caption to the resolved figure width.
+    &.img-figure-left > figcaption,
+    &.img-figure-right > figcaption {
+      width: 0;
+      min-width: 100%;
     }
   }
 

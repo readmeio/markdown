@@ -10,6 +10,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
+import { NodeTypes } from '../../../../enums';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
@@ -150,6 +151,21 @@ const processTableNode = (
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   let tableHasFlowContent = false;
+
+  // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
+  // `mdxishHtmlBlocks` after this transformer) is block-level content that a
+  // markdown table cell can't represent, so keep the table as a JSX `<Table>`.
+  visit(
+    node as Node,
+    candidate =>
+      candidate.type === NodeTypes.htmlBlock ||
+      ((candidate.type === 'mdxJsxFlowElement' || candidate.type === 'mdxJsxTextElement') &&
+        (candidate as MdxJsxFlowElement | MdxJsxTextElement).name === 'HTMLBlock'),
+    () => {
+      tableHasFlowContent = true;
+      return EXIT;
+    },
+  );
 
   // Re-parse text-only cells through markdown and detect flow content
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
