@@ -11,11 +11,12 @@ interface ImageProps {
   className?: string;
   // MDXish passes JSX expression values as strings (e.g., framed={false} becomes "false")
   framed?: boolean | string;
-  height?: string;
+  height?: number | string;
   lazy?: boolean;
   src: string;
+  style?: React.CSSProperties;
   title?: string;
-  width?: string;
+  width?: number | string;
   wrap?: boolean | string;
 }
 
@@ -36,10 +37,11 @@ const Image = (Props: ImageProps) => {
     caption,
     className = '',
     framed: framedProp = false,
-    height = 'auto',
+    height = Props.style?.height ?? 'auto',
     src,
+    style,
     title = '',
-    width = 'auto',
+    width = Props.style?.width ?? 'auto',
     lazy = true,
     children,
     wrap: wrapProp,
@@ -54,7 +56,17 @@ const Image = (Props: ImageProps) => {
   const [lightbox, setLightbox] = React.useState(false);
 
   if (className === 'emoji') {
-    return <img alt={alt} height={height} loading={lazy ? 'lazy' : 'eager'} src={src} title={title} width={width} />;
+    return (
+      <img
+        alt={alt}
+        height={height}
+        loading={lazy ? 'lazy' : 'eager'}
+        src={src}
+        style={style}
+        title={title}
+        width={width}
+      />
+    );
   }
 
   const handleKeyDown = ({ key, metaKey: cmd }: React.KeyboardEvent<HTMLImageElement>) => {
@@ -91,6 +103,7 @@ const Image = (Props: ImageProps) => {
       height={height}
       loading={lazy ? 'lazy' : 'eager'}
       src={src}
+      style={style}
       title={title}
       width={width}
     />
@@ -157,16 +170,22 @@ const Image = (Props: ImageProps) => {
   }
 
   if (children || caption) {
+    // Mirrors the framed pattern: left/right captioned figures float and shrink
+    // to fit so a long caption doesn't widen the float past the image.
+    const isFloating = (align === 'left' || align === 'right') && !noWrap;
+    const figureClass = [
+      (align === 'left' || align === 'right') && `img-figure-${align}`,
+      noWrap && 'img-no-wrap',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const figureStyle: React.CSSProperties | undefined =
+      isFloating && typeof width === 'string' && width.endsWith('%') ? { width } : undefined;
     return (
-      <figure>
-        {closedLightbox(
-          alt || 'Expand image',
-          <>
-            {imgElement}
-            <figcaption>{children || caption}</figcaption>
-          </>,
-        )}
+      <figure className={figureClass || undefined} style={figureStyle}>
+        {closedLightbox(alt || 'Expand image', imgElement)}
         {lightboxOverlay}
+        <figcaption>{children || caption}</figcaption>
       </figure>
     );
   }
