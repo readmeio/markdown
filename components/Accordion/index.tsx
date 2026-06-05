@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import Icon from '../Icon';
+
 import './style.scss';
 
 interface Props extends React.PropsWithChildren<{ icon?: string; iconColor?: string; title: string }> {}
@@ -11,7 +13,7 @@ const Accordion = ({ children, icon, iconColor, title }: Props) => {
     <details className="Accordion" onToggle={() => setIsOpen(!isOpen)}>
       <summary className="Accordion-title">
         <i className={`Accordion-toggleIcon${isOpen ? '_opened' : ''} fa fa-regular fa-chevron-right`}></i>
-        {icon && <i className={`Accordion-icon fa-duotone fa-solid ${icon}`} style={{ color: `${iconColor}` }}></i>}
+        {icon && <Icon className="Accordion-icon" icon={icon} iconColor={iconColor} />}
         {title}
       </summary>
       <div className="Accordion-content">{children}</div>
@@ -20,4 +22,3 @@ const Accordion = ({ children, icon, iconColor, title }: Props) => {
 };
 
 export default Accordion;
-

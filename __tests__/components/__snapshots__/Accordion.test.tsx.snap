@@ -1,0 +1,161 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Accordion > mdx > renders an accordion with a Font Awesome icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      <i
+        class="Accordion-icon fad fa-book"
+      />
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
+
+exports[`Accordion > mdx > renders an accordion with an emoji icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      <span
+        class="Accordion-icon"
+      >
+        🚀
+      </span>
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
+
+exports[`Accordion > mdx > renders an accordion with no icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
+
+exports[`Accordion > mdxish > renders an accordion with a Font Awesome icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      <i
+        class="Accordion-icon fad fa-book"
+      />
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
+
+exports[`Accordion > mdxish > renders an accordion with an emoji icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      <span
+        class="Accordion-icon"
+      >
+        🚀
+      </span>
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
+
+exports[`Accordion > mdxish > renders an accordion with no icon 1`] = `
+<div>
+  <details
+    class="Accordion"
+  >
+    <summary
+      class="Accordion-title"
+    >
+      <i
+        class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
+      />
+      My Section
+    </summary>
+    <div
+      class="Accordion-content"
+    >
+      <p>
+        Content here
+      </p>
+    </div>
+  </details>
+</div>
+`;
