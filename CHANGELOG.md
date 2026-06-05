@@ -1,6 +1,21 @@
 Changelog
 ===
 
+## Version 14.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** render table body rows when there's no <tbody> wrapper ([#1505](https://github.com/readmeio/markdown/issues/1505)) ([2e199a4](https://github.com/readmeio/markdown/commit/2e199a4384753d26827ea43e7bc9e5cbdd48e193))
+
+## Version 14.7.0
+### ✨ New & Improved
+
+* **images:** allow non centered images to have caption ([#1502](https://github.com/readmeio/markdown/issues/1502)) ([15616ea](https://github.com/readmeio/markdown/commit/15616eafcc73008f2ef7f1b489da86e6f08639d8))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** <HTMLBlocks> inside <Table> not rendering ([#1484](https://github.com/readmeio/markdown/issues/1484)) ([3817fa1](https://github.com/readmeio/markdown/commit/3817fa1e97ff8daa5d6c2fa3f0f7f4d0b4ba7e70)), closes [#1455](https://github.com/readmeio/markdown/issues/1455)
+* **mdxish:** normalize spacing for blank-line-split table tags ([#1493](https://github.com/readmeio/markdown/issues/1493)) ([f162158](https://github.com/readmeio/markdown/commit/f16215889f73e3edf3ef71b1b0c06d0f059696d2))
+
 ## Version 14.6.0
 ### ✨ New & Improved
 
