@@ -418,6 +418,29 @@ end"`);
       expect(output).not.toContain('<!-- bottom comment -->');
     });
 
+    it('preserves HTML comments inside HTMLBlock content', async () => {
+      const input = `<HTMLBlock>{\`
+<!-- authored HTML comment -->
+<div>hello</div>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<!-- authored HTML comment -->');
+      expect(output).toContain('<div>hello</div>');
+    });
+
+    it('preserves HTMLBlock comments inside a div wrapper while stripping outer comments', async () => {
+      const input = `<div>
+<!-- strip me -->
+<HTMLBlock>{\`<!-- keep me --><p>hi</p>\`}</HTMLBlock>
+</div>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<!-- keep me -->');
+      expect(output).not.toContain('<!-- strip me -->');
+      expect(output).toContain('<HTMLBlock>');
+    });
+
     it('handles nested HTMLBlocks', async () => {
       const input = `<HTMLBlock>{\`
 <HTMLBlock>{\`<div>nested</div>\`}</HTMLBlock>
