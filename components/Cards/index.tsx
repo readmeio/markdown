@@ -1,7 +1,5 @@
 import React from 'react';
 
-import Icon from '../Icon';
-
 import './style.scss';
 
 interface CardProps
@@ -20,7 +18,7 @@ export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, ta
 
   return (
     <Tag className={`Card Card_${kind}`} href={href} target={target}>
-      {icon && <Icon className="Card-icon" icon={icon} iconColor={iconColor} />}
+      {icon && <i className={`Card-icon fa-duotone fa-solid ${icon}`} style={{ '--Card-icon-color': iconColor } as React.CSSProperties} />}
       <div className="Card-content">
         {title && (
           <div className="Card-title">
