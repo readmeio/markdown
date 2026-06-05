@@ -1266,6 +1266,16 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
     expect(result).toContain('### Heads up');
   });
 
+  it('serializes a callout with font awesome icons to JSX', () => {
+    const mdast = callout({ icon: 'far fa-car-bolt', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Heads up' }] },
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Callout icon="far fa-car-bolt" theme="info">');
+    expect(result).toContain('### Heads up');
+  });
+
   it('fills a missing theme from the icon', () => {
     const mdast = callout({ icon: '🚧', empty: false }, [
       { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Watch out' }] },
@@ -1293,8 +1303,13 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
     ]);
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('<Callout icon="📘" theme="info">');
-    expect(result).toContain('<Callout icon="🚧" theme="warn">');
-    expect(result).not.toContain('rdme-callout');
+    expect(result).toBe(`<Callout icon="📘" theme="info">
+  ### Outer
+
+  <Callout icon="🚧" theme="warn">
+    ### Inner
+  </Callout>
+</Callout>
+`);
   });
 });
