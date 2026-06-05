@@ -1,6 +1,41 @@
 Changelog
 ===
 
+## Version 14.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** render table body rows when there's no <tbody> wrapper ([#1505](https://github.com/readmeio/markdown/issues/1505)) ([2e199a4](https://github.com/readmeio/markdown/commit/2e199a4384753d26827ea43e7bc9e5cbdd48e193))
+
+## Version 14.7.0
+### ✨ New & Improved
+
+* **images:** allow non centered images to have caption ([#1502](https://github.com/readmeio/markdown/issues/1502)) ([15616ea](https://github.com/readmeio/markdown/commit/15616eafcc73008f2ef7f1b489da86e6f08639d8))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** <HTMLBlocks> inside <Table> not rendering ([#1484](https://github.com/readmeio/markdown/issues/1484)) ([3817fa1](https://github.com/readmeio/markdown/commit/3817fa1e97ff8daa5d6c2fa3f0f7f4d0b4ba7e70)), closes [#1455](https://github.com/readmeio/markdown/issues/1455)
+* **mdxish:** normalize spacing for blank-line-split table tags ([#1493](https://github.com/readmeio/markdown/issues/1493)) ([f162158](https://github.com/readmeio/markdown/commit/f16215889f73e3edf3ef71b1b0c06d0f059696d2))
+
+## Version 14.6.0
+### ✨ New & Improved
+
+* **images:** add wrap attr to control text wrapping ([#1491](https://github.com/readmeio/markdown/issues/1491)) ([c59f990](https://github.com/readmeio/markdown/commit/c59f990906501ba84da5b5fe255d1b4784121629))
+
+### 🛠 Fixes & Updates
+
+* margins for inline images ([#1508](https://github.com/readmeio/markdown/issues/1508)) ([7c9bf70](https://github.com/readmeio/markdown/commit/7c9bf703f4ad3a53eb56d8f6291edefe93dedce1)), closes [#1440](https://github.com/readmeio/markdown/issues/1440)
+
+## Version 14.5.0
+### ✨ New & Improved
+
+* updated typography ([#1440](https://github.com/readmeio/markdown/issues/1440)) ([4d16039](https://github.com/readmeio/markdown/commit/4d16039973929fc0974a889407b0614afc798704))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** escape backslashes in expressions in table cells ([#1485](https://github.com/readmeio/markdown/issues/1485)) ([0f9caf4](https://github.com/readmeio/markdown/commit/0f9caf4f63dcf6923665bf2844904931fce62073))
+* make heading clear floating align properties ([#1483](https://github.com/readmeio/markdown/issues/1483)) ([e1c6853](https://github.com/readmeio/markdown/commit/e1c68530c710793fd2be636b8f686540c8d1811b))
+* **images:** properly clamp framed images ([#1490](https://github.com/readmeio/markdown/issues/1490)) ([78267f6](https://github.com/readmeio/markdown/commit/78267f62df6a581d1bf94df59803932442bafa6e))
+
 ## Version 14.4.1
 ### 🛠 Fixes & Updates
 

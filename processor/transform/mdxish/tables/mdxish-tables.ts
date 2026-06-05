@@ -10,6 +10,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
+import { NodeTypes } from '../../../../enums';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
@@ -22,8 +23,9 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
+import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import { tableTags, unwrapSoleParagraph, type Insert } from './utils';
+import { tableTags, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -41,6 +43,9 @@ const tableTypes = {
 // register them manually so we control ordering against our other tokenizers.
 // The fallback omits these so blank-line-separated markdown inside cells still
 // parses when mdxjs throws on malformed JSX.
+//
+// mdx parsing is used because it heavily simplifies the parsing of the table structure;
+// it can identify the rows and cells. The heavy lifting is done by it
 const buildTableNodeProcessor = (withMdx: boolean) =>
   unified()
     .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
@@ -147,6 +152,21 @@ const processTableNode = (
 
   let tableHasFlowContent = false;
 
+  // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
+  // `mdxishHtmlBlocks` after this transformer) is block-level content that a
+  // markdown table cell can't represent, so keep the table as a JSX `<Table>`.
+  visit(
+    node as Node,
+    candidate =>
+      candidate.type === NodeTypes.htmlBlock ||
+      ((candidate.type === 'mdxJsxFlowElement' || candidate.type === 'mdxJsxTextElement') &&
+        (candidate as MdxJsxFlowElement | MdxJsxTextElement).name === 'HTMLBlock'),
+    () => {
+      tableHasFlowContent = true;
+      return EXIT;
+    },
+  );
+
   // Re-parse text-only cells through markdown and detect flow content
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
     if (!isTextOnly(cell.children as unknown[])) return;
@@ -244,16 +264,36 @@ const processTableNode = (
       n.type === 'paragraph' && 'children' in n && Array.isArray(n.children) ? (n.children as Node[]) : [n],
     );
 
-  visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (child.name !== 'thead' && child.name !== 'tbody') return;
+  // Iterate the table's direct children in document order. Rows may live
+  // inside a `<thead>`/`<tbody>` section, or sit bare directly under the table
+  // with no section wrapper — both are collected here so the first row becomes
+  // the markdown table header.
+  const tableChildren = flattenSectionChildren(node.children as Node[]);
+  tableChildren.forEach(child => {
+    if (!isMDXElement(child)) return;
+    const childElement = child as MdxJsxFlowElement | MdxJsxTextElement;
 
-    const sectionChildren = flattenSectionChildren(child.children as Node[]);
+    // Path for a `<tr>` directly under the table, without a `<thead>`/`<tbody>` wrapper.
+    if (childElement.name === 'tr') {
+      children.push({
+        type: 'tableRow' as const,
+        children: collectCells(childElement as Node),
+        position: childElement.position,
+      });
+      return;
+    }
+
+    // Path for when the rows are wrapped in a `<thead>`/`<tbody>`
+    // We visit & collect the entire rows under them directly here
+    if (childElement.name !== 'thead' && childElement.name !== 'tbody') return;
+
+    const sectionChildren = flattenSectionChildren(childElement.children as Node[]);
     const hasRow = sectionChildren.some(
       c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
     );
 
     if (hasRow) {
-      visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
+      visit(childElement as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (row.name !== 'tr') return;
         children.push({
           type: 'tableRow' as const,
@@ -265,19 +305,20 @@ const processTableNode = (
       // No `<tr>`, chunk bare cells into rows using the prior row's column
       // count (e.g. from `<thead>`), so 4 bare `<td>`s under a 2-col header
       // become 2 rows of 2.
-      const cells = collectCells(child as Node);
+      const cells = collectCells(childElement as Node);
       if (cells.length === 0) return;
       const cols = children[0]?.children?.length || cells.length;
       for (let i = 0; i < cells.length; i += cols) {
         children.push({
           type: 'tableRow' as const,
           children: cells.slice(i, i + cols),
-          position: child.position,
+          position: childElement.position,
         });
       }
     }
   });
 
+  // Output the markdown table node
   const firstRow = children[0];
   const columnCount = firstRow?.children?.length || 0;
   const alignArray: Table['align'][number][] =
@@ -315,30 +356,29 @@ const mdxishTables = (): Transform => tree => {
     // Main logic to transform table node to its parts
     // Because the processor uses remarkMdx, it is stricter in what it accepts
     // and only accepts valid MDX syntax. in the table node.
-    // To get around that, we have some fallback logics after trying to repair the table content
+    // To get around that, we have some fallback logics after trying to repair the table content.
     let parsed = parseTableNode(tableNodeProcessor, node);
     if (!parsed) {
-      // First common error is unclosed HTML tags
-      const repaired = repairUnclosedTags(node.value);
-      if (repaired.value !== node.value) {
-        parsed = parseTableNode(
-          tableNodeProcessor,
-          { ...node, value: repaired.value },
-          { inserts: repaired.inserts, originalSource: node.value },
-        );
-      }
-      if (!parsed) {
-        // Second common error is having a line with text and an opening tag
-        // E.g. text <div> \n <div> text
-        const normalized = normalizeTagSpacing(node.value);
-        if (normalized.value !== node.value) {
-          parsed = parseTableNode(
-            tableNodeProcessor,
-            { ...node, value: normalized.value },
-            { inserts: normalized.inserts, originalSource: node.value },
-          );
+      // Try a sequence of targeted repairs and re-parse
+      // after each, stopping at the first that yields a parseable tree:
+      //  - repairUnclosedTags:       unclosed/orphan HTML tags
+      //  - normalizeTagSpacing:      a line mixing text and an opening tag
+      //                              (e.g. `text <div> \n <div> text`)
+      //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
+      // These repairs are created after seeing real customer content that has failed to parse
+      const repairs: ((html: string) => RepairResult)[] = [
+        repairUnclosedTags,
+        normalizeTagSpacing,
+        repairExpressionEscapes,
+      ];
+      // Stops at the first repair that yields a parseable tree
+      repairs.some(repair => {
+        const { value, inserts } = repair(node.value);
+        if (value !== node.value) {
+          parsed = parseTableNode(tableNodeProcessor, { ...node, value }, { inserts, originalSource: node.value });
         }
-      }
+        return Boolean(parsed);
+      });
     }
 
     if (parsed) {
@@ -357,6 +397,8 @@ const mdxishTables = (): Transform => tree => {
       if (!fallback || fallback.children.length <= 1) return;
       parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
     }
+    // Otherwise, there's no point in trying to parse the table content further
+    // More repairs are needed in that case
   });
 
   return tree;
