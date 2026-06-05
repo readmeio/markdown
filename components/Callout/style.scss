@@ -185,7 +185,7 @@
     color: var(--icon-color, inherit) !important;
   }
   &-icon::before {
-    content: var(--icon);
+    content: var(--icon, var(--fa));
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
     font-weight: var(--icon-weight, 400);
