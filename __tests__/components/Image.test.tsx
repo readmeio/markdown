@@ -266,4 +266,83 @@ describe('Image', () => {
 
     expect(container.querySelector('.img-frame')).not.toHaveClass('img-no-wrap');
   });
+
+  it('should forward style to the inner <img>', () => {
+    render(
+      <Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />,
+    );
+
+    const img = screen.getByRole('img');
+    expect(img).toHaveStyle({ width: '120px', height: '28px' });
+  });
+
+  it('should use style.width and style.height as fallback when width/height props are missing', () => {
+    render(
+      <Image src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ width: '120px', height: '28px' }} />,
+    );
+
+    const img = screen.getByRole('img');
+    expect(img).toHaveAttribute('width', '120px');
+    expect(img).toHaveAttribute('height', '28px');
+  });
+
+  it('should prefer explicit width/height props over style fallback', () => {
+    render(
+      <Image
+        height="50"
+        src="https://files.readme.io/b8674d6-pizzabro.jpg"
+        style={{ width: '120px', height: '28px' }}
+        width="200"
+      />,
+    );
+
+    const img = screen.getByRole('img');
+    expect(img).toHaveAttribute('width', '200');
+    expect(img).toHaveAttribute('height', '50');
+  });
+
+  it('should forward non-dimensional style properties to the inner <img>', () => {
+    render(
+      <Image
+        src="https://files.readme.io/b8674d6-pizzabro.jpg"
+        style={{ borderRadius: '8px', opacity: 0.5, transform: 'rotate(2deg)' }}
+      />,
+    );
+
+    const img = screen.getByRole('img');
+    expect(img).toHaveStyle({ borderRadius: '8px', opacity: '0.5', transform: 'rotate(2deg)' });
+  });
+
+  it('should forward style to the inner <img> on the emoji branch', () => {
+    const { container } = render(
+      <Image
+        className="emoji"
+        src="https://files.readme.io/b8674d6-pizzabro.jpg"
+        style={{ verticalAlign: 'middle', width: '24px', height: '24px' }}
+      />,
+    );
+
+    const img = container.querySelector('img');
+    expect(img).toHaveStyle({ verticalAlign: 'middle', width: '24px', height: '24px' });
+    expect(img).toHaveAttribute('width', '24px');
+    expect(img).toHaveAttribute('height', '24px');
+  });
+
+  it('should forward style to the inner <img> on the framed branch', () => {
+    const { container } = render(
+      <Image framed src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ filter: 'grayscale(1)' }} />,
+    );
+
+    const img = container.querySelector('.img-frame img');
+    expect(img).toHaveStyle({ filter: 'grayscale(1)' });
+  });
+
+  it('should forward style to the inner <img> on the captioned branch', () => {
+    const { container } = render(
+      <Image caption="A pizza bro" src="https://files.readme.io/b8674d6-pizzabro.jpg" style={{ filter: 'blur(2px)' }} />,
+    );
+
+    const img = container.querySelector('figure img');
+    expect(img).toHaveStyle({ filter: 'blur(2px)' });
+  });
 });
