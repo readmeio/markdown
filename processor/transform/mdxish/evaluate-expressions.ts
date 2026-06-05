@@ -1,33 +1,14 @@
-import type { Program } from 'estree';
 import type { Html, Root, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
-import { buildJsx } from 'estree-util-build-jsx';
-import { toJs } from 'estree-util-to-js';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { visit } from 'unist-util-visit';
 
-import { evaluate, jsxAcornParser } from '../../utils';
-
-const HAS_JSX = /<[A-Za-z]|<>/;
-
-/** The raw Function() can't parse JSX, so parse & convert it to a React element first so later we can get its HTML representation */
-const evalJsxExpression = (expression: string, scope: Record<string, unknown>) => {
-  const program = jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
-  buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
-  const { value: source } = toJs(program);
-  return evaluate(`(() => { return ${source.trim().replace(/;$/, '')}; })()`, scope);
-};
-
-/** Evaluate an expression body, transforming JSX to `React.createElement` only when needed. */
-const evalExpression = (expression: string, scope: Record<string, unknown>): unknown => {
-  if (HAS_JSX.test(expression)) return evalJsxExpression(expression, scope);
-  return evaluate(expression, scope);
-};
+import { evalExpression } from '../../../lib/utils/mdxish/mdxish-jsx-expression';
 
 /** Given the type of the expression result, create the corresponding mdast node. */
 const createEvaluatedNode = (result: unknown, position: Position | undefined): Html | Text => {

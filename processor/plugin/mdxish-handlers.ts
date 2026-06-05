@@ -6,6 +6,7 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 import { decodeHTMLStrict } from 'entities';
 
 import { NodeTypes } from '../../enums';
+import { createJsxExprSentinel, HAS_JSX } from '../../lib/utils/mdxish/mdxish-jsx-expression';
 import { evaluate } from '../utils';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
@@ -27,7 +28,7 @@ function isStructuredCloneable(value: unknown): boolean {
 // HTML serialization round-trip; downstream normalization rewrites it to `element`.
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
-  const properties: Properties = {};
+  const properties: Record<string, unknown> = {};
 
   attributes.forEach(attribute => {
     if (attribute.type !== 'mdxJsxAttribute' || !attribute.name) return;
@@ -38,6 +39,17 @@ const mdxJsxElementHandler: Handler = (state, node) => {
       properties[attribute.name] = decodeHTMLStrict(attribute.value);
     } else {
       const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
+
+      // An expression could contain JSX fragments (e.g. <>...</>) which can't be
+      // evaluated to a clone-safe value here: the result is a React element, which
+      // rehypeRaw's `structuredClone` passthrough rejects.
+      // To get around this, we store a clone-safe sentinel
+      // and let `resolveJsxAttributeExpressionProps` evaluate it after the clone.
+      if (HAS_JSX.test(expressionSource)) {
+        properties[attribute.name] = createJsxExprSentinel(expressionSource);
+        return;
+      }
+
       let evaluated: ReturnType<typeof evaluate>;
       try {
         evaluated = evaluate(expressionSource);
@@ -61,7 +73,7 @@ const mdxJsxElementHandler: Handler = (state, node) => {
   const jsxNode: MdxJsx = {
     type: 'mdx-jsx',
     tagName: name || '',
-    properties,
+    properties: properties as Properties,
     children: state.all(node),
   };
   return jsxNode;
