@@ -261,6 +261,31 @@ labore et dolore magna aliqua.`,
       expect(componentNode.tagName).toBe('ExampleComponent');
       expect(React.isValidElement(componentNode.properties?.label)).toBe(true);
     });
+
+    it('should treat JSX-looking text inside a string expression as a literal, not JSX', () => {
+      // `<Home>` would match a naive `<tag` regex, but the estree has no JSX node here,
+      // so the expression must evaluate to the plain string rather than a React element.
+      const md = "<ExampleComponent body={'visit <Home> now'} />";
+      const tree = mdxish(md, { components: exampleComponents });
+
+      const componentNode = tree.children[0] as Element;
+      expect(componentNode.tagName).toBe('ExampleComponent');
+      expect(componentNode.properties?.body).toBe('visit <Home> now');
+    });
+
+    it('should evaluate a non-JSX attribute expression using the exported-const scope', () => {
+      const md = `export const greeting = "hi".toUpperCase();
+
+<ExampleComponent body={greeting} />`;
+      const tree = mdxish(md, { components: exampleComponents });
+
+      let componentNode: Element | undefined;
+      visit(tree, 'element', (node: Element) => {
+        if (node.tagName === 'ExampleComponent') componentNode = node;
+      });
+
+      expect(componentNode?.properties?.body).toBe('HI');
+    });
   });
 
   it('should not evaluate an attribute expression if in safe mode', () => {

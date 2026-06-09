@@ -8,7 +8,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { visit } from 'unist-util-visit';
 
-import { evalExpression } from '../../../lib/utils/mdxish/mdxish-jsx-expression';
+import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
 
 /** Given the type of the expression result, create the corresponding mdast node. */
 const createEvaluatedNode = (result: unknown, position: Position | undefined): Html | Text => {
