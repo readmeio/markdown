@@ -134,6 +134,7 @@ Body with **markdown** support.
       const icon = container.querySelector('.callout-icon');
       expect(icon?.tagName).toBe('SPAN');
       expect(icon).toHaveTextContent('📘');
+      expect(icon).not.toHaveClass('callout-icon_fa');
     });
 
     it('renders a bare fa- icon as an <i> with the fad duotone fallback', () => {
@@ -146,7 +147,7 @@ Body with **markdown** support.
 
       const icon = container.querySelector('.callout-icon');
       expect(icon?.tagName).toBe('I');
-      expect(icon).toHaveClass('callout-icon', 'fad', 'fa-book');
+      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', 'fad', 'fa-book');
     });
 
     it.each([
@@ -167,7 +168,7 @@ Body with **markdown** support.
       const icon = container.querySelector('.callout-icon');
       const [, faIcon] = iconClass.split(' ');
       expect(icon?.tagName).toBe('I');
-      expect(icon).toHaveClass('callout-icon', prefix, faIcon);
+      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', prefix, faIcon);
       if (prefix !== 'fad') {
         expect(icon).not.toHaveClass('fad');
       }

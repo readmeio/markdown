@@ -46,6 +46,11 @@ describe('Icon', () => {
       const { container } = render(<Icon className="Test-icon" icon="fa-book" />);
       expect(container.querySelector('span.Test-icon')).toBeNull();
     });
+
+    it('applies faClassName to the <i>', () => {
+      const { container } = render(<Icon className="Test-icon" faClassName="Test-icon_fa" icon="fad fa-book" />);
+      expect(container.querySelector('i.Test-icon')).toHaveClass('Test-icon', 'Test-icon_fa', 'fad', 'fa-book');
+    });
   });
 
   describe('non-Font-Awesome icons', () => {
@@ -64,6 +69,13 @@ describe('Icon', () => {
     it('forwards the className to the <span>', () => {
       const { container } = render(<Icon className="My-icon" icon="⭐" />);
       expect(container.querySelector('span.My-icon')).toBeInTheDocument();
+    });
+
+    it('does not apply faClassName to the emoji <span>', () => {
+      const { container } = render(<Icon className="My-icon" faClassName="My-icon_fa" icon="⭐" />);
+      const icon = container.querySelector('span.My-icon');
+      expect(icon).toBeInTheDocument();
+      expect(icon).not.toHaveClass('My-icon_fa');
     });
   });
 });

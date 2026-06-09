@@ -49,7 +49,7 @@ const Callout = (props: Props) => {
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon || theme}>
-      {icon ? <Icon className="callout-icon" icon={icon} /> : null}
+      {icon ? <Icon className="callout-icon" faClassName="callout-icon_fa" icon={icon} /> : null}
       {heading}
       {children.slice(1)}
     </blockquote>
