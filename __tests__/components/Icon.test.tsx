@@ -8,11 +8,11 @@ import Icon from '../../components/Icon';
 
 describe('Icon', () => {
   describe('Font Awesome icons', () => {
-    it('renders an <i> for a bare fa- icon with the fad duotone fallback', () => {
+    it('renders an <i> for a bare fa- icon with the fa-duotone fa-solid fallback', () => {
       const { container } = render(<Icon className="Test-icon" icon="fa-book" />);
       const icon = container.querySelector('i.Test-icon');
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('fad', 'fa-book');
+      expect(icon).toHaveClass('fa-duotone', 'fa-solid', 'fa-book');
     });
 
     it('does not double the fad prefix when icon already has it', () => {

@@ -37,7 +37,7 @@ describe('Accordion', () => {
   });
 
   describe('icon prop', () => {
-    it('renders a bare fa- icon with the fad duotone fallback', () => {
+    it('renders a bare fa- icon with the fa-duotone fa-solid fallback', () => {
       const { container } = render(
         <Accordion icon="fa-book" title="Section">
           content
@@ -45,7 +45,7 @@ describe('Accordion', () => {
       );
       const icon = container.querySelector('i.Accordion-icon');
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('fad', 'fa-book');
+      expect(icon).toHaveClass('fa-duotone', 'fa-solid', 'fa-book');
     });
 
     it('renders a prefixed far icon without adding fad', () => {

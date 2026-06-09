@@ -6,7 +6,7 @@ const FA_PREFIXES = new Set(['fa', 'fab', 'fad', 'fal', 'far', 'fas', 'fast', 'f
 interface Props {
   /** class applied to the rendered element */
   className: string;
-  /** Emoji or Font Awesome class string (e.g. `fa-book`, `fad fa-book`). Bare `fa-` icons fall back to the `fad` duotone prefix. */
+  /** Emoji or Font Awesome class string (e.g. `fa-book`, `fad fa-book`). Bare `fa-` icons fall back to the `fa-duotone fa-solid` duotone style. */
   icon: string;
   /** Inline `color` style applied to Font Awesome icons. Has no effect on emoji. */
   iconColor?: string;
@@ -23,7 +23,7 @@ const Icon = ({ className, icon, iconColor }: Props) => {
     return <span className={className}>{icon}</span>;
   }
 
-  const faClasses = hasFontAwesomePrefix ? icon : `fad ${icon}`;
+  const faClasses = hasFontAwesomePrefix ? icon : `fa-duotone fa-solid ${icon}`;
 
   return <i className={`${className} ${faClasses}`} style={iconColor ? { color: iconColor } : undefined}></i>;
 };

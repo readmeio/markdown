@@ -12,7 +12,7 @@ exports[`Accordion > mdx > renders an accordion with a Font Awesome icon 1`] = `
         class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
       />
       <i
-        class="Accordion-icon fad fa-book"
+        class="Accordion-icon fa-duotone fa-solid fa-book"
       />
       My Section
     </summary>
@@ -92,7 +92,7 @@ exports[`Accordion > mdxish > renders an accordion with a Font Awesome icon 1`] 
         class="Accordion-toggleIcon fa fa-regular fa-chevron-right"
       />
       <i
-        class="Accordion-icon fad fa-book"
+        class="Accordion-icon fa-duotone fa-solid fa-book"
       />
       My Section
     </summary>
