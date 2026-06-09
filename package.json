@@ -38,7 +38,6 @@
     "estree-util-build-jsx": "^3.0.1",
     "estree-util-to-js": "^2.0.0",
     "estree-util-value-to-estree": "^3.1.1",
-    "estree-util-visit": "^2.0.0",
     "gemoji": "^8.1.0",
     "github-slugger": "^2.0.0",
     "hast-util-from-html": "^2.0.1",

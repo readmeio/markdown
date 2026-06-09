@@ -2,24 +2,23 @@ import type { Program } from 'estree';
 
 import { buildJsx } from 'estree-util-build-jsx';
 import { toJs } from 'estree-util-to-js';
-import { CONTINUE, EXIT, visit } from 'estree-util-visit';
 
 import { evaluate, jsxAcornParser } from '../../../processor/utils';
 
 const parseExpression = (expression: string): Program =>
   jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
 
-/** Walk the parsed program and report whether it contains any JSX element or fragment node. */
-const containsJsxNode = (program: Program) => {
-  let hasJsx = false;
-  visit(program, node => {
-    if (node.type === 'JSXElement' || node.type === 'JSXFragment') {
-      hasJsx = true;
-      return EXIT;
-    }
-    return CONTINUE;
-  });
-  return hasJsx;
+/**
+ * Recursively report whether an estree value contains any JSX element or fragment node.
+ * estree stores children across named fields (not a `children` array), so this descends
+ * through every nested object/array rather than using a unist-shaped walker.
+ */
+const containsJsxNode = (value: unknown): boolean => {
+  if (Array.isArray(value)) return value.some(containsJsxNode);
+  if (value === null || typeof value !== 'object') return false;
+  const { type } = value as { type?: unknown };
+  if (type === 'JSXElement' || type === 'JSXFragment') return true;
+  return Object.values(value).some(containsJsxNode);
 };
 
 /** Convert a program's JSX into `React.createElement` calls and evaluate it. `scope` must provide `React`. */
