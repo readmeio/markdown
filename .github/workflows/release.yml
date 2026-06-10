@@ -41,7 +41,7 @@ jobs:
       - name: Publish release
         run: npm run release # configured in .releaserc
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # auth push to remote repo
 
       # Push release changes to the remote.
       #
