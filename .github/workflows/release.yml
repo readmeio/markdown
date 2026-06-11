@@ -57,7 +57,7 @@ jobs:
         if: "github.ref == 'refs/heads/main'"
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_TOKEN }}
           branch: refs/heads/next
         continue-on-error: true
 
