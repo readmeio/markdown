@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.7.2
+### 🛠 Fixes & Updates
+
+* **images:** remove stacking vertical margins inside framed images ([#1510](https://github.com/readmeio/markdown/issues/1510)) ([e7f10fa](https://github.com/readmeio/markdown/commit/e7f10fad5b9a0e23d19acf516f47c6329f18badf))
+* **images:** respect inline style width and height on <img> ([#1509](https://github.com/readmeio/markdown/issues/1509)) ([70ef92e](https://github.com/readmeio/markdown/commit/70ef92ebc2fbfb06bb9a54756d0033a1a1a33def))
+
 ## Version 14.7.1
 ### 🛠 Fixes & Updates
 
