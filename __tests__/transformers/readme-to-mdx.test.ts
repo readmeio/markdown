@@ -113,6 +113,76 @@ describe('readme-to-mdx transformer', () => {
       "
     `);
   });
+
+  describe('Image', () => {
+    describe('caption', () => {
+      it('keeps a caption on a top-level Image', () => {
+        const markdown = '<Image src="https://example.com/a.png" caption="A **bold** caption" />';
+    
+        const result = mdx(mdast(markdown));
+    
+        expect(result).toMatchInlineSnapshot(`
+          "<Image src="https://example.com/a.png" caption="A **bold** caption" />
+          "
+        `);
+      });
+    
+      it('keeps a caption on an Image nested inside components', () => {
+        const markdown = `<Tabs>
+  <Tab title="One">
+    <Image src="https://example.com/a.png" caption="A caption" />
+  </Tab>
+
+  <Tab title="One"><Image src="https://example.com/a.png" caption="A caption" /></Tab>
+</Tabs>`;
+    
+        const result = mdx(mdast(markdown));
+    
+        expect(result).toMatchInlineSnapshot(`
+          "<Tabs>
+            <Tab title="One">
+              <Image src="https://example.com/a.png" caption="A caption" />
+            </Tab>
+
+            <Tab title="One">
+              <Image src="https://example.com/a.png" caption="A caption" />
+            </Tab>
+          </Tabs>
+          "
+        `);
+      });
+    
+      it('keeps both border and caption on a nested bordered Image', () => {
+        const markdown = `<Tabs>
+  <Tab title="One">
+    <Image src="https://example.com/a.png" border={true} caption="Bordered caption" />
+  </Tab>
+</Tabs>`;
+    
+        const result = mdx(mdast(markdown));
+    
+        expect(result).toMatchInlineSnapshot(`
+          "<Tabs>
+            <Tab title="One">
+              <Image border={true} src="https://example.com/a.png" caption="Bordered caption" />
+            </Tab>
+          </Tabs>
+          "
+        `);
+      });
+    
+      it('does not emit an empty Image for an empty caption', () => {
+        const markdown = '<Image src="https://example.com/a.png" caption="" />';
+    
+        const result = mdx(mdast(markdown));
+    
+        expect(result).toMatchInlineSnapshot(`
+          "![](https://example.com/a.png)
+          "
+        `);
+      });
+    });
+  })
 });
 
 describe('mdxish readme-to-mdx transformer', () => {
