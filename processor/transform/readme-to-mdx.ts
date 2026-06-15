@@ -118,9 +118,9 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   visit(tree, NodeTypes.imageBlock, (image, index, parent) => {
-    // For captions, it may be parsed in the image node's children, so we need to extract it explicitly
+    // Special case for caption: Captions are parsed as children of the image node, so we need to extract them explicitly
     const captionChildren = Array.isArray(image.children) ? image.children : [];
-    // Convert the caption children to string so we can re-add it to the attributes
+    // We want to add it back to the attributes, so re-serialize it to string
     const caption = captionChildren.length ? toMarkdown({ type: 'root', children: captionChildren }).trim() : '';
     const attributes = toAttributes({ ...image, ...image.data.hProperties, ...(caption && { caption }) }, imageAttrs);
 
