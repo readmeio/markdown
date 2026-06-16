@@ -6,7 +6,7 @@ const FA_PREFIXES = new Set(['fa', 'fab', 'fad', 'fal', 'far', 'fas', 'fast', 'f
 interface Props {
   /** class applied to the rendered element */
   className: string;
-  /** additional class applied only when the icon renders as a Font Awesome `<i>` (Use case is to retain legacy CSS classes that might have custom CSS depend on) */
+  /** additional class applied only when the icon renders as a Font Awesome `<i>` (A use case is to retain legacy CSS classes that custom CSS might target) */
   faClassName?: string;
   /** Emoji or Font Awesome class string (e.g. `fa-book`, `fad fa-book`). Bare `fa-` icons fall back to the `fad` duotone prefix. */
   icon: string;
