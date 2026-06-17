@@ -63,6 +63,7 @@ interface ComponentNodeOptions {
   tag: string;
 }
 
+
 /**
  * Create an MdxJsxFlowElement node from component data.
  */
@@ -125,10 +126,17 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    const parsed = parseTag(value.trim(), parseOpts);
+    const trimmed = value.trim();
+    const parsed = parseTag(trimmed, parseOpts);
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
+
+    // Offset of `trimmed` within the (possibly whitespace-padded) html node value,
+    // so consumed-length math maps back onto the node's real source offsets.
+    const leadingWhitespace = value.length - value.trimStart().length;
+    // Index right after the opening tag's `>` within `trimmed`.
+    const openingTagEnd = trimmed.length - contentAfterTag.length;
 
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
@@ -156,6 +164,8 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: [],
         startPosition: node.position,
+        // End at the self-closing tag, not at any trailing content.
+        endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
@@ -189,6 +199,12 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
+        // End at the closing tag, not at trailing content re-parsed as siblings below.
+        endPosition: positionEndingAtConsumed(
+          node.position,
+          value,
+          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+        ),
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 

@@ -469,6 +469,59 @@ hello
         ]);
       });
     });
+
+    // The whole line is tokenized into one html node when a component shares its
+    // line with trailing content. The component node's position must end at its
+    // own tag so position-based source slicing downstream doesn't over-read.
+    describe('case 4: component position ends at its tag when trailing content follows', () => {
+      it('ends a block component at its closing tag', () => {
+        const markdown = '<Tag>body</Tag> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 15 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>body</Tag>');
+      });
+
+      it('ends a self-closing component at its tag', () => {
+        const markdown = '<Tag attr={1} /> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 16 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1} />');
+      });
+
+      it('ends a component with an expression attribute and inline body at its closing tag', () => {
+        const markdown = '<Tag attr={1}>**hi**</Tag> more **text** here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 26 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1}>**hi**</Tag>');
+      });
+    });
   });
 
   describe('Anchor component (inline, excluded)', () => {

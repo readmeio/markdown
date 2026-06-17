@@ -50,6 +50,34 @@ describe('mdxishAstProcessor', () => {
     });
   });
 
+  describe('component node positions', () => {
+    // A component sharing a line with trailing content is tokenized as one html
+    // node; the node's position must end at its own closing tag, else downstream
+    // position-based source slicing over-reads and duplicates the trailing text.
+    it('ends a component node position at its closing tag when trailing content follows on the same line', () => {
+      const md =
+        '<button className="pill" style={{ backgroundColor: "#ffc107" }}>PrPr</button> ***service-explorer***: Message brokers are now surfaced as entities.';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const mdast = processor.runSync(processor.parse(parserReadyContent));
+
+      // Offset 77 is the end of `</button>`; the trailing text is a separate sibling.
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'button',
+            position: {
+              start: { line: 1, column: 1, offset: 0 },
+              end: { line: 1, column: 78, offset: 77 },
+            },
+          },
+          { type: 'paragraph' },
+        ],
+      });
+    });
+  });
+
   it('should return a unified processor and parser-ready content for simple text', () => {
     const md = 'Rafe is **cool**!';
     const { processor, parserReadyContent } = mdxishAstProcessor(md);
