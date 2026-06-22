@@ -6,7 +6,6 @@ import type { Handler, Handlers } from 'mdast-util-to-hast';
 import { decodeHTMLStrict } from 'entities';
 
 import { NodeTypes } from '../../enums';
-import { evaluate } from '../utils';
 
 // Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
 const mdxExpressionHandler: Handler = (_state, node) => ({
@@ -14,20 +13,12 @@ const mdxExpressionHandler: Handler = (_state, node) => ({
   value: (node as { value?: string }).value || '',
 });
 
-function isStructuredCloneable(value: unknown): boolean {
-  try {
-    structuredClone(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // Convert MDX JSX elements to a custom mdx-jsx hast node that bypasses rehypeRaw's
 // HTML serialization round-trip; downstream normalization rewrites it to `element`.
 const mdxJsxElementHandler: Handler = (state, node) => {
   const { attributes = [], name } = node as { attributes?: MdxJsxAttribute[]; name?: string };
-  const properties: Properties = {};
+  const properties: Record<string, unknown> = {};
+  const deferredExpressions: Record<string, string> = {};
 
   attributes.forEach(attribute => {
     if (attribute.type !== 'mdxJsxAttribute' || !attribute.name) return;
@@ -37,32 +28,21 @@ const mdxJsxElementHandler: Handler = (state, node) => {
     } else if (typeof attribute.value === 'string') {
       properties[attribute.name] = decodeHTMLStrict(attribute.value);
     } else {
-      const expressionSource = (attribute.value as MdxJsxAttributeValueExpression).value;
-      let evaluated: ReturnType<typeof evaluate>;
-      try {
-        evaluated = evaluate(expressionSource);
-      } catch {
-        evaluated = expressionSource;
-      }
-
-      // rehypeRaw's passThrough clones our mdx-jsx node with structuredClone, which
-      // rejects functions and other non-serializable values. Attribute expressions
-      // that evaluate to such values (`onClick={() => ...}`) would crash the pipeline,
-      // so if we have a non-serializable value, we fall back to the raw expression source
-      // and not support it for now.
-      if (!isStructuredCloneable(evaluated)) {
-        evaluated = expressionSource;
-      }
-
-      properties[attribute.name] = evaluated;
+      // Defer every attribute-expression evaluation past rehypeRaw's `structuredClone`
+      // passthrough: evaluating here can yield React elements or functions that the clone
+      // rejects. The source is stashed in `node.data` (clone-safe) and
+      // `resolveDeferredAttributeExpressionProps` evaluates it once past the clone.
+      deferredExpressions[attribute.name] = (attribute.value as MdxJsxAttributeValueExpression).value;
     }
   });
 
+  const hasDeferredExpressions = Object.keys(deferredExpressions).length > 0;
   const jsxNode: MdxJsx = {
     type: 'mdx-jsx',
     tagName: name || '',
-    properties,
+    properties: properties as Properties,
     children: state.all(node),
+    ...(hasDeferredExpressions && { data: { deferredExpressions } }),
   };
   return jsxNode;
 };
