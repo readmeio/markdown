@@ -171,10 +171,19 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
     }) || headings[0];
     activate(initialHeading.id);
 
+    // Snap the active indicator to its initial position without animating, then
+    // enable transitions so only subsequent scroll updates animate. The forced
+    // reflow (reading layout) commits the snapped position as the transition
+    // baseline — otherwise enabling the transition in the same style recalc would
+    // animate it in from height 0 every time the TOC (re)mounts.
+    nav.getBoundingClientRect();
+    nav.dataset.tocReady = 'true';
+
     return () => {
       observer.disconnect();
       scrollTarget.removeEventListener('scroll', onScroll);
       nav.removeEventListener('click', onClick);
+      delete nav.dataset.tocReady;
     };
   }, [navRef, tocKey]);
 }

@@ -143,6 +143,7 @@ export interface ImageBlockAttrs {
   src: string;
   title: string;
   width?: string;
+  wrap?: boolean;
 }
 
 export interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {

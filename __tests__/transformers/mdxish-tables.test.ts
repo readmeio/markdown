@@ -1,5 +1,5 @@
 import type { Root, Text } from 'mdast';
-import type { MdxJsxTextElement } from 'mdast-util-mdx';
+import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
@@ -883,6 +883,151 @@ describe('mdxish tables transformation', () => {
 
       const cells = findAllElementsByTagName(tables[0], 'td');
       expect(cells).toHaveLength(2);
+    });
+
+    it('handles where there is asymmetry both in the opener and the closer', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>Icon</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <div style="text-align:center; color:red">hi
+
+        there</div>
+      </td>
+      <td>**Enabled**. The device is active.</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const tree = parseMdxishWithSource(doc);
+      const tableNodes = collectNodes(tree.tree, 'table');
+      expect(tableNodes).toHaveLength(1);
+    });
+  });
+
+  describe('given backslash escapes inside a {…} expression', () => {
+    // mdxjs hands `{…}` to acorn as JS; a markdown-style escape like `\_` is
+    // invalid JS and would otherwise drop parsing for the whole <Table>.
+    it('parses the table and strips the escape inside the expression', () => {
+      const doc = `<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**loginPolicy**</td>
+      <td>
+the /{customer\\_id}/config/clients operation
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // Markdown inside cells is parsed (not left as raw HTML).
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs.length).toBeGreaterThan(0);
+      expect(JSON.stringify(strongs[0])).toContain('loginPolicy');
+
+      // The align attribute is evaluated, not rendered verbatim.
+      const headers = findAllElementsByTagName(tables[0], 'th');
+      expect(headers[0].properties?.align).toBe('left');
+
+      // The escape is dropped, leaving the literal path text.
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(JSON.stringify(cells)).toContain('/{customer_id}/config/clients');
+    });
+
+    it('preserves a valid backslash escape inside a string literal', () => {
+      // The `\t` lives inside a JS string, so it is a valid escape and must
+      // survive — only code-position backslashes are stripped.
+      const doc = `<Table align={["a\\tb"]}>
+<thead><tr><th>H</th></tr></thead>
+<tbody><tr><td>x</td></tr></tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headers = findAllElementsByTagName(tables[0], 'th');
+      expect(headers[0].properties?.align).toBe('a\tb');
+    });
+
+    it('does not strip a backslash from within a JSX-style comment', () => {
+      // The cell holds a code-position escape (forcing the repair pass) plus a
+      // JSX comment containing its own backslash. The repair must strip only the
+      // code-position escape, leaving the comment — and thus the table — intact.
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>{customer\\_id /* keep this \\_ */}</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const headers = findAllElementsByTagName(tables[0], 'th');
+      expect(headers[0].properties?.align).toBe('left');
+    });
+  });
+
+  describe('given JSX-style comments inside a table cell', () => {
+    it('preserves the comment as is and it does not break the table parsing', () => {
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+      {/* keep this comment */}
+      **content here**
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const { tree } = parseMdxishWithSource(doc);
+
+      const mdxFlowExpression = collectNodes(tree, 'mdxFlowExpression');
+      expect(mdxFlowExpression).toHaveLength(1);
+      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe('/* keep this comment */');
+
+      const strong = collectNodes(tree, 'strong');
+      expect(strong).toHaveLength(1);
+    });
+
+    it('special characters in a comment are not stripped', () => {
+      const doc = `<Table align={["left"]}>
+  <thead><tr><th>Key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>
+      {/* keep this comment \\_ and * / / and < and > */}
+      **content here**
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const { tree } = parseMdxishWithSource(doc);
+
+      const mdxFlowExpression = collectNodes(tree, 'mdxFlowExpression');
+      expect(mdxFlowExpression).toHaveLength(1);
+      expect((mdxFlowExpression[0] as MdxFlowExpression).value).toBe('/* keep this comment \\_ and * / / and < and > */');
+
+      const strong = collectNodes(tree, 'strong');
+      expect(strong).toHaveLength(1);
     });
   });
 

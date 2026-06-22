@@ -201,7 +201,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
     .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
-    .use(mdxishHtmlBlocks)
+    .use(mdxishHtmlBlocks) // Convert every <HTMLBlock> shape → html-block
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies
     // (e.g. code/image/embed inside <Tabs>) get visited too
