@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.8.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** support JSX inside attribute expressions ([#1511](https://github.com/readmeio/markdown/issues/1511)) ([f04eb1b](https://github.com/readmeio/markdown/commit/f04eb1baf6fd367c6b08c70dd0cea232b4e19811))
+
 ## Version 14.8.0
 ### ✨ New & Improved
 
