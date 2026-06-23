@@ -147,7 +147,7 @@ Body with **markdown** support.
 
       const icon = container.querySelector('.callout-icon');
       expect(icon?.tagName).toBe('I');
-      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', 'fad', 'fa-book');
+      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', 'fa-duotone', 'fa-solid', 'fa-book');
     });
 
     it.each([
@@ -169,9 +169,6 @@ Body with **markdown** support.
       const [, faIcon] = iconClass.split(' ');
       expect(icon?.tagName).toBe('I');
       expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', prefix, faIcon);
-      if (prefix !== 'fad') {
-        expect(icon).not.toHaveClass('fad');
-      }
     });
 
     it('does not render an icon when none is provided', () => {
