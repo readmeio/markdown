@@ -1170,4 +1170,45 @@ None of the following content will get rendered!`;
       expect(html).toContain('<code>another_name_here</code>');
     });
   });
+
+  describe('tables with no <tbody> wrapper', () => {
+    it.each([['Table'], ['table']])(
+      'still renders all the body rows in a <%s> but <thead> exists',
+      tag => {
+        const doc = `<${tag}>
+  <thead><tr><th>col</th></tr></thead>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const rows = findAllElementsByTagName(tables[0], 'tr');
+        expect(rows).toHaveLength(3);
+      },
+    );
+
+    it.each([['Table'], ['table']])(
+      'still renders all the body rows in a <%s> when <thead> also does not exist',
+      tag => {
+        const doc = `<${tag}>
+  <tr><th>col</th></tr>
+  <tr><td>row 1</td></tr>
+  <tr><td>row 2</td></tr>
+</${tag}>`;
+
+        const hast = mdxish(doc);
+        const tables = findAllElementsByTagName(hast, 'table');
+        expect(tables).toHaveLength(1);
+
+        const rows = findAllElementsByTagName(tables[0], 'tr');
+        expect(rows).toHaveLength(3);
+
+        const headerRow = findAllElementsByTagName(tables[0], 'th');
+        expect(headerRow).toHaveLength(1);
+      },
+    );
+  });
 });
