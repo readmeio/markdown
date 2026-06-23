@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 14.9.0
+### ✨ New & Improved
+
+* export `extractToc` ([#1520](https://github.com/readmeio/markdown/issues/1520)) ([83dfcde](https://github.com/readmeio/markdown/commit/83dfcde967cbd893d56b81179bb6c998c8b22918))
+
+### 🛠 Fixes & Updates
+
+* auto scroll toc when active item out of view ([#1503](https://github.com/readmeio/markdown/issues/1503)) ([57206e8](https://github.com/readmeio/markdown/commit/57206e82c81daa0cfbc432df2e45cc1cce96bd0a))
+* **mdxish:** render user components inside <Table> ([#1499](https://github.com/readmeio/markdown/issues/1499)) ([a3a843a](https://github.com/readmeio/markdown/commit/a3a843ab6d2e303601d8c48b18c09bd7a08105bd))
+* **mdxish:** stop lone leading dash from becoming list in magic block cells ([#1496](https://github.com/readmeio/markdown/issues/1496)) ([48c136e](https://github.com/readmeio/markdown/commit/48c136ebdd9bd3980a9e062c897857572c0cfcb8))
+
 ## Version 14.8.1
 ### 🛠 Fixes & Updates
 
