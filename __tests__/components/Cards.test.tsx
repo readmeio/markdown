@@ -60,7 +60,7 @@ describe('Cards', () => {
     });
   });
 
-  describe('given a Cards with Card children', () => {
+  describe('given Cards with Card children', () => {
     const md = `
 <Cards>
   <Card title="First">First content</Card>
@@ -76,6 +76,37 @@ describe('Cards', () => {
       expect(container.querySelectorAll('.Card')).toHaveLength(2);
       expect(container.querySelectorAll('.Card-title')).toHaveLength(2);
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('given the props in Cards', () => {
+    const md = `
+<Cards cardWidth="400px" columns="2">
+  <Card title="Card One">
+
+  </Card>
+  <Card title="Card Two">
+
+  </Card>
+</Cards>
+    `;
+
+    it.each(renderingEngines)('%s: applies cardWidth as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-cardWidth')).toBe('400px');
+    });
+
+    it.each(renderingEngines)('%s: applies columns as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-columns')).toBe('2');
     });
   });
 
