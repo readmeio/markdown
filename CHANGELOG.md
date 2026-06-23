@@ -1,6 +1,22 @@
 Changelog
 ===
 
+## Version 14.8.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** support JSX inside attribute expressions ([#1511](https://github.com/readmeio/markdown/issues/1511)) ([f04eb1b](https://github.com/readmeio/markdown/commit/f04eb1baf6fd367c6b08c70dd0cea232b4e19811))
+
+## Version 14.8.0
+### ✨ New & Improved
+
+* **Accordion:** support emoji icon ([#1492](https://github.com/readmeio/markdown/issues/1492)) ([facd3d7](https://github.com/readmeio/markdown/commit/facd3d7fda35793261539f82143609e9a2d5cab3))
+
+### 🛠 Fixes & Updates
+
+* adding a CODEOWNERS file ([7598e1d](https://github.com/readmeio/markdown/commit/7598e1d8abd8147e398f448e45bb9c5853d30869))
+* dont animate toc on init ([#1521](https://github.com/readmeio/markdown/issues/1521)) ([627a82d](https://github.com/readmeio/markdown/commit/627a82df3a2716e7a296ddbf25e35e16c888a1b7))
+* **gh/release:** update "sync next" step's ref ([#1515](https://github.com/readmeio/markdown/issues/1515)) ([ee3366d](https://github.com/readmeio/markdown/commit/ee3366deb2986774702107f5a34214b47ca6a646))
+
 ## Version 14.7.2
 ### 🛠 Fixes & Updates
 

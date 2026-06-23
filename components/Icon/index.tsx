@@ -26,8 +26,8 @@ const Icon = ({ className, faClassName, icon, iconColor }: Props) => {
   }
 
   // Get & combine all class names for the font awesome icon
-  const faClasses = hasFontAwesomePrefix ? icon : `fa-duotone fa-solid ${icon}`;
-  const fullClassName = [className, faClassName, faClasses].filter(Boolean).join(' ');
+  const iconFaClasses = hasFontAwesomePrefix ? icon : `fa-duotone fa-solid ${icon}`;
+  const fullClassName = [className, faClassName, iconFaClasses].filter(Boolean).join(' ');
 
   return <i className={fullClassName} style={iconColor ? { color: iconColor } : undefined}></i>;
 };
