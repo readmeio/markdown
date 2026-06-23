@@ -27,8 +27,17 @@ import type { Position } from 'unist';
  * attribute expressions evaluate to real JS values (objects, arrays, numbers)
  * which don't fit hast's HTML-attribute-oriented `PropertyValue` union.
  */
+export interface MdxJsxData {
+  /**
+   * Attribute expressions deferred by `mdxJsxElementHandler` (keyed by prop name) for
+   * `resolveDeferredAttributeExpressionProps` to evaluate past rehypeRaw's clone.
+   */
+  deferredExpressions?: Record<string, string>;
+}
+
 export interface MdxJsx {
   children: ElementContent[];
+  data?: MdxJsxData;
   position?: Position;
   properties: Properties;
   tagName: string;
@@ -143,6 +152,7 @@ export interface ImageBlockAttrs {
   src: string;
   title: string;
   width?: string;
+  wrap?: boolean;
 }
 
 export interface ImageBlock extends ImageBlockAttrs, Omit<Parent, 'children'> {

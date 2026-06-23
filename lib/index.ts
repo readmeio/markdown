@@ -11,6 +11,7 @@ export { default as mdx } from './mdx';
 export { default as mix } from './mix';
 export { default as mdxish, mdxishAstProcessor, mdxishMdastToMd } from './mdxish';
 export type { MdxishOpts } from './mdxish';
+export { default as extractToc } from './extractToc';
 export { default as migrate } from './migrate';
 export { default as plain } from './plain';
 export { default as renderMdxish } from './renderMdxish';

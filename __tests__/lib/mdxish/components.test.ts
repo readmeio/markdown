@@ -1,6 +1,7 @@
 import type { RMDXModule } from '../../../types';
 import type { Element, Text } from 'hast';
 
+import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { mdxish, compile, run } from '../../../lib';
@@ -235,6 +236,56 @@ Sed do eiusmod tempor incididunt ut
 labore et dolore magna aliqua.`,
       });
     });
+
+    it('should parse a component with an array prop whose field is a JSX fragment', () => {
+      const md = '<ExampleComponent items={[{ description: <>a <a href="x">b</a></> }]} />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      const componentNode = tree.children[0] as Element;
+      expect(componentNode.tagName).toBe('ExampleComponent');
+
+      const { items } = componentNode.properties as { items?: unknown };
+      expect(Array.isArray(items)).toBe(true);
+
+      // JSX in the expression evaluates to a real React element (deferred past
+      // rehypeRaw's clone), so the field survives as an element, not a string.
+      const [first] = items as { description: unknown }[];
+      expect(React.isValidElement(first.description)).toBe(true);
+    });
+
+    it('should parse a component with a single JSX element as a prop', () => {
+      const md = '<ExampleComponent label={<span>hi</span>} />';
+      const tree = mdxish(md, { components: exampleComponents });
+
+      const componentNode = tree.children[0] as Element;
+      expect(componentNode.tagName).toBe('ExampleComponent');
+      expect(React.isValidElement(componentNode.properties?.label)).toBe(true);
+    });
+
+    it('should treat JSX-looking text inside a string expression as a literal, not JSX', () => {
+      // `<Home>` would match a naive `<tag` regex, but the estree has no JSX node here,
+      // so the expression must evaluate to the plain string rather than a React element.
+      const md = "<ExampleComponent body={'visit <Home> now'} />";
+      const tree = mdxish(md, { components: exampleComponents });
+
+      const componentNode = tree.children[0] as Element;
+      expect(componentNode.tagName).toBe('ExampleComponent');
+      expect(componentNode.properties?.body).toBe('visit <Home> now');
+    });
+
+    it('should evaluate a non-JSX attribute expression using the exported-const scope', () => {
+      const md = `export const greeting = "hi".toUpperCase();
+
+<ExampleComponent body={greeting} />`;
+      const tree = mdxish(md, { components: exampleComponents });
+
+      let componentNode: Element | undefined;
+      visit(tree, 'element', (node: Element) => {
+        if (node.tagName === 'ExampleComponent') componentNode = node;
+      });
+
+      expect(componentNode?.properties?.body).toBe('HI');
+    });
   });
 
   it('should not evaluate an attribute expression if in safe mode', () => {
@@ -246,6 +297,15 @@ labore et dolore magna aliqua.`,
     expect(element.tagName).toBe('ExampleComponent');
     expect(element.properties?.header).toBe('{1+1}');
     expect(element.properties?.body).toBe('{"HELLO".toLowerCase()}');
+  });
+
+  it('should not evaluate a JSX attribute expression if in safe mode', () => {
+    const md = '<ExampleComponent items={[{ description: <>hi</> }]} />';
+    const tree = mdxish(md, { components: exampleComponents, safeMode: true });
+
+    const element = tree.children[0] as Element;
+    expect(element.tagName).toBe('ExampleComponent');
+    expect(element.properties?.items).toBe('{[{ description: <>hi</> }]}');
   });
 
   it('should recognize nested components', () => {

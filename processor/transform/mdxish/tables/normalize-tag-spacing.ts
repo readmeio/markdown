@@ -41,11 +41,16 @@ const symmetrizePair = (html: string, { openStart, openEnd, closeStart, closeEnd
   const openerHasExtras = preOpener.trim().length > 0 || postOpener.trim().length > 0;
   const closerHasExtras = preCloser.trim().length > 0 || postCloser.trim().length > 0;
 
-  // Both match (both bare or both attached) — mdxjs parses this fine.
-  if (openerHasExtras === closerHasExtras) return [];
+  // A blank line splits opener/closer into separate paragraphs.
+  // If either tag is attached to surrounding text, mdxjs can fail to match.
+  const spansBlankLine = /\n[^\S\n]*\n/.test(html.slice(openEnd, closeStart));
 
-  // Asymmetric. Push non-tag content on the offending side to its own line,
-  // visually aligning the inserted line with the existing whitespace prefix.
+  // If both sides are already symmetric, keep as-is.
+  // Exception: attached + blank-line-split pairs still need normalization.
+  if (openerHasExtras === closerHasExtras && !(openerHasExtras && spansBlankLine)) return [];
+
+  // For asymmetric (or attached-but-split) pairs, move side content to its own
+  // line so opener/closer become line-symmetric.
   const indentFor = (linePrefix: string) => linePrefix.match(/^\s*/)?.[0] ?? '';
   const inserts: Insert[] = [];
   if (openerHasExtras) {
