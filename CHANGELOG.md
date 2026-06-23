@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 14.10.0
+### ✨ New & Improved
+
+* **mdxish:** always compile callouts to JSX in mdxishMdastToMd ([#1498](https://github.com/readmeio/markdown/issues/1498)) ([bbbd46b](https://github.com/readmeio/markdown/commit/bbbd46b7d43ae346d0ad694bb0fa457bc1fe70b2)), closes [#17745](https://github.com/readmeio/markdown/issues/17745) [#1492](https://github.com/readmeio/markdown/issues/1492)
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/checkout from 6 to 7 ([#1523](https://github.com/readmeio/markdown/issues/1523)) ([effa29d](https://github.com/readmeio/markdown/commit/effa29dea0e07c761ac24456448d8ad729037dc6))
+
 ## Version 14.9.0
 ### ✨ New & Improved
 
