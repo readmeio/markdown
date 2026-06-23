@@ -1,392 +1,196 @@
 import type { HTMLBlock } from '../../../types';
-import type { Paragraph, Parent } from 'mdast';
+import type { Html, Paragraph, Parent, RootContent } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { formatHtmlForMdxish } from '../../utils';
 
-import { base64Decode, HTML_BLOCK_CONTENT_END, HTML_BLOCK_CONTENT_START } from './preprocess-jsx-expressions';
+type HtmlBlockJsx = MdxJsxFlowElement | MdxJsxTextElement;
+
+// `<HTMLBlock …>{`…`}</HTMLBlock>` embedded inside a raw HTML block (e.g. a
+// single-line `<div>…</div>`). CommonMark slurps the whole div as one `html`
+// node, so the tokenizer never sees the HTMLBlock — we recover it here.
+const RAW_HTML_BLOCK_RE = /<HTMLBlock\b([^>]*)>\s*\{\s*`((?:[^`\\]|\\.)*)`\s*\}\s*<\/HTMLBlock>/g;
+// Opening `<HTMLBlock …>` as its own `html` node — produced inside a paragraph
+// when an HTMLBlock appears inline alongside text.
+const HTML_BLOCK_OPEN_RE = /^<HTMLBlock\b([^>]*)>$/;
 
 /**
- * Decodes HTMLBlock content that was protected during preprocessing.
- * Content is wrapped in <!--RDMX_HTMLBLOCK:base64:RDMX_HTMLBLOCK-->
+ * Builds the canonical `html-block` MDAST node the renderer expects.
  */
-function decodeProtectedContent(content: string): string {
-  // Escape special regex characters in the markers
-  const startEscaped = HTML_BLOCK_CONTENT_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const endEscaped = HTML_BLOCK_CONTENT_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const markerRegex = new RegExp(`${startEscaped}([A-Za-z0-9+/=]+)${endEscaped}`, 'g');
-  return content.replace(markerRegex, (_match, encoded: string) => {
-    try {
-      return base64Decode(encoded);
-    } catch {
-      return encoded;
-    }
-  });
-}
-
-/**
- * Collects text content from a node and its children recursively
- */
-function collectTextContent(node: { children?: unknown[]; lang?: string; type?: string; value?: string }): string {
-  const parts: string[] = [];
-
-  if (node.type === 'text' && node.value) {
-    parts.push(node.value);
-  } else if (node.type === 'html' && node.value) {
-    parts.push(node.value);
-  } else if (node.type === 'inlineCode' && node.value) {
-    parts.push(node.value);
-  } else if (node.type === 'code' && node.value) {
-    // Reconstruct code fence syntax (markdown parser consumes opening ```)
-    const lang = node.lang || '';
-    const fence = `\`\`\`${lang ? `${lang}\n` : ''}`;
-    parts.push(fence);
-    parts.push(node.value);
-    // Add newline before closing fence if missing
-    const closingFence = node.value.endsWith('\n') ? '```' : '\n```';
-    parts.push(closingFence);
-  } else if (node.children && Array.isArray(node.children)) {
-    node.children.forEach(child => {
-      if (typeof child === 'object' && child !== null) {
-        parts.push(collectTextContent(child as { children?: unknown[]; lang?: string; type?: string; value?: string }));
-      }
-    });
-  }
-
-  return parts.join('');
-}
-
-/**
- * Extracts boolean attribute from HTML tag. Handles JSX (safeMode={true}) and string (safeMode="true") syntax.
- * Returns "true"/"false" string to survive rehypeRaw serialization.
- */
-function extractBooleanAttr(attrs: string, name: string): string | undefined {
-  // Try JSX syntax: name={true|false}
-  const jsxMatch = attrs.match(new RegExp(`${name}=\\{(true|false)\\}`));
-  if (jsxMatch) {
-    return jsxMatch[1];
-  }
-  // Try string syntax: name="true"|true
-  const stringMatch = attrs.match(new RegExp(`${name}="?(true|false)"?`));
-  if (stringMatch) {
-    return stringMatch[1];
-  }
-  return undefined;
-}
-
-/**
- * Extracts runScripts attribute from HTML tag. Returns boolean for "true"/"false", string for other values, or undefined if not found.
- */
-function extractRunScriptsAttr(attrs: string): boolean | string | undefined {
-  const runScriptsMatch = attrs.match(/runScripts="?([^">\s]+)"?/);
-  if (!runScriptsMatch) {
-    return undefined;
-  }
-  const value = runScriptsMatch[1];
-  if (value === 'true') {
-    return true;
-  }
-  if (value === 'false') {
-    return false;
-  }
-  return value;
-}
-
-/**
- * Creates an HTMLBlock node from HTML string and optional attributes
- */
-function createHTMLBlockNode(
-  htmlString: string,
+const createHtmlBlockNode = (
+  html: string,
   position: HTMLBlock['position'],
   runScripts?: boolean | string,
   safeMode?: string,
-): HTMLBlock {
-  return {
-    position,
-    children: [{ type: 'text', value: htmlString }],
-    type: NodeTypes.htmlBlock,
-    data: {
-      hName: 'html-block',
-      hProperties: {
-        html: htmlString,
-        ...(runScripts !== undefined && { runScripts }),
-        ...(safeMode !== undefined && { safeMode }),
-      },
+): HTMLBlock => ({
+  position,
+  children: [{ type: 'text', value: html }],
+  type: NodeTypes.htmlBlock,
+  data: {
+    hName: 'html-block',
+    hProperties: {
+      html,
+      ...(runScripts !== undefined && { runScripts }),
+      ...(safeMode !== undefined && { safeMode }),
     },
-  };
-}
+  },
+});
 
 /**
- * Checks for opening tag only (for split detection)
+ * Reads the cooked string out of a brace expression wrapping a single template
+ * literal (`` `<p>n</p>` `` → `<p>n</p>`).
  */
-function hasOpeningTagOnly(node: { children?: unknown[]; type?: string; value?: string }): {
-  attrs: string;
-  found: boolean;
-} {
-  let hasOpening = false;
-  let hasClosed = false;
-  let attrs = '';
+const extractTemplateLiteral = (value: string | undefined): string => {
+  if (!value) return '';
+  const match = value.trim().match(/^`([\s\S]*)`$/);
+  // Non-template-literal bodies (e.g. `{someVar}`) are malformed mdxish input;
+  // returning '' beats shipping JS identifier source as an HTML payload.
+  return match ? match[1] : '';
+};
 
-  const check = (n: { children?: unknown[]; type?: string; value?: string }) => {
-    if (n.type === 'html' && n.value) {
-      if (n.value === '<HTMLBlock>') {
-        hasOpening = true;
-      } else {
-        const match = n.value.match(/^<HTMLBlock(\s[^>]*)?>$/);
-        if (match) {
-          hasOpening = true;
-          attrs = match[1] || '';
-        }
-      }
-      if (n.value === '</HTMLBlock>' || n.value.includes('</HTMLBlock>')) {
-        hasClosed = true;
-      }
-    }
-    if (n.children && Array.isArray(n.children)) {
-      n.children.forEach(child => {
-        check(child as { children?: unknown[]; type?: string; value?: string });
-      });
-    }
-  };
+const toRunScripts = (raw: string | undefined): boolean | string | undefined =>
+  raw === 'true' ? true : raw === 'false' ? false : raw;
 
-  check(node);
-  // Return true only if opening without closing (split case)
-  return { attrs, found: hasOpening && !hasClosed };
-}
+/** Reads an attribute from a raw `<HTMLBlock …>` attribute string. */
+const rawAttr = (attrs: string, name: string): string | undefined => {
+  const quoted = attrs.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`));
+  if (quoted) return quoted[1];
+  const expr = attrs.match(new RegExp(`\\b${name}\\s*=\\s*\\{(true|false)\\}`));
+  if (expr) return expr[1];
+  return new RegExp(`\\b${name}\\b`).test(attrs) ? 'true' : undefined;
+};
+
+/** Reads an attribute from a parsed `<HTMLBlock>` JSX element. */
+const jsxAttr = (element: HtmlBlockJsx, name: string): string | undefined => {
+  const attr = element.attributes.find(a => a.type === 'mdxJsxAttribute' && a.name === name);
+  if (!attr || attr.type !== 'mdxJsxAttribute') return undefined;
+  if (typeof attr.value === 'string') return attr.value;
+  if (attr.value && typeof attr.value === 'object' && 'value' in attr.value) return attr.value.value;
+  return 'true'; // bare boolean attribute, e.g. <HTMLBlock runScripts />
+};
+
+/** Builds an `html-block` from a raw attribute string and (unparsed) body. */
+const htmlBlockFromRaw = (
+  attrs: string,
+  html: string,
+  position: HTMLBlock['position'],
+  openingTagIndent = 0,
+): HTMLBlock =>
+  createHtmlBlockNode(
+    formatHtmlForMdxish(html, openingTagIndent),
+    position,
+    toRunScripts(rawAttr(attrs, 'runScripts')),
+    rawAttr(attrs, 'safeMode'),
+  );
 
 /**
- * Checks if a node contains an HTMLBlock closing tag
+ * Splits a raw `html` node that embeds one or more `<HTMLBlock>`s into
+ * `[html before, html-block, html after, …]`. Returns null when there is none.
+ *
+ * `String.split` on a regex with capture groups interleaves the captures into
+ * the result, so segments arrive as `[text, attrs, body, text, attrs, body, …]`.
  */
-function hasClosingTag(node: { children?: unknown[]; type?: string; value?: string }): boolean {
-  if (node.type === 'html' && node.value) {
-    if (node.value === '</HTMLBlock>' || node.value.includes('</HTMLBlock>')) return true;
+const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
+  const segments = node.value.split(RAW_HTML_BLOCK_RE);
+  if (segments.length === 1) return null; // no <HTMLBlock> present
+
+  const parts: RootContent[] = [];
+  for (let i = 0; i < segments.length; i += 3) {
+    const [text, attrs, body] = segments.slice(i, i + 3);
+    if (text) parts.push({ type: 'html', value: text });
+    if (body !== undefined) {
+      // The opening tag's column equals the length of the line it starts on
+      // (the text run since the previous newline preceding the match).
+      const openingTagIndent = text.slice(text.lastIndexOf('\n') + 1).length;
+      parts.push(htmlBlockFromRaw(attrs, body, node.position, openingTagIndent));
+    }
   }
-  if (node.children && Array.isArray(node.children)) {
-    return node.children.some(child => hasClosingTag(child as { children?: unknown[]; type?: string; value?: string }));
-  }
-  return false;
-}
+  return parts;
+};
 
 /**
- * Transforms HTMLBlock MDX JSX to html-block nodes. Handles <HTMLBlock>{`...`}</HTMLBlock> syntax.
+ * Converts every `<HTMLBlock>` shape that survives parsing into the canonical
+ * `html-block` MDAST node, reading the body from the tokenizer's template-literal
+ * expression. Three shapes occur:
+ *
+ *   1. JSX element (`mdxJsxFlowElement`/`mdxJsxTextElement`) — multiline/block
+ *      context and table cells (after their remarkMdx re-parse).
+ *   2. Raw `html` blob (`splitRawHtmlBlocks`) — single-line top-level, or nested
+ *      in raw HTML like an inline `<div>`.
+ *   3. Inline-in-paragraph — split into `html` + expression + `html` siblings.
+ *
+ * Runs *after* `mdxishTables` so table cells are re-parsed first;
+ * `mdxishTables` recognizes the still-JSX `<HTMLBlock>` element when deciding to
+ * keep a table as a JSX `<Table>`. This replaces the old base64-comment marker
+ * machinery — the #1455 tokenizer hands the body over already parsed.
  */
 const mdxishHtmlBlocks = (): Transform => tree => {
-  // Handle HTMLBlock split across root children (caused by newlines)
-  visit(tree, 'root', (root: Parent) => {
-    const children = root.children;
-    let i = 0;
+  // Shape 1: tokenized JSX element.
+  visit(
+    tree,
+    node => node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement',
+    (node, index, parent: Parent | undefined) => {
+      const element = node as HtmlBlockJsx;
+      if (element.name !== 'HTMLBlock' || !parent || index === undefined) return;
 
-    while (i < children.length) {
-      const child = children[i] as { children?: unknown[]; type?: string; value?: string };
-      const { attrs, found: hasOpening } = hasOpeningTagOnly(child);
+      const exprChild = element.children.find(
+        child => child.type === 'mdxFlowExpression' || child.type === 'mdxTextExpression',
+      ) as { value?: string } | undefined;
 
-      if (hasOpening) {
-        // Find closing tag in subsequent siblings
-        let closingIdx = -1;
-        for (let j = i + 1; j < children.length; j += 1) {
-          if (hasClosingTag(children[j] as { children?: unknown[]; type?: string; value?: string })) {
-            closingIdx = j;
-            break;
-          }
-        }
+      const openingTagIndent = (element.position?.start.column ?? 1) - 1;
+      parent.children[index] = createHtmlBlockNode(
+        formatHtmlForMdxish(extractTemplateLiteral(exprChild?.value), openingTagIndent),
+        element.position,
+        toRunScripts(jsxAttr(element, 'runScripts')),
+        jsxAttr(element, 'safeMode'),
+      );
+    },
+  );
 
-        if (closingIdx !== -1) {
-          // Collect inner content between tags
-          const contentParts: string[] = [];
-          for (let j = i; j <= closingIdx; j += 1) {
-            const node = children[j] as { children?: unknown[]; type?: string; value?: string };
-            contentParts.push(collectTextContent(node));
-          }
-
-          // Remove the opening/closing tags and template literal syntax from content
-          let content = contentParts.join('');
-          content = content.replace(/^<HTMLBlock[^>]*>\s*\{?\s*`?/, '').replace(/`?\s*\}?\s*<\/HTMLBlock>$/, '');
-          // Decode protected content that was base64 encoded during preprocessing
-          content = decodeProtectedContent(content);
-
-          const htmlString = formatHtmlForMdxish(content);
-          const runScripts = extractRunScriptsAttr(attrs);
-          const safeMode = extractBooleanAttr(attrs, 'safeMode');
-
-          // Replace range with single HTMLBlock node
-          const mdNode = createHTMLBlockNode(
-            htmlString,
-            (children[i] as { position?: unknown }).position as HTMLBlock['position'],
-            runScripts,
-            safeMode,
-          );
-          root.children.splice(i, closingIdx - i + 1, mdNode);
-        }
-      }
-      i += 1;
-    }
+  // Shape 2: raw HTML blob.
+  visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return;
+    const replacement = splitRawHtmlBlocks(node);
+    if (replacement) parent.children.splice(index, 1, ...(replacement as typeof parent.children));
   });
 
-  // Handle HTMLBlock parsed as HTML elements (when template literal contains block-level HTML tags)
-  visit(tree, 'html', (node, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return;
-
-    const value = (node as { value?: string }).value;
-    if (!value) return;
-
-    // Case 1: Full HTMLBlock in single node
-    const fullMatch = value.match(/^<HTMLBlock(\s[^>]*)?>([\s\S]*)<\/HTMLBlock>$/);
-    if (fullMatch) {
-      const attrs = fullMatch[1] || '';
-      let content = fullMatch[2] || '';
-
-      // Remove template literal syntax if present: {`...`}
-      content = content.replace(/^\s*\{\s*`/, '').replace(/`\s*\}\s*$/, '');
-      // Decode protected content that was base64 encoded during preprocessing
-      content = decodeProtectedContent(content);
-
-      const htmlString = formatHtmlForMdxish(content);
-      const runScripts = extractRunScriptsAttr(attrs);
-      const safeMode = extractBooleanAttr(attrs, 'safeMode');
-
-      parent.children[index] = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
-      return;
-    }
-
-    // Case 2: Opening tag only (split by blank lines)
-    if (value === '<HTMLBlock>' || value.match(/^<HTMLBlock\s[^>]*>$/)) {
-      const siblings = parent.children;
-      let closingIdx = -1;
-
-      // Find closing tag in siblings
-      for (let i = index + 1; i < siblings.length; i += 1) {
-        const sibling = siblings[i];
-        if (sibling.type === 'html') {
-          const sibVal = (sibling as { value?: string }).value;
-          if (sibVal === '</HTMLBlock>' || sibVal?.includes('</HTMLBlock>')) {
-            closingIdx = i;
-            break;
-          }
-        }
-      }
-
-      if (closingIdx === -1) return;
-
-      // Collect content between tags, skipping template literal delimiters
-      const contentParts: string[] = [];
-      for (let i = index + 1; i < closingIdx; i += 1) {
-        const sibling = siblings[i];
-        // Skip template literal delimiters
-        if (sibling.type === 'text') {
-          const textVal = (sibling as { value?: string }).value;
-          if (textVal === '{' || textVal === '}' || textVal === '{`' || textVal === '`}') {
-            // eslint-disable-next-line no-continue
-            continue;
-          }
-        }
-        contentParts.push(collectTextContent(sibling as { children?: unknown[]; type?: string; value?: string }));
-      }
-
-      // Decode protected content that was base64 encoded during preprocessing
-      const decodedContent = decodeProtectedContent(contentParts.join(''));
-      const htmlString = formatHtmlForMdxish(decodedContent);
-      const runScripts = extractRunScriptsAttr(value);
-      const safeMode = extractBooleanAttr(value, 'safeMode');
-
-      // Replace opening tag with HTMLBlock node, remove consumed siblings
-      parent.children[index] = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
-      parent.children.splice(index + 1, closingIdx - index);
-    }
-  });
-
-  // Handle HTMLBlock inside paragraphs (parsed as inline elements)
-  visit(tree, 'paragraph', (node: Paragraph, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return;
-
-    const children = node.children || [];
-
-    let htmlBlockStartIdx = -1;
-    let htmlBlockEndIdx = -1;
-    let templateLiteralStartIdx = -1;
-    let templateLiteralEndIdx = -1;
-
+  // Shape 3: inline within a paragraph — `<HTMLBlock>` open/close arrive as
+  // separate `html` siblings with the template-literal expression between them.
+  visit(tree, 'paragraph', (paragraph: Paragraph) => {
+    // An html-block is block content, so it isn't a valid PhrasingContent child;
+    // widen to RootContent (which HTMLBlock belongs to) for the in-place splice.
+    const children = paragraph.children as RootContent[];
     for (let i = 0; i < children.length; i += 1) {
-      const child = children[i];
+      const open = children[i];
+      const openMatch = open.type === 'html' ? open.value.match(HTML_BLOCK_OPEN_RE) : null;
+      if (!openMatch) continue; // eslint-disable-line no-continue
 
-      if (child.type === 'html' && typeof (child as { value?: string }).value === 'string') {
-        const value = (child as { value: string }).value;
-        if (value === '<HTMLBlock>' || value.match(/^<HTMLBlock\s[^>]*>$/)) {
-          htmlBlockStartIdx = i;
-        } else if (value === '</HTMLBlock>') {
-          htmlBlockEndIdx = i;
-        }
-      }
+      const closeIdx = children.findIndex(
+        (child, j) => j > i && child.type === 'html' && child.value === '</HTMLBlock>',
+      );
+      if (closeIdx === -1) continue; // eslint-disable-line no-continue
 
-      // Find opening brace after HTMLBlock start
-      if (htmlBlockStartIdx !== -1 && templateLiteralStartIdx === -1 && child.type === 'text') {
-        const value = (child as { value?: string }).value;
-        if (value === '{') {
-          templateLiteralStartIdx = i;
-        }
-      }
+      const body = children
+        .slice(i + 1, closeIdx)
+        .map(child => {
+          if (child.type === 'mdxTextExpression' || child.type === 'mdxFlowExpression') {
+            return extractTemplateLiteral(child.value);
+          }
+          // Preserve raw text from any other phrasing sibling (e.g. stray
+          // whitespace or content the tokenizer didn't claim) so it isn't
+          // silently dropped from the html payload.
+          return 'value' in child && typeof child.value === 'string' ? child.value : '';
+        })
+        .join('');
 
-      // Find closing brace before HTMLBlock end
-      if (htmlBlockStartIdx !== -1 && htmlBlockEndIdx === -1 && child.type === 'text') {
-        const value = (child as { value?: string }).value;
-        if (value === '}') {
-          templateLiteralEndIdx = i;
-        }
-      }
-    }
-
-    if (
-      htmlBlockStartIdx !== -1 &&
-      htmlBlockEndIdx !== -1 &&
-      templateLiteralStartIdx !== -1 &&
-      templateLiteralEndIdx !== -1 &&
-      templateLiteralStartIdx < templateLiteralEndIdx
-    ) {
-      const openingTag = children[htmlBlockStartIdx] as { value?: string };
-
-      // Collect content between braces (handles code blocks)
-      const templateContent: string[] = [];
-      for (let i = templateLiteralStartIdx + 1; i < templateLiteralEndIdx; i += 1) {
-        const child = children[i];
-        templateContent.push(
-          collectTextContent(child as { children?: unknown[]; lang?: string; type?: string; value?: string }),
-        );
-      }
-
-      // Decode protected content that was base64 encoded during preprocessing
-      const decodedContent = decodeProtectedContent(templateContent.join(''));
-      const htmlString = formatHtmlForMdxish(decodedContent);
-
-      const runScripts = openingTag.value ? extractRunScriptsAttr(openingTag.value) : undefined;
-      const safeMode = openingTag.value ? extractBooleanAttr(openingTag.value, 'safeMode') : undefined;
-
-      const mdNode = createHTMLBlockNode(htmlString, node.position, runScripts, safeMode);
-
-      parent.children[index] = mdNode;
+      const openingTagIndent = (open.position?.start.column ?? 1) - 1;
+      children.splice(i, closeIdx - i + 1, htmlBlockFromRaw(openMatch[1], body, open.position, openingTagIndent));
     }
   });
-
-  // Ensure html-block nodes have HTML in children as text node
-  visit(tree, 'html-block', (node: HTMLBlock) => {
-    const html = node.data?.hProperties?.html;
-    if (
-      html &&
-      (!node.children ||
-        node.children.length === 0 ||
-        (node.children.length === 1 && node.children[0].type === 'text' && node.children[0].value !== html))
-    ) {
-      node.children = [
-        {
-          type: 'text',
-          value: html,
-        },
-      ];
-    }
-  });
-
-  return tree;
 };
 
 export default mdxishHtmlBlocks;
