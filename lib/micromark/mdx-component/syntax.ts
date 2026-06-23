@@ -4,7 +4,7 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
-import { TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -275,12 +275,13 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Tag name parsing ───────────────────────────────────────────────────
 
     function tagNameFirst(code: Code): State | undefined {
-      // Uppercase A-Z → PascalCase MDX component. Flow-only — PascalCase
-      // components are block elements in ReadMe's authoring model.
+      // Uppercase A-Z → PascalCase MDX component. Flow mode claims block
+      // components; text mode only claims inline components (Anchor, Glossary),
+      // which is enforced once the full name is known in `tagNameRest`.
       if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
-        if (!isFlow) return nok(code);
         tagName = String.fromCharCode(code);
         isLowercaseTag = false;
+        sawBraceAttr = false;
         effects.consume(code);
         return tagNameRest;
       }
@@ -311,8 +312,12 @@ function createTokenize(mode: 'flow' | 'text') {
         return tagNameRest;
       }
 
-      // Tag name complete — check exclusions
-      if (TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
+      // Tag name complete — check exclusions. Text mode is the only path that
+      // claims inline PascalCase components (Anchor, Glossary), so it bypasses
+      // the dedicated-tokenizer exclusion for those; every other case honors it.
+      if (!isFlow && !isLowercaseTag) {
+        if (!INLINE_COMPONENT_TAGS.has(tagName)) return nok(code);
+      } else if (TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
         return nok(code);
       }
 
@@ -333,14 +338,14 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // Self-closing />
       if (code === codes.slash) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if ((isLowercaseTag || !isFlow) && !sawBraceAttr) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if ((isLowercaseTag || !isFlow) && !sawBraceAttr) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
         return body;

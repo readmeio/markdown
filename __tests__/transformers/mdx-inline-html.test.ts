@@ -56,6 +56,48 @@ describe('inline HTML with expression attributes transformation to MDX text', ()
     expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
   });
 
+  it('promotes inline Anchor with a concatenation-expression attr to mdxJsxTextElement', () => {
+    // Quotes/spaces inside the braces make CommonMark reject the tag as inline
+    // HTML, so the mdxComponent text tokenizer must claim it instead.
+    const tree = parse("<Anchor target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.");
+    const [inline] = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+    expect(inline).toMatchObject({
+      type: 'mdxJsxTextElement',
+      name: 'Anchor',
+      attributes: [
+        { type: 'mdxJsxAttribute', name: 'target', value: '_blank' },
+        {
+          type: 'mdxJsxAttribute',
+          name: 'href',
+          value: { type: 'mdxJsxAttributeValueExpression', value: "'https://' + user.docsUrl + '/x'" },
+        },
+      ],
+      children: [{ type: 'text', value: 'Docs' }],
+    });
+  });
+
+  it('promotes inline Glossary with a template-literal expression attr', () => {
+    // eslint-disable-next-line no-template-curly-in-string
+    const tree = parse('<Glossary term={`a${b}c`}>word</Glossary>');
+    const [inline] = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+    expect(inline).toMatchObject({
+      type: 'mdxJsxTextElement',
+      name: 'Glossary',
+      attributes: [
+        // eslint-disable-next-line no-template-curly-in-string
+        { type: 'mdxJsxAttribute', name: 'term', value: { type: 'mdxJsxAttributeValueExpression', value: '`a${b}c`' } },
+      ],
+      children: [{ type: 'text', value: 'word' }],
+    });
+  });
+
+  it('leaves inline Anchor without expression attrs for the CommonMark path', () => {
+    // Plain `<Anchor href="x">` stays an html node so the existing inline-mdx
+    // merge path (and rehype-raw) handle it — the tokenizer must not claim it.
+    const tree = parse('<Anchor href="https://example.com">Link</Anchor>');
+    expect(collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement')).toHaveLength(0);
+  });
+
   it('does not touch inline PascalCase components — mdxishComponentBlocks owns them', () => {
     // PascalCase is flow-level by design; it becomes `mdxJsxFlowElement` via
     // the block transformer even when authored inline, so the inline pass

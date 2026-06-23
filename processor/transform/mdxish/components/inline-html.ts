@@ -3,7 +3,7 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
@@ -40,12 +40,11 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
 
   const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
-  // PascalCase stays flow-level; handled by mdxishComponentBlocks.
-  if (isPascalCase(tag)) return node;
-
-  // Dedicated tokenizers (Table, HTMLBlock, Glossary, Anchor) handle their
-  // own tags — don't hijack them here.
-  if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return node;
+  // Non-inline PascalCase stays flow-level (handled by mdxishComponentBlocks)
+  // and dedicated tokenizers (Table, HTMLBlock) own their tags. Inline
+  // components (Anchor, Glossary) with expression attrs are promoted here —
+  // the text tokenizer captures them as a single html node.
+  if (isPascalCase(tag) && !INLINE_COMPONENT_TAGS.has(tag)) return node;
 
   // Plain inline HTML (no expressions) stays as an html node so rehype-raw
   // parses it with parse5 as normal.

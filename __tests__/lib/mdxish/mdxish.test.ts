@@ -594,4 +594,34 @@ describe('html tags rendering', () => {
       children: [{ type: 'text', value: 'Example' }],
     });
   });
+
+  describe('inline components with expression attributes', () => {
+    // Regression: spaces/quotes inside `href={...}` made CommonMark reject the
+    // tag, so the whole <Anchor> leaked as literal text and swallowed `</Anchor>`.
+    it('should render an Anchor whose href is a concatenation expression', () => {
+      const md =
+        "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const anchor = findElementByTagName(tree, 'Anchor');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          label: 'Docs',
+          target: '_blank',
+          href: "'https://' + user.docsUrl + '/x'",
+        },
+        children: [{ type: 'text', value: 'Docs' }],
+      });
+    });
+
+    it('should keep trailing text after the closing tag as a sibling', () => {
+      const md = "<Anchor href={'a' + 'b'}>Link</Anchor> done.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const paragraph = tree.children[0] as Element;
+      const [anchor, trailing] = paragraph.children;
+      expect((anchor as Element).tagName).toBe('Anchor');
+      expect(trailing).toMatchObject({ type: 'text', value: ' done.' });
+    });
+  });
 });
