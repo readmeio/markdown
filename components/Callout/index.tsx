@@ -1,5 +1,6 @@
-import emojiRegex from 'emoji-regex';
 import * as React from 'react';
+
+import Icon from '../Icon';
 
 interface Props extends React.PropsWithChildren<React.HTMLAttributes<HTMLQuoteElement>> {
   attributes?: Record<string, unknown>;
@@ -40,7 +41,6 @@ const Callout = (props: Props) => {
   const children = React.Children.toArray(props.children);
 
   const icon = props.icon;
-  const isEmoji = icon && emojiRegex().test(icon);
   const hasBody = children.length > 1;
   const heading = empty ? (hasBody ? <p className={'callout-heading empty'}></p> : null) : children[0];
   const theme = props.theme || (icon && themes[icon]) || 'default';
@@ -49,13 +49,7 @@ const Callout = (props: Props) => {
     // @ts-expect-error -- theme is not a valid attribute
     // eslint-disable-next-line react/jsx-props-no-spreading, react/no-unknown-property
     <blockquote {...attributes} className={`callout callout_${theme}`} theme={icon || theme}>
-      {icon ? (
-        isEmoji ? (
-          <span className="callout-icon">{icon}</span>
-        ) : (
-          <span className={`callout-icon callout-icon_fa ${icon}`} />
-        )
-      ) : null}
+      {icon ? <Icon className="callout-icon" faClassName="callout-icon_fa" icon={icon} /> : null}
       {heading}
       {children.slice(1)}
     </blockquote>
