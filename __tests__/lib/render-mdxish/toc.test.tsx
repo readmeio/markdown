@@ -130,6 +130,28 @@ describe('toc transformer', () => {
     expect(screen.findByText('Setup for admins')).toBeDefined();
   });
 
+  it('stringifies structured variables in labels', async () => {
+    const md = `# Keys {user.keys}
+
+## Profile {user.profile} {user.limit}
+`;
+    const variables = {
+      user: {
+        keys: [{ apiKey: 'rdme_123' }],
+        limit: 25,
+        profile: { plan: 'enterprise' },
+      },
+      defaults: [],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md), { variables });
+
+    render(<Toc />);
+
+    expect(await screen.findByText('Keys [{"apiKey":"rdme_123"}]')).toBeDefined();
+    expect(await screen.findByText('Profile {"plan":"enterprise"} 25')).toBeDefined();
+  });
+
   it('keeps adjacent legacy variable values and suffixes together', () => {
     const md = '## Hello <<name>>! Nice';
     const variables = {
