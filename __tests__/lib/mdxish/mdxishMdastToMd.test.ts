@@ -44,8 +44,9 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('> 📘 Info');
+    expect(result).toContain('<Callout icon="📘 Info" theme="info">');
     expect(result).toContain('Lorem ipsum dolor sit amet.');
+    expect(result).toContain('</Callout>');
   });
 
   it('should convert GFM mdast', () => {
@@ -1210,5 +1211,105 @@ describe('mdxishMdastToMd', () => {
     const result = mdxishMdastToMd(mdast);
     // There needs to be a space after the checkbox for the list item to be parsed as a checklist item
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
+  });
+});
+
+describe('mdxishMdastToMd callout JSX serialization', () => {
+  const callout = (hProperties: Record<string, unknown>, children: RootContent[]): MdastRoot => ({
+    type: 'root',
+    children: [
+      {
+        type: NodeTypes.callout,
+        data: { hName: 'Callout', hProperties },
+        children,
+      } as RootContent,
+    ],
+  });
+
+  it('always serializes a callout with a heading to JSX, persisting icon + theme', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Title here' }] },
+      { type: 'paragraph', children: [{ type: 'text', value: 'Body with markdown.' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout icon="📘" theme="info">
+  ### Title here
+
+  Body with markdown.
+</Callout>
+`,
+    );
+  });
+
+  it('drops the empty title slot for a body-only callout', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: true }, [
+      { type: 'paragraph', children: [{ type: 'text', value: '' }] },
+      { type: 'paragraph', children: [{ type: 'text', value: 'Content here' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout icon="📘" theme="info">
+  Content here
+</Callout>
+`,
+    );
+  });
+
+  it('serializes a custom fa-icon callout to JSX', () => {
+    const mdast = callout({ icon: 'fad fa-wagon-covered', theme: 'warn', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Heads up' }] },
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Callout icon="fad fa-wagon-covered" theme="warn">');
+    expect(result).toContain('### Heads up');
+  });
+
+  it('serializes a callout with font awesome icons to JSX', () => {
+    const mdast = callout({ icon: 'far fa-car-bolt', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Heads up' }] },
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Callout icon="far fa-car-bolt" theme="info">');
+    expect(result).toContain('### Heads up');
+  });
+
+  it('fills a missing theme from the icon', () => {
+    const mdast = callout({ icon: '🚧', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Watch out' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="🚧" theme="warn">');
+  });
+
+  it('fills a missing icon from the theme', () => {
+    const mdast = callout({ theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'FYI' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="📘" theme="info">');
+  });
+
+  it('converts nested callouts in the body to JSX', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Outer' }] },
+      {
+        type: NodeTypes.callout,
+        data: { hName: 'Callout', hProperties: { icon: '🚧', theme: 'warn', empty: false } },
+        children: [{ type: 'heading', depth: 3, children: [{ type: 'text', value: 'Inner' }] }],
+      } as RootContent,
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe(`<Callout icon="📘" theme="info">
+  ### Outer
+
+  <Callout icon="🚧" theme="warn">
+    ### Inner
+  </Callout>
+</Callout>
+`);
   });
 });
