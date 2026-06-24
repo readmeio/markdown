@@ -4,7 +4,7 @@ import React from 'react';
 
 import CardsGrid, { Card } from '../../components/Cards';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Cards', () => {
   describe('general component rendering', () => {
@@ -159,6 +159,18 @@ describe('Cards', () => {
       expect(container.querySelector('.Card-badge')).toBeInTheDocument();
       expect(container).toMatchSnapshot();
     });
+  });
+
+  it('mdxish: <Card style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Cards>\n  <Card title="Styled" style="color: red">body</Card>\n</Cards>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'Card');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 
   describe('given various card structures', () => {
