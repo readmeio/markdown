@@ -33,7 +33,15 @@ __tests__/regression/fixtures/
 ├── embeds/                     ← <Embed typeOfEmbed="..." /> variants
 ├── consecutive-emojis-fa/      ← :grin::grin:, FA in callouts and components
 ├── compact-headings/           ← #Heading-without-space migration coverage
-└── htmlblock-with-script/      ← <HTMLBlock> static-content parse path
+├── htmlblock-with-script/      ← <HTMLBlock> static-content parse path
+│
+│  ── Table regression fixtures ──
+├── jsx-table-multiline-cells/  ← blank-line paragraphs preserved in a <Table> cell
+├── jsx-table-unclosed-cells/   ← asymmetric/unclosed tags in <Table> cells recovered
+├── table-unwrapped-rows/       ← cells/rows missing their <tr> and <tbody> wrappers
+├── htmlblock-in-table/         ← <HTMLBlock> rendered inside a <Table> cell
+├── legacy-vars-in-table/       ← <<vars>> resolved in a raw <table> cell
+└── callout-icons/              ← blockquote + FA-class-icon <Callout> render
 ```
 
 See each fixture's own `README.md` for what it specifically covers and which
