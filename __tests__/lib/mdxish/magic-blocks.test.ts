@@ -486,6 +486,25 @@ ${JSON.stringify(
         // Text adjacent to lists is flattened (no <p> wrapper) to prevent margin issues
       });
 
+      it('does not render a lone leading dash as a bullet list in a cell', () => {
+        const html = getCellHtml('- foo');
+        expect(html).not.toContain('<ul>');
+        expect(html).not.toContain('<li>');
+        expect(html).toContain('- foo');
+      });
+
+      it('does not render leading asterisk or plus followed by space as a bullet list in a cell', () => {
+        expect(getCellHtml('* foo')).not.toContain('<ul>');
+        expect(getCellHtml('* foo')).toContain('* foo');
+        expect(getCellHtml('+ foo')).not.toContain('<ul>');
+        expect(getCellHtml('+ foo')).toContain('+ foo');
+      });
+
+      it('still parses emphasis when an asterisk hugs the text (no space after the marker)', () => {
+        const html = getCellHtml('*foo*');
+        expect(html).toContain('<em>foo</em>');
+      });
+
       it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
         const input =
           'Note the following: <ul><li>A **Live** status means the domain is externally accessible (HTTP request passes)</li><li>A **Not Live** status means the domain is not exposed and cannot be reached from the internet (HTTP request fails)</li></ul>';

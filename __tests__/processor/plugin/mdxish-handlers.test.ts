@@ -55,30 +55,34 @@ describe('mdxJsxElementHandler', () => {
     expect(node.properties).toStrictEqual({ keep: 'yes' });
   });
 
-  it('evaluates primitive, object, and array expression attributes', () => {
+  it('defers expression attributes to node.data instead of evaluating them', () => {
     const node = runJsx([expr('count', '42'), expr('style', '{ color: "red" }'), expr('items', '[1, 2]')]);
-    expect(node.properties).toStrictEqual({ count: 42, style: { color: 'red' }, items: [1, 2] });
+    // Expression props are not set on `properties`; their sources are stashed verbatim for
+    // `resolveDeferredAttributeExpressionProps` to evaluate past rehypeRaw's clone.
+    expect(node.properties).toStrictEqual({});
+    expect(node.data?.deferredExpressions).toStrictEqual({ count: '42', style: '{ color: "red" }', items: '[1, 2]' });
   });
 
-  it('falls back to the raw source when expression evaluation throws', () => {
+  it('stashes an unparseable expression source verbatim without evaluating it', () => {
     const node = runJsx([expr('broken', 'not(( valid')]);
-    expect(node.properties.broken).toBe('not(( valid');
+    expect(node.properties).toStrictEqual({});
+    expect(node.data?.deferredExpressions).toStrictEqual({ broken: 'not(( valid' });
+  });
+
+  it('omits the data field entirely when there are no expression attributes', () => {
+    const node = runJsx([{ type: 'mdxJsxAttribute', name: 'label', value: 'Go' }]);
+    expect(node.data).toBeUndefined();
+    expect(node.properties).toStrictEqual({ label: 'Go' });
   });
 });
 
-// rehypeRaw's passThrough deep-clones mdx-jsx nodes with structuredClone.
-// Non-serializable attribute values must fall back to the raw source, or the
-// clone would throw and crash the pipeline.
-describe('structuredClone guard', () => {
-  it('falls back to source for function expressions', () => {
+// Deferring evaluation keeps the mdx-jsx node structuredClone-safe through rehypeRaw's
+// passThrough: only plain string sources ride on the node, never functions or elements.
+describe('clone-safe deferral', () => {
+  it('defers function expressions as raw source rather than evaluating them', () => {
     const node = runJsx([expr('onClick', '() => console.log("hi")')]);
-    expect(node.properties.onClick).toBe('() => console.log("hi")');
-  });
-
-  it('falls back when any nested value is non-cloneable', () => {
-    const src = '{ onClick: () => {}, label: "go" }';
-    const node = runJsx([expr('handlers', src)]);
-    expect(node.properties.handlers).toBe(src);
+    expect(node.properties.onClick).toBeUndefined();
+    expect(node.data?.deferredExpressions?.onClick).toBe('() => console.log("hi")');
   });
 
   it('produces an mdx-jsx node that is itself structuredClone-safe', () => {

@@ -1,6 +1,42 @@
 Changelog
 ===
 
+## Version 14.10.0
+### ✨ New & Improved
+
+* **mdxish:** always compile callouts to JSX in mdxishMdastToMd ([#1498](https://github.com/readmeio/markdown/issues/1498)) ([bbbd46b](https://github.com/readmeio/markdown/commit/bbbd46b7d43ae346d0ad694bb0fa457bc1fe70b2)), closes [#17745](https://github.com/readmeio/markdown/issues/17745) [#1492](https://github.com/readmeio/markdown/issues/1492)
+
+### 🛠 Fixes & Updates
+
+* **deps:** bump actions/checkout from 6 to 7 ([#1523](https://github.com/readmeio/markdown/issues/1523)) ([effa29d](https://github.com/readmeio/markdown/commit/effa29dea0e07c761ac24456448d8ad729037dc6))
+
+## Version 14.9.0
+### ✨ New & Improved
+
+* export `extractToc` ([#1520](https://github.com/readmeio/markdown/issues/1520)) ([83dfcde](https://github.com/readmeio/markdown/commit/83dfcde967cbd893d56b81179bb6c998c8b22918))
+
+### 🛠 Fixes & Updates
+
+* auto scroll toc when active item out of view ([#1503](https://github.com/readmeio/markdown/issues/1503)) ([57206e8](https://github.com/readmeio/markdown/commit/57206e82c81daa0cfbc432df2e45cc1cce96bd0a))
+* **mdxish:** render user components inside <Table> ([#1499](https://github.com/readmeio/markdown/issues/1499)) ([a3a843a](https://github.com/readmeio/markdown/commit/a3a843ab6d2e303601d8c48b18c09bd7a08105bd))
+* **mdxish:** stop lone leading dash from becoming list in magic block cells ([#1496](https://github.com/readmeio/markdown/issues/1496)) ([48c136e](https://github.com/readmeio/markdown/commit/48c136ebdd9bd3980a9e062c897857572c0cfcb8))
+
+## Version 14.8.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** support JSX inside attribute expressions ([#1511](https://github.com/readmeio/markdown/issues/1511)) ([f04eb1b](https://github.com/readmeio/markdown/commit/f04eb1baf6fd367c6b08c70dd0cea232b4e19811))
+
+## Version 14.8.0
+### ✨ New & Improved
+
+* **Accordion:** support emoji icon ([#1492](https://github.com/readmeio/markdown/issues/1492)) ([facd3d7](https://github.com/readmeio/markdown/commit/facd3d7fda35793261539f82143609e9a2d5cab3))
+
+### 🛠 Fixes & Updates
+
+* adding a CODEOWNERS file ([7598e1d](https://github.com/readmeio/markdown/commit/7598e1d8abd8147e398f448e45bb9c5853d30869))
+* dont animate toc on init ([#1521](https://github.com/readmeio/markdown/issues/1521)) ([627a82d](https://github.com/readmeio/markdown/commit/627a82df3a2716e7a296ddbf25e35e16c888a1b7))
+* **gh/release:** update "sync next" step's ref ([#1515](https://github.com/readmeio/markdown/issues/1515)) ([ee3366d](https://github.com/readmeio/markdown/commit/ee3366deb2986774702107f5a34214b47ca6a646))
+
 ## Version 14.7.2
 ### 🛠 Fixes & Updates
 

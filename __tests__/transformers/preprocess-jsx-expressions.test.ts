@@ -465,6 +465,45 @@ describe('preprocessJSXExpressions', () => {
       });
     });
 
+    describe('export/import declarations', () => {
+      it('should not escape arrow-function body braces spanning a blank line', () => {
+        const content = 'export const Foo = () => {\n  const x = 1;\n\n  return <div>{x}</div>;\n};';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('should not escape `export function` body braces spanning a blank line', () => {
+        const content = 'export function Greeting() {\n\n  return <div>hi</div>;\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('should not escape an exported object literal spanning a blank line', () => {
+        const content = 'export const config = {\n  a: 1,\n\n  b: 2,\n};';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe(content);
+      });
+
+      it('still escapes a stray prose brace after an export ends', () => {
+        const content = 'export const a = 1;\n\nText {\n\n}';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('export const a = 1;\n\nText \\{\n\n\\}');
+        expect(() => mdxish(result)).not.toThrow();
+      });
+
+      it('does not exempt prose that merely starts with "Export"', () => {
+        const content = 'Export this {\n\n} value';
+        const result = preprocessJSXExpressions(content);
+
+        expect(result).toBe('Export this \\{\n\n\\} value');
+      });
+    });
+
     describe('stress tests - complex real-world scenarios', () => {
       it('should handle API documentation with path parameters and blank lines', () => {
         const content = `GET /api/{version}/users

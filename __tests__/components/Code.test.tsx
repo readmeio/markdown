@@ -4,7 +4,7 @@ import React from 'react';
 
 import Code from '../../components/Code';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Code', () => {
   describe('general component rendering', () => {
@@ -40,5 +40,17 @@ const x = 1;
     const { container } = render(<Content />);
     expect(container.querySelector('code')).toBeInTheDocument();
     expect(container.textContent).toContain('console.log()');
+  });
+
+  it('mdxish: inline <code style="..."> renders without crashing and receives style as an object', () => {
+    const md = 'Use <code style="color: red">console.log()</code> to debug';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'code');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 });

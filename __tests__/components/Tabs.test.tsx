@@ -9,7 +9,7 @@ import Tabs, { Tab } from '../../components/Tabs';
 import { mdxish } from '../../lib';
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../lib/mdxish';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Tabs', () => {
   describe.each(renderingEngines)('%s', (_label, renderContent) => {
@@ -300,6 +300,18 @@ Hello
       expect(icon).toBeInTheDocument();
       expect(icon).toHaveClass('fa-gear');
       expect(icon).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+    });
+
+    it('mdxish: <Tab style="..."> renders without crashing and receives style as an object', () => {
+      const md = '<Tabs>\n  <Tab title="Styled" style="color: red">body</Tab>\n</Tabs>';
+      const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+      const Content = renderMdxishContent(md);
+
+      expect(() => render(<Content />)).not.toThrow();
+
+      const captured = captureMdxishProps(md, 'Tab');
+      expect(typeof captured.style).toBe('object');
+      expect(captured.style).toMatchObject({ color: 'red' });
     });
   });
 });

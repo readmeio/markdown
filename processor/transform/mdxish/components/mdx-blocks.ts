@@ -63,6 +63,30 @@ interface ComponentNodeOptions {
   tag: string;
 }
 
+type Point = NonNullable<Node['position']>['start'];
+
+/**
+ * Advance a point by the substring of source consumed from it.
+ */
+const pointAfter = (start: Point, consumed: string): Point => {
+  const newlineIndex = consumed.lastIndexOf('\n');
+  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
+  return {
+    line: start.line + newlineCount,
+    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
+    offset: start.offset + consumed.length,
+  };
+};
+
+/**
+ * Build a position ending at `consumedLength` into the html node's value, so the
+ * component doesn't claim trailing content the tokenizer swallowed into one node.
+ */
+const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
+  if (!nodePosition?.start) return nodePosition;
+  return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
+};
+
 /**
  * Create an MdxJsxFlowElement node from component data.
  */
@@ -125,10 +149,17 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    const parsed = parseTag(value.trim(), parseOpts);
+    const trimmed = value.trim();
+    const parsed = parseTag(trimmed, parseOpts);
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
+
+    // Offset of `trimmed` within the (possibly whitespace-padded) html node value,
+    // so consumed-length math maps back onto the node's real source offsets.
+    const leadingWhitespace = value.length - value.trimStart().length;
+    // Index right after the opening tag's `>` within `trimmed`.
+    const openingTagEnd = trimmed.length - contentAfterTag.length;
 
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
@@ -156,6 +187,8 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: [],
         startPosition: node.position,
+        // End at the self-closing tag, not at any trailing content.
+        endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
@@ -189,6 +222,12 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
+        // End at the closing tag, not at trailing content re-parsed as siblings below.
+        endPosition: positionEndingAtConsumed(
+          node.position,
+          value,
+          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+        ),
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
