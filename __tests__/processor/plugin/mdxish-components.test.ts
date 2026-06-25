@@ -219,6 +219,29 @@ describe('smartCamelCase (prop normalization)', () => {
     expect(elements[0].properties).toHaveProperty('onClick', 'fn');
   });
 
+  it('should preserve cardWidth without mangling inner boundary words', () => {
+    const TestComponent = {} as CustomComponents[string];
+    const markdown = '<TestComponent cardWidth="400px" />';
+    const hast = mdxish(markdown, { components: { TestComponent } });
+
+    const elements = findElementsByTagName(hast, 'TestComponent');
+    expect(elements).toHaveLength(1);
+    // The `id` boundary word used to match inside `Width` → `cardWidTh`
+    expect(elements[0].properties).not.toHaveProperty('cardWidTh');
+    expect(elements[0].properties).toHaveProperty('cardWidth', '400px');
+  });
+
+  it('should leave already-camelCased props untouched even with embedded boundaries', () => {
+    const TestComponent = {} as CustomComponents[string];
+    const markdown = '<TestComponent gridWidth="2" maxColumns="3" />';
+    const hast = mdxish(markdown, { components: { TestComponent } });
+
+    const elements = findElementsByTagName(hast, 'TestComponent');
+    expect(elements).toHaveLength(1);
+    expect(elements[0].properties).toHaveProperty('gridWidth', '2');
+    expect(elements[0].properties).toHaveProperty('maxColumns', '3');
+  });
+
   describe('template literal children', () => {
     it('passes a multi-line template literal as a raw text child, not as processed paragraphs', () => {
       const Terminal = {} as CustomComponents[string];

@@ -35,6 +35,18 @@ describe('Anchor', () => {
     expect(screen.getByRole('link')).toMatchSnapshot();
   });
 
+  it('mdxish: renders inline HTML <a> with a CSS-string style attribute', () => {
+    const md = '<a href="https://example.com/file.pdf" style="color:#C346FF;"> Download</a>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    render(<Content />);
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', 'https://example.com/file.pdf');
+    expect(link).toHaveStyle({ color: '#C346FF' });
+  });
+
   describe('custom protocol links', () => {
     it.each(renderingEngines)('%s: resolves doc: protocol links', (_label, renderContent) => {
       const md = '[Getting Started](doc:getting-started)';

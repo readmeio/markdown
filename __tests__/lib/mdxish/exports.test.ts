@@ -178,6 +178,70 @@ export function isOdd(n) { return n === 0 ? false : isEven(n - 1); }
 isEven(4) = {isEven(4)}.`;
       expect(mix(md)).toContain('isEven(4) = true.');
     });
+
+    // There were cases where blank lines inside a declaration body
+    // might cause errors because the brace-balancing preprocessor
+    // escaped them
+    describe('blank lines inside declaration bodies', () => {
+      it('renders an arrow component with a blank line in its body', () => {
+        const md = `export const Foo = () => {
+  const x = "hello world";
+
+  return <div>{x}</div>;
+};
+
+<Foo />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md)).toContain('<div>hello world</div>');
+      });
+
+      it('renders an `export function` component with a blank line in its body', () => {
+        const md = `export function Greeting() {
+
+  return <div>Hey Ho</div>;
+}
+
+<Greeting />`;
+        expect(renderToHtml(md)).toContain('<div>Hey Ho</div>');
+      });
+
+      it('tolerates multiple consecutive blank lines in a body', () => {
+        const md = `export const Foo = () => {
+  const x = "spread out";
+
+
+
+  return <div>{x}</div>;
+};
+
+<Foo />`;
+        expect(renderToHtml(md)).toContain('<div>spread out</div>');
+      });
+
+      it('resolves an exported object value declared across a blank line', () => {
+        const md = `export const config = {
+  greeting: "hi",
+
+  name: "world",
+};
+
+{config.greeting} {config.name}`;
+        expect(mix(md)).toContain('hi world');
+      });
+
+      it('renders a blank-line component nested inside a Callout', () => {
+        const md = `export const Inner = () => {
+  const label = "nested";
+
+  return <strong>{label}</strong>;
+};
+
+> 👍 Heads up
+>
+> <Inner />`;
+        expect(renderToHtml(md)).toContain('<strong>nested</strong>');
+      });
+    });
   });
 
   describe('class declarations', () => {

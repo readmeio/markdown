@@ -68,6 +68,12 @@ function smartCamelCase(str: string): string {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
+  // Keys that already carry casing (e.g. `cardWidth`) are correct as-is; running
+  // boundary matching over them mangles inner matches (e.g. `id` inside `Width`).
+  if (/[A-Z]/.test(str)) {
+    return str;
+  }
+
   const allBoundaries = [...REACT_HTML_PROP_BOUNDARIES, ...CSS_STYLE_PROP_BOUNDARIES, ...CUSTOM_PROP_BOUNDARIES];
 
   // Return as-is if already a boundary word to avoid incorrect splitting
