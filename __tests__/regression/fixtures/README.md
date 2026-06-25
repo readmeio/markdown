@@ -41,7 +41,7 @@ __tests__/regression/fixtures/
 ├── table-unwrapped-rows/       ← cells/rows missing their <tr> and <tbody> wrappers
 ├── htmlblock-in-table/         ← <HTMLBlock> rendered inside a <Table> cell
 ├── legacy-vars-in-table/       ← <<vars>> resolved in a raw <table> cell
-└── callout-icons/              ← blockquote + FA-class-icon <Callout> render
+└── callout-icons/              ← blockquote vs JSX <Callout> render parity (emoji icon)
 ```
 
 See each fixture's own `README.md` for what it specifically covers and which

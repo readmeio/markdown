@@ -1,11 +1,11 @@
 # Callout rendering across engines
 
-> 📘 Blockquote heading
+> 📘 Heading
 >
-> Blockquote callout body.
+> Body
 
-<Callout icon="far fa-car-bolt" theme="info">
-  ### JSX heading
+<Callout icon="📘" theme="info">
+  ### Heading
 
-  JSX callout body with a Font Awesome icon.
+  Body
 </Callout>
