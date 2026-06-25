@@ -25,12 +25,12 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
 };
 
 /**
- * Attempt to promote a lowercase inline `html` node to an
- * `mdxJsxTextElement`. Scope is deliberately narrow: only lowercase tags
- * carrying `{…}` attribute expressions (what the `mdxComponent` text
- * tokenizer claims). PascalCase components — even when inline — stay with
- * `mdxishComponentBlocks` so they remain `mdxJsxFlowElement`, matching
- * ReadMe's flow-level component authoring model.
+ * Attempt to promote an inline `html` node to an `mdxJsxTextElement`. Scope
+ * mirrors what the `mdxComponent` text tokenizer claims: lowercase tags and
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary),
+ * both carrying `{…}` attribute expressions. All other PascalCase components
+ * stay with `mdxishComponentBlocks` so they remain `mdxJsxFlowElement`,
+ * matching ReadMe's flow-level component authoring model.
  *
  * Returns the original node unchanged when it doesn't qualify.
  */
@@ -69,14 +69,15 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
  * Runs after `mdxishComponentBlocks`, which skips paragraph-parented html
  * nodes and leaves them for this pass. Two producers put html nodes inside
  * paragraphs:
- *   1. The `mdxComponent` text tokenizer, for lowercase tags with `{…}`
- *      attribute expressions (e.g. `<a href={url}>here</a>`).
+ *   1. The `mdxComponent` text tokenizer, for lowercase tags and inline
+ *      PascalCase components (Anchor, Glossary) with `{…}` attribute
+ *      expressions (e.g. `<a href={url}>here</a>`, `<Anchor href={url}>x</Anchor>`).
  *   2. CommonMark's built-in html-text tokenizer, for PascalCase components
  *      (e.g. a single html node for self-closing `<C />`).
  *
- * Eligibility mirrors `mdxishComponentBlocks`: lowercase tags only promote
- * when they carry an expression attribute; plain inline HTML like
- * `<a href="x">` stays as an html node for rehype-raw.
+ * Eligibility mirrors `mdxishComponentBlocks`: a tag only promotes when it
+ * carries an expression attribute and isn't a non-inline PascalCase component;
+ * plain inline HTML like `<a href="x">` stays as an html node for rehype-raw.
  */
 const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
   const safeMode = !!opts.safeMode;

@@ -612,7 +612,6 @@ describe('html tags rendering', () => {
       });
     });
 
-
     it('should render an Anchor whose href is a concatenation expression', () => {
       const md =
         "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
