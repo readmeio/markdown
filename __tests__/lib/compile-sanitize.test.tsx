@@ -28,10 +28,10 @@ describe('MDX (compile) sanitization', () => {
     expect(container.querySelector('script')).not.toBeInTheDocument();
     expect(container.querySelector('iframe')).not.toBeInTheDocument();
 
-    // The link text still renders, but no anchor carries a javascript: href.
+    // The link text still renders, but no anchor carries a script-executing href.
+    const dangerousScheme = /^\s*(?:javascript|vbscript|data):/i;
     const hrefs = [...container.querySelectorAll('a')].map(a => a.getAttribute('href'));
-    // eslint-disable-next-line no-script-url
-    expect(hrefs.some(href => href?.startsWith('javascript:'))).toBe(false);
+    expect(hrefs.some(href => href !== null && dangerousScheme.test(href))).toBe(false);
     expect(container.textContent).toContain('link');
 
     // Image still renders, but the onerror handler is gone.
