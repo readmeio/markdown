@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import { rehypeToc } from '../processor/plugin/toc';
+import rehypeStripDangerousHtml from '../processor/sanitize/rehype-strip-dangerous-html';
 import {
   defaultTransforms,
   tailwindTransformer,
@@ -80,6 +81,10 @@ const compile = (
     ]);
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
   }
+
+  // MDX (non-`md`) content keeps raw HTML as JSX nodes that the schema above never
+  // sees, so strip script-execution vectors regardless of format.
+  rehypePlugins.push(rehypeStripDangerousHtml);
 
   try {
     const vfile = mdxCompileSync(text, {
