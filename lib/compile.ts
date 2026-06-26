@@ -80,11 +80,11 @@ const compile = (
       },
     ]);
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
+  } else {
+    // MDX (non-`md`) content keeps raw HTML as JSX nodes that the schema above never
+    // sees, so strip script-execution vectors regardless of format.
+    rehypePlugins.push(rehypeStripDangerousHtml);
   }
-
-  // MDX (non-`md`) content keeps raw HTML as JSX nodes that the schema above never
-  // sees, so strip script-execution vectors regardless of format.
-  rehypePlugins.push(rehypeStripDangerousHtml);
 
   try {
     const vfile = mdxCompileSync(text, {

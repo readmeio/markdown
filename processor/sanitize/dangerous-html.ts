@@ -8,7 +8,6 @@ import type { Root } from 'hast';
 const DANGEROUS_TAG_NAMES = new Set([
   'script',
   'noscript',
-  'style',
   'template',
   'iframe',
   'frame',
