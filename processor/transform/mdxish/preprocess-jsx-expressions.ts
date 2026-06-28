@@ -1,48 +1,6 @@
 import { JSX_COMMENT_REGEX } from '../../../lib/micromark/jsx-comment/pattern';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
-// Base64 encode (Node.js + browser compatible)
-function base64Encode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'utf-8').toString('base64');
-  }
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-// Base64 decode (Node.js + browser compatible)
-export function base64Decode(str: string): string {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(str, 'base64').toString('utf-8');
-  }
-  return decodeURIComponent(escape(atob(str)));
-}
-
-// Markers for protected HTMLBlock content (HTML comments avoid markdown parsing issues)
-export const HTML_BLOCK_CONTENT_START = '<!--RDMX_HTMLBLOCK:';
-export const HTML_BLOCK_CONTENT_END = ':RDMX_HTMLBLOCK-->';
-
-/**
- * Base64 encodes HTMLBlock template literal content to prevent markdown parser from consuming <script>/<style> tags.
- *
- * @param content
- * @returns Content with HTMLBlock template literals base64 encoded in HTML comments
- * @example
- * ```typescript
- * const input = '<HTMLBlock>{`<script>alert("xss")</script>`}</HTMLBlock>';
- * protectHTMLBlockContent(input)
- * // Returns: '<HTMLBlock><!--RDMX_HTMLBLOCK:PHNjcmlwdD5hbGVydCgieHNzIik8L3NjcmlwdD4=:RDMX_HTMLBLOCK--></HTMLBlock>'
- * ```
- */
-function protectHTMLBlockContent(content: string): string {
-  return content.replace(
-    /(<HTMLBlock[^>]*>)\{\s*`((?:[^`\\]|\\.)*)`\s*\}(<\/HTMLBlock>)/g,
-    (_match, openTag: string, templateContent: string, closeTag: string) => {
-      const encoded = base64Encode(templateContent);
-      return `${openTag}${HTML_BLOCK_CONTENT_START}${encoded}${HTML_BLOCK_CONTENT_END}${closeTag}`;
-    },
-  );
-}
-
 /**
  * Removes JSX-style comments (e.g., { /* comment *\/ }) from content.
  *
@@ -95,6 +53,25 @@ function restoreHTMLElements(content: string, htmlElements: string[]): string {
   return content.replace(HTML_ELEM_PLACEHOLDER, (_m, idx) => htmlElements[parseInt(idx, 10)]);
 }
 
+const ESM_DECLARATION_START = /^(?:export|import)\b/;
+
+/**
+ * Whether a line begins a top-level `export`/`import` declaration. Its braces
+ * are valid JS owned by the mdxjsEsm tokenizer (which tolerates blank lines),
+ * so escaping them would corrupt the source and break acorn parsing.
+ */
+function startsEsmDeclaration(chars: string[], lineStart: number): boolean {
+  return ESM_DECLARATION_START.test(chars.slice(lineStart, lineStart + 7).join(''));
+}
+
+function isBlankLine(chars: string[], lineStart: number): boolean {
+  for (let i = lineStart; i < chars.length; i += 1) {
+    if (chars[i] === '\n') return true;
+    if (chars[i] !== ' ' && chars[i] !== '\t') return false;
+  }
+  return true;
+}
+
 /**
  * Escapes unbalanced and paragraph-spanning braces so MDX doesn't trip on them.
  */
@@ -111,10 +88,19 @@ function escapeProblematicBraces(content: string): string {
   const toEscape = new Set<number>();
   // Convert to array of Unicode code points so that emojis and multi-byte characters are correctly tracked
   const chars = Array.from(protectedContent);
-  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; pos: number }[] = [];
+  const openStack: { hasBlankLine: boolean; isAttrExpr: boolean; isEsmDeclaration: boolean; pos: number }[] = [];
+  // Whether the current top-level statement is an `export`/`import` declaration.
+  let insideEsmDeclaration = false;
 
   for (let i = 0; i < chars.length; i += 1) {
     const ch = chars[i];
+
+    // At a top-level (brace depth 0) line start, decide whether we're inside an
+    // ESM declaration. The flag persists across the declaration's own lines.
+    if (openStack.length === 0 && (i === 0 || chars[i - 1] === '\n')) {
+      if (startsEsmDeclaration(chars, i)) insideEsmDeclaration = true;
+      else if (isBlankLine(chars, i)) insideEsmDeclaration = false;
+    }
 
     // Track string delimiters inside expressions to ignore braces within them
     if (openStack.length > 0) {
@@ -167,11 +153,13 @@ function escapeProblematicBraces(content: string): string {
       if (!isAttrExpr && openStack.length > 0 && openStack[openStack.length - 1].isAttrExpr) {
         isAttrExpr = true;
       }
-      openStack.push({ pos: i, hasBlankLine: false, isAttrExpr });
+      openStack.push({ pos: i, hasBlankLine: false, isAttrExpr, isEsmDeclaration: insideEsmDeclaration });
       lastNewlinePos = -2;
     } else if (ch === '}') {
       if (openStack.length > 0) {
         const entry = openStack.pop()!;
+        // The declaration's braces are closed; later top-level braces are not ESM.
+        if (openStack.length === 0) insideEsmDeclaration = false;
         // Pure `{/* ... */}` comments are handled downstream by the jsxComment
         // tokenizer — escaping their braces would prevent it from running.
         const isPureJsxComment =
@@ -179,18 +167,23 @@ function escapeProblematicBraces(content: string): string {
           chars[entry.pos + 2] === '*' &&
           chars[i - 1] === '/' &&
           chars[i - 2] === '*';
-        if (entry.hasBlankLine && !isPureJsxComment && !entry.isAttrExpr) {
+        if (entry.hasBlankLine && !isPureJsxComment && !entry.isAttrExpr && !entry.isEsmDeclaration) {
           toEscape.add(entry.pos);
           toEscape.add(i);
         }
       } else {
         toEscape.add(i);
       }
+    } else if (ch === ';' && openStack.length === 0) {
+      // A top-level `;` ends the current statement, ESM or otherwise.
+      insideEsmDeclaration = false;
     }
   }
 
   // Anything still open is unbalanced.
-  openStack.forEach(entry => toEscape.add(entry.pos));
+  openStack.forEach(entry => {
+    if (!entry.isEsmDeclaration) toEscape.add(entry.pos);
+  });
 
   // Reconstruct the content with the escaped braces.
   const escapedContent = toEscape.size === 0 ? protectedContent : chars.map((ch, i) => (toEscape.has(i) ? `\\${ch}` : ch)).join('');
@@ -208,10 +201,9 @@ function escapeProblematicBraces(content: string): string {
  * @returns Preprocessed content ready for markdown parsing
  */
 export function preprocessJSXExpressions(content: string): string {
-  let processed = protectHTMLBlockContent(content);
-  const { protectedCode, protectedContent } = protectCodeBlocks(processed);
+  const { protectedCode, protectedContent } = protectCodeBlocks(content);
 
-  processed = escapeProblematicBraces(protectedContent);
+  let processed = escapeProblematicBraces(protectedContent);
 
   processed = restoreCodeBlocks(processed, protectedCode);
   return processed;

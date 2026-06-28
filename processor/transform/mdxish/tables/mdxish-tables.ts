@@ -10,6 +10,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
+import { NodeTypes } from '../../../../enums';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
@@ -177,6 +178,21 @@ const processTableNode = (
 
   let tableHasFlowContent = false;
 
+  // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
+  // `mdxishHtmlBlocks` after this transformer) is block-level content that a
+  // markdown table cell can't represent, so keep the table as a JSX `<Table>`.
+  visit(
+    node as Node,
+    candidate =>
+      candidate.type === NodeTypes.htmlBlock ||
+      ((candidate.type === 'mdxJsxFlowElement' || candidate.type === 'mdxJsxTextElement') &&
+        (candidate as MdxJsxFlowElement | MdxJsxTextElement).name === 'HTMLBlock'),
+    () => {
+      tableHasFlowContent = true;
+      return EXIT;
+    },
+  );
+
   // Re-parse text-only cells through markdown and detect flow content
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
     if (!isTextOnly(cell.children as unknown[])) return;
@@ -277,16 +293,36 @@ const processTableNode = (
       n.type === 'paragraph' && 'children' in n && Array.isArray(n.children) ? (n.children as Node[]) : [n],
     );
 
-  visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (child.name !== 'thead' && child.name !== 'tbody') return;
+  // Iterate the table's direct children in document order. Rows may live
+  // inside a `<thead>`/`<tbody>` section, or sit bare directly under the table
+  // with no section wrapper — both are collected here so the first row becomes
+  // the markdown table header.
+  const tableChildren = flattenSectionChildren(node.children as Node[]);
+  tableChildren.forEach(child => {
+    if (!isMDXElement(child)) return;
+    const childElement = child as MdxJsxFlowElement | MdxJsxTextElement;
 
-    const sectionChildren = flattenSectionChildren(child.children as Node[]);
+    // Path for a `<tr>` directly under the table, without a `<thead>`/`<tbody>` wrapper.
+    if (childElement.name === 'tr') {
+      children.push({
+        type: 'tableRow' as const,
+        children: collectCells(childElement as Node),
+        position: childElement.position,
+      });
+      return;
+    }
+
+    // Path for when the rows are wrapped in a `<thead>`/`<tbody>`
+    // We visit & collect the entire rows under them directly here
+    if (childElement.name !== 'thead' && childElement.name !== 'tbody') return;
+
+    const sectionChildren = flattenSectionChildren(childElement.children as Node[]);
     const hasRow = sectionChildren.some(
       c => isMDXElement(c) && (c as MdxJsxFlowElement | MdxJsxTextElement).name === 'tr',
     );
 
     if (hasRow) {
-      visit(child as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
+      visit(childElement as Node, isMDXElement, (row: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (row.name !== 'tr') return;
         children.push({
           type: 'tableRow' as const,
@@ -298,19 +334,20 @@ const processTableNode = (
       // No `<tr>`, chunk bare cells into rows using the prior row's column
       // count (e.g. from `<thead>`), so 4 bare `<td>`s under a 2-col header
       // become 2 rows of 2.
-      const cells = collectCells(child as Node);
+      const cells = collectCells(childElement as Node);
       if (cells.length === 0) return;
       const cols = children[0]?.children?.length || cells.length;
       for (let i = 0; i < cells.length; i += cols) {
         children.push({
           type: 'tableRow' as const,
           children: cells.slice(i, i + cols),
-          position: child.position,
+          position: childElement.position,
         });
       }
     }
   });
 
+  // Output the markdown table node
   const firstRow = children[0];
   const columnCount = firstRow?.children?.length || 0;
   const alignArray: Table['align'][number][] =

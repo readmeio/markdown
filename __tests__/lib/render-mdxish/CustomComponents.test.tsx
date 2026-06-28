@@ -376,6 +376,34 @@ export const ExampleComponent = ({ prop1, prop2, prop3 }) => {
       expect(container.querySelector('#prop1')?.textContent).toBe('2');
       expect(container.querySelector('#prop2')?.textContent).toBe('HELLO');
     });
+
+    it('should render a prop that is an array of objects containing JSX', () => {
+      const componentCode = `
+export const Component = ({ items }) => {
+  return (
+    <div data-testid="component">
+      {items.map((item, index) => (
+        <div key={index} className="card">{item.description}</div>
+      ))}
+    </div>
+  );
+};
+
+<Component items={[{ description: <>Hello <a href="https://example.com">link</a></> }]} />
+      `;
+      const compiled = run(compile(componentCode));
+      const components: Record<string, RMDXModule> = { Component: compiled };
+
+      const md = '<Component items={[{ description: <>Hello <a href="https://example.com">link</a></> }]} />';
+      const tree = mdxish(md, { components });
+      const mod = renderMdxish(tree, { components });
+      const { container } = render(<mod.default />);
+
+      expect(container.querySelector('[data-testid="component"]')).toBeInTheDocument();
+      const link = container.querySelector('a');
+      expect(link?.textContent).toBe('link');
+      expect(link?.getAttribute('href')).toBe('https://example.com');
+    });
   });
 
   describe('template literal children', () => {

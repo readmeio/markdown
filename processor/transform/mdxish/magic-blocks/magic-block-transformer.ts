@@ -251,6 +251,10 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
   return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
+/** Escape leading `-`/`*`/`+` (followed by space/EOL) so cells don't become bullet lists. */
+const escapeLeadingListMarkers = (text: string): string =>
+  text.replace(/^([-*+])(?=[ \t]|$)/gm, '\\$1');
+
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
@@ -267,7 +271,7 @@ const parseTableCell = (text: string): MdastNode[] => {
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
   const trimmedLines = normalized.split('\n').map(line => line.trimStart());
-  const processed = trimmedLines.join('\n');
+  const processed = escapeLeadingListMarkers(trimmedLines.join('\n'));
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`

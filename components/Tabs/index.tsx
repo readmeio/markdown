@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import Icon from '../Icon';
+
 import './style.scss';
 
 export const Tab = ({ children }: React.PropsWithChildren) => {
@@ -26,10 +28,7 @@ const Tabs = ({ children }: TabsProps) => {
               onClick={() => setActiveTab(index)}
             >
               {tab.props.icon && (
-                <i
-                  className={`TabGroup-icon fa-duotone fa-solid ${tab.props.icon}`}
-                  style={{ color: `${tab.props.iconColor}` }}
-                ></i>
+                <Icon className="TabGroup-icon" icon={tab.props.icon} iconColor={tab.props.iconColor} />
               )}
               {tab.props.title}
             </button>

@@ -277,6 +277,21 @@
     margin-top: 0;
   }
 
+  // no margins where we’ll likely have inline images or they might break layout
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  figcaption,
+  ol,
+  ul,
+  p,
+  table {
+    --markdown-img-margin: 0;
+  }
+
   ol,
   ul {
     margin-bottom: round(1.3333em, 1px); // 20px at 15px base (condensed)

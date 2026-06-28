@@ -9,7 +9,7 @@ import { expect } from 'vitest';
 import Callout from '../../components/Callout';
 import { mdxish } from '../../lib';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Callout', () => {
   describe('general component rendering', () => {
@@ -119,6 +119,79 @@ Body with **markdown** support.
       const { container: containerWithoutSpaces } = render(<ContentWithoutSpaces />);
 
       expect(containerWithSpaces.innerHTML).toBe(containerWithoutSpaces.innerHTML);
+    });
+  });
+
+  it('mdxish: <Callout style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Callout theme="info" icon="📘" style="color: red">\n\nBody\n\n</Callout>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'Callout');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
+  });
+
+  describe('icon rendering via the Icon component', () => {
+    it('renders an emoji icon as a <span>', () => {
+      const { container } = render(
+        <Callout icon="📘" theme="info">
+          <p>Title</p>
+          <p>Body</p>
+        </Callout>,
+      );
+
+      const icon = container.querySelector('.callout-icon');
+      expect(icon?.tagName).toBe('SPAN');
+      expect(icon).toHaveTextContent('📘');
+      expect(icon).not.toHaveClass('callout-icon_fa');
+    });
+
+    it('renders a bare fa- icon as an <i> with the fad duotone fallback', () => {
+      const { container } = render(
+        <Callout icon="fa-book" theme="info">
+          <p>Title</p>
+          <p>Body</p>
+        </Callout>,
+      );
+
+      const icon = container.querySelector('.callout-icon');
+      expect(icon?.tagName).toBe('I');
+      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', 'fa-duotone', 'fa-solid', 'fa-book');
+    });
+
+    it.each([
+      ['fa', 'fa fa-book'],
+      ['fab', 'fab fa-github'],
+      ['fad', 'fad fa-book'],
+      ['fal', 'fal fa-book'],
+      ['far', 'far fa-bell'],
+      ['fas', 'fas fa-star'],
+    ])('renders a %s prefixed icon as an <i> without adding fad', (prefix, iconClass) => {
+      const { container } = render(
+        <Callout icon={iconClass} theme="info">
+          <p>Title</p>
+          <p>Body</p>
+        </Callout>,
+      );
+
+      const icon = container.querySelector('.callout-icon');
+      const [, faIcon] = iconClass.split(' ');
+      expect(icon?.tagName).toBe('I');
+      expect(icon).toHaveClass('callout-icon', 'callout-icon_fa', prefix, faIcon);
+    });
+
+    it('does not render an icon when none is provided', () => {
+      const { container } = render(
+        <Callout theme="info">
+          <p>Title</p>
+          <p>Body</p>
+        </Callout>,
+      );
+
+      expect(container.querySelector('.callout-icon')).toBeNull();
     });
   });
 
