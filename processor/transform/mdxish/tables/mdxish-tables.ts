@@ -1,4 +1,4 @@
-import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
+import type { Html, List, ListItem, Node, Parent, Parents, Root, Table, TableCell, TableRow, Text } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
@@ -37,6 +37,48 @@ const tableTypes = {
   tr: 'tableRow',
   th: 'tableCell',
   td: 'tableCell',
+};
+
+const CELL_OPEN_TAG_RE = /^<(td|th)(?:\s[^>]*)?>/i;
+const LEADING_ESCAPED_MARKER_RE = /^\s*\\(?:[-*+](?=[ \t]|<|$|\n)|#)/;
+
+/**
+ * Cell starts with `\-`/`\*`/`\+`/`\#`; restore `\` before re-parse.
+ */
+const cellSourceHasEscapedMarker = (cellSrc: string): boolean => {
+  const open = cellSrc.match(CELL_OPEN_TAG_RE);
+  return open != null && LEADING_ESCAPED_MARKER_RE.test(cellSrc.slice(open[0].length));
+};
+
+/**
+ * Re-parsed children are a phantom empty block from a lone marker.
+ */
+const isLonePhantomBlock = (children: Node[]): boolean => {
+  if (children.length !== 1) return false;
+  const child = children[0];
+  switch (child.type) {
+    case 'list': {
+      const items = (child as List).children;
+      return items.length === 1 && ((items[0] as ListItem).children?.length ?? 0) === 0;
+    }
+    case 'heading':
+    case 'blockquote':
+      return ((child as Parent).children?.length ?? 0) === 0;
+    case 'thematicBreak':
+      return true;
+    default:
+      return false;
+  }
+};
+
+/** Slice the cell's substring via its outer-document offsets. */
+const sliceCellSource = (
+  tableSource: string | undefined,
+  cellPosition: Node['position'] | undefined,
+  baseOffset: number,
+): string | undefined => {
+  if (!tableSource || cellPosition?.start?.offset == null || cellPosition?.end?.offset == null) return undefined;
+  return tableSource.slice(cellPosition.start.offset - baseOffset, cellPosition.end.offset - baseOffset);
 };
 
 // `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
@@ -143,6 +185,7 @@ const processTableNode = (
   index: number,
   parent: Parents,
   documentPosition?: Node['position'],
+  tableSource?: string,
 ): void => {
   if (node.name !== 'Table' && node.name !== 'table') return;
 
@@ -151,6 +194,7 @@ const processTableNode = (
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   let tableHasFlowContent = false;
+  const tableBaseOffset = position?.start?.offset ?? 0;
 
   // An `<HTMLBlock>` (still a JSX element here; converted to `html-block` by
   // `mdxishHtmlBlocks` after this transformer) is block-level content that a
@@ -171,19 +215,30 @@ const processTableNode = (
   visit(node as Node, isTableCell, (cell: MdxJsxTableCell) => {
     if (!isTextOnly(cell.children as unknown[])) return;
 
-    const textContent = extractTextFromChildren(cell.children as unknown[]);
-    if (!textContent.trim()) return;
+    const originalText = extractTextFromChildren(cell.children as unknown[]);
+    if (!originalText.trim()) return;
+
+    // Restore the `\` so `\- foo` re-parses as text.
+    const cellSrc = sliceCellSource(tableSource, cell.position, tableBaseOffset);
+    const textContent = cellSrc && cellSourceHasEscapedMarker(cellSrc) ? `\\${originalText}` : originalText;
 
     // Since now we are using remarkMdx, which can fail and error, we need to
     // gate this behind a try/catch to ensure that malformed syntaxes do not
     // crash the page
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
-      if (parsed.children.length > 0) {
-        cell.children = parsed.children as MdxJsxTableCell['children'];
-        if (hasFlowContent(parsed.children as Node[])) {
-          tableHasFlowContent = true;
-        }
+      if (parsed.children.length === 0) return;
+
+      // Lone marker → empty block; render as literal char.
+      if (isLonePhantomBlock(parsed.children as Node[])) {
+        const textNode: Text = { type: 'text', value: originalText.trim() };
+        cell.children = [textNode] as unknown as MdxJsxTableCell['children'];
+        return;
+      }
+
+      cell.children = parsed.children as MdxJsxTableCell['children'];
+      if (hasFlowContent(parsed.children as Node[])) {
+        tableHasFlowContent = true;
       }
     } catch {
       // If parsing fails, keep original children
@@ -386,7 +441,7 @@ const mdxishTables = (): Transform => tree => {
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-        processTableNode(tableNode, index, parent as Parents, node.position);
+        processTableNode(tableNode, index, parent as Parents, node.position, node.value);
         return EXIT;
       });
     } else if (node.value.startsWith('<table')) {

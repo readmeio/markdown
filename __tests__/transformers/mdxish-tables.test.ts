@@ -203,6 +203,181 @@ describe('mdxish tables transformation', () => {
     });
   });
 
+  describe('given a leading list marker inside a JSX cell', () => {
+    it('renders an unescaped leading dash as a bullet list (default markdown behaviour)', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>- foo</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<ul>');
+      expect(html).toContain('<li>foo</li>');
+    });
+
+    it('renders an escaped leading dash as literal text (raw HTML <table>)', () => {
+      const doc = `<table>
+<thead><tr><th>\\-</th><th>\\-</th></tr></thead>
+<tbody><tr><td>\\- fqefeq</td><td>\\- hello</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<ul>');
+      expect(html).not.toContain('<li>');
+      expect(html).toContain('- fqefeq');
+      expect(html).toContain('- hello');
+    });
+
+    it('renders an escaped leading dash as literal text (<Table> component)', () => {
+      const doc = `<Table>
+  <thead>
+    <tr><th>\\-</th><th>\\-</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>\\- fqefeq</td><td>\\- hello</td></tr>
+  </tbody>
+</Table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<ul>');
+      expect(html).not.toContain('<li>');
+      expect(html).toContain('- fqefeq');
+      expect(html).toContain('- hello');
+    });
+
+    it('renders an escaped lone marker (no following content) as literal text', () => {
+      const doc = `<table>
+<thead><tr><th>\\-</th></tr></thead>
+<tbody><tr><td>body</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<ul>');
+      expect(html).toContain('-');
+    });
+
+    it('still parses emphasis (asterisk hugging text) inside a JSX cell', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>*italic*</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<em>italic</em>');
+    });
+
+    it('preserves a real <ul> inside a JSX cell', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td><ul><li>real item</li></ul></td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<ul>');
+      expect(html).toContain('<li>real item</li>');
+    });
+
+    it('renders an unescaped leading hash as a heading (default markdown behaviour)', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td># heading</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toMatch(/<h1[^>]*>heading<\/h1>/);
+    });
+
+    it('renders an escaped leading hash as literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>\\# heading</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toMatch(/<h1[^>]*>/);
+      expect(html).toContain('# heading');
+    });
+
+    it('renders an escaped leading hash with multiple hashes as literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>\\## subheading</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toMatch(/<h2[^>]*>/);
+      expect(html).toContain('## subheading');
+    });
+
+    it.each([
+      ['-', '-'],
+      ['*', '*'],
+      ['+', '+'],
+      ['#', '#'],
+      ['##', '##'],
+      ['###', '###'],
+    ])('flattens a standalone "%s" cell to literal text instead of an empty list/heading', (marker, expected) => {
+      const doc = `<table>
+<thead><tr><th>${marker}</th></tr></thead>
+<tbody><tr><td>body</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<ul>');
+      expect(html).not.toMatch(/<h[1-6][^>]*><\/h[1-6]>/);
+      expect(html).toContain(`<th>${expected}</th>`);
+    });
+
+    it('keeps a list when the cell has actual content after the marker', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>- foo</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<ul>');
+      expect(html).toContain('<li>foo</li>');
+    });
+
+    it('keeps a heading when the cell has actual content after the hash', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td># heading</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toMatch(/<h1[^>]*>heading<\/h1>/);
+    });
+
+    it('flattens a standalone `>` blockquote marker to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>></th></tr></thead>
+<tbody><tr><td>body</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toMatch(/<blockquote/);
+      expect(html).toMatch(/<th>(>|&gt;|&#x3E;)<\/th>/);
+    });
+
+    it('flattens a standalone `---` thematic break to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>---</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<hr');
+      expect(html).toContain('---');
+    });
+
+    it('flattens a standalone `***` thematic break to literal text', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>***</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).not.toContain('<hr');
+      expect(html).toContain('***');
+    });
+
+    it('keeps a blockquote when the cell has actual content after the marker', () => {
+      const doc = `<table>
+<thead><tr><th>head</th></tr></thead>
+<tbody><tr><td>> quote</td></tr></tbody>
+</table>`;
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<blockquote');
+      expect(html).toContain('quote');
+    });
+  });
+
   describe('given malformed JSX inside <table>', () => {
     // Stray duplicated </td></tr> makes mdxjs reject the captured value;
     // the non-MDX fallback should still split the html node so blank-line
