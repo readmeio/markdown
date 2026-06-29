@@ -2,6 +2,7 @@ import type { Code, Heading, Parent, Root } from 'mdast';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
+import { VFile } from 'vfile';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
@@ -18,6 +19,8 @@ interface MdxJsxFlowElement extends Parent {
  * Helper to parse markdown and apply the component block plugins.
  * Includes the mdx-component micromark tokenizer to capture multi-line
  * components as single HTML nodes before the transformer runs.
+ * Passes a VFile so the transformer has access to the original source for
+ * source-aware position computation (needed for blockquote/list items).
  */
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
@@ -27,7 +30,7 @@ const parseWithPlugin = (markdown: string): Root => {
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
-  processor.runSync(tree);
+  processor.runSync(tree, new VFile({ value: markdown }));
   return tree as Root;
 };
 
@@ -534,6 +537,32 @@ hello
 
       it('position spans the full closing tag for a multi-line component inside a list item', () => {
         const markdown = '- <Tag>\n    body\n  </Tag>';
+        const tree = parseWithPlugin(markdown);
+
+        const list = tree.children[0] as Parent;
+        const listItem = list.children[0] as Parent;
+        const tag = listItem.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a blockquote', () => {
+        // Regression: in the trailing-content path, positionEndingAtConsumed used the
+        // stripped value length to compute end.offset. Blockquote lines have '> ' prefixes
+        // in the source that are absent from the html node's value, causing the offset to
+        // be computed too early and the closing tag to appear truncated when sliced.
+        const markdown = '> <Tag>\n>   body\n> </Tag>\n> trailing';
+        const tree = parseWithPlugin(markdown);
+
+        const blockquote = tree.children[0] as Parent;
+        const tag = blockquote.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n>   body\n> </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a list item', () => {
+        // Same regression for list items: indentation is stripped from the html value.
+        const markdown = '- <Tag>\n    body\n  </Tag>\n- trailing';
         const tree = parseWithPlugin(markdown);
 
         const list = tree.children[0] as Parent;
