@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.10.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** restore correct end position for fully-consumed nested component blocks ([#1527](https://github.com/readmeio/markdown/issues/1527)) ([e0a276c](https://github.com/readmeio/markdown/commit/e0a276c297080392dd1b9d87b44205a3dba371db)), closes [#1519](https://github.com/readmeio/markdown/issues/1519)
+
 ## Version 14.10.1
 ### 🛠 Fixes & Updates
 
