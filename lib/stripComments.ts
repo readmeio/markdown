@@ -11,7 +11,9 @@ import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malfor
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
+import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { jsxTable } from './micromark/jsx-table';
+import { mdxComponent } from './micromark/mdx-component';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -27,13 +29,14 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
 
   const processor = unified();
 
-  // we still require these two extensions because:
+  // we still require these extensions because:
   // 1. we can rely on remarkMdx to parse MDXish
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
+  // 3. mdx component to prevent parsing breaks for multiline components
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [jsxTable(), mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), mdxExpressionFromMarkdown()])
+      .data('micromarkExtensions', [jsxTable(), mdxComponent(), mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), mdxComponentFromMarkdown(), mdxExpressionFromMarkdown()])
       .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 

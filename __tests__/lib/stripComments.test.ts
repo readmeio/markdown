@@ -468,6 +468,20 @@ end"`);
     });
 
     it.each([
+      [
+        'multiline component with attribute expression (mdxish)',
+        '<AdvancedTable\n data={[\n  { name: "ConfigID", type: "integer", description: "Unique id `code`." },\n ]}\n/>',
+        { mdxish: true },
+      ],
+      ['single-line component with attribute expression (mdxish)', '<AdvancedTable data={[{ name: "A" }]} />', { mdxish: true }],
+    ])('should preserve multiline custom components through round-trip: %s', async (_name, input, opts) => {
+      const output = await stripComments(input, opts);
+      expect(output).not.toContain('\\<');
+      expect(output).toContain('<AdvancedTable');
+      expect(output).toContain('data={[');
+    });
+
+    it.each([
       ['comment + magic block child', '- Item <!-- c -->\n  [block:html]\n  {\n    "html": "<p>hi</p>"\n  }\n  [/block]'],
       ['comment between magic blocks', '[block:html]\n{\n  "html": "<a>A</a>"\n}\n[/block]\n<!-- c -->\n[block:code]\n{\n  "codes": [{"code": "1", "language": "js"}]\n}\n[/block]'],
       ['comment between raw HTML', '<div>A</div>\n<!-- c -->\n<div>B</div>'],
