@@ -1,4 +1,13 @@
-import type { Root } from 'hast';
+import type { Root, Element } from 'hast';
+import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
+import type { Node, Parent } from 'unist';
+
+import { SKIP, visit } from 'unist-util-visit';
+
+// A deny-list, deliberately weaker than the `md` pipeline's `rehype-sanitize`
+// allow-list: those pipelines preserve arbitrary custom components, which an
+// allow-list can't express. Anything not enumerated below passes through, so
+// CSS exfiltration via `style` and similar lower-severity vectors are out of scope.
 
 /**
  * Elements removed wholesale (subtree included) because they execute script,
@@ -63,6 +72,10 @@ const isComponentName = (name: string): boolean => /^[A-Z]/.test(name);
 /**
  * True for URLs that execute on navigation/load. Only a leading scheme matters:
  * a colon that appears after a `/`, `?`, or `#` is part of a relative path, not a scheme.
+ * 
+ * Re-derives scheme parsing the `md` allow-list gets from rehype-sanitize, since the
+ * deny-list path has no schema. Treats the value as one URL, so it can't vet each entry
+ * of a comma-delimited `srcset` — fine only because `srcset` can't run a `javascript:` scheme.
  */
 const isDangerousUrl = (value: unknown): boolean => {
   if (typeof value !== 'string') return false;
@@ -81,29 +94,30 @@ const isDangerousUrl = (value: unknown): boolean => {
   return scheme === 'data' && /^[^,]*(?:html|xml|script|svg)/.test(normalized.slice(colonIndex + 1));
 };
 
-// MDX keeps JSX (including raw HTML) as `mdxJsxFlowElement`/`mdxJsxTextElement`
-// nodes with a `name` + `attributes` array, whereas the mdxish/`md` pipelines
-// produce hast `element` nodes with `tagName` + `properties`. This loose shape
-// lets one walker sanitize both so every engine reaches parity.
-interface SanitizableNode {
-  attributes?: { name?: string | null; type: string; value?: unknown }[];
-  children?: SanitizableNode[];
+// One tree can mix hast `element` nodes (`tagName`/`properties`) with MDX JSX nodes
+// (`name`/`attributes`), since the `compile` pipeline never round-trips JSX through
+// parse5. A host element is exactly one shape, so guards narrow before touching attrs.
+interface MdxJsxElementNode extends Node {
+  attributes?: MdxJsxAttribute[];
   name?: string | null;
-  properties?: Record<string, unknown> | null;
-  tagName?: string;
-  type: string;
+  type: 'mdxJsxFlowElement' | 'mdxJsxTextElement';
 }
 
+const isHastElement = (node: Node): node is Element => node.type === 'element';
+const isMdxJsxElement = (node: Node): node is MdxJsxElementNode =>
+  node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement';
+
 /** The element/component name for either node shape, or null for text/root/fragments. */
-const elementName = (node: SanitizableNode): string | null => {
-  if (node.type === 'element') return typeof node.tagName === 'string' ? node.tagName : null;
-  if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') return node.name ?? null;
+const elementName = (node: Node): string | null => {
+  if (isHastElement(node)) return node.tagName;
+  if (isMdxJsxElement(node)) return node.name ?? null;
   return null;
 };
 
-const cleanHostElement = (node: SanitizableNode): void => {
-  const { properties } = node;
-  if (properties) {
+/** Removes event-handler and `javascript:`-bearing attributes from a host element, in place. */
+const cleanHostElement = (node: Node): void => {
+  if (isHastElement(node) && node.properties) {
+    const { properties } = node;
     Object.keys(properties).forEach(key => {
       if (isEventHandlerAttribute(key) || (isUrlAttribute(key) && isDangerousUrl(properties[key]))) {
         delete properties[key];
@@ -111,7 +125,7 @@ const cleanHostElement = (node: SanitizableNode): void => {
     });
   }
 
-  if (node.attributes) {
+  if (isMdxJsxElement(node) && node.attributes) {
     node.attributes = node.attributes.filter(attr => {
       if (attr.type !== 'mdxJsxAttribute' || typeof attr.name !== 'string') return true; // keep `{...spread}`
       if (isEventHandlerAttribute(attr.name)) return false;
@@ -121,32 +135,28 @@ const cleanHostElement = (node: SanitizableNode): void => {
 };
 
 /**
- * Removes dangerous descendant elements and neutralizes script-bearing attributes
- * in place. Recurses through components so raw HTML nested inside them is cleaned;
- * iterates back-to-front so splicing doesn't skip siblings.
+ * Strips script-execution vectors (script, MathML/SVG foreign content, event handlers,
+ * `javascript:`/`vbscript:` URLs) from a HAST/MDX tree. Custom components keep their
+ * props (React props, not DOM handlers) but are descended into to clean nested raw HTML.
  */
-const cleanChildren = (node: SanitizableNode): void => {
-  if (!node.children) return;
+export const stripDangerousHtml = (tree: Root): void => {
+  visit(tree, (node, index, parent: Parent | undefined) => {
+    const name = elementName(node);
 
-  for (let index = node.children.length - 1; index >= 0; index -= 1) {
-    const child = node.children[index];
-    const name = elementName(child);
-    const isHostElement = name !== null && !isComponentName(name);
+    // Non-elements (root/text) and PascalCase components: descend without touching attributes.
+    if (name === null || isComponentName(name)) return undefined;
 
-    if (isHostElement && DANGEROUS_TAG_NAMES.has(name.toLowerCase())) {
-      node.children.splice(index, 1);
-      continue; // eslint-disable-line no-continue
+    // Host element: drop it (and its subtree) wholesale if dangerous; SKIP continues at the
+    // same index, which now holds the next sibling shifted in by the splice.
+    if (DANGEROUS_TAG_NAMES.has(name.toLowerCase())) {
+      if (parent && typeof index === 'number') {
+        parent.children.splice(index, 1);
+        return [SKIP, index];
+      }
+      return undefined;
     }
 
-    if (isHostElement) cleanHostElement(child);
-    cleanChildren(child);
-  }
+    cleanHostElement(node);
+    return undefined;
+  });
 };
-
-/**
- * Strips script-execution vectors from a HAST/MDX tree: `<script>`, MathML/SVG
- * foreign content, event-handler attributes, and `javascript:`/`vbscript:` URLs.
- * Handles both hast `element` and MDX JSX nodes; PascalCase custom components keep
- * their props (React props, not DOM handlers) — only host elements are sanitized.
- */
-export const stripDangerousHtml = (tree: Root): void => cleanChildren(tree);

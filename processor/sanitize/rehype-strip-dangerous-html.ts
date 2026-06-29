@@ -3,10 +3,9 @@ import type { Root } from 'hast';
 import { stripDangerousHtml } from './dangerous-html';
 
 /**
- * Rehype plugin that strips script-execution vectors (script, MathML/SVG foreign
- * content, event handlers, `javascript:` URLs) introduced by raw HTML / JSX in doc
- * bodies. Shared by the `mdxish` and MDX `compile` pipelines so both engines match
- * the `md` pipeline's sanitization. Must run after raw HTML is parsed into nodes.
+ * Rehype plugin wrapping the deny-list stripper for the `mdxish` and MDX `compile`
+ * pipelines, which can't use the `md` allow-list because custom components must
+ * survive. Must run after raw HTML is parsed into nodes. See `dangerous-html.ts`.
  */
 const rehypeStripDangerousHtml = () => (tree: Root) => {
   stripDangerousHtml(tree);

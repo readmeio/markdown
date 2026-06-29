@@ -3,11 +3,9 @@ import React from 'react';
 
 import { execute } from '../helpers';
 
-/**
- * The `md` format sanitizes via rehype-sanitize (covered in run.test.tsx). Default
- * MDX format keeps raw HTML as JSX nodes that schema never sees, so these assert the
- * shared dangerous-HTML stripper closes that path too.
- */
+// `md` format sanitizes via rehype-sanitize's allow-list (covered in run.test.tsx).
+// Default MDX keeps raw HTML as JSX nodes that allow-list never sees, so these assert
+// the deny-list stripper removes the known script-execution vectors on that path.
 describe('MDX (compile) sanitization', () => {
   it('strips script-execution vectors in default MDX format', () => {
     const md = [

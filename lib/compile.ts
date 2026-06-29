@@ -81,8 +81,9 @@ const compile = (
     ]);
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
   } else {
-    // MDX (non-`md`) content keeps raw HTML as JSX nodes that the schema above never
-    // sees, so strip script-execution vectors regardless of format.
+    // MDX keeps raw HTML as JSX nodes the `rehypeSanitize` allow-list never sees, and
+    // custom components must survive an allow-list anyway, so fall back to a deny-list.
+    // Narrower guarantee than the `md` path — see `dangerous-html.ts`.
     rehypePlugins.push(rehypeStripDangerousHtml);
   }
 
