@@ -523,9 +523,6 @@ hello
       });
 
       it('position spans the full closing tag for a multi-line component inside a blockquote', () => {
-        // Regression test: positionEndingAtConsumed used the stripped value length to compute
-        // end.offset, but the original source has '> ' on every continuation line.
-        // This caused nodeToSource to slice too early, dropping the closing tag.
         const markdown = '> <Tag>\n>   body\n> </Tag>';
         const tree = parseWithPlugin(markdown);
 
@@ -536,8 +533,6 @@ hello
       });
 
       it('position spans the full closing tag for a multi-line component inside a list item', () => {
-        // Same regression: list-item indentation is stripped from the html value but
-        // present in the original source, causing the same off-by-N offset error.
         const markdown = '- <Tag>\n    body\n  </Tag>';
         const tree = parseWithPlugin(markdown);
 
