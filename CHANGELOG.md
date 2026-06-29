@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 14.10.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** allow empty lines inside export declarations ([#1517](https://github.com/readmeio/markdown/issues/1517)) ([0856591](https://github.com/readmeio/markdown/commit/0856591b8ecb0c39d6fd7b234a1d184012614ece))
+* **mdxish:** component sharing a line with trailing text duplicates the trailing content ([#1519](https://github.com/readmeio/markdown/issues/1519)) ([de14adf](https://github.com/readmeio/markdown/commit/de14adf0491e46112db4ae92fa5f8dbc61048d31))
+* **mdxish:** keep parsed style object when merging raw hast props ([#1504](https://github.com/readmeio/markdown/issues/1504)) ([d94d9ff](https://github.com/readmeio/markdown/commit/d94d9ff419e4988e08c64e808c06a1f9c1b572e3)), closes [#C346FF](https://github.com/readmeio/markdown/issues/C346FF)
+* **mdxish:** preserve already-cased component props ([#1522](https://github.com/readmeio/markdown/issues/1522)) ([36e4a2c](https://github.com/readmeio/markdown/commit/36e4a2c29389672908b0750d13dd2ba63b4b0353))
+* **images:** preserve captions on images in MDX ([#1516](https://github.com/readmeio/markdown/issues/1516)) ([be379aa](https://github.com/readmeio/markdown/commit/be379aabf4844b49e127f341247aa584d5c30f69))
+
 ## Version 14.10.0
 ### ✨ New & Improved
 
