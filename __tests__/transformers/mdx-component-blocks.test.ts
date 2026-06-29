@@ -547,10 +547,6 @@ hello
       });
 
       it('position spans the full closing tag for a component with trailing sibling content inside a blockquote', () => {
-        // Regression: in the trailing-content path, positionEndingAtConsumed used the
-        // stripped value length to compute end.offset. Blockquote lines have '> ' prefixes
-        // in the source that are absent from the html node's value, causing the offset to
-        // be computed too early and the closing tag to appear truncated when sliced.
         const markdown = '> <Tag>\n>   body\n> </Tag>\n> trailing';
         const tree = parseWithPlugin(markdown);
 
