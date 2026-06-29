@@ -88,6 +88,25 @@ const positionEndingAtConsumed = (nodePosition: Node['position'], value: string,
 };
 
 /**
+ * Build a position ending right after the last occurrence of `closingTag` within
+ * this node's span in the original source. Used in the trailing-content path so
+ * the offset is computed against the real source bytes (including blockquote/list
+ * prefixes that were stripped from the html node's value).
+ */
+const positionEndingAtClosingTagInSource = (
+  nodePosition: Node['position'],
+  closingTag: string,
+  source: string,
+): Node['position'] => {
+  if (!nodePosition?.start || !nodePosition.end) return nodePosition;
+  const nodeSource = source.slice(nodePosition.start.offset, nodePosition.end.offset);
+  const closingTagOffset = nodeSource.lastIndexOf(closingTag);
+  if (closingTagOffset === -1) return nodePosition;
+  const consumed = nodeSource.slice(0, closingTagOffset + closingTag.length);
+  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
+};
+
+/**
  * Create an MdxJsxFlowElement node from component data.
  */
 const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
@@ -132,9 +151,10 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
   const stack: Parent[] = [tree];
   const safeMode = !!opts.safeMode;
+  const source: string | null = file?.value ? String(file.value) : null;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
@@ -222,12 +242,21 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // End at the closing tag, not at trailing content re-parsed as siblings below.
-        endPosition: positionEndingAtConsumed(
-          node.position,
-          value,
-          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-        ),
+        // When trailing content follows the closing tag, compute the end position precisely
+        // within the html node's value so the component doesn't claim that content.
+        // Prefer source-based positioning when the original source is available: the html
+        // node's value has '> '/space prefixes stripped for blockquotes/list items, so
+        // positionEndingAtConsumed would undercount source offsets. When the entire node
+        // is consumed, use the original node position directly.
+        endPosition: contentAfterClose
+          ? source
+            ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
+            : positionEndingAtConsumed(
+                node.position,
+                value,
+                leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+              )
+          : node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
