@@ -222,12 +222,19 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // End at the closing tag, not at trailing content re-parsed as siblings below.
-        endPosition: positionEndingAtConsumed(
-          node.position,
-          value,
-          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-        ),
+        // When trailing content follows the closing tag, compute the end position precisely
+        // within the html node's value so the component doesn't claim that content.
+        // When the entire html node is consumed, use the original node position directly:
+        // positionEndingAtConsumed would compute the wrong end.offset for nodes inside
+        // blockquotes/list items where the html value has '> '/space prefixes stripped
+        // but the original source does not, causing nodeToSource to slice too early.
+        endPosition: contentAfterClose
+          ? positionEndingAtConsumed(
+              node.position,
+              value,
+              leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+            )
+          : node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
