@@ -26,7 +26,7 @@ describe('mdxish raw HTML sanitization', () => {
       expect(findElementByTagName(tree, 'h1')).not.toBeNull();
     });
 
-    it('strips the exact String.fromCharCode exfil payload from the report', () => {
+    it('strips scripts containing String.fromCharCode payload', () => {
       const payload =
         '<math><mtext><script>fetch(String.fromCharCode(47,97,112,105)).then(function(r){return r.text()})</script></mtext></math>';
       const tree = mdxish(`# Docs\n\n${payload}\n`);
@@ -48,7 +48,7 @@ describe('mdxish raw HTML sanitization', () => {
       expect(findElementByTagName(tree, 'script')).toBeNull();
     });
 
-    it('strips dangerous embedders (iframe/object)', () => {
+    it('strips embedders (iframe/object)', () => {
       const tree = mdxish('<iframe src="javascript:alert(1)"></iframe>\n\n<object data="x"></object>');
 
       expect(findElementByTagName(tree, 'iframe')).toBeNull();
@@ -140,6 +140,23 @@ describe('mdxish raw HTML sanitization', () => {
 
       expect(findElementByTagName(tree, 'script')).toBeNull();
       expect(JSON.stringify(tree)).toContain('body text');
+    });
+
+    it('sanitizes raw HTML nested inside a JSX table cell', () => {
+      const tree = mdxish(`
+<Table>
+  <tbody>
+    <tr>
+      <td>
+        <script>alert(1)</script>
+      </td>
+    </tr>
+  </tbody>
+</Table>
+        `);
+
+      expect(findElementByTagName(tree, 'script')).toBeNull();
+      expect(findElementByTagName(tree, 'table')).not.toBeNull();
     });
   });
 });
