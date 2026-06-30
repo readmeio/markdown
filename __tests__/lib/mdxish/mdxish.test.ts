@@ -653,4 +653,56 @@ describe('html tags rendering', () => {
       expect(topLevel).toStrictEqual(['div', 'p']);
     });
   });
+  
+  describe('inline components with expression attributes', () => {
+    it('should concatenate expression attributes', () => {
+      const md = "<Anchor label=\"Merchant Sign-Up API Documentation\" target=\"_blank\" href={'https://' + 'www.example.com' + '/reference/sign-up-api'}>Link</Anchor>";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const anchor = findElementByTagName(tree, 'Anchor');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          label: 'Merchant Sign-Up API Documentation',
+          target: '_blank',
+          href: 'https://www.example.com/reference/sign-up-api',
+        },
+        children: [{ type: 'text', value: 'Link' }],
+      });
+    });
+
+    it('should render an Anchor whose href is a concatenation expression', () => {
+      const md =
+        "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const anchor = findElementByTagName(tree, 'Anchor');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          label: 'Docs',
+          target: '_blank',
+          href: "'https://' + user.docsUrl + '/x'",
+        },
+        children: [{ type: 'text', value: 'Docs' }],
+      });
+    });
+
+    it('should keep trailing text after the closing tag as a sibling', () => {
+      const md = "Start <Anchor href={'a' + 'b'}>Link</Anchor> done.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const paragraph = tree.children[0] as Element;
+      const [start, anchor, trailing] = paragraph.children;
+      expect(start).toMatchObject({ type: 'text', value: 'Start ' });
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          href: 'ab',
+        },
+        children: [{ type: 'text', value: 'Link' }],
+      });
+      expect(trailing).toMatchObject({ type: 'text', value: ' done.' });
+    });
+  });
 });

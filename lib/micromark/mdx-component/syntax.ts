@@ -5,7 +5,7 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -62,11 +62,12 @@ const mdxComponentTextConstruct: Construct = {
  * lowercase HTML tags that carry at least one `{…}` attribute expression.
  * Multi-line, concrete, `afterClose` consumes the rest of the line.
  *
- * **Text** — runs inside paragraphs / inline context. Claims *only* lowercase
- * tags with brace attributes (PascalCase is intentionally flow-only, matching
- * how ReadMe's custom components are authored). Aborts on line endings (inline
- * constructs don't span lines) and exits immediately after `</tag>` so the
- * paragraph's inline parser picks up the trailing text.
+ * **Text** — runs inside paragraphs / inline context. Claims lowercase tags and
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary), both
+ * gated on at least one `{…}` brace attribute. All other PascalCase stays
+ * flow-only, matching how ReadMe's custom components are authored. Aborts on line
+ * endings (inline constructs don't span lines) and exits immediately after
+ * `</tag>` so the paragraph's inline parser picks up the trailing text.
  */
 function createTokenize(mode: 'flow' | 'text') {
   const isFlow = mode === 'flow';
@@ -79,8 +80,9 @@ function createTokenize(mode: 'flow' | 'text') {
     let closingTagName = '';
     // For lowercase tags we only want to claim the block if it uses JSX
     // attribute expression syntax (`attr={...}`). Plain HTML should fall
-    // through to CommonMark html-flow. Uppercase tags are always claimed
-    // (flow only — PascalCase is not accepted in text mode).
+    // through to CommonMark html-flow. Flow mode claims any PascalCase block
+    // component; text mode claims only inline PascalCase components
+    // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
 
@@ -285,12 +287,13 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Tag name parsing ───────────────────────────────────────────────────
 
     function tagNameFirst(code: Code): State | undefined {
-      // Uppercase A-Z → PascalCase MDX component. Flow-only — PascalCase
-      // components are block elements in ReadMe's authoring model.
+      // Uppercase A-Z → PascalCase MDX component. Flow mode claims block
+      // components; text mode only claims inline components (Anchor, Glossary),
+      // which is enforced once the full name is known in `tagNameRest`.
       if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
-        if (!isFlow) return nok(code);
         tagName = String.fromCharCode(code);
         isLowercaseTag = false;
+        sawBraceAttr = false;
         effects.consume(code);
         return tagNameRest;
       }
@@ -321,10 +324,17 @@ function createTokenize(mode: 'flow' | 'text') {
         return tagNameRest;
       }
 
-      // Tag name complete — check exclusions
-      if (TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)) {
-        return nok(code);
-      }
+      // Tag name complete — decide whether this tokenizer claims the tag.
+      // Three cases: lowercase tags are always candidates (brace-gated later in
+      // `afterOpenTagName`); flow-mode PascalCase claims any block component
+      // except those with a dedicated tokenizer; text-mode PascalCase claims
+      // only inline components (Anchor, Glossary).
+      const claimable = isLowercaseTag
+        ? true
+        : isFlow
+          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)
+          : INLINE_COMPONENT_TAGS.has(tagName);
+      if (!claimable) return nok(code);
 
       depth = 1;
       return afterOpenTagName(code);
@@ -335,6 +345,11 @@ function createTokenize(mode: 'flow' | 'text') {
     function afterOpenTagName(code: Code): State | undefined {
       if (code === null) return nok(code);
 
+      // Everything except a flow-mode PascalCase block component must carry a
+      // `{…}` brace attribute to be claimed; plain HTML falls through to
+      // CommonMark.
+      const requiresBraceAttr = isLowercaseTag || !isFlow;
+
       if (markdownLineEnding(code)) {
         if (!isFlow) return nok(code);
         effects.exit('mdxComponentData');
@@ -343,14 +358,14 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // Self-closing />
       if (code === codes.slash) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (isLowercaseTag && !sawBraceAttr) return nok(code);
+        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
         return body;
@@ -872,12 +887,13 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
  * self-closing `<Component />`). Prevents CommonMark from fragmenting them
  * across multiple HTML / paragraph nodes.
  *
- * **Text (inline)** — registers only for lowercase tags with brace attrs
- * (e.g. `Start <a href={url}>here</a> end`). Picks them up during inline
- * parsing so they render inline inside their paragraph, then are rewritten
- * to `mdxJsxTextElement` by the `components/inline-html` transformer.
- * PascalCase is intentionally flow-only; ReadMe's custom components are
- * authored as block-level elements.
+ * **Text (inline)** — registers for lowercase tags and inline PascalCase
+ * components (Anchor, Glossary) that carry brace attrs (e.g.
+ * `Start <a href={url}>here</a> end`, `<Anchor href={url}>x</Anchor>`). Picks
+ * them up during inline parsing so they render inline inside their paragraph,
+ * then are rewritten to `mdxJsxTextElement` by the `components/inline-html`
+ * transformer. All other PascalCase is flow-only; ReadMe's custom components
+ * are authored as block-level elements.
  *
  * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock, Glossary,
  * Anchor.
