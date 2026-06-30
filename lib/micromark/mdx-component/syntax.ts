@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { markdownLineEnding } from 'micromark-util-character';
+import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
 import { TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
@@ -12,6 +13,11 @@ declare module 'micromark-util-types' {
     mdxComponentData: 'mdxComponentData';
   }
 }
+
+// CommonMark html-block type-6 tags (e.g. div, section, table): block-level, so
+// they stay flow even with trailing content. Other lowercase tags (i, span, …)
+// follow the type-7 rule and only stay flow when nothing trails the close tag.
+const htmlBlockTagNames = new Set(htmlBlockNames);
 
 const nonLazyContinuationStart: Construct = {
   tokenize: tokenizeNonLazyContinuationStart,
@@ -87,6 +93,10 @@ function createTokenize(mode: 'flow' | 'text') {
     let fenceLength = 0;
     let fenceCloseLength = 0;
     let atLineStart = false;
+
+    // True once this construct consumes any line ending; lets `afterClose`
+    // treat only single-line lowercase tags as inline candidates.
+    let sawLineEnding = false;
 
     // Bail when the opener line has unmatched tag-like tokens in its body.
     // `<Foo>_<Bar>.csv` leaves opens > closes; matched shapes like
@@ -413,6 +423,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function openTagContinuationNonLazy(code: Code): State | undefined {
+      sawLineEnding = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);
@@ -553,6 +564,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function fencedCodeContinuationNonLazy(code: Code): State | undefined {
+      sawLineEnding = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);
@@ -741,6 +753,12 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('mdxComponent');
         return ok(code);
       }
+      // A single-line non-block lowercase tag with content trailing its close is
+      // inline (html-flow type-7), so `<i …></i> <a>…</a>` stays on one line
+      // instead of splitting into separate blocks. Block tags (div, …) stay flow.
+      if (isLowercaseTag && !sawLineEnding && !htmlBlockTagNames.has(tagName)) {
+        return afterCloseInlineCandidate(code);
+      }
       if (code === null || markdownLineEnding(code)) {
         effects.exit('mdxComponentData');
         effects.exit('mdxComponent');
@@ -752,6 +770,21 @@ function createTokenize(mode: 'flow' | 'text') {
       return afterClose;
     }
 
+    // Whitespace-only to the line ending keeps the flow block; any other
+    // trailing char means inline content, so refuse and let inline parsing run.
+    function afterCloseInlineCandidate(code: Code): State | undefined {
+      if (code === null || markdownLineEnding(code)) {
+        effects.exit('mdxComponentData');
+        effects.exit('mdxComponent');
+        return ok(code);
+      }
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return afterCloseInlineCandidate;
+      }
+      return nok(code);
+    }
+
     // ── Body continuation (line endings) ───────────────────────────────────
 
     function bodyContinuationStart(code: Code): State | undefined {
@@ -759,6 +792,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function bodyContinuationNonLazy(code: Code): State | undefined {
+      sawLineEnding = true;
       effects.enter(types.lineEnding);
       effects.consume(code);
       effects.exit(types.lineEnding);

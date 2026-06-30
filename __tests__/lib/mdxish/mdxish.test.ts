@@ -594,4 +594,63 @@ describe('html tags rendering', () => {
       children: [{ type: 'text', value: 'Example' }],
     });
   });
+
+  describe('keeps a non-block level lowercase HTML tags inline', () => {
+    const childTagNames = (parent: Element) =>
+      parent.children.filter((c): c is Element => c.type === 'element').map(c => c.tagName);
+
+    const expectSingleParagraph = (tree: Root): Element => {
+      const paragraphs = tree.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      expect(paragraphs).toHaveLength(1);
+      return paragraphs[0];
+    };
+
+    it('keeps a paired icon tag inline with a trailing link', () => {
+      const md =
+        '<i class="fa fa-check fa-lg" style={{ color: "#ff9f3a" }}></i> <a href="https://example.com">3-D Secure</a>';
+      expect(childTagNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+    });
+
+    it('keeps a self-closing icon tag inline with a trailing link', () => {
+      const md = '<i class="fa fa-check" style={{ color: "red" }}/> <a href="https://example.com">link</a>';
+      expect(childTagNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+    });
+
+    it('keeps an icon tag inline with trailing plain text', () => {
+      const md = '<i class="fa fa-check" style={{ color: "red" }}></i> done';
+      const paragraph = expectSingleParagraph(mdxish(md));
+      expect(childTagNames(paragraph)).toStrictEqual(['i']);
+      const trailing = paragraph.children.at(-1);
+      expect(trailing).toMatchObject({ type: 'text', value: ' done' });
+    });
+
+    it('keeps the icon inline despite condensed/tab whitespace before the link', () => {
+      const md = '<i style={{ color: "red" }}></i>\t \t<a href="https://example.com">link</a>';
+      expect(childTagNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+    });
+
+    it('keeps the icon inline inside a list item', () => {
+      const md = '- <i style={{ color: "red" }}></i> <a href="https://example.com">link</a>';
+      const listItem = findElementByTagName(mdxish(md), 'li');
+      expect(listItem).toBeDefined();
+      expect(childTagNames(listItem!)).toStrictEqual(['i', 'a']);
+    });
+
+    it('leaves a standalone icon (no trailing content) as its own block', () => {
+      const md = '<i class="fa fa-check" style={{ color: "red" }}></i>';
+      const paragraphs = mdxish(md).children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      expect(paragraphs).toHaveLength(0);
+      expect(findElementByTagName(mdxish(md), 'i')).toBeDefined();
+    });
+
+    // Block-level HTML tags (CommonMark html-block type 6) stay flow even with
+    // trailing content, so a `<div>` isn't invalidly nested inside a paragraph.
+    it('keeps a block-level tag as its own block with trailing content as a sibling', () => {
+      const md = '<div style={{ color: "red" }}>box</div> trailing';
+      const tree = mdxish(md);
+      expect(findElementByTagName(tree, 'div')).toBeDefined();
+      const topLevel = tree.children.filter((c): c is Element => c.type === 'element').map(c => c.tagName);
+      expect(topLevel).toStrictEqual(['div', 'p']);
+    });
+  });
 });
