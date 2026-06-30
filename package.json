@@ -2,10 +2,28 @@
   "name": "@readme/markdown",
   "description": "ReadMe's React-based Markdown parser",
   "author": "Rafe Goldberg <rafe@readme.io>",
-  "version": "14.10.0",
+  "version": "14.10.2",
   "main": "dist/main.node.js",
   "types": "dist/index.d.ts",
   "browser": "dist/main.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/main.js",
+      "node": "./dist/main.node.js",
+      "default": "./dist/main.node.js"
+    },
+    "./render-diff": {
+      "types": "./dist/lib/render-diff/index.d.ts",
+      "default": "./dist/render-diff.node.js"
+    },
+    "./render-fixture": {
+      "types": "./dist/lib/render-fixture/index.d.ts",
+      "default": "./dist/render-fixture.node.js"
+    },
+    "./package.json": "./package.json",
+    "./*": "./*"
+  },
   "files": [
     "styles",
     "components",
@@ -16,6 +34,7 @@
   "scripts": {
     "build": "webpack --mode production && npm run build-types",
     "build-types": "npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
+    "build:verify": "npm run build && npm run verify-exports",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",
@@ -23,6 +42,7 @@
     "test": "vitest",
     "test.ui": "vitest --ui",
     "test.browser": "jest",
+    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {
@@ -177,7 +197,15 @@
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "955KB"
+        "maxSize": "975KB"
+      },
+      {
+        "path": "dist/render-diff.node.js",
+        "maxSize": "185KB"
+      },
+      {
+        "path": "dist/render-fixture.node.js",
+        "maxSize": "4.5MB"
       }
     ]
   },
