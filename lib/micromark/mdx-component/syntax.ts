@@ -2,7 +2,7 @@
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
 import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
-import { htmlBlockNames } from 'micromark-util-html-tag-name';
+import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
@@ -14,10 +14,11 @@ declare module 'micromark-util-types' {
   }
 }
 
-// CommonMark html-block type-6 tags (e.g. div, section, table): block-level, so
-// they stay flow even with trailing content. Other lowercase tags (i, span, …)
-// follow the type-7 rule and only stay flow when nothing trails the close tag.
-const htmlBlockTagNames = new Set(htmlBlockNames);
+// Raw tags (type-1: pre/script/style/textarea) and block tags (type-6: div,
+// section, …) always start a block, so they stay flow even with trailing
+// content. Other lowercase tags (i, span, …) follow the type-7 rule and only
+// stay flow when nothing trails the close tag.
+const htmlFlowTagNames = new Set([...htmlRawNames, ...htmlBlockNames]);
 
 const nonLazyContinuationStart: Construct = {
   tokenize: tokenizeNonLazyContinuationStart,
@@ -768,10 +769,10 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('mdxComponent');
         return ok(code);
       }
-      // A single-line non-block lowercase tag with content trailing its close is
-      // inline (html-flow type-7), so `<i …></i> <a>…</a>` stays on one line
-      // instead of splitting into separate blocks. Block tags (div, …) stay flow.
-      if (isLowercaseTag && !sawLineEnding && !htmlBlockTagNames.has(tagName)) {
+      // A single-line type-7 lowercase tag with content trailing its close is
+      // inline, so `<i …></i> <a>…</a>` stays on one line instead of splitting
+      // into separate blocks. Raw/block tags (pre, div, …) stay flow.
+      if (isLowercaseTag && !sawLineEnding && !htmlFlowTagNames.has(tagName)) {
         return afterCloseInlineCandidate(code);
       }
       if (code === null || markdownLineEnding(code)) {
