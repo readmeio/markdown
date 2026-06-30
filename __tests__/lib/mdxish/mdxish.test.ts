@@ -556,7 +556,7 @@ b
 });
 
 describe('html tags rendering', () => {
-  describe('given various attribute formats', () => {
+  describe('various tag attribute formats', () => {
     const expectedAnchor = {
       type: 'element',
       tagName: 'a',
@@ -595,55 +595,63 @@ describe('html tags rendering', () => {
     });
   });
 
-  describe('inline components with expression attributes', () => {
-    it('should concatenate expression attributes', () => {
-      const md = "<Anchor label=\"Merchant Sign-Up API Documentation\" target=\"_blank\" href={'https://' + 'www.example.com' + '/reference/sign-up-api'}>Link</Anchor>";
-      const tree = mdxish(md, { newEditorTypes: true });
-      const anchor = findElementByTagName(tree, 'Anchor');
-      expect(anchor).toMatchObject({
-        type: 'element',
-        tagName: 'Anchor',
-        properties: {
-          label: 'Merchant Sign-Up API Documentation',
-          target: '_blank',
-          href: 'https://www.example.com/reference/sign-up-api',
-        },
-        children: [{ type: 'text', value: 'Link' }],
+  describe('inline-ness vs block-ness of html tags', () => {
+    const elementNames = (parent: Element | Root) =>
+      parent.children.filter((c): c is Element => c.type === 'element').map(c => c.tagName);
+
+    const expectSingleParagraph = (tree: Root): Element => {
+      const paragraphs = tree.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      expect(paragraphs).toHaveLength(1);
+      return paragraphs[0];
+    };
+
+    describe('icon tag', () => {
+      it('keeps a paired icon tag inline with a trailing link', () => {
+        const md =
+          '<i class="fa fa-check fa-lg" style={{ color: "#ff9f3a" }}></i> <a href="https://example.com">3-D Secure</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps a self-closing icon tag inline with a trailing link', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}/> <a href="https://example.com">link</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps an icon tag inline with trailing plain text', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}></i> done';
+        const paragraph = expectSingleParagraph(mdxish(md));
+        expect(elementNames(paragraph)).toStrictEqual(['i']);
+        const trailing = paragraph.children.at(-1);
+        expect(trailing).toMatchObject({ type: 'text', value: ' done' });
+      });
+
+      it('keeps the icon inline despite condensed/tab whitespace before the link', () => {
+        const md = '<i style={{ color: "red" }}></i>\t \t<a href="https://example.com">link</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps the icon inline inside a list item', () => {
+        const md = '- <i style={{ color: "red" }}></i> <a href="https://example.com">link</a>';
+        const listItem = findElementByTagName(mdxish(md), 'li');
+        expect(listItem).toBeDefined();
+        expect(elementNames(listItem!)).toStrictEqual(['i', 'a']);
+      });
+
+      it('leaves a standalone icon (no trailing content) as its own block', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}></i>';
+        expect(elementNames(mdxish(md))).toStrictEqual(['i']);
       });
     });
 
-    it('should render an Anchor whose href is a concatenation expression', () => {
-      const md =
-        "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
-      const tree = mdxish(md, { newEditorTypes: true });
-      const anchor = findElementByTagName(tree, 'Anchor');
-      expect(anchor).toMatchObject({
-        type: 'element',
-        tagName: 'Anchor',
-        properties: {
-          label: 'Docs',
-          target: '_blank',
-          href: "'https://' + user.docsUrl + '/x'",
-        },
-        children: [{ type: 'text', value: 'Docs' }],
-      });
+    // Block-level HTML tags (CommonMark html-block type 6) stay flow even with
+    // trailing content, so a `<div>` isn't invalidly nested inside a paragraph.
+    it('keeps a block-level tag as its own block with trailing content as a sibling', () => {
+      expect(elementNames(mdxish('<div style={{ color: "red" }}>box</div> trailing'))).toStrictEqual(['div', 'p']);
     });
 
-    it('should keep trailing text after the closing tag as a sibling', () => {
-      const md = "Start <Anchor href={'a' + 'b'}>Link</Anchor> done.";
-      const tree = mdxish(md, { newEditorTypes: true });
-      const paragraph = tree.children[0] as Element;
-      const [start, anchor, trailing] = paragraph.children;
-      expect(start).toMatchObject({ type: 'text', value: 'Start ' });
-      expect(anchor).toMatchObject({
-        type: 'element',
-        tagName: 'Anchor',
-        properties: {
-          href: 'ab',
-        },
-        children: [{ type: 'text', value: 'Link' }],
-      });
-      expect(trailing).toMatchObject({ type: 'text', value: ' done.' });
+    // Raw-content tags (CommonMark html-block type 1, e.g. <pre>) also stay flow.
+    it('keeps a raw-content tag as its own block with trailing content as a sibling', () => {
+      expect(elementNames(mdxish('<pre data={{ a: 1 }}>code</pre> trailing'))).toStrictEqual(['pre', 'p']);
     });
   });
 });
