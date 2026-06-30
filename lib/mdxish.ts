@@ -20,10 +20,10 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
+import rehypeStripDangerousHtml from '../processor/plugin/dangerous-html';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import rehypeStripDangerousHtml from '../processor/sanitize/rehype-strip-dangerous-html';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';

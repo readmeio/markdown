@@ -10,8 +10,8 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
+import rehypeStripDangerousHtml from '../processor/plugin/dangerous-html';
 import { rehypeToc } from '../processor/plugin/toc';
-import rehypeStripDangerousHtml from '../processor/sanitize/rehype-strip-dangerous-html';
 import {
   defaultTransforms,
   tailwindTransformer,

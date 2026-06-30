@@ -23,6 +23,7 @@ const DANGEROUS_TAG_NAMES = new Set([
   'frameset',
   'object',
   'applet',
+  'embed',
   'base',
   'link',
   'meta',
@@ -160,3 +161,15 @@ export const stripDangerousHtml = (tree: Root): void => {
     return undefined;
   });
 };
+
+/**
+ * Rehype plugin wrapping the deny-list stripper for the `mdxish` and MDX `compile`
+ * pipelines, which can't use the `md` allow-list because custom components must
+ * survive. Must run after raw HTML is parsed into nodes.
+ */
+const rehypeStripDangerousHtml = () => (tree: Root) => {
+  stripDangerousHtml(tree);
+  return tree;
+};
+
+export default rehypeStripDangerousHtml;
