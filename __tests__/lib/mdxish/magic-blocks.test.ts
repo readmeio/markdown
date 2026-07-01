@@ -1956,12 +1956,17 @@ asdasdasd
       expect(() => mdxish(md)).not.toThrow();
     });
 
+    // CPU-bound robustness guard (no latency assertion): parsing 10k chars
+    // takes ~2s in isolation but can exceed the 5s default under full-suite
+    // parallel contention in CI. A generous explicit timeout still catches a
+    // genuine hang/catastrophic-backtracking regression while tolerating
+    // worker contention.
     it('should handle very long content without crashing', () => {
       const longContent = 'a'.repeat(10000);
       const md = `[block:callout]{"body":"${longContent}"}[/block]`;
 
       expect(() => mdxish(md)).not.toThrow();
-    });
+    }, 30000);
 
     it('should handle multiple blocks in sequence', () => {
       const md = '[block:callout]{}[/block][block:callout]{}[/block]';

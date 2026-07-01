@@ -1,0 +1,7 @@
+{
+  "variables": {
+    "defaults": [],
+    "user": { "companyName": "Acme Inc" }
+  },
+  "glossary": []
+}

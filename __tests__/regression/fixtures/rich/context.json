@@ -1,0 +1,13 @@
+{
+  "variables": {
+    "defaults": [
+      { "name": "region", "default": "us-east-1" }
+    ],
+    "user": {
+      "apiKey": "sk_test_abc123"
+    }
+  },
+  "glossary": [
+    { "term": "acme", "definition": "A placeholder company name used in examples." }
+  ]
+}
