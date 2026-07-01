@@ -89,7 +89,7 @@ exports[`Render engine regressions tests > divergent (mdxish) 1`] = `
 exports[`Render engine regressions tests > embeds (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
 <iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
-<iframe src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
 <iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
 <iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>"
 `;
@@ -97,7 +97,7 @@ exports[`Render engine regressions tests > embeds (mdx) 1`] = `
 exports[`Render engine regressions tests > embeds (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
 <div class="readme-tailwind"><iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
-<div class="readme-tailwind"><iframe src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
 <div class="readme-tailwind"><iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
 <div class="readme-tailwind"><iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>"
 `;
