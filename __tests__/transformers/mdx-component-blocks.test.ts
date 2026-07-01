@@ -2,6 +2,7 @@ import type { Code, Heading, Parent, Root } from 'mdast';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
+import { VFile } from 'vfile';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
@@ -18,6 +19,8 @@ interface MdxJsxFlowElement extends Parent {
  * Helper to parse markdown and apply the component block plugins.
  * Includes the mdx-component micromark tokenizer to capture multi-line
  * components as single HTML nodes before the transformer runs.
+ * Passes a VFile so the transformer has access to the original source for
+ * source-aware position computation (needed for blockquote/list items).
  */
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
@@ -27,7 +30,7 @@ const parseWithPlugin = (markdown: string): Root => {
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
-  processor.runSync(tree);
+  processor.runSync(tree, new VFile({ value: markdown }));
   return tree as Root;
 };
 
@@ -467,6 +470,102 @@ hello
             children: [],
           },
         ]);
+      });
+    });
+
+    // The whole line is tokenized into one html node when a component shares its
+    // line with trailing content. The component node's position must end at its
+    // own tag so position-based source slicing downstream doesn't over-read.
+    describe('case 4: component position ends at its tag when trailing content follows', () => {
+      it('ends a block component at its closing tag', () => {
+        const markdown = '<Tag>body</Tag> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 15 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>body</Tag>');
+      });
+
+      it('ends a self-closing component at its tag', () => {
+        const markdown = '<Tag attr={1} /> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 16 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1} />');
+      });
+
+      it('ends a component with an expression attribute and inline body at its closing tag', () => {
+        const markdown = '<Tag attr={1}>**hi**</Tag> more **text** here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 26 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1}>**hi**</Tag>');
+      });
+
+      it('position spans the full closing tag for a multi-line component inside a blockquote', () => {
+        const markdown = '> <Tag>\n>   body\n> </Tag>';
+        const tree = parseWithPlugin(markdown);
+
+        const blockquote = tree.children[0] as Parent;
+        const tag = blockquote.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n>   body\n> </Tag>');
+      });
+
+      it('position spans the full closing tag for a multi-line component inside a list item', () => {
+        const markdown = '- <Tag>\n    body\n  </Tag>';
+        const tree = parseWithPlugin(markdown);
+
+        const list = tree.children[0] as Parent;
+        const listItem = list.children[0] as Parent;
+        const tag = listItem.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a blockquote', () => {
+        const markdown = '> <Tag>\n>   body\n> </Tag>\n> trailing';
+        const tree = parseWithPlugin(markdown);
+
+        const blockquote = tree.children[0] as Parent;
+        const tag = blockquote.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n>   body\n> </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a list item', () => {
+        // Same regression for list items: indentation is stripped from the html value.
+        const markdown = '- <Tag>\n    body\n  </Tag>\n- trailing';
+        const tree = parseWithPlugin(markdown);
+
+        const list = tree.children[0] as Parent;
+        const listItem = list.children[0] as Parent;
+        const tag = listItem.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
       });
     });
   });

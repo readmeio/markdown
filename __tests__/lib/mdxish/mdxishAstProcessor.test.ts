@@ -50,6 +50,53 @@ describe('mdxishAstProcessor', () => {
     });
   });
 
+  describe('component node positions', () => {
+    it('keeps a lowercase tag inline with trailing content on the same line', () => {
+      const md =
+        '<button className="pill" style={{ backgroundColor: "#ffc107" }}>PrPr</button> ***service-explorer***: Message brokers are now surfaced as entities.';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const mdast = processor.runSync(processor.parse(parserReadyContent));
+
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { type: 'mdxJsxTextElement', name: 'button' },
+              { type: 'text', value: ' ' },
+              { type: 'emphasis' },
+              { type: 'text', value: ': Message brokers are now surfaced as entities.' },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('ends a component node position at its closing tag when trailing content follows on the same line', () => {
+      const md =
+        '<Component attr={1+1}>PrPr</Component> ***service-explorer***: Message brokers are now surfaced as entities.';
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      const mdast = processor.runSync(processor.parse(parserReadyContent));
+
+      // Offset 38 is the end of `</Component>`; the trailing text is a separate sibling.
+      expect(mdast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Component',
+            position: {
+              start: { line: 1, column: 1, offset: 0 },
+              end: { line: 1, column: 39, offset: 38 },
+            },
+          },
+          { type: 'paragraph' },
+        ],
+      });
+    });
+  });
+
   it('should return a unified processor and parser-ready content for simple text', () => {
     const md = 'Rafe is **cool**!';
     const { processor, parserReadyContent } = mdxishAstProcessor(md);

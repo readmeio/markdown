@@ -63,6 +63,49 @@ interface ComponentNodeOptions {
   tag: string;
 }
 
+type Point = NonNullable<Node['position']>['start'];
+
+/**
+ * Advance a point by the substring of source consumed from it.
+ */
+const pointAfter = (start: Point, consumed: string): Point => {
+  const newlineIndex = consumed.lastIndexOf('\n');
+  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
+  return {
+    line: start.line + newlineCount,
+    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
+    offset: start.offset + consumed.length,
+  };
+};
+
+/**
+ * Build a position ending at `consumedLength` into the html node's value, so the
+ * component doesn't claim trailing content the tokenizer swallowed into one node.
+ */
+const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
+  if (!nodePosition?.start) return nodePosition;
+  return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
+};
+
+/**
+ * Build a position ending right after the last occurrence of `closingTag` within
+ * this node's span in the original source. Used in the trailing-content path so
+ * the offset is computed against the real source bytes (including blockquote/list
+ * prefixes that were stripped from the html node's value).
+ */
+const positionEndingAtClosingTagInSource = (
+  nodePosition: Node['position'],
+  closingTag: string,
+  source: string,
+): Node['position'] => {
+  if (!nodePosition?.start || !nodePosition.end) return nodePosition;
+  const nodeSource = source.slice(nodePosition.start.offset, nodePosition.end.offset);
+  const closingTagOffset = nodeSource.lastIndexOf(closingTag);
+  if (closingTagOffset === -1) return nodePosition;
+  const consumed = nodeSource.slice(0, closingTagOffset + closingTag.length);
+  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
+};
+
 /**
  * Create an MdxJsxFlowElement node from component data.
  */
@@ -108,9 +151,10 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => tree => {
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
   const stack: Parent[] = [tree];
   const safeMode = !!opts.safeMode;
+  const source: string | null = file?.value ? String(file.value) : null;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
@@ -125,10 +169,17 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
-    const parsed = parseTag(value.trim(), parseOpts);
+    const trimmed = value.trim();
+    const parsed = parseTag(trimmed, parseOpts);
     if (!parsed) return;
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
+
+    // Offset of `trimmed` within the (possibly whitespace-padded) html node value,
+    // so consumed-length math maps back onto the node's real source offsets.
+    const leadingWhitespace = value.length - value.trimStart().length;
+    // Index right after the opening tag's `>` within `trimmed`.
+    const openingTagEnd = trimmed.length - contentAfterTag.length;
 
     // Skip tags that have dedicated transformers
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
@@ -156,6 +207,8 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: [],
         startPosition: node.position,
+        // End at the self-closing tag, not at any trailing content.
+        endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
@@ -189,6 +242,21 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
+        // When trailing content follows the closing tag, compute the end position precisely
+        // within the html node's value so the component doesn't claim that content.
+        // Prefer source-based positioning when the original source is available: the html
+        // node's value has '> '/space prefixes stripped for blockquotes/list items, so
+        // positionEndingAtConsumed would undercount source offsets. When the entire node
+        // is consumed, use the original node position directly.
+        endPosition: contentAfterClose
+          ? source
+            ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
+            : positionEndingAtConsumed(
+                node.position,
+                value,
+                leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+              )
+          : node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 

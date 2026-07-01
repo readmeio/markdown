@@ -122,6 +122,11 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
 });
 
 const serverConfig = merge(getConfig({ target: 'node' }), {
+  entry: {
+    main: './index',
+    'render-diff': './lib/render-diff',
+    'render-fixture': './lib/render-fixture',
+  },
   output: {
     filename: '[name].node.js',
   },
