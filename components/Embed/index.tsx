@@ -2,7 +2,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
-import { normalizeYouTubeUrl } from './normalizeYouTubeUrl';
+import { normalizeYouTubeUrlToEmbedUrl } from './normalizeYouTubeUrl';
 
 interface FaviconProps {
   alt?: string;
@@ -74,7 +74,7 @@ const Embed = ({
     !html && !explicitOptOut && url && typeOfEmbed && IFRAME_DERIVABLE_TYPES.has(typeOfEmbed);
 
   if (iframe || renderTypeAsIframe) {
-    const src = typeOfEmbed === 'youtube' ? normalizeYouTubeUrl(url) : url;
+    const src = normalizeYouTubeUrlToEmbedUrl(url);
     return <iframe {...spreadAttrs} src={src} style={iframeStyle} title={title} />;
   }
 
