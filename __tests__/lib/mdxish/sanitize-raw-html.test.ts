@@ -106,15 +106,25 @@ describe('mdxish raw HTML sanitization', () => {
       TestComponent: {} as RMDXModule
     }
       
-    it('preserves event-handler-named props on PascalCase components', () => {
+    it('keeps event-handler-named props but strips dangerous URL props on PascalCase components', () => {
       const tree = mdxish('<TestComponent onClick="fn" href="javascript:alert(1)" />', {
         components: testComponents,
       });
 
       const component = findElementByTagName(tree, 'TestComponent');
+      // `on*` props are React props on a component, not DOM handlers, so they survive...
       expect(component?.properties?.onClick).toBe('fn');
-      // eslint-disable-next-line no-script-url
-      expect(component?.properties?.href).toBe('javascript:alert(1)');
+      // ...but a `javascript:` URL prop is stripped: a component may forward it to a host element.
+      expect(component?.properties?.href).toBeUndefined();
+    });
+
+    it('keeps safe URL props on PascalCase components', () => {
+      const tree = mdxish('<TestComponent href="https://example.com" />', {
+        components: testComponents,
+      });
+
+      const component = findElementByTagName(tree, 'TestComponent');
+      expect(component?.properties?.href).toBe('https://example.com');
     });
 
     it('still sanitizes raw HTML nested inside a component', () => {

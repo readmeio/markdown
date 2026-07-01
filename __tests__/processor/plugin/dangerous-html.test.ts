@@ -133,6 +133,19 @@ describe('stripDangerousHtml', () => {
       expect(node.attributes).toStrictEqual([{ type: 'mdxJsxAttribute', name: 'id', value: 'keep' }]);
     });
 
+    it('drops expression-valued URL attributes on host JSX elements', () => {
+      // `href={'javascript:alert(1)'}` / `formAction={...}` — a non-string value could still
+      // resolve to a dangerous scheme at render time, so it can't be trusted like a literal.
+      const node = jsx('a', [
+        { type: 'mdxJsxAttribute', name: 'href', value: { type: 'mdxJsxAttributeValueExpression', value: "'javascript:alert(1)'", data: {} } },
+        { type: 'mdxJsxAttribute', name: 'formAction', value: { type: 'mdxJsxAttributeValueExpression', value: 'dynamicUrl', data: {} } },
+        { type: 'mdxJsxAttribute', name: 'id', value: 'keep' },
+      ]);
+      stripDangerousHtml(root(node));
+
+      expect(node.attributes).toStrictEqual([{ type: 'mdxJsxAttribute', name: 'id', value: 'keep' }]);
+    });
+
     it('keeps spread expression attributes untouched', () => {
       const spread = { type: 'mdxJsxExpressionAttribute', value: '...{ onClick: handler }' } as const;
       const node = jsx('div', [spread]);
@@ -141,15 +154,21 @@ describe('stripDangerousHtml', () => {
       expect(node.attributes).toStrictEqual([spread]);
     });
 
-    it('preserves PascalCase custom components and their props, but descends to clean children', () => {
+    it('preserves PascalCase components and their on* props, but strips URL props and cleans children', () => {
       const child = el('img', { onError: 'steal()' });
-      const component = jsx('Callout', [{ type: 'mdxJsxAttribute', name: 'onClick', value: 'props-not-a-handler' }]);
+      const component = jsx('Callout', [
+        { type: 'mdxJsxAttribute', name: 'onClick', value: 'props-not-a-handler' },
+        { type: 'mdxJsxAttribute', name: 'href', value: 'javascript:alert(1)' },
+      ]);
       component.children = [child];
       stripDangerousHtml(root(component));
 
-      // Component prop survives...
-      expect(component.attributes).toHaveLength(1);
-      // ...but the nested raw <img> handler is stripped.
+      // The `on*` prop survives (React prop, not a DOM handler), but the dangerous URL prop
+      // is stripped since a component may forward it to a host element...
+      expect(component.attributes).toStrictEqual([
+        { type: 'mdxJsxAttribute', name: 'onClick', value: 'props-not-a-handler' },
+      ]);
+      // ...and the nested raw <img> handler is stripped.
       expect(child.properties).toStrictEqual({});
     });
   });

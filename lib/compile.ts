@@ -40,7 +40,18 @@ const sanitizeSchema = deepmerge(defaultSchema, {
 
 const compile = (
   text: string,
-  { components = {}, missingComponents, copyButtons, useTailwind, hardBreaks, ...opts }: CompileOpts = {},
+  {
+    components = {},
+    missingComponents,
+    copyButtons,
+    useTailwind,
+    hardBreaks,
+    // Pulled out of `...opts` so the sanitizer below is always appended last: a caller's
+    // `rehypePlugins`/`remarkPlugins` must not replace the pipeline (and drop the stripper).
+    remarkPlugins: userRemarkPlugins = [],
+    rehypePlugins: userRehypePlugins = [],
+    ...opts
+  }: CompileOpts = {},
 ) => {
   // Destructure at runtime to avoid circular dependency issues
   const { codeTabsTransformer, ...transforms } = defaultTransforms;
@@ -56,13 +67,14 @@ const compile = (
       { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
     ],
     [validateMCPIntro],
+    ...userRemarkPlugins,
   ];
 
   if (useTailwind) {
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
 
-  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }]];
+  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }], ...userRehypePlugins];
 
   if (opts.format === 'md') {
     /**

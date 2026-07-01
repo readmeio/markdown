@@ -115,12 +115,23 @@ const elementName = (node: Node): string | null => {
   return null;
 };
 
-/** Removes event-handler and `javascript:`-bearing attributes from a host element, in place. */
-const cleanHostElement = (node: Node): void => {
+/**
+ * Removes `javascript:`-bearing URL attributes from either node shape, in place.
+ * With `stripEventHandlers`, also drops `on*` attributes — passed for host elements
+ * (where `on*` are DOM handlers) but not custom components (where they're React props).
+ *
+ * A URL attribute survives only as a safe string literal: a non-string value (an MDX
+ * `href={expr}` expression node) could still resolve to `javascript:` at render time,
+ * so it's dropped rather than trusted.
+ */
+const cleanElement = (node: Node, stripEventHandlers: boolean): void => {
   if (isHastElement(node) && node.properties) {
     const { properties } = node;
     Object.keys(properties).forEach(key => {
-      if (isEventHandlerAttribute(key) || (isUrlAttribute(key) && isDangerousUrl(properties[key]))) {
+      if (
+        (stripEventHandlers && isEventHandlerAttribute(key)) ||
+        (isUrlAttribute(key) && isDangerousUrl(properties[key]))
+      ) {
         delete properties[key];
       }
     });
@@ -129,8 +140,9 @@ const cleanHostElement = (node: Node): void => {
   if (isMdxJsxElement(node) && node.attributes) {
     node.attributes = node.attributes.filter(attr => {
       if (attr.type !== 'mdxJsxAttribute' || typeof attr.name !== 'string') return true; // keep `{...spread}`
-      if (isEventHandlerAttribute(attr.name)) return false;
-      return !(isUrlAttribute(attr.name) && isDangerousUrl(attr.value));
+      if (stripEventHandlers && isEventHandlerAttribute(attr.name)) return false;
+      if (isUrlAttribute(attr.name)) return typeof attr.value === 'string' && !isDangerousUrl(attr.value);
+      return true;
     });
   }
 };
@@ -138,14 +150,22 @@ const cleanHostElement = (node: Node): void => {
 /**
  * Strips script-execution vectors (script, MathML/SVG foreign content, event handlers,
  * `javascript:`/`vbscript:` URLs) from a HAST/MDX tree. Custom components keep their
- * props (React props, not DOM handlers) but are descended into to clean nested raw HTML.
+ * `on*` props (React props, not DOM handlers) but have dangerous URL props stripped and
+ * are descended into to clean nested raw HTML.
  */
 export const stripDangerousHtml = (tree: Root): void => {
   visit(tree, (node, index, parent: Parent | undefined) => {
     const name = elementName(node);
 
-    // Non-elements (root/text) and PascalCase components: descend without touching attributes.
-    if (name === null || isComponentName(name)) return undefined;
+    // Non-elements (root/text): descend without touching attributes.
+    if (name === null) return undefined;
+
+    // PascalCase components: keep `on*` props (React props, not DOM handlers), but still
+    // strip dangerous URL props — a component may forward `href`/`src` to a host element.
+    if (isComponentName(name)) {
+      cleanElement(node, false);
+      return undefined;
+    }
 
     // Host element: drop it (and its subtree) wholesale if dangerous; SKIP continues at the
     // same index, which now holds the next sibling shifted in by the splice.
@@ -157,7 +177,7 @@ export const stripDangerousHtml = (tree: Root): void => {
       return undefined;
     }
 
-    cleanHostElement(node);
+    cleanElement(node, true);
     return undefined;
   });
 };
