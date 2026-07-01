@@ -9,8 +9,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "browser": "./dist/main.js",
       "node": "./dist/main.node.js",
+      "browser": "./dist/main.js",
       "default": "./dist/main.node.js"
     },
     "./render-diff": {
