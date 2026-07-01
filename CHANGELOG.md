@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.10.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** ensure inline html tags with expressions stay inline ([#1528](https://github.com/readmeio/markdown/issues/1528)) ([f32f4e9](https://github.com/readmeio/markdown/commit/f32f4e9568e9673162c45a8ede0f16319fd0f59a))
+* **mdxish:** inline Anchor/Glossary with expression attrs render as plain text ([#1525](https://github.com/readmeio/markdown/issues/1525)) ([3355f7c](https://github.com/readmeio/markdown/commit/3355f7c19573c0a0ae0efdd7358ac36e76c06be2))
+* normalize youtube url in Embed ([#1524](https://github.com/readmeio/markdown/issues/1524)) ([190e711](https://github.com/readmeio/markdown/commit/190e711d6fe5a5fae6774bdf495b05f67bdc6a6c))
+
 ## Version 14.10.2
 ### 🛠 Fixes & Updates
 
