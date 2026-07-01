@@ -23,7 +23,6 @@ const DANGEROUS_TAG_NAMES = new Set([
   'frameset',
   'object',
   'applet',
-  'embed',
   'base',
   'link',
   'meta',

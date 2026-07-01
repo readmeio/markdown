@@ -31,7 +31,6 @@ describe('stripDangerousHtml', () => {
       'frameset',
       'object',
       'applet',
-      'embed',
       'base',
       'link',
       'meta',
