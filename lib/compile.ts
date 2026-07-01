@@ -66,13 +66,14 @@ const compile = (
       handleMissingComponents,
       { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
     ],
-    [validateMCPIntro],
-    ...userRemarkPlugins,
+    [validateMCPIntro]
   ];
 
   if (useTailwind) {
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
+
+  remarkPlugins.push(...userRemarkPlugins);
 
   const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }], ...userRehypePlugins];
 
