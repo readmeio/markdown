@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 14.11.0
+### ✨ New & Improved
+
+* **mdxish:** replace brace-escaping preprocessing with lenient expression tokenizer ([#1531](https://github.com/readmeio/markdown/issues/1531)) ([5c5a57c](https://github.com/readmeio/markdown/commit/5c5a57c4632903fcbee174105fc0f0e3532f7c31))
+* **mdxish:** support library imports in declarations ([#1530](https://github.com/readmeio/markdown/issues/1530)) ([fa6ee97](https://github.com/readmeio/markdown/commit/fa6ee97050d1b0e615d262a4ac0eea55d2e52cfd))
+
+### 🛠 Fixes & Updates
+
+* correct exports map ordering ([#1529](https://github.com/readmeio/markdown/issues/1529)) ([08a63dd](https://github.com/readmeio/markdown/commit/08a63ddc477b4221033febd994ab7e78321d0d11))
+
 ## Version 14.10.3
 ### 🛠 Fixes & Updates
 
