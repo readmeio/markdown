@@ -10,6 +10,7 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
+import rehypeStripDangerousHtml from '../processor/plugin/dangerous-html';
 import { rehypeToc } from '../processor/plugin/toc';
 import {
   defaultTransforms,
@@ -39,7 +40,18 @@ const sanitizeSchema = deepmerge(defaultSchema, {
 
 const compile = (
   text: string,
-  { components = {}, missingComponents, copyButtons, useTailwind, hardBreaks, ...opts }: CompileOpts = {},
+  {
+    components = {},
+    missingComponents,
+    copyButtons,
+    useTailwind,
+    hardBreaks,
+    // Pulled out of `...opts` so the sanitizer below is always appended last: a caller's
+    // `rehypePlugins`/`remarkPlugins` must not replace the pipeline (and drop the stripper).
+    remarkPlugins: userRemarkPlugins = [],
+    rehypePlugins: userRehypePlugins = [],
+    ...opts
+  }: CompileOpts = {},
 ) => {
   // Destructure at runtime to avoid circular dependency issues
   const { codeTabsTransformer, ...transforms } = defaultTransforms;
@@ -54,14 +66,16 @@ const compile = (
       handleMissingComponents,
       { components, missingComponents: ['ignore', 'throw'].includes(missingComponents) ? missingComponents : 'ignore' },
     ],
-    [validateMCPIntro],
+    [validateMCPIntro]
   ];
 
   if (useTailwind) {
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
 
-  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }]];
+  remarkPlugins.push(...userRemarkPlugins);
+
+  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }], ...userRehypePlugins];
 
   if (opts.format === 'md') {
     /**
@@ -79,6 +93,11 @@ const compile = (
       },
     ]);
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
+  } else {
+    // MDX keeps raw HTML as JSX nodes the `rehypeSanitize` allow-list never sees, and
+    // custom components must survive an allow-list anyway, so fall back to a deny-list.
+    // Narrower guarantee than the `md` path — see `dangerous-html.ts`.
+    rehypePlugins.push(rehypeStripDangerousHtml);
   }
 
   try {
