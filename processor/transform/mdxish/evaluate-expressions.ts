@@ -10,14 +10,17 @@ import { visit } from 'unist-util-visit';
 
 import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
 
+/** True for an array containing at least one React element, e.g. the result of `.map()` returning JSX. */
+const isRenderableElementArray = (value: unknown): boolean => Array.isArray(value) && value.some(React.isValidElement);
+
 /** Given the type of the expression result, create the corresponding mdast node. */
 const createEvaluatedNode = (result: unknown, position: Position | undefined): Html | Text => {
   if (result === null || result === undefined) {
     return { type: 'text', value: '', position };
-  } else if (React.isValidElement(result)) {
-    // Convert react elements to its HTML representation
-    // This must come before the object check as this is a subset of it
-    return { type: 'html', value: renderToStaticMarkup(result), position };
+  } else if (React.isValidElement(result) || isRenderableElementArray(result)) {
+    // Convert react elements (or arrays of them, e.g. `.map()` returning JSX) to their HTML
+    // representation. This must come before the object check as both are a subset of it.
+    return { type: 'html', value: renderToStaticMarkup(React.createElement(React.Fragment, null, result as React.ReactNode)), position };
   } else if (typeof result === 'object') {
     return { type: 'text', value: JSON.stringify(result), position };
   }
