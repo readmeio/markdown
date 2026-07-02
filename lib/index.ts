@@ -17,6 +17,7 @@ export { default as plain } from './plain';
 export { default as renderMdxish } from './renderMdxish';
 export type { RenderMdxishOpts } from './renderMdxish';
 export { default as run } from './run';
+export type { RunOpts } from './run';
 export { default as tags } from './tags';
 export { default as mdxishTags } from './mdxishTags';
 export { default as stripComments } from './stripComments';
