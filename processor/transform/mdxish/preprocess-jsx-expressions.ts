@@ -22,9 +22,74 @@ const HTML_ELEM_PLACEHOLDER = new RegExp(`${HTML_ELEM_PLACEHOLDER_PREFIX}(\\d+)_
 // Allows optional leading indentation and lazily matches until the same closing tag.
 const BLOCK_HTML_RE = /(?<=^|\n)[ \t]*<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>[ \t]*(?=\n|$)/g;
 
+const ESM_DECLARATION_START = /^(?:export|import)\b/;
+
+/**
+ * Whether a line begins a top-level `export`/`import` declaration. Its braces
+ * are valid JS owned by the mdxjsEsm tokenizer (which tolerates blank lines),
+ * so escaping them would corrupt the source and break acorn parsing.
+ */
+function startsEsmDeclaration(chars: string[], lineStart: number): boolean {
+  return ESM_DECLARATION_START.test(chars.slice(lineStart, lineStart + 7).join(''));
+}
+
+/**
+ * Finds the character ranges spanned by top-level `export`/`import` declarations.
+ *
+ * Their bodies are JS/JSX owned by the mdxjsEsm tokenizer and acorn, so the
+ * brace-escaping pass must leave them intact. Strings hide their braces; a
+ * declaration ends when its braces close back to depth 0, or — when brace-free
+ * (e.g. `export const x = 1;`) — at its terminating `;`.
+ */
+function findEsmRanges(content: string): [number, number][] {
+  const chars = Array.from(content);
+  const ranges: [number, number][] = [];
+
+  let depth = 0;
+  let strDelim: string | null = null;
+  let strEscaped = false;
+  let start = -1;
+
+  for (let i = 0; i < chars.length; i += 1) {
+    const ch = chars[i];
+
+    if (start === -1 && depth === 0 && (i === 0 || chars[i - 1] === '\n') && startsEsmDeclaration(chars, i)) {
+      start = i;
+    }
+
+    if (strDelim) {
+      if (strEscaped) strEscaped = false;
+      else if (ch === '\\') strEscaped = true;
+      else if (ch === strDelim) strDelim = null;
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      strDelim = ch;
+      // eslint-disable-next-line no-continue
+      continue;
+    }
+
+    if (ch === '{') depth += 1;
+    else if (ch === '}' && depth > 0) depth -= 1;
+
+    const declarationEnds = start !== -1 && depth === 0 && (ch === '}' || ch === ';');
+    if (declarationEnds) {
+      ranges.push([start, i]);
+      start = -1;
+    }
+  }
+
+  return ranges;
+}
+
 /**
  * Hides line-anchored HTML elements from the brace-escaping pass so we don't leak `\{`
  * into rendered output (rehypeRaw renders the `\` literally, e.g. `<div>{foo</div>`).
+ *
+ * HTML inside an ESM declaration is skipped: `BLOCK_HTML_RE` stops at the first close
+ * tag, so carving it out could split a JSX expression's braces and corrupt acorn's
+ * source. The brace balancer already exempts ESM declarations.
  *
  * One carve-out: if an interior line at column 0 has bare text containing `{`, mdxish
  * parses that line as a paragraph and the mdxExpression step would throw without an
@@ -32,7 +97,10 @@ const BLOCK_HTML_RE = /(?<=^|\n)[ \t]*<([a-z][a-zA-Z0-9]*)(?:\s[^>]*)?>[\s\S]*?<
  */
 function protectHTMLElements(content: string): { htmlElements: string[]; protectedContent: string } {
   const htmlElements: string[] = [];
-  const protectedContent = content.replace(BLOCK_HTML_RE, match => {
+  const esmRanges = findEsmRanges(content);
+  const protectedContent = content.replace(BLOCK_HTML_RE, (match, _tag, offset: number) => {
+    if (esmRanges.some(([start, end]) => offset >= start && offset <= end)) return match;
+
     // Look at the lines between the open and close tags. If any of them starts
     // at column 0 with bare text (not whitespace, not another tag) and contains
     // `{`, mdxish will parse that line as a paragraph and the brace as an MDX
@@ -51,17 +119,6 @@ function protectHTMLElements(content: string): { htmlElements: string[]; protect
 function restoreHTMLElements(content: string, htmlElements: string[]): string {
   if (htmlElements.length === 0) return content;
   return content.replace(HTML_ELEM_PLACEHOLDER, (_m, idx) => htmlElements[parseInt(idx, 10)]);
-}
-
-const ESM_DECLARATION_START = /^(?:export|import)\b/;
-
-/**
- * Whether a line begins a top-level `export`/`import` declaration. Its braces
- * are valid JS owned by the mdxjsEsm tokenizer (which tolerates blank lines),
- * so escaping them would corrupt the source and break acorn parsing.
- */
-function startsEsmDeclaration(chars: string[], lineStart: number): boolean {
-  return ESM_DECLARATION_START.test(chars.slice(lineStart, lineStart + 7).join(''));
 }
 
 function isBlankLine(chars: string[], lineStart: number): boolean {

@@ -241,6 +241,66 @@ isEven(4) = {isEven(4)}.`;
 > <Inner />`;
         expect(renderToHtml(md)).toContain('<strong>nested</strong>');
       });
+      
+      it('renders an `export default function` whose JSX ternary spans block elements', () => {
+        const md = `export default function Page() {
+  const selected = "";
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <div style={{ flexGrow: 1 }}>
+        {selected === '' ? (
+          <div>
+            <p>
+              Empty state.<br />
+              Pick something.
+            </p>
+          </div>
+        ) : (
+          <p>Has a selection.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+<Page />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe(
+          '<div style="display:flex"><div style="flex-grow:1"><div><p>Empty state.<br/>Pick something.</p></div></div></div>',
+        );
+      });
+
+      it('handles the same brace-spanning ternary in an `export const` arrow component', () => {
+        const md = `export const Panel = () => {
+  const active = true;
+
+  return (
+    <div>
+      {active ? (
+        <span>on</span>
+      ) : (
+        <span>off</span>
+      )}
+    </div>
+  );
+};
+
+<Panel />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe('<div><span>on</span></div>');
+      });
+
+      it('handles a brace-spanning ternary condensed onto one JSX return line', () => {
+        const md = `export default function Compact() {
+  const show = false;
+  return (<div>{show ? (<b>yes</b>) : (<i>no</i>)}</div>);
+}
+
+<Compact />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe('<div><i>no</i></div>');
+      });
     });
   });
 
