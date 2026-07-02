@@ -7,7 +7,6 @@ import type { PluggableList } from 'unified';
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
-import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkBreaks from 'remark-breaks';
@@ -44,10 +43,7 @@ import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-merma
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
-import {
-  preprocessJSXExpressions,
-  removeJSXComments,
-} from '../processor/transform/mdxish/preprocess-jsx-expressions';
+import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
@@ -76,6 +72,7 @@ import { legacyVariable } from './micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
 import { magicBlock } from './micromark/magic-block';
 import { mdxComponent } from './micromark/mdx-component';
+import { mdxExpressionLenient } from './micromark/mdx-expression-lenient';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -110,7 +107,7 @@ const defaultTransformers: PluggableList = [
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
  * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 4. Escape problematic braces so MDX expression parsing doesn't choke
+ * 4. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
  * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
@@ -123,7 +120,6 @@ function preprocessContent(
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
-  result = preprocessJSXExpressions(result);
 
   return processSnakeCaseComponent(result, { knownComponents });
 }
@@ -152,12 +148,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     return acc;
   }, {});
 
-  // Get mdxExpression extension and remove its flow construct to prevent
-  // `{...}` from interrupting paragraphs (which breaks multiline magic blocks)
-  const mdxExprExt = mdxExpression({ allowEmpty: true });
-  const mdxExprTextOnly: Extension = {
-    text: mdxExprExt.text,
-  };
+  // Parser extension for MDX expressions {}
+  const mdxExprTextOnly: Extension = mdxExpressionLenient();
 
   const micromarkExts = [
     jsxTable(),

@@ -1,0 +1,1 @@
+export { mdxExpressionLenient } from './syntax';
