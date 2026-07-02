@@ -1,4 +1,4 @@
-import type { Declaration, Pattern, Program } from 'estree';
+import type { Declaration, ImportDeclaration, Pattern, Program } from 'estree';
 import type { Root } from 'mdast';
 import type { MdxjsEsm } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
@@ -10,6 +10,8 @@ import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { evaluate, isMDXEsm } from '../../utils';
+
+import { collectImportValues } from './resolve-esm-imports';
 
 export type MdxishScope = Record<string, unknown>;
 
@@ -73,6 +75,7 @@ const collectExportNames = (declaration: Declaration): string[] => {
 const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
   const programBody: Declaration[] = [];
   const exportNames: string[] = [];
+  const importDeclarations: ImportDeclaration[] = [];
   const nodesToRemove: { index: number; parent: Root }[] = [];
 
   visit(tree, isMDXEsm, (node: MdxjsEsm, index, parent) => {
@@ -88,6 +91,11 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     // handled the same as a named export — the inner declaration carries the
     // binding name
     estreeBody.forEach(statement => {
+      if (statement.type === 'ImportDeclaration') {
+        importDeclarations.push(statement);
+        return;
+      }
+
       let declaration: Declaration | null = null;
       if (statement.type === 'ExportNamedDeclaration' && statement.declaration) {
         declaration = statement.declaration;
@@ -120,11 +128,14 @@ const evaluateExports: Plugin<[], Root> = () => (tree: Root, file: VFile) => {
     buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });
     const { value: source } = toJs(program);
 
+    // Make sure import values are available in the scope
+    const importValues = collectImportValues(importDeclarations);
+
     // Evaluate and build on the expression source
     // Use react to compile JSX codes
     const evaluatedExports = evaluate(
       `(() => { ${source}\nreturn { ${exportNames.join(', ')} }; })()`,
-      { React },
+      { React, ...importValues },
     ) as Record<string, unknown>;
 
     Object.assign(scope, evaluatedExports);
