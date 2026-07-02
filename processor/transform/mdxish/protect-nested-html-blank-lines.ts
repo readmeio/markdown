@@ -9,11 +9,22 @@ import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/
 const TABLE_STRUCTURE_TAGS = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup']);
 const BLOCK_TAG_NAMES = new Set([...htmlBlockNames].filter(tag => !TABLE_STRUCTURE_TAGS.has(tag)));
 
-// A line that is nothing but one complete, non-self-closing opening tag, e.g. `<div>` or
-// `  <div className="foo">`. Up to 3 leading spaces mirrors CommonMark's HTML block start rule.
-const STANDALONE_OPEN_TAG_RE = / {0,3}<([a-z][\w-]*)(?:\s[^<>]*)?>$/i;
-// A line that is nothing but one closing tag, e.g. `</div>`.
-const STANDALONE_CLOSE_TAG_RE = /^\s*<\/([a-z][\w-]*)>\s*$/i;
+// A line that *starts* with a complete, non-self-closing opening tag, e.g. `<div>` or
+// `  <div className="foo">` — trailing content on the same line (e.g. `<div><span>a</span>`,
+// common in Prettier-compacted JSX) is allowed and doesn't prevent a match. Up to 3 leading
+// spaces mirrors CommonMark's HTML block start rule.
+const OPEN_TAG_LEADING_RE = /^ {0,3}<([a-z][\w-]*)(?:\s[^<>]*)?(?<!\/)>/i;
+
+/**
+ * Net open/close depth change for `tag` across an entire line — counts every non-self-closing
+ * `<tag ...>` as +1 and every `</tag>` as -1, so nesting depth stays correct even when a tag
+ * shares a line with other content instead of sitting alone on its own line.
+ */
+function tagDepthDelta(line: string, tag: string): number {
+  const opens = line.match(new RegExp(`<${tag}(?:\\s[^<>]*)?(?<!/)>`, 'g'))?.length ?? 0;
+  const closes = line.match(new RegExp(`</${tag}>`, 'g'))?.length ?? 0;
+  return opens - closes;
+}
 
 // `<HTMLBlock>{`...`}</HTMLBlock>` bodies are a literal HTML payload the author wants preserved
 // byte-for-byte (see `processor/transform/mdxish/mdxish-html-blocks.ts`) — including any blank
@@ -40,9 +51,39 @@ const endsLikeTag = (trimmed: string): boolean => trimmed.endsWith('>');
 /** True when a trimmed line looks like it starts a tag (`<...`), so a preceding blank line is plausibly a gap between JSX siblings. */
 const startsLikeTag = (trimmed: string): boolean => trimmed.startsWith('<');
 
-/** Rough net `{`/`}` count for a line — good enough to tell "inside a brace expression" from "between tags". */
-const netBraceDelta = (line: string): number =>
-  (line.match(/\{/g)?.length ?? 0) - (line.match(/\}/g)?.length ?? 0);
+/**
+ * Net `{`/`}` depth change for a line, tracking (and skipping) quoted strings and template
+ * literals so a literal brace inside string content (a URL, JSON example, icon name, etc.)
+ * doesn't desync the open-expression tracking. `quoteChar` carries an in-progress quote across
+ * the line boundary, since template literals routinely span multiple lines.
+ */
+function braceDeltaAndQuote(line: string, quoteChar: string | null): { delta: number; quoteChar: string | null } {
+  let delta = 0;
+  let quote = quoteChar;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+
+    if (quote) {
+      if (char === '\\') {
+        i += 1; // Skip the escaped character so e.g. `\"` doesn't end the string early.
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue; // eslint-disable-line no-continue
+    }
+
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+    } else if (char === '{') {
+      delta += 1;
+    } else if (char === '}') {
+      delta -= 1;
+    }
+  }
+
+  return { delta, quoteChar: quote };
+}
 
 /**
  * Neutralizes blank lines nested inside a lowercase, plain-attribute block-level HTML tag
@@ -59,13 +100,14 @@ const netBraceDelta = (line: string): number =>
  * html-flow construct, which fragments the block at the first blank line — corrupting the
  * markup and, per CX-3646, leaking indented continuation lines as literal code blocks.
  *
- * Restricted to standalone open/close tag lines (each tag alone on its own line, the prevalent
- * style for JSX copied from React source) so nesting depth can be tracked with simple line
- * matching rather than a full parser. A blank line between two tag-like lines is replaced with
- * a placeholder; a blank line inside an unclosed `{...}` JS expression (e.g. between statements
- * in a `.map()` callback body) is deleted outright instead — inserting text there would corrupt
- * the JS source once the expression is evaluated, but removing a blank separator between two
- * complete statements is always syntactically safe.
+ * Tracks nesting depth via simple line matching rather than a full parser: each line is
+ * scanned for how many times the wrapper tag opens/closes on it (`tagDepthDelta`), which
+ * handles both the prevalent "one tag per line" JSX style and tags sharing a line with other
+ * content (e.g. `<div><span>a</span>`, common in Prettier-compacted JSX). A blank line between
+ * two tag-like lines is replaced with a placeholder; a blank line inside an unclosed `{...}` JS
+ * expression (e.g. between statements in a `.map()` callback body) is deleted outright instead
+ * — inserting text there would corrupt the JS source once the expression is evaluated, but
+ * removing a blank separator between two complete statements is always syntactically safe.
  */
 export function protectNestedHtmlBlankLines(content: string): string {
   const { placeholders: htmlBlockPlaceholders, protectedContent: contentWithoutHtmlBlocks } = protectHtmlBlockTags(content);
@@ -75,6 +117,7 @@ export function protectNestedHtmlBlankLines(content: string): string {
   let activeTag: string | null = null;
   let depth = 0;
   let braceDepth = 0;
+  let quoteChar: string | null = null;
   let lastNonBlankTrimmed = '';
 
   for (let i = 0; i < lines.length; i += 1) {
@@ -82,11 +125,16 @@ export function protectNestedHtmlBlankLines(content: string): string {
     const trimmed = line.trim();
 
     if (!activeTag) {
-      const openMatch = line.match(STANDALONE_OPEN_TAG_RE);
+      const openMatch = line.match(OPEN_TAG_LEADING_RE);
       if (openMatch && BLOCK_TAG_NAMES.has(openMatch[1].toLowerCase())) {
         activeTag = openMatch[1];
         depth = 1;
         braceDepth = 0;
+        quoteChar = null;
+        // Account for any further opens/closes of this tag later on the same line (e.g. a
+        // compacted `<div><div>` or a fully self-contained `<div>...</div>` one-liner).
+        depth += tagDepthDelta(line.slice(openMatch[0].length), activeTag);
+        if (depth <= 0) activeTag = null;
       }
       if (trimmed) lastNonBlankTrimmed = trimmed;
       continue; // eslint-disable-line no-continue
@@ -114,19 +162,13 @@ export function protectNestedHtmlBlankLines(content: string): string {
     }
 
     lastNonBlankTrimmed = trimmed;
-    braceDepth = Math.max(0, braceDepth + netBraceDelta(line));
 
-    const openMatch = line.match(STANDALONE_OPEN_TAG_RE);
-    if (openMatch && openMatch[1] === activeTag) {
-      depth += 1;
-      continue; // eslint-disable-line no-continue
-    }
+    const brace = braceDeltaAndQuote(line, quoteChar);
+    quoteChar = brace.quoteChar;
+    braceDepth = Math.max(0, braceDepth + brace.delta);
 
-    const closeMatch = line.match(STANDALONE_CLOSE_TAG_RE);
-    if (closeMatch && closeMatch[1] === activeTag) {
-      depth -= 1;
-      if (depth === 0) activeTag = null;
-    }
+    depth += tagDepthDelta(line, activeTag);
+    if (depth <= 0) activeTag = null;
   }
 
   return restoreHtmlBlockTags(restoreCodeBlocks(lines.join('\n'), protectedCode), htmlBlockPlaceholders);

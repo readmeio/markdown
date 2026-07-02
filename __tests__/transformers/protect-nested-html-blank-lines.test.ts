@@ -82,4 +82,30 @@ More text.`;
     const result = protectNestedHtmlBlankLines(input);
     expect(result).toContain('  <!---->');
   });
+
+  it('protects a blank line even when the wrapper tag shares its line with other content', () => {
+    const input = `<div className="wrap"><span>a</span>
+
+<span>b</span></div>`;
+
+    const result = protectNestedHtmlBlankLines(input);
+
+    expect(result).not.toContain('\n\n');
+    expect(result).toContain('<!---->');
+  });
+
+  it('does not desync brace depth when a string literal contains a stray brace', () => {
+    const input = `<div className="grid">
+  {(() => {
+    const s = "}}";
+    return 1;
+
+    return 2;
+  })()}
+</div>`;
+
+    const result = protectNestedHtmlBlankLines(input);
+
+    expect(result).not.toContain('\n\n');
+  });
 });

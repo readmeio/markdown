@@ -2,9 +2,10 @@ import type { Html, Root } from 'mdast';
 import type { Plugin } from 'unified';
 import type { VFile } from 'vfile';
 
+import React from 'react';
 import { visit } from 'unist-util-visit';
 
-import { evaluate } from '../../utils';
+import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
 
 // Matches a standalone `<style ...>{ <expr> }</style>` block — the JSX shape MDX evaluates
 // (typically a template-literal-wrapped CSS string) but which mdxish otherwise leaves as
@@ -26,7 +27,7 @@ const STYLE_EXPRESSION_RE = /^(<style\b[^>]*>)\s*\{([\s\S]*)\}\s*(<\/style>)$/i;
  * turns `html` mdast nodes into raw hast strings. Skipped in safeMode.
  */
 const evaluateStyleBlockExpressions: Plugin<[], Root> = () => (tree, file: VFile) => {
-  const scope: Record<string, unknown> = { ...file.data.mdxishScope };
+  const scope: Record<string, unknown> = { ...file.data.mdxishScope, React };
 
   visit(tree, 'html', (node: Html) => {
     const match = node.value.trim().match(STYLE_EXPRESSION_RE);
@@ -34,7 +35,7 @@ const evaluateStyleBlockExpressions: Plugin<[], Root> = () => (tree, file: VFile
 
     const [, openTag, expression, closeTag] = match;
     try {
-      const css = evaluate(expression, scope);
+      const css = evalExpression(expression, scope);
       node.value = `${openTag}${String(css)}${closeTag}`;
     } catch {
       // Evaluation failed — leave the node untouched so it round-trips as literal text.
