@@ -9,13 +9,12 @@ import { codes } from 'micromark-util-symbol';
  *
  * Matches a balanced `{ ... }` run — tracking nested braces and spanning soft
  * line breaks — and emits the standard `mdxTextExpression*` tokens so the
- * upstream `mdxExpressionFromMarkdown()` builds the node. 
- * 
- * This reimplements the official micromark mdxExpression, but unlike the upstream
- * factory, an unbalanced brace that reaches end of input returns `nok` rather
- * than throwing: micromark rolls back and the `{` renders as literal text. This
- * makes the pipeline more forgiving of unbalanced braces, which the original 
- * mdxExpression would be sensitive to.
+ * upstream `mdxExpressionFromMarkdown()` builds the node.
+ *
+ * Reimplements the official micromark mdxExpression, but an unbalanced brace that
+ * reaches end of input returns `nok` instead of throwing: micromark rolls back
+ * and the `{` renders as literal text, making the pipeline forgiving of stray
+ * braces that upstream would hard-error on.
  */
 function tokenizeTextExpression(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   let depth = 0;
