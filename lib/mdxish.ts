@@ -35,6 +35,7 @@ import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/se
 import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
+import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
@@ -43,6 +44,7 @@ import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-merma
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
+import { protectNestedHtmlBlankLines } from '../processor/transform/mdxish/protect-nested-html-blank-lines';
 import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
@@ -106,9 +108,11 @@ const defaultTransformers: PluggableList = [
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 4. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 5. Replace snake_case component names with parser-safe placeholders
+ * 3. Protect blank lines nested inside plain-attribute block HTML tags so they
+ *    aren't fragmented by CommonMark's blank-line HTML block terminator
+ * 4. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 5. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
+ * 6. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -118,6 +122,7 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
+  result = protectNestedHtmlBlankLines(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
 
@@ -271,6 +276,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(remarkBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
+    .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
