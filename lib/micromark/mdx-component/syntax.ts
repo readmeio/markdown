@@ -5,6 +5,7 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
+import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 declare module 'micromark-util-types' {
@@ -19,6 +20,13 @@ declare module 'micromark-util-types' {
 // content. Other lowercase tags (i, span, …) follow the type-7 rule and only
 // stay flow when nothing trails the close tag.
 const htmlFlowTagNames = new Set([...htmlRawNames, ...htmlBlockNames]);
+
+// Lowercase type-6 block tags claimable in flow even without a `{…}` attribute, so
+// blank lines between nested JSX siblings don't fragment the block. Excludes table
+// tags (mdxishTables owns their blank lines) and voids (never close).
+const plainBlockClaimTagNames = new Set(
+  [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
+);
 
 const nonLazyContinuationStart: Construct = {
   tokenize: tokenizeNonLazyContinuationStart,
@@ -86,6 +94,11 @@ function createTokenize(mode: 'flow' | 'text') {
     // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
+
+    // A plain lowercase block tag claimed without a `{…}` attribute, gated by
+    // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
+    let isPlainBlockClaim = false;
+    let pendingBlankLine = false;
 
     // Code span tracking
     let codeSpanOpenSize = 0;
@@ -366,7 +379,12 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
+        if (requiresBraceAttr && !sawBraceAttr) {
+          // Plain lowercase block tags stay claimable in flow, gated per line by
+          // `plainClaimLineStart`; everything else falls through to CommonMark.
+          if (!isFlow || !plainBlockClaimTagNames.has(tagName)) return nok(code);
+          isPlainBlockClaim = true;
+        }
         effects.consume(code);
         onOpenerLine = isFlow;
         return body;
@@ -712,8 +730,16 @@ function createTokenize(mode: 'flow' | 'text') {
         return nestedOpenTagName;
       }
 
-      // Only increment depth for same-name tags that are followed by valid tag-end chars
-      if (closingTagName === tagName && (code === codes.greaterThan || code === codes.slash || code === codes.space || code === codes.horizontalTab)) {
+      // Same-name opener followed by a tag-end char bumps depth. A line ending
+      // counts too: Prettier puts a newline right after the name (`<div\n …\n>`).
+      if (
+        closingTagName === tagName &&
+        (code === codes.greaterThan ||
+          code === codes.slash ||
+          code === codes.space ||
+          code === codes.horizontalTab ||
+          markdownLineEnding(code))
+      ) {
         depth += 1;
       }
 
@@ -817,6 +843,9 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function bodyContinuationBefore(code: Code): State | undefined {
       if (code === null || markdownLineEnding(code)) {
+        // Empty line: outside any `{…}` expression this is CommonMark's html-block
+        // terminator, so a plain block claim must pass the guard below to continue.
+        if (isPlainBlockClaim && braceDepth === 0) pendingBlankLine = true;
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');
@@ -828,20 +857,41 @@ function createTokenize(mode: 'flow' | 'text') {
         return inBodyBraceExpr(code);
       }
 
-      // Detect tilde fences at line start
-      if (atLineStart && code === codes.tilde) {
-        return bodyAfterLineStart(code);
-      }
+      if (isPlainBlockClaim) return plainClaimLineStart(code);
+      return bodyLineStart(code);
+    }
 
-      // Detect backtick fences at line start
+    // Dispatch a non-blank continuation line: fenced code at line start, else body.
+    function bodyLineStart(code: Code): State | undefined {
+      if (atLineStart && code === codes.tilde) return bodyAfterLineStart(code);
       if (atLineStart && code === codes.graveAccent) {
         codeSpanOpenSize = 0;
         atLineStart = false;
         return countOpenTicks(code);
       }
-
       atLineStart = false;
       return body(code);
+    }
+
+    // Line-start gate for plain block claims. After a blank line the block may only
+    // continue on a tag line (`<…`); any markdown island (`**bold**`, `[block:…]`, a
+    // fence) refuses so CommonMark html-flow reparses it exactly as it does today.
+    function plainClaimLineStart(code: Code): State | undefined {
+      // Leading whitespace only → treat as a blank line, matching CommonMark.
+      if (code === codes.space || code === codes.horizontalTab) {
+        effects.consume(code);
+        return plainClaimLineStart;
+      }
+      if (code === null || markdownLineEnding(code)) {
+        pendingBlankLine = true;
+        effects.exit('mdxComponentData');
+        return bodyContinuationStart(code);
+      }
+      if (pendingBlankLine) {
+        if (code !== codes.lessThan) return nok(code);
+        pendingBlankLine = false;
+      }
+      return bodyLineStart(code);
     }
 
     // ── Shared lazy continuation failure ───────────────────────────────────

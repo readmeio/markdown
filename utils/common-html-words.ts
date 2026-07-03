@@ -93,6 +93,24 @@ export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'html-blo
 export const STANDARD_HTML_TAGS = new Set(htmlTags) as Set<string>;
 
 /**
+ * Table structural tags. Blank lines inside these carry deliberate meaning for
+ * `mdxishTables` (e.g. splitting cell content into paragraphs, or deciding
+ * whether a table stays plain HTML vs a JSX `<Table>`), so transforms that
+ * neutralize or claim across blank lines must leave them alone.
+ */
+export const HTML_TABLE_STRUCTURE_TAGS = new Set([
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'td',
+  'th',
+  'caption',
+  'colgroup',
+]);
+
+/**
  * HTML void elements — elements that have no closing tag and no children.
  *
  * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements

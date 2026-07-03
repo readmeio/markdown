@@ -1,17 +1,16 @@
 import { htmlRawNames } from 'micromark-util-html-tag-name';
 
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
+import { HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
 
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
 
-const TABLE_STRUCTURE_TAGS = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th', 'caption', 'colgroup'];
-
 // Tags whose contents must be preserved as is, inserting a blank line after the
 // opener corrupts the payload.
 // htmlRawNames here refer to <pre>, <textarea>, <script>, <style>
-const RAW_CONTENT_TAGS = [...htmlRawNames, ...TABLE_STRUCTURE_TAGS];
+const RAW_CONTENT_TAGS = [...htmlRawNames, ...HTML_TABLE_STRUCTURE_TAGS];
 
 // The `(?=[\s/>])` lookahead avoids false matches on lookalike names like `<script-foo>`.
 const RAW_CONTENT_TAG_MATCHERS = RAW_CONTENT_TAGS.map(tag => ({
