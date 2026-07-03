@@ -33,7 +33,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     const md = '<div style={{ color: "red", fontSize: 12 }}>hi</div>';
     const html = toHtml(mdxish(md) as never);
 
-    expect(html).toContain('style="color:red;font-size:12"');
+    expect(html).toContain('style="color:red;font-size:12px"');
     expect(html).not.toContain('[object Object]');
   });
 
