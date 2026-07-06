@@ -44,7 +44,6 @@ import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-merma
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
-import { protectNestedHtmlBlankLines } from '../processor/transform/mdxish/protect-nested-html-blank-lines';
 import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
@@ -108,11 +107,9 @@ const defaultTransformers: PluggableList = [
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
  * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 3. Protect blank lines nested inside plain-attribute block HTML tags so they
- *    aren't fragmented by CommonMark's blank-line HTML block terminator
- * 4. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 5. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 6. Replace snake_case component names with parser-safe placeholders
+ * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 4. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
+ * 5. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -122,7 +119,6 @@ function preprocessContent(
 
   let result = normalizeTableSeparator(content);
   result = terminateHtmlFlowBlocks(result);
-  result = protectNestedHtmlBlankLines(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
 
