@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { asciiAlpha, markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
@@ -30,6 +30,13 @@ const plainBlockClaimTagNames = new Set(
 
 const nonLazyContinuationStart: Construct = {
   tokenize: tokenizeNonLazyContinuationStart,
+  partial: true,
+};
+
+// Lookahead for `plainClaimLineStart`: is this line markup-only, or a paragraph
+// that merely starts with a tag? Run via `effects.check` so it never consumes.
+const markupOnlyContinuation: Construct = {
+  tokenize: tokenizeMarkupOnlyContinuation,
   partial: true,
 };
 
@@ -887,10 +894,18 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('mdxComponentData');
         return bodyContinuationStart(code);
       }
+      // Across a blank line the block only continues onto a markup-only line; a
+      // paragraph that merely starts with a tag must fall back so its markdown
+      // parses and rehype-raw re-nests it into the wrapper.
       if (pendingBlankLine) {
         if (code !== codes.lessThan) return nok(code);
-        pendingBlankLine = false;
+        return effects.check(markupOnlyContinuation, plainClaimContinue, nok)(code);
       }
+      return bodyLineStart(code);
+    }
+
+    function plainClaimContinue(code: Code): State | undefined {
+      pendingBlankLine = false;
       return bodyLineStart(code);
     }
 
@@ -927,6 +942,51 @@ function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effect
       return nok(code);
     }
     return ok(code);
+  }
+}
+
+// A markup-only line opens with a tag (`<x`/`</x`) and ends (ignoring trailing
+// spaces) at a `>`. That distinguishes a structural continuation like
+// `<span>b</span></div>` from a paragraph like `<b>Note:</b> read *this*`.
+function tokenizeMarkupOnlyContinuation(effects: Effects, ok: State, nok: State) {
+  let lastNonSpace: Code = null;
+
+  return start;
+
+  function start(code: Code): State | undefined {
+    // Caller guarantees we are at `<` at the (already de-indented) line start.
+    effects.enter(types.data);
+    effects.consume(code);
+    return afterLessThan;
+  }
+
+  function afterLessThan(code: Code): State | undefined {
+    if (code === codes.slash) {
+      effects.consume(code);
+      return afterSlash;
+    }
+    return afterSlash(code);
+  }
+
+  // The `<` (or `</`) must introduce a real tag, not a stray `<` in prose.
+  function afterSlash(code: Code): State | undefined {
+    if (asciiAlpha(code)) {
+      lastNonSpace = code;
+      effects.consume(code);
+      return scanToLineEnd;
+    }
+    effects.exit(types.data);
+    return nok(code);
+  }
+
+  function scanToLineEnd(code: Code): State | undefined {
+    if (code === null || markdownLineEnding(code)) {
+      effects.exit(types.data);
+      return lastNonSpace === codes.greaterThan ? ok(code) : nok(code);
+    }
+    if (!markdownSpace(code)) lastNonSpace = code;
+    effects.consume(code);
+    return scanToLineEnd;
   }
 }
 

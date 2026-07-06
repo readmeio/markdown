@@ -74,6 +74,57 @@ describe('plain HTML block tags with nested blank lines', () => {
     });
   });
 
+  it('falls back for a paragraph that opens with an inline tag then trails into markdown', () => {
+    // Opens with `<b>` but trails into prose, so it is a paragraph, not a markup
+    // continuation: it must fall back so `*this*` and the link parse.
+    const md = `<div className="callout">
+  <p>a</p>
+
+<b>Note:</b> read *this* carefully and see [the docs](https://example.com)
+
+  <p>b</p>
+</div>`;
+
+    const ast = mdxish(md);
+    const wrapper = findElementByTagName(ast, 'div');
+
+    expect(findElementByTagName(ast, 'em')).toMatchObject({ children: [{ type: 'text', value: 'this' }] });
+    expect(findElementByTagName(ast, 'a')).toMatchObject({
+      properties: { href: 'https://example.com' },
+      children: [{ type: 'text', value: 'the docs' }],
+    });
+    // Both siblings plus the recovered paragraph all re-nest into the wrapper.
+    expect(findAllElementsByTagName(wrapper!, 'p')).toHaveLength(3);
+  });
+
+  it('falls back when the trailing paragraph opens with an attribute-carrying tag', () => {
+    const md = `<div className="wrap">
+  <p>x</p>
+
+<a href="https://ex.com">link</a> then some **bold** text
+
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'strong')).toMatchObject({ children: [{ type: 'text', value: 'bold' }] });
+    expect(findElementByTagName(ast, 'div')).not.toBeNull();
+  });
+
+  it('falls back for a trailing-markdown paragraph inside a blockquoted wrapper', () => {
+    const md = `> <div className="quote">
+>   <p>a</p>
+>
+> <b>hi</b> and *there*
+> </div>`;
+
+    const ast = mdxish(md);
+    const blockquote = findElementByTagName(ast, 'blockquote');
+
+    expect(blockquote).not.toBeNull();
+    expect(findElementByTagName(blockquote!, 'em')).toMatchObject({ children: [{ type: 'text', value: 'there' }] });
+  });
+
   it('preserves a magic block island inside an open <div>', () => {
     const md = `<div>
 
