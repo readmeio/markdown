@@ -774,6 +774,29 @@ third\`} />`;
     })
   });
 
+  describe('fenced code blocks starting a continuation line', () => {
+    it('treats a fence opening a line as fenced code, not an inline code span', () => {
+      // Regression test: a fenced block whose opening backticks are the first token
+      // after a newline must be recognized as fenced code so a literal `</Terminal>`
+      // inside it stays inert — not misread as the real closing tag, which would
+      // otherwise close the component early and split the document in two.
+      const markdown = `<Terminal>
+\`\`\`
+</Terminal>
+\`\`\`
+</Terminal>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Terminal' });
+
+      const code = collectNodes<Code>(tree, 'code');
+      expect(code).toHaveLength(1);
+      expect(code[0].value).toBe('</Terminal>');
+    });
+  });
+
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {
     const counts = (tree: Root) => ({
       callouts: collectNodes(tree, 'rdme-callout').length,

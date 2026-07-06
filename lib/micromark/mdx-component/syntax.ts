@@ -561,6 +561,7 @@ function createTokenize(mode: 'flow' | 'text') {
       if (atLineStart && codeSpanOpenSize >= 3) {
         fenceChar = codes.graveAccent;
         fenceLength = codeSpanOpenSize;
+        atLineStart = false;
         return inFencedCode(code);
       }
 
@@ -873,7 +874,9 @@ function createTokenize(mode: 'flow' | 'text') {
       if (atLineStart && code === codes.tilde) return bodyAfterLineStart(code);
       if (atLineStart && code === codes.graveAccent) {
         codeSpanOpenSize = 0;
-        atLineStart = false;
+        // Leave `atLineStart` set — `countOpenTicks` needs it to tell a fence from an
+        // inline code span once the run of backticks is fully counted; it's cleared once
+        // that fence-vs-span decision has actually been made.
         return countOpenTicks(code);
       }
       atLineStart = false;
