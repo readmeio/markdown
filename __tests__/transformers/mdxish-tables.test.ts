@@ -120,9 +120,9 @@ describe('mdxish tables transformation', () => {
                         type: 'mdxJsxFlowElement',
                         name: 'td',
                         children: [
-                          { type: 'text', value: 'Line 1' },
-                          { type: 'text', value: 'Line 3' },
-                          { type: 'text', value: 'Line 5' },
+                          { type: 'paragraph', children: [{ type: 'text', value: 'Line 1' }] },
+                          { type: 'paragraph', children: [{ type: 'text', value: 'Line 3' }] },
+                          { type: 'paragraph', children: [{ type: 'text', value: 'Line 5' }] },
                         ],
                       },
                     ],
@@ -133,6 +133,154 @@ describe('mdxish tables transformation', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('given blank-line-separated paragraphs in a header-less table cell', () => {
+    // A <tbody>-only table can't become an mdast table (no header row), so it
+    // stays JSX — paragraphs inside cells must survive that path
+    it('keeps the paragraphs as separate mdast nodes', () => {
+      const md = `<table><tbody><tr><td>
+First paragraph.
+
+Second paragraph.
+</td></tr></tbody></table>`;
+      const ast = astProcessor(md);
+
+      expect(ast).toMatchObject({
+        type: 'root',
+        children: [
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'table',
+            children: [
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'tbody',
+                children: [
+                  {
+                    type: 'mdxJsxFlowElement',
+                    name: 'tr',
+                    children: [
+                      {
+                        type: 'mdxJsxFlowElement',
+                        name: 'td',
+                        children: [
+                          { type: 'paragraph', children: [{ type: 'text', value: 'First paragraph.' }] },
+                          { type: 'paragraph', children: [{ type: 'text', value: 'Second paragraph.' }] },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('renders the paragraphs as separate <p> elements', () => {
+      const md = `<table><tbody><tr><td>
+First paragraph.
+
+Second paragraph.
+</td></tr></tbody></table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<td><p>First paragraph.</p><p>Second paragraph.</p></td>');
+    });
+
+    it('renders separate <p> elements when the content is condensed against the tags', () => {
+      const md = `<table><tbody><tr><td>First paragraph.
+
+Second paragraph.</td></tr></tbody></table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<p>First paragraph.</p>');
+      expect(html).toContain('<p>Second paragraph.</p>');
+    });
+
+    it('treats multiple blank lines and indentation as a single paragraph break', () => {
+      const md = `<table>
+  <tbody>
+    <tr>
+      <td>
+        First paragraph.
+
+
+
+        Second paragraph.
+      </td>
+    </tr>
+  </tbody>
+</table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<td><p>First paragraph.</p><p>Second paragraph.</p></td>');
+    });
+
+    it('still parses markdown syntax inside each paragraph', () => {
+      const md = `<table><tbody><tr><td>
+**First** paragraph.
+
+_Second_ paragraph.
+</td></tr></tbody></table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<p><strong>First</strong> paragraph.</p>');
+      expect(html).toContain('<p><em>Second</em> paragraph.</p>');
+    });
+
+    it('preserves paragraphs in a JSX <Table> kept as JSX by structural attributes', () => {
+      const md = `<Table>
+  <thead>
+    <tr><th class="head">Header</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        First paragraph.
+
+        Second paragraph.
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<td><p>First paragraph.</p><p>Second paragraph.</p></td>');
+    });
+
+    it('keeps paragraphs separate from a sibling list in the same cell', () => {
+      const md = `<table><tbody><tr><td>
+First paragraph.
+
+- item one
+- item two
+
+Second paragraph.
+</td></tr></tbody></table>`;
+      const hast = mdxish(md);
+      const cells = findAllElementsByTagName(hast, 'td');
+      expect(cells).toHaveLength(1);
+
+      const lists = findAllElementsByTagName(cells[0], 'ul');
+      expect(lists).toHaveLength(1);
+      expect(findAllElementsByTagName(lists[0], 'li')).toHaveLength(2);
+
+      const html = toHtml(cells[0]);
+      expect(html).toContain('First paragraph.');
+      expect(html).toContain('Second paragraph.');
+    });
+
+    it('still unwraps a sole paragraph in a header-less cell (no stray <p>)', () => {
+      const md = `<table><tbody><tr><td>
+Just one line.
+</td></tr></tbody></table>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<td>Just one line.</td>');
     });
   });
 

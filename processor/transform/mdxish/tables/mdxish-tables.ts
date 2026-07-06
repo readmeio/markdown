@@ -25,7 +25,7 @@ import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import { tableTags, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
+import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -214,23 +214,22 @@ const processTableNode = (
     // same line as content becomes mdxJsxTextElement inside a paragraph).
     // Unwrap these so <td>/<th> sit directly under <tr>, and strip
     // whitespace-only text nodes to avoid rendering empty <p>/<br>.
-    const cleanChildren = (children: Node[]): Node[] =>
-      children
-        .flatMap(child => {
-          if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
-            return child.children as Node[];
-          }
-          return [child];
-        })
-        .filter(
-          child =>
-            !(child.type === 'text' && 'value' in child && typeof child.value === 'string' && !child.value.trim()),
-        );
+    const removeWhitespaceOnlyTextNodes = (children: Node[]): Node[] =>
+      children.filter(
+        child =>
+          !(child.type === 'text' && 'value' in child && typeof child.value === 'string' && !child.value.trim()),
+      );
 
     visit(node as Node, isMDXElement, (el: MdxJsxFlowElement | MdxJsxTextElement) => {
-      if ('children' in el && Array.isArray(el.children)) {
-        el.children = cleanChildren(el.children as Node[]) as typeof el.children;
-      }
+      if (!('children' in el) || !Array.isArray(el.children)) return;
+
+      // Filtering transformers
+      // A cell only unwraps a sole paragraph: multiple paragraphs are real
+      // blank-line-separated content that must stay separated
+      const unwrapped = isTableCell(el)
+        ? unwrapSoleParagraph(el.children as Node[])
+        : unwrapParagraphNodes(el.children as Node[]);
+      el.children = removeWhitespaceOnlyTextNodes(unwrapped) as typeof el.children;
     });
 
     (parent.children as ((typeof parent.children)[number] | MdxJsxFlowElement | MdxJsxTextElement)[])[index] = {
