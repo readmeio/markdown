@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.11.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** preserve <style> blocks, style objects, and .map() JSX carried over from MDX ([#1532](https://github.com/readmeio/markdown/issues/1532)) ([1886f43](https://github.com/readmeio/markdown/commit/1886f433ed01c3534937263cf8037e9fbe48b091))
+* **mdxish:** preserve blank-line paragraph breaks inside table cells ([#1534](https://github.com/readmeio/markdown/issues/1534)) ([2bb4646](https://github.com/readmeio/markdown/commit/2bb4646e5e72f341895976923d97df95b5ee5643))
+
 ## Version 14.11.0
 ### ✨ New & Improved
 
