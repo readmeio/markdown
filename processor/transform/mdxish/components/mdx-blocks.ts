@@ -9,6 +9,9 @@ import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
+/** Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
+const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+
 /**
  * Reduce leading whitespace on all lines just enough to prevent
  * remark from treating indented content as code blocks (4+ spaces).
@@ -193,10 +196,16 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     // inline, which is how ReadMe's custom components are modeled).
     if (!isPascal && parent.type === 'paragraph') return;
 
-    // Lowercase HTML tags are only eligible when the tokenizer claimed them
-    // for JSX-expression attributes. Plain HTML should stay as html nodes so
+    // Lowercase HTML tags are eligible when they (or a descendant tag in their
+    // content, e.g. a `.map()` body returning JSX with `key={i}`) carry a
+    // JSX-expression attribute. Without this, a wrapper `<div>` with only plain
+    // attributes (or none) swallows its whole nested block — including any
+    // `style={{...}}`/`.map()` JSX inside it — as literal HTML text, which
+    // rehype-raw's parse5 pass then garbles (it has no notion of JS expressions).
+    // Plain HTML with no expressions anywhere stays as an html node so
     // rehype-raw handles it as normal.
-    if (!isPascal && !hasExpressionAttr(attributes)) return;
+    const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
+    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr) return;
 
     const closingTagStr = `</${tag}>`;
 

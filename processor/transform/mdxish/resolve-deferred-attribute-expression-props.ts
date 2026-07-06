@@ -8,6 +8,8 @@ import { visit } from 'unist-util-visit';
 
 import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
 
+import { isPlainObject, styleObjectToCssText } from './style-object-to-css';
+
 /**
  * Resolve attribute expressions that `mdxJsxElementHandler` deferred.
  *
@@ -30,7 +32,10 @@ const resolveDeferredAttributeExpressionProps: Plugin<[], Root> = () => (tree, f
     const properties: Record<string, unknown> = node.properties;
     Object.entries(deferredExpressions).forEach(([name, source]) => {
       try {
-        properties[name] = evalExpression(source, scope);
+        const result = evalExpression(source, scope);
+        // hast/HTML `style` is a plain CSS string; a `style={{...}}` expression evaluates to
+        // a JS object, which must be serialized or it renders as the literal "[object Object]".
+        properties[name] = name === 'style' && isPlainObject(result) ? styleObjectToCssText(result) : result;
       } catch {
         // Evaluation failed — fall back to the raw expression source so the attribute
         // renders as readable text rather than disappearing.
