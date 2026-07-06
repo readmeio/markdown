@@ -12,16 +12,21 @@ import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../../../../lib/mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../../../../lib/mdast-util/mdx-component';
+import { plainHtmlBlockFromMarkdown } from '../../../../lib/mdast-util/plain-html-block';
 import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { plainHtmlBlock } from '../../../../lib/micromark/plain-html-block';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
 const buildInlineMdProcessor = (safeMode: boolean) => {
-  const micromarkExts = [mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
+  // plainHtmlBlock first in the array = tried last on `<` (micromark prepends
+  // later extensions), so mdxComponent claims components before plain HTML here too.
+  const micromarkExts = [plainHtmlBlock(), mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
   const fromMarkdownExts = [
+    plainHtmlBlockFromMarkdown(),
     mdxComponentFromMarkdown(),
     gemojiFromMarkdown(),
     legacyVariableFromMarkdown(),

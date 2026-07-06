@@ -1,0 +1,1 @@
+export { plainHtmlBlock } from './syntax';

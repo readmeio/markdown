@@ -17,6 +17,10 @@ import { mdxComponent } from './micromark/mdx-component';
 const tags = (doc: string) => {
   const set = new Set<string>();
 
+  // `plainHtmlBlock` is deliberately not registered here: this only extracts
+  // PascalCase component names, and plain HTML blocks contain none. Its
+  // PascalCase-opener guard means the main pipeline agrees on which spans stay
+  // plain HTML vs become components.
   const processor = remark()
     .data('micromarkExtensions', [jsxTable(), magicBlock(), mdxComponent()])
     .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxComponentFromMarkdown()])

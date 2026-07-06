@@ -66,6 +66,7 @@ import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
+import { plainHtmlBlockFromMarkdown } from './mdast-util/plain-html-block';
 import { gemoji } from './micromark/gemoji';
 import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
@@ -74,6 +75,7 @@ import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-
 import { magicBlock } from './micromark/magic-block';
 import { mdxComponent } from './micromark/mdx-component';
 import { mdxExpressionLenient } from './micromark/mdx-expression-lenient';
+import { plainHtmlBlock } from './micromark/plain-html-block';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -153,6 +155,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const mdxExprTextOnly: Extension = mdxExpressionLenient();
 
   const micromarkExts = [
+    // First in the array = tried last on `<` (micromark prepends later
+    // extensions). Plain HTML blocks get last refusal, after mdxComponent/jsxTable.
+    plainHtmlBlock(),
     jsxTable(),
     magicBlock(),
     mdxComponent(),
@@ -161,6 +166,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     looseHtmlEntity(),
   ];
   const fromMarkdownExts = [
+    plainHtmlBlockFromMarkdown(),
     jsxTableFromMarkdown(),
     magicBlockFromMarkdown(),
     mdxComponentFromMarkdown(),
@@ -171,9 +177,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   ];
 
   if (!safeMode) {
-    // Insert mdx expression (text-only, no flow) after gemoji at index 3
-    micromarkExts.splice(3, 0, mdxExprTextOnly);
-    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
+    // Insert mdx expression (text-only, no flow) after gemoji at index 4
+    micromarkExts.splice(4, 0, mdxExprTextOnly);
+    fromMarkdownExts.splice(4, 0, mdxExpressionFromMarkdown());
 
     // Tokenizer for MDX variable declarations
     micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));

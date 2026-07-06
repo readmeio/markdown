@@ -5,10 +5,13 @@ import { toHtml } from 'hast-util-to-html';
 import { mdxish } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
-// The mdxComponent flow tokenizer claims plain lowercase block tags (no `{…}`
-// attribute needed) so blank lines between nested JSX siblings don't fragment
-// the block. A blank line may only be followed by another tag line — anything
-// else falls back to CommonMark html-flow, preserving markdown islands.
+// The dedicated `plainHtmlBlock` construct (lib/micromark/plain-html-block)
+// claims plain lowercase block tags (no `{…}` attribute needed) so blank lines
+// between nested siblings don't fragment the block. A blank line may only be
+// followed by another tag line — anything else falls back to CommonMark
+// html-flow, preserving markdown islands. It claims conservatively: PascalCase
+// openers, nested tables, brace attributes, self-closing and custom-element tags
+// all fall through to CommonMark / mdxComponent / mdxishTables.
 describe('plain HTML block tags with nested blank lines', () => {
   it('keeps a wrapper <div> whole across a blank line between sibling tags', () => {
     const md = `<div className="wrap">
@@ -278,4 +281,118 @@ plain trailing text`;
 
     expect(html).toContain('plain trailing text');
   });
+
+  // ── Conservative-claim edge cases ────────────────────────────────────────
+  // The plain-block claim refuses several shapes so they fall back to
+  // CommonMark exactly as before the claim existed. These pin those refusals.
+
+  it('does not claim a custom element whose name is prefixed by a block tag', () => {
+    // `<section-header>` must not claim as `section` (which would trigger a
+    // doomed scan and, inside a blockquote, truncate the content).
+    const md = `<section-header>
+
+<p>one</p>
+
+<p>two</p>
+
+</section-header>`;
+
+    const ast = mdxish(md);
+    const html = toHtml(ast);
+
+    expect(findAllElementsByTagName(ast, 'p')).toHaveLength(2);
+    expect(html).toContain('<section-header>');
+    expect(html).toContain('</section-header>');
+  });
+
+  it('does not truncate a custom-element wrapper inside a blockquote', () => {
+    const md = `> <nav-bar>
+>
+>   <p>one</p>
+>
+>   <p>two</p>
+>
+> </nav-bar>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'blockquote')).not.toBeNull();
+    expect(findAllElementsByTagName(ast, 'p')).toHaveLength(2);
+  });
+
+  it('renders a component nested inside a plain wrapper across blank lines', () => {
+    // The plain claim refuses a PascalCase opener, so the wrapper reparses and
+    // mdxComponent promotes the <Callout> instead of it rendering literally.
+    const md = `<div>
+
+<Callout icon="ok">hi there</Callout>
+
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'div')).not.toBeNull();
+    expect(findElementByTagName(ast, 'Callout')).not.toBeNull();
+    expect(findElementByTagName(ast, 'Callout')?.children).toContainEqual(
+      expect.objectContaining({ tagName: 'p' }),
+    );
+  });
+
+  it('leaves a table nested in a plain wrapper to mdxishTables (cell markdown parsed)', () => {
+    const md = `<div className="table-wrap">
+<table>
+<tr>
+<td>
+
+**bold cell**
+
+</td>
+</tr>
+</table>
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'table')).not.toBeNull();
+    // The table opt-out lets mdxishTables own the blank lines and cell markdown,
+    // so **bold** becomes a <strong> instead of literal text.
+    expect(findElementByTagName(ast, 'strong')).not.toBeNull();
+  });
+
+  it('keeps a wrapper whole inside a list item, sibling items separate', () => {
+    const md = `- <div className="item">
+    <p>one</p>
+
+    <p>two</p>
+  </div>
+- second list item`;
+
+    const ast = mdxish(md);
+
+    expect(findAllElementsByTagName(ast, 'li')).toHaveLength(2);
+    expect(findElementByTagName(ast, 'div')).toMatchObject({ properties: { className: ['item'] } });
+    expect(findAllElementsByTagName(ast, 'p')).toHaveLength(2);
+  });
+
+  it('falls back when the opener line ends with an unclosed void tag', () => {
+    // The opener-line bail heuristic (opens > closes) skips the claim, so this
+    // shape gets no blank-line protection — documented as a known limitation.
+    const md = `<div className="wrap"><img src="https://example.com/x.png">
+  <p>one</p>
+
+  <p>two</p>
+</div>`;
+
+    const html = toHtml(mdxish(md));
+
+    // Behavior is not regressed vs CommonMark: content is all present.
+    expect(html).toContain('<img src="https://example.com/x.png">');
+    expect(html).toContain('one');
+    expect(html).toContain('two');
+  });
+
+  // Known limitation (deferred): the body scanner is not quote-aware for nested
+  // tag attributes, so a `</div>` inside an attribute string can close the claim
+  // early. Shared with the mdxComponent variant; tracked for a future fix.
+  it.todo('handles a closing tag inside a nested attribute string');
 });
