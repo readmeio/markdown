@@ -272,5 +272,75 @@ describe('GFM footnotes', () => {
         | undefined;
       expect(footnoteDef).toBeDefined();
     });
+
+    it('processes footnote reference inside a GFM pipe-table cell', () => {
+      const markdown = [
+        '| Term         | Definition    |',
+        '| ------------ | ------------- |',
+        '| Example[^1]  | See footnote  |',
+        '',
+        '[^1]: This footnote should render.',
+      ].join('\n');
+      const hast = mdxish(markdown);
+
+      const findElement = (root: typeof hast, tag: string): Element | undefined => {
+        const stack: typeof hast.children = [...root.children];
+        while (stack.length) {
+          const node = stack.shift();
+          if (node?.type === 'element') {
+            if (node.tagName === tag) return node;
+            stack.unshift(...node.children);
+          }
+        }
+        return undefined;
+      };
+
+      const footnoteRef = findElement(hast, 'sup');
+      expect(footnoteRef).toBeDefined();
+
+      const footnoteSection = hast.children.find(
+        child => child.type === 'element' && child.tagName === 'section',
+      ) as Element | undefined;
+      expect(footnoteSection).toBeDefined();
+    });
+
+    it('processes footnote reference inside a JSX <Table> cell', () => {
+      const markdown = [
+        '<Table>',
+        '  <thead>',
+        '    <tr><th>Term</th><th>Definition</th></tr>',
+        '  </thead>',
+        '  <tbody>',
+        '    <tr>',
+        '      <td>Example[^1]</td>',
+        '      <td>See footnote</td>',
+        '    </tr>',
+        '  </tbody>',
+        '</Table>',
+        '',
+        '[^1]: This footnote should render.',
+      ].join('\n');
+      const hast = mdxish(markdown);
+
+      const findElement = (root: typeof hast, tag: string): Element | undefined => {
+        const stack: typeof hast.children = [...root.children];
+        while (stack.length) {
+          const node = stack.shift();
+          if (node?.type === 'element') {
+            if (node.tagName === tag) return node;
+            stack.unshift(...node.children);
+          }
+        }
+        return undefined;
+      };
+
+      const footnoteRef = findElement(hast, 'sup');
+      expect(footnoteRef).toBeDefined();
+
+      const footnoteSection = hast.children.find(
+        child => child.type === 'element' && child.tagName === 'section',
+      ) as Element | undefined;
+      expect(footnoteSection).toBeDefined();
+    });
   });
 });

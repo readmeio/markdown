@@ -1,4 +1,4 @@
-import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
+import type { FootnoteDefinition, Html, Node, Parents, Root, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
@@ -63,6 +63,29 @@ const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
 /**
+ * Collect outer-tree footnote ids so cell re-parses can be primed with
+ * placeholder defs and recognize `[^id]` as a `footnoteReference`.
+ */
+const collectFootnoteIds = (tree: Node): string[] => {
+  const ids = new Set<string>();
+  visit(tree, 'footnoteDefinition', (definition: FootnoteDefinition) => {
+    if (definition.identifier) ids.add(definition.identifier);
+  });
+  return [...ids];
+};
+
+/**
+ * Append placeholder defs so the isolated cell parse tokenizes `[^id]` as a
+ * `footnoteReference`, `remark-gfm` requires the def in the same parse context.
+ */
+const appendFootnotePlaceholders = (value: string, ids: string[]): string => {
+  if (ids.length === 0) return value;
+  const placeholders = ids.map(id => `[^${id}]: x`).join('\n');
+  const separator = value.endsWith('\n') ? '\n' : '\n\n';
+  return `${value}${separator}${placeholders}`;
+};
+
+/**
  * Parse the HTML node that contains the full table substring
  * into the table parts (headers, rows, cells).
  * The plugins in the processor allows parsing markdown & special syntax inside the table cells
@@ -72,10 +95,12 @@ const parseTableNode = (
   processor: typeof tableNodeProcessor,
   node: Html,
   repair?: { inserts: Insert[]; originalSource: string },
+  outerFootnoteIds: string[] = [],
 ): Root | undefined => {
+  const value = appendFootnotePlaceholders(node.value, outerFootnoteIds);
   let parsed: Root;
   try {
-    parsed = processor.runSync(processor.parse(node.value)) as Root;
+    parsed = processor.runSync(processor.parse(value)) as Root;
   } catch {
     return undefined;
   }
@@ -143,6 +168,7 @@ const processTableNode = (
   index: number,
   parent: Parents,
   documentPosition?: Node['position'],
+  outerFootnoteIds: string[] = [],
 ): void => {
   if (node.name !== 'Table' && node.name !== 'table') return;
 
@@ -178,10 +204,13 @@ const processTableNode = (
     // gate this behind a try/catch to ensure that malformed syntaxes do not
     // crash the page
     try {
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
-      if (parsed.children.length > 0) {
-        cell.children = parsed.children as MdxJsxTableCell['children'];
-        if (hasFlowContent(parsed.children as Node[])) {
+      const inputForParse = appendFootnotePlaceholders(textContent, outerFootnoteIds);
+      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(inputForParse)) as Root;
+      // Synthetic placeholder definitions belong to the outer document, not the cell
+      const cleanedChildren = parsed.children.filter(child => child.type !== 'footnoteDefinition');
+      if (cleanedChildren.length > 0) {
+        cell.children = cleanedChildren as MdxJsxTableCell['children'];
+        if (hasFlowContent(cleanedChildren as Node[])) {
           tableHasFlowContent = true;
         }
       }
@@ -347,6 +376,7 @@ const processTableNode = (
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables = (): Transform => tree => {
+  const outerFootnoteIds = collectFootnoteIds(tree as Node);
   visit(tree, 'html', (_node, index, parent) => {
     const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
@@ -356,7 +386,7 @@ const mdxishTables = (): Transform => tree => {
     // Because the processor uses remarkMdx, it is stricter in what it accepts
     // and only accepts valid MDX syntax. in the table node.
     // To get around that, we have some fallback logics after trying to repair the table content.
-    let parsed = parseTableNode(tableNodeProcessor, node);
+    let parsed = parseTableNode(tableNodeProcessor, node, undefined, outerFootnoteIds);
     if (!parsed) {
       // Try a sequence of targeted repairs and re-parse
       // after each, stopping at the first that yields a parseable tree:
@@ -374,7 +404,12 @@ const mdxishTables = (): Transform => tree => {
       repairs.some(repair => {
         const { value, inserts } = repair(node.value);
         if (value !== node.value) {
-          parsed = parseTableNode(tableNodeProcessor, { ...node, value }, { inserts, originalSource: node.value });
+          parsed = parseTableNode(
+            tableNodeProcessor,
+            { ...node, value },
+            { inserts, originalSource: node.value },
+            outerFootnoteIds,
+          );
         }
         return Boolean(parsed);
       });
@@ -385,16 +420,23 @@ const mdxishTables = (): Transform => tree => {
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-        processTableNode(tableNode, index, parent as Parents, node.position);
+        processTableNode(tableNode, index, parent as Parents, node.position, outerFootnoteIds);
         return EXIT;
       });
     } else if (node.value.startsWith('<table')) {
       // If the parsing still fails, give an opportunity to the fallback parser
       // without remarkMdx to process lowercase tables as it's likely to not
       // have needed MDX parsing anyway
-      const fallback = parseTableNode(fallbackTableNodeProcessor, node);
+      const fallback = parseTableNode(fallbackTableNodeProcessor, node, undefined, outerFootnoteIds);
       if (!fallback || fallback.children.length <= 1) return;
-      parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
+      // Drop synthetic placeholder definitions before merging into the outer tree
+      const outerFootnoteIdSet = new Set(outerFootnoteIds);
+      const cleaned = (fallback.children as RootContent[]).filter(child => {
+        if (child.type !== 'footnoteDefinition') return true;
+        return !outerFootnoteIdSet.has((child as FootnoteDefinition).identifier);
+      });
+      if (cleaned.length <= 1) return;
+      parent.children.splice(index, 1, ...(cleaned as typeof parent.children));
     }
     // Otherwise, there's no point in trying to parse the table content further
     // More repairs are needed in that case
