@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.11.2
+### 🛠 Fixes & Updates
+
+* keep TOC auto-scroll local to the TOC scroller so it can't cancel page scroll ([#1536](https://github.com/readmeio/markdown/issues/1536)) ([d377768](https://github.com/readmeio/markdown/commit/d377768a17f1b6b788edc24723559ff7de26961c)), closes [#1503](https://github.com/readmeio/markdown/issues/1503) [#1503](https://github.com/readmeio/markdown/issues/1503) [#1503](https://github.com/readmeio/markdown/issues/1503) [readmeio/readme#19561](https://github.com/readmeio/readme/issues/19561)
+
 ## Version 14.11.1
 ### 🛠 Fixes & Updates
 
