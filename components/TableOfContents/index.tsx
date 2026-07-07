@@ -91,7 +91,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
      * in-flight smooth scroll there — e.g. the hub's scroll-to-top reset when
      * navigating between pages (CX-3667).
      */
-    const scrollLinkIntoView = (link: HTMLAnchorElement) => {
+    const scrollTOCLinkIntoView = (link: HTMLAnchorElement) => {
       const tocScroller = getScrollParent(link);
       // Without a TOC-local scroll area, the link's nearest scrollable
       // ancestor is the window (`getScrollParent`'s fallback) or the scroller
@@ -128,7 +128,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
           nav.style.setProperty('--ToC-border-active-height', `${linkRect.height}px`);
           nav.style.setProperty('--ToC-border-active-top', `${linkRect.top - navRect.top}px`);
 
-          scrollLinkIntoView(link);
+          scrollTOCLinkIntoView(link);
         }
       }
     };
