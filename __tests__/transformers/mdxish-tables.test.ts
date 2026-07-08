@@ -907,6 +907,83 @@ Just one line.
     });
   });
 
+  describe('given a stray < that does not begin a tag', () => {
+    const buildTable = (cell: string): string => `<Table>
+  <thead>
+    <tr><th>Col 1</th><th>_Col 2_</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>**Custom**</td>
+      <td>
+        ${cell}
+      </td>
+    </tr>
+  </tbody>
+</Table>`;
+
+    it('keeps a trailing < as literal text while still processing cell markdown', () => {
+      const hast = mdxish(buildTable('word <'));
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // Sibling cell markdown must render — the symptom of the failed parse is
+      // that even unrelated cells lose their markdown processing.
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs).toHaveLength(1);
+      expect(JSON.stringify(strongs[0])).toContain('Custom');
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(JSON.stringify(cells[1])).toContain('word <');
+    });
+
+    it('keeps a < followed by a digit (<1>) as literal text', () => {
+      const hast = mdxish(buildTable('a <1>'));
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      expect(findAllElementsByTagName(tables[0], 'strong')).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(JSON.stringify(cells[1])).toContain('a <1>');
+      // The `<1>` must not be interpreted as an element.
+      expect(findAllElementsByTagName(tables[0], '1')).toHaveLength(0);
+    });
+
+    it('handles a stray < condensed against surrounding markdown', () => {
+      const hast = mdxish(buildTable('see **bold** < and _more_'));
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // Both the sibling cell bold and the in-cell bold/italic survive.
+      expect(findAllElementsByTagName(tables[0], 'strong').length).toBeGreaterThanOrEqual(2);
+      expect(findAllElementsByTagName(tables[0], 'em').length).toBeGreaterThanOrEqual(1);
+      expect(JSON.stringify(tables[0])).toContain('<');
+    });
+
+    it('does not touch a < inside inline code (masked region)', () => {
+      const hast = mdxish(buildTable('`a < b`'));
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codes = findAllElementsByTagName(tables[0], 'code');
+      expect(codes).toHaveLength(1);
+      expect(JSON.stringify(codes[0])).toContain('a < b');
+      // No stray backslash should have been injected into the code span.
+      expect(JSON.stringify(codes[0])).not.toContain('\\\\');
+    });
+
+    it('still parses a genuine tag in the same cell (no over-escaping)', () => {
+      const hast = mdxish(buildTable('one < two <br/> three'));
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // The real <br/> is preserved as an element while the stray < is literal.
+      expect(findAllElementsByTagName(tables[0], 'br')).toHaveLength(1);
+      expect(JSON.stringify(tables[0])).toContain('one <');
+    });
+  });
+
   describe('given asymmetric inline/flow JSX inside cells', () => {
     // mdxjs throws when a JSX element's opener has trailing text on its line
     // but its closer sits alone on its own line (or vice versa). Without
