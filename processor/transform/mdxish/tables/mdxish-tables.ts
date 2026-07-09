@@ -21,9 +21,10 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
 import { normalizeTagSpacing } from './normalize-tag-spacing';
-import { remapPositionsToOriginal } from './remap-positions';
+import { remapPositionsThroughLayers } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
 import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
@@ -72,7 +73,7 @@ const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 const parseTableNode = (
   processor: typeof tableNodeProcessor,
   node: Html,
-  repair?: { inserts: Insert[]; originalSource: string },
+  repair?: { layers: Insert[][]; originalSource: string },
 ): Root | undefined => {
   let parsed: Root;
   try {
@@ -82,10 +83,10 @@ const parseTableNode = (
   }
 
   // If `node.value` was repaired before parsing, first remap positions back to
-  // the original (unrepaired) coordinates via the insert list — otherwise the
+  // the original (unrepaired) coordinates via the insert layers — otherwise the
   // shift would land on synthetic characters and be inaccurate
   if (repair) {
-    remapPositionsToOriginal(parsed as Node, repair.originalSource, repair.inserts);
+    remapPositionsThroughLayers(parsed as Node, repair.originalSource, repair.layers);
   }
 
   // The subparser produces positions relative to `node.value`; shift them by
@@ -359,27 +360,43 @@ const mdxishTables = (): Transform => tree => {
     // To get around that, we have some fallback logics after trying to repair the table content.
     let parsed = parseTableNode(tableNodeProcessor, node);
     if (!parsed) {
-      // Try a sequence of targeted repairs and re-parse
-      // after each, stopping at the first that yields a parseable tree:
+      // Apply a sequence of targeted repairs cumulatively — each runs on the
+      // prior repair's output — and re-parse after every change, stopping once
+      // the accumulated result parses. Chaining matters because a single table
+      // can carry independent defects in different cells (e.g. crossing
+      // emphasis in one and a blank-line-split `<ul>` in another) that no single
+      // repair fixes on its own.
       //  - repairUnclosedTags:       unclosed/orphan HTML tags
       //  - normalizeTagSpacing:      a line mixing text and an opening tag
       //                              (e.g. `text <div> \n <div> text`)
       //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
       //  - escapeStrayLessThan:      a `<` that doesn't begin a valid tag
       //                              (e.g. `word <`, `a <1>`)
+      //  - escapeCrossingEmphasis:   an emphasis run that opens and closes at
+      //                              different tag depths (e.g. `_<ul><li>x_`)
       // These repairs are created after seeing real customer content that has failed to parse
       const repairs: ((html: string) => RepairResult)[] = [
         repairUnclosedTags,
         normalizeTagSpacing,
         repairExpressionEscapes,
         escapeStrayLessThan,
+        escapeCrossingEmphasis,
       ];
-      // Stops at the first repair that yields a parseable tree
+
+      // Each layer's inserts are relative to the string that repair received, so
+      // we keep them ordered to remap parsed positions back to `node.value`.
+      let repairedValue = node.value;
+      const layers: Insert[][] = [];
       repairs.some(repair => {
-        const { value, inserts } = repair(node.value);
-        if (value !== node.value) {
-          parsed = parseTableNode(tableNodeProcessor, { ...node, value }, { inserts, originalSource: node.value });
-        }
+        const { value, inserts } = repair(repairedValue);
+        if (value === repairedValue) return false;
+        repairedValue = value;
+        layers.push(inserts);
+        parsed = parseTableNode(
+          tableNodeProcessor,
+          { ...node, value: repairedValue },
+          { layers, originalSource: node.value },
+        );
         return Boolean(parsed);
       });
     }
