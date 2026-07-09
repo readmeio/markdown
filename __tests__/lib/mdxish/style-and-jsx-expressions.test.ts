@@ -51,6 +51,21 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     expect(html).not.toContain('_owner');
   });
 
+  it('renders JSX from a nested .map() whose outer level returns an array of arrays', () => {
+    const md = `<div className="sections">
+  {[{ items: [{ title: "A", url: "https://example.com/a" }] }, { items: [{ title: "B", url: "https://example.com/b" }] }].map((section, i) => (
+    section.items.map((item, j) => (
+      <a key={j} href={item.url} className="card">{item.title}</a>
+    ))
+  ))}
+</div>`;
+    const html = toHtml(mdxish(md));
+
+    expect(html).toContain('<a href="https://example.com/a" class="card">A</a>');
+    expect(html).toContain('<a href="https://example.com/b" class="card">B</a>');
+    expect(html).not.toContain('[object Object]');
+  });
+
   it('promotes a plain wrapper <div> (no attribute expression of its own) when its .map() body returns JSX with expression attrs', () => {
     const md = `<div className="grid">
   {[{ title: "A", url: "https://example.com" }].map((item, i) => (

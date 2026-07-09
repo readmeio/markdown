@@ -16,8 +16,10 @@ import { reactElementToHast } from './react-element-to-hast';
  * 1. Renderable values: HTML, JSX, e.g. .map() returning JSX 
  * 2. Non-renderable values: a string, number, or object, regular JS values
  */
-const isRenderable = (value: unknown): boolean =>
-  React.isValidElement(value) || (Array.isArray(value) && value.some(React.isValidElement));
+const isRenderable = (value: unknown): boolean => {
+  if (React.isValidElement(value)) return true;
+  return Array.isArray(value) && value.some(isRenderable);
+};
 
 /** Turn a non-renderable evaluation result into a text node. */
 const createTextNode = (result: unknown, position: Position | undefined): Text => {
