@@ -1147,12 +1147,12 @@ Trailing paragraph then\`C\`<li>last</li></ul>
 <tbody>
 <tr>
 <td>
-The last day to be considered in the performance report snapshot. It cannot be the current date.  <br />**_Note:_**  _<ul><li>The reports encompass data until the end of the day (23:59:59 hrs ET) for this particular date_ </li><li>_If report data is not available for the requested end date, the request will fail, and the response will contain endDate until which the performance report is available_</li></ul>
+Hello  <br />**_Note:_**  _<ul><li>Random words_ </li><li>_Random words 2_</li></ul>
 </td>
 <td>
-Possible values: \`CAMPAIGN\`, \`CAMPAIGN_GROUP\`<ul><li>When \`reportType\` is set to \`campaign\`, \`lineItem\`,  \`sku\`,  or \`newBuyer\`, the default value of \`scope\` = \`CAMPAIGN\`</li><li>When \`reportType\` is set to \`creative\`, \`tactic\`, or \`bid\`: \`scope\` = \`CAMPAIGN_GROUP\` is not supported and will return an error.</li><li></li>
+Possible values: \`SENTINEL\`, \`RANDOM\`<ul><li>A list item</li><li></li>
 
-When \`scope\` = \`CAMPAIGN_GROUP\`, the \`campaign\`, \`lineItem\`, \`sku\`, \`newBuyer\` reports will have 2 additional fields: \`campaignGroupId\` and  \`campaignGroupName\`<li>If \`scope\` isn't defined in the request, it will be set to \`CAMPAIGN\` by default.</li></ul>
+When \`scope\` = \`SENTINEL_GROUP\`, the \`SENTINEL\`, reports will have 2 additional fields: \`SENTINELGroupId\` and  \`SENTINELGroupName\`<li>If \`scope\` isn't defined in the request, it will be set to \`SENTINEL\` by default.</li></ul>
 </td>
 </tr>
 </tbody>
@@ -1162,8 +1162,8 @@ When \`scope\` = \`CAMPAIGN_GROUP\`, the \`campaign\`, \`lineItem\`, \`sku\`, \`
       expect(html).toContain('<table');
       expect(html).toContain('<strong><em>Note:</em></strong>');
       expect(html).not.toContain('**_Note');
-      expect(html).toContain('<code>CAMPAIGN</code>');
-      expect(html).not.toContain('`CAMPAIGN`');
+      expect(html).toContain('<code>SENTINEL</code>');
+      expect(html).not.toContain('`SENTINEL`');
     });
   });
 
