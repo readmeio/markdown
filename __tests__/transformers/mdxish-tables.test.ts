@@ -1556,4 +1556,49 @@ the /{customer\\_id}/config/clients operation
       expect(out).toContain('    "c": "y"');
     });
   });
+
+  describe('given a <table> wrapped in a raw HTML block', () => {
+    // A wrapping `<div>` makes CommonMark html-flow / the mdxComponent plain-block
+    // claim swallow the whole block, so the nested table never reaches the table
+    // machinery and its cell markdown stays literal. The pre-pass lifts the table
+    // out so its cells parse and rehype-raw re-nests it inside the wrapper.
+    const table = `<table>
+<thead>
+<tr>
+<th>Response Code</th>
+<th>Error Code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**400**</td>
+<td>\`CODE\`</td>
+</tr>
+</tbody>
+</table>`;
+
+    it('parses cell markdown and keeps the wrapper when a blank line follows the <div>', () => {
+      const html = toHtml(mdxish(`<div>\n\n${table}\n \n</div>`));
+
+      expect(html).toContain('<div>');
+      expect(html).toContain('<strong>400</strong>');
+      expect(html).toContain('<code>CODE</code>');
+      expect(html).not.toContain('**400**');
+    });
+
+    it('parses cell markdown when the table is directly adjacent to the <div>', () => {
+      const html = toHtml(mdxish(`<div>\n${table}\n</div>`));
+
+      expect(html).toContain('<div>');
+      expect(html).toContain('<strong>400</strong>');
+      expect(html).toContain('<code>CODE</code>');
+    });
+
+    it('preserves attributes on the wrapping element', () => {
+      const html = toHtml(mdxish(`<div className="wrap">\n\n${table}\n\n</div>`));
+
+      expect(html).toContain('class="wrap"');
+      expect(html).toContain('<strong>400</strong>');
+    });
+  });
 });

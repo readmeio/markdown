@@ -1,6 +1,7 @@
-import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Parents, Root, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Point } from 'unist';
 
 import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { phrasing } from 'mdast-util-phrasing';
@@ -336,6 +337,86 @@ const processTableNode = (
   parent.children[index] = mdNode;
 };
 
+// Opening `<table` whose tag-name is properly delimited (so `<tablefoo>` never matches).
+const NESTED_TABLE_OPEN_RE = /<table(?=[\s/>])/i;
+// Every `<table`/`</table>` opener/closer, for depth-matching the outer close tag.
+const TABLE_TAG_RE = /<\/?table(?=[\s/>])/gi;
+
+/**
+ * Resolve the source `Point` at character `index` within `value`, given the
+ * `Point` of `value`'s first character. Lets a split-out sub-node carry accurate
+ * document positions so `parseTableNode`'s offset shifting stays correct.
+ */
+const pointAt = (base: Point, value: string, index: number): Point => {
+  const before = value.slice(0, index);
+  const newlines = before.split('\n').length - 1;
+  const lastNewline = before.lastIndexOf('\n');
+  return {
+    line: base.line + newlines,
+    // Same line → advance the base column; a later line → column is the run since its newline.
+    column: newlines === 0 ? base.column + index : index - lastNewline,
+    offset: (base.offset ?? 0) + index,
+  };
+};
+
+/**
+ * A `<table>` nested inside a raw HTML block (e.g. wrapped in a `<div>`) is
+ * swallowed whole by CommonMark html-flow / the mdxComponent plain-block claim,
+ * so `mdxishTables` never sees it as a table and its cell markdown stays literal.
+ *
+ * Split such a node into `[html before, <table…> html, html after]` so the outer
+ * table machinery below processes the middle node exactly as a top-level table,
+ * while the surrounding raw HTML (the wrapper's open/close tags) is re-nested
+ * around the parsed table by rehype-raw downstream.
+ *
+ * Returns null when there is no wrapped table to extract.
+ */
+const splitHtmlWithNestedTable = (node: Html): RootContent[] | null => {
+  const { value } = node;
+  // Top-level tables are handled directly by the main pass.
+  if (value.startsWith('<table') || value.startsWith('<Table')) return null;
+
+  const open = NESTED_TABLE_OPEN_RE.exec(value);
+  if (!open) return null;
+  const start = open.index;
+  // Only target genuinely-wrapped tables: there must be raw HTML (a wrapper tag)
+  // before the table. Leading plain text/whitespace alone is left untouched.
+  if (!value.slice(0, start).includes('<')) return null;
+
+  // Depth-match the outer `</table>` so nested tables don't close it early.
+  TABLE_TAG_RE.lastIndex = start;
+  let depth = 0;
+  let end = -1;
+  let match: RegExpExecArray | null;
+  while ((match = TABLE_TAG_RE.exec(value))) {
+    if (match[0][1] === '/') {
+      depth -= 1;
+      if (depth === 0) {
+        const closeGt = value.indexOf('>', TABLE_TAG_RE.lastIndex);
+        if (closeGt === -1) return null;
+        end = closeGt + 1;
+        break;
+      }
+    } else {
+      depth += 1;
+    }
+  }
+  if (end === -1) return null;
+
+  const base = node.position?.start;
+  const makeHtml = (from: number, to: number): Html => ({
+    type: 'html',
+    value: value.slice(from, to),
+    ...(base && { position: { start: pointAt(base, value, from), end: pointAt(base, value, to) } }),
+  });
+
+  const parts: RootContent[] = [];
+  if (start > 0) parts.push(makeHtml(0, start));
+  parts.push(makeHtml(start, end)); // now starts with `<table` → picked up by the main pass
+  if (end < value.length) parts.push(makeHtml(end, value.length));
+  return parts;
+};
+
 /**
  * Converts JSX Table elements to markdown table nodes and re-parses markdown in cells.
  *
@@ -348,6 +429,19 @@ const processTableNode = (
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables = (): Transform => tree => {
+  // Pre-pass: lift any `<table>` wrapped in a raw HTML block out into its own
+  // html node so the main pass below treats it like a top-level table.
+  visit(tree, 'html', (_node, index, parent) => {
+    const node = _node as Html;
+    if (typeof index !== 'number' || !parent || !('children' in parent)) return;
+    const parts = splitHtmlWithNestedTable(node);
+    if (!parts) return;
+    // The inserted parts can't re-trigger a split (the middle one starts with
+    // `<table`; the wrappers hold no nested table), so plain in-place splicing
+    // visits each once without looping.
+    parent.children.splice(index, 1, ...(parts as typeof parent.children));
+  });
+
   visit(tree, 'html', (_node, index, parent) => {
     const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
