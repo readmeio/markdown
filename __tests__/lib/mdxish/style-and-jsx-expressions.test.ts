@@ -126,4 +126,79 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     expect(html).toContain('style="padding:20px"');
     expect(html).not.toContain('[object Object]');
   });
+
+  // There has been cases where an expression returns invalid HTML (e.g. <a> wrapping <a>)
+  // breaking the content rendering. These tests ensure when those happen, the content is still rendered
+  // correctly
+  describe('renders given invalid HTML inside the expression', () => {
+    it('keeps an outer <a> card wrapping inner <a> links from a nested .map()', () => {
+      const md = `<div className="grid">
+    {[{ title: "Card", url: "https://example.com/card", items: [{ label: "Link", url: "https://example.com/link" }] }].map((item, i) => (
+      <a key={i} href={item.url} className="card-link">
+        <div className="card">
+          <h3>{item.title}</h3>
+          <ul>
+            {item.items.map((entry, idx) => (
+              <li key={idx}>
+                <a href={entry.url}>{entry.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </a>
+    ))}
+  </div>`;
+      const html = toHtml(mdxish(md));
+  
+      expect(html).toContain(
+        '<a href="https://example.com/card" class="card-link"><div class="card"><h3 id="card">Card</h3><ul><li><a href="https://example.com/link">Link</a></li></ul></div></a>',
+      );
+      expect(html).not.toContain('class="card-link"></a>');
+    });
+
+    it('does not clone the wrapping <a> across block children when siblings are blank-line separated', () => {
+      const md = `<div className="grid">
+    {[{ title: "A", url: "https://example.com/a" }].map((item, i) => (
+      <a key={i} href={item.url} className="card-link">
+        <div className="card">
+          <img src="https://example.com/a.png" alt="" />
+  
+          <h3>{item.title}</h3>
+  
+          <ul>
+            <li><a href="https://example.com/inner">inner</a></li>
+          </ul>
+        </div>
+      </a>
+    ))}
+  </div>`;
+      const ast = mdxish(md);
+      const html = toHtml(ast);
+  
+      expect(html.match(/class="card-link"/g)).toHaveLength(1);
+      expect(html).toContain('<a href="https://example.com/inner">inner</a>');
+      expect((ast.children[0] as Element).tagName).toBe('div');
+    });
+
+    // A different content-model violation: HTML5 auto-closes a `<p>` at a block-level start tag,
+    // so parse5 would hoist the `<div>` out and leave an empty `<p>` clone. Building hast directly
+    // keeps the `<div>` nested inside the `<p>`, alongside the evaluated `<style>` block.
+    it('keeps a block <div> nested inside a <p> returned from a .map()', () => {
+      const md = `<style>{\`.note { color: teal; }\`}</style>
+
+  <div className="notes">
+    {[{ text: "Hello", detail: "World" }].map((item, i) => (
+      <p key={i} className="note">
+        {item.text}
+        <div className="detail">{item.detail}</div>
+      </p>
+    ))}
+  </div>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('<style>.note { color: teal; }</style>');
+      expect(html).toContain('<p class="note">Hello<div class="detail">World</div></p>');
+      expect(html).not.toContain('<p></p>');
+    });
+  });
 });
