@@ -21,6 +21,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { escapeStrayLessThan } from './escape-stray-less-than';
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
@@ -364,11 +365,14 @@ const mdxishTables = (): Transform => tree => {
       //  - normalizeTagSpacing:      a line mixing text and an opening tag
       //                              (e.g. `text <div> \n <div> text`)
       //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
+      //  - escapeStrayLessThan:      a `<` that doesn't begin a valid tag
+      //                              (e.g. `word <`, `a <1>`)
       // These repairs are created after seeing real customer content that has failed to parse
       const repairs: ((html: string) => RepairResult)[] = [
         repairUnclosedTags,
         normalizeTagSpacing,
         repairExpressionEscapes,
+        escapeStrayLessThan,
       ];
       // Stops at the first repair that yields a parseable tree
       repairs.some(repair => {
