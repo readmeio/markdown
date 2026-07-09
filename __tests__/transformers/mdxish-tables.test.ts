@@ -1600,5 +1600,15 @@ the /{customer\\_id}/config/clients operation
       expect(html).toContain('class="wrap"');
       expect(html).toContain('<strong>400</strong>');
     });
+
+    it('lifts every table when the wrapper holds more than one', () => {
+      const second = table.replace('**400**', '**500**').replace('`CODE`', '`OTHER`');
+      const html = toHtml(mdxish(`<div>\n${table}\n${second}\n</div>`));
+
+      expect(html).toContain('<strong>400</strong>');
+      expect(html).toContain('<code>CODE</code>');
+      expect(html).toContain('<strong>500</strong>');
+      expect(html).toContain('<code>OTHER</code>');
+    });
   });
 });

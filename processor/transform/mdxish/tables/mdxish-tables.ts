@@ -1,4 +1,4 @@
-import type { Html, Node, Parents, Root, RootContent, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Point } from 'unist';
@@ -337,9 +337,8 @@ const processTableNode = (
   parent.children[index] = mdNode;
 };
 
-// Opening `<table` whose tag-name is properly delimited (so `<tablefoo>` never matches).
-const NESTED_TABLE_OPEN_RE = /<table(?=[\s/>])/i;
-// Every `<table`/`</table>` opener/closer, for depth-matching the outer close tag.
+// Every `<table`/`</table>` opener/closer whose tag-name is properly delimited
+// (so `<tablefoo>` never matches).
 const TABLE_TAG_RE = /<\/?table(?=[\s/>])/gi;
 
 /**
@@ -350,13 +349,34 @@ const TABLE_TAG_RE = /<\/?table(?=[\s/>])/gi;
 const pointAt = (base: Point, value: string, index: number): Point => {
   const before = value.slice(0, index);
   const newlines = before.split('\n').length - 1;
-  const lastNewline = before.lastIndexOf('\n');
   return {
     line: base.line + newlines,
     // Same line → advance the base column; a later line → column is the run since its newline.
-    column: newlines === 0 ? base.column + index : index - lastNewline,
+    column: newlines === 0 ? base.column + index : index - before.lastIndexOf('\n'),
     offset: (base.offset ?? 0) + index,
   };
+};
+
+/** Find every balanced, depth-matched `<table>…</table>` range in `value`. */
+const findTableRanges = (value: string): { end: number; start: number }[] => {
+  const ranges: { end: number; start: number }[] = [];
+  let depth = 0;
+  let start = 0;
+  TABLE_TAG_RE.lastIndex = 0;
+  for (let match = TABLE_TAG_RE.exec(value); match; match = TABLE_TAG_RE.exec(value)) {
+    if (match[0][1] !== '/') {
+      if (depth === 0) start = match.index;
+      depth += 1;
+    } else if (depth > 0) {
+      depth -= 1;
+      if (depth === 0) {
+        const closeGt = value.indexOf('>', TABLE_TAG_RE.lastIndex);
+        if (closeGt === -1) break;
+        ranges.push({ start, end: closeGt + 1 });
+      }
+    }
+  }
+  return ranges;
 };
 
 /**
@@ -364,56 +384,35 @@ const pointAt = (base: Point, value: string, index: number): Point => {
  * swallowed whole by CommonMark html-flow / the mdxComponent plain-block claim,
  * so `mdxishTables` never sees it as a table and its cell markdown stays literal.
  *
- * Split such a node into `[html before, <table…> html, html after]` so the outer
- * table machinery below processes the middle node exactly as a top-level table,
- * while the surrounding raw HTML (the wrapper's open/close tags) is re-nested
- * around the parsed table by rehype-raw downstream.
+ * Split such a node at each table's boundaries so the main pass below processes
+ * every table exactly like a top-level one, while the surrounding raw HTML (the
+ * wrapper's open/close tags) is re-nested around the parsed tables by rehype-raw
+ * downstream.
  *
  * Returns null when there is no wrapped table to extract.
  */
-const splitHtmlWithNestedTable = (node: Html): RootContent[] | null => {
+const splitHtmlWithNestedTables = (node: Html): Html[] | null => {
   const { value } = node;
   // Top-level tables are handled directly by the main pass.
   if (value.startsWith('<table') || value.startsWith('<Table')) return null;
-
-  const open = NESTED_TABLE_OPEN_RE.exec(value);
-  if (!open) return null;
-  const start = open.index;
-  // Only target genuinely-wrapped tables: there must be raw HTML (a wrapper tag)
-  // before the table. Leading plain text/whitespace alone is left untouched.
-  if (!value.slice(0, start).includes('<')) return null;
-
-  // Depth-match the outer `</table>` so nested tables don't close it early.
-  TABLE_TAG_RE.lastIndex = start;
-  let depth = 0;
-  let end = -1;
-  let match: RegExpExecArray | null;
-  while ((match = TABLE_TAG_RE.exec(value))) {
-    if (match[0][1] === '/') {
-      depth -= 1;
-      if (depth === 0) {
-        const closeGt = value.indexOf('>', TABLE_TAG_RE.lastIndex);
-        if (closeGt === -1) return null;
-        end = closeGt + 1;
-        break;
-      }
-    } else {
-      depth += 1;
-    }
-  }
-  if (end === -1) return null;
+  const ranges = findTableRanges(value);
+  if (ranges.length === 0) return null;
 
   const base = node.position?.start;
-  const makeHtml = (from: number, to: number): Html => ({
+  const sliceToHtml = (from: number, to: number): Html => ({
     type: 'html',
     value: value.slice(from, to),
     ...(base && { position: { start: pointAt(base, value, from), end: pointAt(base, value, to) } }),
   });
 
-  const parts: RootContent[] = [];
-  if (start > 0) parts.push(makeHtml(0, start));
-  parts.push(makeHtml(start, end)); // now starts with `<table` → picked up by the main pass
-  if (end < value.length) parts.push(makeHtml(end, value.length));
+  const parts: Html[] = [];
+  let cursor = 0;
+  ranges.forEach(({ start, end }) => {
+    if (start > cursor) parts.push(sliceToHtml(cursor, start));
+    parts.push(sliceToHtml(start, end)); // starts with `<table` → picked up by the main pass
+    cursor = end;
+  });
+  if (cursor < value.length) parts.push(sliceToHtml(cursor, value.length));
   return parts;
 };
 
@@ -429,15 +428,15 @@ const splitHtmlWithNestedTable = (node: Html): RootContent[] | null => {
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables = (): Transform => tree => {
-  // Pre-pass: lift any `<table>` wrapped in a raw HTML block out into its own
-  // html node so the main pass below treats it like a top-level table.
+  // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
+  // html nodes so the main pass below treats them like top-level tables.
   visit(tree, 'html', (_node, index, parent) => {
     const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
-    const parts = splitHtmlWithNestedTable(node);
+    const parts = splitHtmlWithNestedTables(node);
     if (!parts) return;
-    // The inserted parts can't re-trigger a split (the middle one starts with
-    // `<table`; the wrappers hold no nested table), so plain in-place splicing
+    // The inserted parts can't re-trigger a split (table parts start with
+    // `<table`; the wrapper slices hold no table), so plain in-place splicing
     // visits each once without looping.
     parent.children.splice(index, 1, ...(parts as typeof parent.children));
   });
