@@ -21,7 +21,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
 
 <div className="foo">hi</div>
 `;
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('<style>');
     expect(html).toContain('.foo { color: red; }');
@@ -31,7 +31,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
 
   it('serializes an evaluated style={{...}} object into a CSS string, not "[object Object]"', () => {
     const md = '<div style={{ color: "red", fontSize: 12 }}>hi</div>';
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('style="color:red;font-size:12px"');
     expect(html).not.toContain('[object Object]');
@@ -43,7 +43,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     <span key={i} className="card">{item.title}</span>
   ))}
 </div>`;
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('<span class="card">A</span>');
     expect(html).toContain('<span class="card">B</span>');
@@ -57,7 +57,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     <a key={i} href={item.url} className="card">{item.title}</a>
   ))}
 </div>`;
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('<div class="grid"><a href="https://example.com" class="card">A</a></div>');
   });
@@ -73,7 +73,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
   </div>
 </div>`;
     const ast = mdxish(md);
-    const html = toHtml(ast as never);
+    const html = toHtml(ast);
 
     // A single wrapper div, not fragmented into stray <pre>/duplicate tags.
     expect(ast.children).toHaveLength(1);
@@ -101,7 +101,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     );
   })}
 </div>`;
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('<a href="https://example.com/a" class="card">');
     expect(html).toContain('<h3');
@@ -119,7 +119,7 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     </a>
   ))}
 </div>`;
-    const html = toHtml(mdxish(md) as never);
+    const html = toHtml(mdxish(md));
 
     expect(html).toContain('style="display:grid"');
     expect(html).toContain('style="text-decoration:none"');
