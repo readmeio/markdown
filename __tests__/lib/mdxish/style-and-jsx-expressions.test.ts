@@ -66,6 +66,38 @@ describe('CX-3646: <style> blocks and JSX expressions carried over from MDX', ()
     expect(html).not.toContain('[object Object]');
   });
 
+  it('falls back to rendering a React.memo component returned by a .map() instead of dropping it', () => {
+    const md = `export const Card = React.memo(({ title }) => (
+  <div className="card">{title}</div>
+));
+
+<div className="grid">
+  {[{ title: "A" }, { title: "B" }].map((item, i) => (
+    <Card key={i} title={item.title} />
+  ))}
+</div>`;
+    const html = toHtml(mdxish(md));
+
+    expect(html).toContain('<div class="card">A</div>');
+    expect(html).toContain('<div class="card">B</div>');
+  });
+
+  it('falls back to rendering a hook-using function component returned by a .map() instead of dropping it', () => {
+    const md = `export function Count({ value }) {
+  const [count] = React.useState(value);
+  return <span className="count">{count}</span>;
+}
+
+<div className="grid">
+  {[{ value: 3 }].map((item, i) => (
+    <Count key={i} value={item.value} />
+  ))}
+</div>`;
+    const html = toHtml(mdxish(md));
+
+    expect(html).toContain('<span class="count">3</span>');
+  });
+
   it('promotes a plain wrapper <div> (no attribute expression of its own) when its .map() body returns JSX with expression attrs', () => {
     const md = `<div className="grid">
   {[{ title: "A", url: "https://example.com" }].map((item, i) => (

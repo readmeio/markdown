@@ -1,7 +1,9 @@
 import type { MdxJsx } from '../../../types';
 import type { ElementContent, Properties, Text } from 'hast';
+import type { Raw } from 'mdast-util-to-hast';
 
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { isPlainObject, styleObjectToCssText } from './style-object-to-css';
 
@@ -23,6 +25,23 @@ function propsToHastProperties(props: Record<string, unknown>): Properties {
 
   // Values are resolved React props, wider than hast's HTML-attribute `PropertyValue` union.
   return properties as Properties;
+}
+
+/**
+ * Render an element with React's own renderer as a last resort, wrapped as a hast `raw` node —
+ * the same node type markdown's literal HTML blocks produce, so it re-enters rehypeRaw's
+ * parse5 pass normally. Used for element types this converter can't resolve on its own (wrapped
+ * component types, or a function component that throws when called outside React, e.g. one
+ * using hooks). It's not immune to the invalid-HTML-nesting this module otherwise avoids, but
+ * that's a fair trade against silently dropping the content.
+ */
+function renderFallbackHtml(element: React.ReactElement): ElementContent[] {
+  try {
+    const rawNode: Raw = { type: 'raw', value: renderToStaticMarkup(element) };
+    return [rawNode];
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -48,16 +67,19 @@ export function reactElementToHast(node: unknown): ElementContent[] {
   if (type === React.Fragment) return reactElementToHast(props.children);
 
   // Resolve function components to their rendered output so the tree is plain intrinsic
-  // elements. Anything that throws is dropped, matching the evaluation error fallback.
+  // elements. If invoking it directly throws (e.g. it uses hooks, which need React's own
+  // render context), fall back to React's renderer for just this subtree.
   if (typeof type === 'function') {
     try {
       return reactElementToHast((type as (componentProps: unknown) => unknown)(props));
     } catch {
-      return [];
+      return renderFallbackHtml(node);
     }
   }
 
-  if (typeof type !== 'string') return [];
+  // Non-intrinsic, non-callable element types — `React.memo`, `React.forwardRef`,
+  // `Context.Provider`/`Consumer`, `React.lazy` — have no `type` we can resolve ourselves.
+  if (typeof type !== 'string') return renderFallbackHtml(node);
 
   const mdxJsxNode: MdxJsx = {
     type: 'mdx-jsx',
