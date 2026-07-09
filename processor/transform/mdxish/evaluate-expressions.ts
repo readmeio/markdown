@@ -23,9 +23,7 @@ const isRenderable = (value: unknown): boolean => {
 
 /** Turn a non-renderable evaluation result into a text node. */
 const createTextNode = (result: unknown, position: Position | undefined): Text => {
-  if (result === null || result === undefined || typeof result === 'boolean') {
-    return { type: 'text', value: '', position };
-  }
+  if (result === null || result === undefined) return { type: 'text', value: '', position };
   if (typeof result === 'object') return { type: 'text', value: JSON.stringify(result), position };
   return { type: 'text', value: String(result), position };
 };
