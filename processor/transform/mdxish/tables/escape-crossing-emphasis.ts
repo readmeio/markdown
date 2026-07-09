@@ -9,8 +9,7 @@ const isWhitespace = (ch: string | undefined): boolean => ch === undefined || /\
 // ASCII punctuation, per the CommonMark flanking definition. String bounds
 // (undefined) count as whitespace, not punctuation.
 const isPunctuation = (ch: string | undefined): boolean => {
-  if (ch === undefined) return false;
-  const code = ch.charCodeAt(0);
+  const code = ch?.charCodeAt(0) ?? -1;
   return (
     (code >= 33 && code <= 47) ||
     (code >= 58 && code <= 64) ||
@@ -25,14 +24,13 @@ interface Flanking {
 }
 
 /**
- * Decide whether a delimiter run can open and/or close emphasis, following
- * CommonMark's left/right-flanking rules. `_` additionally can't open/close
- * intraword, which is what keeps `snake_case` from being treated as emphasis.
+ * Whether a delimiter run can open and/or close emphasis, per CommonMark's
+ * left/right-flanking rules. The extra `_` conditions forbid intraword
+ * emphasis, which keeps `snake_case` from being treated as a delimiter.
  */
 const analyzeFlanking = (source: string, char: string, start: number, end: number): Flanking => {
-  const before = start > 0 ? source[start - 1] : undefined;
-  const after = end < source.length ? source[end] : undefined;
-
+  const before = source[start - 1];
+  const after = source[end];
   const leftFlanking =
     !isWhitespace(after) && (!isPunctuation(after) || isWhitespace(before) || isPunctuation(before));
   const rightFlanking =
@@ -47,54 +45,45 @@ const analyzeFlanking = (source: string, char: string, start: number, end: numbe
   return { canOpen: leftFlanking, canClose: rightFlanking };
 };
 
-interface TagOpenEvent {
-  kind: 'tagOpen';
-  offset: number;
-}
-interface TagCloseEvent {
-  kind: 'tagClose';
-  offset: number;
-}
-interface EmphasisEvent {
-  char: string;
-  flanking: Flanking;
-  kind: 'emphasis';
-  length: number;
-  offset: number;
-}
-type WalkEvent = EmphasisEvent | TagCloseEvent | TagOpenEvent;
+type WalkEvent =
+  | { char: string; flanking: Flanking; kind: 'emphasis'; length: number; offset: number }
+  | { kind: 'tagClose'; offset: number }
+  | { kind: 'tagOpen'; offset: number };
 
-// At a shared offset, an opener must sort before an emphasis run before a closer
-// so a self-closing tag's open/close bracket the run rather than swallow it.
-const eventPriority = (event: WalkEvent): number =>
-  event.kind === 'tagOpen' ? 0 : event.kind === 'emphasis' ? 1 : 2;
+/**
+ * Collect HTML tag boundaries (via htmlparser2) and emphasis delimiter runs
+ * (via regex over the masked source, so code spans and escaped `<` are skipped)
+ * into one list ordered by position. At a shared offset a tag opener sorts
+ * before a closer, so a self-closing tag brackets rather than swallows a run.
+ */
+const collectEvents = (html: string): WalkEvent[] => {
+  const masked = maskNonTagRegions(html);
+  const events: WalkEvent[] = [];
 
-const collectTagEvents = (source: string): (TagCloseEvent | TagOpenEvent)[] => {
-  const events: (TagCloseEvent | TagOpenEvent)[] = [];
-  walkTags(source, {
+  walkTags(html, {
     onOpen: ({ start }) => events.push({ kind: 'tagOpen', offset: start }),
     onClose: ({ start }) => events.push({ kind: 'tagClose', offset: start }),
   });
-  return events;
-};
 
-const collectEmphasisEvents = (masked: string, source: string): EmphasisEvent[] => {
-  const events: EmphasisEvent[] = [];
   EMPHASIS_RUN_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = EMPHASIS_RUN_RE.exec(masked)) !== null) {
+    const [run, char] = match;
     const start = match.index;
-    // Leave already-escaped delimiters alone.
     // eslint-disable-next-line no-continue
-    if (source[start - 1] === '\\') continue;
-    const char = match[1];
-    const length = match[0].length;
-    events.push({ kind: 'emphasis', offset: start, char, length, flanking: analyzeFlanking(source, char, start, start + length) });
+    if (html[start - 1] === '\\') continue; // already escaped
+    events.push({ kind: 'emphasis', offset: start, char, length: run.length, flanking: analyzeFlanking(html, char, start, start + run.length) });
   }
-  return events;
+
+  return events.sort((a, b) => a.offset - b.offset || (a.kind === 'tagClose' ? 1 : 0) - (b.kind === 'tagClose' ? 1 : 0));
 };
 
-type Frame = { char: string; kind: 'em'; length: number; offset: number } | { kind: 'tag' };
+interface OpenEmphasis {
+  char: string;
+  depth: number;
+  length: number;
+  offset: number;
+}
 
 /**
  * mdxjs rejects a table when a markdown emphasis run opens at one HTML
@@ -103,50 +92,44 @@ type Frame = { char: string; kind: 'em'; length: number; offset: number } | { ki
  * "Expected a closing tag for `<li>` before the end of `emphasis`" and the
  * whole `<Table>` fails to parse.
  *
- * This pass walks tags and emphasis delimiters together, keeping a stack of
- * open tags and open emphasis. A delimiter only matches an opener living in the
- * same tag context; any emphasis left dangling when its enclosing tag closes
- * (or at end of input), and any closer with no in-context opener, is escaped so
- * mdxjs treats it as literal text. Scoped to the malformed-retry path.
+ * We walk tags and emphasis together, tracking tag depth and a stack of open
+ * emphasis. A delimiter only closes an opener at the same depth; any emphasis
+ * still open when its enclosing tag closes (or at end of input), and any closer
+ * with no same-depth opener, is escaped so mdxjs treats it as literal text.
+ * Scoped to the malformed-retry path.
  */
 export const escapeCrossingEmphasis = (html: string): RepairResult => {
-  const masked = maskNonTagRegions(html);
-  const events: WalkEvent[] = [...collectTagEvents(html), ...collectEmphasisEvents(masked, html)].sort(
-    (a, b) => a.offset - b.offset || eventPriority(a) - eventPriority(b),
-  );
-
-  const stack: Frame[] = [];
+  const open: OpenEmphasis[] = [];
   const orphans: { length: number; offset: number }[] = [];
+  let depth = 0;
 
-  events.forEach(event => {
+  collectEvents(html).forEach(event => {
     if (event.kind === 'tagOpen') {
-      stack.push({ kind: 'tag' });
+      depth += 1;
       return;
     }
     if (event.kind === 'tagClose') {
-      // Unwind to the nearest open tag; emphasis opened inside it never closed
-      // within the tag, so it crosses the boundary.
-      while (stack.length > 0) {
-        const frame = stack.pop();
-        if (!frame || frame.kind === 'tag') break;
-        orphans.push({ offset: frame.offset, length: frame.length });
+      depth -= 1;
+      // Emphasis opened deeper than the surviving depth was inside the tag that
+      // just closed, so it crosses the boundary.
+      while (open.length > 0 && open[open.length - 1].depth > depth) {
+        const crossed = open.pop();
+        if (crossed) orphans.push(crossed);
       }
       return;
     }
 
-    const top = stack[stack.length - 1];
-    if (event.flanking.canClose && top?.kind === 'em' && top.char === event.char) {
-      stack.pop();
+    const top = open[open.length - 1];
+    if (event.flanking.canClose && top?.char === event.char && top.depth === depth) {
+      open.pop();
     } else if (event.flanking.canOpen) {
-      stack.push({ kind: 'em', char: event.char, offset: event.offset, length: event.length });
+      open.push({ char: event.char, depth, offset: event.offset, length: event.length });
     } else if (event.flanking.canClose) {
       orphans.push({ offset: event.offset, length: event.length });
     }
   });
 
-  stack.forEach(frame => {
-    if (frame.kind === 'em') orphans.push({ offset: frame.offset, length: frame.length });
-  });
+  orphans.push(...open); // anything still open never closed
 
   const inserts: Insert[] = orphans.flatMap(({ offset, length }) =>
     Array.from({ length }, (_unused, i) => ({ offset: offset + i, text: '\\' })),
