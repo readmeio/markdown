@@ -7,11 +7,11 @@ import { decodeHTMLStrict } from 'entities';
 
 import { NodeTypes } from '../../enums';
 
-// Convert MDX expressions to text nodes (evaluation happens earlier in pipeline)
-const mdxExpressionHandler: Handler = (_state, node) => ({
-  type: 'text',
-  value: (node as { value?: string }).value || '',
-});
+// If hChildren is populated, it means the node holds a renderable value (e.g. React)
+// See evaluate-expressions.ts for more details
+// Otherwise, it's a simple value and we fall back to text
+const mdxExpressionHandler: Handler = (_state, node) =>
+  node.data?.hChildren ?? { type: 'text', value: (node as { value?: string }).value || '' };
 
 // Convert MDX JSX elements to a custom mdx-jsx hast node that bypasses rehypeRaw's
 // HTML serialization round-trip; downstream normalization rewrites it to `element`.
