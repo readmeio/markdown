@@ -103,14 +103,6 @@ const remapWithMapper = (tree: Node, originalSource: string, mapOffset: (repaire
 };
 
 /**
- * Remap positions produced from a single-repair string back to the original.
- */
-export const remapPositionsToOriginal = (tree: Node, originalSource: string, inserts: Insert[]): void => {
-  if (inserts.length === 0) return;
-  remapWithMapper(tree, originalSource, buildOffsetMapper(inserts));
-};
-
-/**
  * Remap positions produced after a chain of repairs (each applied to the prior
  * one's output) back to the original source coordinates.
  */

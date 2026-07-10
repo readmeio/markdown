@@ -64,6 +64,22 @@ const buildTableNodeProcessor = (withMdx: boolean) =>
 const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
 
+// Targeted repairs for tables mdxjs rejects, tried cumulatively (each runs on
+// the prior's output) since one table can carry independent per-cell defects.
+// Each was added after seeing real customer content fail to parse:
+//  - repairUnclosedTags:      unclosed/orphan HTML tags
+//  - normalizeTagSpacing:     a line mixing text and an opening tag
+//  - repairExpressionEscapes: backslash escapes inside a `{…}` expression
+//  - escapeStrayLessThan:     a `<` that doesn't begin a valid tag (`word <`)
+//  - escapeCrossingEmphasis:  emphasis opening/closing at different tag depths
+const tableRepairs: ((html: string) => RepairResult)[] = [
+  repairUnclosedTags,
+  normalizeTagSpacing,
+  repairExpressionEscapes,
+  escapeStrayLessThan,
+  escapeCrossingEmphasis,
+];
+
 /**
  * Parse the HTML node that contains the full table substring
  * into the table parts (headers, rows, cells).
@@ -110,9 +126,7 @@ const parseTableNode = (
  * Check if children are only text nodes that might contain markdown
  */
 const isTextOnly = (children: unknown[]): boolean => {
-  return children.every(
-    child => child && typeof child === 'object' && 'type' in child && child.type === 'text',
-  );
+  return children.every(child => child && typeof child === 'object' && 'type' in child && child.type === 'text');
 };
 
 /**
@@ -202,11 +216,7 @@ const processTableNode = (
   let hasStructuralAttributes = false;
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
-    if (
-      tableTags.has(child.name) &&
-      Array.isArray(child.attributes) &&
-      child.attributes.length > 0
-    ) {
+    if (tableTags.has(child.name) && Array.isArray(child.attributes) && child.attributes.length > 0) {
       hasStructuralAttributes = true;
     }
   });
@@ -218,8 +228,7 @@ const processTableNode = (
     // whitespace-only text nodes to avoid rendering empty <p>/<br>.
     const removeWhitespaceOnlyTextNodes = (children: Node[]): Node[] =>
       children.filter(
-        child =>
-          !(child.type === 'text' && 'value' in child && typeof child.value === 'string' && !child.value.trim()),
+        child => !(child.type === 'text' && 'value' in child && typeof child.value === 'string' && !child.value.trim()),
       );
 
     visit(node as Node, isMDXElement, (el: MdxJsxFlowElement | MdxJsxTextElement) => {
@@ -338,6 +347,32 @@ const processTableNode = (
 };
 
 /**
+ * Apply `tableRepairs` cumulatively, re-parsing after every change and stopping
+ * once the accumulated result parses. Each layer's inserts are relative to the
+ * string that repair received, so they stay ordered for position remapping.
+ */
+const repairAndReparse = (node: Html): Root | undefined => {
+  let repairedValue = node.value;
+  const layers: Insert[][] = [];
+  let parsed: Root | undefined;
+
+  tableRepairs.some(repair => {
+    const { value, inserts } = repair(repairedValue);
+    if (value === repairedValue) return false;
+    repairedValue = value;
+    layers.push(inserts);
+    parsed = parseTableNode(
+      tableNodeProcessor,
+      { ...node, value: repairedValue },
+      { layers, originalSource: node.value },
+    );
+    return Boolean(parsed);
+  });
+
+  return parsed;
+};
+
+/**
  * Converts JSX Table elements to markdown table nodes and re-parses markdown in cells.
  *
  * The jsxTable micromark tokenizer captures `<Table>...</Table>` as a single html node,
@@ -354,52 +389,10 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
-    // Main logic to transform table node to its parts
     // Because the processor uses remarkMdx, it is stricter in what it accepts
-    // and only accepts valid MDX syntax. in the table node.
-    // To get around that, we have some fallback logics after trying to repair the table content.
-    let parsed = parseTableNode(tableNodeProcessor, node);
-    if (!parsed) {
-      // Apply a sequence of targeted repairs cumulatively — each runs on the
-      // prior repair's output — and re-parse after every change, stopping once
-      // the accumulated result parses. Chaining matters because a single table
-      // can carry independent defects in different cells (e.g. crossing
-      // emphasis in one and a blank-line-split `<ul>` in another) that no single
-      // repair fixes on its own.
-      //  - repairUnclosedTags:       unclosed/orphan HTML tags
-      //  - normalizeTagSpacing:      a line mixing text and an opening tag
-      //                              (e.g. `text <div> \n <div> text`)
-      //  - repairExpressionEscapes:  backslash escapes inside a `{…}` expression
-      //  - escapeStrayLessThan:      a `<` that doesn't begin a valid tag
-      //                              (e.g. `word <`, `a <1>`)
-      //  - escapeCrossingEmphasis:   an emphasis run that opens and closes at
-      //                              different tag depths (e.g. `_<ul><li>x_`)
-      // These repairs are created after seeing real customer content that has failed to parse
-      const repairs: ((html: string) => RepairResult)[] = [
-        repairUnclosedTags,
-        normalizeTagSpacing,
-        repairExpressionEscapes,
-        escapeStrayLessThan,
-        escapeCrossingEmphasis,
-      ];
-
-      // Each layer's inserts are relative to the string that repair received, so
-      // we keep them ordered to remap parsed positions back to `node.value`.
-      let repairedValue = node.value;
-      const layers: Insert[][] = [];
-      repairs.some(repair => {
-        const { value, inserts } = repair(repairedValue);
-        if (value === repairedValue) return false;
-        repairedValue = value;
-        layers.push(inserts);
-        parsed = parseTableNode(
-          tableNodeProcessor,
-          { ...node, value: repairedValue },
-          { layers, originalSource: node.value },
-        );
-        return Boolean(parsed);
-      });
-    }
+    // and only accepts valid MDX syntax in the table node. To get around that,
+    // fall back to the cumulative repairs when the first parse fails.
+    const parsed = parseTableNode(tableNodeProcessor, node) ?? repairAndReparse(node);
 
     if (parsed) {
       // If the table is parsed successfully, we can now process it further

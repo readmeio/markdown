@@ -1,22 +1,16 @@
+import { unicodePunctuation, unicodeWhitespace } from 'micromark-util-character';
+
 import { maskNonTagRegions, walkTags } from './tag-walker';
 import { applyInserts, type Insert, type RepairResult } from './utils';
 
 // Maximal run of a single emphasis delimiter (`_`, `*`, `**`, `***`, …).
 const EMPHASIS_RUN_RE = /([*_])\1*/g;
 
-const isWhitespace = (ch: string | undefined): boolean => ch === undefined || /\s/.test(ch);
+// String bounds (undefined) count as whitespace, not punctuation, per the
+// CommonMark flanking definition.
+const isWhitespace = (ch: string | undefined): boolean => ch === undefined || unicodeWhitespace(ch.charCodeAt(0));
 
-// ASCII punctuation, per the CommonMark flanking definition. String bounds
-// (undefined) count as whitespace, not punctuation.
-const isPunctuation = (ch: string | undefined): boolean => {
-  const code = ch?.charCodeAt(0) ?? -1;
-  return (
-    (code >= 33 && code <= 47) ||
-    (code >= 58 && code <= 64) ||
-    (code >= 91 && code <= 96) ||
-    (code >= 123 && code <= 126)
-  );
-};
+const isPunctuation = (ch: string | undefined): boolean => ch !== undefined && unicodePunctuation(ch.charCodeAt(0));
 
 interface Flanking {
   canClose: boolean;
