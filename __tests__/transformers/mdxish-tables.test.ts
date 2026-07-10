@@ -984,6 +984,189 @@ Just one line.
     });
   });
 
+  describe('given emphasis that crosses an HTML tag boundary inside a cell', () => {
+    it('escapes an underscore that opens outside a list and closes inside it', () => {
+      // `_` opens before `<ul>` (tag depth N) but closes inside `<li>` (depth
+      // N+2), which makes mdxjs throw and drop the whole table's markdown.
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>**bold**</td>
+<td>_<ul><li>crossing underscore_</li></ul></td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // Sibling cell markdown must still render; the crossing `_` degrades to
+      // a literal underscore rather than breaking the table.
+      const strongs = findAllElementsByTagName(tables[0], 'strong');
+      expect(strongs).toHaveLength(1);
+      expect(JSON.stringify(strongs[0])).toContain('bold');
+
+      expect(findAllElementsByTagName(tables[0], 'ul')).toHaveLength(1);
+      const items = findAllElementsByTagName(tables[0], 'li');
+      expect(items).toHaveLength(1);
+      expect(JSON.stringify(items[0])).toContain('crossing underscore_');
+      expect(findAllElementsByTagName(items[0], 'em')).toHaveLength(0);
+    });
+
+    it('keeps well-formed emphasis inside a deeper tag while escaping the crossing one', () => {
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>**heading**</td>
+<td>**_Note:_**  _<ul><li>opener escaped_ </li><li>_kept italic_</li></ul></td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // `**_Note:_**` and the balanced `_kept italic_` inside the second <li>
+      // are well-formed and must render; only the crossing `_` is escaped.
+      const html = toHtml(tables[0]);
+      expect(html).toContain('<strong><em>Note:</em></strong>');
+      expect(html).toContain('<li><em>kept italic</em></li>');
+      expect(html).toContain('opener escaped_');
+      expect(html).not.toContain('**_Note');
+    });
+
+    it('escapes a crossing bold (**) run the same way as underscores', () => {
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>ok</td>
+<td>**<ul><li>bold crosses**</li></ul></td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const items = findAllElementsByTagName(tables[0], 'li');
+      expect(items).toHaveLength(1);
+      expect(JSON.stringify(items[0])).toContain('bold crosses**');
+      expect(findAllElementsByTagName(items[0], 'strong')).toHaveLength(0);
+    });
+
+    it('does not touch snake_case or emphasis contained within a single tag', () => {
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>**keep**</td>
+<td><ul><li>uses snake_case_name and _real italic_ here</li></ul></td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      // Emphasis fully inside the <li> is well-formed, so it renders and the
+      // intraword underscores stay literal — no repair needed here.
+      const items = findAllElementsByTagName(tables[0], 'li');
+      expect(items).toHaveLength(1);
+      const emphasis = findAllElementsByTagName(items[0], 'em');
+      expect(emphasis).toHaveLength(1);
+      expect(JSON.stringify(emphasis[0])).toContain('real italic');
+      expect(JSON.stringify(items[0])).toContain('snake_case_name');
+    });
+
+    it('leaves an underscore inside inline code untouched (masked region)', () => {
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>**keep**</td>
+<td>\`_<ul>_\` and text</td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const codes = findAllElementsByTagName(tables[0], 'code');
+      expect(codes).toHaveLength(1);
+      expect(JSON.stringify(codes[0])).toContain('_<ul>_');
+      expect(JSON.stringify(codes[0])).not.toContain('\\\\');
+    });
+  });
+
+  describe('given independent parse defects in different cells (chained repairs)', () => {
+    it('fixes crossing emphasis in one cell and a blank-line-split <ul> in another', () => {
+      // Each cell fails mdxjs for a different reason: cell 1 has emphasis that
+      // crosses a tag boundary (escapeCrossingEmphasis) and cell 2 has a `<ul>`
+      // that spans a blank line / paragraph break (normalizeTagSpacing). Neither
+      // repair fixes both alone — they have to stack for the table to parse.
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>
+Intro.  _<ul><li>crossing underscore_</li></ul>
+</td>
+<td>
+Values: \`A\`, \`B\`<ul><li>first</li><li></li>
+
+Trailing paragraph then\`C\`<li>last</li></ul>
+</td>
+</tr>
+</tbody>
+</Table>`;
+
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+
+      const cells = findAllElementsByTagName(tables[0], 'td');
+      expect(cells).toHaveLength(2);
+
+      // Cell 1: crossing `_` degraded to literal, list still rendered.
+      expect(JSON.stringify(cells[0])).toContain('crossing underscore_');
+      // Cell 2: inline code parsed rather than left as raw backticks.
+      const codes = findAllElementsByTagName(tables[0], 'code');
+      expect(codes.length).toBeGreaterThanOrEqual(3);
+      const html = toHtml(tables[0]);
+      expect(html).toContain('<code>A</code>');
+      expect(html).not.toContain('`A`');
+      // Both cells' lists survive the two-cell layout.
+      expect(findAllElementsByTagName(tables[0], 'ul')).toHaveLength(2);
+    });
+
+    it('renders the reported two-cell table without leaking literal markdown', () => {
+      const doc = `<Table>
+<tbody>
+<tr>
+<td>
+Hello  <br />**_Note:_**  _<ul><li>Random words_ </li><li>_Random words 2_</li></ul>
+</td>
+<td>
+Possible values: \`SENTINEL\`, \`RANDOM\`<ul><li>A list item</li><li></li>
+
+When \`scope\` = \`SENTINEL_GROUP\`, the \`SENTINEL\`, reports will have 2 additional fields: \`SENTINELGroupId\` and  \`SENTINELGroupName\`<li>If \`scope\` isn't defined in the request, it will be set to \`SENTINEL\` by default.</li></ul>
+</td>
+</tr>
+</tbody>
+</Table>`;
+
+      const html = toHtml(mdxish(doc));
+      expect(html).toContain('<table');
+      expect(html).toContain('<strong><em>Note:</em></strong>');
+      expect(html).not.toContain('**_Note');
+      expect(html).toContain('<code>SENTINEL</code>');
+      expect(html).not.toContain('`SENTINEL`');
+    });
+  });
+
   describe('given asymmetric inline/flow JSX inside cells', () => {
     // mdxjs throws when a JSX element's opener has trailing text on its line
     // but its closer sits alone on its own line (or vice versa). Without
