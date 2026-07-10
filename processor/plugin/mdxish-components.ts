@@ -101,6 +101,21 @@ function isActualHtmlTag(tagName: string, originalExcerpt: string): boolean {
   return false;
 }
 
+/**
+ * Re-parsing a component's text child treats it as a standalone document, so
+ * content that happens to start with the literal word `export`/`import`
+ * (e.g. link text like "export Lorem Ipsum") sits at true column 1 and
+ * gets mistaken for an MDX ESM statement, which then fails to parse as JS.
+ * Fall back to `undefined` rather than letting one such child crash the page.
+ */
+function tryProcessMarkdown(processMarkdown: (content: string) => Root, content: string): Root | undefined {
+  try {
+    return processMarkdown(content);
+  } catch {
+    return undefined;
+  }
+}
+
 /** Parse and replace text children with processed markdown */
 function parseTextChildren(node: Element, processMarkdown: (content: string) => Root, components: CustomComponents): void {
   if (!node.children?.length) return;
@@ -116,7 +131,8 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
       return [];
     }
 
-    const hast = processMarkdown(child.value.trim());
+    const hast = tryProcessMarkdown(processMarkdown, child.value.trim());
+    if (!hast) return [child];
     const children = (hast.children ?? []).filter(isElementContentNode);
 
     // For inline components, preserve plain text instead of wrapping in <p>
@@ -199,8 +215,9 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
       // rehypeRaw strips children from <img> (void element), so we must
       // re-process the caption here, after rehypeRaw.
       if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
-        const captionHast = processMarkdown(node.properties.caption as string);
-        node.children = (captionHast.children ?? []).filter(isElementContentNode);
+        const caption = node.properties.caption as string;
+        const captionHast = tryProcessMarkdown(processMarkdown, caption);
+        node.children = captionHast ? (captionHast.children ?? []).filter(isElementContentNode) : [{ type: 'text', value: caption }];
       }
 
       // Skip runtime components and standard HTML tags
