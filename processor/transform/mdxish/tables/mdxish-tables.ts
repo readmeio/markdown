@@ -27,6 +27,7 @@ import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
+import { walkTags } from './tag-walker';
 import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
@@ -337,16 +338,12 @@ const processTableNode = (
   parent.children[index] = mdNode;
 };
 
-// Every `<table`/`</table>` opener/closer whose tag-name is properly delimited
-// (so `<tablefoo>` never matches).
-const TABLE_TAG_RE = /<\/?table(?=[\s/>])/gi;
-
 /**
  * Resolve the source `Point` at character `index` within `value`, given the
  * `Point` of `value`'s first character. Lets a split-out sub-node carry accurate
  * document positions so `parseTableNode`'s offset shifting stays correct.
  */
-const pointAt = (base: Point, value: string, index: number): Point => {
+export const pointAt = (base: Point, value: string, index: number): Point => {
   const before = value.slice(0, index);
   const newlines = before.split('\n').length - 1;
   return {
@@ -357,25 +354,27 @@ const pointAt = (base: Point, value: string, index: number): Point => {
   };
 };
 
-/** Find every balanced, depth-matched `<table>…</table>` range in `value`. */
+/**
+ * Find every balanced, depth-matched `<table>…</table>` range in `value`.
+ * Uses `walkTags` so `<table>`s inside code spans / fenced blocks (masked away)
+ * are never matched.
+ */
 const findTableRanges = (value: string): { end: number; start: number }[] => {
   const ranges: { end: number; start: number }[] = [];
   let depth = 0;
   let start = 0;
-  TABLE_TAG_RE.lastIndex = 0;
-  for (let match = TABLE_TAG_RE.exec(value); match; match = TABLE_TAG_RE.exec(value)) {
-    if (match[0][1] !== '/') {
-      if (depth === 0) start = match.index;
+  walkTags(value, {
+    onOpen: ({ name, start: openStart, isStrayCloser }) => {
+      if (name.toLowerCase() !== 'table' || isStrayCloser) return;
+      if (depth === 0) start = openStart;
       depth += 1;
-    } else if (depth > 0) {
+    },
+    onClose: ({ name, end }) => {
+      if (name.toLowerCase() !== 'table' || depth === 0) return;
       depth -= 1;
-      if (depth === 0) {
-        const closeGt = value.indexOf('>', TABLE_TAG_RE.lastIndex);
-        if (closeGt === -1) break;
-        ranges.push({ start, end: closeGt + 1 });
-      }
-    }
-  }
+      if (depth === 0) ranges.push({ start, end });
+    },
+  });
   return ranges;
 };
 

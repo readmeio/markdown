@@ -4,6 +4,7 @@ import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
+import { pointAt } from '../../processor/transform/mdxish/tables/mdxish-tables';
 import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
 
 const astProcessor = (md: string): Root => {
@@ -1557,6 +1558,40 @@ the /{customer\\_id}/config/clients operation
     });
   });
 
+  describe('pointAt', () => {
+    it('returns the base point unchanged when index is 0', () => {
+      const base = { line: 5, column: 3, offset: 40 };
+      expect(pointAt(base, 'anything', 0)).toStrictEqual({ line: 5, column: 3, offset: 40 });
+    });
+
+    it('advances only the column and offset when index stays on the base line', () => {
+      const base = { line: 5, column: 3, offset: 40 };
+      expect(pointAt(base, '0123456789', 4)).toStrictEqual({ line: 5, column: 7, offset: 44 });
+    });
+
+    it('advances the line and resets the column relative to the last newline when index crosses lines', () => {
+      const base = { line: 1, column: 1, offset: 0 };
+      // "ab\ncdef\nghij" — index 9 lands on 'h', the 2nd character of the 3rd line.
+      expect(pointAt(base, 'ab\ncdef\nghij', 9)).toStrictEqual({ line: 3, column: 2, offset: 9 });
+    });
+
+    it('places the column at 1 when index lands exactly on the first character after a newline', () => {
+      const base = { line: 1, column: 1, offset: 0 };
+      // "ab\ncdef" — index 3 lands on 'c', the 1st character of the 2nd line.
+      expect(pointAt(base, 'ab\ncdef', 3)).toStrictEqual({ line: 2, column: 1, offset: 3 });
+    });
+
+    it('treats a missing base offset as 0', () => {
+      const base = { line: 2, column: 5 };
+      expect(pointAt(base, 'xyz', 2)).toStrictEqual({ line: 2, column: 7, offset: 2 });
+    });
+
+    it('carries a non-zero base offset through unchanged in the same-line case', () => {
+      const base = { line: 1, column: 1, offset: 1000 };
+      expect(pointAt(base, 'hello world', 6)).toStrictEqual({ line: 1, column: 7, offset: 1006 });
+    });
+  });
+
   describe('given a <table> wrapped in a raw HTML block', () => {
     // A wrapping `<div>` makes CommonMark html-flow / the mdxComponent plain-block
     // claim swallow the whole block, so the nested table never reaches the table
@@ -1609,6 +1644,77 @@ the /{customer\\_id}/config/clients operation
       expect(html).toContain('<code>CODE</code>');
       expect(html).toContain('<strong>500</strong>');
       expect(html).toContain('<code>OTHER</code>');
+    });
+
+    it('still renders nested tables when there are blank lines inside the table', () => {
+      const md = `
+<div>
+
+<table>
+
+<thead>
+<tr>
+<th>Header 1</th>
+<th>Header 2</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>**Bold**</td>
+<td>\`CODE\`</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+`;
+      const html = toHtml(mdxish(md));
+      expect(html).toContain('<strong>Bold</strong>');
+      expect(html).toContain('<code>CODE</code>');
+    });
+
+    it('does not treat a <table> inside a fenced code example as a real table', () => {
+      const md = `<div>
+
+\`\`\`html
+<table><td>example</td></table>
+\`\`\`
+
+${table}
+
+</div>`;
+      const html = toHtml(mdxish(md));
+
+      // The fenced example survives verbatim (its cell markdown is NOT parsed)...
+      expect(html).toContain('&#x3C;table>&#x3C;td>example&#x3C;/td>&#x3C;/table>');
+      // ...while the real table below it still gets its cells parsed.
+      expect(html).toContain('<strong>400</strong>');
+      expect(html).toContain('<code>CODE</code>');
+    });
+
+    it('positions the lifted table fragment at its real location in a multi-line wrapper', () => {
+      const md = `<div>
+some prose before the table
+another line here
+${table}
+</div>`;
+
+      const { tree, parserReadyContent } = astAndSource(md);
+      const [tableNode] = collectNodes(tree, 'table');
+
+      expect(tableNode).toBeDefined();
+      const { start, end } = tableNode.position!;
+      const slice = parserReadyContent.slice(start.offset!, end.offset!);
+      expect(slice.startsWith('<table>')).toBe(true);
+      expect(slice.endsWith('</table>')).toBe(true);
+
+      // Independently recompute the expected line by counting newlines up to
+      // the fragment's offset, cross-checking pointAt's line/offset outputs
+      // are consistent as actually wired into the tree.
+      const expectedLine = parserReadyContent.slice(0, start.offset!).split('\n').length;
+      expect(start.line).toBe(expectedLine);
     });
   });
 });
