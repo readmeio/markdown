@@ -35,7 +35,14 @@ const Tabs = ({ children }: TabsProps) => {
           ))}
         </nav>
       </header>
-      <section>{tabs[activeTab]}</section>
+      <section>
+        {/* Keep every panel mounted so runtime Tailwind can scan inactive tabs' classes on first paint */}
+        {tabs.map((tab, index: number) => (
+          <div key={tab.props.title} hidden={index !== activeTab}>
+            {tab}
+          </div>
+        ))}
+      </section>
     </div>
   );
 };

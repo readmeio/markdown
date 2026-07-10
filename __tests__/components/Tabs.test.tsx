@@ -31,6 +31,24 @@ describe('Tabs', () => {
       expect(container).toHaveTextContent('First tab content');
     });
 
+    it('keeps inactive tabs mounted in the DOM but hidden', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">Second tab content</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      // Inactive panel stays in the DOM so runtime Tailwind can scan its classes on first paint
+      expect(panels[1]).toHaveTextContent('Second tab content');
+      expect(panels[0]).toBeVisible();
+      expect(panels[1]).not.toBeVisible();
+    });
+
     it('renders a single Tab without crashing', () => {
       const md = `
 <Tabs>
@@ -261,15 +279,19 @@ Hello
       expect(buttons[1]).toHaveTextContent('B');
     });
 
-    it('displays only the active tab content', () => {
+    it('keeps every tab mounted but shows only the active one', () => {
       const { container } = render(
         <Tabs>
           <Tab title="A">aaa</Tab>
           <Tab title="B">bbb</Tab>
         </Tabs>,
       );
-      expect(container).toHaveTextContent('aaa');
-      expect(container).not.toHaveTextContent('bbb');
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      expect(panels[0]).toBeVisible();
+      expect(panels[0]).toHaveTextContent('aaa');
+      expect(panels[1]).not.toBeVisible();
+      expect(panels[1]).toHaveTextContent('bbb');
     });
 
     it('renders a single Tab without crashing', () => {
