@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 
 import '@testing-library/jest-dom';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
 import Tabs, { Tab } from '../../components/Tabs';
@@ -29,6 +29,35 @@ describe('Tabs', () => {
       expect(buttons[0]).toHaveTextContent('First');
       expect(buttons[1]).toHaveTextContent('Second');
       expect(container).toHaveTextContent('First tab content');
+    });
+
+    it('keeps inactive tabs mounted in the DOM but hidden, and swaps visibility on click', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">
+    <Accordion title="Random">Second tab content</Accordion>
+  </Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      // Inactive panel stays in the DOM so runtime Tailwind can scan its classes on first paint
+      expect(panels[1].querySelector('.Accordion')).toBeInTheDocument();
+      expect(panels[0]).toBeVisible();
+      expect(panels[1]).not.toBeVisible();
+
+      const buttons = container.querySelectorAll('.TabGroup-nav button');
+      fireEvent.click(buttons[1]);
+
+      // Panel visibility swaps, and the custom component stays mounted and rendered
+      expect(panels[0]).not.toBeVisible();
+      expect(panels[1]).toBeVisible();
+      expect(panels[1].querySelector('.Accordion')).toBeInTheDocument();
+      expect(panels[1]).toHaveTextContent('Second tab content');
     });
 
     it('renders a single Tab without crashing', () => {
@@ -261,15 +290,25 @@ Hello
       expect(buttons[1]).toHaveTextContent('B');
     });
 
-    it('displays only the active tab content', () => {
+    it('keeps every tab mounted but shows only the active one, and swaps on click', () => {
       const { container } = render(
         <Tabs>
           <Tab title="A">aaa</Tab>
           <Tab title="B">bbb</Tab>
         </Tabs>,
       );
-      expect(container).toHaveTextContent('aaa');
-      expect(container).not.toHaveTextContent('bbb');
+      const panels = container.querySelectorAll('.TabGroup section > div');
+      expect(panels).toHaveLength(2);
+      expect(panels[0]).toBeVisible();
+      expect(panels[0]).toHaveTextContent('aaa');
+      expect(panels[1]).not.toBeVisible();
+      expect(panels[1]).toHaveTextContent('bbb');
+
+      const buttons = container.querySelectorAll('.TabGroup-nav button');
+      fireEvent.click(buttons[1]);
+
+      expect(panels[0]).not.toBeVisible();
+      expect(panels[1]).toBeVisible();
     });
 
     it('renders a single Tab without crashing', () => {
