@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 14.11.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** escape stray `<` in table cells ([#1535](https://github.com/readmeio/markdown/issues/1535)) ([807f61a](https://github.com/readmeio/markdown/commit/807f61abfd59da03191164fcdb4817b08217ad4a))
+* esm statements in JSX component child text crash rendering ([#1541](https://github.com/readmeio/markdown/issues/1541)) ([6347bab](https://github.com/readmeio/markdown/commit/6347babfd067574726c37400750331a26dcbd045))
+* extract HTMLBlocks before parsing in stripComments ([#1506](https://github.com/readmeio/markdown/issues/1506)) ([2c65c3f](https://github.com/readmeio/markdown/commit/2c65c3f9080812674d68e2294dbdc0bc54e70c8a)), closes [#1439](https://github.com/readmeio/markdown/issues/1439)
+* release workflow breakage from npm engine drift ([#1542](https://github.com/readmeio/markdown/issues/1542)) ([2288aa7](https://github.com/readmeio/markdown/commit/2288aa7f560d59c79b87d35f3ffb47d1f0075890))
+
 ## Version 14.11.2
 ### 🛠 Fixes & Updates
 
