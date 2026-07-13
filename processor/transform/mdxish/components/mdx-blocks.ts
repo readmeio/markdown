@@ -5,6 +5,7 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
+import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
@@ -14,16 +15,17 @@ export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-c
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
 /**
- * Reduce leading whitespace on all lines just enough to prevent
- * remark from treating indented content as code blocks (4+ spaces).
- * Preserves relative indentation so whitespace text nodes are
- * maintained in the HAST output.
+ * Dedent component bodies so readability indentation isn't parsed as indented code
+ * (4+ spaces). Shallow bodies (min indent ≤3) stay byte-identical to preserve
+ * whitespace text nodes; deeper bodies dedent fully, keeping relative indentation.
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
   if (nonEmptyLines.length === 0) return text;
 
+  // Indent counts characters (tab = 1), unlike indentWidth's CommonMark columns
+  // (tab = 4) in terminate-html-flow-blocks; tab-indented bodies stay untouched.
   const minIndent = Math.min(
     ...nonEmptyLines.map(line => {
       const match = line.match(/^(\s*)/);
@@ -31,19 +33,19 @@ function safeDeindent(text: string): string {
     }),
   );
 
-  // Only strip enough indent to keep all lines below the 4-space code threshold
-  const stripAmount = Math.max(0, minIndent - 3);
+  // Bodies already below the code threshold stay byte-identical.
+  const stripAmount = minIndent > 3 ? minIndent : 0;
   if (stripAmount === 0) return text;
   return lines.map(line => line.slice(stripAmount)).join('\n');
 }
 
 /**
- * Parse markdown content into mdast children nodes.
- * Dedents the content first to prevent indented component content
- * (from nested components) from being treated as code blocks.
+ * Parse component-body markdown into mdast children. Dedenting shifts columns and
+ * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
+ * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
+  const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
   return parsed.children || [];
 };
 
