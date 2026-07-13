@@ -1,7 +1,6 @@
 import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
-import type { Point } from 'unist';
 
 import { mdxFromMarkdown } from 'mdast-util-mdx';
 import { phrasing } from 'mdast-util-phrasing';
@@ -27,8 +26,14 @@ import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import { walkTags } from './tag-walker';
-import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
+import {
+  splitHtmlWithNestedTables,
+  tableTags,
+  unwrapParagraphNodes,
+  unwrapSoleParagraph,
+  type Insert,
+  type RepairResult,
+} from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';
@@ -336,83 +341,6 @@ const processTableNode = (
   };
 
   parent.children[index] = mdNode;
-};
-
-/**
- * Resolve the source `Point` at character `index` within `value`, given the
- * `Point` of `value`'s first character. Lets a split-out sub-node carry accurate
- * document positions so `parseTableNode`'s offset shifting stays correct.
- */
-export const pointAt = (base: Point, value: string, index: number): Point => {
-  const before = value.slice(0, index);
-  const newlines = before.split('\n').length - 1;
-  return {
-    line: base.line + newlines,
-    // Same line → advance the base column; a later line → column is the run since its newline.
-    column: newlines === 0 ? base.column + index : index - before.lastIndexOf('\n'),
-    offset: (base.offset ?? 0) + index,
-  };
-};
-
-/**
- * Find every balanced, depth-matched `<table>…</table>` range in `value`.
- * Uses `walkTags` so `<table>`s inside code spans / fenced blocks (masked away)
- * are never matched.
- */
-const findTableRanges = (value: string): { end: number; start: number }[] => {
-  const ranges: { end: number; start: number }[] = [];
-  let depth = 0;
-  let start = 0;
-  walkTags(value, {
-    onOpen: ({ name, start: openStart, isStrayCloser }) => {
-      if (name.toLowerCase() !== 'table' || isStrayCloser) return;
-      if (depth === 0) start = openStart;
-      depth += 1;
-    },
-    onClose: ({ name, end }) => {
-      if (name.toLowerCase() !== 'table' || depth === 0) return;
-      depth -= 1;
-      if (depth === 0) ranges.push({ start, end });
-    },
-  });
-  return ranges;
-};
-
-/**
- * A `<table>` nested inside a raw HTML block (e.g. wrapped in a `<div>`) is
- * swallowed whole by CommonMark html-flow / the mdxComponent plain-block claim,
- * so `mdxishTables` never sees it as a table and its cell markdown stays literal.
- *
- * Split such a node at each table's boundaries so the main pass below processes
- * every table exactly like a top-level one, while the surrounding raw HTML (the
- * wrapper's open/close tags) is re-nested around the parsed tables by rehype-raw
- * downstream.
- *
- * Returns null when there is no wrapped table to extract.
- */
-const splitHtmlWithNestedTables = (node: Html): Html[] | null => {
-  const { value } = node;
-  // Top-level tables are handled directly by the main pass.
-  if (value.startsWith('<table') || value.startsWith('<Table')) return null;
-  const ranges = findTableRanges(value);
-  if (ranges.length === 0) return null;
-
-  const base = node.position?.start;
-  const sliceToHtml = (from: number, to: number): Html => ({
-    type: 'html',
-    value: value.slice(from, to),
-    ...(base && { position: { start: pointAt(base, value, from), end: pointAt(base, value, to) } }),
-  });
-
-  const parts: Html[] = [];
-  let cursor = 0;
-  ranges.forEach(({ start, end }) => {
-    if (start > cursor) parts.push(sliceToHtml(cursor, start));
-    parts.push(sliceToHtml(start, end)); // starts with `<table` → picked up by the main pass
-    cursor = end;
-  });
-  if (cursor < value.length) parts.push(sliceToHtml(cursor, value.length));
-  return parts;
 };
 
 /**

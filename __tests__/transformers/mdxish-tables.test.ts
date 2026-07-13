@@ -1,11 +1,17 @@
-import type { Root, Text } from 'mdast';
+import type { Html, Root, Text } from 'mdast';
 import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
-import { pointAt } from '../../processor/transform/mdxish/tables/mdxish-tables';
+import { splitHtmlWithNestedTables } from '../../processor/transform/mdxish/tables/utils';
 import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
+
+const htmlNode = (value: string, start?: { column: number; line: number; offset: number }): Html => ({
+  type: 'html',
+  value,
+  ...(start && { position: { start, end: start } }),
+});
 
 const astProcessor = (md: string): Root => {
   const { processor, parserReadyContent } = mdxishAstProcessor(md);
@@ -1558,46 +1564,71 @@ the /{customer\\_id}/config/clients operation
     });
   });
 
-  describe('pointAt', () => {
-    it('returns the base point unchanged when index is 0', () => {
-      const base = { line: 5, column: 3, offset: 40 };
-      expect(pointAt(base, 'anything', 0)).toStrictEqual({ line: 5, column: 3, offset: 40 });
+  describe('splitHtmlWithNestedTables', () => {
+    const lowercaseTable = '<table><tr><td>x</td></tr></table>';
+    const uppercaseTable = '<Table><tr><td>x</td></tr></Table>';
+    
+    it('returns null for a top-level lowercase <table>', () => {
+      expect(splitHtmlWithNestedTables(htmlNode(lowercaseTable))).toBeNull();
     });
 
-    it('advances only the column and offset when index stays on the base line', () => {
-      const base = { line: 5, column: 3, offset: 40 };
-      expect(pointAt(base, '0123456789', 4)).toStrictEqual({ line: 5, column: 7, offset: 44 });
+    it('returns null for a top-level <Table> component', () => {
+      expect(splitHtmlWithNestedTables(htmlNode(uppercaseTable))).toBeNull();
     });
 
-    it('advances the line and resets the column relative to the last newline when index crosses lines', () => {
-      const base = { line: 1, column: 1, offset: 0 };
-      // "ab\ncdef\nghij" — index 9 lands on 'h', the 2nd character of the 3rd line.
-      expect(pointAt(base, 'ab\ncdef\nghij', 9)).toStrictEqual({ line: 3, column: 2, offset: 9 });
+    it('returns null when the block holds no table at all', () => {
+      expect(splitHtmlWithNestedTables(htmlNode('<div>no table here</div>'))).toBeNull();
     });
 
-    it('places the column at 1 when index lands exactly on the first character after a newline', () => {
-      const base = { line: 1, column: 1, offset: 0 };
-      // "ab\ncdef" — index 3 lands on 'c', the 1st character of the 2nd line.
-      expect(pointAt(base, 'ab\ncdef', 3)).toStrictEqual({ line: 2, column: 1, offset: 3 });
+    it.each([lowercaseTable, uppercaseTable])('splits a <div>-wrapped %s into wrapper-open, table, wrapper-close parts', (table) => {
+      const value = `<div>\n${table}\n</div>`;
+      const parts = splitHtmlWithNestedTables(htmlNode(value));
+
+      expect(parts).toStrictEqual([
+        { type: 'html', value: '<div>\n' },
+        { type: 'html', value: table },
+        { type: 'html', value: '\n</div>' },
+      ]);
     });
 
-    it('treats a missing base offset as 0', () => {
-      const base = { line: 2, column: 5 };
-      expect(pointAt(base, 'xyz', 2)).toStrictEqual({ line: 2, column: 7, offset: 2 });
+    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', (table) => {
+      const value = `<div>\n${table}\n${table}\n</div>`;
+      const parts = splitHtmlWithNestedTables(htmlNode(value));
+
+      expect(parts?.map(p => p.value)).toStrictEqual([
+        '<div>\n',
+        table,
+        '\n',
+        table,
+        '\n</div>',
+      ]);
     });
 
-    it('carries a non-zero base offset through unchanged in the same-line case', () => {
-      const base = { line: 1, column: 1, offset: 1000 };
-      expect(pointAt(base, 'hello world', 6)).toStrictEqual({ line: 1, column: 7, offset: 1006 });
+    it('does not match a <table> masked inside a fenced code block', () => {
+      const value = '<div>\n\n```html\n<table><td>x</td></table>\n```\n\n</div>';
+      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+    });
+
+    it('leaves an implicitly-closed table whole so trailing content is not dropped', () => {
+      const value = '<div>\n<table><tr><td>x</td></tr>\n**important trailing content**\n</div>';
+      expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+    });
+
+    it('carries source positions onto each split part', () => {
+      const value = '<div>\n<table><tr><td>x</td></tr></table>\n</div>';
+      const parts = splitHtmlWithNestedTables(htmlNode(value, { line: 3, column: 1, offset: 20 }));
+
+      const tablePart = parts?.find(p => p.value.startsWith('<table'));
+      // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
+      expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
   });
 
-  describe('given a <table> wrapped in a raw HTML block', () => {
+  describe('given a table wrapped in a raw HTML block', () => {
     // A wrapping `<div>` makes CommonMark html-flow / the mdxComponent plain-block
-    // claim swallow the whole block, so the nested table never reaches the table
-    // machinery and its cell markdown stays literal. The pre-pass lifts the table
-    // out so its cells parse and rehype-raw re-nests it inside the wrapper.
-    const table = `<table>
+    // claim swallow the whole HTML block. We need to extract them out so the 
+    // table transformer can process the table separately
+    const lowercaseTable = `<table>
 <thead>
 <tr>
 <th>Response Code</th>
@@ -1611,9 +1642,24 @@ the /{customer\\_id}/config/clients operation
 </tr>
 </tbody>
 </table>`;
+    const uppercaseTable = `<Table>
+<thead>
+<tr>
+<th>Response Code</th>
+<th>Error Code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**400**</td>
+<td>\`CODE\`</td>
+</tr>
+</tbody>
+</Table>`;
 
-    it('parses cell markdown and keeps the wrapper when a blank line follows the <div>', () => {
-      const html = toHtml(mdxish(`<div>\n\n${table}\n \n</div>`));
+    it.each([lowercaseTable, uppercaseTable])('parses cell markdown and keeps the wrapper when a blank line follows the <div>', (table) => {
+      const value = `<div>\n\n${table}\n \n</div>`;
+      const html = toHtml(mdxish(value));
 
       expect(html).toContain('<div>');
       expect(html).toContain('<strong>400</strong>');
@@ -1621,7 +1667,7 @@ the /{customer\\_id}/config/clients operation
       expect(html).not.toContain('**400**');
     });
 
-    it('parses cell markdown when the table is directly adjacent to the <div>', () => {
+    it.each([lowercaseTable, uppercaseTable])('parses cell markdown when the table is directly adjacent to the <div>', (table) => {
       const html = toHtml(mdxish(`<div>\n${table}\n</div>`));
 
       expect(html).toContain('<div>');
@@ -1629,15 +1675,15 @@ the /{customer\\_id}/config/clients operation
       expect(html).toContain('<code>CODE</code>');
     });
 
-    it('preserves attributes on the wrapping element', () => {
+    it.each([lowercaseTable, uppercaseTable])('preserves attributes on the wrapping element', (table) => {
       const html = toHtml(mdxish(`<div className="wrap">\n\n${table}\n\n</div>`));
 
       expect(html).toContain('class="wrap"');
       expect(html).toContain('<strong>400</strong>');
     });
 
-    it('lifts every table when the wrapper holds more than one', () => {
-      const second = table.replace('**400**', '**500**').replace('`CODE`', '`OTHER`');
+    it.each([lowercaseTable, uppercaseTable])('lifts every table when the wrapper holds more than one', (table) => {
+      const second = lowercaseTable.replace('**400**', '**500**').replace('`CODE`', '`OTHER`');
       const html = toHtml(mdxish(`<div>\n${table}\n${second}\n</div>`));
 
       expect(html).toContain('<strong>400</strong>');
@@ -1682,7 +1728,7 @@ the /{customer\\_id}/config/clients operation
 <table><td>example</td></table>
 \`\`\`
 
-${table}
+${lowercaseTable}
 
 </div>`;
       const html = toHtml(mdxish(md));
@@ -1694,11 +1740,21 @@ ${table}
       expect(html).toContain('<code>CODE</code>');
     });
 
+    it('keeps trailing content when a nested table is never closed', () => {
+      const md = `<div>
+<table><tr><td>x</td></tr>
+important trailing content
+</div>`;
+      const html = toHtml(mdxish(md));
+
+      expect(html).toContain('important trailing content');
+    });
+
     it('positions the lifted table fragment at its real location in a multi-line wrapper', () => {
       const md = `<div>
 some prose before the table
 another line here
-${table}
+${lowercaseTable}
 </div>`;
 
       const { tree, parserReadyContent } = astAndSource(md);
