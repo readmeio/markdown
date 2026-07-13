@@ -26,14 +26,8 @@ import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsToOriginal } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
-import {
-  splitHtmlWithNestedTables,
-  tableTags,
-  unwrapParagraphNodes,
-  unwrapSoleParagraph,
-  type Insert,
-  type RepairResult,
-} from './utils';
+import { splitHtmlWithNestedTables } from './split-nested-tables';
+import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
   name: 'td' | 'th';

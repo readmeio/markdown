@@ -4,7 +4,7 @@ import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish, mdxishAstProcessor } from '../../lib/mdxish';
-import { splitHtmlWithNestedTables } from '../../processor/transform/mdxish/tables/utils';
+import { splitHtmlWithNestedTables } from '../../processor/transform/mdxish/tables/split-nested-tables';
 import { collectNodes, findAllElementsByTagName, parseMdxishWithSource, roundTripMdxish } from '../helpers';
 
 const htmlNode = (value: string, start?: { column: number; line: number; offset: number }): Html => ({

@@ -46,10 +46,8 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
 
 /**
  * Advance a `Point` by the `consumed` substring that follows it, returning the
- * point at the consumed string's end. 
- * 
- * Use case: Lets split-out sub-nodes carry accurate document positions 
- * so downstream offset shifting stays correct.
+ * point at the consumed string's end. Lets split-out sub-nodes carry accurate
+ * document positions so downstream offset shifting stays correct.
  */
 export const pointAfter = (start: Point, consumed: string): Point => {
   const newlineIndex = consumed.lastIndexOf('\n');
