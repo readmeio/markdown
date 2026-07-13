@@ -34,6 +34,7 @@ __tests__/regression/fixtures/
 ├── consecutive-emojis-fa/      ← :grin::grin:, FA in callouts and components
 ├── compact-headings/           ← #Heading-without-space migration coverage
 ├── htmlblock-with-script/      ← <HTMLBlock> static-content parse path
+├── style-and-jsx-expressions/  ← <style>{`...`}</style>, style={{}}, nested .map() JSX, invalid HTML nesting
 │
 │  ── Table regression fixtures ──
 ├── jsx-table-multiline-cells/  ← blank-line paragraphs preserved in a <Table> cell
