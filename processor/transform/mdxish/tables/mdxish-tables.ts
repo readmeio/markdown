@@ -27,6 +27,7 @@ import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsThroughLayers } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
 import { repairUnclosedTags } from './repair-unclosed-tags';
+import { splitHtmlWithNestedTables } from './split-nested-tables';
 import { tableTags, unwrapParagraphNodes, unwrapSoleParagraph, type Insert, type RepairResult } from './utils';
 
 interface MdxJsxTableCell extends Omit<MdxJsxFlowElement, 'name'> {
@@ -384,6 +385,19 @@ const repairAndReparse = (node: Html): Root | undefined => {
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables = (): Transform => tree => {
+  // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
+  // html nodes so the main pass below treats them like top-level tables.
+  visit(tree, 'html', (_node, index, parent) => {
+    const node = _node as Html;
+    if (typeof index !== 'number' || !parent || !('children' in parent)) return;
+    const parts = splitHtmlWithNestedTables(node);
+    if (!parts) return;
+    // The inserted parts can't re-trigger a split (table parts start with
+    // `<table`; the wrapper slices hold no table), so plain in-place splicing
+    // visits each once without looping.
+    parent.children.splice(index, 1, ...(parts as typeof parent.children));
+  });
+
   visit(tree, 'html', (_node, index, parent) => {
     const node = _node as Html;
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;

@@ -4,6 +4,7 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { pointAfter } from '../../../utils';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
@@ -65,21 +66,6 @@ interface ComponentNodeOptions {
   startPosition?: Node['position'];
   tag: string;
 }
-
-type Point = NonNullable<Node['position']>['start'];
-
-/**
- * Advance a point by the substring of source consumed from it.
- */
-const pointAfter = (start: Point, consumed: string): Point => {
-  const newlineIndex = consumed.lastIndexOf('\n');
-  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
-  return {
-    line: start.line + newlineCount,
-    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
-    offset: start.offset + consumed.length,
-  };
-};
 
 /**
  * Build a position ending at `consumedLength` into the html node's value, so the
