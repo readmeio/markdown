@@ -310,6 +310,28 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('does not escape custom components with array/object expression props in mdxish mode', async () => {
+    // Component should not be escaped when stripping comments, and whitespace preserved
+    const input = `<DosAndDonts
+      title="Your Section Title"
+      dos={[
+        { label: "Your first do item.", code: "Optional code example" },
+      ]}
+      donts={[
+        { label: "Your first dont item." },
+      ]}
+    />`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+    expect(output).not.toContain('\\<');
+  });
+
+  it('still escapes lowercase literal angle brackets in mdxish mode', async () => {
+    const output = await stripComments('render a \\<b when a is less than b', { mdxish: true });
+    expect(output).toBe('render a \\<b when a is less than b');
+  });
+
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests
