@@ -116,10 +116,12 @@ const findTableRanges = (html: string): { end: number; start: number }[] => {
  *
  * Returns null when there is no wrapped table to extract.
  */
+const TOP_LEVEL_TABLE_TAG_RE = /^<(?:table|Table)(?=[\s/>])/;
+
 export const splitHtmlWithNestedTables = (node: Html): Html[] | null => {
   const { value } = node;
   // This is a top-level table, so we don't need to split it
-  if (value.startsWith('<table') || value.startsWith('<Table')) return null;
+  if (TOP_LEVEL_TABLE_TAG_RE.test(value)) return null;
   const ranges = findTableRanges(value);
   if (ranges.length === 0) return null;
 

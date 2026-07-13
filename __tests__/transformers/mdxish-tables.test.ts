@@ -1580,6 +1580,14 @@ the /{customer\\_id}/config/clients operation
       expect(splitHtmlWithNestedTables(htmlNode('<div>no table here</div>'))).toBeNull();
     });
 
+    it.each(['<tablewrapper>', '<TableOfContents>'])('splits a node beginning with the non-table tag %s', (prefixTag) => {
+      const closeTag = `</${prefixTag.slice(1, -1)}>`;
+      const value = `${prefixTag}${lowercaseTable}${closeTag}`;
+      const parts = splitHtmlWithNestedTables(htmlNode(value));
+
+      expect(parts?.map(p => p.value)).toStrictEqual([prefixTag, lowercaseTable, closeTag]);
+    });
+
     it.each([lowercaseTable, uppercaseTable])('splits a <div>-wrapped %s into wrapper-open, table, wrapper-close parts', (table) => {
       const value = `<div>\n${table}\n</div>`;
       const parts = splitHtmlWithNestedTables(htmlNode(value));
