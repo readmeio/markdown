@@ -619,6 +619,17 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       effects.enter('mdxComponentData');
       fenceCloseLength = 0;
+      return fencedCodeMaybeClose(code);
+    }
+
+    // Skip leading indentation before the closing-fence check: an indented fence
+    // (the norm in a component body) closes on an equally-indented line, else the
+    // closer is never matched and scanning runs to EOF (CX-3704).
+    function fencedCodeMaybeClose(code: Code): State | undefined {
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return fencedCodeMaybeClose;
+      }
 
       // Check for closing fence
       if (code === fenceChar) {
@@ -871,6 +882,13 @@ function createTokenize(mode: 'flow' | 'text') {
 
     // Dispatch a non-blank continuation line: fenced code at line start, else body.
     function bodyLineStart(code: Code): State | undefined {
+      // Skip leading indentation while staying "at line start" so an indented
+      // fence is still recognized. Otherwise the first space clears `atLineStart`
+      // and its content — including any unbalanced `{` — stays live text (CX-3704).
+      if (atLineStart && markdownSpace(code)) {
+        effects.consume(code);
+        return bodyLineStart;
+      }
       if (atLineStart && code === codes.tilde) return bodyAfterLineStart(code);
       if (atLineStart && code === codes.graveAccent) {
         codeSpanOpenSize = 0;

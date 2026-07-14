@@ -1159,6 +1159,52 @@ describe('mdxishMdastToMd', () => {
     });
   });
 
+  describe('git round-trip of a Callout with an unbalanced brace in a fence (CX-3704)', () => {
+    // The customer's real trigger: a truncated snippet (more `{` than `}`) fenced
+    // inside a Callout. Before the fix the mis-parsed tree re-serialized as
+    // corrupted Markdown on every save: bullets escaped to `\*`, lists flattened,
+    // prose wrapped in fences, and `</Callout>` merged onto the preceding line.
+    const md = `<Callout icon="⚠️" theme="warn">
+  Update your reverse-proxy config:
+
+  \`\`\`nginx
+  location / {
+      proxy_pass http://backend;
+  \`\`\`
+
+  Then restart the service.
+</Callout>
+
+- First list item
+- Second list item
+
+Final plain paragraph at end of file.
+`;
+
+    it('serializes back without corrupting the surrounding Markdown', () => {
+      const out = roundTripMdxish(md);
+      const lines = out.split('\n');
+
+      // `</Callout>` closes on its own line (not merged onto text).
+      expect(lines).toContain('</Callout>');
+      // No bullets escaped to `\*`.
+      expect(out).not.toContain('\\*');
+      // The list survives as a list (two items), not flattened prose.
+      expect(out).toContain('- First list item');
+      expect(out).toContain('- Second list item');
+      // Trailing prose is a paragraph, not wrapped in a code fence.
+      expect(out).toContain('Final plain paragraph at end of file.');
+      // The unbalanced brace stays inside the fenced code block.
+      expect(out).toContain('location / {');
+    });
+
+    it('is idempotent — re-saving does not re-corrupt the file', () => {
+      const once = roundTripMdxish(md);
+      const twice = roundTripMdxish(once);
+      expect(twice).toBe(once);
+    });
+  });
+
   it('should convert readme-anchor nodes back to <Anchor> JSX syntax', () => {
     const mdast: MdastRoot = {
       type: 'root',

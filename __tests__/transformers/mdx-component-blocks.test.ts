@@ -863,6 +863,43 @@ third\`} />`;
       expect(code).toHaveLength(1);
       expect(code[0].value).toBe('</Terminal>');
     });
+
+    it('treats an INDENTED fence as fenced code so an unbalanced `{` inside stays inert (CX-3704)', () => {
+      // Regression test: inside a component body the fence is indented for
+      // readability. An unbalanced `{` in that fence must not open a
+      // brace-expression that scans past the real `</Callout>` to EOF — which
+      // would fail the whole construct and let CommonMark html-flow swallow the
+      // rest of the document.
+      const markdown = `<Callout icon="⚠️" theme="warn">
+  Intro.
+
+  \`\`\`
+  {
+  \`\`\`
+
+  Closing.
+</Callout>
+
+After the callout.`;
+      const tree = parseWithPlugin(markdown);
+
+      // The whole callout is captured as a single component node...
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Callout' });
+
+      // ...its fenced content (the lone `{`) survives as a code node...
+      const code = collectNodes<Code>(tree, 'code');
+      expect(code).toHaveLength(1);
+      expect(code[0].value).toBe('{');
+
+      // ...and `</Callout>` never leaks out as a stray html node.
+      const strayCloser = collectNodes(tree, n => n.type === 'html' && (n as { value?: string }).value === '</Callout>');
+      expect(strayCloser).toHaveLength(0);
+
+      // Trailing content lands as a sibling after the callout, not inside it.
+      expect(tree.children.at(-1)).toMatchObject({ type: 'paragraph' });
+    });
   });
 
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {
