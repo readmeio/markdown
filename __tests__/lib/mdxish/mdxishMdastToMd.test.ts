@@ -2,6 +2,7 @@ import type { Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
+import { roundTripMdxish } from '../../helpers';
 
 describe('mdxishMdastToMd', () => {
   it('should convert a simple paragraph', () => {
@@ -1013,6 +1014,60 @@ describe('mdxishMdastToMd', () => {
         | Alice | 30  |
         "
       `);
+    });
+  });
+
+  describe('underscores serialization', () => {
+    const paragraph = (value: string): MdastRoot => ({
+      type: 'root',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value }] }],
+    });
+
+    it('should not escape underscores flanked by word characters', () => {
+      expect(mdxishMdastToMd(paragraph('payroll_setup.pay_schedule_setup_not_complete'))).toBe(
+        'payroll_setup.pay_schedule_setup_not_complete\n',
+      );
+    });
+
+    it('should not escape consecutive intraword underscores', () => {
+      expect(mdxishMdastToMd(paragraph('leading__double__trailing'))).toBe('leading__double__trailing\n');
+    });
+
+    it('should still escape underscores at word boundaries that could open emphasis', () => {
+      expect(roundTripMdxish('_leading and trailing_')).toBe('_leading and trailing_\n');
+    });
+
+    it('should not escape intraword underscores inside table cells', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Category' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'pay_schedule_transition' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'entity_type' }] }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('pay_schedule_transition');
+      expect(result).toContain('entity_type');
+      expect(result).not.toContain('\\_');
     });
   });
 
