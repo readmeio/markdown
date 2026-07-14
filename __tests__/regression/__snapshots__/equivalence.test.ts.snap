@@ -741,6 +741,22 @@ exports[`MDX↔MDXish equivalence > style-and-jsx-expressions 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > table-in-callout 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > table-unwrapped-rows 1`] = `
 {
   "changes": [

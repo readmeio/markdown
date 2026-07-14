@@ -739,6 +739,33 @@ exports[`Render engine regressions tests > style-and-jsx-expressions (mdxish) 1`
 <div class="ems-grid-fix"><a class="ems-card-fix" href="https://example.com/bogus-link-alpha" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-1.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="copper-lantern"></div><div class="heading-text">Copper Lantern</div><a aria-label="Skip link to Copper Lantern" class="heading-anchor-icon fa fa-regular fa-anchor" href="#copper-lantern"></a></h3><p>Velvet thunder beside the marble orchard.</p></div></div></a><a class="ems-card-fix" href="https://example.com/bogus-link-beta" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-2.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="silent-compass"></div><div class="heading-text">Silent Compass</div><a aria-label="Skip link to Silent Compass" class="heading-anchor-icon fa fa-regular fa-anchor" href="#silent-compass"></a></h3><p>Paper rivers drift through amber corridors.</p></div></div></a><a class="ems-card-fix" href="https://example.com/bogus-link-gamma" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-3.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="broken-telescope"></div><div class="heading-text">Broken Telescope</div><a aria-label="Skip link to Broken Telescope" class="heading-anchor-icon fa fa-regular fa-anchor" href="#broken-telescope"></a></h3><p>Winter hinges open on distant kitchen light.</p></div></div></a></div>"
 `;
 
+exports[`Render engine regressions tests > table-in-callout (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p><div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Scenario</th><th>Result</th></tr></thead><tbody><tr><td>Two adapters disagree</td><td>Higher-tier adapter wins</td></tr><tr><td>One adapter reports twice</td><td>Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote>"
+`;
+
+exports[`Render engine regressions tests > table-in-callout (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Scenario</th><th style="text-align:left">Result</th></tr></thead><tbody><tr><td style="text-align:left">Two adapters disagree</td><td style="text-align:left">Higher-tier adapter wins</td></tr><tr><td style="text-align:left">One adapter reports twice</td><td style="text-align:left">Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote></div>"
+`;
+
 exports[`Render engine regressions tests > table-unwrapped-rows (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-rows-missing-their-tr-and-tbody-wrappers"></div><div class="heading-text">Tables with rows missing their tr and tbody wrappers</div><a aria-label="Skip link to Tables with rows missing their tr and tbody wrappers" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-rows-missing-their-tr-and-tbody-wrappers"></a></h1>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><td>Hi</td><td>World</td></thead><tbody><td>Hello</td><td>Globe</td></tbody></table></div></div>

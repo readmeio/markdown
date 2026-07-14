@@ -9,10 +9,12 @@ import { unified } from 'unified';
 
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
+import { jsxTableFromMarkdown } from '../../../../lib/mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../../../../lib/mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../../../../lib/mdast-util/mdx-component';
 import { gemoji } from '../../../../lib/micromark/gemoji';
+import { jsxTable } from '../../../../lib/micromark/jsx-table';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
@@ -20,8 +22,13 @@ import { mdxComponent } from '../../../../lib/micromark/mdx-component';
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
 const buildInlineMdProcessor = (safeMode: boolean) => {
-  const micromarkExts = [mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
+  // `jsxTable` must be present so a `<Table>`/`<table>` nested in a component
+  // body (e.g. a `<Callout>`) is captured as one html node. Without it, blank
+  // lines between rows let CommonMark HTML block type 6 fragment the table and
+  // its rows spill out as text / indented code blocks (CX-3705).
+  const micromarkExts = [jsxTable(), mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
   const fromMarkdownExts = [
+    jsxTableFromMarkdown(),
     mdxComponentFromMarkdown(),
     gemojiFromMarkdown(),
     legacyVariableFromMarkdown(),

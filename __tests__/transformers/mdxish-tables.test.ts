@@ -1964,4 +1964,195 @@ ${lowercaseTable}
       expect(start.line).toBe(expectedLine);
     });
   });
+
+  describe('given a table nested inside a component body (CX-3705)', () => {
+    // The component body is re-parsed by `getInlineMdProcessor`, which must
+    // include the `jsxTable` tokenizer. Without it, blank lines between rows let
+    // CommonMark HTML block type 6 fragment the table — rows spill out as text
+    // and indented code blocks instead of rendering as a table.
+    it('keeps a <Table> with blank lines between rows whole inside a <Callout>', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+  **Conflict resolution**
+
+  <Table align={["left","left"]}>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Two adapters disagree</td>
+        <td>Higher-tier adapter wins</td>
+      </tr>
+
+      <tr>
+        <td>One adapter reports twice</td>
+        <td>Most recent by Last Seen wins</td>
+      </tr>
+    </tbody>
+  </Table>
+</Callout>`;
+      const hast = mdxish(md);
+
+      // Exactly one table, with its header row and both body rows intact.
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+
+      // The rows must not fragment into a <pre><code> block.
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+
+      // The table lives inside the callout, not hoisted out of it.
+      const callouts = findAllElementsByTagName(hast, 'Callout');
+      expect(callouts).toHaveLength(1);
+      expect(findAllElementsByTagName(callouts[0], 'table')).toHaveLength(1);
+
+      // Every cell renders; none leak as escaped HTML text.
+      const html = toHtml(hast);
+      ['Two adapters disagree', 'Higher-tier adapter wins', 'One adapter reports twice', 'Most recent by Last Seen wins'].forEach(
+        text => expect(html).toContain(text),
+      );
+      expect(html).not.toContain('&#x3C;tr>');
+    });
+
+    it('keeps a lowercase <table> with blank lines between rows whole inside a <Callout>', () => {
+      const md = `<Callout icon="📘" theme="info">
+  Heads up:
+
+  <table>
+    <thead>
+      <tr><th>Key</th><th>Value</th></tr>
+    </thead>
+
+    <tbody>
+      <tr><td>a</td><td>1</td></tr>
+
+      <tr><td>b</td><td>2</td></tr>
+    </tbody>
+  </table>
+</Callout>`;
+      const hast = mdxish(md);
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('is not Callout-specific: works in any component body (e.g. <Accordion>)', () => {
+      const md = `<Accordion title="Details">
+
+<Table>
+<thead>
+<tr><th>A</th><th>B</th></tr>
+</thead>
+
+<tbody>
+<tr><td>1</td><td>2</td></tr>
+
+<tr><td>3</td><td>4</td></tr>
+</tbody>
+</Table>
+
+</Accordion>`;
+      const hast = mdxish(md);
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('still parses markdown that follows the table in the same component body', () => {
+      const md = `<Callout icon="📘" theme="info">
+<Table>
+<thead>
+<tr><th>A</th></tr>
+</thead>
+
+<tbody>
+<tr><td>x</td></tr>
+</tbody>
+</Table>
+
+**After the table** and a [link](https://example.com).
+</Callout>`;
+      const hast = mdxish(md);
+
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      // Sibling markdown after the table must still be processed, not swallowed.
+      expect(findAllElementsByTagName(hast, 'strong')).toHaveLength(1);
+      const links = findAllElementsByTagName(hast, 'a');
+      expect(links).toHaveLength(1);
+      expect(links[0].properties).toMatchObject({ href: 'https://example.com' });
+    });
+
+    it('does not treat a <table> inside a fenced code example as a real table', () => {
+      const md = `<Callout icon="📘" theme="info">
+\`\`\`html
+<table><tr><td>example</td></tr></table>
+\`\`\`
+</Callout>`;
+      const hast = mdxish(md);
+
+      // The example is code, not a rendered table.
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(0);
+      const html = toHtml(hast);
+      expect(html).toContain('&#x3C;table>');
+    });
+
+    it('keeps the table whole in safeMode', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+<Table align={["left"]}>
+<thead>
+<tr><th>A</th></tr>
+</thead>
+
+<tbody>
+<tr><td>x</td></tr>
+
+<tr><td>y</td></tr>
+</tbody>
+</Table>
+</Callout>`;
+      const hast = mdxish(md, { safeMode: true });
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('round-trips (mdast -> markdown) with the callout wrapper and all rows intact', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+<Table align={["left","left"]}>
+<thead>
+<tr><th>Scenario</th><th>Result</th></tr>
+</thead>
+
+<tbody>
+<tr><td>disagree</td><td>higher wins</td></tr>
+
+<tr><td>twice</td><td>recent wins</td></tr>
+</tbody>
+</Table>
+</Callout>`;
+      const out = roundTripMdxish(md);
+
+      // The callout wrapper survives, and every row round-trips (the fragmented
+      // pre-fix output lost rows entirely, so they could never serialize back).
+      expect(out).toContain('<Callout icon="🚧" theme="warn">');
+      expect(out).toContain('</Callout>');
+      ['Scenario', 'Result', 'disagree', 'higher wins', 'twice', 'recent wins'].forEach(text =>
+        expect(out).toContain(text),
+      );
+      // Serializes as a GFM table, not a leaked code fence or escaped tags.
+      expect(out).toContain('| Scenario | Result');
+      expect(out).not.toContain('```');
+      expect(out).not.toContain('&#x3C;');
+    });
+  });
 });
