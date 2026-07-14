@@ -11,7 +11,7 @@ than fragmenting its rows into text and a `<pre><code>` block.
   when blank lines separated the rows. A callout body is re-parsed by the
   component-body processor (`getInlineMdProcessor`, built in
   `processor/transform/mdxish/components/utils.ts`), which was missing the
-  `jsxTable` micromark tokenizer. Without it, `mdxComponent` noks on `<Table>`
+  `jsxTable` micromark tokenizer. Without it, `mdxComponent` chokes on `<Table>`
   and micromark falls back to CommonMark HTML block type 6, which terminates at
   every blank line — fragmenting the table so its rows spilled out as text and
   an indented row became a `<pre><code>` block. The fix adds `jsxTable()` +
