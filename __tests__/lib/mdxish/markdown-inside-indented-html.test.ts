@@ -125,8 +125,9 @@ describe('markdown inside indented plain HTML blocks', () => {
   </Card>
 </Cards>`;
 
-    const ast = mdxish(md);
-
+    const ast = mdxish(md);    
+    const html = toHtml(ast);
+    expect(html).toContain('Account balances, position changes, and transaction activity updated instantly');
     expect(findElementByTagName(ast, 'code')).toBeNull();
   });
 });
