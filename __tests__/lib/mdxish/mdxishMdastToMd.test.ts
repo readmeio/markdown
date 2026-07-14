@@ -1075,6 +1075,90 @@ describe('mdxishMdastToMd', () => {
     });
   });
 
+  describe('braces serialization', () => {
+    const paragraph = (value: string): MdastRoot => ({
+      type: 'root',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value }] }],
+    });
+
+    it('should escape a lone literal open brace in text', () => {
+      expect(mdxishMdastToMd(paragraph('{label'))).toBe('\\{label\n');
+    });
+
+    it('should preserve escaped closed braces in text', () => {
+      expect(roundTripMdxish('a\\{b}c')).toBe('a\\{b\\}c\n');
+    });
+
+    it('should keep escaped braces stable across two round trips', () => {
+      const once = roundTripMdxish('vars \\{label}, \\{payment_period}\n', { newEditorTypes: true });
+      const twice = roundTripMdxish(once, { newEditorTypes: true });
+      expect(once).toBe(twice);
+    });
+
+    it('should not escape underscores that sit inside literal braces', () => {
+      expect(roundTripMdxish('for the %\\{payment_period} pay period.\n', { newEditorTypes: true })).not.toContain('\\_');
+    });
+
+    it('should not escape the braces of a readme-variable expression', () => {
+      expect(roundTripMdxish('Hello {user.name}!\n', { newEditorTypes: true })).toBe('Hello {user.name}!\n');
+    });
+
+    it('should escape literal braces inside table cells', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Title' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Vars' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Run payroll%{label' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '{label}' }] }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('Run payroll%\\{label');
+      expect(result).toContain('\\{label\\}');
+    });
+
+    it('should preserve JSX table attributes while escaping braces in a cell', () => {
+      // A list in a cell forces JSX <Table> output; attribute braces must survive.
+      const out = roundTripMdxish(
+        [
+          '<Table align={["left"]}>',
+          '  <thead><tr><th style={{ textAlign: "left" }}>A</th></tr></thead>',
+          '  <tbody><tr><td style={{ textAlign: "left" }}>',
+          '',
+          '- x',
+          '- y',
+          '',
+          '  </td></tr></tbody>',
+          '</Table>',
+          '',
+        ].join('\n'),
+        { newEditorTypes: true },
+      );
+
+      expect(out).toContain('align={["left"]}');
+      expect(out).toContain('style={{ textAlign: "left" }}');
+      expect(out).not.toContain('align={\\[');
+    });
+  });
+
   it('should convert readme-anchor nodes back to <Anchor> JSX syntax', () => {
     const mdast: MdastRoot = {
       type: 'root',
