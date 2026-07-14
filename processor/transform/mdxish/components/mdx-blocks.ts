@@ -5,8 +5,8 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
-import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 import { tableTags } from '../tables/utils';
+import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
