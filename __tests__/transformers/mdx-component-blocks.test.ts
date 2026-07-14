@@ -382,6 +382,74 @@ More content here
       });
     });
 
+    describe('components nested inside plain HTML wrappers', () => {
+      it('should promote a single-line wrapper containing a component', () => {
+        const tree = parseWithPlugin('<p><Component /></p>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            attributes: [],
+            children: [{ type: 'mdxJsxFlowElement', name: 'Component', attributes: [], children: [] }],
+          },
+        ]);
+      });
+
+      it('should promote a multi-line wrapper with an indented component', () => {
+        const markdown = `<div>
+  <Component />
+</div>`;
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'mdxJsxFlowElement', name: 'Component', children: [] }],
+          },
+        ]);
+      });
+
+      it('should promote a wrapper around a component with children', () => {
+        const tree = parseWithPlugin('<div><Component>text</Component></div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Component',
+                children: [{ type: 'paragraph', children: [{ type: 'text', value: 'text' }] }],
+              },
+            ],
+          },
+        ]);
+      });
+
+      it('should not promote a wrapper around a legacy <<VARIABLE>>', () => {
+        const tree = parseWithPlugin('<p>Hello <<NAME>>!</p>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<p>Hello <<NAME>>!</p>' }]);
+      });
+
+      it('should not promote a wrapper whose only component has a dedicated transformer', () => {
+        const tree = parseWithPlugin('<div><Table>content</Table></div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div><Table>content</Table></div>' }]);
+      });
+
+      it('should not promote table-structural wrappers (owned by mdxishTables)', () => {
+        const tree = parseWithPlugin('<table><tr><td><Component /></td></tr></table>');
+
+        expect(tree.children).toMatchObject([
+          { type: 'html', value: '<table><tr><td><Component /></td></tr></table>' },
+        ]);
+      });
+    });
+
     describe('case 3: embedded closing tag with trailing content', () => {
       it('should preserve content after the closing tag in an HTML sibling', () => {
         const markdown = `<Outer>

@@ -6,6 +6,7 @@ import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
+import { tableTags } from '../tables/utils';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
@@ -13,6 +14,21 @@ export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-c
 
 /** Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+
+/**
+ * Matches PascalCase component tags (e.g. `<Component`) anywhere in a string.
+ * The name shape mirrors `componentTagPattern` but with the lookbehind to reject the
+ * inner tag of a legacy `<<VARIABLE>>` pattern.
+ */
+const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
+
+/**
+ * True when the content nests a PascalCase component owned by generic MDX
+ * handling. Tags with dedicated transformers (`Table`, `HTMLBlock`, inline
+ * components) don't count — their transforms expect the wrapper to stay raw.
+ */
+const hasNestedGenericComponentTag = (content: string): boolean =>
+  [...content.matchAll(NESTED_COMPONENT_TAG_RE)].some(match => !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(match[1]));
 
 /**
  * Strip the shared leading indentation from a component body so readability indentation
@@ -182,16 +198,21 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     // inline, which is how ReadMe's custom components are modeled).
     if (!isPascal && parent.type === 'paragraph') return;
 
-    // Lowercase HTML tags are eligible when they (or a descendant tag in their
-    // content, e.g. a `.map()` body returning JSX with `key={i}`) carry a
-    // JSX-expression attribute. Without this, a wrapper `<div>` with only plain
-    // attributes (or none) swallows its whole nested block — including any
-    // `style={{...}}`/`.map()` JSX inside it — as literal HTML text, which
-    // rehype-raw's parse5 pass then garbles (it has no notion of JS expressions).
-    // Plain HTML with no expressions anywhere stays as an html node so
-    // rehype-raw handles it as normal.
+    // Lowercase HTML tags are eligible when they carry a JSX-expression
+    // attribute (directly or on a descendant tag, e.g. a `.map()` body
+    // returning JSX with `key={i}`), or when their content nests a PascalCase
+    // component. Without this, a wrapper like `<p>` or `<div>` swallows its
+    // whole nested block — including any `style={{...}}` JSX or `<Component />`
+    // inside it — as literal HTML text, which rehype-raw's parse5 pass then
+    // garbles (it has no notion of JS expressions or custom components).
+    // Plain HTML with neither stays as an html node for rehype-raw as normal.
     const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
-    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr) return;
+    // Table-structural wrappers stay raw: `mdxishTables` owns re-parsing their
+    // contents (including any nested components) with full table semantics.
+    const isTableStructuralTag = tag === 'table' || tableTags.has(tag);
+    const hasNestedComponentTag =
+      !selfClosing && !isTableStructuralTag && hasNestedGenericComponentTag(contentAfterTag);
+    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr && !hasNestedComponentTag) return;
 
     const closingTagStr = `</${tag}>`;
 
