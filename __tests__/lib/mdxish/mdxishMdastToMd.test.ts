@@ -1160,10 +1160,6 @@ describe('mdxishMdastToMd', () => {
   });
 
   describe('git round-trip of a Callout with an unbalanced brace in a fence (CX-3704)', () => {
-    // The customer's real trigger: a truncated snippet (more `{` than `}`) fenced
-    // inside a Callout. Before the fix the mis-parsed tree re-serialized as
-    // corrupted Markdown on every save: bullets escaped to `\*`, lists flattened,
-    // prose wrapped in fences, and `</Callout>` merged onto the preceding line.
     const md = `<Callout icon="⚠️" theme="warn">
   Update your reverse-proxy config:
 

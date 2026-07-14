@@ -865,11 +865,6 @@ third\`} />`;
     });
 
     it('treats an INDENTED fence as fenced code so an unbalanced `{` inside stays inert (CX-3704)', () => {
-      // Regression test: inside a component body the fence is indented for
-      // readability. An unbalanced `{` in that fence must not open a
-      // brace-expression that scans past the real `</Callout>` to EOF — which
-      // would fail the whole construct and let CommonMark html-flow swallow the
-      // rest of the document.
       const markdown = `<Callout icon="⚠️" theme="warn">
   Intro.
 
