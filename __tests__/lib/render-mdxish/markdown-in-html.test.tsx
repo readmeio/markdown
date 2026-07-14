@@ -1,92 +1,124 @@
-import type { RenderResult } from '@testing-library/react';
-
-import fs from 'node:fs';
-
 import '@testing-library/jest-dom';
 import { render, within } from '@testing-library/react';
 import React from 'react';
 
 import { compile, mdxish, renderMdxish, run } from '../../../lib';
 
-const body = fs.readFileSync('__tests__/fixtures/markdown-in-html-tests.mdx', { encoding: 'utf8' });
-
-// Renders the fixture to a real DOM through each engine. Both must agree:
-// markdown nested inside plain HTML wrappers (indented or not, nested in
-// custom components or not) parses as markdown and re-nests into its wrapper.
-const engines: Record<string, () => RenderResult> = {
-  mdxish: () => {
-    const mod = renderMdxish(mdxish(body));
-    const Content = mod.default;
+// Markdown nested inside plain HTML wrappers — indented or not, at top level or
+// inside custom components — must parse as markdown and re-nest into its wrapper.
+// Both engines must agree, so every case renders through each to a real DOM.
+//
+// NOTE: markdown indented 4+ columns inside a *plain* (non-component)
+// wrapper stays literal HTML text per CommonMark's indented-code-block rule — see
+// the "keeps deeply indented (4+ columns) HTML lines as HTML" case below. Only
+// custom-component bodies get dedented (via safeDeindent in mdx-blocks.ts) before
+// re-parsing, so nesting inside a component sidesteps the limit.
+const renderThrough = {
+  mdxish: (md: string) => {
+    const Content = renderMdxish(mdxish(md)).default;
     return render(<Content />);
   },
-  mdx: () => {
-    const Content = run(compile(body)).default;
+  mdx: (md: string) => {
+    const Content = run(compile(md)).default;
     return render(<Content />);
   },
-};
+} as const;
 
-describe.each(Object.keys(engines))('markdown nested in HTML fixture (%s engine)', engine => {
-  const renderFixture = () => engines[engine]();
+describe.each(['mdxish', 'mdx'] as const)('markdown nested in HTML (%s engine)', engine => {
+  const renderMarkdown = (md: string) => renderThrough[engine](md);
 
   it('renders indented markdown inside a <div> nested in <Columns>/<Column>', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<Columns layout="auto">
+  <Column>
+    <div className="simple-list" data-testid="card">
+      ## Learn By Example
 
-    const firstCard = within(getByTestId('column-card-1'));
-    expect(firstCard.getByRole('heading', { level: 2, name: /Learn By Example/ })).toBeVisible();
-    expect(firstCard.getByRole('link', { name: /Guides/ })).toHaveAttribute('href', 'https://example.com/docs');
+      Use the [Guides](https://example.com/docs) to learn about **new features**.
+    </div>
+  </Column>
+</Columns>`);
 
-    const secondCard = within(getByTestId('column-card-2'));
-    expect(secondCard.getByRole('heading', { level: 2, name: /Stay Informed/ })).toBeVisible();
-    expect(secondCard.getByRole('link', { name: /Release Notes/ })).toHaveAttribute(
-      'href',
-      'https://example.com/changelog',
-    );
-    // Emphasis nested inside html nested inside components still parses
-    expect(secondCard.getByText('new features').tagName).toBe('STRONG');
+    const card = within(getByTestId('card'));
+    expect(card.getByRole('heading', { level: 2, name: /Learn By Example/ })).toBeVisible();
+    expect(card.getByRole('link', { name: /Guides/ })).toHaveAttribute('href', 'https://example.com/docs');
+    // Emphasis nested inside html nested inside a component still parses
+    expect(card.getByText('new features').tagName).toBe('STRONG');
   });
 
   it('renders indented markdown directly after a top-level opening tag', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<div className="wrapper" data-testid="wrapper">
+  ### Indented Markdown After The Opening Tag
 
-    const wrapper = within(getByTestId('top-level-wrapper'));
+  This paragraph has \`inline code\` and [a link](https://example.com/indented).
+</div>`);
+
+    const wrapper = within(getByTestId('wrapper'));
     expect(wrapper.getByRole('heading', { level: 3, name: /Indented Markdown After The Opening Tag/ })).toBeVisible();
     expect(wrapper.getByRole('link', { name: /a link/ })).toHaveAttribute('href', 'https://example.com/indented');
     expect(wrapper.getByText('inline code').tagName).toBe('CODE');
   });
 
   it('renders a blank-line separated markdown island inside a wrapper', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<section data-testid="island">
 
-    const section = within(getByTestId('island-section'));
+#### A Blank-Line Separated Island
+
+- List item one
+- List item two
+
+</section>`);
+
+    const section = within(getByTestId('island'));
     expect(section.getByRole('heading', { level: 4, name: /A Blank-Line Separated Island/ })).toBeVisible();
     expect(section.getAllByRole('listitem')).toHaveLength(2);
   });
 
-  it('keeps deeply indented (4+ columns) HTML lines as HTML', () => {
-    const { getByTestId } = renderFixture();
+  it('keeps deeply indented (4+ columns) HTML lines as HTML (#1344)', () => {
+    const { container, getByTestId } = renderMarkdown(`<div data-testid="glossary-links">
+        <a className="glossary-letter" href="#a">A</a> |
+        <a className="glossary-letter" href="#b">B</a> |
+</div>`);
 
     const links = within(getByTestId('glossary-links')).getAllByRole('link');
     expect(links).toHaveLength(2);
     expect(links[0]).toHaveAttribute('href', '#a');
+    expect(container.querySelector('pre')).toBeNull();
   });
 
   it('renders an indented ordered list inside a wrapper', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<div className="steps" data-testid="steps">
+  ###### Quickstart Steps
 
-    const steps = within(getByTestId('ordered-steps'));
+  1. Install the SDK
+  2. Configure your **API key**
+  3. Make your first request
+</div>`);
+
+    const steps = within(getByTestId('steps'));
     expect(steps.getAllByRole('listitem')).toHaveLength(3);
     expect(steps.getByText('API key').tagName).toBe('STRONG');
   });
 
   it('renders an indented blockquote inside a wrapper', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<aside data-testid="quote">
+  ###### Words Of Wisdom
 
-    const quote = within(getByTestId('quote-aside')).getByText(/love letter/);
+  > Documentation is a love letter that you write to your future self.
+</aside>`);
+
+    const quote = within(getByTestId('quote')).getByText(/love letter/);
     expect(quote.closest('blockquote')).not.toBeNull();
   });
 
   it('renders a markdown table island inside a wrapper', () => {
-    const { getByTestId } = renderFixture();
+    const { getByTestId } = renderMarkdown(`<div data-testid="table-wrapper">
+
+| Method | Path         |
+| ------ | ------------ |
+| GET    | /v1/examples |
+| POST   | /v1/tokens   |
+
+</div>`);
 
     const wrapper = within(getByTestId('table-wrapper'));
     expect(wrapper.getByRole('table')).toBeVisible();
@@ -94,17 +126,19 @@ describe.each(Object.keys(engines))('markdown nested in HTML fixture (%s engine)
   });
 
   it('renders markdown after a nested opening tag inside stacked plain wrappers', () => {
-    const { getByTestId } = renderFixture();
+    const { container, getByTestId } = renderMarkdown(`<div className="outer-wrapper" data-testid="nested">
+  <div className="inner-wrapper">
+  ##### Markdown After A Nested Opening Tag
 
-    const nested = within(getByTestId('nested-wrappers'));
+  Stacked plain wrappers still parse ~~strikethrough~~ and *emphasis*.
+  </div>
+</div>`);
+
+    const nested = within(getByTestId('nested'));
     expect(nested.getByRole('heading', { level: 5, name: /Nested Opening Tag/ })).toBeVisible();
     expect(nested.getByText('strikethrough').tagName).toBe('DEL');
     expect(nested.getByText('emphasis').tagName).toBe('EM');
-  });
-
-  it('never renders the nested markdown as an indented code block', () => {
-    const { container } = renderFixture();
-
+    // The indented markdown must never fall through to an indented code block
     expect(container.querySelector('pre')).toBeNull();
   });
 });
