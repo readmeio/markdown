@@ -1964,4 +1964,100 @@ ${lowercaseTable}
       expect(start.line).toBe(expectedLine);
     });
   });
+
+  describe('given a raw-HTML table whose closer has stray whitespace (CX-3706)', () => {
+    // `jsxTable` captures a raw `<table>` by scanning for a literal `</table>`.
+    // A `</ table >` closer (the same "spaces in the tag" defect the source has
+    // in its `</ td >` cells) isn't recognized, so the table used to look
+    // unclosed: it fragmented at blank lines into an empty `<table></table>`
+    // plus a `<pre>` code block. Normalizing the closer keeps the table whole.
+    it('recovers a table closed with </ table > into a single table with every row', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+
+  <tr>
+    <td>USA</td>
+    <td>IRS</td>
+  </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      // header row + 2 body rows
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(html).toContain('Federal Tax Service');
+      expect(html).toContain('IRS');
+    });
+
+    it('does not fragment 4-space-indented rows into a <pre> code block', () => {
+      const doc = `<table>
+    <thead>
+        <tr><th>Country</th><th>Src</th></tr>
+    </thead>
+
+    <tr>
+        <td>Russia</td>
+        <td>Federal Tax Service</td>
+    </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(html).not.toContain('<code');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+    });
+
+    it('recovers a </ table >-closed table wrapped in a plain <div>', () => {
+      const doc = `<div class="rdmd-table">
+<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+</ table >
+</div>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(html).toContain('Federal Tax Service');
+    });
+
+    it('drops the stray comment a spaced </ td > cell closer used to leave behind', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Marshall Islands </ td >
+    <td>International Registries Inc.</td>
+  </tr>
+</table>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<!--');
+      const cells = findAllElementsByTagName(hast, 'td');
+      expect(cells.length).toBeGreaterThanOrEqual(2);
+      expect(html).toContain('Marshall Islands');
+      expect(html).toContain('International Registries Inc.');
+    });
+  });
 });
