@@ -55,6 +55,12 @@ This is phrasing: <Inline />
     expect(mdxishTags(mdx)).toStrictEqual([]);
   });
 
+  it('captures snake_case components', () => {
+    const mdx = '<Snake_case_component>Snake case component</Snake_case_component>';
+
+    expect(mdxishTags(mdx)).toStrictEqual(['Snake_case_component']);
+  });
+
   it('captures components and nested components', () => {
     const mdx = '<Component>Hello<NestedComponent /></Component>';
 
@@ -157,6 +163,48 @@ This is phrasing: <Inline />
   </table>`;
 
       expect(mdxishTags(mdx)).toStrictEqual(['TableBlock']);
+    });
+  });
+
+  describe('inside HTML tags', () => {
+    it('captures components inside <p> tags', () => {
+      const mdx = '<p><Component /></p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('captures components inside multi-line <div> wrappers', () => {
+      const mdx = `<div>
+  <Component />
+</div>`;
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('captures components nested through multiple HTML levels', () => {
+      const mdx = '<div><section><Component /></section></div>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('does not treat legacy <<VARIABLE>> syntax as a component', () => {
+      const mdx = '<p>Hello <<NAME>>!</p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual([]);
+    });
+
+    it('captures snake_case components', () => {
+      const mdx = '<p><Snake_case_component /></p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Snake_case_component']);
+    });
+  });
+
+  describe('in nested components', () => {
+    it('captures nested components', () => {
+      const mdx = '<Component><NestedComponent><SubNestedComponent /></NestedComponent></Component>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component', 'NestedComponent', 'SubNestedComponent']);
     });
   });
 });
