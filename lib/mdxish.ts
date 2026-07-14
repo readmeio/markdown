@@ -62,11 +62,13 @@ import { jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
+import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
@@ -184,6 +186,14 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
     micromarkExts.unshift(jsxComment());
   }
+
+  // `<HTMLBlock>` must be claimed as a single opaque token before jsxTable/htmlFlow
+  // fragment its inner HTML (e.g. a `<table>` in the body). Without this, a multiline
+  // `<HTMLBlock>{`…`}</HTMLBlock>` splits into `html` + parsed-JSX + `html` siblings that
+  // `mdxishHtmlBlocks` can't reassemble, so the HTMLBlock component receives non-string
+  // children and throws, crashing the whole page (CX-3701). Runs in both modes.
+  micromarkExts.unshift(htmlBlockComponent());
+  fromMarkdownExts.unshift(htmlBlockComponentFromMarkdown());
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExts)

@@ -5,6 +5,9 @@ import { pointAfter } from '../../../utils';
 import { walkTags } from './tag-walker';
 
 const TOP_LEVEL_TABLE_TAG_RE = /^<(?:table|Table)(?=[\s/>])/;
+// An `<HTMLBlock>` body is opaque raw HTML handed verbatim to the HTMLBlock
+// component; a `<table>` inside it must never be lifted out and re-parsed.
+const HTMLBLOCK_WRAPPER_RE = /^\s*<HTMLBlock(?=[\s/>])/;
 
 /**
  * Find every balanced, depth-matched `<table>…</table>` range in an html string.
@@ -48,6 +51,9 @@ export const splitHtmlWithNestedTables = (node: Html): Html[] | null => {
   const { value } = node;
   // This is a top-level table, so we don't need to split it
   if (TOP_LEVEL_TABLE_TAG_RE.test(value)) return null;
+  // `<HTMLBlock>` wraps opaque raw HTML; leave its inner `<table>` untouched so
+  // `mdxishHtmlBlocks` can convert the whole node to an html-block next.
+  if (HTMLBLOCK_WRAPPER_RE.test(value)) return null;
   // No table text anywhere in the value → skip the htmlparser2 walk entirely.
   if (!/<\/?table/i.test(value)) return null;
   const ranges = findTableRanges(value);

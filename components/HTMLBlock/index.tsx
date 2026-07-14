@@ -21,16 +21,12 @@ interface Props {
 }
 
 const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeModeRaw = false }: Props) => {
-  // Determine HTML source: MDXish uses html prop (from HAST), MDX uses children
-  let html: string = '';
-  if (htmlProp !== undefined) {
-    html = htmlProp;
-  } else {
-    if (typeof children !== 'string') {
-      throw new TypeError('HTMLBlock: children must be a string');
-    }
-    html = children;
-  }
+  // Determine HTML source: MDXish uses html prop (from HAST), MDX uses children.
+  // A non-string child (no html prop) can't be injected as raw HTML — see the
+  // fail-soft fallback below.
+  const htmlSource = htmlProp !== undefined ? htmlProp : children;
+  const nonStringChildren = typeof htmlSource !== 'string';
+  const html: string = nonStringChildren ? '' : htmlSource;
 
   // eslint-disable-next-line no-param-reassign
   runScripts = typeof runScripts !== 'boolean' ? runScripts === 'true' : runScripts;
@@ -44,6 +40,17 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof runScripts === 'boolean' && runScripts) exec();
   }, [runScripts, exec]);
+
+  if (nonStringChildren) {
+    // Fail soft: a non-string child (e.g. JSX that wasn't serialized back to a
+    // raw string) must never throw — an unhandled throw here bubbles to the
+    // page-level error boundary and replaces the ENTIRE document (CX-3701).
+    // Render the already-parsed child nodes directly so the failure stays
+    // localized to this block and the rest of the page still renders.
+    // eslint-disable-next-line no-console
+    console.error('HTMLBlock: expected a string child; rendering children directly as a fallback.');
+    return <div className="rdmd-html">{children}</div>;
+  }
 
   if (safeMode) {
     return (

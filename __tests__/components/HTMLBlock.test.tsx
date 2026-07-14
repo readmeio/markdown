@@ -43,6 +43,24 @@ describe('HTML Block', () => {
     expect(screen.queryByText('mockFn()')).not.toBeInTheDocument();
   });
 
+  // CX-3701: a non-string child must never throw. An unhandled throw here bubbles
+  // to the page-level error boundary and replaces the ENTIRE document. Fail soft
+  // by rendering the child nodes directly so the failure stays localized.
+  it('fails soft on non-string children instead of throwing', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(() =>
+      render(
+        <HTMLBlock>
+          <b>x</b>
+        </HTMLBlock>,
+      ),
+    ).not.toThrow();
+    expect(screen.getByText('x')).toBeInTheDocument();
+
+    errorSpy.mockRestore();
+  });
+
   it("doesn't run scripts on the server (even in compat mode)", () => {
     const html = `
     <h1>Hello World</h1>
