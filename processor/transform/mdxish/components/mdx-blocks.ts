@@ -5,54 +5,62 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
+import { tableTags } from '../tables/utils';
+import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-/** Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
+// Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
+// of a legacy `<<VARIABLE>>`.
+const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
+
+// Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
+// components), which expect their wrapper to stay raw.
+const hasNestedGenericComponentTag = (content: string): boolean =>
+  [...content.matchAll(NESTED_COMPONENT_TAG_RE)].some(match => !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(match[1]));
+
 /**
- * Reduce leading whitespace on all lines just enough to prevent
- * remark from treating indented content as code blocks (4+ spaces).
- * Preserves relative indentation so whitespace text nodes are
- * maintained in the HAST output.
+ * Strip the shared leading indentation from a component body so readability indentation
+ * isn't parsed as indented code (4+ spaces), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
+ * Relative indentation is kept, so content genuinely 4+ columns deeper stays code. We
+ * only strip when a line actually reaches 4 columns; otherwise the body is left as-is so
+ * its leading whitespace survives as text nodes (mixed component + HTML content needs it).
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
   if (nonEmptyLines.length === 0) return text;
 
-  const minIndent = Math.min(
-    ...nonEmptyLines.map(line => {
-      const match = line.match(/^(\s*)/);
-      return match ? match[1].length : 0;
-    }),
-  );
+  // Indent counts characters (tab = 1), unlike indentWidth's CommonMark columns
+  // (tab = 4) in terminate-html-flow-blocks.
+  const indents = nonEmptyLines.map(line => line.match(/^(\s*)/)?.[1].length ?? 0);
+  const minIndent = Math.min(...indents);
+  const maxIndent = Math.max(...indents);
 
-  // Only strip enough indent to keep all lines below the 4-space code threshold
-  const stripAmount = Math.max(0, minIndent - 3);
+  const stripAmount = maxIndent > 3 ? minIndent : 0;
   if (stripAmount === 0) return text;
   return lines.map(line => line.slice(stripAmount)).join('\n');
 }
 
 /**
- * Parse markdown content into mdast children nodes.
- * Dedents the content first to prevent indented component content
- * (from nested components) from being treated as code blocks.
+ * Parse component-body markdown into mdast children. Dedenting shifts columns and
+ * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
+ * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
+  const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
   return parsed.children || [];
 };
 
-/**
- * Parse substring content of a node and update the parent's children to include the new nodes.
- */
+// Parses trailing content into sibling nodes and re-queues the parent so any
+// components among them get processed.
 const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
-  // The new sibling nodes might contain new components to be processed
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
     stack.push(parent);
@@ -67,21 +75,15 @@ interface ComponentNodeOptions {
   tag: string;
 }
 
-/**
- * Build a position ending at `consumedLength` into the html node's value, so the
- * component doesn't claim trailing content the tokenizer swallowed into one node.
- */
+// Ends the position at `consumedLength` so the component doesn't claim trailing
+// content the tokenizer swallowed into the same html node.
 const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
   if (!nodePosition?.start) return nodePosition;
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
 };
 
-/**
- * Build a position ending right after the last occurrence of `closingTag` within
- * this node's span in the original source. Used in the trailing-content path so
- * the offset is computed against the real source bytes (including blockquote/list
- * prefixes that were stripped from the html node's value).
- */
+// Like `positionEndingAtConsumed`, but measures against the original source so
+// blockquote/list prefixes stripped from the html node's value are counted.
 const positionEndingAtClosingTagInSource = (
   nodePosition: Node['position'],
   closingTag: string,
@@ -95,9 +97,6 @@ const positionEndingAtClosingTagInSource = (
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
 };
 
-/**
- * Create an MdxJsxFlowElement node from component data.
- */
 const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: tag,
@@ -153,8 +152,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       stack.push(node as Parent);
     }
 
-    // Only visit HTML nodes with an actual html tag,
-    // which means a potential unparsed MDX component
+    // Only html nodes can be an unparsed MDX component.
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
@@ -164,34 +162,28 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
-    // Offset of `trimmed` within the (possibly whitespace-padded) html node value,
-    // so consumed-length math maps back onto the node's real source offsets.
+    // Offsets so consumed-length math maps back onto the node's real source.
     const leadingWhitespace = value.length - value.trimStart().length;
-    // Index right after the opening tag's `>` within `trimmed`.
     const openingTagEnd = trimmed.length - contentAfterTag.length;
 
-    // Skip tags that have dedicated transformers
-    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);
 
-    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
-    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
-    // them here so they stay as html for that pass; PascalCase components
-    // keep going through this transformer (they stay flow-level even when
-    // inline, which is how ReadMe's custom components are modeled).
+    // Lowercase inline tags with `{…}` attributes belong to
+    // mdxishInlineComponentBlocks; leave them as html for that pass. PascalCase
+    // components stay flow-level even when inline (ReadMe's component model).
     if (!isPascal && parent.type === 'paragraph') return;
 
-    // Lowercase HTML tags are eligible when they (or a descendant tag in their
-    // content, e.g. a `.map()` body returning JSX with `key={i}`) carry a
-    // JSX-expression attribute. Without this, a wrapper `<div>` with only plain
-    // attributes (or none) swallows its whole nested block — including any
-    // `style={{...}}`/`.map()` JSX inside it — as literal HTML text, which
-    // rehype-raw's parse5 pass then garbles (it has no notion of JS expressions).
-    // Plain HTML with no expressions anywhere stays as an html node so
-    // rehype-raw handles it as normal.
+    // A lowercase wrapper is only promoted when it (or a descendant) carries a
+    // JSX expression or nests a component; otherwise it would swallow that inner
+    // JSX/component as literal text that rehype-raw's parse5 pass can't handle.
+    // Table-structural wrappers are excluded — `mdxishTables` re-parses those.
     const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
-    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr) return;
+    const isTableStructuralTag = tag === 'table' || tableTags.has(tag);
+    const hasNestedComponentTag =
+      !selfClosing && !isTableStructuralTag && hasNestedGenericComponentTag(contentAfterTag);
+    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr && !hasNestedComponentTag) return;
 
     const closingTagStr = `</${tag}>`;
 
@@ -207,7 +199,6 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // Check and parse if there's relevant content after the current closing tag
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
         parseSibling(stack, parent, index, remainingContent, safeMode);
@@ -217,17 +208,14 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
-      // Find the first closing tag
       const closingTagIndex = contentAfterTag.lastIndexOf(closingTagStr);
-      // Pass raw (untrimmed) content so dedent in parseMdChildren can
-      // normalize indentation before trimming
+      // Untrimmed so parseMdChildren can dedent before trimming.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
         ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
         : [];
-      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
-      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
@@ -237,12 +225,9 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // When trailing content follows the closing tag, compute the end position precisely
-        // within the html node's value so the component doesn't claim that content.
-        // Prefer source-based positioning when the original source is available: the html
-        // node's value has '> '/space prefixes stripped for blockquotes/list items, so
-        // positionEndingAtConsumed would undercount source offsets. When the entire node
-        // is consumed, use the original node position directly.
+        // With trailing content, end precisely at the closing tag. Prefer source
+        // offsets when available (the node's value strips blockquote/list
+        // prefixes); otherwise fall back to the whole node position.
         endPosition: contentAfterClose
           ? source
             ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
@@ -255,17 +240,16 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // After the closing tag, there might be more content to be processed
+      // Re-queue whichever side may hold further components.
       if (contentAfterClose) {
         parseSibling(stack, parent, index, contentAfterClose, safeMode);
       } else if (componentNode.children.length > 0) {
-        // The content inside the component block might contain new components to be processed
         stack.push(componentNode as Parent);
       }
     }
   };
 
-  // Process the nodes with the components depth-first to maintain the correct order of the nodes
+  // Depth-first so nodes keep their source order.
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {

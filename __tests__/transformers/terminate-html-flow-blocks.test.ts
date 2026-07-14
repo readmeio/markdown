@@ -167,6 +167,32 @@ const x = 1;
 [/block]`);
     });
 
+    it('inserts blank line after a lone opening tag when the next line is markdown indented 1-3 columns', () => {
+      const input = `<div className="simple-list">
+  ## Learn By Example
+
+  Use the [API Simulator](https://example.com) alongside guides.
+</div>`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div className="simple-list">
+
+  ## Learn By Example
+
+  Use the [API Simulator](https://example.com) alongside guides.
+</div>`);
+    });
+
+    it('inserts blank line after an indented (1-3 columns) lone opening tag followed by markdown', () => {
+      const input = `  <div>
+text at column 0`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`  <div>
+
+text at column 0`);
+    });
+
     it('inserts blank line when HTML line has text content between and after tags', () => {
       const input = `<div><p>Inner text</p></div>Outer text
 [block:callout]
@@ -232,17 +258,58 @@ Hello
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
 
-    it('does not modify indented non-HTML lines after an HTML tag', () => {
+    it('does not insert after a tab-indented opening tag (a tab counts as 4 columns)', () => {
+      const input = `\t<div>
+text at column 0`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not modify non-HTML lines indented 4+ columns after an HTML tag', () => {
       const input = `<div>
-  indented line
+      indented line
       with some text after
 
       should be left alone
-<div>
-  nested divs should be left alone too
-</div>
 </div>
       `;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert for indented shapes when the current line has more than a lone opening tag', () => {
+      const input = `  <div><span>x</span>
+  text after`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert after an opening tag when the indented next line opens a tag', () => {
+      const input = `<div>
+  <div
+    style={{ display: "grid" }}
+  >
+  </div>
+</div>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert after an opening tag when the indented next line opens an expression', () => {
+      const input = `<div className="grid">
+  {[1, 2].map(item => (
+    <span>{item}</span>
+  ))}
+</div>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('does not insert for indented shapes inside a still-open raw-content element', () => {
+      const input = `<pre>
+<div>
+  # verbatim, not a heading
+</pre>`;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
@@ -375,6 +442,22 @@ Some text
 </pre>`;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
+    });
+
+    it('still inserts for column-0 pairs inside a still-open raw-content element', () => {
+      // Locks in the col-0 asymmetry: only the line's own unclosed opener blocks
+      // insertion at column 0 — cumulative tracking is deliberately not consulted,
+      // so one unclosed <pre>/<table> typo can't poison the rest of the document.
+      const input = `<pre>
+<div>
+# consumed by the still-open pre
+</pre>`;
+
+      expect(terminateHtmlFlowBlocks(input)).toBe(`<pre>
+<div>
+
+# consumed by the still-open pre
+</pre>`);
     });
 
     it('does not insert blank line after <pre> opener even when next line looks like a magic block', () => {
