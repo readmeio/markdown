@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.11.5
+### 🛠 Fixes & Updates
+
+* **mdxishTags:** capture components inside HTML blocks  ([#1547](https://github.com/readmeio/markdown/issues/1547)) ([06d84d5](https://github.com/readmeio/markdown/commit/06d84d5a179fda95f055ab3e42b68f2fa4ed5c7f))
+* **mdxish:** parse indented markdown inside plain html wrappers ([#1545](https://github.com/readmeio/markdown/issues/1545)) ([522275a](https://github.com/readmeio/markdown/commit/522275a7eec9257836891689893df02189993d79)), closes [#1344](https://github.com/readmeio/markdown/issues/1344)
+* **mdxish:** stop escaping intraword underscores on serialization ([#1546](https://github.com/readmeio/markdown/issues/1546)) ([571f839](https://github.com/readmeio/markdown/commit/571f839e9369af286bc784bc03a688e4a7f3e107))
+
 ## Version 14.11.4
 ### 🛠 Fixes & Updates
 
