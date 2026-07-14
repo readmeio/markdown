@@ -253,6 +253,12 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(remarkStringify, {
       bullet: '-',
       emphasis: '_',
+      // Escape literal braces in text so they don't parse as (often
+      // unterminated) MDX expressions on the next round trip.
+      unsafe: [
+        { character: '{', inConstruct: 'phrasing' },
+        { character: '}', inConstruct: 'phrasing' },
+      ],
     });
   return processor.stringify(processor.runSync(mdast));
 }

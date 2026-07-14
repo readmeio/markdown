@@ -338,6 +338,28 @@ labore et dolore magna aliqua.`,
     ]);
   });
 
+  it('should render a component nested inside a plain HTML wrapper', () => {
+    const md = '<p><ExampleComponent body="This is a body" /></p>';
+    const tree = mdxish(md, { components: exampleComponents });
+
+    expect(tree.children).toMatchObject([
+      {
+        type: 'element',
+        tagName: 'p',
+        children: [
+          {
+            type: 'element',
+            tagName: 'ExampleComponent',
+            properties: {
+              body: 'This is a body',
+            },
+            children: [],
+          },
+        ],
+      },
+    ]);
+  });
+
   it('should not identify an MDX component syntax inside a code block', () => {
     const md = '```jsx\n<ExampleComponent body="This is a body" />\n```';
     const tree = mdxish(md, { components: exampleComponents });
