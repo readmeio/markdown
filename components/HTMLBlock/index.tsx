@@ -48,7 +48,7 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
     // Render the already-parsed child nodes directly so the failure stays
     // localized to this block and the rest of the page still renders.
     // eslint-disable-next-line no-console
-    console.error('HTMLBlock: expected a string child; rendering children directly as a fallback.');
+    console.warn('[WARNING] HTMLBlock received non-string children; falling back to rendering them directly.');
     return <div className="rdmd-html">{children}</div>;
   }
 

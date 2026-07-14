@@ -187,13 +187,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     micromarkExts.unshift(jsxComment());
   }
 
-  // `<HTMLBlock>` must be claimed as a single opaque token before jsxTable/htmlFlow
-  // fragment its inner HTML (e.g. a `<table>` in the body). Without this, a multiline
-  // `<HTMLBlock>{`…`}</HTMLBlock>` splits into `html` + parsed-JSX + `html` siblings that
-  // `mdxishHtmlBlocks` can't reassemble, so the HTMLBlock component receives non-string
-  // children and throws, crashing the whole page (CX-3701). Runs in both modes.
-  micromarkExts.unshift(htmlBlockComponent());
-  fromMarkdownExts.unshift(htmlBlockComponentFromMarkdown());
+  // Claim `<HTMLBlock>` as one opaque token so broad tokenizers can't fragment its body
+  // (e.g. a `<table>`) into non-string children that crash the page (CX-3701). micromark
+  // tries the last-registered extension first, so push (not unshift) to win the `<` race.
+  micromarkExts.push(htmlBlockComponent());
+  fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExts)

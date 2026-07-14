@@ -47,7 +47,7 @@ describe('HTML Block', () => {
   // to the page-level error boundary and replaces the ENTIRE document. Fail soft
   // by rendering the child nodes directly so the failure stays localized.
   it('fails soft on non-string children instead of throwing', () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     expect(() =>
       render(
@@ -57,8 +57,9 @@ describe('HTML Block', () => {
       ),
     ).not.toThrow();
     expect(screen.getByText('x')).toBeInTheDocument();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('non-string children'));
 
-    errorSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   it("doesn't run scripts on the server (even in compat mode)", () => {
