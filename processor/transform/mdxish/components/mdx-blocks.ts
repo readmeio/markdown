@@ -12,21 +12,15 @@ import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-/** Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
-/**
- * Matches PascalCase component tags (e.g. `<Component`) anywhere in a string.
- * The name shape mirrors `componentTagPattern` but with the lookbehind to reject the
- * inner tag of a legacy `<<VARIABLE>>` pattern.
- */
+// Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
+// of a legacy `<<VARIABLE>>`.
 const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
 
-/**
- * True when the content nests a PascalCase component owned by generic MDX
- * handling. Tags with dedicated transformers (`Table`, `HTMLBlock`, inline
- * components) don't count — their transforms expect the wrapper to stay raw.
- */
+// Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
+// components), which expect their wrapper to stay raw.
 const hasNestedGenericComponentTag = (content: string): boolean =>
   [...content.matchAll(NESTED_COMPONENT_TAG_RE)].some(match => !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(match[1]));
 
@@ -63,12 +57,10 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
   return parsed.children || [];
 };
 
-/**
- * Parse substring content of a node and update the parent's children to include the new nodes.
- */
+// Parses trailing content into sibling nodes and re-queues the parent so any
+// components among them get processed.
 const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
-  // The new sibling nodes might contain new components to be processed
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
     stack.push(parent);
@@ -83,21 +75,15 @@ interface ComponentNodeOptions {
   tag: string;
 }
 
-/**
- * Build a position ending at `consumedLength` into the html node's value, so the
- * component doesn't claim trailing content the tokenizer swallowed into one node.
- */
+// Ends the position at `consumedLength` so the component doesn't claim trailing
+// content the tokenizer swallowed into the same html node.
 const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
   if (!nodePosition?.start) return nodePosition;
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
 };
 
-/**
- * Build a position ending right after the last occurrence of `closingTag` within
- * this node's span in the original source. Used in the trailing-content path so
- * the offset is computed against the real source bytes (including blockquote/list
- * prefixes that were stripped from the html node's value).
- */
+// Like `positionEndingAtConsumed`, but measures against the original source so
+// blockquote/list prefixes stripped from the html node's value are counted.
 const positionEndingAtClosingTagInSource = (
   nodePosition: Node['position'],
   closingTag: string,
@@ -111,9 +97,6 @@ const positionEndingAtClosingTagInSource = (
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
 };
 
-/**
- * Create an MdxJsxFlowElement node from component data.
- */
 const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: tag,
@@ -169,8 +152,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       stack.push(node as Parent);
     }
 
-    // Only visit HTML nodes with an actual html tag,
-    // which means a potential unparsed MDX component
+    // Only html nodes can be an unparsed MDX component.
     const value = (node as { value?: string }).value;
     if (node.type !== 'html' || typeof value !== 'string') return;
 
@@ -180,35 +162,24 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
     const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
 
-    // Offset of `trimmed` within the (possibly whitespace-padded) html node value,
-    // so consumed-length math maps back onto the node's real source offsets.
+    // Offsets so consumed-length math maps back onto the node's real source.
     const leadingWhitespace = value.length - value.trimStart().length;
-    // Index right after the opening tag's `>` within `trimmed`.
     const openingTagEnd = trimmed.length - contentAfterTag.length;
 
-    // Skip tags that have dedicated transformers
-    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return;
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);
 
-    // Lowercase inline tags (inside a paragraph) with `{…}` attributes are
-    // promoted to `mdxJsxTextElement` by mdxishInlineComponentBlocks. Skip
-    // them here so they stay as html for that pass; PascalCase components
-    // keep going through this transformer (they stay flow-level even when
-    // inline, which is how ReadMe's custom components are modeled).
+    // Lowercase inline tags with `{…}` attributes belong to
+    // mdxishInlineComponentBlocks; leave them as html for that pass. PascalCase
+    // components stay flow-level even when inline (ReadMe's component model).
     if (!isPascal && parent.type === 'paragraph') return;
 
-    // Lowercase HTML tags are eligible when they carry a JSX-expression
-    // attribute (directly or on a descendant tag, e.g. a `.map()` body
-    // returning JSX with `key={i}`), or when their content nests a PascalCase
-    // component. Without this, a wrapper like `<p>` or `<div>` swallows its
-    // whole nested block — including any `style={{...}}` JSX or `<Component />`
-    // inside it — as literal HTML text, which rehype-raw's parse5 pass then
-    // garbles (it has no notion of JS expressions or custom components).
-    // Plain HTML with neither stays as an html node for rehype-raw as normal.
+    // A lowercase wrapper is only promoted when it (or a descendant) carries a
+    // JSX expression or nests a component; otherwise it would swallow that inner
+    // JSX/component as literal text that rehype-raw's parse5 pass can't handle.
+    // Table-structural wrappers are excluded — `mdxishTables` re-parses those.
     const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
-    // Table-structural wrappers stay raw: `mdxishTables` owns re-parsing their
-    // contents (including any nested components) with full table semantics.
     const isTableStructuralTag = tag === 'table' || tableTags.has(tag);
     const hasNestedComponentTag =
       !selfClosing && !isTableStructuralTag && hasNestedGenericComponentTag(contentAfterTag);
@@ -228,7 +199,6 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // Check and parse if there's relevant content after the current closing tag
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
         parseSibling(stack, parent, index, remainingContent, safeMode);
@@ -238,17 +208,14 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
     // Case 2: Self-contained block (closing tag in content)
     if (contentAfterTag.includes(closingTagStr)) {
-      // Find the first closing tag
       const closingTagIndex = contentAfterTag.lastIndexOf(closingTagStr);
-      // Pass raw (untrimmed) content so dedent in parseMdChildren can
-      // normalize indentation before trimming
+      // Untrimmed so parseMdChildren can dedent before trimming.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
         ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
         : [];
-      // Lowercase HTML tags are usually inline (e.g. <a>, <span>). Remark wraps
-      // bare text in a paragraph; unwrap when there's exactly one paragraph so
+      // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
@@ -258,12 +225,9 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // When trailing content follows the closing tag, compute the end position precisely
-        // within the html node's value so the component doesn't claim that content.
-        // Prefer source-based positioning when the original source is available: the html
-        // node's value has '> '/space prefixes stripped for blockquotes/list items, so
-        // positionEndingAtConsumed would undercount source offsets. When the entire node
-        // is consumed, use the original node position directly.
+        // With trailing content, end precisely at the closing tag. Prefer source
+        // offsets when available (the node's value strips blockquote/list
+        // prefixes); otherwise fall back to the whole node position.
         endPosition: contentAfterClose
           ? source
             ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
@@ -276,17 +240,16 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // After the closing tag, there might be more content to be processed
+      // Re-queue whichever side may hold further components.
       if (contentAfterClose) {
         parseSibling(stack, parent, index, contentAfterClose, safeMode);
       } else if (componentNode.children.length > 0) {
-        // The content inside the component block might contain new components to be processed
         stack.push(componentNode as Parent);
       }
     }
   };
 
-  // Process the nodes with the components depth-first to maintain the correct order of the nodes
+  // Depth-first so nodes keep their source order.
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {
