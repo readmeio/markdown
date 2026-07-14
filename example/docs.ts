@@ -3,6 +3,7 @@ import childTests from '../__tests__/fixtures/child-tests.mdx';
 import codeBlockTests from '../__tests__/fixtures/code-block-tests.md';
 import exportTests from '../__tests__/fixtures/export-tests.mdx';
 import imageTests from '../__tests__/fixtures/image-tests.mdx';
+import markdownInHtmlTests from '../__tests__/fixtures/markdown-in-html-tests.mdx';
 import sanitizingTests from '../__tests__/fixtures/sanitizing-tests.md';
 import tableOfContentsTests from '../__tests__/fixtures/table-of-contents-tests.md';
 import tailwindRootTests from '../__tests__/fixtures/tailwind-root-tests.mdx';
@@ -40,6 +41,7 @@ const fixtures = Object.entries({
   images,
   imageTests,
   lists,
+  markdownInHtmlTests,
   mdxComponents,
   builtInComponents,
   mermaid,

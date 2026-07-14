@@ -5,6 +5,7 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
+import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
 
@@ -14,36 +15,35 @@ export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-c
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
 /**
- * Reduce leading whitespace on all lines just enough to prevent
- * remark from treating indented content as code blocks (4+ spaces).
- * Preserves relative indentation so whitespace text nodes are
- * maintained in the HAST output.
+ * Strip the shared leading indentation from a component body so readability indentation
+ * isn't parsed as indented code (4+ spaces), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
+ * Relative indentation is kept, so content genuinely 4+ columns deeper stays code. We
+ * only strip when a line actually reaches 4 columns; otherwise the body is left as-is so
+ * its leading whitespace survives as text nodes (mixed component + HTML content needs it).
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
   if (nonEmptyLines.length === 0) return text;
 
-  const minIndent = Math.min(
-    ...nonEmptyLines.map(line => {
-      const match = line.match(/^(\s*)/);
-      return match ? match[1].length : 0;
-    }),
-  );
+  // Indent counts characters (tab = 1), unlike indentWidth's CommonMark columns
+  // (tab = 4) in terminate-html-flow-blocks.
+  const indents = nonEmptyLines.map(line => line.match(/^(\s*)/)?.[1].length ?? 0);
+  const minIndent = Math.min(...indents);
+  const maxIndent = Math.max(...indents);
 
-  // Only strip enough indent to keep all lines below the 4-space code threshold
-  const stripAmount = Math.max(0, minIndent - 3);
+  const stripAmount = maxIndent > 3 ? minIndent : 0;
   if (stripAmount === 0) return text;
   return lines.map(line => line.slice(stripAmount)).join('\n');
 }
 
 /**
- * Parse markdown content into mdast children nodes.
- * Dedents the content first to prevent indented component content
- * (from nested components) from being treated as code blocks.
+ * Parse component-body markdown into mdast children. Dedenting shifts columns and
+ * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
+ * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const parsed = getInlineMdProcessor({ safeMode }).parse(safeDeindent(value).trim());
+  const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
   return parsed.children || [];
 };
 
