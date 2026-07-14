@@ -1033,6 +1033,10 @@ describe('mdxishMdastToMd', () => {
       expect(mdxishMdastToMd(paragraph('leading__double__trailing'))).toBe('leading__double__trailing\n');
     });
 
+    it('should not escape intraword underscores between non-ASCII letters', () => {
+      expect(mdxishMdastToMd(paragraph('café_touché'))).toBe('café_touché\n');
+    });
+
     it('should still escape underscores at word boundaries that could open emphasis', () => {
       expect(roundTripMdxish('_leading and trailing_')).toBe('_leading and trailing_\n');
     });

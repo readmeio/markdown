@@ -1,3 +1,4 @@
+import type { Unsafe } from 'mdast-util-to-markdown';
 import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
@@ -42,7 +43,17 @@ function compilers(this: Processor, mdxish = false) {
     ...(mdxish && { [NodeTypes.variable]: variable }),
   };
 
-  toMarkdownExtensions.push({ extensions: [{ handlers }] });
+  // Escape literal braces in mdxish text so they don't parse as (often
+  // unterminated) MDX expressions on the next round trip. Routed through the
+  // unsafe list so mdast-util-to-markdown handles backslash ordering.
+  const unsafe: Unsafe[] = mdxish
+    ? [
+        { character: '{', inConstruct: 'phrasing' },
+        { character: '}', inConstruct: 'phrasing' },
+      ]
+    : [];
+
+  toMarkdownExtensions.push({ extensions: [{ handlers, unsafe }] });
 }
 
 export function mdxishCompilers(this: Processor) {
