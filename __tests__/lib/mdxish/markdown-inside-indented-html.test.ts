@@ -116,4 +116,17 @@ describe('markdown inside indented plain HTML blocks', () => {
 
     expect(findElementByTagName(ast, 'code')).not.toBeNull();
   });
+
+  it('does not treat deeply indented content as code when nested under unindented HTML', () => {
+    const md = `<Cards>
+  <Card class="card">
+   <p class="Card-title">Title</p>
+    Account balances, position changes, and transaction activity updated instantly for faster financial  response.<br />
+  </Card>
+</Cards>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+  });
 });

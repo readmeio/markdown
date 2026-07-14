@@ -15,9 +15,11 @@ export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-c
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
 /**
- * Dedent component bodies so readability indentation isn't parsed as indented code
- * (4+ spaces). Shallow bodies (min indent ≤3) stay byte-identical to preserve
- * whitespace text nodes; deeper bodies dedent fully, keeping relative indentation.
+ * Strip the shared leading indentation from a component body so readability indentation
+ * isn't parsed as indented code (4+ spaces), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
+ * Relative indentation is kept, so content genuinely 4+ columns deeper stays code. We
+ * only strip when a line actually reaches 4 columns; otherwise the body is left as-is so
+ * its leading whitespace survives as text nodes (mixed component + HTML content needs it).
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');
@@ -25,16 +27,12 @@ function safeDeindent(text: string): string {
   if (nonEmptyLines.length === 0) return text;
 
   // Indent counts characters (tab = 1), unlike indentWidth's CommonMark columns
-  // (tab = 4) in terminate-html-flow-blocks; tab-indented bodies stay untouched.
-  const minIndent = Math.min(
-    ...nonEmptyLines.map(line => {
-      const match = line.match(/^(\s*)/);
-      return match ? match[1].length : 0;
-    }),
-  );
+  // (tab = 4) in terminate-html-flow-blocks.
+  const indents = nonEmptyLines.map(line => line.match(/^(\s*)/)?.[1].length ?? 0);
+  const minIndent = Math.min(...indents);
+  const maxIndent = Math.max(...indents);
 
-  // Bodies already below the code threshold stay byte-identical.
-  const stripAmount = minIndent > 3 ? minIndent : 0;
+  const stripAmount = maxIndent > 3 ? minIndent : 0;
   if (stripAmount === 0) return text;
   return lines.map(line => line.slice(stripAmount)).join('\n');
 }
