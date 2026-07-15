@@ -1813,6 +1813,33 @@ the /{customer\\_id}/config/clients operation
       // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
       expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
+
+    describe('when surrounded by HTMLBlock (protected)', () => {
+      it('does not split a table inside a closed <HTMLBlock>', () => {
+        const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('leaves a <table> inside an unclosed <HTMLBlock> untouched', () => {
+        expect(splitHtmlWithNestedTables(htmlNode('<HTMLBlock>\n<table><tr><td>x</td></tr></table>'))).toBeNull();
+      });
+
+      it('suppresses a later well-formed <table> once an unclosed <HTMLBlock> is open', () => {
+        const value = '<div><HTMLBlock>oops</div>\n<table><tr><td>real</td></tr></table>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('does not protect a table after a self-closing <HTMLBlock/>', () => {
+        const parts = splitHtmlWithNestedTables(htmlNode('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>'));
+    
+        expect(parts).not.toBeNull();
+        expect(parts).toStrictEqual([
+          { type: 'html', value: '<div><HTMLBlock/>' },
+          { type: 'html', value: '<table><tr><td>x</td></tr></table>' },
+          { type: 'html', value: '</div>' },
+        ]);
+      });
+    });
   });
 
   describe('given a table wrapped in a raw HTML block', () => {

@@ -161,6 +161,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     gemoji(),
     legacyVariable(),
     looseHtmlEntity(),
+    htmlBlockComponent(),
   ];
   const fromMarkdownExts = [
     jsxTableFromMarkdown(),
@@ -170,6 +171,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     legacyVariableFromMarkdown(),
     emptyTaskListItemFromMarkdown(),
     looseHtmlEntityFromMarkdown(),
+    htmlBlockComponentFromMarkdown(),
   ];
 
   if (!safeMode) {
@@ -188,10 +190,9 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   }
 
   // Claim `<HTMLBlock>` as one opaque token so broad tokenizers can't fragment its body
-  // (e.g. a `<table>`) into non-string children that crash the page (CX-3701). micromark
-  // tries the last-registered extension first, so push (not unshift) to win the `<` race.
-  micromarkExts.push(htmlBlockComponent());
-  fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
+  // We put this last as micromark tries the last-registered extension first, so push (not unshift) to win the `<` race.
+  // micromarkExts.push(htmlBlockComponent());
+  // fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExts)

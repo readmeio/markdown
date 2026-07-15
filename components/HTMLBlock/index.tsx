@@ -43,12 +43,7 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
 
   if (nonStringChildren) {
     // Fail soft: a non-string child (e.g. JSX that wasn't serialized back to a
-    // raw string) must never throw — an unhandled throw here bubbles to the
-    // page-level error boundary and replaces the ENTIRE document (CX-3701).
-    // Render the already-parsed child nodes directly so the failure stays
-    // localized to this block and the rest of the page still renders.
-    // eslint-disable-next-line no-console
-    console.warn('[WARNING] HTMLBlock received non-string children; falling back to rendering them directly.');
+    // raw string) should never throw, so render the child nodes directly
     return <div className="rdmd-html">{children}</div>;
   }
 

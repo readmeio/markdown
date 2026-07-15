@@ -124,11 +124,6 @@ there`;
       expect(findElementByTagName(tree, 'script')).toBeNull();
     });
 
-    // CX-3701: a `<table>` inside a multiline HTMLBlock body must stay opaque raw
-    // HTML. Before the fix, the jsxTable tokenizer + terminateHtmlFlowBlocks split
-    // the block into `html` + parsed-table + `html` siblings that mdxishHtmlBlocks
-    // couldn't reassemble, so the HTMLBlock component received non-string children
-    // and threw — replacing the whole page with "Unable to render content".
     it('preserves a raw <table> inside a multiline HTMLBlock (CX-3701)', () => {
       const tree = mdxish('<HTMLBlock>{`\n<table><tr><td>hello</td></tr></table>\n`}</HTMLBlock>');
 
