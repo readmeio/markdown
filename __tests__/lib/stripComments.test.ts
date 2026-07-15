@@ -332,6 +332,64 @@ end"`);
     expect(output).toBe('render a \\<b when a is less than b');
   });
 
+  describe('Custom components render correctly in mdxish mode', () => {
+    // Expressions should be preserved, and component should not be escaped with a backslash prefix
+    it.each([
+      { name: 'a literal < inside an expression', input: '<Card ok={a < b} />' },
+      { name: 'a literal < inside a quoted attribute', input: '<Card note="use a < b here" />' },
+      // eslint-disable-next-line no-template-curly-in-string
+      { name: 'a template literal attribute with interpolation', input: '<Card label={`Hello ${user.name}`} />' },
+      { name: 'a spread attribute', input: '<Card {...props} title="Hi" />' },
+      { name: 'a boolean shorthand attribute', input: '<Card disabled title="Hi" />' },
+      { name: 'an inline component surrounded by markdown', input: 'See the *shiny* <Anchor href={url}>link</Anchor> for **more**.' },
+      {
+        name: 'a component nested inside a <div>',
+        input: `<div>
+  <Callout icon="info" data={[{ a: 1 }]}>
+    Body text
+  </Callout>
+</div>`,
+      },
+      {
+        name: 'same-name components nested inside each other',
+        input: `<Accordion title="Outer">
+  <Accordion title="Inner">
+    Inner body
+  </Accordion>
+</Accordion>`,
+      },
+    ])('preserves $name without escaping', async ({ input }) => {
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toBe(input);
+      expect(output).not.toContain('\\<');
+    });
+
+    // A JSDoc block inside a component's expression is treated as code and not stripped
+    it('preserves a multi-line JSDoc block inside an expression attribute', async () => {
+      const input = `<Card
+  data={
+    /**
+     * A JSDoc comment inside the expression
+     */
+    values
+  }
+/>`;
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toBe(input);
+    });
+
+    it('strips an HTML comment inside a component body', async () => {
+      const input = `<Callout data={[{ a: 1 }]}>
+  <!-- strip me -->
+  Body
+</Callout>`;
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).not.toContain('<!-- strip me -->');
+      expect(output).toContain('<Callout data={[{ a: 1 }]}>');
+      expect(output).toContain('Body');
+    });
+  });
+
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests
