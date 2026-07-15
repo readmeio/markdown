@@ -600,22 +600,22 @@ None of the following content will get rendered!`;
 
     it('resolves a quoted string expression inside inline code', () => {
       const doc =
-        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>--r-format \\{"your-rule-format"}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>--r-format {"your-rule-format"}</code></td></tr><tr><td>next</td></tr></tbody></table>';
 
       const hast = mdxish(doc);
       expect(bodyRowsOf(hast)).toHaveLength(2);
-      expect(toHtml(hast)).toContain('<code>--r-format {"your-rule-format"}</code>');
+      expect(toHtml(hast)).toContain('<code>--r-format your-rule-format</code>');
     });
 
     it('preserves escaped braces inside a code cell', () => {
       const doc =
-        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>literal \\{not-expr\\}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>literal \\{"not-expr"\\}</code></td></tr><tr><td>next</td></tr></tbody></table>';
 
       const hast = mdxish(doc);
       expect(bodyRowsOf(hast)).toHaveLength(2);
       const code = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
       const codeText = code[0].children[0];
-      expect(codeText.type === 'text' && codeText.value).toBe('literal {not-expr}');
+      expect(codeText.type === 'text' && codeText.value).toBe('literal {"not-expr"}');
     });
 
     it('handles multiple code spans with expressions across a line break in one cell', () => {
