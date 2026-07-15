@@ -1,12 +1,14 @@
-import type { Html, PhrasingContent } from 'mdast';
+import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import { htmlRawNames } from 'micromark-util-html-tag-name';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { NodeTypes } from '../../../../enums';
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
@@ -16,6 +18,7 @@ import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { tableTags } from '../tables/utils';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
@@ -96,3 +99,45 @@ export const toMdxJsxTextElement = (
   children,
   ...(position ? { position } : {}),
 });
+
+// Raw-body tags (pre/script/style/textarea) must stay byte-exact; table
+// structure is owned by `mdxishTables` and figures by `mdxishJsxToMdast`,
+// both of which run later on raw html nodes.
+const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, 'table', 'figure', 'figcaption']);
+export const NESTED_TABLE_RE = /<table[\s>]/i;
+export const isMarkdownPromotableHtmlTag = (tag: string): boolean =>
+  !tableTags.has(tag) && !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
+
+// Expression nodes count as plain so `<div>{1+1}</div>` keeps its current
+// literal-brace behavior; variables/glossary already resolve inside raw html.
+const PLAIN_CONTENT_TYPES = new Set<string>([
+  'paragraph',
+  'text',
+  'html',
+  'mdxTextExpression',
+  'mdxFlowExpression',
+  NodeTypes.variable,
+  NodeTypes.glossary,
+]);
+
+// Promoting plain HTML is only worth bypassing rehype-raw's parse5 pass when
+// the body parses into an actual markdown construct.
+export const containsMarkdownConstruct = (nodes: Node[]): boolean =>
+  nodes.some(
+    node =>
+      !PLAIN_CONTENT_TYPES.has(node.type) ||
+      ('children' in node && Array.isArray(node.children) && containsMarkdownConstruct(node.children)),
+  );
+
+// Depth-matching closing-tag finder: `lastIndexOf` mis-slices sibling
+// same-tag pairs like `<div>**a**</div><div>**b**</div>`.
+export function findBalancedClosingTagIndex(content: string, tag: string): number {
+  const tagTokenRe = new RegExp(`<${tag}(?=[\\s/>])[^>]*>|</${tag}>`, 'gi');
+  let depth = 1;
+  const closingMatch = [...content.matchAll(tagTokenRe)].find(match => {
+    if (match[0].startsWith('</')) depth -= 1;
+    else if (!match[0].endsWith('/>')) depth += 1;
+    return depth === 0;
+  });
+  return closingMatch?.index ?? -1;
+}

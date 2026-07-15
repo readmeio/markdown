@@ -450,6 +450,65 @@ More content here
       });
     });
 
+    describe('plain lowercase HTML with markdown content', () => {
+      it('should promote a single-line wrapper whose body holds markdown', () => {
+        const tree = parseWithPlugin('<div>**bold**</div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            attributes: [],
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'bold' }] }],
+          },
+        ]);
+      });
+
+      it('should promote sibling same-tag wrappers independently', () => {
+        const tree = parseWithPlugin('<div>**a**</div><div>**b**</div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'a' }] }],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'b' }] }],
+          },
+        ]);
+      });
+
+      it('should not promote a wrapper without markdown content', () => {
+        const tree = parseWithPlugin('<div>plain <span>x</span></div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div>plain <span>x</span></div>' }]);
+      });
+
+      it('should not promote table-structural or raw-content tags', () => {
+        const inputs = ['<td>**x**</td>', '<pre>**x**</pre>', '<table><tr><td>**x**</td></tr></table>'];
+        inputs.forEach(input => {
+          const tree = parseWithPlugin(input);
+          expect(tree.children).toMatchObject([{ type: 'html', value: input }]);
+        });
+      });
+
+      it('should not promote a wrapper holding a nested table', () => {
+        const input = '<div><table><tr><td>**x**</td></tr></table></div>';
+        const tree = parseWithPlugin(input);
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: input }]);
+      });
+
+      it('should not promote a self-closing plain tag', () => {
+        const tree = parseWithPlugin('<br />');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<br />' }]);
+      });
+    });
+
     describe('case 3: embedded closing tag with trailing content', () => {
       it('should preserve content after the closing tag in an HTML sibling', () => {
         const markdown = `<Outer>
