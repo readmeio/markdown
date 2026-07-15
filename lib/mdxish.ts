@@ -120,9 +120,8 @@ function preprocessContent(
   const { knownComponents } = opts;
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
-  // classification in `terminateHtmlFlowBlocks` is accurate) rather than a
-  // whitespace-mangled closer that would leave the table looking unclosed.
-  let result = normalizeClosingTagWhitespace(content);
+  // classification in `terminateHtmlFlowBlocks` is accurate)
+  let result = normalizeClosingTagWhitespace(content); 
   result = normalizeTableSeparator(result);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
