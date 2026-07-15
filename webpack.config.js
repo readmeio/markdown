@@ -91,7 +91,10 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
     '@readme/variable': '@readme/variable',
     '@tippyjs/react': '@tippyjs/react',
     acorn: 'acorn',
-    mermaid: 'mermaid',
+    // 'import' (not a plain umd external) keeps import('mermaid') lazy in
+    // dist/main.js, so consumers only download mermaid when a diagram renders.
+    // Guarded by scripts/verify-lazy-mermaid.cjs.
+    mermaid: 'import mermaid',
     react: {
       amd: 'react',
       commonjs: 'react',
@@ -110,6 +113,10 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
   output: {
     library: {
       type: 'umd',
+    },
+    // Required for the 'import mermaid' external
+    environment: {
+      dynamicImport: true,
     },
   },
   resolve: {
