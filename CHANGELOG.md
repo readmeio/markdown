@@ -1,6 +1,21 @@
 Changelog
 ===
 
+## Version 14.11.5
+### 🛠 Fixes & Updates
+
+* **mdxishTags:** capture components inside HTML blocks  ([#1547](https://github.com/readmeio/markdown/issues/1547)) ([06d84d5](https://github.com/readmeio/markdown/commit/06d84d5a179fda95f055ab3e42b68f2fa4ed5c7f))
+* **mdxish:** parse indented markdown inside plain html wrappers ([#1545](https://github.com/readmeio/markdown/issues/1545)) ([522275a](https://github.com/readmeio/markdown/commit/522275a7eec9257836891689893df02189993d79)), closes [#1344](https://github.com/readmeio/markdown/issues/1344)
+* **mdxish:** stop escaping intraword underscores on serialization ([#1546](https://github.com/readmeio/markdown/issues/1546)) ([571f839](https://github.com/readmeio/markdown/commit/571f839e9369af286bc784bc03a688e4a7f3e107))
+
+## Version 14.11.4
+### 🛠 Fixes & Updates
+
+* **mdxish:** parse tables markdown when inside html tags ([#1540](https://github.com/readmeio/markdown/issues/1540)) ([2719687](https://github.com/readmeio/markdown/commit/271968754a01d0ed07bdeeadade83d33b77a33c0)), closes [#1532](https://github.com/readmeio/markdown/issues/1532)
+* **mdxish:** preserve invalid-HTML nesting from evaluated JSX expressions ([#1538](https://github.com/readmeio/markdown/issues/1538)) ([67aa719](https://github.com/readmeio/markdown/commit/67aa719f3708e14b389ab5d2f97a5a5fdef1ab47)), closes [#1532](https://github.com/readmeio/markdown/issues/1532)
+* **mdxish:** render tables with tag-crossing emphasis and multiple per-cell defects ([#1539](https://github.com/readmeio/markdown/issues/1539)) ([67ca8d6](https://github.com/readmeio/markdown/commit/67ca8d6136da4d8ccaa69a02d048a17ca4623a5c))
+* **tabs:** tailwind styles not applied initially on hidden tabs ([#1543](https://github.com/readmeio/markdown/issues/1543)) ([9499ed3](https://github.com/readmeio/markdown/commit/9499ed3b7dce79c56f4958dedfb50953a3f7dfaf))
+
 ## Version 14.11.3
 ### 🛠 Fixes & Updates
 
