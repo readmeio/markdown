@@ -41,6 +41,7 @@ import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/ma
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
+import { normalizeClosingTagWhitespace } from '../processor/transform/mdxish/normalize-closing-tag-whitespace';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
@@ -62,11 +63,13 @@ import { jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
+import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
@@ -105,11 +108,12 @@ const defaultTransformers: PluggableList = [
  * CommonMark/remark limitations and reach parity with legacy (rdmd) rendering.
  *
  * Runs a series of string-level transformations before micromark/remark parsing:
- * 1. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
- * 2. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 3. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 4. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 5. Replace snake_case component names with parser-safe placeholders
+ * 1. Canonicalize closing tags with stray whitespace (e.g., `</ td >` → `</td>`)
+ * 2. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
+ * 3. Terminate HTML flow blocks so subsequent content isn't swallowed
+ * 4. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 5. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
+ * 6. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -117,7 +121,10 @@ function preprocessContent(
 ) {
   const { knownComponents } = opts;
 
-  let result = normalizeTableSeparator(content);
+  // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
+  // classification in `terminateHtmlFlowBlocks` is accurate)
+  let result = normalizeClosingTagWhitespace(content); 
+  result = normalizeTableSeparator(result);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
@@ -159,6 +166,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     gemoji(),
     legacyVariable(),
     looseHtmlEntity(),
+    htmlBlockComponent(),
   ];
   const fromMarkdownExts = [
     jsxTableFromMarkdown(),
@@ -168,6 +176,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     legacyVariableFromMarkdown(),
     emptyTaskListItemFromMarkdown(),
     looseHtmlEntityFromMarkdown(),
+    htmlBlockComponentFromMarkdown(),
   ];
 
   if (!safeMode) {
@@ -184,6 +193,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
     micromarkExts.unshift(jsxComment());
   }
+
+  // Claim `<HTMLBlock>` as one opaque token so broad tokenizers can't fragment its body
+  // We put this last as micromark tries the last-registered extension first, so push (not unshift) to win the `<` race.
+  // micromarkExts.push(htmlBlockComponent());
+  // fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExts)

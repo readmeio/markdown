@@ -121,6 +121,73 @@ Hello`;
     expect(htmlBlock?.innerHTML).not.toContain('{');
   });
 
+  // CX-3701 (Class 1, hard crash): a multiline <HTMLBlock> whose body contains a
+  // <table> used to throw during render and take down the whole page. The block
+  // must now render its raw HTML AND leave surrounding content intact.
+  it('renders a multiline HTMLBlock containing a styled <table> without crashing the page', () => {
+    const markdown = [
+      '# Title',
+      '',
+      '<HTMLBlock>{`',
+      '<style> .demo { color: #0062df; } </style>',
+      '<table class="demo"><tr><td>hello</td></tr></table>',
+      '`}</HTMLBlock>',
+      '',
+      'after the block',
+    ].join('\n');
+
+    const tree = mdxish(markdown);
+    const mod = renderMdxish(tree);
+
+    const { container } = render(<mod.default />);
+
+    // The raw table renders inside the html block...
+    const htmlBlock = container.querySelector('.rdmd-html');
+    expect(htmlBlock?.querySelector('table')).toBeInTheDocument();
+    expect(htmlBlock?.innerHTML).toContain('hello');
+    // ...and, crucially, the rest of the page survives (no whole-document unmount).
+    expect(screen.getByText('Title')).toBeInTheDocument();
+    expect(screen.getByText('after the block')).toBeInTheDocument();
+  });
+
+  // CX-3701 (Class 2, soft failure): template-literal <style> must be evaluated to
+  // plain CSS, not left as literal `{`...`}` (which the browser drops as invalid).
+  it('evaluates a template-literal <style> block into plain CSS', () => {
+    const markdown = ['<style>', '  {`', '  .card { border-radius: 22px; }', '  `}', '</style>'].join('\n');
+
+    const tree = mdxish(markdown);
+    const mod = renderMdxish(tree);
+
+    const { container } = render(<mod.default />);
+    const style = container.querySelector('style');
+    expect(style?.innerHTML).toContain('border-radius');
+    expect(style?.innerHTML).not.toContain('{`');
+  });
+
+  // CX-3701 (Class 3): a raw <table> pretty-printed with blank lines between rows
+  // must render as a real table, not collapse into a <pre><code> block.
+  it('renders a blank-line-separated raw <table> as a real table', () => {
+    const markdown = [
+      '<table>',
+      '  <thead>',
+      '    <tr><th>Country</th></tr>',
+      '  </thead>',
+      '',
+      '  <tr>',
+      '    <td>Afghanistan</td>',
+      '  </tr>',
+      '</table>',
+    ].join('\n');
+
+    const tree = mdxish(markdown);
+    const mod = renderMdxish(tree);
+
+    const { container } = render(<mod.default />);
+    expect(container.querySelector('table')).toBeInTheDocument();
+    expect(container.querySelector('pre')).not.toBeInTheDocument();
+    expect(screen.getByText('Afghanistan')).toBeInTheDocument();
+  });
+
   it('renders a component with an array as a prop', () => {
     const componentWithArrayCode = `
 export const CompWithArray = ({ array }) => {

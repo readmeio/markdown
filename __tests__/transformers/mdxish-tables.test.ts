@@ -1813,6 +1813,33 @@ the /{customer\\_id}/config/clients operation
       // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
       expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
+
+    describe('when surrounded by HTMLBlock (protected)', () => {
+      it('does not split a table inside a closed <HTMLBlock>', () => {
+        const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('leaves a <table> inside an unclosed <HTMLBlock> untouched', () => {
+        expect(splitHtmlWithNestedTables(htmlNode('<HTMLBlock>\n<table><tr><td>x</td></tr></table>'))).toBeNull();
+      });
+
+      it('suppresses a later well-formed <table> once an unclosed <HTMLBlock> is open', () => {
+        const value = '<div><HTMLBlock>oops</div>\n<table><tr><td>real</td></tr></table>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('does not protect a table after a self-closing <HTMLBlock/>', () => {
+        const parts = splitHtmlWithNestedTables(htmlNode('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>'));
+    
+        expect(parts).not.toBeNull();
+        expect(parts).toStrictEqual([
+          { type: 'html', value: '<div><HTMLBlock/>' },
+          { type: 'html', value: '<table><tr><td>x</td></tr></table>' },
+          { type: 'html', value: '</div>' },
+        ]);
+      });
+    });
   });
 
   describe('given a table wrapped in a raw HTML block', () => {
@@ -1962,6 +1989,102 @@ ${lowercaseTable}
       // are consistent as actually wired into the tree.
       const expectedLine = parserReadyContent.slice(0, start.offset!).split('\n').length;
       expect(start.line).toBe(expectedLine);
+    });
+  });
+
+  describe('given a raw-HTML table whose closer has stray whitespace (CX-3706)', () => {
+    // `jsxTable` captures a raw `<table>` by scanning for a literal `</table>`.
+    // A `</ table >` closer (the same "spaces in the tag" defect the source has
+    // in its `</ td >` cells) isn't recognized, so the table used to look
+    // unclosed: it fragmented at blank lines into an empty `<table></table>`
+    // plus a `<pre>` code block. Normalizing the closer keeps the table whole.
+    it('recovers a table closed with </ table > into a single table with every row', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+
+  <tr>
+    <td>USA</td>
+    <td>IRS</td>
+  </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      // header row + 2 body rows
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(html).toContain('Federal Tax Service');
+      expect(html).toContain('IRS');
+    });
+
+    it('does not fragment 4-space-indented rows into a <pre> code block', () => {
+      const doc = `<table>
+    <thead>
+        <tr><th>Country</th><th>Src</th></tr>
+    </thead>
+
+    <tr>
+        <td>Russia</td>
+        <td>Federal Tax Service</td>
+    </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(html).not.toContain('<code');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+    });
+
+    it('recovers a </ table >-closed table wrapped in a plain <div>', () => {
+      const doc = `<div class="rdmd-table">
+<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+</ table >
+</div>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(html).toContain('Federal Tax Service');
+    });
+
+    it('drops the stray comment a spaced </ td > cell closer used to leave behind', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Marshall Islands </ td >
+    <td>International Registries Inc.</td>
+  </tr>
+</table>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<!--');
+      const cells = findAllElementsByTagName(hast, 'td');
+      expect(cells.length).toBeGreaterThanOrEqual(2);
+      expect(html).toContain('Marshall Islands');
+      expect(html).toContain('International Registries Inc.');
     });
   });
 });

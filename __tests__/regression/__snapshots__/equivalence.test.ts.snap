@@ -208,6 +208,12 @@ exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
+{
+  "status": "match",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
 {
   "changes": [
@@ -237,12 +243,6 @@ exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
   ],
   "severity": "structural",
   "status": "differ",
-}
-`;
-
-exports[`MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
-{
-  "status": "match",
 }
 `;
 
