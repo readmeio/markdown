@@ -55,16 +55,6 @@ Scoped styles are a common use case. The template literal keeps the CSS braces f
 <div class="demo">This should be coloured</div>
 `}</HTMLBlock>
 
-### A `<style>` block
-
-Scoped styles are a common use case. The template literal keeps the CSS braces from being mistaken for MDX expressions:
-
-```markdown
-<HTMLBlock>{`
-<style> .demo { color: #0062df; } </style>
-`}</HTMLBlock>
-```
-
 ## Complex examples
 
 The following snippets are ones that historically broke the page — either by crashing the whole document or by mangling the content. 
