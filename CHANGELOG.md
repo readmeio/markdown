@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 14.12.0
+### ✨ New & Improved
+
+* **mdxish:** parse markdown inside single-line HTML tags ([#1554](https://github.com/readmeio/markdown/issues/1554)) ([6933b0b](https://github.com/readmeio/markdown/commit/6933b0b1702c6531a0a13b740c1d98d6d869625d))
+
+### 🛠 Fixes & Updates
+
+* defer mermaid download until a diagram is present ([#1537](https://github.com/readmeio/markdown/issues/1537)) ([c113dfe](https://github.com/readmeio/markdown/commit/c113dfec2e2aaa88ba5ddfc028c25c65a9c4d6ea))
+* **mdxish:** expressions in tables breaking row structure ([#1553](https://github.com/readmeio/markdown/issues/1553)) ([3c3e371](https://github.com/readmeio/markdown/commit/3c3e371d9b4156b983acebdb1b6fc255c47302f4)), closes [#1532](https://github.com/readmeio/markdown/issues/1532)
+* **mdxish:** keep <HTMLBlock> opaque so nested tables don’t crash the page ([#1549](https://github.com/readmeio/markdown/issues/1549)) ([47db557](https://github.com/readmeio/markdown/commit/47db557401e7fd0acb4587213e8f16bf7bf5264f)), closes [#0062df](https://github.com/readmeio/markdown/issues/0062df)
+* **mdxish:** keep nested tables whole in component bodies ([#1550](https://github.com/readmeio/markdown/issues/1550)) ([9b3e255](https://github.com/readmeio/markdown/commit/9b3e255c7c659a8d20bbbc7d74f7bf8927bdb978))
+* **mdxish:** keep tables whole when their closer has stray whitespace ([#1551](https://github.com/readmeio/markdown/issues/1551)) ([aa1b1b4](https://github.com/readmeio/markdown/commit/aa1b1b425f95159963eafdd5ef3001092f42ffdd))
+* **mdxish:** recognize indented fenced code in component bodies ([#1552](https://github.com/readmeio/markdown/issues/1552)) ([7dfad6d](https://github.com/readmeio/markdown/commit/7dfad6d0f3ad53fcdc4b1d9fb7353f6a09b9b420))
+
 ## Version 14.11.5
 ### 🛠 Fixes & Updates
 
