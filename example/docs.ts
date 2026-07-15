@@ -17,6 +17,7 @@ import embeds from '../docs/embeds.md';
 import features from '../docs/features.md';
 import gettingStarted from '../docs/getting-started.md';
 import headings from '../docs/headings.md';
+import htmlBlocks from '../docs/html-blocks.md';
 import images from '../docs/images.md';
 import lists from '../docs/lists.md';
 import mdxComponents from '../docs/mdx-components.mdx';
@@ -38,6 +39,7 @@ const fixtures = Object.entries({
   features,
   gettingStarted,
   headings,
+  htmlBlocks,
   images,
   imageTests,
   lists,
