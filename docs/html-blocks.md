@@ -130,17 +130,20 @@ It is all literal text inside a raw div.
 
 ## 13. safeMode attribute
 
-<HTMLBlock safeMode={true}>{`<button onload="alert('blocked in safe mode')">Do not click</button>`}</HTMLBlock>
+<HTMLBlock safeMode={true}>{`<button onclick="alert('blocked in safe mode')">Click me</button>`}</HTMLBlock>
 
 ## 14. runScripts attribute
 
-<HTMLBlock runScripts="true">{`<script>console.log('ran from an HTMLBlock');</script>
+<HTMLBlock runScripts="true">{`<script>
+document.getElementById('script-target').textContent = 'Script ran.';
+</script>
 <div id="script-target">Script output lands here.</div>
 `}</HTMLBlock>
 
 ## 15. Both attributes together
 
-<HTMLBlock safeMode="false" runScripts="afterRender">{`<div>Rendered, then scripts run afterward.</div>`}</HTMLBlock>
+<HTMLBlock safeMode="false" runScripts="true">{`<script>console.log('ran after render');</script>
+<div>Rendered, then scripts run afterward.</div>`}</HTMLBlock>
 
 ## 16. An embedded iframe
 
