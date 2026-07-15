@@ -1,5 +1,5 @@
 import type { HTMLBlock } from '../../../types';
-import type { Html, Paragraph, Parent, RootContent } from 'mdast';
+import type { Html, Parent, RootContent } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
@@ -14,9 +14,6 @@ type HtmlBlockJsx = MdxJsxFlowElement | MdxJsxTextElement;
 // single-line `<div>…</div>`). CommonMark slurps the whole div as one `html`
 // node, so the tokenizer never sees the HTMLBlock — we recover it here.
 const RAW_HTML_BLOCK_RE = /<HTMLBlock\b([^>]*)>\s*\{\s*`((?:[^`\\]|\\.)*)`\s*\}\s*<\/HTMLBlock>/g;
-// Opening `<HTMLBlock …>` as its own `html` node — produced inside a paragraph
-// when an HTMLBlock appears inline alongside text.
-const HTML_BLOCK_OPEN_RE = /^<HTMLBlock\b([^>]*)>$/;
 
 /**
  * Builds the canonical `html-block` MDAST node the renderer expects.
@@ -115,13 +112,14 @@ const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
 /**
  * Converts every `<HTMLBlock>` shape that survives parsing into the canonical
  * `html-block` MDAST node, reading the body from the tokenizer's template-literal
- * expression. Three shapes occur:
+ * expression. Two shapes occur:
  *
- *   1. JSX element (`mdxJsxFlowElement`/`mdxJsxTextElement`) — multiline/block
- *      context and table cells (after their remarkMdx re-parse).
- *   2. Raw `html` blob (`splitRawHtmlBlocks`) — single-line top-level, or nested
- *      in raw HTML like an inline `<div>`.
- *   3. Inline-in-paragraph — split into `html` + expression + `html` siblings.
+ *   1. JSX element (`mdxJsxFlowElement`/`mdxJsxTextElement`) — table cells, after
+ *      their remarkMdx re-parse (that re-parse runs without the htmlBlockComponent
+ *      tokenizer, so `<HTMLBlock>` arrives as JSX rather than an opaque `html` node).
+ *   2. Raw `html` blob (`splitRawHtmlBlocks`) — the htmlBlockComponent tokenizer's
+ *      opaque output (top-level and inline), or an `<HTMLBlock>` embedded in a
+ *      larger raw-HTML node like an inline `<div>` that the tokenizer never saw.
  *
  * Runs *after* `mdxishTables` so table cells are re-parsed first;
  * `mdxishTables` recognizes the still-JSX `<HTMLBlock>` element when deciding to
@@ -156,40 +154,6 @@ const mdxishHtmlBlocks = (): Transform => tree => {
     if (!parent || index === undefined) return;
     const replacement = splitRawHtmlBlocks(node);
     if (replacement) parent.children.splice(index, 1, ...(replacement as typeof parent.children));
-  });
-
-  // Shape 3: inline within a paragraph — `<HTMLBlock>` open/close arrive as
-  // separate `html` siblings with the template-literal expression between them.
-  visit(tree, 'paragraph', (paragraph: Paragraph) => {
-    // An html-block is block content, so it isn't a valid PhrasingContent child;
-    // widen to RootContent (which HTMLBlock belongs to) for the in-place splice.
-    const children = paragraph.children as RootContent[];
-    for (let i = 0; i < children.length; i += 1) {
-      const open = children[i];
-      const openMatch = open.type === 'html' ? open.value.match(HTML_BLOCK_OPEN_RE) : null;
-      if (!openMatch) continue; // eslint-disable-line no-continue
-
-      const closeIdx = children.findIndex(
-        (child, j) => j > i && child.type === 'html' && child.value === '</HTMLBlock>',
-      );
-      if (closeIdx === -1) continue; // eslint-disable-line no-continue
-
-      const body = children
-        .slice(i + 1, closeIdx)
-        .map(child => {
-          if (child.type === 'mdxTextExpression' || child.type === 'mdxFlowExpression') {
-            return extractTemplateLiteral(child.value);
-          }
-          // Preserve raw text from any other phrasing sibling (e.g. stray
-          // whitespace or content the tokenizer didn't claim) so it isn't
-          // silently dropped from the html payload.
-          return 'value' in child && typeof child.value === 'string' ? child.value : '';
-        })
-        .join('');
-
-      const openingTagIndent = (open.position?.start.column ?? 1) - 1;
-      children.splice(i, closeIdx - i + 1, htmlBlockFromRaw(openMatch[1], body, open.position, openingTagIndent));
-    }
   });
 };
 

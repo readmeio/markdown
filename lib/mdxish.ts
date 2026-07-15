@@ -62,11 +62,13 @@ import { jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
+import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { gemoji } from './micromark/gemoji';
+import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxComment } from './micromark/jsx-comment';
 import { jsxTable } from './micromark/jsx-table';
 import { legacyVariable } from './micromark/legacy-variable';
@@ -159,6 +161,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     gemoji(),
     legacyVariable(),
     looseHtmlEntity(),
+    htmlBlockComponent(),
   ];
   const fromMarkdownExts = [
     jsxTableFromMarkdown(),
@@ -168,6 +171,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     legacyVariableFromMarkdown(),
     emptyTaskListItemFromMarkdown(),
     looseHtmlEntityFromMarkdown(),
+    htmlBlockComponentFromMarkdown(),
   ];
 
   if (!safeMode) {
@@ -184,6 +188,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
     micromarkExts.unshift(jsxComment());
   }
+
+  // Claim `<HTMLBlock>` as one opaque token so broad tokenizers can't fragment its body
+  // We put this last as micromark tries the last-registered extension first, so push (not unshift) to win the `<` race.
+  // micromarkExts.push(htmlBlockComponent());
+  // fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExts)
