@@ -863,6 +863,66 @@ third\`} />`;
       expect(code).toHaveLength(1);
       expect(code[0].value).toBe('</Terminal>');
     });
+
+    it('treats an INDENTED fence as fenced code so an unbalanced `{` inside stays inert (CX-3704)', () => {
+      const markdown = `<Callout icon="⚠️" theme="warn">
+  Intro.
+
+  \`\`\`
+  {
+  \`\`\`
+
+  Closing.
+</Callout>
+
+After the callout.`;
+      const tree = parseWithPlugin(markdown);
+
+      // The whole callout is captured as a single component node...
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Callout' });
+
+      // ...its fenced content (the lone `{`) survives as a code node...
+      const code = collectNodes<Code>(tree, 'code');
+      expect(code).toHaveLength(1);
+      expect(code[0].value).toBe('{');
+
+      // ...and `</Callout>` never leaks out as a stray html node.
+      const strayCloser = collectNodes(tree, n => n.type === 'html' && (n as { value?: string }).value === '</Callout>');
+      expect(strayCloser).toHaveLength(0);
+
+      // Trailing content lands as a sibling after the callout, not inside it.
+      expect(tree.children.at(-1)).toMatchObject({ type: 'paragraph' });
+    });
+
+    it('does not split component when there is an unclosed braces inside the component, and its closer is outside the component', () => {
+      const markdown = `<Component>
+
+  \`\`\`
+  {
+  \`\`\`
+  test
+</Component>
+
+  }`;
+      const tree = parseWithPlugin(markdown);
+      expect(tree.children).toHaveLength(2);
+      expect(tree.children).toMatchObject([
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Component',
+          children: [
+            { type: 'code', value: '  {' },
+            { type: 'paragraph', children: [{ type: 'text', value: 'test' }] },
+          ],
+        },
+        {
+          type: 'paragraph',
+          children: [{ type: 'text', value: '}' }],
+        },
+      ]);
+    });
   });
 
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {
