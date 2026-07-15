@@ -328,7 +328,7 @@ end"`);
   });
 
   it('still escapes lowercase literal angle brackets in mdxish mode', async () => {
-    const output = await stripComments('render a \\<b when a is less than b', { mdxish: true });
+    const output = await stripComments('render a <b when a is less than b', { mdxish: true });
     expect(output).toBe('render a \\<b when a is less than b');
   });
 
