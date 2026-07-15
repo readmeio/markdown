@@ -895,6 +895,34 @@ After the callout.`;
       // Trailing content lands as a sibling after the callout, not inside it.
       expect(tree.children.at(-1)).toMatchObject({ type: 'paragraph' });
     });
+
+    it('does not split component when there is an unclosed braces inside the component, and its closer is outside the component', () => {
+      const markdown = `<Component>
+
+  \`\`\`
+  {
+  \`\`\`
+  test
+</Component>
+
+  }`;
+      const tree = parseWithPlugin(markdown);
+      expect(tree.children).toHaveLength(2);
+      expect(tree.children).toMatchObject([
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Component',
+          children: [
+            { type: 'code', value: '  {' },
+            { type: 'paragraph', children: [{ type: 'text', value: 'test' }] },
+          ],
+        },
+        {
+          type: 'paragraph',
+          children: [{ type: 'text', value: '}' }],
+        },
+      ]);
+    });
   });
 
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {
