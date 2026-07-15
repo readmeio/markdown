@@ -192,9 +192,12 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     // A lowercase wrapper is only promoted when it (or a descendant) carries a
     // JSX expression or nests a component; otherwise it would swallow that inner
     // JSX/component as literal text that rehype-raw's parse5 pass can't handle.
-    // Table-structural wrappers are excluded — `mdxishTables` re-parses those.
-    const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
+    // Table-structural wrappers are excluded from both — `mdxishTables` re-parses
+    // those, so a `{…}` in a cell (e.g. `<code>--depth={n}</code>`) must not
+    // accidentally promote the table to an MDX element prematurely.
     const isTableStructuralTag = tag === 'table' || tableTags.has(tag);
+    const hasNestedExpressionAttr =
+      !selfClosing && !isTableStructuralTag && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
     const hasNestedComponentTag =
       !selfClosing && !isTableStructuralTag && hasNestedGenericComponentTag(contentAfterTag);
 

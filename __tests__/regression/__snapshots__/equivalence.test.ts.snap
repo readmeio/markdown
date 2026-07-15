@@ -185,6 +185,29 @@ exports[`MDX↔MDXish equivalence > embeds 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
 {
   "status": "match",
