@@ -537,6 +537,105 @@ None of the following content will get rendered!`;
     });
   });
 
+  describe('brace expressions inside table cells', () => {
+    const bodyRowsOf = (hast: ReturnType<typeof mdxish>) =>
+      findAllElementsByTagName(findAllElementsByTagName(hast, 'tbody')[0], 'tr');
+
+    it('preserves an identifier expression inside inline code without collapsing rows', () => {
+      const doc = `<table>
+    <thead>
+    <tr>
+        <th>Command</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>hello</td>
+        <td><code>--split-depth={nesting-level-number-value}</code></td>
+    </tr>
+    <tr>
+        <td>YOOO</td>
+        <td>YOO</td>
+    </tr>
+</tbody>
+</table>`;
+
+      const hast = mdxish(doc);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+
+      const code = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      expect(code).toHaveLength(1);
+      const codeText = code[0].children[0];
+      expect(codeText.type === 'text' && codeText.value).toBe('--split-depth={nesting-level-number-value}');
+    });
+
+    it('keeps rows separate in condensed single-line table markup', () => {
+      const doc =
+        '<table><thead><tr><th>Command</th></tr></thead><tbody><tr><td><code>--depth={n}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+    });
+
+    it('keeps a bare identifier expression in a cell as literal text', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>value is {your-property-name}</td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<td>value is {your-property-name}</td>');
+    });
+
+    it('still evaluates a self-contained expression inside a cell', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>x={1 + 2}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<code>x=3</code>');
+    });
+
+    it('resolves a quoted string expression inside inline code', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>--r-format \\{"your-rule-format"}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      expect(toHtml(hast)).toContain('<code>--r-format {"your-rule-format"}</code>');
+    });
+
+    it('preserves escaped braces inside a code cell', () => {
+      const doc =
+        '<table><thead><tr><th>H</th></tr></thead><tbody><tr><td><code>literal \\{not-expr\\}</code></td></tr><tr><td>next</td></tr></tbody></table>';
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+      const code = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      const codeText = code[0].children[0];
+      expect(codeText.type === 'text' && codeText.value).toBe('literal {not-expr}');
+    });
+
+    it('handles multiple code spans with expressions across a line break in one cell', () => {
+      const doc = `<table><thead><tr><th>H</th></tr></thead><tbody><tr><td>
+<code>a --version {v-number}</code> <br /><br />
+<code>a {p-name}</code>
+</td></tr><tr><td>next</td></tr></tbody></table>`;
+
+      const hast = mdxish(doc);
+      expect(bodyRowsOf(hast)).toHaveLength(2);
+
+      const codes = findAllElementsByTagName(bodyRowsOf(hast)[0], 'code');
+      expect(codes).toHaveLength(2);
+      expect(codes.map(code => (code.children[0].type === 'text' ? code.children[0].value : ''))).toStrictEqual([
+        'a --version {v-number}',
+        'a {p-name}',
+      ]);
+    });
+  });
+
   describe('jsx tables with multi code tabs', () => {
     it('groups consecutive code blocks in a cell into code-tabs', async () => {
       const doc = `
