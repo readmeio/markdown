@@ -1,12 +1,14 @@
-import type { Html, PhrasingContent } from 'mdast';
+import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
+import { htmlRawNames } from 'micromark-util-html-tag-name';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { NodeTypes } from '../../../../enums';
 import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { jsxTableFromMarkdown } from '../../../../lib/mdast-util/jsx-table';
@@ -18,6 +20,8 @@ import { jsxTable } from '../../../../lib/micromark/jsx-table';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { walkTags } from '../tables/tag-walker';
+import { tableTags } from '../tables/utils';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
@@ -103,3 +107,65 @@ export const toMdxJsxTextElement = (
   children,
   ...(position ? { position } : {}),
 });
+
+// Raw-body tags (pre/script/style/textarea) must stay byte-exact; table
+// structure (`table` + `tableTags`) is owned by `mdxishTables` and figures by
+// `mdxishJsxToMdast`, both of which run later on raw html nodes.
+const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', 'figure', 'figcaption']);
+export const NESTED_TABLE_RE = /<table[\s>]/i;
+export const isMarkdownPromotableHtmlTag = (tag: string): boolean => !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
+
+// Expression nodes count as plain so `<div>{1+1}</div>` keeps its current
+// literal-brace behavior; variables/glossary already resolve inside raw html.
+const PLAIN_CONTENT_TYPES = new Set<string>([
+  'paragraph',
+  'text',
+  'html',
+  'mdxTextExpression',
+  'mdxFlowExpression',
+  NodeTypes.variable,
+  NodeTypes.glossary,
+]);
+
+// Promoting plain HTML is only worth bypassing rehype-raw's parse5 pass when
+// the body parses into an actual markdown construct.
+export const containsMarkdownConstruct = (nodes: Node[]): boolean =>
+  nodes.some(
+    node =>
+      !PLAIN_CONTENT_TYPES.has(node.type) ||
+      ('children' in node && Array.isArray(node.children) && containsMarkdownConstruct(node.children)),
+  );
+
+/**
+ * Index of the `</tag>` that balances the already-consumed opening tag (the
+ * caller starts us one level deep). `lastIndexOf` mis-slices sibling same-tag
+ * pairs like `<div>**a**</div><div>**b**</div>`, so we depth-match instead —
+ * delegating to `walkTags` (htmlparser2) so quoted attributes (`title="</div>"`),
+ * code spans, and legacy `<<VARIABLE>>` are handled for free. Returns -1 when
+ * the wrapper is left open.
+ */
+export function findBalancedClosingTagIndex(content: string, tag: string): number {
+  const target = tag.toLowerCase();
+  const canonicalCloserLength = tag.length + 3; // `</tag>`
+  // The caller already stripped the opening tag, so re-attach one: htmlparser2
+  // drops an unmatched closer, and we want it balanced. Offsets shift by the
+  // prefix length.
+  const prefix = `<${tag}>`;
+  let depth = 0;
+  let closeIndex = -1;
+  walkTags(prefix + content, {
+    onOpen: ({ name, isSelfClosing, isStrayCloser }) => {
+      if (closeIndex >= 0 || isSelfClosing || isStrayCloser) return;
+      if (name.toLowerCase() === target) depth += 1;
+    },
+    onClose: ({ name, start, end, implicit }) => {
+      if (closeIndex >= 0 || implicit || name.toLowerCase() !== target) return;
+      // Only canonical `</tag>` closers — the caller slices by that length, so a
+      // whitespaced `</tag >` would misalign; leaving it unmatched keeps it raw.
+      if (end - start !== canonicalCloserLength) return;
+      depth -= 1;
+      if (depth === 0) closeIndex = start - prefix.length;
+    },
+  });
+  return closeIndex;
+}
