@@ -1813,6 +1813,33 @@ the /{customer\\_id}/config/clients operation
       // `<table>` sits on line 4, offset 6 into the value → offset 26 in the document.
       expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
+
+    describe('when surrounded by HTMLBlock (protected)', () => {
+      it('does not split a table inside a closed <HTMLBlock>', () => {
+        const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('leaves a <table> inside an unclosed <HTMLBlock> untouched', () => {
+        expect(splitHtmlWithNestedTables(htmlNode('<HTMLBlock>\n<table><tr><td>x</td></tr></table>'))).toBeNull();
+      });
+
+      it('suppresses a later well-formed <table> once an unclosed <HTMLBlock> is open', () => {
+        const value = '<div><HTMLBlock>oops</div>\n<table><tr><td>real</td></tr></table>';
+        expect(splitHtmlWithNestedTables(htmlNode(value))).toBeNull();
+      });
+
+      it('does not protect a table after a self-closing <HTMLBlock/>', () => {
+        const parts = splitHtmlWithNestedTables(htmlNode('<div><HTMLBlock/><table><tr><td>x</td></tr></table></div>'));
+    
+        expect(parts).not.toBeNull();
+        expect(parts).toStrictEqual([
+          { type: 'html', value: '<div><HTMLBlock/>' },
+          { type: 'html', value: '<table><tr><td>x</td></tr></table>' },
+          { type: 'html', value: '</div>' },
+        ]);
+      });
+    });
   });
 
   describe('given a table wrapped in a raw HTML block', () => {
@@ -1962,6 +1989,293 @@ ${lowercaseTable}
       // are consistent as actually wired into the tree.
       const expectedLine = parserReadyContent.slice(0, start.offset!).split('\n').length;
       expect(start.line).toBe(expectedLine);
+    });
+  });
+
+  describe('given a table nested inside a component body (CX-3705)', () => {
+    // The component body is re-parsed by `getInlineMdProcessor`, which must
+    // include the `jsxTable` tokenizer. Without it, blank lines between rows let
+    // CommonMark HTML block type 6 fragment the table — rows spill out as text
+    // and indented code blocks instead of rendering as a table.
+    it('keeps a <Table> with blank lines between rows whole inside a <Callout>', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+  **Conflict resolution**
+
+  <Table align={["left","left"]}>
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>Two adapters disagree</td>
+        <td>Higher-tier adapter wins</td>
+      </tr>
+
+      <tr>
+        <td>One adapter reports twice</td>
+        <td>Most recent by Last Seen wins</td>
+      </tr>
+    </tbody>
+  </Table>
+</Callout>`;
+      const hast = mdxish(md);
+
+      // Exactly one table, with its header row and both body rows intact.
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+
+      // The rows must not fragment into a <pre><code> block.
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+
+      // The table lives inside the callout, not hoisted out of it.
+      const callouts = findAllElementsByTagName(hast, 'Callout');
+      expect(callouts).toHaveLength(1);
+      expect(findAllElementsByTagName(callouts[0], 'table')).toHaveLength(1);
+
+      // Every cell renders; none leak as escaped HTML text.
+      const html = toHtml(hast);
+      ['Two adapters disagree', 'Higher-tier adapter wins', 'One adapter reports twice', 'Most recent by Last Seen wins'].forEach(
+        text => expect(html).toContain(text),
+      );
+      expect(html).not.toContain('&#x3C;tr>');
+    });
+
+    it('keeps a lowercase <table> with blank lines between rows whole inside a <Callout>', () => {
+      const md = `<Callout icon="📘" theme="info">
+  Heads up:
+
+  <table>
+    <thead>
+      <tr><th>Key</th><th>Value</th></tr>
+    </thead>
+
+    <tbody>
+      <tr><td>a</td><td>1</td></tr>
+
+      <tr><td>b</td><td>2</td></tr>
+    </tbody>
+  </table>
+</Callout>`;
+      const hast = mdxish(md);
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('is not Callout-specific: works in any component body (e.g. <Accordion>)', () => {
+      const md = `<Accordion title="Details">
+
+<Table>
+<thead>
+<tr><th>A</th><th>B</th></tr>
+</thead>
+
+<tbody>
+<tr><td>1</td><td>2</td></tr>
+
+<tr><td>3</td><td>4</td></tr>
+</tbody>
+</Table>
+
+</Accordion>`;
+      const hast = mdxish(md);
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('still parses markdown that follows the table in the same component body', () => {
+      const md = `<Callout icon="📘" theme="info">
+<Table>
+<thead>
+<tr><th>A</th></tr>
+</thead>
+
+<tbody>
+<tr><td>x</td></tr>
+</tbody>
+</Table>
+
+**After the table** and a [link](https://example.com).
+</Callout>`;
+      const hast = mdxish(md);
+
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      // Sibling markdown after the table must still be processed, not swallowed.
+      expect(findAllElementsByTagName(hast, 'strong')).toHaveLength(1);
+      const links = findAllElementsByTagName(hast, 'a');
+      expect(links).toHaveLength(1);
+      expect(links[0].properties).toMatchObject({ href: 'https://example.com' });
+    });
+
+    it('does not treat a <table> inside a fenced code example as a real table', () => {
+      const md = `<Callout icon="📘" theme="info">
+\`\`\`html
+<table><tr><td>example</td></tr></table>
+\`\`\`
+</Callout>`;
+      const hast = mdxish(md);
+
+      // The example is code, not a rendered table.
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(0);
+      const html = toHtml(hast);
+      expect(html).toContain('&#x3C;table>');
+    });
+
+    it('keeps the table whole in safeMode', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+<Table align={["left"]}>
+<thead>
+<tr><th>A</th></tr>
+</thead>
+
+<tbody>
+<tr><td>x</td></tr>
+
+<tr><td>y</td></tr>
+</tbody>
+</Table>
+</Callout>`;
+      const hast = mdxish(md, { safeMode: true });
+
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(findAllElementsByTagName(hast, 'pre')).toHaveLength(0);
+    });
+
+    it('round-trips (mdast -> markdown) with the callout wrapper and all rows intact', () => {
+      const md = `<Callout icon="🚧" theme="warn">
+<Table align={["left","left"]}>
+<thead>
+<tr><th>Scenario</th><th>Result</th></tr>
+</thead>
+
+<tbody>
+<tr><td>disagree</td><td>higher wins</td></tr>
+
+<tr><td>twice</td><td>recent wins</td></tr>
+</tbody>
+</Table>
+</Callout>`;
+      const out = roundTripMdxish(md);
+
+      // The callout wrapper survives, and every row round-trips (the fragmented
+      // pre-fix output lost rows entirely, so they could never serialize back).
+      expect(out).toContain('<Callout icon="🚧" theme="warn">');
+      expect(out).toContain('</Callout>');
+      ['Scenario', 'Result', 'disagree', 'higher wins', 'twice', 'recent wins'].forEach(text =>
+        expect(out).toContain(text),
+      );
+      // Serializes as a GFM table, not a leaked code fence or escaped tags.
+      expect(out).toContain('| Scenario | Result');
+      expect(out).not.toContain('```');
+      expect(out).not.toContain('&#x3C;');
+    });
+  });
+
+  describe('given a raw-HTML table whose closer has stray whitespace (CX-3706)', () => {
+    // `jsxTable` captures a raw `<table>` by scanning for a literal `</table>`.
+    // A `</ table >` closer (the same "spaces in the tag" defect the source has
+    // in its `</ td >` cells) isn't recognized, so the table used to look
+    // unclosed: it fragmented at blank lines into an empty `<table></table>`
+    // plus a `<pre>` code block. Normalizing the closer keeps the table whole.
+    it('recovers a table closed with </ table > into a single table with every row', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+
+  <tr>
+    <td>USA</td>
+    <td>IRS</td>
+  </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
+      // header row + 2 body rows
+      expect(findAllElementsByTagName(tables[0], 'tr')).toHaveLength(3);
+      expect(html).toContain('Federal Tax Service');
+      expect(html).toContain('IRS');
+    });
+
+    it('does not fragment 4-space-indented rows into a <pre> code block', () => {
+      const doc = `<table>
+    <thead>
+        <tr><th>Country</th><th>Src</th></tr>
+    </thead>
+
+    <tr>
+        <td>Russia</td>
+        <td>Federal Tax Service</td>
+    </tr>
+</ table >`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(html).not.toContain('<code');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+    });
+
+    it('recovers a </ table >-closed table wrapped in a plain <div>', () => {
+      const doc = `<div class="rdmd-table">
+<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Russia</td>
+    <td>Federal Tax Service</td>
+  </tr>
+</ table >
+</div>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<pre');
+      expect(findAllElementsByTagName(hast, 'table')).toHaveLength(1);
+      expect(html).toContain('Federal Tax Service');
+    });
+
+    it('drops the stray comment a spaced </ td > cell closer used to leave behind', () => {
+      const doc = `<table>
+  <thead>
+    <tr><th>Country</th><th>Src</th></tr>
+  </thead>
+
+  <tr>
+    <td>Marshall Islands </ td >
+    <td>International Registries Inc.</td>
+  </tr>
+</table>`;
+      const hast = mdxish(doc);
+      const html = toHtml(hast);
+
+      expect(html).not.toContain('<!--');
+      const cells = findAllElementsByTagName(hast, 'td');
+      expect(cells.length).toBeGreaterThanOrEqual(2);
+      expect(html).toContain('Marshall Islands');
+      expect(html).toContain('International Registries Inc.');
     });
   });
 });

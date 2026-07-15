@@ -42,7 +42,7 @@
     "test": "vitest",
     "test.ui": "vitest --ui",
     "test.browser": "jest",
-    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs",
+    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs && node scripts/verify-lazy-mermaid.cjs",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {

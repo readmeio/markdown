@@ -185,6 +185,35 @@ exports[`MDX↔MDXish equivalence > embeds 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/h1[0]",
+      "right": "<h1 class="header-scroll heading heading-1">…(3 children)…</h1>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
+exports[`MDX↔MDXish equivalence > htmlblock 1`] = `
+{
+  "status": "match",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
 {
   "changes": [
@@ -214,12 +243,6 @@ exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
   ],
   "severity": "structural",
   "status": "differ",
-}
-`;
-
-exports[`MDX↔MDXish equivalence > htmlblock-with-script 1`] = `
-{
-  "status": "match",
 }
 `;
 
@@ -737,6 +760,22 @@ exports[`MDX↔MDXish equivalence > style-and-jsx-expressions 1`] = `
     },
   ],
   "severity": "content",
+  "status": "differ",
+}
+`;
+
+exports[`MDX↔MDXish equivalence > table-in-callout 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
   "status": "differ",
 }
 `;

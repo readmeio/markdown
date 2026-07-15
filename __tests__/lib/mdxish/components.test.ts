@@ -5,7 +5,7 @@ import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { mdxish, compile, run } from '../../../lib';
-import { findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('end-to-end tests in the mdxish pipeline for various types and variations of MDX components', () => {
   // Create & compile example component
@@ -422,6 +422,49 @@ labore et dolore magna aliqua.`,
         children: [{ type: 'text', value: 'Link' }],
       });
       expect(trailing).toMatchObject({ type: 'text', value: ' done.' });
+    });
+  });
+
+  describe('fenced code with an unbalanced brace inside a Callout (CX-3704)', () => {
+    const md = `<Callout icon="⚠️" theme="warn">
+  **Title line**
+
+  Intro paragraph inside the callout.
+
+  \`\`\`
+  {
+  \`\`\`
+
+  Closing paragraph inside the callout.
+</Callout>
+
+* **After-marker bullet**
+
+  Indented continuation after the callout.
+
+Final plain paragraph at end of file.`;
+
+    it('closes the callout at </Callout> and renders following content outside it', () => {
+      const tree = mdxish(md);
+
+      // Exactly one Callout, and the content after </Callout> is NOT swallowed.
+      const callouts = findAllElementsByTagName(tree, 'Callout');
+      expect(callouts).toHaveLength(1);
+
+      // The after-marker bullet renders as a real list, not a literal `*`
+      // paragraph, and that list lives OUTSIDE the callout.
+      expect(findAllElementsByTagName(tree, 'ul')).toHaveLength(1);
+      expect(findAllElementsByTagName(callouts[0], 'ul')).toHaveLength(0);
+
+      // The unbalanced `{` stays inside a code block within the callout.
+      const pre = findElementByTagName(callouts[0], 'pre');
+      expect(pre).not.toBeNull();
+      expect(JSON.stringify(pre)).toContain('{');
+    });
+
+    it('does not strand a literal </Callout> in the output', () => {
+      const tree = mdxish(md);
+      expect(JSON.stringify(tree)).not.toContain('</Callout>');
     });
   });
 });

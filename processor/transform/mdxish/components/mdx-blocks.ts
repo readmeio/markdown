@@ -8,7 +8,15 @@ import { pointAfter } from '../../../utils';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
-import { getInlineMdProcessor, hasExpressionAttr, isPascalCase } from './utils';
+import {
+  containsMarkdownConstruct,
+  findBalancedClosingTagIndex,
+  getInlineMdProcessor,
+  hasExpressionAttr,
+  isMarkdownPromotableHtmlTag,
+  isPascalCase,
+  NESTED_TABLE_RE,
+} from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
@@ -120,6 +128,10 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * This transformer identifies these patterns and converts them to proper MDX JSX elements so they
  * can be accurately recognized and rendered later with their component definition code.
  *
+ * Note: The main goal is to promote PascalCase tags to MDX elements, but we want to promote
+ * normal HTML to MDX elements in some cases so they get the full custom parsing behavior.
+ * E.g. tags with JSX expressions, nested components, etc.
+ *
  * The mdx-component micromark tokenizer ensures that multi-line components are captured
  * as single HTML nodes, so this transformer only needs to handle two cases:
  *
@@ -170,6 +182,8 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
     const isPascal = isPascalCase(tag);
 
+    // ==== SPECIAL CASES TO PROMOTE NORMAL HTML TO MDX ELEMENTS ====
+
     // Lowercase inline tags with `{…}` attributes belong to
     // mdxishInlineComponentBlocks; leave them as html for that pass. PascalCase
     // components stay flow-level even when inline (ReadMe's component model).
@@ -178,12 +192,24 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     // A lowercase wrapper is only promoted when it (or a descendant) carries a
     // JSX expression or nests a component; otherwise it would swallow that inner
     // JSX/component as literal text that rehype-raw's parse5 pass can't handle.
-    // Table-structural wrappers are excluded — `mdxishTables` re-parses those.
-    const hasNestedExpressionAttr = !selfClosing && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
+    // Table-structural wrappers are excluded from both — `mdxishTables` re-parses
+    // those, so a `{…}` in a cell (e.g. `<code>--depth={n}</code>`) must not
+    // accidentally promote the table to an MDX element prematurely.
     const isTableStructuralTag = tag === 'table' || tableTags.has(tag);
+    const hasNestedExpressionAttr =
+      !selfClosing && !isTableStructuralTag && NESTED_ATTR_EXPRESSION_RE.test(contentAfterTag);
     const hasNestedComponentTag =
       !selfClosing && !isTableStructuralTag && hasNestedGenericComponentTag(contentAfterTag);
-    if (!isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr && !hasNestedComponentTag) return;
+
+    // Promotion: By default commonmark doesn't parse markdown in single line HTML tags (e.g. <div>**bold**</div>)
+    // To support that, we try to promote them to MDX elements so the markdown gets parsed
+    const isPlainLowercaseHtml =
+      !isPascal && !hasExpressionAttr(attributes) && !hasNestedExpressionAttr && !hasNestedComponentTag;
+    const plainClosingTagIndex =
+      isPlainLowercaseHtml && !selfClosing && isMarkdownPromotableHtmlTag(tag) && !NESTED_TABLE_RE.test(contentAfterTag)
+        ? findBalancedClosingTagIndex(contentAfterTag, tag)
+        : -1;
+    if (isPlainLowercaseHtml && plainClosingTagIndex < 0) return;
 
     const closingTagStr = `</${tag}>`;
 
@@ -207,14 +233,23 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
     }
 
     // Case 2: Self-contained block (closing tag in content)
-    if (contentAfterTag.includes(closingTagStr)) {
-      const closingTagIndex = contentAfterTag.lastIndexOf(closingTagStr);
+    const closingTagIndex = isPlainLowercaseHtml ? plainClosingTagIndex : contentAfterTag.lastIndexOf(closingTagStr);
+    if (closingTagIndex >= 0) {
       // Untrimmed so parseMdChildren can dedent before trimming.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
-      let parsedChildren: MdxJsxFlowElement['children'] = componentInnerContent.trim()
-        ? (parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'])
-        : [];
+      let parsedChildren: MdxJsxFlowElement['children'] = [];
+      if (componentInnerContent.trim()) {
+        try {
+          parsedChildren = parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'];
+        } catch (error) {
+          // Plain HTML bodies can hold anything (e.g. stray braces the strict
+          // expression parser rejects) — keep the node raw instead of throwing.
+          if (isPlainLowercaseHtml) return;
+          throw error;
+        }
+      }
+      if (isPlainLowercaseHtml && !containsMarkdownConstruct(parsedChildren)) return;
       // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
