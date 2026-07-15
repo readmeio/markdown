@@ -18,6 +18,7 @@ import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
@@ -101,12 +102,11 @@ export const toMdxJsxTextElement = (
 });
 
 // Raw-body tags (pre/script/style/textarea) must stay byte-exact; table
-// structure is owned by `mdxishTables` and figures by `mdxishJsxToMdast`,
-// both of which run later on raw html nodes.
-const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, 'table', 'figure', 'figcaption']);
+// structure (`table` + `tableTags`) is owned by `mdxishTables` and figures by
+// `mdxishJsxToMdast`, both of which run later on raw html nodes.
+const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', 'figure', 'figcaption']);
 export const NESTED_TABLE_RE = /<table[\s>]/i;
-export const isMarkdownPromotableHtmlTag = (tag: string): boolean =>
-  !tableTags.has(tag) && !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
+export const isMarkdownPromotableHtmlTag = (tag: string): boolean => !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
 
 // Expression nodes count as plain so `<div>{1+1}</div>` keeps its current
 // literal-brace behavior; variables/glossary already resolve inside raw html.
@@ -129,15 +129,36 @@ export const containsMarkdownConstruct = (nodes: Node[]): boolean =>
       ('children' in node && Array.isArray(node.children) && containsMarkdownConstruct(node.children)),
   );
 
-// Depth-matching closing-tag finder: `lastIndexOf` mis-slices sibling
-// same-tag pairs like `<div>**a**</div><div>**b**</div>`.
+/**
+ * Index of the `</tag>` that balances the already-consumed opening tag (the
+ * caller starts us one level deep). `lastIndexOf` mis-slices sibling same-tag
+ * pairs like `<div>**a**</div><div>**b**</div>`, so we depth-match instead —
+ * delegating to `walkTags` (htmlparser2) so quoted attributes (`title="</div>"`),
+ * code spans, and legacy `<<VARIABLE>>` are handled for free. Returns -1 when
+ * the wrapper is left open.
+ */
 export function findBalancedClosingTagIndex(content: string, tag: string): number {
-  const tagTokenRe = new RegExp(`<${tag}(?=[\\s/>])[^>]*>|</${tag}>`, 'gi');
-  let depth = 1;
-  const closingMatch = [...content.matchAll(tagTokenRe)].find(match => {
-    if (match[0].startsWith('</')) depth -= 1;
-    else if (!match[0].endsWith('/>')) depth += 1;
-    return depth === 0;
+  const target = tag.toLowerCase();
+  const canonicalCloserLength = tag.length + 3; // `</tag>`
+  // The caller already stripped the opening tag, so re-attach one: htmlparser2
+  // drops an unmatched closer, and we want it balanced. Offsets shift by the
+  // prefix length.
+  const prefix = `<${tag}>`;
+  let depth = 0;
+  let closeIndex = -1;
+  walkTags(prefix + content, {
+    onOpen: ({ name, isSelfClosing, isStrayCloser }) => {
+      if (closeIndex >= 0 || isSelfClosing || isStrayCloser) return;
+      if (name.toLowerCase() === target) depth += 1;
+    },
+    onClose: ({ name, start, end, implicit }) => {
+      if (closeIndex >= 0 || implicit || name.toLowerCase() !== target) return;
+      // Only canonical `</tag>` closers — the caller slices by that length, so a
+      // whitespaced `</tag >` would misalign; leaving it unmatched keeps it raw.
+      if (end - start !== canonicalCloserLength) return;
+      depth -= 1;
+      if (depth === 0) closeIndex = start - prefix.length;
+    },
   });
-  return closingMatch?.index ?? -1;
+  return closeIndex;
 }

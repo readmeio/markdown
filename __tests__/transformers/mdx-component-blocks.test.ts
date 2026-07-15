@@ -507,6 +507,26 @@ More content here
 
         expect(tree.children).toMatchObject([{ type: 'html', value: '<br />' }]);
       });
+
+      it('should ignore a closing-tag-shaped nested attribute when finding the real close', () => {
+        // The `</div>` inside `title="…"` must not be mistaken for the wrapper's
+        // close, or the div would slice short and the `<span>` would be orphaned.
+        const tree = parseWithPlugin('<div>**a** <span title="</div>">b</span></div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [
+              { type: 'strong', children: [{ type: 'text', value: 'a' }] },
+              { type: 'text', value: ' ' },
+              { type: 'html', value: '<span title="</div>">' },
+              { type: 'text', value: 'b' },
+              { type: 'html', value: '</span>' },
+            ],
+          },
+        ]);
+      });
     });
 
     describe('case 3: embedded closing tag with trailing content', () => {
