@@ -3,6 +3,8 @@ import { htmlRawNames } from 'micromark-util-html-tag-name';
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 import { HTML_TABLE_STRUCTURE_TAGS } from '../../../utils/common-html-words';
 
+import { indentWidth } from './indentation';
+
 const STANDALONE_HTML_LINE_REGEX = /^(<[a-z][^<>]*>|<\/[a-z][^<>]*>)+\s*$/;
 
 const HTML_LINE_WITH_CONTENT_REGEX = /^<[a-z][^<>]*>.*<\/[a-z][^<>]*>(?:[^<]*)$/;
@@ -33,12 +35,6 @@ function countRawContentTags(line: string): { closes: number; opens: number }[] 
     opens: (line.match(open) ?? []).length,
     closes: (line.match(close) ?? []).length,
   }));
-}
-
-// Indentation width in columns, counting a tab as 4 per CommonMark.
-function indentWidth(line: string): number {
-  const leading = line.match(/^[ \t]*/)?.[0] ?? '';
-  return leading.replace(/\t/g, '    ').length;
 }
 
 interface RawContentFacts {
