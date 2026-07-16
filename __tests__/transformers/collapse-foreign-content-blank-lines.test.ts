@@ -134,6 +134,19 @@ paragraph two`;
     expect(collapseForeignContentBlankLines(input)).toBe(input);
   });
 
+  it('does not swallow document blank lines after a self-closing <svg/> with a quoted ">"', () => {
+    // The `>` lives inside a quoted attribute value, so it must not be read as the tag
+    // terminator — otherwise the `/>` is missed, the tag latches as an unclosed opener,
+    // and every downstream blank line is eaten.
+    const input = `<svg data-tooltip="a > b" viewBox="0 0 24 24" />
+
+paragraph one
+
+paragraph two`;
+
+    expect(collapseForeignContentBlankLines(input)).toBe(input);
+  });
+
   it('collapses blank lines inside an SVG with a multi-line opening tag', () => {
     const input = `<svg
   viewBox="0 0 24 24"

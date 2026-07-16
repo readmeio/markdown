@@ -8,12 +8,16 @@ const ROOT_ALT = FOREIGN_CONTENT_TAGS.join('|');
 // root name, so lookalikes like `<svgfoo>` and custom elements like `<svg-icon>` are ignored.
 const ANY_ROOT_RE = new RegExp(`<(?:${ROOT_ALT})(?=[\\s/>])`, 'i');
 
+// Tag body: swallows whole quoted attribute values so a `>` inside a quote (e.g.
+// `<svg data-x="a > b" />`) can't be mistaken for the tag terminator; other non-`>`
+// chars (including newlines) are consumed one at a time.
+const TAG_BODY = '(?:"[^"]*"|\'[^\']*\'|[^>\'"])*?';
+
 // One whole svg/math tag (opener, self-closer, or closer), matched whole so attributes
 // and `>` may span lines. The `[\s/>]` boundary after the root name keeps `<svgfoo>`/
-// `<svg-icon>` out. Group 1 is `/` only for a self-closer. A `>` inside an attribute value
-// ends the match early — a known limitation shared by these preprocessors.
+// `<svg-icon>` out. Group 1 is `/` only for a self-closer.
 const FOREIGN_TAG_RE = new RegExp(
-  `<(?:${ROOT_ALT})(?=[\\s/>])[^>]*?(/)?>|</(?:${ROOT_ALT})(?=[\\s/>])[^>]*?>`,
+  `<(?:${ROOT_ALT})(?=[\\s/>])${TAG_BODY}(/)?>|</(?:${ROOT_ALT})(?=[\\s/>])${TAG_BODY}>`,
   'gi',
 );
 
