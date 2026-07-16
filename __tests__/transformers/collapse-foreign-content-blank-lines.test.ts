@@ -163,6 +163,30 @@ paragraph two`;
     expect(collapseForeignContentBlankLines(input)).toBe(input);
   });
 
+  it('does not treat a hyphenated custom element like <svg-icon> as foreign content', () => {
+    const input = `<svg-icon>
+
+paragraph one
+
+paragraph two
+
+</svg-icon>`;
+
+    // A custom element is not SVG/MathML, so its blank lines must survive.
+    expect(collapseForeignContentBlankLines(input)).toBe(input);
+  });
+
+  it('ignores an unmatched foreign tag inside an HTML comment', () => {
+    const input = `<!-- <math> -->
+
+paragraph one
+
+paragraph two`;
+
+    // A stray tag in a comment must not open an island and eat downstream blank lines.
+    expect(collapseForeignContentBlankLines(input)).toBe(input);
+  });
+
   it('returns content unchanged when there is no SVG/MathML', () => {
     const input = `<div>
 

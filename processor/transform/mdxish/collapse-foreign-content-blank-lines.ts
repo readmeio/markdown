@@ -4,13 +4,21 @@ import { FOREIGN_CONTENT_TAGS } from '../../../utils/common-html-words';
 // `svg|math`, from the canonical list so this stays in sync with the component transform.
 const ROOT_ALT = FOREIGN_CONTENT_TAGS.join('|');
 
-// A foreign-content opener. `\b` avoids lookalikes like `<svgfoo>`.
-const ANY_ROOT_RE = new RegExp(`<(?:${ROOT_ALT})\\b`, 'i');
+// A foreign-content opener. The `[\s/>]` boundary requires a real tag delimiter after the
+// root name, so lookalikes like `<svgfoo>` and custom elements like `<svg-icon>` are ignored.
+const ANY_ROOT_RE = new RegExp(`<(?:${ROOT_ALT})(?=[\\s/>])`, 'i');
 
 // One whole svg/math tag (opener, self-closer, or closer), matched whole so attributes
-// and `>` may span lines. Group 1 is `/` only for a self-closer. A `>` inside an
-// attribute value ends the match early — a known limitation shared by these preprocessors.
-const FOREIGN_TAG_RE = new RegExp(`<(?:${ROOT_ALT})\\b[^>]*?(/)?>|</(?:${ROOT_ALT})\\b[^>]*?>`, 'gi');
+// and `>` may span lines. The `[\s/>]` boundary after the root name keeps `<svgfoo>`/
+// `<svg-icon>` out. Group 1 is `/` only for a self-closer. A `>` inside an attribute value
+// ends the match early — a known limitation shared by these preprocessors.
+const FOREIGN_TAG_RE = new RegExp(
+  `<(?:${ROOT_ALT})(?=[\\s/>])[^>]*?(/)?>|</(?:${ROOT_ALT})(?=[\\s/>])[^>]*?>`,
+  'gi',
+);
+
+// An HTML comment. Foreign markup inside one is inert and must not open an island.
+const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g;
 
 /**
  * `[start, end)` spans of every top-level SVG/MathML island. Matching whole tags
@@ -19,11 +27,21 @@ const FOREIGN_TAG_RE = new RegExp(`<(?:${ROOT_ALT})\\b[^>]*?(/)?>|</(?:${ROOT_AL
  */
 function findForeignContentSpans(text: string): [number, number][] {
   const spans: [number, number][] = [];
+
+  // Foreign tags inside an HTML comment are inert; a stray `<svg>`/`<math>` in a comment
+  // must not open an island and latch onto (line 39) the rest of the doc.
+  const comments = [...text.matchAll(HTML_COMMENT_RE)].map(
+    (m): [number, number] => [m.index ?? 0, (m.index ?? 0) + m[0].length],
+  );
+  const inComment = (offset: number) =>
+    comments.some(([commentStart, commentEnd]) => offset >= commentStart && offset < commentEnd);
+
   let depth = 0;
   let start = -1;
 
   [...text.matchAll(FOREIGN_TAG_RE)].forEach(match => {
     const offset = match.index ?? 0;
+    if (inComment(offset)) return; // markup inside an HTML comment is inert
     if (match[1] === '/') return; // self-closing tag opens no island
     if (match[0].startsWith('</')) {
       depth = Math.max(0, depth - 1);
