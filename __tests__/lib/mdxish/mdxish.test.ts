@@ -3,7 +3,7 @@ import type { Element, Root, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-import { findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -396,6 +396,24 @@ Line 2`;
       expect((paragraph.children[0] as Text).value).toBe('Line 1');
       expect((paragraph.children[1] as Element).tagName).toBe('br');
       expect((paragraph.children[2] as Text).value).toBe('\nLine 2');
+    });
+
+    it('converts CRLF line endings into <br> elements', () => {
+      const tree = mdxish('Line 1\r\nLine 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(1);
+    });
+
+    it('does not convert standalone carriage returns into <br> elements', () => {
+      const tree = mdxish('Line 1\rLine 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(0);
+    });
+
+    it('does not double explicit breaks separated by standalone carriage returns', () => {
+      const tree = mdxish('Line 1\r<br />\r<br />Line 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(2);
     });
 
     it('handles multiple soft line breaks and retains lone \\n nodes', () => {

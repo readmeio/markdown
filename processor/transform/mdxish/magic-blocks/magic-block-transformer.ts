@@ -30,7 +30,6 @@ import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { htmlBlockNames } from 'micromark-util-html-tag-name';
 import rehypeParse from 'rehype-parse';
 import rehypeStringify from 'rehype-stringify';
-import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -45,6 +44,7 @@ import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
+import hardBreaks from '../../../plugin/hard-breaks';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
@@ -108,7 +108,7 @@ const textToBlock = (text: string): MdastNode[] => [{ children: textToInline(tex
 /**
  * Converts leading newlines in magic block content to `<br>` tags.
  * Leading newlines are stripped by remark-parse before they become soft break nodes,
- * so remark-breaks cannot handle them. We convert them to HTML `<br>` tags instead.
+ * so the hard-breaks plugin cannot handle them. We convert them to HTML `<br>` tags instead.
  */
 const ensureLeadingBreaks = (text: string): string => text.replace(/^\n+/, match => '<br>'.repeat(match.length));
 
@@ -122,7 +122,7 @@ const contentParser = unified()
   .data('micromarkExtensions', [gemoji(), legacyVariable(), looseHtmlEntity()])
   .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
-  .use(remarkBreaks)
+  .use(hardBreaks)
   .use(remarkGfm)
   .use(normalizeEmphasisAST);
 
