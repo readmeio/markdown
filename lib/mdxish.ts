@@ -9,7 +9,6 @@ import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
-import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -20,6 +19,7 @@ import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
+import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import calloutTransformer from '../processor/transform/callouts';
@@ -123,7 +123,7 @@ function preprocessContent(
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
-  let result = normalizeClosingTagWhitespace(content); 
+  let result = normalizeClosingTagWhitespace(content);
   result = normalizeTableSeparator(result);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
@@ -290,7 +290,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
-    .use(remarkBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
+    .use(hardBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
