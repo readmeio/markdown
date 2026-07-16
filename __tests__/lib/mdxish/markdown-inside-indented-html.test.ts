@@ -125,9 +125,55 @@ describe('markdown inside indented plain HTML blocks', () => {
   </Card>
 </Cards>`;
 
-    const ast = mdxish(md);    
+    const ast = mdxish(md);
     const html = toHtml(ast);
     expect(html).toContain('Account balances, position changes, and transaction activity updated instantly');
     expect(findElementByTagName(ast, 'code')).toBeNull();
+  });
+
+  // A tab counts as 1 char but 4 CommonMark columns, so tab-indented bodies used to
+  // slip past the dedent's column gate and fragment into indented-code blocks.
+  it('does not wrap tab-indented nested HTML siblings in code blocks', () => {
+    const md = [
+      '<div class="top-image-text-section">',
+      '\t<div class="top-text-container">',
+      '\t\t<div style="font-size: 18px;"><h2>Try Akamai products for free</h2></div>',
+      '\t\t<p style="font-size: 16px;"><a class="dev-center-link" href="https://example.com/trials">Create an account</a> and explore for free.</p>',
+      '\t</div>',
+      '\t<div class="top-image-container">',
+      '\t\t<div>',
+      '\t\t\t<img src="https://example.com/img.jpg">',
+      '\t\t</div>',
+      '\t</div>',
+      '</div>',
+    ].join('\n');
+
+    const ast = mdxish(md);
+    const html = toHtml(ast);
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+
+    // Both sibling wrappers survive rather than one collapsing into a code block.
+    expect(findAllElementsByTagName(ast, 'div').filter(el =>
+      Array.isArray(el.properties.className)
+        ? el.properties.className.includes('top-image-container')
+        : el.properties.className === 'top-image-container',
+    )).toHaveLength(1);
+
+    expect(html).toContain('Try Akamai products for free</h2>');
+    expect(findElementByTagName(ast, 'a')).toMatchObject({ properties: { href: 'https://example.com/trials' } });
+    expect(findElementByTagName(ast, 'img')).toMatchObject({ properties: { src: 'https://example.com/img.jpg' } });
+  });
+
+  it('dedents a tab-indented <div> body so single-tab-deep markdown still parses', () => {
+    const md = ['<div className="simple-list">', '\t<h2>Learn By Example</h2>', '\t<p>Use the <a href="https://example.com">API Simulator</a>.</p>', '</div>'].join('\n');
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+    expect(findElementByTagName(ast, 'h2')).not.toBeNull();
+    expect(findElementByTagName(ast, 'a')).toMatchObject({ properties: { href: 'https://example.com' } });
   });
 });

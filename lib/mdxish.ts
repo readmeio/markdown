@@ -123,7 +123,7 @@ function preprocessContent(
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
-  let result = normalizeClosingTagWhitespace(content); 
+  let result = normalizeClosingTagWhitespace(content);
   result = normalizeTableSeparator(result);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
