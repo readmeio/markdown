@@ -189,6 +189,70 @@ paragraph two
     expect(collapseForeignContentBlankLines(input)).toBe(input);
   });
 
+  it('leaves the document untouched when an <svg> is never closed', () => {
+    const input = `Intro para.
+
+A stray <svg> mention that never closes.
+
+Second para.
+
+Third para.`;
+
+    expect(collapseForeignContentBlankLines(input)).toBe(input);
+  });
+
+  it('does not swallow document blank lines after a stray <svg> mention, but still collapses the islands after it', () => {
+    const input = `A stray <svg> mention.
+
+<svg viewBox="0 0 2 2">
+  <path d="a" />
+
+  <path d="b" />
+</svg>
+
+First para.
+
+Second para.`;
+
+    expect(collapseForeignContentBlankLines(input)).toBe(`A stray <svg> mention.
+
+<svg viewBox="0 0 2 2">
+  <path d="a" />
+  <path d="b" />
+</svg>
+
+First para.
+
+Second para.`);
+  });
+
+  it('does not swallow document blank lines after a stray </svg> mention, but still collapses the islands after it', () => {
+    const input = `A stray </svg> mention.
+
+<svg viewBox="0 0 2 2">
+  <path d="a" />
+
+  <path d="b" />
+</svg>
+
+First para.
+
+Second para.`;
+
+    // A closer with no opener closes nothing, so it must not consume the real island's
+    // `</svg>` and leave that island looking unclosed.
+    expect(collapseForeignContentBlankLines(input)).toBe(`A stray </svg> mention.
+
+<svg viewBox="0 0 2 2">
+  <path d="a" />
+  <path d="b" />
+</svg>
+
+First para.
+
+Second para.`);
+  });
+
   it('ignores an unmatched foreign tag inside an HTML comment', () => {
     const input = `<!-- <math> -->
 
