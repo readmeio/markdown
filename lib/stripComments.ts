@@ -12,8 +12,10 @@ import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
 import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
+import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxTable } from './micromark/jsx-table';
+import { mdxComponent } from './micromark/mdx-component';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -33,10 +35,16 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 1. we can rely on remarkMdx to parse MDXish
   // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
   // 3. we need to claim <HTMLBlock> before htmlFlow intercepts its inner HTML tags
+  // 4. we need mdxComponent to parse custom components as one node, and prevent the tag from getting escaped
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [htmlBlockComponent(), jsxTable(), mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [htmlBlockComponentFromMarkdown(), jsxTableFromMarkdown(), mdxExpressionFromMarkdown()])
+      .data('micromarkExtensions', [htmlBlockComponent(), jsxTable(), mdxComponent(), mdxExpression({ allowEmpty: true })])
+      .data('fromMarkdownExtensions', [
+        htmlBlockComponentFromMarkdown(),
+        jsxTableFromMarkdown(),
+        mdxComponentFromMarkdown(),
+        mdxExpressionFromMarkdown(),
+      ])
       .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 

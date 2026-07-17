@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.12.1
+### 🛠 Fixes & Updates
+
+* ignore standalone carriage returns as hard breaks ([#1555](https://github.com/readmeio/markdown/issues/1555)) ([8d8505e](https://github.com/readmeio/markdown/commit/8d8505e0e7ce2a52bca8e2e58841b872c002dd39))
+* **mdxish:** keep tab-indented HTML from fragmenting into code blocks ([#1556](https://github.com/readmeio/markdown/issues/1556)) ([86559de](https://github.com/readmeio/markdown/commit/86559deb0f9b009ef00d77869e627cf7435b9f3b))
+
 ## Version 14.12.0
 ### ✨ New & Improved
 

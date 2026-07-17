@@ -5,6 +5,7 @@ import type { Plugin } from 'unified';
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
+import { expandIndentToColumns, leadingIndent } from '../indentation';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -34,25 +35,34 @@ const hasNestedGenericComponentTag = (content: string): boolean =>
 
 /**
  * Strip the shared leading indentation from a component body so readability indentation
- * isn't parsed as indented code (4+ spaces), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
+ * isn't parsed as indented code (4+ columns), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
  * Relative indentation is kept, so content genuinely 4+ columns deeper stays code. We
  * only strip when a line actually reaches 4 columns; otherwise the body is left as-is so
  * its leading whitespace survives as text nodes (mixed component + HTML content needs it).
+ *
+ * Indentation is measured in CommonMark columns (tab = up to 4), matching how the parser
+ * decides indented code. A char count (tab = 1) under-measures tab-indented bodies, so
+ * they slip past the 4-column gate and their nested content fragments into code blocks.
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
   if (nonEmptyLines.length === 0) return text;
 
-  // Indent counts characters (tab = 1), unlike indentWidth's CommonMark columns
-  // (tab = 4) in terminate-html-flow-blocks.
-  const indents = nonEmptyLines.map(line => line.match(/^(\s*)/)?.[1].length ?? 0);
+  const indents = nonEmptyLines.map(line => expandIndentToColumns(leadingIndent(line)).length);
   const minIndent = Math.min(...indents);
   const maxIndent = Math.max(...indents);
 
-  const stripAmount = maxIndent > 3 ? minIndent : 0;
-  if (stripAmount === 0) return text;
-  return lines.map(line => line.slice(stripAmount)).join('\n');
+  if (maxIndent < 4 || minIndent === 0) return text;
+
+  // Expand each line's leading run to spaces before slicing so a shared indent of mixed
+  // tabs/spaces (and partial-tab remainders) strips cleanly while relative depth survives.
+  return lines
+    .map(line => {
+      const indent = leadingIndent(line);
+      return expandIndentToColumns(indent).slice(minIndent) + line.slice(indent.length);
+    })
+    .join('\n');
 }
 
 /**
