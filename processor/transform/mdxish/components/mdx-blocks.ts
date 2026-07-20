@@ -80,8 +80,9 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
 };
 
 // Splices trailing content in as sibling nodes. parseMdChildren has already
-// promoted any components nested among them (bottom-up), so — unlike the
-// old lazy walk — the parent needs no re-queue for them to be processed.
+// promoted any components nested among them (bottom-up); the main loop's
+// index-based walk then reaches these spliced siblings and the original children
+// they shift down, so no parent re-queue is needed.
 const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   if (siblingNodes.length > 0) {
@@ -173,8 +174,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     const node = parent.children[index];
     if (!node) return;
     // Descend into container nodes (lists, blockquotes, …) so their html children
-    // are reached. This is the stack's only job now — component bodies are promoted
-    // eagerly by parseMdChildren, so promoted subtrees never need re-queuing.
+    // are reached.
     if ('children' in node && Array.isArray(node.children)) {
       stack.push(node as Parent);
     }
@@ -299,13 +299,15 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     }
   };
 
-  // Depth-first so nodes keep their source order.
+  // Depth-first so nodes keep their source order. Index-based (not forEach) and
+  // re-reading length each step: parseSibling splices siblings in mid-iteration, and
+  // those — plus the original children they shift down — must all stay eligible.
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {
-      parent.children.forEach((_child, index) => {
+      for (let index = 0; index < parent.children.length; index += 1) {
         processChildNode(parent, index);
-      });
+      }
     }
   }
 
