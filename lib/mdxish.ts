@@ -28,6 +28,7 @@ import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
 import mdxishCalloutToJsx from '../processor/transform/mdxish/callout-to-jsx';
 import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
+import { collapseForeignContentBlankLines } from '../processor/transform/mdxish/collapse-foreign-content-blank-lines';
 import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
 import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
@@ -110,10 +111,11 @@ const defaultTransformers: PluggableList = [
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Canonicalize closing tags with stray whitespace (e.g., `</ td >` → `</td>`)
  * 2. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
- * 3. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 4. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 5. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 6. Replace snake_case component names with parser-safe placeholders
+ * 3. Collapse blank lines inside `<svg>`/`<math>` so their children aren't fragmented
+ * 4. Terminate HTML flow blocks so subsequent content isn't swallowed
+ * 5. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 6. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
+ * 7. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -125,6 +127,10 @@ function preprocessContent(
   // classification in `terminateHtmlFlowBlocks` is accurate)
   let result = normalizeClosingTagWhitespace(content);
   result = normalizeTableSeparator(result);
+  // Before terminateHtmlFlowBlocks: a blank line inside an <svg>/<math> island
+  // would otherwise fragment it (children spill out as an indented code block once
+  // a wrapper re-parses its deindented body — #1545).
+  result = collapseForeignContentBlankLines(result);
   result = terminateHtmlFlowBlocks(result);
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);

@@ -3,13 +3,14 @@ import type { Root, Element, ElementContent } from 'hast';
 import type { Transformer } from 'unified';
 import type { VFile } from 'vfile';
 
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS_LOWER } from '../../lib/constants';
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
 import {
   CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,
+  FOREIGN_CONTENT_TAGS,
   REACT_HTML_PROP_BOUNDARIES,
   RUNTIME_COMPONENT_TAGS,
   STANDARD_HTML_TAGS,
@@ -19,6 +20,10 @@ interface Options {
   components: CustomComponents;
   processMarkdown: (markdownContent: string) => Root;
 }
+
+// Foreign-content (SVG/MathML) roots — subtrees the component transform leaves
+// untouched (their children are namespaced XML, not HTML tags/components).
+const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
@@ -209,6 +214,12 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
+
+      // Skip foreign-content subtrees: their namespaced children (<path>, <mrow>, …)
+      // aren't HTML tags or components, so the "unknown component" removal below would
+      // otherwise delete them. (svg/math themselves are standard HTML tags, kept.)
+      // eslint-disable-next-line consistent-return
+      if (FOREIGN_CONTENT_ROOTS.has(node.tagName)) return SKIP;
 
       // Parse Image caption as markdown so it renders formatted (bold, code,
       // decoded entities) in the figcaption instead of as a raw string.
