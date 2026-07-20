@@ -246,6 +246,181 @@ exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > indented-foreign-html-tags 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "target",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[0]",
+      "right": "true",
+      "severity": "structural",
+    },
+    {
+      "attrName": "title",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[0]",
+      "right": "true",
+      "severity": "content",
+    },
+    {
+      "kind": "tag",
+      "left": "<a>",
+      "path": "/div[1]/a[1]",
+      "right": "#text(" ")",
+      "severity": "structural",
+    },
+    {
+      "attrName": "href",
+      "kind": "attr",
+      "left": "/docs/random-10",
+      "path": "/div[1]/a[2]",
+      "right": "/reference",
+      "severity": "content",
+    },
+    {
+      "attrName": "target",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[2]",
+      "right": "true",
+      "severity": "structural",
+    },
+    {
+      "attrName": "title",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[2]",
+      "right": "true",
+      "severity": "content",
+    },
+    {
+      "kind": "tag",
+      "left": "rect",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/rect[0]",
+      "right": "polyline",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "path",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[1]",
+      "right": "polyline",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M9 1v3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[2]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M15 1v3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[3]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M9 20v3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[4]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M15 20v3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[5]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M20 9h3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[6]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M20 15h3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[7]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M1 9h3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[8]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<path d="M1 15h3"></path>",
+      "path": "/div[1]/a[2]/div[0]/svg[0]/path[9]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "text",
+      "left": "Random 5",
+      "path": "/div[1]/a[2]/div[1]/#text[0]",
+      "right": "Random 7",
+      "severity": "content",
+    },
+    {
+      "kind": "text",
+      "left": "Random 4",
+      "path": "/div[1]/a[2]/div[2]/#text[0]",
+      "right": "Random 8",
+      "severity": "content",
+    },
+    {
+      "kind": "text",
+      "left": "Set up Random 6",
+      "path": "/div[1]/a[2]/div[3]/#text[0]",
+      "right": "View Random 9",
+      "severity": "content",
+    },
+    {
+      "kind": "tag",
+      "left": "<a>",
+      "path": "/div[1]/a[3]",
+      "right": "#text(" ")",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/a[4]",
+      "right": "<a class="wrike-nav-card" href="/docs/random-10" target="true" title="true">…(4 children)…</a>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/#text[5]",
+      "right": "#text(" ")",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/a[6]",
+      "right": "<a class="wrike-nav-card" href="/docs/datahub-overview" target="true" title="true">…(4 children)…</a>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 {
   "changes": [
