@@ -37,6 +37,14 @@ describe('htmlToMarkdown', () => {
     expect(result).not.toContain('secret');
   });
 
+  it('drops a titled iframe that the default handler would turn into a link', () => {
+    expect(htmlToMarkdown('<p>keep</p><iframe src="https://x.com" title="secret"></iframe>')).toBe('keep');
+  });
+
+  it('drops noscript content the default handler would keep', () => {
+    expect(htmlToMarkdown('<p>keep</p><noscript>secret</noscript>')).toBe('keep');
+  });
+
   it('strips html comments', () => {
     const result = htmlToMarkdown('<p>keep</p><!-- hidden -->');
     expect(result).toContain('keep');
