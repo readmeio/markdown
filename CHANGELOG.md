@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 14.13.0
+### ✨ New & Improved
+
+* Add MDXComponent processor, to preserve whitespace and prevent … ([#1544](https://github.com/readmeio/markdown/issues/1544)) ([940dedf](https://github.com/readmeio/markdown/commit/940dedf07c81c205aab826697fbb92e957555c73))
+* allow Card to take a LinkComponent ([#1558](https://github.com/readmeio/markdown/issues/1558)) ([1478d38](https://github.com/readmeio/markdown/commit/1478d384e376cd1aaaff796572f0e9ec936caa11)), closes [readmeio/readme#19773](https://github.com/readmeio/readme/issues/19773)
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep inline SVG/MathML whole ([#1557](https://github.com/readmeio/markdown/issues/1557)) ([63204b8](https://github.com/readmeio/markdown/commit/63204b843612681757b0b3046c4a323d3caadbd0))
+
 ## Version 14.12.1
 ### 🛠 Fixes & Updates
 
