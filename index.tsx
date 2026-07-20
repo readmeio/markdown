@@ -17,6 +17,7 @@ export {
   exports,
   FLOW_TYPES,
   hast,
+  htmlToMarkdown,
   INLINE_ONLY_PARENT_TYPES,
   run,
   mdast,
