@@ -8,9 +8,10 @@ import { unified } from 'unified';
  * Converts an HTML fragment to GitHub-flavored Markdown.
  *
  * `remark-gfm` is load-bearing: without it, `<table>` and `<del>` input throws
- * at serialization. `script`, `style`, `iframe`, `noscript`, and `template`
- * elements and HTML comments are dropped so raw markup never leaks into the
- * output.
+ * at serialization. `iframe` (default: becomes a link) and `noscript` (default:
+ * keeps its text) are dropped by the handlers so raw markup never leaks;
+ * `script`, `style`, and `template` already drop by default and are overridden
+ * defensively. HTML comments are dropped via `nodeHandlers`.
  */
 const processor = unified()
   .use(rehypeParse, { fragment: true })
