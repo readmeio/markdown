@@ -160,6 +160,33 @@ const x = 1;
     expect(toHtml(ast)).toContain('const x = 1;');
   });
 
+  it('claims a nested wrapper so a 4+ column markdown island parses, not fragments (RM-17560)', () => {
+    // 6-col nesting indent would let CommonMark swallow the island as indented code;
+    // being nested (prior body content), the block is claimed and its body re-parsed.
+    const md = `<ol>
+  <li>
+    <details>
+      <summary>x</summary>
+
+      ### Heading
+
+      \`\`\`js
+      const x = 1;
+      \`\`\`
+    </details>
+  </li>
+</ol>`;
+
+    const ast = mdxish(md);
+
+    // The heading and code parse; the closing tag never leaks into the code.
+    expect(findElementByTagName(ast, 'h3')).toMatchObject({ children: [{ type: 'text', value: 'Heading' }] });
+    const code = findElementByTagName(findElementByTagName(ast, 'details')!, 'code');
+    expect(code).not.toBeNull();
+    expect(toHtml(ast)).toContain('const x = 1;');
+    expect(toHtml(ast)).not.toContain('&#x3C;/details>');
+  });
+
   it('allows blank lines inside a brace expression body (e.g. a .map() callback)', () => {
     const md = `<div className="grid">
   {[1, 2].map((item, i) => {

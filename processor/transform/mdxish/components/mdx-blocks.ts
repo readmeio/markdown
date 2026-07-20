@@ -72,16 +72,20 @@ function safeDeindent(text: string): string {
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
   const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
+  // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
+  // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
+  promoteComponentBlocks(parsed as Parent, safeMode, null);
   return parsed.children || [];
 };
 
-// Parses trailing content into sibling nodes and re-queues the parent so any
-// components among them get processed.
-const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+// Splices trailing content in as sibling nodes. parseMdChildren has already
+// promoted any components nested among them (bottom-up), so — unlike the
+// old lazy walk — the parent needs no re-queue for them to be processed.
+const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
-    stack.push(parent);
   }
 };
 
@@ -161,15 +165,16 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
+function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string | null): Parent {
   const stack: Parent[] = [tree];
-  const safeMode = !!opts.safeMode;
-  const source: string | null = file?.value ? String(file.value) : null;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
+    // Descend into container nodes (lists, blockquotes, …) so their html children
+    // are reached. This is the stack's only job now — component bodies are promoted
+    // eagerly by parseMdChildren, so promoted subtrees never need re-queuing.
     if ('children' in node && Array.isArray(node.children)) {
       stack.push(node as Parent);
     }
@@ -237,7 +242,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(stack, parent, index, remainingContent, safeMode);
+        parseSibling(parent, index, remainingContent, safeMode);
       }
       return;
     }
@@ -285,11 +290,11 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // Re-queue whichever side may hold further components.
+      // Trailing content after the close becomes siblings; parseMdChildren has
+      // already promoted any components nested inside both sides, so the promoted
+      // subtree itself needs no re-queue.
       if (contentAfterClose) {
-        parseSibling(stack, parent, index, contentAfterClose, safeMode);
-      } else if (componentNode.children.length > 0) {
-        stack.push(componentNode as Parent);
+        parseSibling(parent, index, contentAfterClose, safeMode);
       }
     }
   };
@@ -305,6 +310,11 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
   }
 
   return tree;
+}
+
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
+  const source: string | null = file?.value ? String(file.value) : null;
+  return promoteComponentBlocks(tree, !!opts.safeMode, source);
 };
 
 export default mdxishMdxComponentBlocks;
