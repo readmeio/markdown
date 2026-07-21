@@ -82,11 +82,13 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
 // Splices trailing content in as sibling nodes. parseMdChildren has already
 // promoted any components nested among them (bottom-up); the main loop's
 // index-based walk then reaches these spliced siblings and the original children
-// they shift down, so no parent re-queue is needed.
-const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+// they shift down, so no parent re-queue is needed. Each spliced subtree is marked
+// `promoted` so the walk doesn't redundantly re-descend into it (its html is gone).
+const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean, promoted: WeakSet<Node>) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
+    siblingNodes.forEach(siblingNode => promoted.add(siblingNode));
   }
 };
 
@@ -169,13 +171,16 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
 function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string | null): Parent {
   const stack: Parent[] = [tree];
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+  // Subtrees a nested parseMdChildren already promoted wholesale (spliced siblings):
+  // re-descending them finds no html to promote, so skip them.
+  const promoted = new WeakSet<Node>();
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
     // Descend into container nodes (lists, blockquotes, …) so their html children
-    // are reached.
-    if ('children' in node && Array.isArray(node.children)) {
+    // are reached — unless the subtree was already promoted upstream.
+    if ('children' in node && Array.isArray(node.children) && !promoted.has(node)) {
       stack.push(node as Parent);
     }
 
@@ -242,7 +247,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
 
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(parent, index, remainingContent, safeMode);
+        parseSibling(parent, index, remainingContent, safeMode, promoted);
       }
       return;
     }
@@ -272,23 +277,25 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
         unwrappedSoleParagraph = true;
       }
+      // Without trailing content the whole node position is correct. With it, end
+      // precisely at the closing tag — preferring source offsets when available (the
+      // node's value strips blockquote/list prefixes), else the consumed span.
+      let endPosition = node.position;
+      if (contentAfterClose) {
+        endPosition = source
+          ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
+          : positionEndingAtConsumed(
+              node.position,
+              value,
+              leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+            );
+      }
       const componentNode = createComponentNode({
         tag,
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // With trailing content, end precisely at the closing tag. Prefer source
-        // offsets when available (the node's value strips blockquote/list
-        // prefixes); otherwise fall back to the whole node position.
-        endPosition: contentAfterClose
-          ? source
-            ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
-            : positionEndingAtConsumed(
-                node.position,
-                value,
-                leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-              )
-          : node.position,
+        endPosition,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
@@ -302,7 +309,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // already promoted any components nested inside both sides, so the promoted
       // subtree itself needs no re-queue.
       if (contentAfterClose) {
-        parseSibling(parent, index, contentAfterClose, safeMode);
+        parseSibling(parent, index, contentAfterClose, safeMode, promoted);
       }
     }
   };

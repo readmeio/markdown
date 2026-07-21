@@ -111,11 +111,14 @@ export const HTML_TABLE_STRUCTURE_TAGS = new Set([
 ]);
 
 /**
- * Figure tags. Their bodies are owned by the figure reassembly transform
- * (`mdxishJsxToMdast`), which expects raw html nodes, so the markdown pipeline
- * must neither re-parse their bodies nor claim markdown islands inside them.
+ * Tags whose bodies a later mdxish transform keeps raw and never re-parses as
+ * markdown. Both layers depend on this property, not on the tags being figures:
+ * the transformer treats them as non-promotable, and the tokenizer must not claim
+ * markdown islands inside them (a claimed island would never be re-parsed and would
+ * leak as literal text). Currently just the figure tags, whose bodies are owned by
+ * the figure reassembly transform (`mdxishJsxToMdast`).
  */
-export const HTML_FIGURE_TAGS = new Set(['figure', 'figcaption']);
+export const NON_REPARSED_BODY_TAGS = new Set(['figure', 'figcaption']);
 
 /**
  * The two HTML "foreign content" namespaces: SVG and MathML. Their descendants

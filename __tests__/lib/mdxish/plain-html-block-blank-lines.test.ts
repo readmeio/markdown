@@ -300,8 +300,9 @@ const x = 1;
   });
 
   it('keeps the CommonMark fallback for a deep island inside <figure> (non-promotable)', () => {
-    // The transformer keeps figure bodies raw for figure reassembly, so the 4+ col
-    // island claim must not fire
+    // Note: In this example the indented content would still be parsed as code
+    // Since this looks like an edge case, we'll leave it as is first since it
+    // requires a bigger refactor.
     const md = `<figure>
   <figcaption>cap</figcaption>
 

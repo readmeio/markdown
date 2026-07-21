@@ -5,7 +5,7 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { HTML_FIGURE_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
+import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS, NON_REPARSED_BODY_TAGS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
@@ -29,6 +29,13 @@ const htmlFlowTagNames = new Set([...htmlRawNames, ...htmlBlockNames]);
 const plainBlockClaimTagNames = new Set(
   [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
 );
+
+// Both are 4 columns per CommonMark, but they mean different things: a tab advances
+// to the next multiple of TAB_STOP_WIDTH, and INDENTED_CODE_MIN_COLUMNS is the depth
+// at which a line would fragment into indented code. Named separately so the two
+// concepts don't read as one incidental literal.
+const TAB_STOP_WIDTH = 4;
+const INDENTED_CODE_MIN_COLUMNS = 4;
 
 function resolveToMdxComponent(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -914,7 +921,8 @@ function createTokenize(mode: 'flow' | 'text') {
     function plainClaimLineStart(code: Code): State | undefined {
       // Leading whitespace only → treat as a blank line, matching CommonMark.
       if (code === codes.space || code === codes.horizontalTab) {
-        plainClaimIndentColumns += code === codes.horizontalTab ? 4 - (plainClaimIndentColumns % 4) : 1;
+        plainClaimIndentColumns +=
+          code === codes.horizontalTab ? TAB_STOP_WIDTH - (plainClaimIndentColumns % TAB_STOP_WIDTH) : 1;
         effects.consume(code);
         return plainClaimLineStart;
       }
@@ -926,9 +934,13 @@ function createTokenize(mode: 'flow' | 'text') {
       if (pendingBlankLine) {
         // A 4+ col island nested under other tags is cosmetic nesting indent, not code:
         // keep claiming so promotion dedents + re-parses it as markdown (RM-17560).
-        // Figure tags are excluded — the transformer keeps their bodies raw, so a
-        // claimed island would never be re-parsed and would leak as literal text.
-        if (plainClaimIndentColumns >= 4 && sawPlainBlockBodyContent && !HTML_FIGURE_TAGS.has(tagName)) {
+        // Tags whose bodies stay raw are excluded — a claimed island there would never
+        // be re-parsed and would leak as literal text.
+        if (
+          plainClaimIndentColumns >= INDENTED_CODE_MIN_COLUMNS &&
+          sawPlainBlockBodyContent &&
+          !NON_REPARSED_BODY_TAGS.has(tagName)
+        ) {
           return plainClaimContinue(code);
         }
         // Otherwise only a markup-only tag line continues; markdown/prose falls back to

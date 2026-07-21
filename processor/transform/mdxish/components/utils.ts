@@ -20,7 +20,7 @@ import { jsxTable } from '../../../../lib/micromark/jsx-table';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
-import { HTML_FIGURE_TAGS } from '../../../../utils/common-html-words';
+import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 
@@ -112,7 +112,7 @@ export const toMdxJsxTextElement = (
 // Raw-body tags (pre/script/style/textarea) must stay byte-exact; table
 // structure (`table` + `tableTags`) is owned by `mdxishTables` and figures by
 // `mdxishJsxToMdast`, both of which run later on raw html nodes.
-const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', ...HTML_FIGURE_TAGS]);
+const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', ...NON_REPARSED_BODY_TAGS]);
 export const NESTED_TABLE_RE = /<table[\s>]/i;
 export const isMarkdownPromotableHtmlTag = (tag: string): boolean => !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
 
