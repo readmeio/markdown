@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.13.1
+### 🛠 Fixes & Updates
+
+* consistent spacing for components nested inside Accordions ([#1560](https://github.com/readmeio/markdown/issues/1560)) ([3d8f17e](https://github.com/readmeio/markdown/commit/3d8f17e259d0f64124826484bd88a8b92d197272))
+* **mdxish:** parse code samples nested in <ol>/<li>/<details> ([#1562](https://github.com/readmeio/markdown/issues/1562)) ([8866688](https://github.com/readmeio/markdown/commit/88666885d27595c46fafcac0bf028de396b8a90d))
+
 ## Version 14.13.0
 ### ✨ New & Improved
 
