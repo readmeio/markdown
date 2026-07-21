@@ -18,6 +18,30 @@ describe('markdown inside single-line plain HTML tags', () => {
     expect(html).not.toContain('**');
   });
 
+  it('promotes a sibling wrapper that follows a wrapper with trailing content', () => {
+    // The first wrapper's trailing "t" is spliced in as a sibling mid-walk, shifting
+    // the second wrapper down. The transformer must still reach and promote it so its
+    // markdown parses instead of leaking as literal `**` (regression: the traversal
+    // used to stop early after a splice).
+    const ast = mdxish('- <div>**a**</div>t\n\n  <div>**b**</div>');
+    const html = toHtml(ast);
+
+    expect(findAllElementsByTagName(ast, 'strong')).toHaveLength(2);
+    expect(html).not.toContain('**');
+  });
+
+  it('promotes a nested {…}-attr tag unwrapped from a sole paragraph', () => {
+    const ast = mdxish('<div>hello <span attr={x}>**bold**</span></div>');
+    const html = toHtml(ast);
+
+    expect(findElementByTagName(ast, 'span')).toMatchObject({
+      tagName: 'span',
+      children: [{ tagName: 'strong', children: [{ type: 'text', value: 'bold' }] }],
+    });
+    expect(html).not.toContain('**');
+    expect(html).not.toContain('{x}');
+  });
+
   it('preserves plain HTML attributes on the promoted wrapper', () => {
     const ast = mdxish('<div class="card-title">**a**</div>');
     const html = toHtml(ast);
