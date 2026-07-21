@@ -267,8 +267,10 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       if (isPlainLowercaseHtml && !containsMarkdownConstruct(parsedChildren)) return;
       // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
+      let unwrappedSoleParagraph = false;
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+        unwrappedSoleParagraph = true;
       }
       const componentNode = createComponentNode({
         tag,
@@ -289,6 +291,12 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
           : node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
+
+      // The unwrap reparented the children out of their paragraph, so re-walk them
+      // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
+      if (unwrappedSoleParagraph) {
+        stack.push(componentNode as Parent);
+      }
 
       // Trailing content after the close becomes siblings; parseMdChildren has
       // already promoted any components nested inside both sides, so the promoted

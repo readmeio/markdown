@@ -30,6 +30,18 @@ describe('markdown inside single-line plain HTML tags', () => {
     expect(html).not.toContain('**');
   });
 
+  it('promotes a nested {…}-attr tag unwrapped from a sole paragraph', () => {
+    const ast = mdxish('<div>hello <span attr={x}>**bold**</span></div>');
+    const html = toHtml(ast);
+
+    expect(findElementByTagName(ast, 'span')).toMatchObject({
+      tagName: 'span',
+      children: [{ tagName: 'strong', children: [{ type: 'text', value: 'bold' }] }],
+    });
+    expect(html).not.toContain('**');
+    expect(html).not.toContain('{x}');
+  });
+
   it('preserves plain HTML attributes on the promoted wrapper', () => {
     const ast = mdxish('<div class="card-title">**a**</div>');
     const html = toHtml(ast);

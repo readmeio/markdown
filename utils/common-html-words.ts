@@ -111,6 +111,13 @@ export const HTML_TABLE_STRUCTURE_TAGS = new Set([
 ]);
 
 /**
+ * Figure tags. Their bodies are owned by the figure reassembly transform
+ * (`mdxishJsxToMdast`), which expects raw html nodes, so the markdown pipeline
+ * must neither re-parse their bodies nor claim markdown islands inside them.
+ */
+export const HTML_FIGURE_TAGS = new Set(['figure', 'figcaption']);
+
+/**
  * The two HTML "foreign content" namespaces: SVG and MathML. Their descendants
  * (`<path>`, `<mrow>`, …) are namespaced XML, not HTML tags or components. A closed
  * set per the HTML spec, so transforms can treat these roots as opaque islands.

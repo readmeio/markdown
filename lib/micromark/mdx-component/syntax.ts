@@ -5,7 +5,7 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
+import { HTML_FIGURE_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
@@ -926,9 +926,10 @@ function createTokenize(mode: 'flow' | 'text') {
       if (pendingBlankLine) {
         // A 4+ col island nested under other tags is cosmetic nesting indent, not code:
         // keep claiming so promotion dedents + re-parses it as markdown (RM-17560).
-        if (plainClaimIndentColumns >= 4 && sawPlainBlockBodyContent) {
-          pendingBlankLine = false;
-          return bodyLineStart(code);
+        // Figure tags are excluded — the transformer keeps their bodies raw, so a
+        // claimed island would never be re-parsed and would leak as literal text.
+        if (plainClaimIndentColumns >= 4 && sawPlainBlockBodyContent && !HTML_FIGURE_TAGS.has(tagName)) {
+          return plainClaimContinue(code);
         }
         // Otherwise only a markup-only tag line continues; markdown/prose falls back to
         // CommonMark so it parses and rehype-raw re-nests it into the wrapper.
