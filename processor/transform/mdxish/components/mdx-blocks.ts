@@ -72,16 +72,23 @@ function safeDeindent(text: string): string {
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
   const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
+  // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
+  // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
+  promoteComponentBlocks(parsed as Parent, safeMode, null);
   return parsed.children || [];
 };
 
-// Parses trailing content into sibling nodes and re-queues the parent so any
-// components among them get processed.
-const parseSibling = (stack: Parent[], parent: Parent, index: number, sibling: string, safeMode: boolean) => {
+// Splices trailing content in as sibling nodes. parseMdChildren has already
+// promoted any components nested among them (bottom-up); the main loop's
+// index-based walk then reaches these spliced siblings and the original children
+// they shift down, so no parent re-queue is needed. Each spliced subtree is marked
+// `promoted` so the walk doesn't redundantly re-descend into it (its html is gone).
+const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean, promoted: WeakSet<Node>) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
-    stack.push(parent);
+    siblingNodes.forEach(siblingNode => promoted.add(siblingNode));
   }
 };
 
@@ -161,16 +168,19 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
+function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string | null): Parent {
   const stack: Parent[] = [tree];
-  const safeMode = !!opts.safeMode;
-  const source: string | null = file?.value ? String(file.value) : null;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+  // Subtrees a nested parseMdChildren already promoted wholesale (spliced siblings):
+  // re-descending them finds no html to promote, so skip them.
+  const promoted = new WeakSet<Node>();
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
-    if ('children' in node && Array.isArray(node.children)) {
+    // Descend into container nodes (lists, blockquotes, …) so their html children
+    // are reached — unless the subtree was already promoted upstream.
+    if ('children' in node && Array.isArray(node.children) && !promoted.has(node)) {
       stack.push(node as Parent);
     }
 
@@ -237,7 +247,7 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
 
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
-        parseSibling(stack, parent, index, remainingContent, safeMode);
+        parseSibling(parent, index, remainingContent, safeMode, promoted);
       }
       return;
     }
@@ -262,49 +272,66 @@ const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opt
       if (isPlainLowercaseHtml && !containsMarkdownConstruct(parsedChildren)) return;
       // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
+      let unwrappedSoleParagraph = false;
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+        unwrappedSoleParagraph = true;
+      }
+      // Without trailing content the whole node position is correct. With it, end
+      // precisely at the closing tag — preferring source offsets when available (the
+      // node's value strips blockquote/list prefixes), else the consumed span.
+      let endPosition = node.position;
+      if (contentAfterClose) {
+        endPosition = source
+          ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
+          : positionEndingAtConsumed(
+              node.position,
+              value,
+              leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+            );
       }
       const componentNode = createComponentNode({
         tag,
         attributes,
         children: parsedChildren,
         startPosition: node.position,
-        // With trailing content, end precisely at the closing tag. Prefer source
-        // offsets when available (the node's value strips blockquote/list
-        // prefixes); otherwise fall back to the whole node position.
-        endPosition: contentAfterClose
-          ? source
-            ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
-            : positionEndingAtConsumed(
-                node.position,
-                value,
-                leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-              )
-          : node.position,
+        endPosition,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      // Re-queue whichever side may hold further components.
-      if (contentAfterClose) {
-        parseSibling(stack, parent, index, contentAfterClose, safeMode);
-      } else if (componentNode.children.length > 0) {
+      // The unwrap reparented the children out of their paragraph, so re-walk them
+      // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
+      if (unwrappedSoleParagraph) {
         stack.push(componentNode as Parent);
+      }
+
+      // Trailing content after the close becomes siblings; parseMdChildren has
+      // already promoted any components nested inside both sides, so the promoted
+      // subtree itself needs no re-queue.
+      if (contentAfterClose) {
+        parseSibling(parent, index, contentAfterClose, safeMode, promoted);
       }
     }
   };
 
-  // Depth-first so nodes keep their source order.
+  // Depth-first so nodes keep their source order. Index-based (not forEach) and
+  // re-reading length each step: parseSibling splices siblings in mid-iteration, and
+  // those — plus the original children they shift down — must all stay eligible.
   while (stack.length) {
     const parent = stack.pop();
     if (parent?.children) {
-      parent.children.forEach((_child, index) => {
+      for (let index = 0; index < parent.children.length; index += 1) {
         processChildNode(parent, index);
-      });
+      }
     }
   }
 
   return tree;
+}
+
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
+  const source: string | null = file?.value ? String(file.value) : null;
+  return promoteComponentBlocks(tree, !!opts.safeMode, source);
 };
 
 export default mdxishMdxComponentBlocks;
