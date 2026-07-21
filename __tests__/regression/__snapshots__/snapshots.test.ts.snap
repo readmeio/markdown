@@ -284,6 +284,70 @@ exports[`Render engine regressions tests > indented-foreign-html-tags (mdxish) 1
 </div>"
 `;
 
+exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdx) 1`] = `
+"<ol><li><details><summary>Authorization request</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0100&quot;,
+        &quot;Message_Desc&quot;: &quot;Authorisation Request&quot;
+    },
+    &quot;SUMMARY&quot;: {
+        &quot;TID&quot;: &quot;2237374892345000118&quot;,
+        &quot;Network&quot;: &quot;MC&quot;,
+    }
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;Message_Type&quot;: &quot;0110&quot;,
+}</code></pre></div></div></details></li><li><details><summary>ATM withdrawal and reversal</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0400&quot;,
+        &quot;Message_Desc&quot;: &quot;Reversal Request&quot;
+    },
+    &quot;ISO_MSG&quot;: {
+        &quot;DE48&quot;: {
+            &quot;1&quot;: &quot;Z&quot;,
+            &quot;80&quot;: &quot;TV&quot;
+        },
+    },
+    &quot;RULES&quot;: []
+
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;DE11&quot;: &quot;000071&quot;,
+    &quot;DE2&quot;: &quot;818654321&quot;,
+}</code></pre></div></div></details></li></ol>"
+`;
+
+exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdxish) 1`] = `
+"<ol><li><details>
+  <summary>Authorization request</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0100&quot;,
+        &quot;Message_Desc&quot;: &quot;Authorisation Request&quot;
+    },
+    &quot;SUMMARY&quot;: {
+        &quot;TID&quot;: &quot;2237374892345000118&quot;,
+        &quot;Network&quot;: &quot;MC&quot;,
+    }
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;Message_Type&quot;: &quot;0110&quot;,
+}</code></pre></div></div></details></li><li><details>
+  <summary>ATM withdrawal and reversal</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0400&quot;,
+        &quot;Message_Desc&quot;: &quot;Reversal Request&quot;
+    },
+    &quot;ISO_MSG&quot;: {
+        &quot;DE48&quot;: {
+            &quot;1&quot;: &quot;Z&quot;,
+            &quot;80&quot;: &quot;TV&quot;
+        },
+    },
+    &quot;RULES&quot;: []
+
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;DE11&quot;: &quot;000071&quot;,
+    &quot;DE2&quot;: &quot;818654321&quot;,
+}</code></pre></div></div></details></li></ol>"
+`;
+
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
 <blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>

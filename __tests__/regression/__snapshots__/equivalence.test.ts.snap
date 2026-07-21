@@ -421,6 +421,12 @@ exports[`MDX↔MDXish equivalence > indented-foreign-html-tags 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > indented-markdown-islands-in-html 1`] = `
+{
+  "status": "match",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 {
   "changes": [

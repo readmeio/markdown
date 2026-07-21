@@ -160,6 +160,39 @@ const x = 1;
     expect(toHtml(ast)).toContain('const x = 1;');
   });
 
+  it('preserves HTML lists with 4+ column indents', () => {
+    const md = `<ul>
+  <li>
+    <div>
+       <p>**bold ul**</p>
+    </div>
+
+    <ul>
+
+      <li>
+
+        <p>**super nested ul**</p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<ol>
+  <li>
+    <div>
+       <p>**bold ol**</p>
+    </div>
+  </li>
+</ol>`;
+
+    const ast = mdxish(md);
+    const html = toHtml(ast);
+
+    expect(html).toContain('<strong>bold ul</strong>');
+    expect(html).toContain('<strong>bold ol</strong>');
+    expect(html).toContain('<strong>super nested ul</strong>');
+  });
+
   it('claims a nested wrapper so a 4+ column markdown island parses, not fragments (RM-17560)', () => {
     // 6-col nesting indent would let CommonMark swallow the island as indented code;
     // being nested (prior body content), the block is claimed and its body re-parsed.
@@ -185,6 +218,107 @@ const x = 1;
     expect(code).not.toBeNull();
     expect(toHtml(ast)).toContain('const x = 1;');
     expect(toHtml(ast)).not.toContain('&#x3C;/details>');
+  });
+
+  it('claims a 4+ col island in a single 4-space-indented wrapper, no nesting (RM-17560)', () => {
+    const md = `<div class="card">
+    <p>Install the CLI:</p>
+
+    \`\`\`bash
+    npm install -g acme
+    \`\`\`
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'code')).toMatchObject({
+      properties: { className: ['language-bash'] },
+      children: [{ type: 'text', value: 'npm install -g acme\n' }],
+    });
+    expect(toHtml(ast)).not.toContain('```');
+  });
+
+  it('claims a 4+ col island under 2-space-nested layout tags (RM-17560)', () => {
+    const md = `<section>
+  <article>
+    <p>Release notes</p>
+
+    ### What's new
+
+    - Faster builds
+    - **Bug fixes**
+  </article>
+</section>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'h3')).toMatchObject({ children: [{ type: 'text', value: "What's new" }] });
+    const items = findAllElementsByTagName(ast, 'li');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatchObject({ children: [{ type: 'text', value: 'Faster builds' }] });
+    expect(items[1]).toMatchObject({
+      children: [{ tagName: 'strong', children: [{ type: 'text', value: 'Bug fixes' }] }],
+    });
+    expect(toHtml(ast)).not.toContain('###');
+  });
+
+  it('claims a 4+ col prose + fence island in a <details> without a list wrapper (RM-17560)', () => {
+    const md = `<details>
+    <summary>How do I authenticate?</summary>
+
+    Pass your key in the \`Authorization\` header:
+
+    \`\`\`http
+    Authorization: Bearer <token>
+    \`\`\`
+</details>`;
+
+    const ast = mdxish(md);
+    const details = findElementByTagName(ast, 'details');
+
+    expect(findElementByTagName(details!, 'summary')).toMatchObject({
+      children: [{ type: 'text', value: 'How do I authenticate?' }],
+    });
+    // The prose parses as a paragraph with inline code, not as part of a code block.
+    expect(findElementByTagName(details!, 'p')).toMatchObject({
+      children: [
+        { type: 'text', value: 'Pass your key in the ' },
+        { tagName: 'code', children: [{ type: 'text', value: 'Authorization' }] },
+        { type: 'text', value: ' header:' },
+      ],
+    });
+    expect(findElementByTagName(details!, 'pre')).toMatchObject({
+      children: [
+        {
+          tagName: 'code',
+          properties: { className: ['language-http'] },
+          children: [{ type: 'text', value: 'Authorization: Bearer <token>\n' }],
+        },
+      ],
+    });
+    expect(toHtml(ast)).not.toContain('```');
+  });
+
+  it('keeps the CommonMark fallback for a deep island inside <figure> (non-promotable)', () => {
+    // The transformer keeps figure bodies raw for figure reassembly, so the 4+ col
+    // island claim must not fire
+    const md = `<figure>
+  <figcaption>cap</figcaption>
+
+      ### Heading
+
+      \`\`\`js
+      const x = 1;
+      \`\`\`
+</figure>`;
+
+    const ast = mdxish(md);
+
+    const figure = findElementByTagName(ast, 'figure');
+    expect(figure).not.toBeNull();
+    expect(findElementByTagName(figure!, 'figcaption')).toMatchObject({
+      children: [{ type: 'text', value: 'cap' }],
+    });
   });
 
   it('allows blank lines inside a brace expression body (e.g. a .map() callback)', () => {
