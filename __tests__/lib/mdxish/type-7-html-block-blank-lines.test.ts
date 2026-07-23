@@ -1,8 +1,9 @@
+import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
 
-import { mdxish } from '../../../lib';
+import { mdxish, compile, run } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName, roundTripMdxish } from '../../helpers';
 
 // Type-7 tags (a, span, button, …) end their HTML block at a blank line, fragmenting
@@ -432,6 +433,62 @@ After **bold** text`;
       expect(roundTripped).toContain('</a>');
       expect(roundTripped).not.toContain('    <p>body</p>\n\n');
       expect(mdxish(roundTripped) && findElementByTagName(mdxish(roundTripped), 'pre')).toBeNull();
+    });
+  });
+
+  // A capitalized custom component wraps children the same way a type-7 tag does,
+  // so component → HTML → component nesting must not fragment past the blank line.
+  describe('custom component wrappers', () => {
+    const wrap = (name: string) =>
+      run(compile(`\nexport const ${name} = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<${name} />\n`));
+    const components: Record<string, RMDXModule> = { Card: wrap('Card'), Grid: wrap('Grid') };
+
+    it('preserves component → HTML → component nesting past the indent threshold', () => {
+      const md = `<Card href="deep" title="Deep">
+  <div class="content-card-content">
+
+      <Card href="inner">
+
+            <h3>Inner card</h3>
+      </Card>
+  </div>
+</Card>`;
+
+      const ast = mdxish(md, { components });
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      const cards = findAllElementsByTagName(ast, 'Card');
+      expect(cards).toHaveLength(2);
+      expect(findElementByTagName(cards[1], 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Inner card' }],
+      });
+    });
+
+    it('renders inline markdown inside each component body of a wrapper grid', () => {
+      const md = `<Grid>
+  <Card href="a" title="First">
+
+    Body of the **first** card.
+  </Card>
+  <Card href="b" title="Second">
+
+    Body of the *second* card.
+  </Card>
+</Grid>`;
+
+      const ast = mdxish(md, { components });
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      const grid = findElementByTagName(ast, 'Grid');
+      const cards = findAllElementsByTagName(grid!, 'Card');
+      expect(cards).toHaveLength(2);
+      // Bold/italic render as real emphasis, not literal markdown text.
+      expect(findElementByTagName(cards[0], 'strong')).toMatchObject({
+        children: [{ type: 'text', value: 'first' }],
+      });
+      expect(findElementByTagName(cards[1], 'em')).toMatchObject({
+        children: [{ type: 'text', value: 'second' }],
+      });
     });
   });
 });

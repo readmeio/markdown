@@ -1,8 +1,9 @@
+import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
 
-import { mdxish } from '../../../lib';
+import { mdxish, compile, run } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 // The mdxComponent flow tokenizer claims plain lowercase block tags (no `{…}`
@@ -491,5 +492,57 @@ plain trailing text`;
     const html = toHtml(mdxish(md));
 
     expect(html).toContain('plain trailing text');
+  });
+
+  // A capitalized custom component is a block wrapper too: its indented children
+  // must survive a blank line rather than collapsing into an indented-code block.
+  describe('custom component wrappers', () => {
+    const components: Record<string, RMDXModule> = {
+      Card: run(compile('\nexport const Card = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<Card />\n')),
+    };
+
+    it('keeps an indented HTML island whole across a blank line', () => {
+      const md = `<Card href="report" title="Report">
+  <div class="stats">
+
+      <h3>Quarterly numbers</h3>
+      <p>Deeply indented HTML.</p>
+  </div>
+</Card>`;
+
+      const ast = mdxish(md, { components });
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      const card = findElementByTagName(ast, 'Card');
+      expect(card).toMatchObject({ properties: { href: 'report', title: 'Report' } });
+      expect(findElementByTagName(card!, 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Quarterly numbers' }],
+      });
+      expect(findElementByTagName(card!, 'p')).toMatchObject({
+        children: [{ type: 'text', value: 'Deeply indented HTML.' }],
+      });
+    });
+
+    it('parses an indented markdown island (heading + fenced code) inside a component', () => {
+      const md = `<Card href="install">
+
+  ### Install the CLI
+
+  \`\`\`bash
+  npm install -g @readme/rdme
+  \`\`\`
+</Card>`;
+
+      const ast = mdxish(md, { components });
+
+      const card = findElementByTagName(ast, 'Card');
+      expect(findElementByTagName(card!, 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Install the CLI' }],
+      });
+      // Only the fence body is code — the heading above it stays a real heading.
+      const code = findElementByTagName(card!, 'code');
+      expect(code).not.toBeNull();
+      expect(JSON.stringify(code)).toContain('npm install -g @readme/rdme');
+    });
   });
 });
