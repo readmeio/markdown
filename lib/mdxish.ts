@@ -277,7 +277,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * Processes markdown content with MDX syntax support and returns a HAST.
  * Detects and renders custom component tags from the components hash.
  *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { components: userComponents = {}, safeMode = false, variables } = opts;
