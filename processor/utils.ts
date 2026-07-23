@@ -285,15 +285,27 @@ export const reformatHTML = (html: string): string => {
   return cleaned;
 };
 
-export const toAttributes = (object: Record<string, unknown>, keys: string[] = []): MdxJsxAttribute[] => {
+interface ToAttributesOptions {
+  preserveEmpty?: string[];
+  preserveFalse?: string[];
+}
+
+export const toAttributes = (
+  object: Record<string, unknown>,
+  keys: string[] = [],
+  options: ToAttributesOptions = {},
+): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
+  const { preserveEmpty = [], preserveFalse = [] } = options;
 
   Object.entries(object).forEach(([name, v]) => {
     if (keys.length > 0 && !keys.includes(name)) return;
 
     let value: MdxJsxAttributeValueExpression | string;
+    const shouldSkipEmpty = v === '' && !preserveEmpty.includes(name);
+    const shouldSkipFalse = v === false && !preserveFalse.includes(name);
 
-    if (typeof v === 'undefined' || v === null || v === '' || v === false) {
+    if (typeof v === 'undefined' || v === null || shouldSkipEmpty || shouldSkipFalse) {
       return;
     } else if (typeof v === 'string') {
       value = v;
