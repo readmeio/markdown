@@ -48,7 +48,7 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.0.0",
     "@readme/emojis": "^6.0.0",
-    "@readme/syntax-highlighter": "^15.0.0-beta.0",
+    "@readme/syntax-highlighter": "^15.0.2",
     "@readme/variable": "^18.0.0",
     "copy-to-clipboard": "^3.3.2",
     "debug": "^4.3.4",
@@ -71,7 +71,7 @@
     "mdast-util-gfm": "^3.1.0",
     "mdast-util-gfm-strikethrough": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
-    "mdast-util-mdx-expression": "2.0.0",
+    "mdast-util-mdx-expression": "2.0.1",
     "mdast-util-mdxjs-esm": "^2.0.1",
     "mdast-util-phrasing": "^4.1.0",
     "mdast-util-to-markdown": "^2.1.2",
