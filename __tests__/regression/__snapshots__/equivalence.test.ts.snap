@@ -423,7 +423,55 @@ exports[`MDX↔MDXish equivalence > indented-foreign-html-tags 1`] = `
 
 exports[`MDX↔MDXish equivalence > indented-markdown-islands-in-html 1`] = `
 {
-  "status": "match",
+  "changes": [
+    {
+      "attrName": "target",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[0]",
+      "right": "true",
+      "severity": "structural",
+    },
+    {
+      "attrName": "title",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[0]",
+      "right": "true",
+      "severity": "content",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/a[0]/div[0]/h3[1]",
+      "right": "header-scroll heading heading-3",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("How to View and Download Invoices")",
+      "path": "/div[1]/a[0]/div[0]/h3[1]/#text[0]",
+      "right": "<div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/a[0]/div[0]/h3[1]/div[1]",
+      "right": "<div class="heading-text">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/a[0]/div[0]/h3[1]/a[2]",
+      "right": "<a aria-label="Skip link to How to View and Download Invoices" class="fa fa-anchor fa-regular heading-anchor-icon" href="#how-to-view-and-download-invoices"></a>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
 }
 `;
 

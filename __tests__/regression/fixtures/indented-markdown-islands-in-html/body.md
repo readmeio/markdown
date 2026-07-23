@@ -56,3 +56,17 @@
     </details>
   </li>
 </ol>
+
+<div class="content-card-container">
+  {/* Card 1 */}
+  <a href="invoices" class="content-card">
+    <div class="content-card-content">
+
+      <i class="far fa-file-invoice"></i>
+      <span>
+        <h3>How to View and Download Invoices</h3>
+        <p>Access detailed invoices for VoIP, DID numbers, and subscriptions, and download them in PDF format</p>
+      </span>
+    </div>
+  </a>
+</div>
