@@ -15,7 +15,7 @@ is wrapped in a non-type-6 tag (`<a>`), which — unlike the type-6 wrappers abo
 could not be claimed by the plain-block path. After a blank line its 6-column
 `<i>`/`<span>`/`<h3>` body collapsed into a literal `<pre>` code block. The fix
 extends the plain-block claim to lowercase non-type-6 wrapper tags when the opener
-sits alone on its line (see `conditionalBlockClaimTagNames` in `syntax.ts`).
+sits alone on its line (see `isBlockWrapperClaimTagName` in `syntax.ts`).
 
 ## Source bugs
 
@@ -29,8 +29,8 @@ sits alone on its line (see `conditionalBlockClaimTagNames` in `syntax.ts`).
 
 Changes to the `mdxComponent` tokenizer's plain-block-claim continuation
 (`plainClaimLineStart` / the 4-column island rule in
-`lib/micromark/mdx-component/syntax.ts`), the conditional-block claim for
-non-type-6 wrapper tags (`conditionalBlockClaimTagNames` /
-`conditionalClaimOpenerRest` in the same file), the bottom-up promotion recursion
+`lib/micromark/mdx-component/syntax.ts`), the block-wrapper claim for
+non-type-6 wrapper tags (`isBlockWrapperClaimTagName` /
+`blockWrapperOpenerRest` in the same file), the bottom-up promotion recursion
 in `processor/transform/mdxish/components/mdx-blocks.ts` (`parseMdChildren` /
 `promoteComponentBlocks`), or `safeDeindent`'s shared-indent stripping.

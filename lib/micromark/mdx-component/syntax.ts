@@ -39,10 +39,10 @@ const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
 
 // Type-7 lowercase tags (a, span, button, and unknown names): CommonMark ends their
 // block at a blank line, fragmenting 4+ column children into indented code. Claimable
-// only in block-wrapper shape (see `conditionalClaimOpenerRest`); lookalike openers
+// only in block-wrapper shape (see `blockWrapperOpenerRest`); lookalike openers
 // (`<https://…>`) never find a closer, so their claim retreats cleanly to CommonMark.
 // Voids never close and raw/foreign-content bodies have dedicated owners.
-const isConditionalBlockClaimTagName = (tag: string): boolean =>
+const isBlockWrapperClaimTagName = (tag: string): boolean =>
   !htmlFlowTagNames.has(tag) && !HTML_VOID_ELEMENTS.has(tag) && !foreignContentTags.has(tag);
 
 // Both are 4 columns per CommonMark, but they mean different things: a tab advances
@@ -118,11 +118,11 @@ function createTokenize(mode: 'flow' | 'text') {
     // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
     let isPlainBlockClaim = false;
     let pendingBlankLine = false;
-    // Conditional tag claimed pending the block-wrapper (opener alone on its line) check.
-    let pendingConditionalBlockClaim = false;
-    // True once a conditional claim is confirmed; relaxes the top-of-body island gate
+    // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
+    let pendingBlockWrapperClaim = false;
+    // True once a block-wrapper claim is confirmed; relaxes the top-of-body island gate
     // below (type-7 fallback is the fragmentation bug, not intentional indented code).
-    let isConditionalBlockClaim = false;
+    let isBlockWrapperClaim = false;
     // Leading indent columns of the current plain-claim line, reset per line; ≥4 is
     // where CommonMark would fragment the island as indented code. Tabs advance to the
     // next 4-column stop — the same rule `expandIndentToColumns`
@@ -418,7 +418,7 @@ function createTokenize(mode: 'flow' | 'text') {
         if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
-        return pendingConditionalBlockClaim ? conditionalClaimOpenerRest : body;
+        return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
       }
 
       // Quoted attribute value
@@ -483,31 +483,31 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     // Whether a brace-less lowercase flow tag is claimable: type-6 tags immediately,
-    // conditional tags pending the wrapper-shape check; anything else is CommonMark's.
+    // type-7 tags pending the block-wrapper check; anything else is CommonMark's.
     function claimBraceLessTag(): boolean {
       if (!isFlow) return false;
       if (plainBlockClaimTagNames.has(tagName)) {
         isPlainBlockClaim = true;
         return true;
       }
-      if (isConditionalBlockClaimTagName(tagName)) {
-        pendingConditionalBlockClaim = true;
+      if (isBlockWrapperClaimTagName(tagName)) {
+        pendingBlockWrapperClaim = true;
         return true;
       }
       return false;
     }
 
-    // A conditional tag is claimed only as a block wrapper: opener alone on its line
+    // A type-7 tag is claimed only as a block wrapper: opener alone on its line
     // (trailing spaces ok). Inline content after the opener bails to CommonMark.
-    function conditionalClaimOpenerRest(code: Code): State | undefined {
+    function blockWrapperOpenerRest(code: Code): State | undefined {
       if (markdownSpace(code)) {
         effects.consume(code);
-        return conditionalClaimOpenerRest;
+        return blockWrapperOpenerRest;
       }
       if (!markdownLineEnding(code)) return nok(code);
-      pendingConditionalBlockClaim = false;
+      pendingBlockWrapperClaim = false;
       isPlainBlockClaim = true;
-      isConditionalBlockClaim = true;
+      isBlockWrapperClaim = true;
       return body(code);
     }
 
@@ -983,12 +983,12 @@ function createTokenize(mode: 'flow' | 'text') {
       if (pendingBlankLine) {
         // A 4+ col island nested under other tags is cosmetic nesting indent, not code:
         // keep claiming so promotion dedents + re-parses it as markdown (RM-17560).
-        // Conditional claims extend this to top-of-body islands — their CommonMark
+        // Block-wrapper claims extend this to top-of-body islands — their CommonMark
         // fallback is the fragmentation bug, not intentional indented code. Tags whose
         // bodies stay raw are excluded: a claimed island there would leak as literal text.
         if (
           plainClaimIndentColumns >= INDENTED_CODE_MIN_COLUMNS &&
-          (sawPlainBlockBodyContent || isConditionalBlockClaim) &&
+          (sawPlainBlockBodyContent || isBlockWrapperClaim) &&
           !NON_REPARSED_BODY_TAGS.has(tagName)
         ) {
           return plainClaimContinue(code);

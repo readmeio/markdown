@@ -8,7 +8,7 @@ import { findAllElementsByTagName, findElementByTagName, roundTripMdxish } from 
 // Type-7 tags (a, span, button, …) end their HTML block at a blank line, fragmenting
 // 4+ column children into indented code. The mdxComponent tokenizer claims them like
 // type-6 plain blocks, but only when the opener sits alone on its line.
-describe('conditional block claims for type-7 wrapper tags', () => {
+describe('block-wrapper claims for type-7 wrapper tags', () => {
   const wrapperTags = [
     'a',
     'span',
@@ -262,7 +262,7 @@ plain trailing text`;
     });
   });
 
-  describe('non-tags and owned tags never enter the conditional claim', () => {
+  describe('non-tags and owned tags never enter the block-wrapper claim', () => {
     it('leaves a URI autolink alone', () => {
       const ast = mdxish('<https://example.com>');
 
