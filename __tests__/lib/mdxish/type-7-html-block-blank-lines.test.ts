@@ -112,6 +112,64 @@ describe('conditional block claims for type-7 wrapper tags', () => {
       });
     });
 
+    it('claims a tab-indented island sitting directly after the opener blank line', () => {
+      const md = '<button class="tabbed">\n\n\t<h3>Tab-indented heading</h3>\n\t<p>Indented with a real tab.</p>\n</button>';
+
+      const ast = mdxish(md);
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      const button = findElementByTagName(ast, 'button');
+      expect(findElementByTagName(button!, 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Tab-indented heading' }],
+      });
+      expect(findElementByTagName(button!, 'p')).toMatchObject({
+        children: [{ type: 'text', value: 'Indented with a real tab.' }],
+      });
+    });
+
+    it('claims a top-of-body prose island at 4+ columns instead of fragmenting it', () => {
+      const md = `<span class="badge">
+
+    some indented text
+</span>`;
+
+      const ast = mdxish(md);
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(toHtml(findElementByTagName(ast, 'span')!)).toContain('some indented text');
+    });
+
+    it('claims a top-of-body island in an unknown lowercase tag', () => {
+      const md = `<placeholder>
+
+    some indented text
+</placeholder>`;
+
+      const ast = mdxish(md);
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(toHtml(findElementByTagName(ast, 'placeholder')!)).toContain('some indented text');
+    });
+
+    it('claims a top-of-body titled fence island so it parses as a code sample (RM-17560 shape)', () => {
+      const md = `<a href="sample" class="content-card">
+
+      \`\`\`json 0100 Request
+      {
+          "Message_Type": "0100"
+      }
+      \`\`\`
+</a>`;
+
+      const ast = mdxish(md);
+      const anchor = findElementByTagName(ast, 'a');
+
+      expect(findElementByTagName(anchor!, 'code')).toMatchObject({
+        properties: { className: ['language-json'], meta: '0100 Request' },
+      });
+      expect(toHtml(ast)).not.toContain('```');
+    });
+
     it('tracks depth through nested same-name wrappers separated by a blank line', () => {
       const md = `<span class="outer-badge">
     <span class="inner-badge">
@@ -223,7 +281,7 @@ plain trailing text`;
       });
     });
 
-    it('leaves an unknown lowercase tag to CommonMark', () => {
+    it('falls back for an unknown tag whose post-blank prose sits under 4 columns', () => {
       const md = `<placeholder>
 
 body text

@@ -10,7 +10,6 @@ import {
   HTML_TABLE_STRUCTURE_TAGS,
   HTML_VOID_ELEMENTS,
   NON_REPARSED_BODY_TAGS,
-  STANDARD_HTML_TAGS,
 } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
@@ -38,19 +37,13 @@ const plainBlockClaimTagNames = new Set(
 
 const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
 
-// Type-7 lowercase tags (a, span, button, …): CommonMark ends their block at a blank
-// line, fragmenting 4+ column children into indented code. Claimable only in
-// block-wrapper shape (see `conditionalClaimOpenerRest`); restricted to known HTML
-// tags so lookalikes (`<https://…>`) never claim, and owned tags keep their owners.
-const conditionalBlockClaimTagNames = new Set(
-  [...STANDARD_HTML_TAGS].filter(
-    tag =>
-      !htmlFlowTagNames.has(tag) &&
-      !HTML_TABLE_STRUCTURE_TAGS.has(tag) &&
-      !HTML_VOID_ELEMENTS.has(tag) &&
-      !foreignContentTags.has(tag),
-  ),
-);
+// Type-7 lowercase tags (a, span, button, and unknown names): CommonMark ends their
+// block at a blank line, fragmenting 4+ column children into indented code. Claimable
+// only in block-wrapper shape (see `conditionalClaimOpenerRest`); lookalike openers
+// (`<https://…>`) never find a closer, so their claim retreats cleanly to CommonMark.
+// Voids never close and raw/foreign-content bodies have dedicated owners.
+const isConditionalBlockClaimTagName = (tag: string): boolean =>
+  !htmlFlowTagNames.has(tag) && !HTML_VOID_ELEMENTS.has(tag) && !foreignContentTags.has(tag);
 
 // Both are 4 columns per CommonMark, but they mean different things: a tab advances
 // to the next multiple of TAB_STOP_WIDTH, and INDENTED_CODE_MIN_COLUMNS is the depth
@@ -127,6 +120,9 @@ function createTokenize(mode: 'flow' | 'text') {
     let pendingBlankLine = false;
     // Conditional tag claimed pending the block-wrapper (opener alone on its line) check.
     let pendingConditionalBlockClaim = false;
+    // True once a conditional claim is confirmed; relaxes the top-of-body island gate
+    // below (type-7 fallback is the fragmentation bug, not intentional indented code).
+    let isConditionalBlockClaim = false;
     // Leading indent columns of the current plain-claim line, reset per line; ≥4 is
     // where CommonMark would fragment the island as indented code. Tabs advance to the
     // next 4-column stop — the same rule `expandIndentToColumns`
@@ -494,7 +490,7 @@ function createTokenize(mode: 'flow' | 'text') {
         isPlainBlockClaim = true;
         return true;
       }
-      if (conditionalBlockClaimTagNames.has(tagName)) {
+      if (isConditionalBlockClaimTagName(tagName)) {
         pendingConditionalBlockClaim = true;
         return true;
       }
@@ -511,6 +507,7 @@ function createTokenize(mode: 'flow' | 'text') {
       if (!markdownLineEnding(code)) return nok(code);
       pendingConditionalBlockClaim = false;
       isPlainBlockClaim = true;
+      isConditionalBlockClaim = true;
       return body(code);
     }
 
@@ -966,10 +963,15 @@ function createTokenize(mode: 'flow' | 'text') {
     // continue on a tag line (`<…`); any markdown island (`**bold**`, `[block:…]`, a
     // fence) refuses so CommonMark html-flow reparses it exactly as it does today.
     function plainClaimLineStart(code: Code): State | undefined {
-      // Leading whitespace only → treat as a blank line, matching CommonMark.
-      if (code === codes.space || code === codes.horizontalTab) {
-        plainClaimIndentColumns +=
-          code === codes.horizontalTab ? TAB_STOP_WIDTH - (plainClaimIndentColumns % TAB_STOP_WIDTH) : 1;
+      // Leading whitespace only → treat as a blank line, matching CommonMark. A tab
+      // advances to the next stop; its trailing `virtualSpace` fillers add nothing
+      // but must still be consumed or they'd read as line content below.
+      if (markdownSpace(code)) {
+        if (code === codes.horizontalTab) {
+          plainClaimIndentColumns += TAB_STOP_WIDTH - (plainClaimIndentColumns % TAB_STOP_WIDTH);
+        } else if (code === codes.space) {
+          plainClaimIndentColumns += 1;
+        }
         effects.consume(code);
         return plainClaimLineStart;
       }
@@ -981,11 +983,12 @@ function createTokenize(mode: 'flow' | 'text') {
       if (pendingBlankLine) {
         // A 4+ col island nested under other tags is cosmetic nesting indent, not code:
         // keep claiming so promotion dedents + re-parses it as markdown (RM-17560).
-        // Tags whose bodies stay raw are excluded — a claimed island there would never
-        // be re-parsed and would leak as literal text.
+        // Conditional claims extend this to top-of-body islands — their CommonMark
+        // fallback is the fragmentation bug, not intentional indented code. Tags whose
+        // bodies stay raw are excluded: a claimed island there would leak as literal text.
         if (
           plainClaimIndentColumns >= INDENTED_CODE_MIN_COLUMNS &&
-          sawPlainBlockBodyContent &&
+          (sawPlainBlockBodyContent || isConditionalBlockClaim) &&
           !NON_REPARSED_BODY_TAGS.has(tagName)
         ) {
           return plainClaimContinue(code);
