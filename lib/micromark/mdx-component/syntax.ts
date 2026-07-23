@@ -5,7 +5,13 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS, NON_REPARSED_BODY_TAGS } from '../../../utils/common-html-words';
+import {
+  FOREIGN_CONTENT_TAGS,
+  HTML_TABLE_STRUCTURE_TAGS,
+  HTML_VOID_ELEMENTS,
+  NON_REPARSED_BODY_TAGS,
+  STANDARD_HTML_TAGS,
+} from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
@@ -28,6 +34,22 @@ const htmlFlowTagNames = new Set([...htmlRawNames, ...htmlBlockNames]);
 // tags (mdxishTables owns their blank lines) and voids (never close).
 const plainBlockClaimTagNames = new Set(
   [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
+);
+
+const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
+
+// Type-7 lowercase tags (a, span, button, …): CommonMark ends their block at a blank
+// line, fragmenting 4+ column children into indented code. Claimable only in
+// block-wrapper shape (see `conditionalClaimOpenerRest`); restricted to known HTML
+// tags so lookalikes (`<https://…>`) never claim, and owned tags keep their owners.
+const conditionalBlockClaimTagNames = new Set(
+  [...STANDARD_HTML_TAGS].filter(
+    tag =>
+      !htmlFlowTagNames.has(tag) &&
+      !HTML_TABLE_STRUCTURE_TAGS.has(tag) &&
+      !HTML_VOID_ELEMENTS.has(tag) &&
+      !foreignContentTags.has(tag),
+  ),
 );
 
 // Both are 4 columns per CommonMark, but they mean different things: a tab advances
@@ -103,6 +125,8 @@ function createTokenize(mode: 'flow' | 'text') {
     // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
     let isPlainBlockClaim = false;
     let pendingBlankLine = false;
+    // Conditional tag claimed pending the block-wrapper (opener alone on its line) check.
+    let pendingConditionalBlockClaim = false;
     // Leading indent columns of the current plain-claim line, reset per line; ≥4 is
     // where CommonMark would fragment the island as indented code. Tabs advance to the
     // next 4-column stop — the same rule `expandIndentToColumns`
@@ -395,15 +419,10 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr) {
-          // Plain lowercase block tags stay claimable in flow, gated per line by
-          // `plainClaimLineStart`; everything else falls through to CommonMark.
-          if (!isFlow || !plainBlockClaimTagNames.has(tagName)) return nok(code);
-          isPlainBlockClaim = true;
-        }
+        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
-        return body;
+        return pendingConditionalBlockClaim ? conditionalClaimOpenerRest : body;
       }
 
       // Quoted attribute value
@@ -465,6 +484,34 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       // `/ ` without `>` is just part of the attribute area
       return afterOpenTagName(code);
+    }
+
+    // Whether a brace-less lowercase flow tag is claimable: type-6 tags immediately,
+    // conditional tags pending the wrapper-shape check; anything else is CommonMark's.
+    function claimBraceLessTag(): boolean {
+      if (!isFlow) return false;
+      if (plainBlockClaimTagNames.has(tagName)) {
+        isPlainBlockClaim = true;
+        return true;
+      }
+      if (conditionalBlockClaimTagNames.has(tagName)) {
+        pendingConditionalBlockClaim = true;
+        return true;
+      }
+      return false;
+    }
+
+    // A conditional tag is claimed only as a block wrapper: opener alone on its line
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
+    function conditionalClaimOpenerRest(code: Code): State | undefined {
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return conditionalClaimOpenerRest;
+      }
+      if (!markdownLineEnding(code)) return nok(code);
+      pendingConditionalBlockClaim = false;
+      isPlainBlockClaim = true;
+      return body(code);
     }
 
     // Continuation for multi-line opening tags
