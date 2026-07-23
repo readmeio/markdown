@@ -312,7 +312,8 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 }</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;DE11&quot;: &quot;000071&quot;,
     &quot;DE2&quot;: &quot;818654321&quot;,
-}</code></pre></div></div></details></li></ol>"
+}</code></pre></div></div></details></li></ol>
+<div class="content-card-container"><a href="invoices" class="content-card"><div class="content-card-content"><i class="far fa-file-invoice"></i><span><h3>How to View and Download Invoices</h3><p>Access detailed invoices for VoIP, DID numbers, and subscriptions, and download them in PDF format</p></span></div></a></div>"
 `;
 
 exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdxish) 1`] = `
@@ -345,7 +346,20 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 }</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;DE11&quot;: &quot;000071&quot;,
     &quot;DE2&quot;: &quot;818654321&quot;,
-}</code></pre></div></div></details></li></ol>"
+}</code></pre></div></div></details></li></ol>
+<div class="content-card-container">
+  
+  <a class="content-card" href="invoices" target="" title="">
+    <div class="content-card-content">
+
+      <i class="far fa-file-invoice"></i>
+      <span>
+        <h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="how-to-view-and-download-invoices"></div><div class="heading-text">How to View and Download Invoices</div><a aria-label="Skip link to How to View and Download Invoices" class="heading-anchor-icon fa fa-regular fa-anchor" href="#how-to-view-and-download-invoices"></a></h3>
+        <p>Access detailed invoices for VoIP, DID numbers, and subscriptions, and download them in PDF format</p>
+      </span>
+    </div>
+  </a>
+</div>"
 `;
 
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `

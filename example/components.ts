@@ -73,6 +73,26 @@ export const Snake_case_component = ({ children }) => {
 
 <Snake_case_component>Snake case component</Snake_case_component>
   `,
+
+  Card: `
+export const Card = ({ href, title, children }) => {
+  return (
+    <a
+      href={href}
+      className="block rounded-xl border border-gray-200 p-6 no-underline hover:border-blue-400"
+    >
+      {title ? <h3 className="mt-0 text-lg font-semibold">{title}</h3> : null}
+      <div className="content-card-content">{children}</div>
+    </a>
+  );
+};
+  `,
+
+  Grid: `
+export const Grid = ({ children }) => {
+  return <div className="grid grid-cols-2 gap-4">{children}</div>;
+};
+  `,
 };
 
 export default components;
