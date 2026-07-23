@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.13.2
+### 🛠 Fixes & Updates
+
+* **llm context:** add Code & Architecture Conventions, update stale context documents ([#1561](https://github.com/readmeio/markdown/issues/1561)) ([ea00b9c](https://github.com/readmeio/markdown/commit/ea00b9cb92aa0de5349693bf8922d26da3586829))
+* **styles:** block spacing lost inside reusable content ([#1565](https://github.com/readmeio/markdown/issues/1565)) ([8b21d45](https://github.com/readmeio/markdown/commit/8b21d45dd893a37a68d8d270c926b72bd88e59a7))
+* **mdxish:** claim non-type-6 HTML wrapper tags so blank-line islands don't fragment into code ([#1564](https://github.com/readmeio/markdown/issues/1564)) ([2de2933](https://github.com/readmeio/markdown/commit/2de2933de576b786401b974032111bf2ffa6da64))
+
 ## Version 14.13.1
 ### 🛠 Fixes & Updates
 
