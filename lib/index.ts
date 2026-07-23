@@ -5,6 +5,7 @@ export { default as astProcessor, remarkPlugins } from './ast-processor';
 export { default as compile } from './compile';
 export { default as exports } from './exports';
 export { default as hast } from './hast';
+export { default as htmlToMarkdown } from './htmlToMarkdown';
 export { default as mdast } from './mdast';
 export { default as mdastV6 } from './mdastV6';
 export { default as mdx } from './mdx';
