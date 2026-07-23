@@ -16,6 +16,7 @@ import { h } from 'hastscript';
 
 import { mdx, plain } from '../../lib';
 import { STANDARD_HTML_TAGS } from '../../utils/common-html-words';
+import { flattenUserVariables } from '../../utils/user';
 import { hasNamedExport } from '../utils';
 
 const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
@@ -149,7 +150,7 @@ const getDepth = (el: HastHeading) => {
 const flattenVariables = (variables?: Variables): Record<string, string> => {
   if (!variables) return {};
   return {
-    ...variables.user,
+    ...flattenUserVariables(variables.user),
     ...Object.fromEntries(
       (variables.defaults || []).filter(d => !(d.name in variables.user)).map(d => [d.name, d.default]),
     ),
