@@ -57,10 +57,6 @@ function shouldTerminateBetween(
 
   const currentIndent = indentWidth(line);
   const nextIndent = indentWidth(next);
-  // 4+ columns is CommonMark indented-code territory: an inserted blank line
-  // would turn the next line into a code block instead of freeing it (#1344).
-  if (currentIndent > 3 || nextIndent > 3) return false;
-
   const currentTrimmed = line.trim();
   const nextTrimmed = next.trim();
   if (!isLineHtml(currentTrimmed) || isLineHtml(nextTrimmed) || lineLeavesRawOpen) {
@@ -72,9 +68,10 @@ function shouldTerminateBetween(
   // termination for the whole rest of the document.
   if (currentIndent === 0 && nextIndent === 0) return true;
 
-  // Indented shapes (either line at 1–3 columns) are stricter: only a lone opening
-  // tag followed by markdown. A next line opening a tag or expression must stay
-  // glued for the mdxComponent tokenizer; raw-content payloads stay byte-exact.
+  // Indented shapes (either line indented — any depth, since indented code is
+  // disabled) are stricter: only a lone opening tag followed by markdown. A next
+  // line opening a tag or expression must stay glued for the mdxComponent
+  // tokenizer; raw-content payloads stay byte-exact.
   return (
     !insideRawContent &&
     SINGLE_OPENING_TAG_REGEX.test(currentTrimmed) &&
