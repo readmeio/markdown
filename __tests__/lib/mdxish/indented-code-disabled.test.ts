@@ -88,4 +88,47 @@ describe('indented code blocks are disabled (CX-3739)', () => {
 
     expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph', 'paragraph']);
   });
+
+  // With indented code disabled, an indented line is ordinary markdown, so inline
+  // emphasis parses and escaped markers stay literal — exactly as at column 0, and
+  // identically in both engines. Covers `*`/`_` and their escapes.
+  describe('indented prose still parses inline markdown, not code', () => {
+    it.each([
+      ['asterisk', '*this*'],
+      ['underscore', '_this_'],
+    ])('renders an indented %s emphasis as <em> (mdxish)', (_name, marker) => {
+      const ast = mdxish(`intro\n\n    look at ${marker} word\n\nafter`);
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'em')).toMatchObject({ children: [{ type: 'text', value: 'this' }] });
+    });
+
+    it('honors escaped emphasis markers in indented prose (mdxish)', () => {
+      const ast = mdxish('intro\n\n    literal \\*stars\\* and \\_unders\\_\n\nafter');
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'em')).toBeNull();
+      expect(toHtml(ast)).toContain('literal *stars* and _unders_');
+    });
+
+    it('matches MDX: indented emphasis parses as emphasis, not code', () => {
+      const tree = mdast('intro\n\n    look at *this* word', { missingComponents: 'ignore' });
+
+      expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
+      expect(tree.children[1]).toMatchObject({
+        children: [
+          { type: 'text', value: 'look at ' },
+          { type: 'emphasis', children: [{ type: 'text', value: 'this' }] },
+          { type: 'text', value: ' word' },
+        ],
+      });
+    });
+
+    it('matches MDX: escaped markers in indented prose stay literal', () => {
+      const tree = mdast('intro\n\n    literal \\*stars\\*', { missingComponents: 'ignore' });
+
+      expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
+      expect(tree.children[1]).toMatchObject({ children: [{ type: 'text', value: 'literal *stars*' }] });
+    });
+  });
 });
