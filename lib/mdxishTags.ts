@@ -5,7 +5,7 @@ import { visit } from 'unist-util-visit';
 
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
 import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
-import { isMDXElement } from '../processor/utils';
+import { disableIndentedCode, isMDXElement } from '../processor/utils';
 
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
 import { magicBlockFromMarkdown } from './mdast-util/magic-block';
@@ -18,7 +18,7 @@ const tags = (doc: string) => {
   const set = new Set<string>();
 
   const processor = remark()
-    .data('micromarkExtensions', [jsxTable(), magicBlock(), mdxComponent()])
+    .data('micromarkExtensions', [disableIndentedCode, jsxTable(), magicBlock(), mdxComponent()])
     .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), magicBlockFromMarkdown(), mdxComponentFromMarkdown()])
     .use(mdxishMdxComponentBlocks)
     .use(mdxishTables);

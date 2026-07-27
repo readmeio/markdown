@@ -45,7 +45,7 @@ import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import hardBreaks from '../../../plugin/hard-breaks';
-import { toAttributes } from '../../../utils';
+import { disableIndentedCode, toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
@@ -119,7 +119,7 @@ const preprocessBody = (text: string): string => {
 
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [gemoji(), legacyVariable(), looseHtmlEntity()])
+  .data('micromarkExtensions', [disableIndentedCode, gemoji(), legacyVariable(), looseHtmlEntity()])
   .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(hardBreaks)
@@ -134,7 +134,7 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
+  .data('micromarkExtensions', [disableIndentedCode, gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
   .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
@@ -251,9 +251,9 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
   return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
-/** Escape leading `-`/`*`/`+` (followed by space/EOL) so cells don't become bullet lists. */
+/** Escape a leading `-`/`*`/`+` (allowing indentation, followed by space/EOL) so cells don't become bullet lists. */
 const escapeLeadingListMarkers = (text: string): string =>
-  text.replace(/^([-*+])(?=[ \t]|$)/gm, '\\$1');
+  text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
 
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
@@ -265,13 +265,11 @@ const parseTableCell = (text: string): MdastNode[] => {
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
-  // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
-  const processed = escapeLeadingListMarkers(trimmedLines.join('\n'));
+  const processed = escapeLeadingListMarkers(normalized);
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`

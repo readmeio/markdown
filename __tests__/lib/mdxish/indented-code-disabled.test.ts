@@ -81,6 +81,62 @@ describe('indented code blocks are disabled (CX-3739)', () => {
     expect(toHtml(blockquote!)).toContain('indented under quote');
   });
 
+  // Magic-block bodies re-parse through `contentParser`/`markdownToHtml` in the
+  // transformer, each carrying its own micromark extension list — this covers
+  // that third wiring site.
+  describe('inside magic block bodies', () => {
+    const callout = (body: string) =>
+      `[block:callout]\n{ "type": "info", "title": "Heads up", "body": "${body}" }\n[/block]`;
+
+    it('renders a 4-space-indented callout body line as prose', () => {
+      const ast = mdxish(callout('Intro line.\\n\\n    const literal = 1;'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'code')).toBeNull();
+      const paragraphs = findAllElementsByTagName(ast, 'p');
+      expect(paragraphs).toHaveLength(2);
+      expect(paragraphs[1]).toMatchObject({ children: [{ type: 'text', value: 'const literal = 1;' }] });
+    });
+
+    it('renders a tab-indented callout body line as prose', () => {
+      const ast = mdxish(callout('Intro line.\\n\\n\\tconst literal = 2;'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findAllElementsByTagName(ast, 'p')[1]).toMatchObject({
+        children: [{ type: 'text', value: 'const literal = 2;' }],
+      });
+    });
+
+    it('parses an indented markdown construct in a callout body, not code', () => {
+      const ast = mdxish(callout('Steps:\\n\\n    1. first step\\n    2. second step'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'ol')).not.toBeNull();
+      expect(findAllElementsByTagName(ast, 'li')).toHaveLength(2);
+    });
+
+    it('still renders an explicit fence in a callout body as code', () => {
+      const ast = mdxish(callout('Intro.\\n\\n```js\\nconst x = 1;\\n```'));
+
+      expect(findElementByTagName(ast, 'code')).toMatchObject({
+        properties: { className: ['language-js'] },
+        children: [{ type: 'text', value: 'const x = 1;\n' }],
+      });
+    });
+
+    it('renders an indented image-caption continuation line as prose', () => {
+      const md =
+        '[block:image]\n{ "images": [ { "image": ["https://x/y.png", "y.png"], "caption": "Cap line.\\n\\n    indented caption tail" } ] }\n[/block]';
+
+      const ast = mdxish(md);
+
+      const figcaption = findElementByTagName(ast, 'figcaption');
+      expect(figcaption).not.toBeNull();
+      expect(toHtml(figcaption!)).toContain('indented caption tail');
+      expect(toHtml(figcaption!)).not.toContain('<pre>');
+    });
+  });
+
   it('matches MDX, which also parses the indented block as a paragraph', () => {
     const md = 'intro paragraph\n\n    const literal = 1;\n\nafter paragraph';
 

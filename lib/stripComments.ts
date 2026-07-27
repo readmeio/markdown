@@ -9,6 +9,7 @@ import { unified } from 'unified';
 
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
+import { disableIndentedCode } from '../processor/utils';
 
 import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
@@ -38,7 +39,7 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 4. we need mdxComponent to parse custom components as one node, and prevent the tag from getting escaped
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [htmlBlockComponent(), jsxTable(), mdxComponent(), mdxExpression({ allowEmpty: true })])
+      .data('micromarkExtensions', [disableIndentedCode, htmlBlockComponent(), jsxTable(), mdxComponent(), mdxExpression({ allowEmpty: true })])
       .data('fromMarkdownExtensions', [
         htmlBlockComponentFromMarkdown(),
         jsxTableFromMarkdown(),

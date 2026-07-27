@@ -15,7 +15,7 @@ import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
 import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
 import { gemoji } from '../../../../lib/micromark/gemoji';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { getAttrs, isMDXElement } from '../../../utils';
+import { disableIndentedCode, getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
@@ -45,13 +45,14 @@ const tableTypes = {
 // `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
 // register them manually so we control ordering against our other tokenizers.
 // The fallback omits these so blank-line-separated markdown inside cells still
-// parses when mdxjs throws on malformed JSX.
+// parses when mdxjs throws on malformed JSX. `mdxjs` already disables indented
+// code (via `mdx-md`), so the fallback registers `disableIndentedCode` to match.
 //
 // mdx parsing is used because it heavily simplifies the parsing of the table structure;
 // it can identify the rows and cells. The heavy lifting is done by it
 const buildTableNodeProcessor = (withMdx: boolean) =>
   unified()
-    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
+    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : [disableIndentedCode]), gemoji(), legacyVariable()])
     .data('fromMarkdownExtensions', [
       ...(withMdx ? [mdxFromMarkdown()] : []),
       gemojiFromMarkdown(),
