@@ -101,9 +101,9 @@ describe('markdown inside indented plain HTML blocks', () => {
     expect(findAllElementsByTagName(ast, 'a')).toHaveLength(2);
   });
 
-  it('keeps content indented 4+ columns relative to its nested wrapper as an indented code block', () => {
-    // Relative indentation is preserved when component bodies are dedented, so
-    // content 4+ columns deeper than the surrounding tags still parses as code.
+  it('renders content indented 4+ columns inside a nested wrapper as prose, not code (CX-3739)', () => {
+    // Indented code blocks are disabled (matching MDX), so deep readability
+    // indentation never becomes code — code requires an explicit fence.
     const md = `<Column>
   <div>
 
@@ -114,7 +114,8 @@ describe('markdown inside indented plain HTML blocks', () => {
 
     const ast = mdxish(md);
 
-    expect(findElementByTagName(ast, 'code')).not.toBeNull();
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+    expect(toHtml(ast)).toContain("const literal = 'code';");
   });
 
   it('does not treat deeply indented content as code when nested under unindented HTML', () => {

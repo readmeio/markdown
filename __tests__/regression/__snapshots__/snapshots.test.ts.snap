@@ -213,6 +213,64 @@ exports[`Render engine regressions tests > htmlblock-in-table (mdxish) 1`] = `
 <div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tbody><tr><td><strong>bold</strong> still works</td><td><div class="rdmd-html"><div style="color: red;">Hello</div></div></td></tr></tbody></table></div></div></div>"
 `;
 
+exports[`Render engine regressions tests > indented-content-is-not-code (mdx) 1`] = `
+"<div class="card"><p>Block two — indented 6 spaces after a blank line, so it renders as a raw code block instead of HTML.</p></div>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-info-circle"></i></summary><div class="Accordion-content"><ol start="4">
+<li>
+<p><strong>Get All Files from Path</strong></p>
+</li>
+<li>
+<p><strong>Suppressname lookup</strong>:
+<em><code class="rdmd-code lang-undefined theme-undefined">\\\\&lt;full_server_NetBIOS_name&gt;\\path\\to\\file.ext</code></em></p>
+</li>
+</ol><ul>
+<li>Wildcards are supported in file names as follows:<!-- -->
+<ul>
+<li><strong>Suppress name lookup</strong> must be enabled.</li>
+</ul>
+</li>
+</ul><ol start="6">
+<li><strong>Use Authentication</strong></li>
+</ol></div></details>
+<p>Fenced code still works, including when indented inside a list:</p>
+<ol>
+<li>
+<p>Install the CLI:</p>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="bash">Bash</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-shell theme-undefined" data-lang="shell">npm install</code></pre></div></div>
+</li>
+</ol>"
+`;
+
+exports[`Render engine regressions tests > indented-content-is-not-code (mdxish) 1`] = `
+"      <div class="card">
+        <p>Block two — indented 6 spaces after a blank line, so it renders as a raw code block instead of HTML.</p>
+      </div>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-info-circle"></i></summary><div class="Accordion-content"><ol start="4">
+<li>
+<p><strong>Get All Files from Path</strong></p>
+</li>
+<li>
+<p><strong>Suppressname lookup</strong>:<br/>
+<em><code class="rdmd-code lang-undefined theme-undefined">\\\\&lt;full_server_NetBIOS_name&gt;\\path\\to\\file.ext</code></em></p>
+</li>
+</ol><ul>
+<li>Wildcards are supported in file names as follows:
+<ul>
+<li><strong>Suppress name lookup</strong> must be enabled.</li>
+</ul>
+</li>
+</ul><ol start="6">
+<li><strong>Use Authentication</strong></li>
+</ol></div></details></div>
+<p>Fenced code still works, including when indented inside a list:</p>
+<ol>
+<li>
+<p>Install the CLI:</p>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="bash">Bash</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-shell theme-undefined" data-lang="shell">npm install</code></pre></div></div>
+</li>
+</ol>"
+`;
+
 exports[`Render engine regressions tests > indented-foreign-html-tags (mdx) 1`] = `
 "<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="platform-resources"></div><div class="heading-text">Platform resources</div><a aria-label="Skip link to Platform resources" class="heading-anchor-icon fa fa-regular fa-anchor" href="#platform-resources"></a></h2>
 <div class="wrike-cards-grid"><a href="/docs/overview" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="wrike-card-title">Guides</div><div class="wrike-card-desc">Step-by-step tutorials for authentication, webhooks, custom integrations, and common recipes.</div><div class="wrike-card-link">Read the guides <span class="wrike-arrow">→</span></div></a><a href="/reference" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div class="wrike-card-title">Random 7</div><div class="wrike-card-desc">Random 8</div><div class="wrike-card-link">View Random 9<span class="wrike-arrow">→</span></div></a><a href="/docs/random-10" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6v6H9z"></path><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 20v3"></path><path d="M15 20v3"></path><path d="M20 9h3"></path><path d="M20 15h3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path></svg></div><div class="wrike-card-title">Random 5</div><div class="wrike-card-desc">Random 4</div><div class="wrike-card-link">Set up Random 6<span class="wrike-arrow">→</span></div></a><a href="/docs/datahub-overview" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg></div><div class="wrike-card-title">Random 1</div><div class="wrike-card-desc">Random 2</div><div class="wrike-card-link">Explore Random 3<span class="wrike-arrow">→</span></div></a></div>"
