@@ -60,7 +60,7 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
-import { jsxAcornParser } from '../processor/utils';
+import { disableIndentedCode, jsxAcornParser } from '../processor/utils';
 
 import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from './mdast-util/gemoji';
@@ -166,6 +166,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
   const mdxExprTextOnly: Extension = mdxExpressionLenient();
 
   const micromarkExts = [
+    disableIndentedCode,
     jsxTable(),
     magicBlock(),
     mdxComponent(),

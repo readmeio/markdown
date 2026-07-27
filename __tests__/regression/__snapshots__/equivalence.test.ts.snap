@@ -246,6 +246,22 @@ exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > indented-content-is-not-code 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "details",
+      "path": "/details[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > indented-foreign-html-tags 1`] = `
 {
   "changes": [
