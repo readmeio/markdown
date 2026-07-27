@@ -1,4 +1,5 @@
 import { toHtml } from 'hast-util-to-html';
+import { removePosition } from 'unist-util-remove-position';
 
 import { mdxish } from '../../../lib';
 import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxish } from '../../helpers';
@@ -132,13 +133,31 @@ describe('markdown inside single-line plain HTML tags', () => {
     });
 
     it('reassembles a raw table preceded by text on the same line (CX-3645)', () => {
-      const ast = mdxish(
-        'Bad request <table><thead><tr><th>Error Code</th><th>Description</th></tr></thead><tbody><tr><td>amount_mismatch</td><td>Mismatch</td></tr></tbody></table>',
-        { safeMode: true },
-      );
+      const source = 'Bad request <table><tr><td>Error</td></tr></table>';
+      const mdast = parseMdxish(source, { safeMode: true });
+      removePosition(mdast, { force: true });
 
-      expect(toHtml(ast)).toBe(
-        '<p>Bad request </p><table><thead><tr><th>Error Code</th><th>Description</th></tr></thead><tbody><tr><td>amount_mismatch</td><td>Mismatch</td></tr></tbody></table><p></p>',
+      expect(mdast).toStrictEqual({
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { type: 'text', value: 'Bad request ' },
+              { type: 'html', value: '<table>' },
+              { type: 'html', value: '<tr>' },
+              { type: 'html', value: '<td>' },
+              { type: 'text', value: 'Error' },
+              { type: 'html', value: '</td>' },
+              { type: 'html', value: '</tr>' },
+              { type: 'html', value: '</table>' },
+            ],
+          },
+        ],
+      });
+
+      expect(toHtml(mdxish(source, { safeMode: true }))).toBe(
+        '<p>Bad request </p><table><tbody><tr><td>Error</td></tr></tbody></table><p></p>',
       );
     });
 
