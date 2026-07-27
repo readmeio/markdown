@@ -131,6 +131,17 @@ describe('markdown inside single-line plain HTML tags', () => {
       });
     });
 
+    it('reassembles a raw table preceded by text on the same line (CX-3645)', () => {
+      const ast = mdxish(
+        'Bad request <table><thead><tr><th>Error Code</th><th>Description</th></tr></thead><tbody><tr><td>amount_mismatch</td><td>Mismatch</td></tr></tbody></table>',
+        { safeMode: true },
+      );
+
+      expect(toHtml(ast)).toBe(
+        '<p>Bad request </p><table><thead><tr><th>Error Code</th><th>Description</th></tr></thead><tbody><tr><td>amount_mismatch</td><td>Mismatch</td></tr></tbody></table><p></p>',
+      );
+    });
+
     it('does not promote a wrapper holding a nested table', () => {
       const ast = mdxish('<div><table><tr><td>**x**</td></tr></table></div>');
 
