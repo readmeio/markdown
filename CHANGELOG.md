@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 14.14.0
+### ✨ New & Improved
+
+* add htmlToMarkdown for converting HTML fragments to markdown ([#1559](https://github.com/readmeio/markdown/issues/1559)) ([ef6df0f](https://github.com/readmeio/markdown/commit/ef6df0fa2f5f6474e0d9426836d904c9c53657dc))
+* **mdxish:** disable 4+ code conversion commonmark behaviour ([#1566](https://github.com/readmeio/markdown/issues/1566)) ([2583f38](https://github.com/readmeio/markdown/commit/2583f385e045459620aef42e4011d8baad7ba1b3))
+
 ## Version 14.13.2
 ### 🛠 Fixes & Updates
 
