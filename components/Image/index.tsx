@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 
 interface ImageProps {
   align?: string;
@@ -54,6 +55,22 @@ const Image = (Props: ImageProps) => {
   const noWrap = (align === 'left' || align === 'right') && (wrapProp === false || wrapProp === 'false');
 
   const [lightbox, setLightbox] = React.useState(false);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+
+  // While the lightbox is open, move focus into the overlay and close it on
+  // Escape / Cmd+. from anywhere — the zoom/pan surface may hold pointer focus,
+  // so a document-level listener keeps the keyboard shortcuts reliable.
+  React.useEffect(() => {
+    if (!lightbox) return undefined;
+
+    closeButtonRef.current?.focus();
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || (e.metaKey && e.key === '.')) setLightbox(false);
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [lightbox]);
 
   if (className === 'emoji') {
     return (
@@ -125,20 +142,55 @@ const Image = (Props: ImageProps) => {
   const lightboxOverlay = lightbox ? (
     <LightboxPortal>
       <div className="markdown-body">
-        <span
-          aria-label={alt || 'Collapse image'}
-          className="img lightbox open"
-          onClick={toggle}
-          onKeyDown={handleKeyDown}
-          role={'button'}
-          tabIndex={0}
-        >
-          <span className="lightbox-inner">
-            {imgElement}
-            {(children || caption) && <figcaption>{children || caption}</figcaption>}
-          </span>
+        <span className="img lightbox open">
+          <TransformWrapper
+            centerOnInit
+            doubleClick={{ mode: 'zoomIn', step: 0.7 }}
+            initialScale={1}
+            maxScale={8}
+            minScale={1}
+            pinch={{ step: 5 }}
+            wheel={{ step: 0.2 }}
+          >
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                <TransformComponent
+                  contentStyle={{ alignItems: 'center', height: '100%', justifyContent: 'center', width: '100%' }}
+                  wrapperClass="lightbox-canvas"
+                  wrapperStyle={{ height: '100vh', width: '100vw' }}
+                >
+                  {imgElement}
+                </TransformComponent>
+                <div className="lightbox-toolbar">
+                  {(children || caption) && <figcaption>{children || caption}</figcaption>}
+                  <div className="lightbox-controls">
+                    <button aria-label="Zoom in" className="lightbox-control" onClick={() => zoomIn()} type="button">
+                      <i aria-hidden="true" className="fa-solid fa-magnifying-glass-plus" />
+                    </button>
+                    <button aria-label="Zoom out" className="lightbox-control" onClick={() => zoomOut()} type="button">
+                      <i aria-hidden="true" className="fa-solid fa-magnifying-glass-minus" />
+                    </button>
+                    <button
+                      aria-label="Reset zoom"
+                      className="lightbox-control"
+                      onClick={() => resetTransform()}
+                      type="button"
+                    >
+                      <i aria-hidden="true" className="fa-solid fa-arrows-rotate" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </TransformWrapper>
         </span>
-        <button aria-label="Minimize image" className="lightbox-close" onClick={toggle} type="button">
+        <button
+          ref={closeButtonRef}
+          aria-label="Minimize image"
+          className="lightbox-close"
+          onClick={toggle}
+          type="button"
+        >
           <i aria-hidden="true" className="fa-solid fa-xmark" />
         </button>
       </div>

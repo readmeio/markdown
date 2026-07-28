@@ -1,10 +1,21 @@
 import '@testing-library/jest-dom';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import Image from '../../components/Image';
 
 import { captureMdxishProps, renderingEngines } from './utils';
+
+// react-zoom-pan-pinch (the lightbox zoom/pan engine) observes element size via
+// ResizeObserver, which jsdom doesn't implement — stub it so the overlay mounts.
+const noop = () => undefined;
+globalThis.ResizeObserver ??= class {
+  observe = noop;
+
+  unobserve = noop;
+
+  disconnect = noop;
+} as unknown as typeof ResizeObserver;
 
 describe('Image', () => {
   it('should render', () => {
@@ -358,5 +369,52 @@ describe('Image', () => {
 
     const img = container.querySelector('figure img');
     expect(img).toHaveStyle({ filter: 'blur(2px)' });
+  });
+
+  describe('lightbox zoom/pan', () => {
+    const openLightbox = () => {
+      render(<Image alt="Pizza bro" src="https://files.readme.io/b8674d6-pizzabro.jpg" />);
+      fireEvent.click(screen.getByRole('button', { name: 'Expand image' }));
+    };
+
+    it('should not render the lightbox overlay until the image is activated', () => {
+      render(<Image alt="Pizza bro" src="https://files.readme.io/b8674d6-pizzabro.jpg" />);
+
+      expect(document.querySelector('.lightbox.open')).not.toBeInTheDocument();
+    });
+
+    it('should open a zoomable overlay with zoom controls when the image is activated', () => {
+      openLightbox();
+
+      expect(document.querySelector('.lightbox.open')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Minimize image' })).toBeInTheDocument();
+    });
+
+    it('should keep the lightbox open when a zoom control is clicked', () => {
+      openLightbox();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+
+      expect(document.querySelector('.lightbox.open')).toBeInTheDocument();
+    });
+
+    it('should close the lightbox when the minimize button is clicked', () => {
+      openLightbox();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Minimize image' }));
+
+      expect(document.querySelector('.lightbox.open')).not.toBeInTheDocument();
+    });
+
+    it('should close the lightbox when Escape is pressed', () => {
+      openLightbox();
+
+      fireEvent.keyDown(document, { key: 'Escape' });
+
+      expect(document.querySelector('.lightbox.open')).not.toBeInTheDocument();
+    });
   });
 });
