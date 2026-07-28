@@ -9,7 +9,6 @@ import { unified } from 'unified';
 
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
-import { disableIndentedCode } from '../processor/utils';
 
 import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
@@ -17,6 +16,7 @@ import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
 import { htmlBlockComponent } from './micromark/html-block-component';
 import { jsxTable } from './micromark/jsx-table';
 import { mdxComponent } from './micromark/mdx-component';
+import { disableConstructs } from './micromark/mdxish-extensions';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -39,7 +39,16 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 4. we need mdxComponent to parse custom components as one node, and prevent the tag from getting escaped
   if (mdxish) {
     processor
-      .data('micromarkExtensions', [disableIndentedCode, htmlBlockComponent(), jsxTable(), mdxComponent(), mdxExpression({ allowEmpty: true })])
+      // NOTE: `mdxComponent` is registered last, so it — not `htmlBlockComponent` —
+      // wins the `<` race and claims `<HTMLBlock>` here, the opposite of the
+      // document parser. Converging the two is tracked as part of CX-3708.
+      .data('micromarkExtensions', [
+        disableConstructs(),
+        htmlBlockComponent(),
+        jsxTable(),
+        mdxComponent(),
+        mdxExpression({ allowEmpty: true }),
+      ])
       .data('fromMarkdownExtensions', [
         htmlBlockComponentFromMarkdown(),
         jsxTableFromMarkdown(),

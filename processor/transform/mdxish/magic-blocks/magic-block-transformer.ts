@@ -37,15 +37,10 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
-import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
-import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
-import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
-import { gemoji } from '../../../../lib/micromark/gemoji';
-import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
+import { mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import hardBreaks from '../../../plugin/hard-breaks';
-import { disableIndentedCode, toAttributes } from '../../../utils';
+import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
@@ -117,10 +112,14 @@ const preprocessBody = (text: string): string => {
   return ensureLeadingBreaks(text);
 };
 
+// A magic block body is legacy content: it carries the inline syntax but never
+// the component/table tokenizers, which the surrounding document parser owns.
+const bodyExtensions = mdxishExtensions(['gemoji', 'legacyVariable', 'looseHtmlEntity', 'emptyTaskListItem']);
+
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [disableIndentedCode, gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', bodyExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', bodyExtensions.fromMarkdownExtensions)
   .use(remarkParse)
   .use(hardBreaks)
   .use(remarkGfm)
@@ -134,8 +133,8 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [disableIndentedCode, gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', [...bodyExtensions.micromarkExtensions, gfmStrikethrough()])
+  .data('fromMarkdownExtensions', [...bodyExtensions.fromMarkdownExtensions, gfmStrikethroughFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
@@ -301,25 +300,16 @@ const parseBlock = (text: string): MdastNode[] => {
 
 /**
  * Minimal parser for api-header titles.
- * Disables markdown constructs that are not parsed in legacy (headings, lists)
+ * Disables markdown constructs that are not parsed in legacy (headings, lists),
+ * on top of the base set rather than in place of it.
  */
+const titleExtensions = mdxishExtensions(['gemoji', 'legacyVariable', 'looseHtmlEntity'], {
+  disable: ['blockQuote', 'headingAtx', 'list', 'thematicBreak'],
+});
+
 const apiHeaderTitleParser = unified()
-  .data('micromarkExtensions', [
-    gemoji(),
-    legacyVariable(),
-    looseHtmlEntity(),
-    {
-      disable: {
-        null: [
-          'blockQuote',
-          'headingAtx',
-          'list',
-          'thematicBreak',
-        ],
-      },
-    },
-  ])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', titleExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', titleExtensions.fromMarkdownExtensions)
   .use(remarkParse)
   .use(remarkGfm);
 

@@ -135,6 +135,21 @@ describe('indented code blocks are disabled (CX-3739)', () => {
       expect(toHtml(figcaption!)).toContain('indented caption tail');
       expect(toHtml(figcaption!)).not.toContain('<pre>');
     });
+
+    // The api-header title parser adds its own construct disables. It used to
+    // replace the shared base config rather than extend it, so it was the one
+    // sub-parser still turning an indented line into code (CX-3708).
+    it.each([
+      ['4-space-indented', '    Indented Title'],
+      ['tab-indented', '\\tTabbed Title'],
+    ])('renders a %s api-header title as text, not code', (_label, title) => {
+      const ast = mdxish(`[block:api-header]\n{ "title": "${title}", "level": 2 }\n[/block]`);
+
+      const heading = findElementByTagName(ast, 'h2');
+      expect(heading).not.toBeNull();
+      expect(toHtml(heading!)).not.toContain('<code>');
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+    });
   });
 
   it('matches MDX, which also parses the indented block as a paragraph', () => {

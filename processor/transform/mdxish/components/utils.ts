@@ -20,8 +20,8 @@ import { jsxTable } from '../../../../lib/micromark/jsx-table';
 import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
 import { magicBlock } from '../../../../lib/micromark/magic-block';
 import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { disableConstructs } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
-import { disableIndentedCode } from '../../../utils';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 
@@ -32,7 +32,7 @@ const buildInlineMdProcessor = (safeMode: boolean) => {
   // body (e.g. a `<Callout>`) is captured as one html node. Without it, blank
   // lines between rows let CommonMark HTML block type 6 fragment the table and
   // its rows spill out as text / indented code blocks (CX-3705).
-  const micromarkExts = [disableIndentedCode, jsxTable(), mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
+  const micromarkExts = [disableConstructs(), jsxTable(), mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
   const fromMarkdownExts = [
     jsxTableFromMarkdown(),
     mdxComponentFromMarkdown(),
