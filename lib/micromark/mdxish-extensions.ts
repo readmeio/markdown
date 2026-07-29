@@ -3,6 +3,7 @@ import type { Extension } from 'micromark-util-types';
 
 import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
+import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
 import { emptyTaskListItemFromMarkdown } from '../mdast-util/empty-task-list-item';
@@ -25,51 +26,46 @@ import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
- * CommonMark constructs disabled for every MDXish parser.
- *
- * `codeIndented`: any line indented 4+ spaces is an indented code block per
- * CommonMark (https://spec.commonmark.org/0.28/#indented-code-blocks), which is
- * unexpected for users coming from MDX — `mdx-md` disables it for the same reason.
- *
- * Adding a construct here applies it to every sub-parser at once; before this
- * list existed each one had to be updated by hand and they drifted (CX-3708).
- */
-export const MDXISH_DISABLED_CONSTRUCTS: readonly string[] = ['codeIndented'];
-
-/**
- * Base construct config every MDXish parser registers. Pass `extra` to disable
- * further constructs on top of the shared set rather than replacing it.
+ * Constructs disabled for every MDXish parser. `codeIndented` because 4+ column
+ * indentation is formatting to an MDX author, never code — `mdx-md` drops it too.
+ * Pass `extra` to disable more on top of the shared set, never in place of it.
  */
 export const disableConstructs = (extra: readonly string[] = []): Extension => ({
-  disable: { null: [...MDXISH_DISABLED_CONSTRUCTS, ...extra] },
+  disable: { null: ['codeIndented', ...extra] },
 });
 
 interface ExtensionPair {
+  /** Produces expression syntax, so safeMode drops it. */
+  expression?: boolean;
   fromMarkdown?: () => FromMarkdownExtension;
   syntax?: () => Extension;
 }
 
 /**
- * Canonical registration order for MDXish content extensions, **lowest priority
- * first**, pairing each syntax extension with its `fromMarkdown` counterpart so
- * the two lists can't fall out of sync.
+ * Every MDXish extension, in canonical registration order — **lowest priority
+ * first**, each syntax extension paired with its `fromMarkdown` counterpart.
  *
- * `micromark-util-combine-extensions` prepends every extension's constructs and
- * nothing here sets `add: 'after'`, so a *later* entry is tried *first*. Only
- * `flow` + `<` is contended — `jsxTable`, `mdxComponent` and `htmlBlockComponent`
- * all claim it, and `htmlBlockComponent` must stay after `mdxComponent` or
- * `mdxComponent` wins `<HTMLBlock>` (it claims any PascalCase tag outside
+ * `combineExtensions` prepends constructs and nothing sets `add: 'after'`, so a
+ * *later* entry is tried *first*. Only `flow` + `<` is contended: keep
+ * `htmlBlockComponent` after `mdxComponent`, or `mdxComponent` claims
+ * `<HTMLBlock>` (it takes any PascalCase tag outside
  * `TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`, which `HTMLBlock` is not in).
- * Every other extension owns its start code alone, so its position is inert.
- *
- * This order is the document parser's proven one — don't reorder without a
- * regression test for the tag above.
  */
 const REGISTRY = {
-  jsxComment: { syntax: jsxComment },
+  jsxComment: { syntax: jsxComment, expression: true },
   jsxTable: { syntax: jsxTable, fromMarkdown: jsxTableFromMarkdown },
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
-  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown },
+  // Two `{` tokenizers, never registered together: the document parser takes text
+  // only, the component-body re-parser needs flow too for multi-line expressions.
+  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown, expression: true },
+  mdxExpression: {
+    syntax: () => {
+      const ext = mdxExpression({ allowEmpty: true });
+      return { flow: ext.flow, text: ext.text };
+    },
+    fromMarkdown: mdxExpressionFromMarkdown,
+    expression: true,
+  },
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
   gemoji: { syntax: gemoji, fromMarkdown: gemojiFromMarkdown },
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
@@ -78,77 +74,108 @@ const REGISTRY = {
   mdxjsEsm: {
     syntax: () => mdxjsEsm({ acorn: jsxAcornParser, addResult: true }),
     fromMarkdown: mdxjsEsmFromMarkdown,
+    expression: true,
   },
   emptyTaskListItem: { fromMarkdown: emptyTaskListItemFromMarkdown },
 } satisfies Record<string, ExtensionPair>;
 
 export type MdxishFeature = keyof typeof REGISTRY;
 
-/** Insertion order of `REGISTRY` is the canonical priority order. */
-const FEATURE_ORDER = Object.keys(REGISTRY) as MdxishFeature[];
+// ======= TOKENIZER EXTENSION GROUP DEFINITIONS =======
+
+/** Tokenizers that claim a whole block so broader ones can't fragment it. */
+const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
+
+/** Inline syntax every parser that renders user prose needs. */
+const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
 
 /**
- * Expression syntax is evaluated downstream, so safeMode drops every extension
- * that produces it. Centralised here so no call site can forget the gate.
+ * `{}` and ESM syntax. A parser that re-parses a component body swaps
+ * `mdxExpressionLenient` for the flow-capable `mdxExpression`, so it composes
+ * this group itself. What drops these in safeMode is the `expression` flag on
+ * each registry entry, not this list — the two don't have to match.
  */
-const SAFE_MODE_EXCLUDED: ReadonlySet<MdxishFeature> = new Set([
-  'jsxComment',
-  'mdxExpressionLenient',
-  'mdxjsEsm',
-]);
+const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdxjsEsm'];
+
+// ======= TOKENIZER EXTENSION GROUP REGISTRY =======
 
 /**
- * The full MDXish content syntax set, shared by the parsers that render a
- * document: the top-level parser and the component-body re-parser. A component
- * body should tokenize exactly like the document it lives in — when the two
- * drifted, a `<Table>` nested in a `<Callout>` lost all of its rows (CX-3705).
+ * The feature set of every MDXish sub-parser, kept together so adding a
+ * tokenizer means deciding for each one rather than silently reaching none of
+ * them. A site opting out of a group should say so here, in the open.
+ *
+ * `lib/stripComments.ts` is the one parser missing from this map: it needs
+ * `mdxComponent` to outrank `htmlBlockComponent`, the reverse of the canonical
+ * order, so it still builds its own list (CX-3708).
  */
-export const MDXISH_CONTENT_FEATURES: readonly MdxishFeature[] = [
-  'jsxComment',
-  'jsxTable',
-  'magicBlock',
-  'mdxExpressionLenient',
-  'mdxComponent',
-  'gemoji',
-  'legacyVariable',
-  'looseHtmlEntity',
-  'htmlBlockComponent',
-  'mdxjsEsm',
-  'emptyTaskListItem',
-];
+export const FEATURES = {
+  /** `lib/mdxish.ts` — the document parser; the only site taking every group */
+  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem'],
 
-interface MdxishExtensionOpts {
-  /** Constructs to disable on top of `MDXISH_DISABLED_CONSTRUCTS`. */
-  disable?: readonly string[];
-  /** Drops the expression-producing extensions. */
-  safeMode?: boolean;
-}
+  /**
+   * `components/utils.ts` — re-parses a component body, which should tokenize
+   * like the document around it: when the two drifted a `<Table>` in a
+   * `<Callout>` lost every row (CX-3705).
+   *
+   * @todo spelled out rather than composed because it is off both groups —
+   * missing `looseHtmlEntity`, so `&nbsp` renders literally here but as a space
+   * in prose, and missing `htmlBlockComponent`. Both are rendering changes;
+   * once made this collapses to `[...BLOCK_CLAIMS, ...INLINE, 'mdxExpression',
+   * 'emptyTaskListItem']`.
+   */
+  componentBody: [
+    'jsxTable',
+    'magicBlock',
+    'mdxComponent',
+    'gemoji',
+    'legacyVariable',
+    'mdxExpression',
+    'emptyTaskListItem',
+  ],
+
+  /**
+   * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
+   * Omits `htmlBlockComponent` deliberately: either way `<HTMLBlock>` is not
+   * reported as a custom component.
+   */
+  tags: ['jsxTable', 'magicBlock', 'mdxComponent'],
+
+  /**
+   * `tables/mdxish-tables.ts` — table cells. The block claims would recurse into
+   * the structure being parsed.
+   *
+   * @todo same `looseHtmlEntity` divergence as `componentBody`; once fixed this
+   * is just `[...INLINE]`.
+   */
+  tableCell: ['gemoji', 'legacyVariable'],
+
+  /** `magic-blocks` — callout/image bodies; legacy content, no components */
+  magicBlockBody: [...INLINE, 'emptyTaskListItem'],
+
+  /** `magic-blocks` — api-header titles; also disables block constructs */
+  apiHeaderTitle: [...INLINE],
+} satisfies Record<string, MdxishFeature[]>;
 
 /**
- * Builds the micromark + `fromMarkdown` extension lists for an MDXish parser.
+ * Builds the extension lists for an MDXish parser. `features` is an unordered
+ * set — ordering is `REGISTRY`'s job, so a call site can't get it wrong — and
+ * the base construct config is always registered.
  *
- * `features` is treated as an unordered set: ordering is this module's job (see
- * `REGISTRY`), so a call site can't introduce an ordering bug by listing them
- * differently. The base construct config is always registered.
- *
- * Extensions outside the registry (`mdxjs()`, `gfmStrikethrough()`) stay at
- * their call site — spread them onto the returned lists. Position is only
- * load-bearing for `flow` + `<`, so appending is safe for everything else.
+ * Extensions outside the registry (`mdxjs()`, `gfmStrikethrough()`) stay at their
+ * call site; spread them onto the result, minding the `flow` + `<` order.
  */
 export function mdxishExtensions(
   features: readonly MdxishFeature[],
-  { disable = [], safeMode = false }: MdxishExtensionOpts = {},
+  { disable = [], safeMode = false }: { disable?: readonly string[]; safeMode?: boolean } = {},
 ): { fromMarkdownExtensions: FromMarkdownExtension[]; micromarkExtensions: Extension[] } {
-  const enabled = new Set(features);
-  const selected: ExtensionPair[] = FEATURE_ORDER.filter(
-    feature => enabled.has(feature) && !(safeMode && SAFE_MODE_EXCLUDED.has(feature)),
-  ).map(feature => REGISTRY[feature]);
+  const enabled: Set<string> = new Set(features);
+  const entries: [string, ExtensionPair][] = Object.entries(REGISTRY);
+  const selected = entries
+    .filter(([feature, pair]) => enabled.has(feature) && !(safeMode && pair.expression))
+    .map(([, pair]) => pair);
 
   return {
     fromMarkdownExtensions: selected.flatMap(({ fromMarkdown }) => (fromMarkdown ? [fromMarkdown()] : [])),
-    micromarkExtensions: [
-      disableConstructs(disable),
-      ...selected.flatMap(({ syntax }) => (syntax ? [syntax()] : [])),
-    ],
+    micromarkExtensions: [disableConstructs(disable), ...selected.flatMap(({ syntax }) => (syntax ? [syntax()] : []))],
   };
 }

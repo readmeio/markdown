@@ -5,8 +5,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import {
-  MDXISH_CONTENT_FEATURES,
-  MDXISH_DISABLED_CONSTRUCTS,
+  FEATURES,
   disableConstructs,
   mdxishExtensions,
   type MdxishFeature,
@@ -34,7 +33,6 @@ describe('mdxishExtensions', () => {
       disableConstructs(extra);
       extra.push('thematicBreak');
 
-      expect(MDXISH_DISABLED_CONSTRUCTS).toStrictEqual(['codeIndented']);
       expect(disableConstructs()).toStrictEqual({ disable: { null: ['codeIndented'] } });
     });
   });
@@ -106,8 +104,8 @@ describe('mdxishExtensions', () => {
     const EXPRESSION_FEATURES: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdxjsEsm'];
 
     it('drops every expression-producing extension', () => {
-      const open = mdxishExtensions(MDXISH_CONTENT_FEATURES);
-      const safe = mdxishExtensions(MDXISH_CONTENT_FEATURES, { safeMode: true });
+      const open = mdxishExtensions(FEATURES.document);
+      const safe = mdxishExtensions(FEATURES.document, { safeMode: true });
 
       expect(safe.micromarkExtensions).toHaveLength(open.micromarkExtensions.length - EXPRESSION_FEATURES.length);
     });
@@ -120,7 +118,7 @@ describe('mdxishExtensions', () => {
     });
 
     it('still applies the base construct config', () => {
-      const { micromarkExtensions } = mdxishExtensions(MDXISH_CONTENT_FEATURES, { safeMode: true });
+      const { micromarkExtensions } = mdxishExtensions(FEATURES.document, { safeMode: true });
 
       expect(micromarkExtensions[0]).toStrictEqual({ disable: { null: ['codeIndented'] } });
     });
@@ -146,9 +144,7 @@ describe('extension registration is centralised (CX-3708)', () => {
   const registrationSites = SEARCH_DIRS.flatMap(dir => walk(path.join(ROOT, dir)))
     .map(file => ({ path: path.relative(ROOT, file), source: fs.readFileSync(file, 'utf8') }))
     .filter(({ source }) =>
-      source
-        .split('\n')
-        .some(line => line.includes(".data('micromarkExtensions'") && !/^\s*(?:\*|\/\/)/.test(line)),
+      source.split('\n').some(line => line.includes(".data('micromarkExtensions'") && !/^\s*(?:\*|\/\/)/.test(line)),
     );
 
   it('finds every known sub-parser', () => {
@@ -168,5 +164,21 @@ describe('extension registration is centralised (CX-3708)', () => {
       .map(site => site.path);
 
     expect(offenders).toStrictEqual([]);
+  });
+
+  // Every sub-parser but `stripComments` declares its set in FEATURES, so adding
+  // a tokenizer means deciding for each row. A preset nobody reads means a site
+  // was migrated away or renamed and the map went stale.
+  it('has a consumer for every entry in the FEATURES map', () => {
+    const sources = registrationSites.map(site => site.source).join('\n');
+    const unused = Object.keys(FEATURES).filter(preset => !sources.includes(`FEATURES.${preset}`));
+
+    expect(unused).toStrictEqual([]);
+  });
+
+  it('leaves stripComments as the only sub-parser off the FEATURES map', () => {
+    const offMap = registrationSites.filter(({ source }) => !source.includes('FEATURES.')).map(site => site.path);
+
+    expect(offMap).toStrictEqual(['lib/stripComments.ts']);
   });
 });
