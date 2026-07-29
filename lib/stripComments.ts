@@ -39,9 +39,6 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
   // 4. we need mdxComponent to parse custom components as one node, and prevent the tag from getting escaped
   if (mdxish) {
     processor
-      // NOTE: `mdxComponent` is registered last, so it — not `htmlBlockComponent` —
-      // wins the `<` race and claims `<HTMLBlock>` here, the opposite of the
-      // document parser. Converging the two is tracked as part of CX-3708.
       .data('micromarkExtensions', [
         disableConstructs(),
         htmlBlockComponent(),

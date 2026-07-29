@@ -375,12 +375,8 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 `;
 
 exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdxish) 1`] = `
-"<ol>
-  <li>
-    <details>
-      <summary>Authorization request</summary>
-<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3>
-<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+"<ol><li><details>
+  <summary>Authorization request</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;MESSAGE_TYPE&quot;: {
         &quot;Message_Type&quot;: &quot;0100&quot;,
         &quot;Message_Desc&quot;: &quot;Authorisation Request&quot;
@@ -391,14 +387,8 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
     }
 }</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;Message_Type&quot;: &quot;0110&quot;,
-}</code></pre></div></div>
-    </details>
-  </li>
-  <li>
-    <details>
-      <summary>ATM withdrawal and reversal</summary>
-<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3>
-<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+}</code></pre></div></div></details></li><li><details>
+  <summary>ATM withdrawal and reversal</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;MESSAGE_TYPE&quot;: {
         &quot;Message_Type&quot;: &quot;0400&quot;,
         &quot;Message_Desc&quot;: &quot;Reversal Request&quot;
@@ -414,10 +404,7 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 }</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
     &quot;DE11&quot;: &quot;000071&quot;,
     &quot;DE2&quot;: &quot;818654321&quot;,
-}</code></pre></div></div>
-    </details>
-  </li>
-</ol>
+}</code></pre></div></div></details></li></ol>
 <div class="content-card-container">
   
   <a class="content-card" href="invoices" target="" title="">

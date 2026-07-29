@@ -250,9 +250,9 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
   return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
-/** Escape a leading `-`/`*`/`+` (allowing indentation, followed by space/EOL) so cells don't become bullet lists. */
+/** Escape leading `-`/`*`/`+` (followed by space/EOL) so cells don't become bullet lists. */
 const escapeLeadingListMarkers = (text: string): string =>
-  text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
+  text.replace(/^([-*+])(?=[ \t]|$)/gm, '\\$1');
 
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
@@ -264,11 +264,13 @@ const parseTableCell = (text: string): MdastNode[] => {
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
+  // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const processed = escapeLeadingListMarkers(normalized);
+  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
+  const processed = escapeLeadingListMarkers(trimmedLines.join('\n'));
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`

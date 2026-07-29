@@ -34,17 +34,15 @@ const hasNestedGenericComponentTag = (content: string): boolean =>
   [...content.matchAll(NESTED_COMPONENT_TAG_RE)].some(match => !GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(match[1]));
 
 /**
- * Strip the shared leading indentation from a component body so it parses as it would
- * at column 0, e.g. `  <p>` / `   text` -> `<p>` / ` text`. Indented code is disabled,
- * but columns still shape parsing — list/blockquote continuation, table rows, and the
- * mdxComponent claim gates all measure the line prefix — and relative indentation is
- * kept so genuinely deeper content still nests. We only strip when a line actually
- * reaches 4 columns; otherwise the body is left as-is so its leading whitespace
- * survives as text nodes (mixed component + HTML content needs it).
+ * Strip the shared leading indentation from a component body so readability indentation
+ * isn't parsed as indented code (4+ columns), e.g. `  <p>` / `   text` -> `<p>` / ` text`.
+ * Relative indentation is kept, so content genuinely 4+ columns deeper stays code. We
+ * only strip when a line actually reaches 4 columns; otherwise the body is left as-is so
+ * its leading whitespace survives as text nodes (mixed component + HTML content needs it).
  *
- * Indentation is measured in CommonMark columns (tab = up to 4), matching micromark.
- * A char count (tab = 1) under-measures tab-indented bodies, so they slip past the
- * 4-column gate and their nested content mis-parses (#1556).
+ * Indentation is measured in CommonMark columns (tab = up to 4), matching how the parser
+ * decides indented code. A char count (tab = 1) under-measures tab-indented bodies, so
+ * they slip past the 4-column gate and their nested content fragments into code blocks.
  */
 function safeDeindent(text: string): string {
   const lines = text.split('\n');

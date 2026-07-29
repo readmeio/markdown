@@ -2,11 +2,11 @@
  * CommonMark indentation helpers, shared by the mdxish preprocessors so tab- and
  * space-indented content is measured (and sliced) on one scale.
  *
- * CommonMark measures indentation in *columns*, and a tab is a 4-column tab stop —
- * not a fixed 4 characters. Counting characters (tab = 1) under-measures tab-indented
- * lines, so column-anchored decisions (body dedenting, HTML-flow termination) would
- * drift from how micromark reads the same lines. Keeping one implementation here
- * stops the callers from drifting on what a column means.
+ * CommonMark's indented-code threshold is 4 *columns*, and a tab is a 4-column tab
+ * stop — not a fixed 4 characters. Counting characters (tab = 1) under-measures
+ * tab-indented lines, letting them slip past the 4-column gate so their content
+ * fragments into code blocks. Keeping one implementation here stops the two callers
+ * from drifting on what "4 columns" means.
  */
 
 /** The run of leading spaces/tabs on a line. */

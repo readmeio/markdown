@@ -18,7 +18,7 @@ It applies seven transforms in sequence (the function carries a matching docstri
    Fixes malformed GFM table separator rows — e.g. misplaced alignment colons like `|: ---` → `| :---`. Without this, remarkGfm would fail to recognize the table.
 1. **`collapseForeignContentBlankLines()`**
 
-   Collapses blank lines inside `<svg>`/`<math>` islands. A blank line inside foreign content would otherwise fragment it — the children spill out of the island, where parse5 drops the orphaned foreign tags (#1545).
+   Collapses blank lines inside `<svg>`/`<math>` islands. A blank line inside foreign content would otherwise fragment it — the children spill out as an indented code block once a wrapper re-parses its deindented body (#1545).
 1. **`terminateHtmlFlowBlocks()`**
 
    Inserts blank lines after standalone HTML elements (like `<div>...</div>`) when the next line is regular markdown. CommonMark's HTML flow rules only terminate on blank lines, so without this, the parser would swallow subsequent markdown content into the HTML block token.
@@ -251,8 +251,6 @@ A tokenizer registers itself under one or more **constructs**, keyed by the char
 - **text** — inline constructs that appear inside a paragraph or other text.
 
 A construct may set `concrete: true` to keep container markers (`>` for blockquotes, `-`/`*` for list items) from interrupting it mid-body. Registration **order matters**: micromark tries the last-registered extension first, so the pipeline splices or prepends constructs to win the race for a shared trigger character — e.g. `jsxComment` is prepended so it claims `{/* … */}` before other `{`-openers, and the MDX expression extension is registered *text-only* (`mdxExpressionLenient()`, no flow construct) so a line-leading `{` can't hijack a block that owns it.
-
-The pipeline also **disables** one core CommonMark construct: `disableIndentedCode` (@processor/utils.ts) turns off indented code blocks, matching MDX (`micromark-extension-mdx-md`). Content indented 4+ columns parses as ordinary markdown/HTML at any depth, and code requires an explicit fence (CX-3739). Both the main parser and the component-body re-parser (`getInlineMdProcessor`) register it.
 
 ### Example: magic blocks
 
