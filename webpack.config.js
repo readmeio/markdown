@@ -140,6 +140,7 @@ const serverConfig = merge(getConfig({ target: 'node' }), {
   externals: {
     react: 'react',
     'react-dom': 'react-dom',
+    'react-zoom-pan-pinch': 'react-zoom-pan-pinch',
   },
   devtool: 'source-map',
 });
