@@ -250,8 +250,8 @@
     opacity: 0.5;
     padding: 0.5rem;
     position: fixed;
-    right: 0;
-    top: 0;
+    right: env(safe-area-inset-right, 0);
+    top: env(safe-area-inset-top, 0);
     transition: opacity 0.15s ease;
     z-index: 10000000;
 

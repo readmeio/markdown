@@ -56,17 +56,35 @@ const Image = (Props: ImageProps) => {
 
   const [lightbox, setLightbox] = React.useState(false);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  const dialogRef = React.useRef<HTMLDivElement>(null);
 
-  // While the lightbox is open, move focus into the overlay and close it on
-  // Escape / Cmd+. from anywhere — the zoom/pan surface may hold pointer focus,
-  // so a document-level listener keeps the keyboard shortcuts reliable.
+  // While the lightbox is open, move focus into the overlay and keep it there:
+  // close on Escape, and trap Tab / Shift+Tab so focus cycles among the overlay's buttons.
   React.useEffect(() => {
     if (!lightbox) return undefined;
 
     closeButtonRef.current?.focus();
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || (e.metaKey && e.key === '.')) setLightbox(false);
+      if (e.key === 'Escape' || (e.metaKey && e.key === '.')) {
+        setLightbox(false);
+        return;
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLButtonElement>('button');
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener('keydown', handleGlobalKeyDown);
     return () => document.removeEventListener('keydown', handleGlobalKeyDown);
@@ -141,7 +159,13 @@ const Image = (Props: ImageProps) => {
 
   const lightboxOverlay = lightbox ? (
     <LightboxPortal>
-      <div aria-label={alt || 'Expanded image'} aria-modal="true" className="markdown-body" role="dialog">
+      <div
+        ref={dialogRef}
+        aria-label={alt || 'Expanded image'}
+        aria-modal="true"
+        className="markdown-body"
+        role="dialog"
+      >
         <span className="img lightbox open">
           {/* All zoom options use library defaults (e.g. wheel.step 0.015); only
               centering on open is non-default. */}
@@ -217,10 +241,7 @@ const Image = (Props: ImageProps) => {
     // Mirrors the framed pattern: left/right captioned figures float and shrink
     // to fit so a long caption doesn't widen the float past the image.
     const isFloating = (align === 'left' || align === 'right') && !noWrap;
-    const figureClass = [
-      (align === 'left' || align === 'right') && `img-figure-${align}`,
-      noWrap && 'img-no-wrap',
-    ]
+    const figureClass = [(align === 'left' || align === 'right') && `img-figure-${align}`, noWrap && 'img-no-wrap']
       .filter(Boolean)
       .join(' ');
     const figureStyle: React.CSSProperties | undefined =

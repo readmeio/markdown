@@ -407,5 +407,23 @@ describe('Image', () => {
 
       expect(document.querySelector('.lightbox.open')).not.toBeInTheDocument();
     });
+
+    it('should trap Tab focus among the overlay buttons', () => {
+      openLightbox();
+
+      const zoomIn = screen.getByRole('button', { name: 'Zoom in' });
+      const close = screen.getByRole('button', { name: 'Minimize image' });
+
+      // Focus starts on the close button (last in DOM order).
+      expect(close).toHaveFocus();
+
+      // Tab from the last button wraps to the first.
+      fireEvent.keyDown(document, { key: 'Tab' });
+      expect(zoomIn).toHaveFocus();
+
+      // Shift+Tab from the first button wraps back to the last.
+      fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+      expect(close).toHaveFocus();
+    });
   });
 });
