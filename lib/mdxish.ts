@@ -57,7 +57,7 @@ import variablesCodeResolver from '../processor/transform/mdxish/variables-code'
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
 
-import { MDXISH_CONTENT_FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
+import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -142,10 +142,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     return acc;
   }, {});
 
-  // safeMode drops the expression-producing extensions (jsxComment,
-  // mdxExpressionLenient, mdxjsEsm); the builder owns that gate and the
-  // registration order, which is load-bearing for `<HTMLBlock>`.
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(MDXISH_CONTENT_FEATURES, { safeMode });
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.document, { safeMode });
 
   const processor = unified()
     .data('micromarkExtensions', micromarkExtensions)

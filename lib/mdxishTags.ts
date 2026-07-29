@@ -7,11 +7,9 @@ import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/m
 import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
 import { isMDXElement } from '../processor/utils';
 
-import { mdxishExtensions } from './micromark/mdxish-extensions';
+import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
 
-// Only the extensions that can carry a component name: this pipeline collects
-// tag names, so gemoji/variables/entities would be parsed for nothing.
-const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(['jsxTable', 'magicBlock', 'mdxComponent']);
+const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tags);
 
 const tags = (doc: string) => {
   const set = new Set<string>();

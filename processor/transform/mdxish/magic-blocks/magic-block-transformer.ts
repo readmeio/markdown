@@ -37,7 +37,7 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
-import { mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import hardBreaks from '../../../plugin/hard-breaks';
 import { toAttributes } from '../../../utils';
@@ -112,9 +112,7 @@ const preprocessBody = (text: string): string => {
   return ensureLeadingBreaks(text);
 };
 
-// A magic block body is legacy content: it carries the inline syntax but never
-// the component/table tokenizers, which the surrounding document parser owns.
-const bodyExtensions = mdxishExtensions(['gemoji', 'legacyVariable', 'looseHtmlEntity', 'emptyTaskListItem']);
+const bodyExtensions = mdxishExtensions(FEATURES.magicBlockBody);
 
 /** Markdown parser */
 const contentParser = unified()
@@ -303,7 +301,7 @@ const parseBlock = (text: string): MdastNode[] => {
  * Disables markdown constructs that are not parsed in legacy (headings, lists),
  * on top of the base set rather than in place of it.
  */
-const titleExtensions = mdxishExtensions(['gemoji', 'legacyVariable', 'looseHtmlEntity'], {
+const titleExtensions = mdxishExtensions(FEATURES.apiHeaderTitle, {
   disable: ['blockQuote', 'headingAtx', 'list', 'thematicBreak'],
 });
 
