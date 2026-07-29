@@ -141,7 +141,7 @@ const Image = (Props: ImageProps) => {
 
   const lightboxOverlay = lightbox ? (
     <LightboxPortal>
-      <div className="markdown-body">
+      <div aria-label={alt || 'Expanded image'} aria-modal="true" className="markdown-body" role="dialog">
         <span className="img lightbox open">
           {/* All zoom options use library defaults (e.g. wheel.step 0.015); only
               centering on open is non-default. */}

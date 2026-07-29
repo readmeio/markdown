@@ -376,6 +376,8 @@ describe('Image', () => {
       openLightbox();
 
       expect(document.querySelector('.lightbox.open')).toBeInTheDocument();
+      const dialog = screen.getByRole('dialog', { name: 'Pizza bro' });
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
       expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Reset zoom' })).toBeInTheDocument();
