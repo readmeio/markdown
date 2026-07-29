@@ -176,9 +176,9 @@ describe('extension registration is centralised (CX-3708)', () => {
     expect(unused).toStrictEqual([]);
   });
 
-  it('leaves stripComments as the only sub-parser off the FEATURES map', () => {
+  it('declares every sub-parser in the FEATURES map', () => {
     const offMap = registrationSites.filter(({ source }) => !source.includes('FEATURES.')).map(site => site.path);
 
-    expect(offMap).toStrictEqual(['lib/stripComments.ts']);
+    expect(offMap).toStrictEqual([]);
   });
 });

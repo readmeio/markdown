@@ -58,11 +58,10 @@ const REGISTRY = {
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
   mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown, expression: true },
+  // `allowEmpty` is the package default; passed explicitly because `mdx-jsx`
+  // registers the same tokenizer with it off for attribute expressions.
   mdxExpression: {
-    syntax: () => {
-      const ext = mdxExpression({ allowEmpty: true });
-      return { flow: ext.flow, text: ext.text };
-    },
+    syntax: () => mdxExpression({ allowEmpty: true }),
     fromMarkdown: mdxExpressionFromMarkdown,
     expression: true,
   },
@@ -71,6 +70,7 @@ const REGISTRY = {
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
   looseHtmlEntity: { syntax: looseHtmlEntity, fromMarkdown: looseHtmlEntityFromMarkdown },
   htmlBlockComponent: { syntax: htmlBlockComponent, fromMarkdown: htmlBlockComponentFromMarkdown },
+  // This is for in-document variable & function definitions
   mdxjsEsm: {
     syntax: () => mdxjsEsm({ acorn: jsxAcornParser, addResult: true }),
     fromMarkdown: mdxjsEsmFromMarkdown,
@@ -90,10 +90,10 @@ const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent',
 const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
 
 /**
- * `{}` and ESM syntax. A parser that re-parses a component body swaps
+ * `{}` and ESM (export) syntax. A parser that re-parses a component body swaps
  * `mdxExpressionLenient` for the flow-capable `mdxExpression`, so it composes
- * this group itself. What drops these in safeMode is the `expression` flag on
- * each registry entry, not this list — the two don't have to match.
+ * this group itself. The `expression` flag on each registry entry determines what
+ * drops these in safeMode
  */
 const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdxjsEsm'];
 
@@ -103,10 +103,6 @@ const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdx
  * The feature set of every MDXish sub-parser, kept together so adding a
  * tokenizer means deciding for each one rather than silently reaching none of
  * them. A site opting out of a group should say so here, in the open.
- *
- * `lib/stripComments.ts` is the one parser missing from this map: it needs
- * `mdxComponent` to outrank `htmlBlockComponent`, the reverse of the canonical
- * order, so it still builds its own list (CX-3708).
  */
 export const FEATURES = {
   /** `lib/mdxish.ts` — the document parser; the only site taking every group */
@@ -116,44 +112,39 @@ export const FEATURES = {
    * `components/utils.ts` — re-parses a component body, which should tokenize
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
-   *
-   * @todo spelled out rather than composed because it is off both groups —
-   * missing `looseHtmlEntity`, so `&nbsp` renders literally here but as a space
-   * in prose, and missing `htmlBlockComponent`. Both are rendering changes;
-   * once made this collapses to `[...BLOCK_CLAIMS, ...INLINE, 'mdxExpression',
-   * 'emptyTaskListItem']`.
    */
   componentBody: [
-    'jsxTable',
-    'magicBlock',
-    'mdxComponent',
-    'gemoji',
-    'legacyVariable',
+    ...BLOCK_CLAIMS,
+    ...INLINE,
     'mdxExpression',
     'emptyTaskListItem',
   ],
 
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
-   * Omits `htmlBlockComponent` deliberately: either way `<HTMLBlock>` is not
-   * reported as a custom component.
+   * Omits `htmlBlockComponent` deliberately since it's not a custom component,
+   * and not components can be nested inside it (it's just for raw HTML).
    */
-  tags: ['jsxTable', 'magicBlock', 'mdxComponent'],
+  tags: BLOCK_CLAIMS.filter(feature => feature !== 'htmlBlockComponent'),
 
   /**
-   * `tables/mdxish-tables.ts` — table cells. The block claims would recurse into
-   * the structure being parsed.
-   *
-   * @todo same `looseHtmlEntity` divergence as `componentBody`; once fixed this
-   * is just `[...INLINE]`.
+   * `tables/mdxish-tables.ts` — table cells.
    */
-  tableCell: ['gemoji', 'legacyVariable'],
+  tableCell: [...INLINE],
 
-  /** `magic-blocks` — callout/image bodies; legacy content, no components */
+  /** `magic-blocks` — legacy content, no components */
   magicBlockBody: [...INLINE, 'emptyTaskListItem'],
 
-  /** `magic-blocks` — api-header titles; also disables block constructs */
+  /** `magic-blocks` — api-header titles */
   apiHeaderTitle: [...INLINE],
+
+  /**
+   * `lib/stripComments.ts` — parses only to strip comments, then re-stringifies,
+   * so it needs the tokenizers that keep a construct in one piece across the
+   * round trip. 
+   * No inline syntax: nothing here rewrites prose, and magic blocks are already excluded.
+   */
+  stripComments: [...BLOCK_CLAIMS.filter(feature => feature !== 'magicBlock'), 'mdxExpression'],
 } satisfies Record<string, MdxishFeature[]>;
 
 /**
