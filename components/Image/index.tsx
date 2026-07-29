@@ -143,15 +143,9 @@ const Image = (Props: ImageProps) => {
     <LightboxPortal>
       <div className="markdown-body">
         <span className="img lightbox open">
-          <TransformWrapper
-            centerOnInit
-            doubleClick={{ mode: 'zoomIn', step: 0.7 }}
-            initialScale={1}
-            maxScale={8}
-            minScale={1}
-            pinch={{ step: 5 }}
-            wheel={{ step: 0.2 }}
-          >
+          {/* All zoom options use library defaults (e.g. wheel.step 0.015); only
+              centering on open is non-default. */}
+          <TransformWrapper centerOnInit>
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 <TransformComponent
