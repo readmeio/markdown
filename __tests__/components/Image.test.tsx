@@ -6,17 +6,6 @@ import Image from '../../components/Image';
 
 import { captureMdxishProps, renderingEngines } from './utils';
 
-// react-zoom-pan-pinch (the lightbox zoom/pan engine) observes element size via
-// ResizeObserver, which jsdom doesn't implement — stub it so the overlay mounts.
-const noop = () => undefined;
-globalThis.ResizeObserver ??= class {
-  observe = noop;
-
-  unobserve = noop;
-
-  disconnect = noop;
-} as unknown as typeof ResizeObserver;
-
 describe('Image', () => {
   it('should render', () => {
     render(<Image align="center" lazy={true} src="https://files.readme.io/b8674d6-pizzabro.jpg" />);
