@@ -157,28 +157,26 @@ const Image = (Props: ImageProps) => {
                 <TransformComponent
                   contentStyle={{ alignItems: 'center', height: '100%', justifyContent: 'center', width: '100%' }}
                   wrapperClass="lightbox-canvas"
-                  wrapperStyle={{ height: '100vh', width: '100vw' }}
+                  wrapperStyle={{ flex: '1 1 0', minHeight: 0, width: '100%' }}
                 >
                   {imgElement}
                 </TransformComponent>
-                <div className="lightbox-toolbar">
-                  {(children || caption) && <figcaption>{children || caption}</figcaption>}
-                  <div className="lightbox-controls">
-                    <button aria-label="Zoom in" className="lightbox-control" onClick={() => zoomIn()} type="button">
-                      <i aria-hidden="true" className="fa-solid fa-magnifying-glass-plus" />
-                    </button>
-                    <button aria-label="Zoom out" className="lightbox-control" onClick={() => zoomOut()} type="button">
-                      <i aria-hidden="true" className="fa-solid fa-magnifying-glass-minus" />
-                    </button>
-                    <button
-                      aria-label="Reset zoom"
-                      className="lightbox-control"
-                      onClick={() => resetTransform()}
-                      type="button"
-                    >
-                      <i aria-hidden="true" className="fa-solid fa-arrows-rotate" />
-                    </button>
-                  </div>
+                {(children || caption) && <figcaption>{children || caption}</figcaption>}
+                <div className="lightbox-controls">
+                  <button aria-label="Zoom in" className="lightbox-control" onClick={() => zoomIn()} type="button">
+                    <i aria-hidden="true" className="fa-solid fa-magnifying-glass-plus" />
+                  </button>
+                  <button aria-label="Zoom out" className="lightbox-control" onClick={() => zoomOut()} type="button">
+                    <i aria-hidden="true" className="fa-solid fa-magnifying-glass-minus" />
+                  </button>
+                  <button
+                    aria-label="Reset zoom"
+                    className="lightbox-control"
+                    onClick={() => resetTransform()}
+                    type="button"
+                  >
+                    <i aria-hidden="true" className="fa-solid fa-arrows-rotate" />
+                  </button>
                 </div>
               </>
             )}

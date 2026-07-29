@@ -237,50 +237,40 @@
   }
 
   .lightbox-close {
+    align-items: center;
     background: none;
     border: 0;
     color: var(--color-text-default);
     cursor: pointer;
-    display: inline-block;
-    font-size: inherit;
+    display: inline-flex;
+    font-size: 1.5rem;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
     opacity: 0.5;
-    padding: 0;
+    padding: 0.5rem;
     position: fixed;
-    right: 1em;
-    text-rendering: auto;
-    top: 1em;
-    transform: scale(1.5);
-    transition: 0.3s 0.3s ease-in;
-    z-index: 10000000;
-  }
-
-  // Bottom toolbar: stacks the caption above the zoom controls so the two never
-  // collide, regardless of caption length. Pinned over the lightbox, centered.
-  .lightbox-toolbar {
-    align-items: center;
-    bottom: 1.5em;
-    display: flex;
-    flex-direction: column;
-    gap: var(--size-8);
-    left: 50%;
-    max-width: min(90vw, 640px);
-    position: fixed;
-    transform: translateX(-50%);
+    right: 0;
+    top: 0;
+    transition: opacity 0.15s ease;
     z-index: 10000000;
 
-    figcaption {
-      background: rgba(var(--color-bg-page-rgb), 0.8);
-      border-radius: var(--border-radius-lg);
-      margin: 0;
-      max-width: 100%;
-      padding: 0.35em 0.75em;
+    &:hover {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-text-default);
+      outline-offset: 2px;
     }
   }
 
-  // Zoom control bar (zoom in / out / reset).
   .lightbox-controls {
     display: flex;
+    flex: 0 0 auto;
     gap: var(--size-8);
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .lightbox-control {
@@ -312,32 +302,42 @@
     background: rgba(var(--color-bg-page-rgb), 0.966);
     display: flex;
     flex-flow: nowrap column;
+    gap: 8px;
     height: 100vh;
-    justify-content: flex-start;
+    justify-content: center;
     left: 0;
     margin-bottom: 0;
     margin-top: 0;
     overflow: hidden;
+    padding: 0 0 1.5rem;
     position: fixed;
     top: 0;
     user-select: none;
     width: 100vw;
     z-index: 9999999;
 
-    // Zoom/pan surface. grab/grabbing communicates that the image can be dragged
-    // once zoomed in; the sizing lives inline on the element (see Image/index.tsx).
     .lightbox-canvas {
       cursor: grab;
+      overflow: hidden;
+      position: relative;
 
       &:active {
         cursor: grabbing;
       }
     }
 
+    figcaption {
+      flex: 0 0 auto;
+      font-size: 0.93em;
+      font-style: italic;
+      max-width: min(90vw, 640px);
+      text-align: center;
+    }
+
     img {
       height: auto !important;
-      max-height: 97.5vh !important;
-      max-width: 97.5vw !important;
+      max-height: 100% !important;
+      max-width: 100% !important;
       min-width: unset !important;
       width: auto !important;
 
@@ -348,10 +348,11 @@
 
       &[src$='svg'] {
         display: block !important;
-        height: 66vw !important;
-        max-width: 100% !important;
+        height: auto !important;
+        max-height: 100% !important;
+        max-width: min(80vw, 900px) !important;
         min-width: 200px !important;
-        width: 42vw !important;
+        width: auto !important;
       }
     }
   }
