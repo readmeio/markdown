@@ -5,7 +5,7 @@ import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 // Markdown inside plain lowercase HTML must parse even when indented for
 // readability — at top level and nested inside custom components (whose bodies are
-// re-parsed). Guards HTML-flow swallowing and 4+-column indented-code fallout.
+// re-parsed). Guards HTML-flow swallowing and deep-indent fragmentation fallout.
 describe('markdown inside indented plain HTML blocks', () => {
   it('parses indented markdown in a <div> nested inside <Columns>/<Column>', () => {
     const md = `<Columns layout="auto">
@@ -86,6 +86,21 @@ describe('markdown inside indented plain HTML blocks', () => {
     expect(findElementByTagName(ast, 'pre')).toBeNull();
     expect(findElementByTagName(ast, 'h2')).not.toBeNull();
     expect(findElementByTagName(ast, 'a')).toMatchObject({ properties: { href: 'https://example.com' } });
+  });
+
+  it('parses markdown directly after a deeply indented (4+ col) opening tag', () => {
+    const md = `<div>
+    <section>
+    ## Deep heading
+    </section>
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+    expect(findElementByTagName(ast, 'h2')).toMatchObject({
+      children: [{ type: 'text', value: 'Deep heading' }],
+    });
   });
 
   it('keeps deeply indented (4+ columns) HTML lines inside a wrapper as HTML (#1344)', () => {

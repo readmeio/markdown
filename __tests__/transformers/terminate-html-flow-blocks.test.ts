@@ -193,6 +193,50 @@ text at column 0`;
 text at column 0`);
     });
 
+    // The next three shapes reach 4+ columns; indented code is disabled, so the
+    // freed line parses as markdown rather than turning into a code block.
+    it('inserts blank line before a tab-indented (4-column) markdown line', () => {
+      const input = `<div>
+\tTabbed line
+</div>`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+\tTabbed line
+</div>`);
+    });
+
+    it('inserts blank line after a tab-indented lone opening tag followed by markdown', () => {
+      const input = `\t<div>
+text at column 0`;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`\t<div>
+
+text at column 0`);
+    });
+
+    it('inserts blank line after a lone opening tag when the next line is markdown at 4+ columns', () => {
+      const input = `<div>
+      indented line
+      with some text after
+
+      should be freed as markdown
+</div>
+      `;
+
+      const result = terminateHtmlFlowBlocks(input);
+      expect(result).toBe(`<div>
+
+      indented line
+      with some text after
+
+      should be freed as markdown
+</div>
+      `);
+    });
+
     it('inserts blank line when HTML line has text content between and after tags', () => {
       const input = `<div><p>Inner text</p></div>Outer text
 [block:callout]
@@ -246,33 +290,6 @@ Hello
 
     it('does not insert blank line after last line', () => {
       const input = '<div></div>';
-
-      expect(terminateHtmlFlowBlocks(input)).toBe(input);
-    });
-
-    it('does not insert blank line if next line starts with a tab', () => {
-      const input = `<div>
-\tTabbed line
-</div>`;
-
-      expect(terminateHtmlFlowBlocks(input)).toBe(input);
-    });
-
-    it('does not insert after a tab-indented opening tag (a tab counts as 4 columns)', () => {
-      const input = `\t<div>
-text at column 0`;
-
-      expect(terminateHtmlFlowBlocks(input)).toBe(input);
-    });
-
-    it('does not modify non-HTML lines indented 4+ columns after an HTML tag', () => {
-      const input = `<div>
-      indented line
-      with some text after
-
-      should be left alone
-</div>
-      `;
 
       expect(terminateHtmlFlowBlocks(input)).toBe(input);
     });
