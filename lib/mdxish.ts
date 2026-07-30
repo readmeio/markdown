@@ -22,6 +22,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import rehypeStripScripts from '../processor/plugin/strip-scripts';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -306,6 +307,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(restoreBooleanProperties)
     .use(safeMode ? undefined : resolveDeferredAttributeExpressionProps) // Evaluate deferred attribute expressions on mdx-jsx nodes (now past rehypeRaw's clone)
     .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
+    .use(rehypeStripScripts) // Remove <script> elements so user content can never execute in the page
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
