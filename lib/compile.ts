@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import hardBreaksPlugin from '../processor/plugin/hard-breaks';
+import rehypeStripScripts from '../processor/plugin/strip-scripts';
 import { rehypeToc } from '../processor/plugin/toc';
 import {
   defaultTransforms,
@@ -80,6 +81,10 @@ const compile = (
     ]);
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
   }
+
+  // In `mdx` format a literal <script> parses as JSX rather than raw HTML, so
+  // it bypasses sanitization entirely — strip it in every format.
+  rehypePlugins.push(rehypeStripScripts);
 
   try {
     const vfile = mdxCompileSync(text, {
