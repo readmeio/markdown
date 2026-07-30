@@ -7,8 +7,9 @@ import { mdxish, compile, run } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName, roundTripMdxish } from '../../helpers';
 
 // Type-7 tags (a, span, button, …) end their HTML block at a blank line, fragmenting
-// 4+ column children into indented code. The mdxComponent tokenizer claims them like
-// type-6 plain blocks, but only when the opener sits alone on its line.
+// the wrapper so its children don't re-nest into one element. The mdxComponent
+// tokenizer claims them like type-6 plain blocks, but only when the opener sits
+// alone on its line.
 describe('block-wrapper claims for type-7 wrapper tags', () => {
   const wrapperTags = [
     'a',
@@ -113,7 +114,7 @@ describe('block-wrapper claims for type-7 wrapper tags', () => {
       });
     });
 
-    it('claims a tab-indented island sitting directly after the opener blank line', () => {
+    it('renders a tab-indented island sitting directly after the opener blank line', () => {
       const md = '<button class="tabbed">\n\n\t<h3>Tab-indented heading</h3>\n\t<p>Indented with a real tab.</p>\n</button>';
 
       const ast = mdxish(md);
@@ -128,7 +129,7 @@ describe('block-wrapper claims for type-7 wrapper tags', () => {
       });
     });
 
-    it('claims a top-of-body prose island at 4+ columns instead of fragmenting it', () => {
+    it('renders a top-of-body prose island at 4+ columns instead of fragmenting it', () => {
       const md = `<span class="badge">
 
     some indented text
@@ -140,7 +141,7 @@ describe('block-wrapper claims for type-7 wrapper tags', () => {
       expect(toHtml(findElementByTagName(ast, 'span')!)).toContain('some indented text');
     });
 
-    it('claims a top-of-body island in an unknown lowercase tag', () => {
+    it('renders a top-of-body island in an unknown lowercase tag', () => {
       const md = `<placeholder>
 
     some indented text
@@ -152,7 +153,7 @@ describe('block-wrapper claims for type-7 wrapper tags', () => {
       expect(toHtml(findElementByTagName(ast, 'placeholder')!)).toContain('some indented text');
     });
 
-    it('claims a top-of-body titled fence island so it parses as a code sample (RM-17560 shape)', () => {
+    it('parses a top-of-body titled fence island as a code sample (RM-17560 shape)', () => {
       const md = `<a href="sample" class="content-card">
 
       \`\`\`json 0100 Request

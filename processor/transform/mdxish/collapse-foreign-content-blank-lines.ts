@@ -68,7 +68,8 @@ function findForeignContentSpans(text: string): [number, number][] {
 /**
  * Drop blank lines inside `<svg>`/`<math>` islands: their whitespace is
  * insignificant XML, but a blank line ends the CommonMark HTML block and spills the
- * children out as a code block (#1545). Collapsing keeps the island one block.
+ * children out of the island, where parse5 drops the orphaned foreign tags (#1545).
+ * Collapsing keeps the island one block.
  */
 export function collapseForeignContentBlankLines(content: string): string {
   // Fast path: nothing to do when the doc has no foreign-content island.
