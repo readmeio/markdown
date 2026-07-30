@@ -37,12 +37,7 @@ import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
-import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
-import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
-import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
-import { gemoji } from '../../../../lib/micromark/gemoji';
-import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../../lib/micromark/loose-html-entities';
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import hardBreaks from '../../../plugin/hard-breaks';
 import { toAttributes } from '../../../utils';
@@ -117,10 +112,12 @@ const preprocessBody = (text: string): string => {
   return ensureLeadingBreaks(text);
 };
 
+const bodyExtensions = mdxishExtensions(FEATURES.magicBlockBody);
+
 /** Markdown parser */
 const contentParser = unified()
-  .data('micromarkExtensions', [gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', bodyExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', bodyExtensions.fromMarkdownExtensions)
   .use(remarkParse)
   .use(hardBreaks)
   .use(remarkGfm)
@@ -134,8 +131,8 @@ const contentParser = unified()
  * such as `<ul><li>https://a</li>\n</ul>` due to subtokenizing recursion for URLs
  */
 const markdownToHtml = unified()
-  .data('micromarkExtensions', [gfmStrikethrough(), gemoji(), legacyVariable(), looseHtmlEntity()])
-  .data('fromMarkdownExtensions', [gfmStrikethroughFromMarkdown(), gemojiFromMarkdown(), legacyVariableFromMarkdown(), emptyTaskListItemFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', [...bodyExtensions.micromarkExtensions, gfmStrikethrough()])
+  .data('fromMarkdownExtensions', [...bodyExtensions.fromMarkdownExtensions, gfmStrikethroughFromMarkdown()])
   .use(remarkParse)
   .use(normalizeEmphasisAST)
   .use(remarkRehype)
@@ -251,9 +248,9 @@ const separateBlockTagFromContent = (match: string, tag: string, inlineChar?: st
   return `</${tag}>${breaks}\n\n${inlineChar || nextLineChar}`;
 };
 
-/** Escape leading `-`/`*`/`+` (followed by space/EOL) so cells don't become bullet lists. */
+/** Escape a leading (possibly indented) `-`/`*`/`+` so cells don't become bullet lists. */
 const escapeLeadingListMarkers = (text: string): string =>
-  text.replace(/^([-*+])(?=[ \t]|$)/gm, '\\$1');
+  text.replace(/^([ \t]*)([-*+])(?=[ \t]|$)/gm, '$1\\$2');
 
 /**
  * CommonMark doesn't process markdown inside HTML blocks -
@@ -265,13 +262,11 @@ const parseTableCell = (text: string): MdastNode[] => {
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
   // CommonMark doesn't split them on blank lines.
-  // Then strip leading whitespace to prevent indented code blocks.
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
-  const trimmedLines = normalized.split('\n').map(line => line.trimStart());
-  const processed = escapeLeadingListMarkers(trimmedLines.join('\n'));
+  const processed = escapeLeadingListMarkers(normalized);
   const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`
@@ -303,25 +298,16 @@ const parseBlock = (text: string): MdastNode[] => {
 
 /**
  * Minimal parser for api-header titles.
- * Disables markdown constructs that are not parsed in legacy (headings, lists)
+ * Disables markdown constructs that are not parsed in legacy (headings, lists),
+ * on top of the base set rather than in place of it.
  */
+const titleExtensions = mdxishExtensions(FEATURES.apiHeaderTitle, {
+  disable: ['blockQuote', 'headingAtx', 'list', 'thematicBreak'],
+});
+
 const apiHeaderTitleParser = unified()
-  .data('micromarkExtensions', [
-    gemoji(),
-    legacyVariable(),
-    looseHtmlEntity(),
-    {
-      disable: {
-        null: [
-          'blockQuote',
-          'headingAtx',
-          'list',
-          'thematicBreak',
-        ],
-      },
-    },
-  ])
-  .data('fromMarkdownExtensions', [gemojiFromMarkdown(), legacyVariableFromMarkdown(), looseHtmlEntityFromMarkdown()])
+  .data('micromarkExtensions', titleExtensions.micromarkExtensions)
+  .data('fromMarkdownExtensions', titleExtensions.fromMarkdownExtensions)
   .use(remarkParse)
   .use(remarkGfm);
 

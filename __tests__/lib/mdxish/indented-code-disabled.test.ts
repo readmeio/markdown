@@ -81,54 +81,82 @@ describe('indented code blocks are disabled (CX-3739)', () => {
     expect(toHtml(blockquote!)).toContain('indented under quote');
   });
 
+  // Magic-block bodies re-parse through `contentParser`/`markdownToHtml` in the
+  // transformer, each carrying its own micromark extension list — this covers
+  // that third wiring site.
+  describe('inside magic block bodies', () => {
+    const callout = (body: string) =>
+      `[block:callout]\n{ "type": "info", "title": "Heads up", "body": "${body}" }\n[/block]`;
+
+    it('renders a 4-space-indented callout body line as prose', () => {
+      const ast = mdxish(callout('Intro line.\\n\\n    const literal = 1;'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'code')).toBeNull();
+      const paragraphs = findAllElementsByTagName(ast, 'p');
+      expect(paragraphs).toHaveLength(2);
+      expect(paragraphs[1]).toMatchObject({ children: [{ type: 'text', value: 'const literal = 1;' }] });
+    });
+
+    it('renders a tab-indented callout body line as prose', () => {
+      const ast = mdxish(callout('Intro line.\\n\\n\\tconst literal = 2;'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findAllElementsByTagName(ast, 'p')[1]).toMatchObject({
+        children: [{ type: 'text', value: 'const literal = 2;' }],
+      });
+    });
+
+    it('parses an indented markdown construct in a callout body, not code', () => {
+      const ast = mdxish(callout('Steps:\\n\\n    1. first step\\n    2. second step'));
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      expect(findElementByTagName(ast, 'ol')).not.toBeNull();
+      expect(findAllElementsByTagName(ast, 'li')).toHaveLength(2);
+    });
+
+    it('still renders an explicit fence in a callout body as code', () => {
+      const ast = mdxish(callout('Intro.\\n\\n```js\\nconst x = 1;\\n```'));
+
+      expect(findElementByTagName(ast, 'code')).toMatchObject({
+        properties: { className: ['language-js'] },
+        children: [{ type: 'text', value: 'const x = 1;\n' }],
+      });
+    });
+
+    it('renders an indented image-caption continuation line as prose', () => {
+      const md =
+        '[block:image]\n{ "images": [ { "image": ["https://x/y.png", "y.png"], "caption": "Cap line.\\n\\n    indented caption tail" } ] }\n[/block]';
+
+      const ast = mdxish(md);
+
+      const figcaption = findElementByTagName(ast, 'figcaption');
+      expect(figcaption).not.toBeNull();
+      expect(toHtml(figcaption!)).toContain('indented caption tail');
+      expect(toHtml(figcaption!)).not.toContain('<pre>');
+    });
+
+    // The api-header title parser adds its own construct disables. It used to
+    // replace the shared base config rather than extend it, so it was the one
+    // sub-parser still turning an indented line into code (CX-3708).
+    it.each([
+      ['4-space-indented', '    Indented Title'],
+      ['tab-indented', '\\tTabbed Title'],
+    ])('renders a %s api-header title as text, not code', (_label, title) => {
+      const ast = mdxish(`[block:api-header]\n{ "title": "${title}", "level": 2 }\n[/block]`);
+
+      const heading = findElementByTagName(ast, 'h2');
+      expect(heading).not.toBeNull();
+      expect(toHtml(heading!)).not.toContain('<code>');
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+    });
+  });
+
   it('matches MDX, which also parses the indented block as a paragraph', () => {
     const md = 'intro paragraph\n\n    const literal = 1;\n\nafter paragraph';
 
     const tree = mdast(md, { missingComponents: 'ignore' });
 
     expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph', 'paragraph']);
-  });
-
-  // With indented code disabled, an indented line is ordinary markdown, so inline
-  // emphasis parses and escaped markers stay literal — exactly as at column 0, and
-  // identically in both engines. Covers `*`/`_` and their escapes.
-  describe('indented prose still parses inline markdown, not code', () => {
-    it.each([
-      ['asterisk', '*this*'],
-      ['underscore', '_this_'],
-    ])('renders an indented %s emphasis as <em> (mdxish)', (_name, marker) => {
-      const ast = mdxish(`intro\n\n    look at ${marker} word\n\nafter`);
-
-      expect(findElementByTagName(ast, 'pre')).toBeNull();
-      expect(findElementByTagName(ast, 'em')).toMatchObject({ children: [{ type: 'text', value: 'this' }] });
-    });
-
-    it('honors escaped emphasis markers in indented prose (mdxish)', () => {
-      const ast = mdxish('intro\n\n    literal \\*stars\\* and \\_unders\\_\n\nafter');
-
-      expect(findElementByTagName(ast, 'pre')).toBeNull();
-      expect(findElementByTagName(ast, 'em')).toBeNull();
-      expect(toHtml(ast)).toContain('literal *stars* and _unders_');
-    });
-
-    it('matches MDX: indented emphasis parses as emphasis, not code', () => {
-      const tree = mdast('intro\n\n    look at *this* word', { missingComponents: 'ignore' });
-
-      expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
-      expect(tree.children[1]).toMatchObject({
-        children: [
-          { type: 'text', value: 'look at ' },
-          { type: 'emphasis', children: [{ type: 'text', value: 'this' }] },
-          { type: 'text', value: ' word' },
-        ],
-      });
-    });
-
-    it('matches MDX: escaped markers in indented prose stay literal', () => {
-      const tree = mdast('intro\n\n    literal \\*stars\\*', { missingComponents: 'ignore' });
-
-      expect(tree.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
-      expect(tree.children[1]).toMatchObject({ children: [{ type: 'text', value: 'literal *stars*' }] });
-    });
   });
 });

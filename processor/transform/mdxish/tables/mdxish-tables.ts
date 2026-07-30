@@ -11,10 +11,7 @@ import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
-import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
-import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
-import { gemoji } from '../../../../lib/micromark/gemoji';
-import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
@@ -45,22 +42,24 @@ const tableTypes = {
 // `mdxjs` + `mdxFromMarkdown` is what `remarkMdx` registers internally; we
 // register them manually so we control ordering against our other tokenizers.
 // The fallback omits these so blank-line-separated markdown inside cells still
-// parses when mdxjs throws on malformed JSX.
+// parses when mdxjs throws on malformed JSX. Both paths end up with indented
+// code disabled — the base config on the fallback, `mdx-md` on the primary.
 //
 // mdx parsing is used because it heavily simplifies the parsing of the table structure;
 // it can identify the rows and cells. The heavy lifting is done by it
-const buildTableNodeProcessor = (withMdx: boolean) =>
-  unified()
-    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), gemoji(), legacyVariable()])
-    .data('fromMarkdownExtensions', [
-      ...(withMdx ? [mdxFromMarkdown()] : []),
-      gemojiFromMarkdown(),
-      legacyVariableFromMarkdown(),
-    ])
+const buildTableNodeProcessor = (withMdx: boolean) => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tableCell);
+
+  // `mdxjs` goes first (= lowest priority): its `mdxJsx` also claims `text` + `<`,
+  // and `legacyVariable` has to keep winning that race so `<<var>>` still parses.
+  return unified()
+    .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), ...micromarkExtensions])
+    .data('fromMarkdownExtensions', [...(withMdx ? [mdxFromMarkdown()] : []), ...fromMarkdownExtensions])
     .use(remarkParse)
     .use(normalizeEmphasisAST)
     .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
     .use(remarkGfm);
+};
 
 const tableNodeProcessor = buildTableNodeProcessor(true);
 const fallbackTableNodeProcessor = buildTableNodeProcessor(false);
