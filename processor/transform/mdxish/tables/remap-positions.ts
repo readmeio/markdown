@@ -13,7 +13,7 @@ import { visit } from 'unist-util-visit';
  * offset in the original — consumers slicing the original source get the
  * boundary, not garbage.
  */
-const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) => {
+export const buildOffsetMapper = (inserts: Insert[]): ((repaired: number) => number) => {
   // Pre-compute each insert's start in repaired-space.
   let acc = 0;
   const segments = inserts.map(ins => {
@@ -55,7 +55,7 @@ const composeOffsetMapper = (layers: Insert[][]): ((repaired: number) => number)
  * Map an offset in `source` to its 1-based `{ line, column }`. `lineStarts`
  * is the precomputed array of offsets where each line begins.
  */
-const offsetToLineCol = (lineStarts: number[], offset: number): { column: number; line: number } => {
+export const offsetToLineCol = (lineStarts: number[], offset: number): { column: number; line: number } => {
   // Binary search for the greatest lineStart <= offset.
   let lo = 0;
   let hi = lineStarts.length - 1;
@@ -67,7 +67,7 @@ const offsetToLineCol = (lineStarts: number[], offset: number): { column: number
   return { line: lo + 1, column: offset - lineStarts[lo] + 1 };
 };
 
-const computeLineStarts = (source: string): number[] => {
+export const computeLineStarts = (source: string): number[] => {
   const starts = [0];
   for (let i = 0; i < source.length; i += 1) {
     if (source[i] === '\n') starts.push(i + 1);

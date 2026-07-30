@@ -1,11 +1,15 @@
+import type { Insert } from '../tables/utils';
 import type { Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
+
+import { SKIP, visit } from 'unist-util-visit';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { buildOffsetMapper, computeLineStarts, offsetToLineCol } from '../tables/remap-positions';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -44,38 +48,127 @@ const hasNestedGenericComponentTag = (content: string): boolean =>
  * Indentation is measured in CommonMark columns (tab = up to 4), matching micromark: a
  * char count (tab = 1) under-measures tab-indented bodies so they slip the gate (#1556).
  */
-function safeDeindent(text: string): string {
+function safeDeindent(text: string): { content: string; toOriginal: (offset: number) => number } {
+  const identity = { content: text, toOriginal: (offset: number) => offset };
   const lines = text.split('\n');
   const nonEmptyLines = lines.filter(line => line.trim().length > 0);
-  if (nonEmptyLines.length === 0) return text;
+  if (nonEmptyLines.length === 0) return identity;
 
   const indents = nonEmptyLines.map(line => expandIndentToColumns(leadingIndent(line)).length);
   const minIndent = Math.min(...indents);
   const maxIndent = Math.max(...indents);
 
-  if (maxIndent < 4 || minIndent === 0) return text;
+  if (maxIndent < 4 || minIndent === 0) return identity;
 
   // Expand each line's leading run to spaces before slicing so a shared indent of mixed
   // tabs/spaces (and partial-tab remainders) strips cleanly while relative depth survives.
-  return lines
+  // Per-line bookkeeping lets `toOriginal` map offsets in the deindented text back to
+  // `text`'s coordinates, so positions produced by parsing it can be remapped.
+  const lineInfo: { newIndentLength: number; newStart: number; origIndent: string; origStart: number }[] = [];
+  let origStart = 0;
+  let newStart = 0;
+  const content = lines
     .map(line => {
       const indent = leadingIndent(line);
-      return expandIndentToColumns(indent).slice(minIndent) + line.slice(indent.length);
+      const newIndent = expandIndentToColumns(indent).slice(minIndent);
+      lineInfo.push({ newIndentLength: newIndent.length, newStart, origIndent: indent, origStart });
+      origStart += line.length + 1;
+      const newLine = newIndent + line.slice(indent.length);
+      newStart += newLine.length + 1;
+      return newLine;
     })
     .join('\n');
+
+  const toOriginal = (offset: number): number => {
+    // Binary search for the line containing `offset` (greatest newStart <= offset).
+    let lo = 0;
+    let hi = lineInfo.length - 1;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi + 1) / 2);
+      if (lineInfo[mid].newStart <= offset) lo = mid;
+      else hi = mid - 1;
+    }
+    const line = lineInfo[lo];
+    const delta = offset - line.newStart;
+    // Past the rewritten indent, characters correspond one-to-one with the original line.
+    if (delta >= line.newIndentLength) return line.origStart + line.origIndent.length + (delta - line.newIndentLength);
+    // Inside the rewritten indent: a pure-space indent maps column-for-column (the
+    // stripped columns sit before it); a tab-mixed indent has no exact original
+    // counterpart, so clamp to the line's content start.
+    return /^ *$/.test(line.origIndent) ? line.origStart + minIndent + delta : line.origStart + line.origIndent.length;
+  };
+
+  return { content, toOriginal };
 }
+
+// `terminateHtmlFlowBlocks` only ever inserts `\n` characters; recover each insert's
+// offset (in `original` coordinates) by aligning the two strings.
+const newlineInserts = (original: string, repaired: string): Insert[] => {
+  if (original === repaired) return [];
+  const inserts: Insert[] = [];
+  let i = 0;
+  for (let j = 0; j < repaired.length; j += 1) {
+    if (i < original.length && original[i] === repaired[j]) {
+      i += 1;
+    } else {
+      inserts.push({ offset: i, text: '\n', consumes: 0 });
+    }
+  }
+  return inserts;
+};
+
+// Maps an offset in some re-parsed string back to its point in the parsed document.
+type ToDocPoint = (offset: number) => { column: number; line: number; offset: number };
+
+// Subtrees whose positions have already been remapped to document coordinates by a
+// nested `parseMdChildren`; the enclosing invocation's remap pass must not touch them.
+const docMapped = new WeakSet<Node>();
 
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
+ *
+ * The re-parse produces positions relative to the transformed body text, but mdast
+ * positions must refer to the parsed document — consumers slice the full source with
+ * them (the same contract `mdxishTables` upholds for its re-parsed table parts). When
+ * the caller can anchor the body in the document (`toDocOfValue`), every position is
+ * remapped back through the body's string edits and into document coordinates.
  */
-const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
+const parseMdChildren = (value: string, safeMode: boolean, toDocOfValue?: ToDocPoint): RootContent[] => {
+  const deindented = safeDeindent(value);
+  const headTrim = deindented.content.length - deindented.content.trimStart().length;
+  const trimmed = deindented.content.trim();
+  const terminated = terminateHtmlFlowBlocks(trimmed);
+  const parsed = getInlineMdProcessor({ safeMode }).parse(terminated);
+
+  let toDocOfParse: ToDocPoint | undefined;
+  if (toDocOfValue) {
+    // Unmap each edit in reverse: parse input → trimmed (blank-line inserts),
+    // → deindented (constant head-trim shift), → value (per-line indent rewrites).
+    const terminatedToTrimmed = buildOffsetMapper(newlineInserts(trimmed, terminated));
+    toDocOfParse = offset => toDocOfValue(deindented.toOriginal(terminatedToTrimmed(offset) + headTrim));
+  }
+
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
+  // Runs before the remap below so nested bodies can be anchored using this parse's
+  // coordinates (node values are verbatim slices of the parse input).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
-  promoteComponentBlocks(parsed as Parent, safeMode, null);
+  promoteComponentBlocks(parsed as Parent, safeMode, null, toDocOfParse);
+
+  if (toDocOfParse) {
+    visit(parsed as Node, child => {
+      // Children produced by a nested parseMdChildren are already in document
+      // coordinates — remapping them again through this parse's edits would corrupt them.
+      if (docMapped.has(child)) return SKIP;
+      if (child.position?.start?.offset != null) child.position.start = toDocOfParse(child.position.start.offset);
+      if (child.position?.end?.offset != null) child.position.end = toDocOfParse(child.position.end.offset);
+      docMapped.add(child);
+      return undefined;
+    });
+  }
+
   return parsed.children || [];
 };
 
@@ -84,8 +177,15 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
 // index-based walk then reaches these spliced siblings and the original children
 // they shift down, so no parent re-queue is needed. Each spliced subtree is marked
 // `promoted` so the walk doesn't redundantly re-descend into it (its html is gone).
-const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean, promoted: WeakSet<Node>) => {
-  const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
+const parseSibling = (
+  parent: Parent,
+  index: number,
+  sibling: string,
+  safeMode: boolean,
+  promoted: WeakSet<Node>,
+  toDocOfValue?: ToDocPoint,
+) => {
+  const siblingNodes = parseMdChildren(sibling, safeMode, toDocOfValue) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
     siblingNodes.forEach(siblingNode => promoted.add(siblingNode));
@@ -102,7 +202,11 @@ interface ComponentNodeOptions {
 
 // Ends the position at `consumedLength` so the component doesn't claim trailing
 // content the tokenizer swallowed into the same html node.
-const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
+const positionEndingAtConsumed = (
+  nodePosition: Node['position'],
+  value: string,
+  consumedLength: number,
+): Node['position'] => {
   if (!nodePosition?.start) return nodePosition;
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
 };
@@ -122,7 +226,13 @@ const positionEndingAtClosingTagInSource = (
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
 };
 
-const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
+const createComponentNode = ({
+  tag,
+  attributes,
+  children,
+  startPosition,
+  endPosition,
+}: ComponentNodeOptions): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: tag,
   attributes,
@@ -168,12 +278,20 @@ const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJs
  * The opening tag, content, and closing tag are all captured in one HTML node
  * (guaranteed by the mdx-component tokenizer).
  */
-function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string | null): Parent {
+function promoteComponentBlocks(
+  tree: Parent,
+  safeMode: boolean,
+  source: string | null,
+  toDocOfTree?: ToDocPoint,
+): Parent {
   const stack: Parent[] = [tree];
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
   // Subtrees a nested parseMdChildren already promoted wholesale (spliced siblings):
   // re-descending them finds no html to promote, so skip them.
   const promoted = new WeakSet<Node>();
+  // At the top level (no toDocOfTree) node positions already refer to the document, so
+  // body anchors are built straight from `source`'s line table.
+  const sourceLineStarts = !toDocOfTree && source ? computeLineStarts(source) : null;
 
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
@@ -197,6 +315,22 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Offsets so consumed-length math maps back onto the node's real source.
     const leadingWhitespace = value.length - value.trimStart().length;
     const openingTagEnd = trimmed.length - contentAfterTag.length;
+
+    // Anchor for re-parsed body positions: maps an offset within `value` (shifted by
+    // where the body starts) to its document point. Inside a nested re-parse, `value`
+    // is a verbatim slice of that parse's input, so the enclosing mapper is exact; at
+    // the top level it's approximate only when `value` diverges from the source span
+    // (remark strips blockquote/list prefixes) — same caveat as `positionEndingAtConsumed`.
+    const bodyToDoc = (bodyStartInValue: number): ToDocPoint | undefined => {
+      const startOffset = node.position?.start?.offset;
+      if (startOffset == null) return undefined;
+      if (toDocOfTree) return offset => toDocOfTree(startOffset + bodyStartInValue + offset);
+      if (!sourceLineStarts) return undefined;
+      return offset => {
+        const docOffset = startOffset + bodyStartInValue + offset;
+        return { offset: docOffset, ...offsetToLineCol(sourceLineStarts, docOffset) };
+      };
+    };
 
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return; // owned by dedicated transformers
 
@@ -245,9 +379,9 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      const remainingContent = contentAfterTag.trim();
-      if (remainingContent) {
-        parseSibling(parent, index, remainingContent, safeMode, promoted);
+      if (contentAfterTag.trim()) {
+        // Untrimmed so the sibling's positions can be remapped from its real offset.
+        parseSibling(parent, index, contentAfterTag, safeMode, promoted, bodyToDoc(leadingWhitespace + openingTagEnd));
       }
       return;
     }
@@ -257,11 +391,15 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     if (closingTagIndex >= 0) {
       // Untrimmed so parseMdChildren can dedent before trimming.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
-      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
+      const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length);
       let parsedChildren: MdxJsxFlowElement['children'] = [];
       if (componentInnerContent.trim()) {
         try {
-          parsedChildren = parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'];
+          parsedChildren = parseMdChildren(
+            componentInnerContent,
+            safeMode,
+            bodyToDoc(leadingWhitespace + openingTagEnd),
+          ) as MdxJsxFlowElement['children'];
         } catch (error) {
           // Plain HTML bodies can hold anything (e.g. stray braces the strict
           // expression parser rejects) — keep the node raw instead of throwing.
@@ -281,7 +419,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // precisely at the closing tag — preferring source offsets when available (the
       // node's value strips blockquote/list prefixes), else the consumed span.
       let endPosition = node.position;
-      if (contentAfterClose) {
+      if (contentAfterClose.trim()) {
         endPosition = source
           ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
           : positionEndingAtConsumed(
@@ -308,8 +446,15 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // Trailing content after the close becomes siblings; parseMdChildren has
       // already promoted any components nested inside both sides, so the promoted
       // subtree itself needs no re-queue.
-      if (contentAfterClose) {
-        parseSibling(parent, index, contentAfterClose, safeMode, promoted);
+      if (contentAfterClose.trim()) {
+        parseSibling(
+          parent,
+          index,
+          contentAfterClose,
+          safeMode,
+          promoted,
+          bodyToDoc(leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length),
+        );
       }
     }
   };
@@ -329,9 +474,11 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
   return tree;
 }
 
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
-  const source: string | null = file?.value ? String(file.value) : null;
-  return promoteComponentBlocks(tree, !!opts.safeMode, source);
-};
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> =
+  (opts = {}) =>
+  (tree, file) => {
+    const source: string | null = file?.value ? String(file.value) : null;
+    return promoteComponentBlocks(tree, !!opts.safeMode, source);
+  };
 
 export default mdxishMdxComponentBlocks;
