@@ -157,17 +157,19 @@ const parseMdChildren = (value: string, safeMode: boolean, toDocOfValue?: ToDocP
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
   promoteComponentBlocks(parsed as Parent, safeMode, null, toDocOfParse);
 
-  if (toDocOfParse) {
-    visit(parsed as Node, child => {
-      // Children produced by a nested parseMdChildren are already in document
-      // coordinates — remapping them again through this parse's edits would corrupt them.
-      if (docMapped.has(child)) return SKIP;
+  // Every subtree this function returns is coordinate-final: remapped to document
+  // coordinates when anchored, left in body-relative coordinates when not. Either
+  // way it's marked so an enclosing parse never reinterprets these offsets through
+  // its own (unrelated) edit chain.
+  visit(parsed as Node, child => {
+    if (docMapped.has(child)) return SKIP;
+    if (toDocOfParse) {
       if (child.position?.start?.offset != null) child.position.start = toDocOfParse(child.position.start.offset);
       if (child.position?.end?.offset != null) child.position.end = toDocOfParse(child.position.end.offset);
-      docMapped.add(child);
-      return undefined;
-    });
-  }
+    }
+    docMapped.add(child);
+    return undefined;
+  });
 
   return parsed.children || [];
 };
