@@ -979,8 +979,10 @@ function createTokenize(mode: 'flow' | 'text') {
  * transformer. All other PascalCase is flow-only; ReadMe's custom components
  * are authored as block-level elements.
  *
- * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock, Glossary,
- * Anchor.
+ * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
+ * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
+ * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.
  *
  * The resulting `html` mdast node is later restructured into an
  * `mdxJsxFlowElement` (block) or `mdxJsxTextElement` (inline) by the

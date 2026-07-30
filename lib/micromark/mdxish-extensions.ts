@@ -26,8 +26,9 @@ import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
- * Constructs disabled for every MDXish parser. `codeIndented` because 4+ column
- * indentation is formatting to an MDX author, never code — `mdx-md` drops it too.
+ * Constructs disabled for every MDXish parser. 
+ * -`codeIndented`: To avoing formatting 4+ column indentation as code (default commonmark behavior)
+ *                  and match MDX behavior.
  * Pass `extra` to disable more on top of the shared set, never in place of it.
  */
 export const disableConstructs = (extra: readonly string[] = []): Extension => ({
@@ -43,13 +44,13 @@ interface ExtensionPair {
 
 /**
  * Every MDXish extension, in canonical registration order — **lowest priority
- * first**, each syntax extension paired with its `fromMarkdown` counterpart.
+ * first** (`combineExtensions` prepends, so a later entry is tried first), each
+ * syntax extension paired with its `fromMarkdown` counterpart.
  *
- * `combineExtensions` prepends constructs and nothing sets `add: 'after'`, so a
- * *later* entry is tried *first*. Only `flow` + `<` is contended: keep
- * `htmlBlockComponent` after `mdxComponent`, or `mdxComponent` claims
- * `<HTMLBlock>` (it takes any PascalCase tag outside
- * `TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`, which `HTMLBlock` is not in).
+ * Notes:
+ * - `<` is the only contended code, in both `flow` and `text`. Every contender
+ *   currently emits the same opaque `html` node, so this order is a latent
+ *   guarantee, not an active fix — it starts mattering if one emits a different token.
  */
 const REGISTRY = {
   jsxComment: { syntax: jsxComment, expression: true },
@@ -123,13 +124,11 @@ export const FEATURES = {
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
    * Omits `htmlBlockComponent` deliberately since it's not a custom component,
-   * and not components can be nested inside it (it's just for raw HTML).
+   * and no components are meants to be nested inside it (it's just for raw HTML).
    */
   tags: BLOCK_CLAIMS.filter(feature => feature !== 'htmlBlockComponent'),
 
-  /**
-   * `tables/mdxish-tables.ts` — table cells.
-   */
+  /** `tables/mdxish-tables.ts` — table cells */
   tableCell: [...INLINE],
 
   /** `magic-blocks` — legacy content, no components */

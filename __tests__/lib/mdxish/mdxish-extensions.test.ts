@@ -12,8 +12,8 @@ import {
 } from '../../../lib/micromark/mdxish-extensions';
 
 // The builder is the single source of truth for MDXish extension registration
-// (CX-3708). Its two jobs are (1) always applying the base construct config and
-// (2) owning the ordering, which is load-bearing for the `flow` + `<` race.
+// Its two jobs are (1) always applying the base construct config and (2) owning
+// the ordering, so a call site can't register the `<` tokenizers out of order.
 describe('mdxishExtensions', () => {
   describe('base construct config', () => {
     it('registers the disabled constructs even with no features', () => {
