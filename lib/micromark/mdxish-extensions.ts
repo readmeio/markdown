@@ -27,7 +27,7 @@ import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
  * Constructs disabled for every MDXish parser. 
- * -`codeIndented`: To avoing formatting 4+ column indentation as code (default commonmark behavior)
+ * -`codeIndented`: To avoid formatting 4+ column indentation as code (default commonmark behavior)
  *                  and match MDX behavior.
  * Pass `extra` to disable more on top of the shared set, never in place of it.
  */
@@ -124,7 +124,7 @@ export const FEATURES = {
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
    * Omits `htmlBlockComponent` deliberately since it's not a custom component,
-   * and no components are meants to be nested inside it (it's just for raw HTML).
+   * and no components are meant to be nested inside it (it's just for raw HTML).
    */
   tags: BLOCK_CLAIMS.filter(feature => feature !== 'htmlBlockComponent'),
 
