@@ -98,7 +98,11 @@ describe('markdown inside indented plain HTML blocks', () => {
     const ast = mdxish(md);
 
     expect(findElementByTagName(ast, 'pre')).toBeNull();
-    expect(findElementByTagName(ast, 'h2')).toMatchObject({
+
+    // The heading must re-nest inside the wrapper, not float out beside it.
+    const section = findElementByTagName(ast, 'section');
+    expect(section).not.toBeNull();
+    expect(findElementByTagName(section!, 'h2')).toMatchObject({
       children: [{ type: 'text', value: 'Deep heading' }],
     });
   });

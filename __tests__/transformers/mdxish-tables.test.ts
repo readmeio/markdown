@@ -399,6 +399,7 @@ Just one line.
     // The fallback processor omits mdxjs (which bundles the codeIndented disable),
     // so it registers `disableIndentedCode` to match the primary path. Indented
     // cell content stays prose; only the explicit fence becomes a code node.
+    // Keeps `malformed`'s duplicated </td></tr> so this stays on the fallback path.
     it('keeps a fence as the only code node while an indented sibling line stays prose', () => {
       const withIndentedTail = `<table>
 <thead>
@@ -427,7 +428,7 @@ Just one line.
 
       const html = toHtml(mdxish(withIndentedTail));
       expect(html).toContain('indented tail line');
-      expect(html).not.toContain('<pre><code value="indented');
+      expect(html).not.toMatch(/<pre>\s*<code[^>]*>[^<]*indented tail line/);
     });
   });
 
