@@ -395,6 +395,41 @@ Just one line.
       expect(html).toContain('2.16.0.0/13');
       expect(html).not.toContain('```');
     });
+
+    // The fallback processor omits mdxjs (which bundles the codeIndented disable),
+    // so it registers `disableIndentedCode` to match the primary path. Indented
+    // cell content stays prose; only the explicit fence becomes a code node.
+    // Keeps `malformed`'s duplicated </td></tr> so this stays on the fallback path.
+    it('keeps a fence as the only code node while an indented sibling line stays prose', () => {
+      const withIndentedTail = `<table>
+<thead>
+<th>IPv4</th>
+</thead>
+<tbody>
+<tr>
+<td>
+
+\`\`\`
+2.16.0.0/13
+\`\`\`
+
+    indented tail line
+
+</td>
+</tr>
+</td>
+</tr>
+</tbody>
+</table>`;
+
+      const codes = collectNodes(astProcessor(withIndentedTail), 'code');
+      expect(codes).toHaveLength(1);
+      expect(codes[0]).toMatchObject({ type: 'code', value: '2.16.0.0/13' });
+
+      const html = toHtml(mdxish(withIndentedTail));
+      expect(html).toContain('indented tail line');
+      expect(html).not.toMatch(/<pre>\s*<code[^>]*>[^<]*indented tail line/);
+    });
   });
 
   describe('given unclosed tags inside cells that is not MDX valid', () => {

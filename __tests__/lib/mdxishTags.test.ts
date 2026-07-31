@@ -207,4 +207,28 @@ This is phrasing: <Inline />
       expect(mdxishTags(mdx)).toStrictEqual(['Component', 'NestedComponent', 'SubNestedComponent']);
     });
   });
+
+  describe('deeply indented components', () => {
+    it('captures a 4+ column indented component at the top level', () => {
+      const mdx = '      <MyComponent />';
+  
+      expect(mdxishTags(mdx)).toStrictEqual(['MyComponent']);
+    });
+
+    it('captures a 4+ column indented component nested in a parent component', () => {
+      const mdx = `
+<ParentComponent>
+              <MyComponent />
+</ParentComponent>
+
+        <ComponentOne>
+          <ComponentTwo>
+            Hello
+          </ComponentTwo>
+        </ComponentOne>
+`;
+
+      expect(mdxishTags(mdx)).toStrictEqual(['ParentComponent', 'MyComponent', 'ComponentOne', 'ComponentTwo']);
+    });
+  });
 });

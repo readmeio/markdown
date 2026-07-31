@@ -77,8 +77,10 @@ export const GENERIC_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
 ]);
 
 /**
- * Tags the micromark `mdxComponent` tokenizer must not claim, which
- * are inline components and those that have their own dedicated tokenizer
+ * Tags the micromark `mdxComponent` tokenizer must not claim: inline components,
+ * plus `Table` (whose rows `jsxTable` has to keep together). `HTMLBlock` is absent
+ * on purpose — claiming it yields the same `html` node, and the transforms skip it
+ * by name via {@link GENERIC_MDX_COMPONENT_EXCLUDED_TAGS}.
  */
 export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
   'Table',

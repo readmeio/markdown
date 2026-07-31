@@ -7,29 +7,15 @@ import type {
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
-import type { Extension } from 'micromark-util-types';
 import type { Point } from 'unist';
 
-import { Parser } from 'acorn';
-import acornJsx from 'acorn-jsx';
 import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
+import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
 
-/**
- * Single instance of acorn parser extended with `acorn-jsx`
- * to parse expressions containing JSX.
- */
-export const jsxAcornParser = Parser.extend(acornJsx());
-
-/**
- * Disables CommonMark's indented-code-block construct (4+ spaces)
- * The micromark tokenizers use follow the CommonMark specification: https://spec.commonmark.org/0.28/#indented-code-blocks
- * So any lines indented 4+ spaces are considered as a code block,
- * which is unexpected from users that used MDX before.
- */
-export const disableIndentedCode = { disable: { null: ['codeIndented'] } } satisfies Extension;
+export { jsxAcornParser };
 
 /**
  * Evaluate a JavaScript expression source and return its value.
