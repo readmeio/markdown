@@ -21,6 +21,16 @@ import {
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
+declare module 'mdast' {
+  interface Data {
+    /**
+     * The string this node's positions refer to. Set on subtrees produced by
+     * re-parsing a component body, whose offsets don't map to the document source.
+     */
+    reparseSource?: string;
+  }
+}
+
 // Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 
@@ -65,17 +75,35 @@ function safeDeindent(text: string): string {
     .join('\n');
 }
 
+// Structural view of any mdast node; some custom node types declare inline `data`
+// shapes that don't extend mdast's `Data`, so the visit() union rejects the stamp.
+interface StampableNode {
+  children?: StampableNode[];
+  data?: { hName?: unknown; hProperties?: unknown; reparseSource?: string };
+  type: string;
+}
+
+// Re-parsed subtrees carry positions relative to the re-parsed string, not the document.
+// Stamp that string so position-based consumers (e.g. the editor) slice the right source.
+// Nodes stamped by a deeper re-parse keep their own (deeper) string.
+const stampReparseSource = (node: StampableNode, reparseSource: string) => {
+  if (!node.data?.reparseSource) node.data = { ...node.data, reparseSource };
+  node.children?.forEach(child => stampReparseSource(child, reparseSource));
+};
+
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const parsed = getInlineMdProcessor({ safeMode }).parse(terminateHtmlFlowBlocks(safeDeindent(value).trim()));
+  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
+  const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
   promoteComponentBlocks(parsed as Parent, safeMode, null);
+  stampReparseSource(parsed, reparseSource);
   return parsed.children || [];
 };
 
@@ -102,7 +130,11 @@ interface ComponentNodeOptions {
 
 // Ends the position at `consumedLength` so the component doesn't claim trailing
 // content the tokenizer swallowed into the same html node.
-const positionEndingAtConsumed = (nodePosition: Node['position'], value: string, consumedLength: number): Node['position'] => {
+const positionEndingAtConsumed = (
+  nodePosition: Node['position'],
+  value: string,
+  consumedLength: number,
+): Node['position'] => {
   if (!nodePosition?.start) return nodePosition;
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
 };
@@ -122,7 +154,13 @@ const positionEndingAtClosingTagInSource = (
   return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
 };
 
-const createComponentNode = ({ tag, attributes, children, startPosition, endPosition }: ComponentNodeOptions): MdxJsxFlowElement => ({
+const createComponentNode = ({
+  tag,
+  attributes,
+  children,
+  startPosition,
+  endPosition,
+}: ComponentNodeOptions): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: tag,
   attributes,
@@ -133,7 +171,15 @@ const createComponentNode = ({ tag, attributes, children, startPosition, endPosi
   },
 });
 
-const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
+// The promoted node inherits the html node's position, so it must also inherit the
+// stamp saying which re-parsed string that position refers to (`reparseSource`).
+const substituteNodeWithMdxNode = (
+  parent: Parent,
+  index: number,
+  mdxNode: MdxJsxFlowElement,
+  reparseSource?: string,
+) => {
+  if (reparseSource) mdxNode.data = { ...mdxNode.data, reparseSource };
   (parent.children as Node[]).splice(index, 1, mdxNode);
 };
 
@@ -243,7 +289,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         // End at the self-closing tag, not at any trailing content.
         endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      substituteNodeWithMdxNode(parent, index, componentNode, node.data?.reparseSource);
 
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
@@ -297,7 +343,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      substituteNodeWithMdxNode(parent, index, componentNode, node.data?.reparseSource);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
@@ -329,9 +375,11 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
   return tree;
 }
 
-const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> = (opts = {}) => (tree, file) => {
-  const source: string | null = file?.value ? String(file.value) : null;
-  return promoteComponentBlocks(tree, !!opts.safeMode, source);
-};
+const mdxishMdxComponentBlocks: Plugin<[{ safeMode?: boolean }?], Parent> =
+  (opts = {}) =>
+  (tree, file) => {
+    const source: string | null = file?.value ? String(file.value) : null;
+    return promoteComponentBlocks(tree, !!opts.safeMode, source);
+  };
 
 export default mdxishMdxComponentBlocks;

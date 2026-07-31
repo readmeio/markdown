@@ -1,4 +1,5 @@
-import type { Root, Table } from 'mdast';
+import type { Node, Parent, Root, Strong, Table } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
 import { roundTripMdxish } from '../../helpers';
@@ -94,6 +95,198 @@ describe('mdxishAstProcessor', () => {
           { type: 'paragraph' },
         ],
       });
+    });
+  });
+
+  describe('re-parsed component body positions', () => {
+    const parseMdast = (md: string): Root => {
+      const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+      return processor.runSync(processor.parse(parserReadyContent)) as Root;
+    };
+
+    const findJsxChild = (parent: Parent, name: string): MdxJsxFlowElement =>
+      parent.children.find(
+        (child): child is MdxJsxFlowElement => child.type === 'mdxJsxFlowElement' && (child as MdxJsxFlowElement).name === name,
+      )!;
+
+    const sliceReparseSource = (node: Node): string | undefined =>
+      node.data?.reparseSource?.slice(node.position?.start.offset, node.position?.end.offset);
+
+    it('stamps nodes inside a component body with the source their positions refer to', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="Accounts">',
+        '    ### Common Account Fields',
+        '',
+        '    <ExampleComponent />',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const mdast = parseMdast(md);
+
+      // Top-level node positions still refer to the document, so it carries no stamp.
+      const tabs = findJsxChild(mdast, 'Tabs');
+      expect(tabs.data?.reparseSource).toBeUndefined();
+
+      const tab = findJsxChild(tabs, 'Tab');
+      expect(sliceReparseSource(tab)).toBe(
+        ['<Tab title="Accounts">', '  ### Common Account Fields', '', '  <ExampleComponent />', '</Tab>'].join('\n'),
+      );
+
+      const nested = findJsxChild(tab, 'ExampleComponent');
+      expect(sliceReparseSource(nested)).toBe('  <ExampleComponent />');
+    });
+
+    it('stamps expression nodes inside a component body', () => {
+      const md = ['<Wrapper>', '  {1 + 1}', '</Wrapper>'].join('\n');
+      const mdast = parseMdast(md);
+
+      const expression = findJsxChild(mdast, 'Wrapper').children.find(child => child.type === 'mdxFlowExpression')!;
+      expect(sliceReparseSource(expression)).toBe('{1 + 1}');
+    });
+
+    it('stamps siblings spliced after a self-closing component with their own source', () => {
+      const md = ['<Wrapper>', '  <ExampleComponent />', '  Some *sibling* text', '</Wrapper>'].join('\n');
+      const mdast = parseMdast(md);
+
+      const wrapper = findJsxChild(mdast, 'Wrapper');
+      const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
+      expect(sliceReparseSource(paragraph)).toBe('Some *sibling* text');
+
+      const emphasis = paragraph.children.find(child => child.type === 'emphasis')!;
+      expect(sliceReparseSource(emphasis)).toBe('*sibling*');
+    });
+
+    it('stamps deeply indented bodies with the dedented source', () => {
+      const md = [
+        '<Tabs>',
+        '    <Tab title="One">',
+        '',
+        '        <ExampleComponent />',
+        '',
+        '    </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const mdast = parseMdast(md);
+
+      const tab = findJsxChild(findJsxChild(mdast, 'Tabs'), 'Tab');
+      const nested = findJsxChild(tab, 'ExampleComponent');
+      expect(sliceReparseSource(nested)).toBe('<ExampleComponent />');
+    });
+
+    it('stamps ReadMe components nested inside other components at every depth', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    <Cards columns={2}>',
+        '      <Card title="First" icon="fa-rocket">',
+        '        Card **body** text',
+        '      </Card>',
+        '    </Cards>',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const mdast = parseMdast(md);
+
+      const tab = findJsxChild(findJsxChild(mdast, 'Tabs'), 'Tab');
+      const cards = findJsxChild(tab, 'Cards');
+      expect(sliceReparseSource(cards)).toBe(
+        [
+          '<Cards columns={2}>',
+          '  <Card title="First" icon="fa-rocket">',
+          '    Card **body** text',
+          '  </Card>',
+          '</Cards>',
+        ].join('\n'),
+      );
+
+      const card = findJsxChild(cards, 'Card');
+      expect(sliceReparseSource(card)).toBe(
+        ['<Card title="First" icon="fa-rocket">', '  Card **body** text', '</Card>'].join('\n'),
+      );
+
+      const paragraph = card.children.find(child => child.type === 'paragraph')!;
+      expect(sliceReparseSource(paragraph)).toBe('Card **body** text');
+    });
+
+    it('stamps a multi-line HTML sequence and the markdown between its tags', () => {
+      const md = ['<Wrapper>', '  <div>', '    A **bold** move', '  </div>', '</Wrapper>'].join('\n');
+      const mdast = parseMdast(md);
+
+      // A multi-line lowercase tag stays a pair of html nodes with markdown between;
+      // all three share the body's re-parsed source (blank line added by the body re-parse).
+      const wrapper = findJsxChild(mdast, 'Wrapper');
+      const bodySource = '<div>\n\n  A **bold** move\n</div>';
+      const openingTag = wrapper.children.find(child => child.type === 'html')!;
+      expect(openingTag.data?.reparseSource).toBe(bodySource);
+
+      const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
+      expect(sliceReparseSource(paragraph)).toBe('A **bold** move');
+
+      const strong = paragraph.children.find(child => child.type === 'strong')!;
+      expect(sliceReparseSource(strong)).toBe('**bold**');
+    });
+
+    it('stamps children of a single-line lowercase HTML tag promoted for markdown parsing', () => {
+      const md = ['<Wrapper>', '  <div>A **bold** move</div>', '</Wrapper>'].join('\n');
+      const mdast = parseMdast(md);
+
+      const div = findJsxChild(findJsxChild(mdast, 'Wrapper'), 'div');
+      expect(sliceReparseSource(div)).toBe('<div>A **bold** move</div>');
+
+      // Lowercase promotion unwraps the sole paragraph, so phrasing sits directly on the div.
+      const strong = (div.children as Node[]).find((child): child is Strong => child.type === 'strong')!;
+      expect(sliceReparseSource(strong)).toBe('**bold**');
+    });
+
+    it('stamps lowercase HTML promoted through an MDX expression attribute', () => {
+      const md = ['<Wrapper>', '  <button style={{ color: "red" }}>Click me</button>', '</Wrapper>'].join('\n');
+      const mdast = parseMdast(md);
+
+      const button = findJsxChild(findJsxChild(mdast, 'Wrapper'), 'button');
+      expect(sliceReparseSource(button)).toBe('<button style={{ color: "red" }}>Click me</button>');
+    });
+
+    it('stamps a component nested inside a list item of a component body', () => {
+      const md = [
+        '<Tabs>',
+        '    <Tab title="One">',
+        '        - item one',
+        '        - <ExampleComponent />',
+        '    </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const mdast = parseMdast(md);
+
+      const tab = findJsxChild(findJsxChild(mdast, 'Tabs'), 'Tab');
+      const list = tab.children.find(child => child.type === 'list')!;
+      const secondItem = list.children[1];
+      const nested = findJsxChild(secondItem, 'ExampleComponent');
+      expect(sliceReparseSource(nested)).toBe('<ExampleComponent />');
+    });
+
+    it('stamps sibling components separated by extra blank lines with the same body source', () => {
+      const md = [
+        '<Wrapper>',
+        '',
+        '  <First />',
+        '',
+        '',
+        '  <Second>',
+        '    content',
+        '  </Second>',
+        '',
+        '</Wrapper>',
+      ].join('\n');
+      const mdast = parseMdast(md);
+
+      const wrapper = findJsxChild(mdast, 'Wrapper');
+      const first = findJsxChild(wrapper, 'First');
+      const second = findJsxChild(wrapper, 'Second');
+
+      expect(first.data?.reparseSource).toBe(second.data?.reparseSource);
+      expect(sliceReparseSource(first)).toBe('<First />');
+      expect(sliceReparseSource(second)).toBe(['<Second>', '  content', '</Second>'].join('\n'));
     });
   });
 
@@ -350,10 +543,13 @@ Content here
 
       const second = mdxishAstProcessor(out, { newEditorTypes: true });
       const tree2 = second.processor.runSync(second.processor.parse(second.parserReadyContent)) as Root;
-      const callout = tree2.children[0] as { children: { type: string }[]; data?: { hProperties?: { empty?: boolean } } };
+      const callout = tree2.children[0] as {
+        children: { type: string }[];
+        data?: { hProperties?: { empty?: boolean } };
+      };
 
       expect(callout.data?.hProperties?.empty).toBe(true);
-      const firstChildText = ((callout.children[0] as { children?: { value?: string }[] }).children?.[0]?.value) ?? '';
+      const firstChildText = (callout.children[0] as { children?: { value?: string }[] }).children?.[0]?.value ?? '';
       expect(firstChildText).toBe('');
       expect(callout.children[1]).toMatchObject({
         type: 'paragraph',

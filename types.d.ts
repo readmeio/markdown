@@ -83,12 +83,12 @@ export interface EmbedBlock extends Node {
     hName: 'Embed' | 'embed';
     hProperties: Record<string, unknown> & {
       favicon?: string;
-      height?:string;
+      height?: string;
       href?: string;
       html?: string;
       iframe?: boolean;
       image?: string;
-      provider?:string;
+      provider?: string;
       providerName?: string;
       providerUrl?: string;
       title: string;
