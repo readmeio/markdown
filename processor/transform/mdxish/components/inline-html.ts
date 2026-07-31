@@ -6,7 +6,13 @@ import { visit } from 'unist-util-visit';
 import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
+import {
+  getInlineMdProcessor,
+  hasExpressionAttr,
+  isPascalCase,
+  stampReparseSource,
+  toMdxJsxTextElement,
+} from './utils';
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always
@@ -21,7 +27,10 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
   const trimmed = value.trim();
   if (!trimmed) return [];
   const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  return first?.type === 'paragraph' ? (first as Paragraph).children : [];
+  if (first?.type !== 'paragraph') return [];
+  // These children root a new coordinate space: their offsets index into `trimmed`.
+  stampReparseSource((first as Paragraph).children, trimmed);
+  return (first as Paragraph).children;
 };
 
 /**

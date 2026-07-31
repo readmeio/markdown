@@ -17,19 +17,10 @@ import {
   isMarkdownPromotableHtmlTag,
   isPascalCase,
   NESTED_TABLE_RE,
+  stampReparseSource,
 } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-
-declare module 'mdast' {
-  interface Data {
-    /**
-     * The string this node's positions refer to. Set on subtrees produced by
-     * re-parsing a component body, whose offsets don't map to the document source.
-     */
-    reparseSource?: string;
-  }
-}
 
 // Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
 const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
@@ -75,22 +66,6 @@ function safeDeindent(text: string): string {
     .join('\n');
 }
 
-// Structural view of any mdast node; some custom node types declare inline `data`
-// shapes that don't extend mdast's `Data`, so the visit() union rejects the stamp.
-interface StampableNode {
-  children?: StampableNode[];
-  data?: { hName?: unknown; hProperties?: unknown; reparseSource?: string };
-  type: string;
-}
-
-// Re-parsed subtrees carry positions relative to the re-parsed string, not the document.
-// Stamp that string so position-based consumers (e.g. the editor) slice the right source.
-// Nodes stamped by a deeper re-parse keep their own (deeper) string.
-const stampReparseSource = (node: StampableNode, reparseSource: string) => {
-  if (!node.data?.reparseSource) node.data = { ...node.data, reparseSource };
-  node.children?.forEach(child => stampReparseSource(child, reparseSource));
-};
-
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
@@ -103,8 +78,10 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
   promoteComponentBlocks(parsed as Parent, safeMode, null);
-  stampReparseSource(parsed, reparseSource);
-  return parsed.children || [];
+  const children = parsed.children || [];
+  // These children root a new coordinate space: their offsets index into `reparseSource`.
+  stampReparseSource(children, reparseSource);
+  return children;
 };
 
 // Splices trailing content in as sibling nodes. parseMdChildren has already
@@ -171,15 +148,11 @@ const createComponentNode = ({
   },
 });
 
-// The promoted node inherits the html node's position, so it must also inherit the
-// stamp saying which re-parsed string that position refers to (`reparseSource`).
-const substituteNodeWithMdxNode = (
-  parent: Parent,
-  index: number,
-  mdxNode: MdxJsxFlowElement,
-  reparseSource?: string,
-) => {
-  if (reparseSource) mdxNode.data = { ...mdxNode.data, reparseSource };
+// The promoted node takes over the html node's position, so it also takes over the
+// coordinate space that position belongs to.
+const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
+  const replacedSource = parent.children[index]?.data?.reparseSource;
+  if (replacedSource) stampReparseSource([mdxNode], replacedSource);
   (parent.children as Node[]).splice(index, 1, mdxNode);
 };
 
@@ -289,7 +262,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         // End at the self-closing tag, not at any trailing content.
         endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
       });
-      substituteNodeWithMdxNode(parent, index, componentNode, node.data?.reparseSource);
+      substituteNodeWithMdxNode(parent, index, componentNode);
 
       const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
@@ -320,7 +293,10 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // phrasing content isn't spuriously block-wrapped.
       let unwrappedSoleParagraph = false;
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
-        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
+        const soleParagraph = parsedChildren[0];
+        parsedChildren = (soleParagraph as Parent).children as MdxJsxFlowElement['children'];
+        // The unwrap drops the stamped root, so its children inherit that coordinate space.
+        if (soleParagraph.data?.reparseSource) stampReparseSource(parsedChildren, soleParagraph.data.reparseSource);
         unwrappedSoleParagraph = true;
       }
       // Without trailing content the whole node position is correct. With it, end
@@ -343,7 +319,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode, node.data?.reparseSource);
+      substituteNodeWithMdxNode(parent, index, componentNode);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)

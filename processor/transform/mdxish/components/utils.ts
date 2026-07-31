@@ -42,6 +42,18 @@ export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean 
 };
 
 /**
+ * Mark re-parsed subtree roots with the string their positions index into, so consumers
+ * slicing by offset use the right source (see `Data.reparseSource`). Only roots are
+ * stamped; descendants resolve via their nearest stamped ancestor. Roots a deeper
+ * re-parse already stamped keep their own string.
+ */
+export const stampReparseSource = (roots: Node[], reparseSource: string) => {
+  roots.forEach(root => {
+    if (!root.data?.reparseSource) root.data = { ...root.data, reparseSource };
+  });
+};
+
+/**
  * True when a tag name starts with an uppercase letter — ReadMe's marker for
  * a custom MDX component (vs a lowercase HTML tag).
  */

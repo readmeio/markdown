@@ -105,7 +105,7 @@ export interface EmbedBlock extends Node {
 
 export interface Figure extends Node {
   children: [ImageBlock & { url: string }, FigCaption];
-  data: {
+  data: Data & {
     hName: 'figure';
   };
   type: NodeTypes.figure;
@@ -113,7 +113,7 @@ export interface Figure extends Node {
 
 export interface FigCaption extends Node {
   children: BlockContent[];
-  data: {
+  data: Data & {
     hName: 'figcaption';
   };
   type: NodeTypes.figcaption;
@@ -205,7 +205,7 @@ export interface Variable extends Node {
 }
 
 export interface Glossary extends Node {
-  children: [{ type: 'text'; value: string }];
+  children: [Text];
   data: Data & {
     hName: 'Glossary';
     hProperties: { term: string };
@@ -230,6 +230,16 @@ export interface Anchor extends Node {
 }
 
 declare module 'mdast' {
+  // eslint-disable-next-line @typescript-eslint/no-shadow -- augmenting mdast's `Data` requires reusing the name
+  interface Data {
+    /**
+     * Marks the root of a re-parsed subtree: this node's and its descendants' positions
+     * index into this string rather than the document. Resolve a node's source from its
+     * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
+     */
+    reparseSource?: string;
+  }
+
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
