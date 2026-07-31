@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 14.14.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** render raw tables preceded by text ([#1569](https://github.com/readmeio/markdown/issues/1569)) ([7640fa4](https://github.com/readmeio/markdown/commit/7640fa412fba4b418ddf1434f998db26a3e99d95))
+* **mdxish:** stamp re-parsed component bodies with their source  ([#1576](https://github.com/readmeio/markdown/issues/1576)) ([e0a007c](https://github.com/readmeio/markdown/commit/e0a007cb11af50d4237b22e305a0d7cbf09f54db))
+* **mdxish:** unify sub-pipelines & remove dead indentation logic ([#1568](https://github.com/readmeio/markdown/issues/1568)) ([2fd82e3](https://github.com/readmeio/markdown/commit/2fd82e3ac2b464190b2f7365635371b1afb0f84d)), closes [#1566](https://github.com/readmeio/markdown/issues/1566) [#1566](https://github.com/readmeio/markdown/issues/1566) [#1566](https://github.com/readmeio/markdown/issues/1566)
+
 ## Version 14.14.0
 ### ✨ New & Improved
 
