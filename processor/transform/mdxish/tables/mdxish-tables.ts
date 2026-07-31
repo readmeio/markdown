@@ -402,6 +402,10 @@ const mdxishTables = (): Transform => tree => {
     if (typeof index !== 'number' || !parent || !('children' in parent)) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
+    // Inline tables are tokenized as separate raw HTML fragments inside a
+    // paragraph. Leave them untouched so rehype-raw can reassemble the table.
+    if (parent.type === 'paragraph') return;
+
     // Because the processor uses remarkMdx, it is stricter in what it accepts
     // and only accepts valid MDX syntax in the table node. To get around that,
     // fall back to the cumulative repairs when the first parse fails.
