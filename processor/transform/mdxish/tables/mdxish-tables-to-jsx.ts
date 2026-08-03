@@ -1,11 +1,13 @@
-import type { Literal, Node, Table, TableCell } from 'mdast';
+import type { Literal, Node, Nodes, Table, TableCell } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { phrasing } from 'mdast-util-phrasing';
-import { visit } from 'unist-util-visit';
+import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
+
+import { flattenBreaksToNewlines, isBareListMarker, normalizeCellForGfm } from './gfm-cell-normalization';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
@@ -27,6 +29,47 @@ const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.typ
 const isLiteral = (node: Node): node is Literal => 'value' in node;
 
 /**
+ * Block-level content that a single-line GFM cell cannot hold. `phrasing()` returns true
+ * for inline types (text, emphasis, strong, link…), which are safe to keep.
+ */
+const isFlowChild = (child: Nodes): boolean => {
+  if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
+  if (child.type === NodeTypes.variable) return false;
+  if (phrasing(child)) return false;
+  if (isBareListMarker(child)) return false;
+  if (child.type === 'html') return SELF_CLOSING_JSX_REGEX.test(child.value);
+
+  return true;
+};
+
+/**
+ * Newlines that survive {@link normalizeCellForGfm}. Only `text` newlines become `<br />`;
+ * one inside `inlineCode` or raw `html` is part of the value and has no inline equivalent.
+ */
+const hasUnrepresentableNewline = (cell: TableCell): boolean => {
+  let found = false;
+  visit(cell, isLiteral, (node: Literal & Node) => {
+    if (node.type !== 'text' && node.value.includes('\n')) {
+      found = true;
+      return EXIT;
+    }
+    return undefined;
+  });
+  return found;
+};
+
+/** True when a cell's content round-trips through a GFM pipe cell without losing structure. */
+const canCellBeGfm = (cell: TableCell): boolean => {
+  if (cell.children.length === 0) return true;
+
+  // Multiple paragraphs are distinct blocks; a single-line cell cannot keep them apart.
+  if (cell.children.filter(child => child.type === 'paragraph').length > 1) return false;
+  if (cell.children.some(isFlowChild)) return false;
+
+  return !hasUnrepresentableNewline(cell);
+};
+
+/**
  * Mdxish-specific version of `tablesToJsx`. Differs from the shared MDX version:
  *
  * - Excludes `html` nodes from triggering JSX conversion because raw HTML
@@ -42,53 +85,18 @@ const mdxishTablesToJsx = (): Transform => tree => {
       let hasFlowContent = false;
 
       visit(table, isTableCell, (cell: TableCell) => {
-        if (hasFlowContent || cell.children.length === 0) return;
-
-        visit(cell, 'break', (_, breakIndex, breakParent) => {
-          breakParent.children.splice(breakIndex, 1, { type: 'text', value: '\n' });
-        });
-
-        // A cell with more than one paragraph child cannot be serialized as GFM
-        // (pipe tables are single-line per cell), so force JSX <Table> output to
-        // preserve paragraph separation.
-        const paragraphCount = cell.children.filter(child => child.type === 'paragraph').length;
-        if (paragraphCount > 1) {
-          hasFlowContent = true;
-          return;
-        }
-
-        // Check if any child is "flow" content (block-level) that requires JSX <Table>
-        // serialization instead of GFM. `phrasing()` from mdast-util-phrasing returns
-        // true for inline node types (text, emphasis, strong, link, etc.) which are
-        // safe to keep in GFM cells.
-        const hasFlowChild = (cell.children as Node[]).some(child => {
-          if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
-          if (child.type === NodeTypes.variable) return false;
-          if (phrasing(child as Parameters<typeof phrasing>[0])) return false;
-          if (child.type === 'html') {
-            return SELF_CLOSING_JSX_REGEX.test((child as Literal).value);
-          }
-
-          return true;
-        });
-
-        if (hasFlowChild) {
-          hasFlowContent = true;
-        }
-
-        if (!hasFlowContent) {
-          visit(cell, isLiteral, (node: Literal) => {
-            if (node.value.match(/\n/)) {
-              hasFlowContent = true;
-            }
-          });
-        }
+        if (canCellBeGfm(cell)) return undefined;
+        hasFlowContent = true;
+        return EXIT;
       });
 
       if (!hasFlowContent) {
+        visit(table, isTableCell, normalizeCellForGfm);
         table.type = 'table';
         return;
       }
+
+      visit(table, isTableCell, flattenBreaksToNewlines);
 
       const styles = table.align.map(alignToStyle);
 

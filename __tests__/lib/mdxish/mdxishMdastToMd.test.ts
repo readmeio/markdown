@@ -145,7 +145,7 @@ describe('mdxishMdastToMd', () => {
   });
 
   describe('tables with flow content', () => {
-    it('should serialize a table with newlines in cells to JSX <Table>', () => {
+    it('should serialize a table with a fenced code block in a cell to JSX <Table>', () => {
       const mdast: MdastRoot = {
         type: 'root',
         children: [
@@ -217,7 +217,7 @@ describe('mdxishMdastToMd', () => {
       `);
     });
 
-    it('should serialize a table with newlines in cells to JSX <Table> and separate the lines with an empty line between them', () => {
+    it('should serialize a table with multiple paragraphs in a cell to JSX <Table> and separate the lines with an empty line between them', () => {
       const mdast: MdastRoot = {
         type: 'root',
         children: [
@@ -1014,6 +1014,94 @@ describe('mdxishMdastToMd', () => {
         | Alice | 30  |
         "
       `);
+    });
+  });
+
+  /**
+   * CX-3773: pasting multi-line text into a cell, or typing a bare `-` placeholder, used to
+   * promote the whole table to `<Table>` for good. Both are representable inline in GFM, so
+   * these build the mdast the editor hands to save and assert a pipe table comes back.
+   */
+  describe('cell content that stays a GFM table (CX-3773)', () => {
+    const tableWithCellChildren = (children: RootContent[]): MdastRoot => ({
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          align: ['left', 'left'],
+          children: [
+            {
+              type: 'tableRow',
+              children: [
+                { type: 'tableCell', children: [{ type: 'text', value: 'Field' }] },
+                { type: 'tableCell', children: [{ type: 'text', value: 'Required' }] },
+              ],
+            },
+            {
+              type: 'tableRow',
+              children: [
+                { type: 'tableCell', children: [{ type: 'text', value: 'postal_code' }] },
+                { type: 'tableCell', children },
+              ],
+            },
+          ],
+        } as Table,
+      ],
+    });
+
+    it('turns a pasted break node into <br />', () => {
+      const mdast = tableWithCellChildren([
+        { type: 'text', value: 'Required for US' },
+        { type: 'break' },
+        { type: 'text', value: 'Ignored elsewhere' },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required                               |
+        | :---------- | :------------------------------------- |
+        | postal_code | Required for US<br />Ignored elsewhere |
+        "
+      `);
+    });
+
+    it('turns a pasted newline inside a text node into <br />', () => {
+      const mdast = tableWithCellChildren([{ type: 'text', value: 'Required for US\nIgnored elsewhere' }]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required                               |
+        | :---------- | :------------------------------------- |
+        | postal_code | Required for US<br />Ignored elsewhere |
+        "
+      `);
+    });
+
+    it('turns a bare list marker placeholder into text', () => {
+      const mdast = tableWithCellChildren([
+        { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: null, children: [] }] },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required |
+        | :---------- | :------- |
+        | postal_code | -        |
+        "
+      `);
+    });
+
+    it('still promotes a cell holding a list with real content', () => {
+      const mdast = tableWithCellChildren([
+        {
+          type: 'list',
+          ordered: false,
+          start: null,
+          spread: false,
+          children: [
+            { type: 'listItem', spread: false, checked: null, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'yes' }] }] },
+          ],
+        },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
     });
   });
 

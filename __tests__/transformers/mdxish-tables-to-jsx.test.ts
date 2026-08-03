@@ -5,7 +5,34 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import mdxishTablesToJsx from '../../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
-import { collectNodes } from '../helpers';
+import { collectNodes, roundTripMdxish } from '../helpers';
+
+/**
+ * A pipe table cannot express a multi-line cell, so the CX-3773 cases have to start
+ * from `<Table>` and be round-tripped back through the serializer.
+ */
+const tableWithCell = (cell: string): string =>
+  [
+    '<Table align={["left","left"]}>',
+    '<thead>',
+    '<tr>',
+    '<th>Field</th>',
+    '<th>Notes</th>',
+    '</tr>',
+    '</thead>',
+    '<tbody>',
+    '<tr>',
+    '<td>',
+    cell,
+    '</td>',
+    '<td>x</td>',
+    '</tr>',
+    '</tbody>',
+    '</Table>',
+    '',
+  ].join('\n');
+
+const stayedJsx = (markdown: string): boolean => /^<Table/m.test(markdown);
 
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
@@ -16,6 +43,9 @@ const parseWithPlugin = (markdown: string): Root => {
   processor.runSync(tree);
   return tree as Root;
 };
+
+/** The first body cell of a two-column table — indexes 0 and 1 are the header cells. */
+const firstBodyCell = (markdown: string): Parent => collectNodes<Parent>(parseWithPlugin(markdown), 'tableCell')[2];
 
 describe('mdxish-tables-to-jsx', () => {
   describe('plain GFM tables (no flow content)', () => {
@@ -67,24 +97,95 @@ describe('mdxish-tables-to-jsx', () => {
     });
   });
 
-  describe('break node replacement', () => {
-    it('replaces break nodes with text newlines', () => {
-      const md = '| Header |\n| --- |\n| line1<br>line2 |';
-      const tree = parseWithPlugin(md);
+  // CX-3773: line breaks and bare list markers are representable inline in GFM, so they
+  // must not silently promote a pipe table to <Table>.
+  describe('line breaks in a cell (CX-3773)', () => {
+    it.each([
+      ['a single soft line break', 'one\ntwo'],
+      ['a hard break written as a trailing backslash', 'one\\\ntwo'],
+      ['a hard break written as two trailing spaces', 'one  \ntwo'],
+    ])('normalizes %s to <br /> and keeps the table as GFM', (_label, cell) => {
+      const markdown = roundTripMdxish(tableWithCell(cell));
 
-      const textNodes: Parent[] = [];
-      const stack = [tree as Parent];
-      while (stack.length) {
-        const node = stack.pop()!;
-        if (node.type === 'text' && 'value' in node && (node as unknown as { value: string }).value.includes('\n')) {
-          textNodes.push(node);
-        }
-        if ('children' in node && Array.isArray(node.children)) {
-          stack.push(...(node.children as Parent[]));
-        }
-      }
+      expect(stayedJsx(markdown)).toBe(false);
+      expect(markdown).toContain('one<br />two');
+    });
 
-      expect(textNodes.length).toBeGreaterThanOrEqual(0);
+    it('emits a br element rather than a newline in the cell AST', () => {
+      const cell = firstBodyCell(roundTripMdxish(tableWithCell('one\ntwo')));
+
+      expect(cell).toMatchObject({
+        type: 'tableCell',
+        children: [
+          { type: 'text', value: 'one' },
+          { type: 'html', value: '<br />' },
+          { type: 'text', value: 'two' },
+        ],
+      });
+    });
+
+    it('leaves an author-written <br /> untouched', () => {
+      const markdown = roundTripMdxish(tableWithCell('one<br />two'));
+
+      expect(stayedJsx(markdown)).toBe(false);
+      expect(markdown).toContain('one<br />two');
+    });
+
+    it('keeps blank-line separated paragraphs as JSX, since a break is not a paragraph', () => {
+      expect(stayedJsx(roundTripMdxish(tableWithCell('one\n\ntwo')))).toBe(true);
+    });
+
+    it('keeps a newline inside inline code as JSX, since it has no inline equivalent', () => {
+      expect(stayedJsx(roundTripMdxish(tableWithCell('`one\ntwo`')))).toBe(true);
+    });
+
+    it('round-trips a normalized break without drifting', () => {
+      const once = roundTripMdxish(tableWithCell('one\ntwo'));
+
+      expect(roundTripMdxish(once)).toBe(once);
+    });
+
+    // Guards the promote path, which must keep collapsing `break` to a newline: leaving the
+    // node intact serializes a dangling `\` into the `<td>`. (That cell's own round trip has
+    // a separate, pre-existing instability, so this asserts the serialized shape only.)
+    it('collapses a break in a cell of a table that still promotes', () => {
+      const source = tableWithCell('one\\\ntwo').replace('<td>x</td>', '<td>\n\n```js\nx\n```\n\n</td>');
+      const serialized = roundTripMdxish(source);
+
+      expect(stayedJsx(serialized)).toBe(true);
+      expect(serialized).not.toContain('\\\n');
+    });
+  });
+
+  describe('bare list markers in a cell (CX-3773)', () => {
+    it.each([
+      ['a hyphen', '-', '-'],
+      ['an asterisk', '*', '-'],
+      ['a plus', '+', '-'],
+      ['an ordered marker', '1.', '1.'],
+    ])('treats %s as text and keeps the table as GFM', (_label, cell, expected) => {
+      const markdown = roundTripMdxish(tableWithCell(cell));
+
+      expect(stayedJsx(markdown)).toBe(false);
+      expect(markdown).toContain(`| ${expected}`);
+    });
+
+    it('replaces the empty list with a text node in the cell AST', () => {
+      const cell = firstBodyCell(roundTripMdxish(tableWithCell('-')));
+
+      expect(cell).toMatchObject({ type: 'tableCell', children: [{ type: 'text', value: '-' }] });
+    });
+
+    it('preserves the start number of an ordered marker', () => {
+      expect(roundTripMdxish(tableWithCell('3.'))).toContain('| 3.');
+    });
+
+    it.each([
+      ['a single item that has content', '- one'],
+      ['multiple items', '- one\n- two'],
+      ['an empty item alongside a real one', '- \n- two'],
+    ])('keeps a list with %s as JSX', (_label, cell) => {
+      expect(stayedJsx(roundTripMdxish(tableWithCell(cell)))).toBe(true);
     });
   });
 
