@@ -1018,9 +1018,9 @@ describe('mdxishMdastToMd', () => {
   });
 
   /**
-   * CX-3773: pasting multi-line text into a cell, or typing a bare `-` placeholder, used to
-   * promote the whole table to `<Table>` for good. Both are representable inline in GFM, so
-   * these build the mdast the editor hands to save and assert a pipe table comes back.
+   * CX-3773: pasting multi-line text into a cell used to promote the whole table to `<Table>`
+   * for good. Line breaks are representable inline in GFM as `<br />`, so these build the
+   * mdast the editor hands to save and assert a pipe table comes back.
    */
   describe('cell content that stays a GFM table (CX-3773)', () => {
     const tableWithCellChildren = (children: RootContent[]): MdastRoot => ({
@@ -1075,17 +1075,12 @@ describe('mdxishMdastToMd', () => {
       `);
     });
 
-    it('turns a bare list marker placeholder into text', () => {
+    it('keeps a bare list marker placeholder as JSX', () => {
       const mdast = tableWithCellChildren([
         { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: null, children: [] }] },
       ]);
 
-      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
-        "| Field       | Required |
-        | :---------- | :------- |
-        | postal_code | -        |
-        "
-      `);
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
     });
 
     it('still promotes a cell holding a list with real content', () => {
@@ -1113,54 +1108,6 @@ describe('mdxishMdastToMd', () => {
         | postal_code | one<br /><br />two |
         "
       `);
-    });
-
-    it.each([
-      ['an unchecked', false, '[ ]'],
-      ['a checked', true, '[x]'],
-    ])('keeps %s empty task-list item as JSX, preserving its checkbox', (_label, checked, marker) => {
-      const mdast = tableWithCellChildren([
-        {
-          type: 'list',
-          ordered: false,
-          start: null,
-          spread: false,
-          children: [{ type: 'listItem', spread: false, checked, children: [{ type: 'paragraph', children: [] }] }],
-        },
-      ]);
-      const serialized = mdxishMdastToMd(mdast);
-
-      expect(serialized).toContain('<Table');
-      expect(serialized).toContain(`- ${marker}`);
-    });
-
-    // The checkbox itself is dropped by remark-stringify for a childless item (pre-existing),
-    // so this only asserts the routing: a task item must never collapse to a bare `-` cell.
-    it('keeps a childless task-list item as JSX', () => {
-      const mdast = tableWithCellChildren([
-        { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: false, children: [] }] },
-      ]);
-
-      expect(mdxishMdastToMd(mdast)).toContain('<Table');
-    });
-
-    it('keeps multiple empty list items as JSX, preserving their count', () => {
-      const mdast = tableWithCellChildren([
-        {
-          type: 'list',
-          ordered: false,
-          start: null,
-          spread: false,
-          children: [
-            { type: 'listItem', spread: false, checked: null, children: [] },
-            { type: 'listItem', spread: false, checked: null, children: [] },
-          ],
-        },
-      ]);
-      const serialized = mdxishMdastToMd(mdast);
-
-      expect(serialized).toContain('<Table');
-      expect(serialized.match(/^\s*-\s*$/gm)).toHaveLength(2);
     });
   });
 

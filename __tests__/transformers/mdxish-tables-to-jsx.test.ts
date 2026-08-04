@@ -97,8 +97,8 @@ describe('mdxish-tables-to-jsx', () => {
     });
   });
 
-  // CX-3773: line breaks and bare list markers are representable inline in GFM, so they
-  // must not silently promote a pipe table to <Table>.
+  // CX-3773: line breaks are representable inline in GFM as <br />, so they must not
+  // silently promote a pipe table to <Table>.
   describe('line breaks in a cell (CX-3773)', () => {
     it.each([
       ['a single soft line break', 'one\ntwo'],
@@ -175,34 +175,10 @@ describe('mdxish-tables-to-jsx', () => {
     });
   });
 
-  describe('bare list markers in a cell (CX-3773)', () => {
+  describe('lists in a cell', () => {
     it.each([
-      ['a hyphen', '-', '-'],
-      ['an asterisk', '*', '-'],
-      ['a plus', '+', '-'],
-      ['an ordered marker', '1.', '1.'],
-    ])('treats %s as text and keeps the table as GFM', (_label, cell, expected) => {
-      const markdown = roundTripMdxish(tableWithCell(cell));
-
-      expect(stayedJsx(markdown)).toBe(false);
-      expect(markdown).toContain(`| ${expected}`);
-    });
-
-    it('replaces the empty list with a text node in the cell AST', () => {
-      const cell = firstBodyCell(roundTripMdxish(tableWithCell('-')));
-
-      expect(cell).toMatchObject({ type: 'tableCell', children: [{ type: 'text', value: '-' }] });
-    });
-
-    it('preserves the start number of an ordered marker', () => {
-      expect(roundTripMdxish(tableWithCell('3.'))).toContain('| 3.');
-    });
-
-    it.each([
-      ['a single item that has content', '- one'],
-      ['multiple items', '- one\n- two'],
-      ['an empty item alongside a real one', '- \n- two'],
-      ['multiple empty items', '-\n-\n-'],
+      ['a bare marker', '-'],
+      ['an item that has content', '- one'],
       ['a task-list item', '- [ ] done'],
     ])('keeps a list with %s as JSX', (_label, cell) => {
       expect(stayedJsx(roundTripMdxish(tableWithCell(cell)))).toBe(true);
