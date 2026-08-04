@@ -1115,7 +1115,28 @@ describe('mdxishMdastToMd', () => {
       `);
     });
 
-    it('keeps an empty task-list item as JSX, preserving its checkbox', () => {
+    it.each([
+      ['an unchecked', false, '[ ]'],
+      ['a checked', true, '[x]'],
+    ])('keeps %s empty task-list item as JSX, preserving its checkbox', (_label, checked, marker) => {
+      const mdast = tableWithCellChildren([
+        {
+          type: 'list',
+          ordered: false,
+          start: null,
+          spread: false,
+          children: [{ type: 'listItem', spread: false, checked, children: [{ type: 'paragraph', children: [] }] }],
+        },
+      ]);
+      const serialized = mdxishMdastToMd(mdast);
+
+      expect(serialized).toContain('<Table');
+      expect(serialized).toContain(`- ${marker}`);
+    });
+
+    // The checkbox itself is dropped by remark-stringify for a childless item (pre-existing),
+    // so this only asserts the routing: a task item must never collapse to a bare `-` cell.
+    it('keeps a childless task-list item as JSX', () => {
       const mdast = tableWithCellChildren([
         { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: false, children: [] }] },
       ]);
@@ -1136,8 +1157,10 @@ describe('mdxishMdastToMd', () => {
           ],
         },
       ]);
+      const serialized = mdxishMdastToMd(mdast);
 
-      expect(mdxishMdastToMd(mdast)).toContain('<Table');
+      expect(serialized).toContain('<Table');
+      expect(serialized.match(/^\s*-\s*$/gm)).toHaveLength(2);
     });
   });
 
