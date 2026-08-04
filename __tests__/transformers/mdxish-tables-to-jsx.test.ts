@@ -124,6 +124,24 @@ describe('mdxish-tables-to-jsx', () => {
       });
     });
 
+    it('normalizes a line break nested inside strong formatting', () => {
+      const cell = firstBodyCell(roundTripMdxish(tableWithCell('**one\ntwo**')));
+
+      expect(cell).toMatchObject({
+        type: 'tableCell',
+        children: [
+          {
+            type: 'strong',
+            children: [
+              { type: 'text', value: 'one' },
+              { type: 'html', value: '<br />' },
+              { type: 'text', value: 'two' },
+            ],
+          },
+        ],
+      });
+    });
+
     it('leaves an author-written <br /> untouched', () => {
       const markdown = roundTripMdxish(tableWithCell('one<br />two'));
 
@@ -184,6 +202,8 @@ describe('mdxish-tables-to-jsx', () => {
       ['a single item that has content', '- one'],
       ['multiple items', '- one\n- two'],
       ['an empty item alongside a real one', '- \n- two'],
+      ['multiple empty items', '-\n-\n-'],
+      ['a task-list item', '- [ ] done'],
     ])('keeps a list with %s as JSX', (_label, cell) => {
       expect(stayedJsx(roundTripMdxish(tableWithCell(cell)))).toBe(true);
     });

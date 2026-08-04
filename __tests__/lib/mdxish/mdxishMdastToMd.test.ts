@@ -1103,6 +1103,42 @@ describe('mdxishMdastToMd', () => {
 
       expect(mdxishMdastToMd(mdast)).toContain('<Table');
     });
+
+    it('turns consecutive newlines into consecutive breaks', () => {
+      const mdast = tableWithCellChildren([{ type: 'text', value: 'one\n\ntwo' }]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required           |
+        | :---------- | :----------------- |
+        | postal_code | one<br /><br />two |
+        "
+      `);
+    });
+
+    it('keeps an empty task-list item as JSX, preserving its checkbox', () => {
+      const mdast = tableWithCellChildren([
+        { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: false, children: [] }] },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
+    });
+
+    it('keeps multiple empty list items as JSX, preserving their count', () => {
+      const mdast = tableWithCellChildren([
+        {
+          type: 'list',
+          ordered: false,
+          start: null,
+          spread: false,
+          children: [
+            { type: 'listItem', spread: false, checked: null, children: [] },
+            { type: 'listItem', spread: false, checked: null, children: [] },
+          ],
+        },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
+    });
   });
 
   describe('underscores serialization', () => {

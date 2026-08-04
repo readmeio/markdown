@@ -7,7 +7,7 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
 
-import { flattenBreaksToNewlines, isBareListMarker, normalizeCellForGfm } from './gfm-cell-normalization';
+import { hasChildren, normalizeCellChildrenForGfm } from './gfm-cell-normalization';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
@@ -36,37 +36,31 @@ const isFlowChild = (child: Nodes): boolean => {
   if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
   if (child.type === NodeTypes.variable) return false;
   if (phrasing(child)) return false;
-  if (isBareListMarker(child)) return false;
   if (child.type === 'html') return SELF_CLOSING_JSX_REGEX.test(child.value);
 
   return true;
 };
 
-/**
- * Newlines that survive {@link normalizeCellForGfm}. Only `text` newlines become `<br />`;
- * one inside `inlineCode` or raw `html` is part of the value and has no inline equivalent.
- */
-const hasUnrepresentableNewline = (cell: TableCell): boolean => {
-  let found = false;
-  visit(cell, isLiteral, (node: Literal & Node) => {
-    if (node.type !== 'text' && node.value.includes('\n')) {
-      found = true;
-      return EXIT;
-    }
-    return undefined;
-  });
-  return found;
+/** A newline in a normalized cell (e.g. inside `inlineCode`) has no inline equivalent. */
+const containsLiteralNewline = (nodes: Node[]): boolean =>
+  nodes.some(
+    node => (isLiteral(node) && node.value.includes('\n')) || (hasChildren(node) && containsLiteralNewline(node.children)),
+  );
+
+/** True when normalized cell content survives a single-line GFM pipe cell without losing structure. */
+const canCellBeGfm = (children: TableCell['children']): boolean => {
+  // Multiple paragraphs are distinct blocks; a single-line cell cannot keep them apart.
+  if (children.filter(child => child.type === 'paragraph').length > 1) return false;
+  if (children.some(isFlowChild)) return false;
+
+  return !containsLiteralNewline(children);
 };
 
-/** True when a cell's content round-trips through a GFM pipe cell without losing structure. */
-const canCellBeGfm = (cell: TableCell): boolean => {
-  if (cell.children.length === 0) return true;
-
-  // Multiple paragraphs are distinct blocks; a single-line cell cannot keep them apart.
-  if (cell.children.filter(child => child.type === 'paragraph').length > 1) return false;
-  if (cell.children.some(isFlowChild)) return false;
-
-  return !hasUnrepresentableNewline(cell);
+/** On the promote path a `break` would serialize as a dangling `\`, so collapse it to a newline. */
+const flattenBreaksToNewlines = (cell: TableCell): void => {
+  visit(cell, 'break', (_, index, parent) => {
+    parent.children.splice(index, 1, { type: 'text', value: '\n' });
+  });
 };
 
 /**
@@ -82,16 +76,23 @@ const mdxishTablesToJsx = (): Transform => tree => {
     tree,
     (node: Node) => ['table', 'tableau'].includes(node.type),
     (table: Table, index, parent) => {
-      let hasFlowContent = false;
+      const gfmCells: [TableCell, TableCell['children']][] = [];
+      let requiresJsxTable = false;
 
       visit(table, isTableCell, (cell: TableCell) => {
-        if (canCellBeGfm(cell)) return undefined;
-        hasFlowContent = true;
-        return EXIT;
+        const normalized = normalizeCellChildrenForGfm(cell);
+        if (!canCellBeGfm(normalized)) {
+          requiresJsxTable = true;
+          return EXIT;
+        }
+        gfmCells.push([cell, normalized]);
+        return undefined;
       });
 
-      if (!hasFlowContent) {
-        visit(table, isTableCell, normalizeCellForGfm);
+      if (!requiresJsxTable) {
+        gfmCells.forEach(([cell, children]) => {
+          cell.children = children;
+        });
         table.type = 'table';
         return;
       }
