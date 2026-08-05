@@ -1,49 +1,47 @@
-import type { Root } from 'hast';
-import type { Node, Parent } from 'unist';
+import type { Nodes, Parents, Root } from 'hast';
+import type { Transformer } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-type MaybeScriptNode = Node & { name?: string; tagName?: string };
+import { isMDXElement } from '../utils';
 
 /**
- * Whether a node would render as a literal DOM `<script>` element.
+ * Whether a node would render as a literal DOM `<script>` element. Browsers match
+ * tag names case-insensitively, so `<sCrIpT>` executes too.
  *
  * JSX names with an uppercase first letter (`<Script />`) are component
  * references, not literal tags, so they're left alone.
  */
-const isScriptNode = (node: MaybeScriptNode): boolean => {
-  if (node.type === 'element') {
-    return node.tagName?.toLowerCase() === 'script';
-  }
+const isScriptNode = (node: Nodes): boolean => {
+  if (node.type === 'element') return node.tagName.toLowerCase() === 'script';
 
-  if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') {
-    const { name } = node;
-    return !!name && name.toLowerCase() === 'script' && name[0] === name[0].toLowerCase();
+  if (isMDXElement(node)) {
+    const name = node.name ?? '';
+    return /^[a-z]/.test(name) && name.toLowerCase() === 'script';
   }
 
   return false;
 };
 
 /**
- * Removes `<script>` elements from user-provided content so they never reach
- * server-rendered (or client-rendered) HTML. Matches legacy rdmd, which strips
- * script tags via its sanitization schema regardless of safe mode.
+ * Removes literal `<script>` elements from user-provided content so they never
+ * reach rendered HTML. In `md` format `rehypeSanitize` already drops them; this
+ * covers the `mdx` and `mdxish` pipelines, which have no sanitization step.
+ *
+ * This only handles `<script>`. Broader parity with the `md` sanitization schema
+ * (`javascript:` URLs, `on*` handlers, `<iframe>`, `<object>`, …) is tracked
+ * separately in readmeio/markdown#1526.
  *
  * Explicit `HTMLBlock`s are an intentional exception, matching legacy: their
  * scripts live in a string prop rather than as elements, so they never appear
  * in SSR HTML, and they only execute client-side when the author opts in via
  * `runScripts`.
  */
-const rehypeStripScripts = () => {
+export const rehypeStripScripts = (): Transformer<Root, Root> => {
   return (tree: Root) => {
-    visit(tree, (node, index, parent: Parent | undefined) => {
-      if (parent && typeof index === 'number' && isScriptNode(node as MaybeScriptNode)) {
-        parent.children.splice(index, 1);
-        return index;
-      }
-      return undefined;
+    visit(tree, isScriptNode, (_node, index: number, parent: Parents) => {
+      parent.children.splice(index, 1);
+      return index;
     });
   };
 };
-
-export default rehypeStripScripts;
