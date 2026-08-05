@@ -1,56 +1,25 @@
 import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
-import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { htmlRawNames } from 'micromark-util-html-tag-name';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import { NodeTypes } from '../../../../enums';
-import { emptyTaskListItemFromMarkdown } from '../../../../lib/mdast-util/empty-task-list-item';
-import { gemojiFromMarkdown } from '../../../../lib/mdast-util/gemoji';
-import { jsxTableFromMarkdown } from '../../../../lib/mdast-util/jsx-table';
-import { legacyVariableFromMarkdown } from '../../../../lib/mdast-util/legacy-variable';
-import { magicBlockFromMarkdown } from '../../../../lib/mdast-util/magic-block';
-import { mdxComponentFromMarkdown } from '../../../../lib/mdast-util/mdx-component';
-import { gemoji } from '../../../../lib/micromark/gemoji';
-import { jsxTable } from '../../../../lib/micromark/jsx-table';
-import { legacyVariable } from '../../../../lib/micromark/legacy-variable';
-import { magicBlock } from '../../../../lib/micromark/magic-block';
-import { mdxComponent } from '../../../../lib/micromark/mdx-component';
+import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
+import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
 const buildInlineMdProcessor = (safeMode: boolean) => {
-  // `jsxTable` must be present so a `<Table>`/`<table>` nested in a component
-  // body (e.g. a `<Callout>`) is captured as one html node. Without it, blank
-  // lines between rows let CommonMark HTML block type 6 fragment the table and
-  // its rows spill out as text / indented code blocks (CX-3705).
-  const micromarkExts = [jsxTable(), mdxComponent(), gemoji(), legacyVariable(), magicBlock()];
-  const fromMarkdownExts = [
-    jsxTableFromMarkdown(),
-    mdxComponentFromMarkdown(),
-    gemojiFromMarkdown(),
-    legacyVariableFromMarkdown(),
-    emptyTaskListItemFromMarkdown(),
-    magicBlockFromMarkdown(),
-  ];
-
-  // Since evaluating expressions can be dangerous, do so only when safeMode is off
-  if (!safeMode) {
-    const mdxExprExt = mdxExpression({ allowEmpty: true });
-    // We include both flow and text extensions to support both single-line and multi-line expressions
-    micromarkExts.push({ flow: mdxExprExt.flow, text: mdxExprExt.text });
-    fromMarkdownExts.push(mdxExpressionFromMarkdown());
-  }
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
 
   return unified()
-    .data('micromarkExtensions', micromarkExts)
-    .data('fromMarkdownExtensions', fromMarkdownExts)
+    .data('micromarkExtensions', micromarkExtensions)
+    .data('fromMarkdownExtensions', fromMarkdownExtensions)
     .use(remarkParse)
     .use(remarkGfm);
 };
@@ -70,6 +39,18 @@ export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean 
     processorCache.set(safeMode, processor);
   }
   return processor;
+};
+
+/**
+ * Mark re-parsed subtree roots with the string their positions index into, so consumers
+ * slicing by offset use the right source (see `Data.reparseSource`). Only roots are
+ * stamped; descendants resolve via their nearest stamped ancestor. Roots a deeper
+ * re-parse already stamped keep their own string.
+ */
+export const stampReparseSource = (roots: Node[], reparseSource: string) => {
+  roots.forEach(root => {
+    if (!root.data?.reparseSource) root.data = { ...root.data, reparseSource };
+  });
 };
 
 /**
@@ -111,7 +92,7 @@ export const toMdxJsxTextElement = (
 // Raw-body tags (pre/script/style/textarea) must stay byte-exact; table
 // structure (`table` + `tableTags`) is owned by `mdxishTables` and figures by
 // `mdxishJsxToMdast`, both of which run later on raw html nodes.
-const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', 'figure', 'figcaption']);
+const NON_PROMOTABLE_PLAIN_TAGS = new Set<string>([...htmlRawNames, ...tableTags, 'table', ...NON_REPARSED_BODY_TAGS]);
 export const NESTED_TABLE_RE = /<table[\s>]/i;
 export const isMarkdownPromotableHtmlTag = (tag: string): boolean => !NON_PROMOTABLE_PLAIN_TAGS.has(tag);
 

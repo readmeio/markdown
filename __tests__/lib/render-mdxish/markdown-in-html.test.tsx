@@ -141,4 +141,37 @@ describe.each(['mdxish', 'mdx'] as const)('markdown nested in HTML (%s engine)',
     // The indented markdown must never fall through to an indented code block
     expect(container.querySelector('pre')).toBeNull();
   });
+
+  it('renders a fenced code sample + heading inside <ol>/<li>/<details> (RM-17560)', () => {
+    // Deep HTML nesting indents the body 6 cols (past CommonMark's indented-code
+    // threshold); both engines must still parse the heading + fenced code, not swallow them.
+    const { container } = renderMarkdown(`<ol>
+  <li>
+    <details>
+      <summary>Authorization request</summary>
+
+      ### Authorization request
+
+      \`\`\`json
+      {
+          "MESSAGE_TYPE": "0100"
+      }
+      \`\`\`
+    </details>
+  </li>
+</ol>`);
+
+    // A collapsed <details> hides its body from the a11y tree — assert presence, not visibility.
+    const details = container.querySelector('details');
+    expect(details).not.toBeNull();
+    expect(details!.querySelector('summary')?.textContent).toContain('Authorization request');
+    expect(within(details!).getByRole('heading', { level: 3, name: /Authorization request/, hidden: true })).toBeInTheDocument();
+
+    const code = details!.querySelector('pre code');
+    expect(code).not.toBeNull();
+    expect(code!.textContent).toContain('"MESSAGE_TYPE": "0100"');
+    // The fence markers and the closing tag must not leak into the code block.
+    expect(code!.textContent).not.toContain('```');
+    expect(code!.textContent).not.toContain('</details>');
+  });
 });

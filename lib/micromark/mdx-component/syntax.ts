@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeContext } from 'micromark-util-types';
 
-import { asciiAlpha, markdownLineEnding, markdownSpace } from 'micromark-util-character';
+import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
+import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+
+import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -28,17 +30,14 @@ const plainBlockClaimTagNames = new Set(
   [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
 );
 
-const nonLazyContinuationStart: Construct = {
-  tokenize: tokenizeNonLazyContinuationStart,
-  partial: true,
-};
+const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
 
-// Lookahead for `plainClaimLineStart`: is this line markup-only, or a paragraph
-// that merely starts with a tag? Run via `effects.check` so it never consumes.
-const markupOnlyContinuation: Construct = {
-  tokenize: tokenizeMarkupOnlyContinuation,
-  partial: true,
-};
+// Type-7 lowercase tags (a, span, button, unknown names): CommonMark ends their block
+// at a blank line, so the wrapper's children don't re-nest into one element. Only
+// claimable in block-wrapper shape (see `blockWrapperOpenerRest`), and never for voids
+// or raw/foreign-content bodies, which have dedicated owners.
+const isBlockWrapperClaimTagName = (tag: string): boolean =>
+  !htmlFlowTagNames.has(tag) && !HTML_VOID_ELEMENTS.has(tag) && !foreignContentTags.has(tag);
 
 function resolveToMdxComponent(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -106,6 +105,8 @@ function createTokenize(mode: 'flow' | 'text') {
     // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
     let isPlainBlockClaim = false;
     let pendingBlankLine = false;
+    // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
+    let pendingBlockWrapperClaim = false;
 
     // Code span tracking
     let codeSpanOpenSize = 0;
@@ -386,15 +387,10 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr) {
-          // Plain lowercase block tags stay claimable in flow, gated per line by
-          // `plainClaimLineStart`; everything else falls through to CommonMark.
-          if (!isFlow || !plainBlockClaimTagNames.has(tagName)) return nok(code);
-          isPlainBlockClaim = true;
-        }
+        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
-        return body;
+        return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
       }
 
       // Quoted attribute value
@@ -456,6 +452,34 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       // `/ ` without `>` is just part of the attribute area
       return afterOpenTagName(code);
+    }
+
+    // Whether a brace-less lowercase flow tag is claimable: type-6 tags immediately,
+    // type-7 tags pending the block-wrapper check; anything else is CommonMark's.
+    function claimBraceLessTag(): boolean {
+      if (!isFlow) return false;
+      if (plainBlockClaimTagNames.has(tagName)) {
+        isPlainBlockClaim = true;
+        return true;
+      }
+      if (isBlockWrapperClaimTagName(tagName)) {
+        pendingBlockWrapperClaim = true;
+        return true;
+      }
+      return false;
+    }
+
+    // A type-7 tag is claimed only as a block wrapper: opener alone on its line
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
+    function blockWrapperOpenerRest(code: Code): State | undefined {
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return blockWrapperOpenerRest;
+      }
+      if (!markdownLineEnding(code)) return nok(code);
+      pendingBlockWrapperClaim = false;
+      isPlainBlockClaim = true;
+      return body(code);
     }
 
     // Continuation for multi-line opening tags
@@ -902,11 +926,11 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     // Line-start gate for plain block claims. After a blank line the block may only
-    // continue on a tag line (`<…`); any markdown island (`**bold**`, `[block:…]`, a
-    // fence) refuses so CommonMark html-flow reparses it exactly as it does today.
+    // continue on a markup-only tag line (`<…`); anything else refuses, so CommonMark
+    // reparses it as markdown and rehype-raw re-nests it into the wrapper.
     function plainClaimLineStart(code: Code): State | undefined {
       // Leading whitespace only → treat as a blank line, matching CommonMark.
-      if (code === codes.space || code === codes.horizontalTab) {
+      if (markdownSpace(code)) {
         effects.consume(code);
         return plainClaimLineStart;
       }
@@ -915,9 +939,6 @@ function createTokenize(mode: 'flow' | 'text') {
         effects.exit('mdxComponentData');
         return bodyContinuationStart(code);
       }
-      // Across a blank line the block only continues onto a markup-only line; a
-      // paragraph that merely starts with a tag must fall back so its markdown
-      // parses and rehype-raw re-nests it into the wrapper.
       if (pendingBlankLine) {
         if (code !== codes.lessThan) return nok(code);
         return effects.check(markupOnlyContinuation, plainClaimContinue, nok)(code);
@@ -942,75 +963,6 @@ function createTokenize(mode: 'flow' | 'text') {
   };
 }
 
-function tokenizeNonLazyContinuationStart(this: TokenizeContext, effects: Effects, ok: State, nok: State) {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
-
-  return start;
-
-  function start(code: Code): State | undefined {
-    if (markdownLineEnding(code)) {
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return after;
-    }
-    return nok(code);
-  }
-
-  function after(code: Code): State | undefined {
-    if (self.parser.lazy[self.now().line]) {
-      return nok(code);
-    }
-    return ok(code);
-  }
-}
-
-// A markup-only line opens with a tag (`<x`/`</x`) and ends (ignoring trailing
-// spaces) at a `>`. That distinguishes a structural continuation like
-// `<span>b</span></div>` from a paragraph like `<b>Note:</b> read *this*`.
-function tokenizeMarkupOnlyContinuation(effects: Effects, ok: State, nok: State) {
-  let lastNonSpace: Code = null;
-
-  return start;
-
-  function start(code: Code): State | undefined {
-    // Caller guarantees we are at `<` at the (already de-indented) line start.
-    effects.enter(types.data);
-    effects.consume(code);
-    return afterLessThan;
-  }
-
-  function afterLessThan(code: Code): State | undefined {
-    if (code === codes.slash) {
-      effects.consume(code);
-      return afterSlash;
-    }
-    return afterSlash(code);
-  }
-
-  // The `<` (or `</`) must introduce a real tag, not a stray `<` in prose.
-  function afterSlash(code: Code): State | undefined {
-    if (asciiAlpha(code)) {
-      lastNonSpace = code;
-      effects.consume(code);
-      return scanToLineEnd;
-    }
-    effects.exit(types.data);
-    return nok(code);
-  }
-
-  function scanToLineEnd(code: Code): State | undefined {
-    if (code === null || markdownLineEnding(code)) {
-      effects.exit(types.data);
-      return lastNonSpace === codes.greaterThan ? ok(code) : nok(code);
-    }
-    if (!markdownSpace(code)) lastNonSpace = code;
-    effects.consume(code);
-    return scanToLineEnd;
-  }
-}
-
 /**
  * Micromark extension that tokenizes MDX-like components.
  *
@@ -1027,8 +979,10 @@ function tokenizeMarkupOnlyContinuation(effects: Effects, ok: State, nok: State)
  * transformer. All other PascalCase is flow-only; ReadMe's custom components
  * are authored as block-level elements.
  *
- * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock, Glossary,
- * Anchor.
+ * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
+ * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
+ * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.
  *
  * The resulting `html` mdast node is later restructured into an
  * `mdxJsxFlowElement` (block) or `mdxJsxTextElement` (inline) by the

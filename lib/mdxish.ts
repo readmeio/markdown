@@ -1,13 +1,9 @@
 import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
-import type { Extension } from 'micromark-util-types';
 import type { PluggableList } from 'unified';
 
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
-import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
-import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -61,24 +57,8 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
-import { jsxAcornParser } from '../processor/utils';
 
-import { emptyTaskListItemFromMarkdown } from './mdast-util/empty-task-list-item';
-import { gemojiFromMarkdown } from './mdast-util/gemoji';
-import { htmlBlockComponentFromMarkdown } from './mdast-util/html-block-component';
-import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
-import { legacyVariableFromMarkdown } from './mdast-util/legacy-variable';
-import { magicBlockFromMarkdown } from './mdast-util/magic-block';
-import { mdxComponentFromMarkdown } from './mdast-util/mdx-component';
-import { gemoji } from './micromark/gemoji';
-import { htmlBlockComponent } from './micromark/html-block-component';
-import { jsxComment } from './micromark/jsx-comment';
-import { jsxTable } from './micromark/jsx-table';
-import { legacyVariable } from './micromark/legacy-variable';
-import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './micromark/loose-html-entities';
-import { magicBlock } from './micromark/magic-block';
-import { mdxComponent } from './micromark/mdx-component';
-import { mdxExpressionLenient } from './micromark/mdx-expression-lenient';
+import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
 import { loadComponents } from './utils/mdxish/mdxish-load-components';
 import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-code-blocks';
 
@@ -155,52 +135,11 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     return acc;
   }, {});
 
-  // Parser extension for MDX expressions {}
-  const mdxExprTextOnly: Extension = mdxExpressionLenient();
-
-  const micromarkExts = [
-    jsxTable(),
-    magicBlock(),
-    mdxComponent(),
-    gemoji(),
-    legacyVariable(),
-    looseHtmlEntity(),
-    htmlBlockComponent(),
-  ];
-  const fromMarkdownExts = [
-    jsxTableFromMarkdown(),
-    magicBlockFromMarkdown(),
-    mdxComponentFromMarkdown(),
-    gemojiFromMarkdown(),
-    legacyVariableFromMarkdown(),
-    emptyTaskListItemFromMarkdown(),
-    looseHtmlEntityFromMarkdown(),
-    htmlBlockComponentFromMarkdown(),
-  ];
-
-  if (!safeMode) {
-    // Insert mdx expression (text-only, no flow) after gemoji at index 3
-    micromarkExts.splice(3, 0, mdxExprTextOnly);
-    fromMarkdownExts.splice(3, 0, mdxExpressionFromMarkdown());
-
-    // Tokenizer for MDX variable declarations
-    micromarkExts.push(mdxjsEsm({ acorn: jsxAcornParser, addResult: true }));
-    fromMarkdownExts.push(mdxjsEsmFromMarkdown());
-  }
-
-  if (!safeMode) {
-    // JSX comment tokenizer must come before magicBlock so it claims `{/* ... */}` first
-    micromarkExts.unshift(jsxComment());
-  }
-
-  // Claim `<HTMLBlock>` as one opaque token so broad tokenizers can't fragment its body
-  // We put this last as micromark tries the last-registered extension first, so push (not unshift) to win the `<` race.
-  // micromarkExts.push(htmlBlockComponent());
-  // fromMarkdownExts.push(htmlBlockComponentFromMarkdown());
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.document, { safeMode });
 
   const processor = unified()
-    .data('micromarkExtensions', micromarkExts)
-    .data('fromMarkdownExtensions', fromMarkdownExts)
+    .data('micromarkExtensions', micromarkExtensions)
+    .data('fromMarkdownExtensions', fromMarkdownExtensions)
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
@@ -270,7 +209,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * Processes markdown content with MDX syntax support and returns a HAST.
  * Detects and renders custom component tags from the components hash.
  *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { components: userComponents = {}, safeMode = false, variables } = opts;

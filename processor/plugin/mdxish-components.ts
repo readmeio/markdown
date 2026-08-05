@@ -197,7 +197,7 @@ function normalizeProperties(node: Element): void {
  * Identifies custom MDX components and recursively parses markdown children.
  * Replaces tagName with PascalCase component name for React component resolution.
  *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ * @see .claude/context/MDXish/Processor Overview.md
  * @param {Options} options - Configuration options
  * @param {CustomComponents} options.components - Available custom components
  * @param {Function} options.processMarkdown - Function to process markdown content

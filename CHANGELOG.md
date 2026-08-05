@@ -1,6 +1,37 @@
 Changelog
 ===
 
+## Version 14.14.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** don't serialise GFM tables -> JSX because of line breaks ([#1577](https://github.com/readmeio/markdown/issues/1577)) ([1ef7f10](https://github.com/readmeio/markdown/commit/1ef7f109bd54ddb44ccb6f184a4ee12813f9f70b))
+
+## Version 14.14.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** render raw tables preceded by text ([#1569](https://github.com/readmeio/markdown/issues/1569)) ([7640fa4](https://github.com/readmeio/markdown/commit/7640fa412fba4b418ddf1434f998db26a3e99d95))
+* **mdxish:** stamp re-parsed component bodies with their source  ([#1576](https://github.com/readmeio/markdown/issues/1576)) ([e0a007c](https://github.com/readmeio/markdown/commit/e0a007cb11af50d4237b22e305a0d7cbf09f54db))
+* **mdxish:** unify sub-pipelines & remove dead indentation logic ([#1568](https://github.com/readmeio/markdown/issues/1568)) ([2fd82e3](https://github.com/readmeio/markdown/commit/2fd82e3ac2b464190b2f7365635371b1afb0f84d)), closes [#1566](https://github.com/readmeio/markdown/issues/1566) [#1566](https://github.com/readmeio/markdown/issues/1566) [#1566](https://github.com/readmeio/markdown/issues/1566)
+
+## Version 14.14.0
+### ✨ New & Improved
+
+* add htmlToMarkdown for converting HTML fragments to markdown ([#1559](https://github.com/readmeio/markdown/issues/1559)) ([ef6df0f](https://github.com/readmeio/markdown/commit/ef6df0fa2f5f6474e0d9426836d904c9c53657dc))
+* **mdxish:** disable 4+ code conversion commonmark behaviour ([#1566](https://github.com/readmeio/markdown/issues/1566)) ([2583f38](https://github.com/readmeio/markdown/commit/2583f385e045459620aef42e4011d8baad7ba1b3))
+
+## Version 14.13.2
+### 🛠 Fixes & Updates
+
+* **llm context:** add Code & Architecture Conventions, update stale context documents ([#1561](https://github.com/readmeio/markdown/issues/1561)) ([ea00b9c](https://github.com/readmeio/markdown/commit/ea00b9cb92aa0de5349693bf8922d26da3586829))
+* **styles:** block spacing lost inside reusable content ([#1565](https://github.com/readmeio/markdown/issues/1565)) ([8b21d45](https://github.com/readmeio/markdown/commit/8b21d45dd893a37a68d8d270c926b72bd88e59a7))
+* **mdxish:** claim non-type-6 HTML wrapper tags so blank-line islands don't fragment into code ([#1564](https://github.com/readmeio/markdown/issues/1564)) ([2de2933](https://github.com/readmeio/markdown/commit/2de2933de576b786401b974032111bf2ffa6da64))
+
+## Version 14.13.1
+### 🛠 Fixes & Updates
+
+* consistent spacing for components nested inside Accordions ([#1560](https://github.com/readmeio/markdown/issues/1560)) ([3d8f17e](https://github.com/readmeio/markdown/commit/3d8f17e259d0f64124826484bd88a8b92d197272))
+* **mdxish:** parse code samples nested in <ol>/<li>/<details> ([#1562](https://github.com/readmeio/markdown/issues/1562)) ([8866688](https://github.com/readmeio/markdown/commit/88666885d27595c46fafcac0bf028de396b8a90d))
+
 ## Version 14.13.0
 ### ✨ New & Improved
 
