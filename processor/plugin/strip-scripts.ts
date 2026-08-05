@@ -3,8 +3,6 @@ import type { Transformer } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { isMDXElement } from '../utils';
-
 /**
  * Whether a node would render as a literal DOM `<script>` element. Browsers match
  * tag names case-insensitively, so `<sCrIpT>` executes too.
@@ -15,7 +13,7 @@ import { isMDXElement } from '../utils';
 const isScriptNode = (node: Nodes): boolean => {
   if (node.type === 'element') return node.tagName.toLowerCase() === 'script';
 
-  if (isMDXElement(node)) {
+  if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') {
     const name = node.name ?? '';
     return /^[a-z]/.test(name) && name.toLowerCase() === 'script';
   }
