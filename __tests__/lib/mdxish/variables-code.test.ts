@@ -138,6 +138,23 @@ const name = 'Bearer ${variable}';
     expect(getCodeText(tree)).toBe('|');
   });
 
+  it('coerces unserializable user variable values to empty strings', () => {
+    const cyclicValue: Record<string, unknown> = {};
+    cyclicValue.self = cyclicValue;
+
+    const tree = mdxish('`<<cyclicValue>>|<<bigintValue>>`', {
+      variables: {
+        user: {
+          bigintValue: { limit: BigInt(10) },
+          cyclicValue,
+        },
+        defaults: [],
+      },
+    });
+
+    expect(getCodeText(tree)).toBe('|');
+  });
+
   it('does not double-resolve when a legacy variable value contains an MDX variable pattern', () => {
     const tree = mdxish('`<<payload>>`', {
       variables: {

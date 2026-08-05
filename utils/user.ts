@@ -17,7 +17,14 @@ export interface Variables {
 const stringifyVariableValue = (value: unknown): string => {
   if (typeof value === 'string') return value;
   if (value == null) return '';
-  if (typeof value === 'object') return JSON.stringify(value) ?? '';
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value) ?? '';
+    } catch {
+      console.warn('[WARNING] Could not stringify a structured user variable.');
+      return '';
+    }
+  }
   return String(value);
 };
 
