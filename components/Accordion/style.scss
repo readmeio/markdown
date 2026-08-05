@@ -57,5 +57,9 @@
   &-content {
     color: var(--color-text-muted, #4f5a66);
     padding: 5px 15px 0 15px;
+
+    > * {
+      margin-bottom: var(--markdown-spacing, 15px);
+    }
   }
 }

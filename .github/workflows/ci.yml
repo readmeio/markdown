@@ -17,7 +17,7 @@ jobs:
           - lts/*
           - latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -30,6 +30,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Verify subpath exports (build + dist-grep + self-ref probes)
+        run: npm run build:verify
+
   visual:
     name: 'Visual Tests'
     if: "!contains(github.event.head_commit.message, 'SKIP CI')"
@@ -39,7 +42,7 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run visual tests (node ${{ matrix.node-version }})
         run: make ci

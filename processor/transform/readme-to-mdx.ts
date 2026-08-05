@@ -5,6 +5,7 @@ import type { MdxJsxAttribute } from 'mdast-util-mdx-jsx';
 import type { Variable, HTMLBlock, Recipe } from 'types';
 
 import emojiRegex from 'emoji-regex';
+import { toMarkdown } from 'mdast-util-to-markdown';
 import { visit } from 'unist-util-visit';
 
 import { defaultIcons, themes } from '../../components/Callout';
@@ -117,7 +118,11 @@ const readmeToMdx = (): Transform => tree => {
   });
 
   visit(tree, NodeTypes.imageBlock, (image, index, parent) => {
-    const attributes = toAttributes({ ...image, ...image.data.hProperties }, imageAttrs);
+    // Special case for caption: Captions are parsed as children of the image node, so we need to extract them explicitly
+    const captionChildren = Array.isArray(image.children) ? image.children : [];
+    // We want to add it back to the attributes, so re-serialize it to string
+    const caption = captionChildren.length ? toMarkdown({ type: 'root', children: captionChildren }).trim() : '';
+    const attributes = toAttributes({ ...image, ...image.data.hProperties, ...(caption && { caption }) }, imageAttrs);
 
     if (hasExtra(attributes)) {
       parent.children.splice(index, 1, {

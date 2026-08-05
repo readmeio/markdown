@@ -236,6 +236,89 @@ describe('Table of Contents', () => {
       expect(newLink.classList.contains('active')).toBe(true);
     });
 
+    describe('active link auto-scroll', () => {
+      it('scrolls the TOC-local scroll container when the active link is out of view, without scrollIntoView', async () => {
+        // The TOC has its own scroll area (separate from the content scroller).
+        const tocScrollContainer = document.createElement('div');
+        Object.defineProperties(tocScrollContainer, {
+          scrollTop: { value: 100, writable: true },
+          clientHeight: { value: 200, writable: true },
+          scrollHeight: { value: 600, writable: true },
+        });
+        tocScrollContainer.style.overflow = 'auto';
+        tocScrollContainer.scrollTo = vi.fn();
+        tocScrollContainer.getBoundingClientRect = () => ({ top: 0, bottom: 200, height: 200 });
+        document.body.appendChild(tocScrollContainer);
+
+        const { container } = render(
+          <TableOfContents>
+            <a href="#heading-1">Heading 1</a>
+            <a href="#heading-2">Heading 2</a>
+            <a href="#heading-3">Heading 3</a>
+          </TableOfContents>,
+          { container: tocScrollContainer },
+        );
+
+        await act(async () => {});
+
+        // The link for heading-2 sits below the TOC scroller's viewport.
+        const secondLink = [...container.querySelectorAll('a')].find(a => a.hash === '#heading-2');
+        secondLink.getBoundingClientRect = () => ({ top: 250, bottom: 270, height: 20 });
+        secondLink.scrollIntoView = vi.fn();
+
+        act(() => {
+          observerCallback([{ target: document.getElementById('heading-2'), isIntersecting: true }]);
+        });
+
+        // Scrolled just far enough to reveal the link (block: 'nearest' semantics),
+        // on the TOC's own scroller only.
+        expect(tocScrollContainer.scrollTo).toHaveBeenCalledWith({ top: 100 + (270 - 200), behavior: 'smooth' });
+        // scrollIntoView walks every scrollable ancestor and cancels in-flight
+        // smooth scrolls on the page's content scroller (CX-3667) — it must not be used.
+        expect(secondLink.scrollIntoView).not.toHaveBeenCalled();
+
+        tocScrollContainer.remove();
+      });
+
+      it('never scrolls a container that holds the page content (CX-3667)', async () => {
+        // No TOC-local scroll area: the TOC lives directly inside the content
+        // scroller, so the link's nearest scrollable ancestor is the same
+        // scroller the page animates during navigation. Auto-scrolling it would
+        // cancel the hub's scroll-to-top reset.
+        scrollContainer.scrollTo = vi.fn();
+        scrollContainer.getBoundingClientRect = () => ({ top: 0, bottom: 800, height: 800 });
+
+        // Render into a plain wrapper inside the content scroller (rendering
+        // straight into scrollContainer would wipe the headings from the DOM).
+        const wrapper = document.createElement('div');
+        scrollContainer.appendChild(wrapper);
+
+        const { container } = render(
+          <TableOfContents>
+            <a href="#heading-1">Heading 1</a>
+            <a href="#heading-2">Heading 2</a>
+            <a href="#heading-3">Heading 3</a>
+          </TableOfContents>,
+          { container: wrapper },
+        );
+
+        await act(async () => {});
+
+        // Even with the active link far out of view, the shared scroller stays put.
+        const secondLink = [...container.querySelectorAll('a')].find(a => a.hash === '#heading-2');
+        secondLink.getBoundingClientRect = () => ({ top: 5000, bottom: 5020, height: 20 });
+        secondLink.scrollIntoView = vi.fn();
+
+        act(() => {
+          observerCallback([{ target: document.getElementById('heading-2'), isIntersecting: true }]);
+        });
+
+        expect(secondLink.classList.contains('active')).toBe(true);
+        expect(scrollContainer.scrollTo).not.toHaveBeenCalled();
+        expect(secondLink.scrollIntoView).not.toHaveBeenCalled();
+      });
+    });
+
     it('should work when hrefs contain query params (frame preview mode)', async () => {
       // In frame preview mode, links may include query params before the hash,
       // e.g. href="?isFramePreview=true#heading-1" instead of "#heading-1".

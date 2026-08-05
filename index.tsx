@@ -17,6 +17,7 @@ export {
   exports,
   FLOW_TYPES,
   hast,
+  htmlToMarkdown,
   INLINE_ONLY_PARENT_TYPES,
   run,
   mdast,
@@ -35,6 +36,7 @@ export {
   stripComments,
   tags,
 } from './lib';
+export type { MdxishOpts, RenderMdxishOpts, RunOpts } from './lib';
 export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
 export { tailwindCompiler } from './utils/tailwind-compiler';

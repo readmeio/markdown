@@ -46,4 +46,20 @@ This is phrasing: <Inline />
 
     expect(tags(mdx)).toStrictEqual(['TableBlock']);
   });
+
+  describe('inside HTML tags', () => {
+    it('captures components inside <p> tags', () => {
+      const mdx = '<p><Component /></p>';
+
+      expect(tags(mdx)).toStrictEqual(['Component']);
+    });
+  });
+
+  describe('nested components', () => {
+    it('captures nested components', () => {
+      const mdx = '<Component><NestedComponent /></Component>';
+
+      expect(tags(mdx)).toStrictEqual(['Component', 'NestedComponent']);
+    });
+  });
 });

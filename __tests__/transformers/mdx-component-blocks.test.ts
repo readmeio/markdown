@@ -2,6 +2,7 @@ import type { Code, Heading, Parent, Root } from 'mdast';
 
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
+import { VFile } from 'vfile';
 
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
@@ -18,6 +19,8 @@ interface MdxJsxFlowElement extends Parent {
  * Helper to parse markdown and apply the component block plugins.
  * Includes the mdx-component micromark tokenizer to capture multi-line
  * components as single HTML nodes before the transformer runs.
+ * Passes a VFile so the transformer has access to the original source for
+ * source-aware position computation (needed for blockquote/list items).
  */
 const parseWithPlugin = (markdown: string): Root => {
   const processor = unified()
@@ -27,7 +30,7 @@ const parseWithPlugin = (markdown: string): Root => {
     .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
-  processor.runSync(tree);
+  processor.runSync(tree, new VFile({ value: markdown }));
   return tree as Root;
 };
 
@@ -379,6 +382,153 @@ More content here
       });
     });
 
+    describe('components nested inside plain HTML wrappers', () => {
+      it('should promote a single-line wrapper containing a component', () => {
+        const tree = parseWithPlugin('<p><Component /></p>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            attributes: [],
+            children: [{ type: 'mdxJsxFlowElement', name: 'Component', attributes: [], children: [] }],
+          },
+        ]);
+      });
+
+      it('should promote a multi-line wrapper with an indented component', () => {
+        const markdown = `<div>
+  <Component />
+</div>`;
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'mdxJsxFlowElement', name: 'Component', children: [] }],
+          },
+        ]);
+      });
+
+      it('should promote a wrapper around a component with children', () => {
+        const tree = parseWithPlugin('<div><Component>text</Component></div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [
+              {
+                type: 'mdxJsxFlowElement',
+                name: 'Component',
+                children: [{ type: 'paragraph', children: [{ type: 'text', value: 'text' }] }],
+              },
+            ],
+          },
+        ]);
+      });
+
+      it('should not promote a wrapper around a legacy <<VARIABLE>>', () => {
+        const tree = parseWithPlugin('<p>Hello <<NAME>>!</p>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<p>Hello <<NAME>>!</p>' }]);
+      });
+
+      it('should not promote a wrapper whose only component has a dedicated transformer', () => {
+        const tree = parseWithPlugin('<div><Table>content</Table></div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div><Table>content</Table></div>' }]);
+      });
+
+      it('should not promote table-structural wrappers (owned by mdxishTables)', () => {
+        const tree = parseWithPlugin('<table><tr><td><Component /></td></tr></table>');
+
+        expect(tree.children).toMatchObject([
+          { type: 'html', value: '<table><tr><td><Component /></td></tr></table>' },
+        ]);
+      });
+    });
+
+    describe('plain lowercase HTML with markdown content', () => {
+      it('should promote a single-line wrapper whose body holds markdown', () => {
+        const tree = parseWithPlugin('<div>**bold**</div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            attributes: [],
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'bold' }] }],
+          },
+        ]);
+      });
+
+      it('should promote sibling same-tag wrappers independently', () => {
+        const tree = parseWithPlugin('<div>**a**</div><div>**b**</div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'a' }] }],
+          },
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [{ type: 'strong', children: [{ type: 'text', value: 'b' }] }],
+          },
+        ]);
+      });
+
+      it('should not promote a wrapper without markdown content', () => {
+        const tree = parseWithPlugin('<div>plain <span>x</span></div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div>plain <span>x</span></div>' }]);
+      });
+
+      it('should not promote table-structural or raw-content tags', () => {
+        const inputs = ['<td>**x**</td>', '<pre>**x**</pre>', '<table><tr><td>**x**</td></tr></table>'];
+        inputs.forEach(input => {
+          const tree = parseWithPlugin(input);
+          expect(tree.children).toMatchObject([{ type: 'html', value: input }]);
+        });
+      });
+
+      it('should not promote a wrapper holding a nested table', () => {
+        const input = '<div><table><tr><td>**x**</td></tr></table></div>';
+        const tree = parseWithPlugin(input);
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: input }]);
+      });
+
+      it('should not promote a self-closing plain tag', () => {
+        const tree = parseWithPlugin('<br />');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<br />' }]);
+      });
+
+      it('should ignore a closing-tag-shaped nested attribute when finding the real close', () => {
+        // The `</div>` inside `title="…"` must not be mistaken for the wrapper's
+        // close, or the div would slice short and the `<span>` would be orphaned.
+        const tree = parseWithPlugin('<div>**a** <span title="</div>">b</span></div>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            children: [
+              { type: 'strong', children: [{ type: 'text', value: 'a' }] },
+              { type: 'text', value: ' ' },
+              { type: 'html', value: '<span title="</div>">' },
+              { type: 'text', value: 'b' },
+              { type: 'html', value: '</span>' },
+            ],
+          },
+        ]);
+      });
+    });
+
     describe('case 3: embedded closing tag with trailing content', () => {
       it('should preserve content after the closing tag in an HTML sibling', () => {
         const markdown = `<Outer>
@@ -467,6 +617,102 @@ hello
             children: [],
           },
         ]);
+      });
+    });
+
+    // The whole line is tokenized into one html node when a component shares its
+    // line with trailing content. The component node's position must end at its
+    // own tag so position-based source slicing downstream doesn't over-read.
+    describe('case 4: component position ends at its tag when trailing content follows', () => {
+      it('ends a block component at its closing tag', () => {
+        const markdown = '<Tag>body</Tag> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 15 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>body</Tag>');
+      });
+
+      it('ends a self-closing component at its tag', () => {
+        const markdown = '<Tag attr={1} /> trailing text here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 16 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1} />');
+      });
+
+      it('ends a component with an expression attribute and inline body at its closing tag', () => {
+        const markdown = '<Tag attr={1}>**hi**</Tag> more **text** here';
+        const tree = parseWithPlugin(markdown);
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'Tag',
+            position: { start: { offset: 0 }, end: { offset: 26 } },
+          },
+          { type: 'paragraph' },
+        ]);
+        const [tag] = tree.children;
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag attr={1}>**hi**</Tag>');
+      });
+
+      it('position spans the full closing tag for a multi-line component inside a blockquote', () => {
+        const markdown = '> <Tag>\n>   body\n> </Tag>';
+        const tree = parseWithPlugin(markdown);
+
+        const blockquote = tree.children[0] as Parent;
+        const tag = blockquote.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n>   body\n> </Tag>');
+      });
+
+      it('position spans the full closing tag for a multi-line component inside a list item', () => {
+        const markdown = '- <Tag>\n    body\n  </Tag>';
+        const tree = parseWithPlugin(markdown);
+
+        const list = tree.children[0] as Parent;
+        const listItem = list.children[0] as Parent;
+        const tag = listItem.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a blockquote', () => {
+        const markdown = '> <Tag>\n>   body\n> </Tag>\n> trailing';
+        const tree = parseWithPlugin(markdown);
+
+        const blockquote = tree.children[0] as Parent;
+        const tag = blockquote.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n>   body\n> </Tag>');
+      });
+
+      it('position spans the full closing tag for a component with trailing sibling content inside a list item', () => {
+        // Same regression for list items: indentation is stripped from the html value.
+        const markdown = '- <Tag>\n    body\n  </Tag>\n- trailing';
+        const tree = parseWithPlugin(markdown);
+
+        const list = tree.children[0] as Parent;
+        const listItem = list.children[0] as Parent;
+        const tag = listItem.children[0] as MdxJsxFlowElement;
+        expect(tag.type).toBe('mdxJsxFlowElement');
+        expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
       });
     });
   });
@@ -673,6 +919,89 @@ third\`} />`;
         expect(mdxNodes[0]).toMatchObject({ name: 'MyComponent' });
       });
     })
+  });
+
+  describe('fenced code blocks starting a continuation line', () => {
+    it('treats a fence opening a line as fenced code, not an inline code span', () => {
+      // Regression test: a fenced block whose opening backticks are the first token
+      // after a newline must be recognized as fenced code so a literal `</Terminal>`
+      // inside it stays inert — not misread as the real closing tag, which would
+      // otherwise close the component early and split the document in two.
+      const markdown = `<Terminal>
+\`\`\`
+</Terminal>
+\`\`\`
+</Terminal>`;
+      const tree = parseWithPlugin(markdown);
+
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Terminal' });
+
+      const code = collectNodes<Code>(tree, 'code');
+      expect(code).toHaveLength(1);
+      expect(code[0].value).toBe('</Terminal>');
+    });
+
+    it('treats an INDENTED fence as fenced code so an unbalanced `{` inside stays inert (CX-3704)', () => {
+      const markdown = `<Callout icon="⚠️" theme="warn">
+  Intro.
+
+  \`\`\`
+  {
+  \`\`\`
+
+  Closing.
+</Callout>
+
+After the callout.`;
+      const tree = parseWithPlugin(markdown);
+
+      // The whole callout is captured as a single component node...
+      const mdxNodes = collectNodes(tree, 'mdxJsxFlowElement');
+      expect(mdxNodes).toHaveLength(1);
+      expect(mdxNodes[0]).toMatchObject({ name: 'Callout' });
+
+      // ...its fenced content (the lone `{`) survives as a code node...
+      const code = collectNodes<Code>(tree, 'code');
+      expect(code).toHaveLength(1);
+      expect(code[0].value).toBe('{');
+
+      // ...and `</Callout>` never leaks out as a stray html node.
+      const strayCloser = collectNodes(tree, n => n.type === 'html' && (n as { value?: string }).value === '</Callout>');
+      expect(strayCloser).toHaveLength(0);
+
+      // Trailing content lands as a sibling after the callout, not inside it.
+      expect(tree.children.at(-1)).toMatchObject({ type: 'paragraph' });
+    });
+
+    it('does not split component when there is an unclosed braces inside the component, and its closer is outside the component', () => {
+      const markdown = `<Component>
+
+  \`\`\`
+  {
+  \`\`\`
+  test
+</Component>
+
+  }`;
+      const tree = parseWithPlugin(markdown);
+      expect(tree.children).toHaveLength(2);
+      expect(tree.children).toMatchObject([
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Component',
+          children: [
+            { type: 'code', value: '  {' },
+            { type: 'paragraph', children: [{ type: 'text', value: 'test' }] },
+          ],
+        },
+        {
+          type: 'paragraph',
+          children: [{ type: 'text', value: '}' }],
+        },
+      ]);
+    });
   });
 
   describe('unclosed `<Tag>` opener does not swallow following blocks', () => {

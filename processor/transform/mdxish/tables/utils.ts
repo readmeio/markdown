@@ -25,6 +25,19 @@ export const tableTags = new Set([
 ]);
 
 /**
+ * Replaces every paragraph node with its inline children. Used where paragraphs
+ * are parser artifacts (remarkMdx wrapping inline JSX), not real content.
+ */
+export const unwrapParagraphNodes = (children: Node[]): Node[] => {
+  return children.flatMap(child => {
+    if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
+      return child.children as Node[];
+    }
+    return [child];
+  });
+};
+
+/**
  * If the cell has exactly one paragraph child, unwrap it so its inline children sit
  * directly under the cell (matches GFM table cell shape and avoids stray `<p>` wrappers).
  *
@@ -35,12 +48,7 @@ export const unwrapSoleParagraph = (children: Node[]): Node[] => {
   const paragraphCount = children.filter(c => c.type === 'paragraph').length;
   if (paragraphCount !== 1) return children;
 
-  return children.flatMap(child => {
-    if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
-      return child.children as Node[];
-    }
-    return [child];
-  });
+  return unwrapParagraphNodes(children);
 };
 
 /**

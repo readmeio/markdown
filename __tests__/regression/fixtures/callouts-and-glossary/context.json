@@ -1,0 +1,9 @@
+{
+  "variables": {
+    "defaults": [],
+    "user": {}
+  },
+  "glossary": [
+    { "term": "acme", "definition": "A placeholder company name used in examples." }
+  ]
+}

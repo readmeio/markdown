@@ -7,19 +7,15 @@ import type {
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
+import type { Point } from 'unist';
 
-import { Parser } from 'acorn';
-import acornJsx from 'acorn-jsx';
 import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
+import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
 
-/**
- * Single instance of acorn parser extended with `acorn-jsx`
- * to parse expressions containing JSX.
- */
-export const jsxAcornParser = Parser.extend(acornJsx());
+export { jsxAcornParser };
 
 /**
  * Evaluate a JavaScript expression source and return its value.
@@ -42,6 +38,22 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
   // eslint-disable-next-line no-new-func
   return new Function(...names, `return (${source})`)(...values);
 }
+
+/**
+ * Advance a `Point` by the `consumed` substring that follows it, returning the
+ * point at the consumed string's end. Lets split-out sub-nodes carry accurate
+ * document positions so downstream offset shifting stays correct.
+ */
+export const pointAfter = (start: Point, consumed: string): Point => {
+  const newlineIndex = consumed.lastIndexOf('\n');
+  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
+  return {
+    line: start.line + newlineCount,
+    // Same line → advance the base column; a later line → column is the run since its newline.
+    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
+    offset: (start.offset ?? 0) + consumed.length,
+  };
+};
 
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.

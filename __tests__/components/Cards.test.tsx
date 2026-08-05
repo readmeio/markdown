@@ -4,7 +4,7 @@ import React from 'react';
 
 import CardsGrid, { Card } from '../../components/Cards';
 
-import { renderingEngines } from './utils';
+import { captureMdxishProps, renderingEngines } from './utils';
 
 describe('Cards', () => {
   describe('general component rendering', () => {
@@ -40,6 +40,35 @@ describe('Cards', () => {
       expect(container.querySelector('.Card-arrow')).toBeInTheDocument();
     });
 
+    it('renders the link with LinkComponent when one is given', () => {
+      const LinkComponent = ({
+        children,
+        className,
+        href,
+        target,
+      }: React.PropsWithChildren<{ className?: string; href?: string; target?: string }>) => (
+        <a className={className} href={`/ai-ml${href}`} target={target}>
+          {children}
+        </a>
+      );
+      const { container } = render(
+        <CardsGrid>
+          <Card href="/docs/f" LinkComponent={LinkComponent} title="Link">Linked</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('a.Card')).toHaveAttribute('href', '/ai-ml/docs/f');
+    });
+
+    it('ignores LinkComponent when there is no href', () => {
+      const LinkComponent = ({ children }: React.PropsWithChildren) => <a href="/nope">{children}</a>;
+      const { container } = render(
+        <CardsGrid>
+          <Card LinkComponent={LinkComponent} title="Static">Static</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('div.Card')).toBeInTheDocument();
+    });
+
     it('renders Card as a div when no href', () => {
       const { container } = render(
         <CardsGrid>
@@ -60,7 +89,7 @@ describe('Cards', () => {
     });
   });
 
-  describe('given a Cards with Card children', () => {
+  describe('given Cards with Card children', () => {
     const md = `
 <Cards>
   <Card title="First">First content</Card>
@@ -76,6 +105,37 @@ describe('Cards', () => {
       expect(container.querySelectorAll('.Card')).toHaveLength(2);
       expect(container.querySelectorAll('.Card-title')).toHaveLength(2);
       expect(container).toMatchSnapshot();
+    });
+  });
+
+  describe('given the props in Cards', () => {
+    const md = `
+<Cards cardWidth="400px" columns="2">
+  <Card title="Card One">
+
+  </Card>
+  <Card title="Card Two">
+
+  </Card>
+</Cards>
+    `;
+
+    it.each(renderingEngines)('%s: applies cardWidth as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-cardWidth')).toBe('400px');
+    });
+
+    it.each(renderingEngines)('%s: applies columns as the grid CSS variable', (_label, renderContent) => {
+      const Content = renderContent(md);
+      const { container } = render(<Content />);
+
+      const grid = container.querySelector<HTMLElement>('.CardsGrid');
+      expect(grid).toBeInTheDocument();
+      expect(grid?.style.getPropertyValue('--CardsGrid-columns')).toBe('2');
     });
   });
 
@@ -128,6 +188,18 @@ describe('Cards', () => {
       expect(container.querySelector('.Card-badge')).toBeInTheDocument();
       expect(container).toMatchSnapshot();
     });
+  });
+
+  it('mdxish: <Card style="..."> renders without crashing and receives style as an object', () => {
+    const md = '<Cards>\n  <Card title="Styled" style="color: red">body</Card>\n</Cards>';
+    const [, renderMdxishContent] = renderingEngines.find(([label]) => label === 'mdxish')!;
+    const Content = renderMdxishContent(md);
+
+    expect(() => render(<Content />)).not.toThrow();
+
+    const captured = captureMdxishProps(md, 'Card');
+    expect(typeof captured.style).toBe('object');
+    expect(captured.style).toMatchObject({ color: 'red' });
   });
 
   describe('given various card structures', () => {

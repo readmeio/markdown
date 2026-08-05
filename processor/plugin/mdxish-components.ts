@@ -3,13 +3,14 @@ import type { Root, Element, ElementContent } from 'hast';
 import type { Transformer } from 'unified';
 import type { VFile } from 'vfile';
 
-import { visit } from 'unist-util-visit';
+import { visit, SKIP } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS_LOWER } from '../../lib/constants';
 import { getComponentName } from '../../lib/utils/mdxish/mdxish-get-component-name';
 import {
   CUSTOM_PROP_BOUNDARIES,
   CSS_STYLE_PROP_BOUNDARIES,
+  FOREIGN_CONTENT_TAGS,
   REACT_HTML_PROP_BOUNDARIES,
   RUNTIME_COMPONENT_TAGS,
   STANDARD_HTML_TAGS,
@@ -19,6 +20,10 @@ interface Options {
   components: CustomComponents;
   processMarkdown: (markdownContent: string) => Root;
 }
+
+// Foreign-content (SVG/MathML) roots — subtrees the component transform leaves
+// untouched (their children are namespaced XML, not HTML tags/components).
+const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
@@ -68,6 +73,12 @@ function smartCamelCase(str: string): string {
     return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
   }
 
+  // Keys that already carry casing (e.g. `cardWidth`) are correct as-is; running
+  // boundary matching over them mangles inner matches (e.g. `id` inside `Width`).
+  if (/[A-Z]/.test(str)) {
+    return str;
+  }
+
   const allBoundaries = [...REACT_HTML_PROP_BOUNDARIES, ...CSS_STYLE_PROP_BOUNDARIES, ...CUSTOM_PROP_BOUNDARIES];
 
   // Return as-is if already a boundary word to avoid incorrect splitting
@@ -95,6 +106,21 @@ function isActualHtmlTag(tagName: string, originalExcerpt: string): boolean {
   return false;
 }
 
+/**
+ * Re-parsing a component's text child treats it as a standalone document, so
+ * content that happens to start with the literal word `export`/`import`
+ * (e.g. link text like "export Lorem Ipsum") sits at true column 1 and
+ * gets mistaken for an MDX ESM statement, which then fails to parse as JS.
+ * Fall back to `undefined` rather than letting one such child crash the page.
+ */
+function tryProcessMarkdown(processMarkdown: (content: string) => Root, content: string): Root | undefined {
+  try {
+    return processMarkdown(content);
+  } catch {
+    return undefined;
+  }
+}
+
 /** Parse and replace text children with processed markdown */
 function parseTextChildren(node: Element, processMarkdown: (content: string) => Root, components: CustomComponents): void {
   if (!node.children?.length) return;
@@ -110,7 +136,8 @@ function parseTextChildren(node: Element, processMarkdown: (content: string) => 
       return [];
     }
 
-    const hast = processMarkdown(child.value.trim());
+    const hast = tryProcessMarkdown(processMarkdown, child.value.trim());
+    if (!hast) return [child];
     const children = (hast.children ?? []).filter(isElementContentNode);
 
     // For inline components, preserve plain text instead of wrapping in <p>
@@ -170,7 +197,7 @@ function normalizeProperties(node: Element): void {
  * Identifies custom MDX components and recursively parses markdown children.
  * Replaces tagName with PascalCase component name for React component resolution.
  *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ * @see .claude/context/MDXish/Processor Overview.md
  * @param {Options} options - Configuration options
  * @param {CustomComponents} options.components - Available custom components
  * @param {Function} options.processMarkdown - Function to process markdown content
@@ -188,13 +215,20 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
     visit(tree, 'element', (node: Element, index, parent: Element | Root) => {
       if (index === undefined || !parent) return;
 
+      // Skip foreign-content subtrees: their namespaced children (<path>, <mrow>, …)
+      // aren't HTML tags or components, so the "unknown component" removal below would
+      // otherwise delete them. (svg/math themselves are standard HTML tags, kept.)
+      // eslint-disable-next-line consistent-return
+      if (FOREIGN_CONTENT_ROOTS.has(node.tagName)) return SKIP;
+
       // Parse Image caption as markdown so it renders formatted (bold, code,
       // decoded entities) in the figcaption instead of as a raw string.
       // rehypeRaw strips children from <img> (void element), so we must
       // re-process the caption here, after rehypeRaw.
       if (node.tagName === 'img' && typeof node.properties?.caption === 'string' && !node.children?.length) {
-        const captionHast = processMarkdown(node.properties.caption as string);
-        node.children = (captionHast.children ?? []).filter(isElementContentNode);
+        const caption = node.properties.caption as string;
+        const captionHast = tryProcessMarkdown(processMarkdown, caption);
+        node.children = captionHast ? (captionHast.children ?? []).filter(isElementContentNode) : [{ type: 'text', value: caption }];
       }
 
       // Skip runtime components and standard HTML tags

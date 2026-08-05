@@ -184,7 +184,9 @@
     font-size: var(--emoji, 0);
     color: var(--icon-color, inherit) !important;
   }
-  &-icon::before {
+  // Emoji icons render as <span>; Font Awesome icons render as <i> and manage their
+  // own ::before/::after pseudo-elements. Only apply the legacy icon-font ::before to spans.
+  span#{&}-icon::before {
     content: var(--icon);
     font-family: var(--icon-font);
     font-size: var(--icon-size, 1rem);
@@ -195,13 +197,6 @@
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  &-icon_fa::before,
-  &-icon_fa::after {
-    font-family: inherit;
-    font-size: inherit;
-    top: unset;
-    transform: none;
   }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;

@@ -1,0 +1,1155 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Render engine regressions tests > callout-icons (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote>"
+`;
+
+exports[`Render engine regressions tests > callout-icons (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote></div>"
+`;
+
+exports[`Render engine regressions tests > callouts-and-glossary (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to [object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote>
+<!-- -->
+<p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Render engine regressions tests > callouts-and-glossary (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote></div>
+<p></p>
+<p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Render engine regressions tests > compact-headings (mdx) 1`] = `
+"<p>#Compact h1 with no space after hash
+##Compact h2 with no space
+###Compact h3 with no space</p>
+<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h1-with-space"></div><div class="heading-text">Normal h1 with space</div><a aria-label="Skip link to Normal h1 with space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h1-with-space"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h2"></div><div class="heading-text">Normal h2</div><a aria-label="Skip link to Normal h2" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h2"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
+`;
+
+exports[`Render engine regressions tests > compact-headings (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h1-with-no-space-after-hash"></div><div class="heading-text">Compact h1 with no space after hash</div><a aria-label="Skip link to Compact h1 with no space after hash" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h1-with-no-space-after-hash"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h2-with-no-space"></div><div class="heading-text">Compact h2 with no space</div><a aria-label="Skip link to Compact h2 with no space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h2-with-no-space"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="compact-h3-with-no-space"></div><div class="heading-text">Compact h3 with no space</div><a aria-label="Skip link to Compact h3 with no space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#compact-h3-with-no-space"></a></h3>
+<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h1-with-space"></div><div class="heading-text">Normal h1 with space</div><a aria-label="Skip link to Normal h1 with space" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h1-with-space"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h2"></div><div class="heading-text">Normal h2</div><a aria-label="Skip link to Normal h2" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h2"></a></h2>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
+`;
+
+exports[`Render engine regressions tests > consecutive-emojis-fa (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
+<p>Consecutive gemojis: <!-- -->😁<!-- -->:grin: should both render side by side.</p>
+<p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to [object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and <!-- -->😁<!-- --> together.</p></blockquote>"
+`;
+
+exports[`Render engine regressions tests > consecutive-emojis-fa (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
+<p>Consecutive gemojis: 😁😁 should both render side by side.</p>
+<p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and 😁 together.</p></blockquote></div>"
+`;
+
+exports[`Render engine regressions tests > convergent (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="convergent-fixture"></div><div class="heading-text">Convergent Fixture</div><a aria-label="Skip link to Convergent Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#convergent-fixture"></a></h1>
+<p>This is a simple convergent fixture with plain Markdown.</p>
+<p>Both engines should render this identically.</p>"
+`;
+
+exports[`Render engine regressions tests > convergent (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="convergent-fixture"></div><div class="heading-text">Convergent Fixture</div><a aria-label="Skip link to Convergent Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#convergent-fixture"></a></h1>
+<p>This is a simple convergent fixture with plain Markdown.</p>
+<p>Both engines should render this identically.</p>"
+`;
+
+exports[`Render engine regressions tests > divergent (mdx) 1`] = `
+"<pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre>
+<p>Some prose after the HTML block.</p>"
+`;
+
+exports[`Render engine regressions tests > divergent (mdxish) 1`] = `
+"<pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre>
+<p>Some prose after the HTML block.</p>"
+`;
+
+exports[`Render engine regressions tests > embeds (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
+<iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>
+<iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe>"
+`;
+
+exports[`Render engine regressions tests > embeds (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="embeds"></div><div class="heading-text">Embeds</div><a aria-label="Skip link to Embeds" class="heading-anchor-icon fa fa-regular fa-anchor" href="#embeds"></a></h1>
+<div class="readme-tailwind"><iframe src="https://example.com/embed" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://example.com/doc.pdf" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>
+<div class="readme-tailwind"><iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>"
+`;
+
+exports[`Render engine regressions tests > expressions-in-tables (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > expressions-in-tables (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="expressions-inside-raw-table-cells"></div><div class="heading-text">Expressions inside raw table cells</div><a aria-label="Skip link to Expressions inside raw table cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#expressions-inside-raw-table-cells"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Command</th><th>Description</th><th>random syntax</th></tr></thead><tbody><tr><td><code class="rdmd-code lang-undefined theme-undefined">random-mtls-truststore</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, this randoms your CA set for a specific version.<br/><br/><blockquote><b>Note:</b> If you don&#x27;t provide the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, by default, it randoms the <code class="rdmd-code lang-undefined theme-undefined">latest</code> CA set version whether it is active or not.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-mtls-truststore --version {your-ca-set-version-number}{your-ca-set-name}</code></td></tr><tr><td rowspan="4"><code class="rdmd-code lang-undefined theme-undefined">random-property</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, this randoms your property&#x27;s rules without includes for a specific version. <br/><br/><blockquote><b>Note:</b> If you don&#x27;t provide the <code class="rdmd-code lang-undefined theme-undefined">--version</code> flag, by default, it randoms the <code class="rdmd-code lang-undefined theme-undefined">latest</code> property version whether it is active or not.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --version {your-property-version-number}{your-property-name}</code><br/><br/><code class="rdmd-code lang-undefined theme-undefined"> random-property {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag, this randoms your property&#x27;s rules as the <code class="rdmd-code lang-undefined theme-undefined">_property_rules_builder</code> data source in HCL format.<br/><br/><blockquote><b>Note:</b> Must be a valid dated rule format ≥ <code class="rdmd-code lang-undefined theme-undefined">v2023-01-05</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --rs-as-hcl {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--split-depth</code> flag, this randoms rules into a dedicated module. Each rule will be placed in a separate file up to a specified nesting level.<br/><br/><blockquote><b>Note:</b> You can use this flag only along with the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --split-depth={nesting-level-number-value} --rs-as-hcl {your-property-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--r-format</code> flag, this randoms your property configuration using the specified rule format version. This affects only the randomed configuration and doesn&#x27;t modify the property on the server.<br/><br/><blockquote><b>Notes:</b><ul><li>Must be a valid dated rule format, for example, <code class="rdmd-code lang-undefined theme-undefined">v2024-02-12</code>. The <code class="rdmd-code lang-undefined theme-undefined">latest</code> value is allowed only for properties that use the JSON rule format.</li><li>To protect your settings for behaviors and criteria that aren&#x27;t backwards compatible, updating your rule format on import only works with versions greater than the one you&#x27;re on.</li></ul></blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property --r-format your-rule-formatyour-property-name</code></td></tr><tr><td rowspan="4"><code class="rdmd-code lang-undefined theme-undefined">random-property-include</code></td><td>randoms your property&#x27;s include.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag, this randoms your property&#x27;s include as the <code class="rdmd-code lang-undefined theme-undefined">_property_rules_builder</code> data source in HCL format.<br/><br/><blockquote><b>Note:</b> Must be a valid dated rule format ≥ <code class="rdmd-code lang-undefined theme-undefined">v1</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --rs-as-hcl {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--split-depth</code> flag, this randoms rules into a dedicated module. Each rule will be placed in a separate file up to a specified nesting level.<br/><br/><blockquote><b>Note:</b> You can use this flag only along with the <code class="rdmd-code lang-undefined theme-undefined">--rs-as-hcl</code> flag.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --split-depth={nesting-level-number-value} --rs-as-hcl {your-contract-id}{your-property-include-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--r-format</code> flag <br/><br/><blockquote><b>Notes:</b><ul><li> Must be a valid dated rule format, for example, <code class="rdmd-code lang-undefined theme-undefined">v2024-02-12</code>. Cannot use <code class="rdmd-code lang-undefined theme-undefined">latest</code>.</li><li>To protect your settings for behaviors and criteria that aren&#x27;t backwards compatible, updating your rule format on import only works with versions greater than the one you&#x27;re on.</li></ul></blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-property-include --r-format your-rule-format{your-contract-id}your-property-include-name</code></td></tr><tr><td><code class="rdmd-code lang-undefined theme-undefined">random-reportinggroup</code></td><td>randoms your reporting group configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-reportinggroup {your-reporting-group-name}</code></td></tr><tr><td rowspan="8"><code class="rdmd-code lang-undefined theme-undefined">random-zone</code></td><td>With the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> flag, this generates a JSON-formatted resource file. <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> uses this file as input.<br/><br/><blockquote><b>Note:</b> randoming a configuration for an <code class="rdmd-code lang-undefined theme-undefined">ALIAS</code> zone isn&#x27;t currently supported.</blockquote></td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources {your-dns-zone-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates configurations based on the values in the output files from <code class="rdmd-code lang-undefined theme-undefined">--resources</code>.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig {your-dns-zone-name}</code></td></tr><tr><td>With the <code class="rdmd-code lang-undefined theme-undefined">--importscript</code> flag, this generates an import script for the generated zone configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --importscript {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--recordname</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> and <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flags, this filters the generated resource list by a given record name.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources --recordname {your-record-name}{your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--namesonly</code>option for the <code class="rdmd-code lang-undefined theme-undefined">--resources</code> and <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flags, this generates a resource file with recordset names only for all associated record types.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --resources --namesonly {your-dns-zone-name}</code><br/><br/><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --namesonly {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--segmentconfig</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates a modularized configuration.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --segmentconfig {your-dns-zone-name}</code></td></tr><tr><td>With the advanced <code class="rdmd-code lang-undefined theme-undefined">--configonly</code> option for the <code class="rdmd-code lang-undefined theme-undefined">--createconfig</code> flag, this generates a zone configuration without JSON itemization. The configuration generated varies based on which set of flags you use.</td><td><code class="rdmd-code lang-undefined theme-undefined"> random-zone --createconfig --configonly {your-dns-zone-name}</code></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > htmlblock (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-rendering"></div><div class="heading-text">HTMLBlock rendering</div><a aria-label="Skip link to HTMLBlock rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-rendering"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="plain-html-inside-an-htmlblock-no-script-execution"></div><div class="heading-text">Plain HTML inside an HTMLBlock (no script execution)</div><a aria-label="Skip link to Plain HTML inside an HTMLBlock (no script execution)" class="heading-anchor-icon fa fa-regular fa-anchor" href="#plain-html-inside-an-htmlblock-no-script-execution"></a></h2>
+<div class="rdmd-html">
+<div class="example-card">
+  <h3>Plain HTML inside HTMLBlock</h3>
+  <p>Content with <strong>nested tags</strong> and an entity: &amp;.</p>
+</div>
+</div>
+<p>Trailing paragraph after the HTMLBlock.</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="raw-html-table-nested-inside-an-htmlblock"></div><div class="heading-text">Raw HTML table nested inside an HTMLBlock</div><a aria-label="Skip link to Raw HTML table nested inside an HTMLBlock" class="heading-anchor-icon fa fa-regular fa-anchor" href="#raw-html-table-nested-inside-an-htmlblock"></a></h2>
+<div class="rdmd-html">
+<div class="rdmd-table">
+    <div class="rdmd-table-inner">
+        <table class="tiers-table">
+            <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Access</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td colspan="3" style="background-color: #D6EEEE;">
+                        <p><b>Case identification and metadata</b></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p><code>id</code></p></td>
+                    <td><p>AML case ID</p></td>
+                    <td><p>Non-sensitive</p></td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="background-color: #D6EEEE;">
+                        <p><b>Applicant personal data</b></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p><code>inputInfo.firstName</code></p></td>
+                    <td><p>First name</p></td>
+                    <td><p>Sensitive</p></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>"
+`;
+
+exports[`Render engine regressions tests > htmlblock (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-rendering"></div><div class="heading-text">HTMLBlock rendering</div><a aria-label="Skip link to HTMLBlock rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-rendering"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="plain-html-inside-an-htmlblock-no-script-execution"></div><div class="heading-text">Plain HTML inside an HTMLBlock (no script execution)</div><a aria-label="Skip link to Plain HTML inside an HTMLBlock (no script execution)" class="heading-anchor-icon fa fa-regular fa-anchor" href="#plain-html-inside-an-htmlblock-no-script-execution"></a></h2>
+<div class="rdmd-html"><div class="example-card">
+  <h3>Plain HTML inside HTMLBlock</h3>
+  <p>Content with <strong>nested tags</strong> and an entity: &amp;.</p>
+</div></div>
+<p>Trailing paragraph after the HTMLBlock.</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="raw-html-table-nested-inside-an-htmlblock"></div><div class="heading-text">Raw HTML table nested inside an HTMLBlock</div><a aria-label="Skip link to Raw HTML table nested inside an HTMLBlock" class="heading-anchor-icon fa fa-regular fa-anchor" href="#raw-html-table-nested-inside-an-htmlblock"></a></h2>
+<div class="rdmd-html"><div class="rdmd-table">
+    <div class="rdmd-table-inner">
+        <table class="tiers-table">
+            <tr>
+                <th>Field</th>
+                <th>Description</th>
+                <th>Access</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <td colspan="3" style="background-color: #D6EEEE;">
+                        <p><b>Case identification and metadata</b></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p><code>id</code></p></td>
+                    <td><p>AML case ID</p></td>
+                    <td><p>Non-sensitive</p></td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="background-color: #D6EEEE;">
+                        <p><b>Applicant personal data</b></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td><p><code>inputInfo.firstName</code></p></td>
+                    <td><p>First name</p></td>
+                    <td><p>Sensitive</p></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div></div>"
+`;
+
+exports[`Render engine regressions tests > htmlblock-in-table (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-inside-a-table-cell"></div><div class="heading-text">HTMLBlock inside a table cell</div><a aria-label="Skip link to HTMLBlock inside a table cell" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-inside-a-table-cell"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tbody><tr><td><strong>bold</strong> still works</td><td><div class="rdmd-html"><div style="color: red;">Hello</div></div></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > htmlblock-in-table (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-inside-a-table-cell"></div><div class="heading-text">HTMLBlock inside a table cell</div><a aria-label="Skip link to HTMLBlock inside a table cell" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-inside-a-table-cell"></a></h1>
+<div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tbody><tr><td><strong>bold</strong> still works</td><td><div class="rdmd-html"><div style="color: red;">Hello</div></div></td></tr></tbody></table></div></div></div>"
+`;
+
+exports[`Render engine regressions tests > indented-content-is-not-code (mdx) 1`] = `
+"<div class="card"><p>Block two — indented 6 spaces after a blank line, so it renders as a raw code block instead of HTML.</p></div>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-info-circle"></i></summary><div class="Accordion-content"><ol start="4">
+<li>
+<p><strong>Get All Files from Path</strong></p>
+</li>
+<li>
+<p><strong>Suppressname lookup</strong>:
+<em><code class="rdmd-code lang-undefined theme-undefined">\\\\&lt;full_server_NetBIOS_name&gt;\\path\\to\\file.ext</code></em></p>
+</li>
+</ol><ul>
+<li>Wildcards are supported in file names as follows:<!-- -->
+<ul>
+<li><strong>Suppress name lookup</strong> must be enabled.</li>
+</ul>
+</li>
+</ul><ol start="6">
+<li><strong>Use Authentication</strong></li>
+</ol></div></details>
+<p>Fenced code still works, including when indented inside a list:</p>
+<ol>
+<li>
+<p>Install the CLI:</p>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="bash">Bash</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-shell theme-undefined" data-lang="shell">npm install</code></pre></div></div>
+</li>
+</ol>"
+`;
+
+exports[`Render engine regressions tests > indented-content-is-not-code (mdxish) 1`] = `
+"      <div class="card">
+        <p>Block two — indented 6 spaces after a blank line, so it renders as a raw code block instead of HTML.</p>
+      </div>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-info-circle"></i></summary><div class="Accordion-content"><ol start="4">
+<li>
+<p><strong>Get All Files from Path</strong></p>
+</li>
+<li>
+<p><strong>Suppressname lookup</strong>:<br/>
+<em><code class="rdmd-code lang-undefined theme-undefined">\\\\&lt;full_server_NetBIOS_name&gt;\\path\\to\\file.ext</code></em></p>
+</li>
+</ol><ul>
+<li>Wildcards are supported in file names as follows:
+<ul>
+<li><strong>Suppress name lookup</strong> must be enabled.</li>
+</ul>
+</li>
+</ul><ol start="6">
+<li><strong>Use Authentication</strong></li>
+</ol></div></details></div>
+<p>Fenced code still works, including when indented inside a list:</p>
+<ol>
+<li>
+<p>Install the CLI:</p>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="bash">Bash</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-shell theme-undefined" data-lang="shell">npm install</code></pre></div></div>
+</li>
+</ol>"
+`;
+
+exports[`Render engine regressions tests > indented-foreign-html-tags (mdx) 1`] = `
+"<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="platform-resources"></div><div class="heading-text">Platform resources</div><a aria-label="Skip link to Platform resources" class="heading-anchor-icon fa fa-regular fa-anchor" href="#platform-resources"></a></h2>
+<div class="wrike-cards-grid"><a href="/docs/overview" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div><div class="wrike-card-title">Guides</div><div class="wrike-card-desc">Step-by-step tutorials for authentication, webhooks, custom integrations, and common recipes.</div><div class="wrike-card-link">Read the guides <span class="wrike-arrow">→</span></div></a><a href="/reference" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><div class="wrike-card-title">Random 7</div><div class="wrike-card-desc">Random 8</div><div class="wrike-card-link">View Random 9<span class="wrike-arrow">→</span></div></a><a href="/docs/random-10" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6v6H9z"></path><path d="M9 1v3"></path><path d="M15 1v3"></path><path d="M9 20v3"></path><path d="M15 20v3"></path><path d="M20 9h3"></path><path d="M20 15h3"></path><path d="M1 9h3"></path><path d="M1 15h3"></path></svg></div><div class="wrike-card-title">Random 5</div><div class="wrike-card-desc">Random 4</div><div class="wrike-card-link">Set up Random 6<span class="wrike-arrow">→</span></div></a><a href="/docs/datahub-overview" class="wrike-nav-card"><div class="wrike-card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg></div><div class="wrike-card-title">Random 1</div><div class="wrike-card-desc">Random 2</div><div class="wrike-card-link">Explore Random 3<span class="wrike-arrow">→</span></div></a></div>"
+`;
+
+exports[`Render engine regressions tests > indented-foreign-html-tags (mdxish) 1`] = `
+"<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="platform-resources"></div><div class="heading-text">Platform resources</div><a aria-label="Skip link to Platform resources" class="heading-anchor-icon fa fa-regular fa-anchor" href="#platform-resources"></a></h2>
+<div class="wrike-cards-grid">
+  <a class="wrike-nav-card" href="/docs/overview" target="" title="">
+    <div class="wrike-card-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+    </div>
+
+    <div class="wrike-card-title">Guides</div>
+    <div class="wrike-card-desc">Step-by-step tutorials for authentication, webhooks, custom integrations, and common recipes.</div>
+    <div class="wrike-card-link">Read the guides <span class="wrike-arrow">→</span></div>
+  </a>
+
+  <a class="wrike-nav-card" href="/reference" target="" title="">
+    <div class="wrike-card-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"></polyline>
+        <polyline points="8 6 2 12 8 18"></polyline>
+      </svg>
+    </div>
+
+    <div class="wrike-card-title">Random 7</div>
+    <div class="wrike-card-desc">Random 8</div>
+    <div class="wrike-card-link">View Random 9<span class="wrike-arrow">→</span></div>
+  </a>
+
+  <a class="wrike-nav-card" href="/docs/random-10" target="" title="">
+    <div class="wrike-card-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+        <path d="M9 9h6v6H9z"></path>
+        <path d="M9 1v3"></path>
+        <path d="M15 1v3"></path>
+        <path d="M9 20v3"></path>
+        <path d="M15 20v3"></path>
+        <path d="M20 9h3"></path>
+        <path d="M20 15h3"></path>
+        <path d="M1 9h3"></path>
+        <path d="M1 15h3"></path>
+      </svg>
+    </div>
+
+    <div class="wrike-card-title">Random 5</div>
+    <div class="wrike-card-desc">Random 4</div>
+    <div class="wrike-card-link">Set up Random 6<span class="wrike-arrow">→</span></div>
+  </a>
+
+  <a class="wrike-nav-card" href="/docs/datahub-overview" target="" title="">
+    <div class="wrike-card-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0A615A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+      </svg>
+    </div>
+
+    <div class="wrike-card-title">Random 1</div>
+    <div class="wrike-card-desc">Random 2</div>
+    <div class="wrike-card-link">Explore Random 3<span class="wrike-arrow">→</span></div>
+  </a>
+</div>"
+`;
+
+exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdx) 1`] = `
+"<ol><li><details><summary>Authorization request</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0100&quot;,
+        &quot;Message_Desc&quot;: &quot;Authorisation Request&quot;
+    },
+    &quot;SUMMARY&quot;: {
+        &quot;TID&quot;: &quot;2237374892345000118&quot;,
+        &quot;Network&quot;: &quot;MC&quot;,
+    }
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;Message_Type&quot;: &quot;0110&quot;,
+}</code></pre></div></div></details></li><li><details><summary>ATM withdrawal and reversal</summary><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3><div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0400&quot;,
+        &quot;Message_Desc&quot;: &quot;Reversal Request&quot;
+    },
+    &quot;ISO_MSG&quot;: {
+        &quot;DE48&quot;: {
+            &quot;1&quot;: &quot;Z&quot;,
+            &quot;80&quot;: &quot;TV&quot;
+        },
+    },
+    &quot;RULES&quot;: []
+
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;DE11&quot;: &quot;000071&quot;,
+    &quot;DE2&quot;: &quot;818654321&quot;,
+}</code></pre></div></div></details></li></ol>
+<div class="content-card-container"><a href="invoices" class="content-card"><div class="content-card-content"><i class="far fa-file-invoice"></i><span><h3>How to View and Download Invoices</h3><p>Access detailed invoices for VoIP, DID numbers, and subscriptions, and download them in PDF format</p></span></div></a></div>"
+`;
+
+exports[`Render engine regressions tests > indented-markdown-islands-in-html (mdxish) 1`] = `
+"<ol>
+  <li>
+    <details>
+      <summary>Authorization request</summary>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="1-authorization-request"></div><div class="heading-text">1. Authorization request</div><a aria-label="Skip link to 1. Authorization request" class="heading-anchor-icon fa fa-regular fa-anchor" href="#1-authorization-request"></a></h3>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">0100 Request</button><button type="button" value="json">0100 Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0100&quot;,
+        &quot;Message_Desc&quot;: &quot;Authorisation Request&quot;
+    },
+    &quot;SUMMARY&quot;: {
+        &quot;TID&quot;: &quot;2237374892345000118&quot;,
+        &quot;Network&quot;: &quot;MC&quot;,
+    }
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;Message_Type&quot;: &quot;0110&quot;,
+}</code></pre></div></div>
+    </details>
+  </li>
+  <li>
+    <details>
+      <summary>ATM withdrawal and reversal</summary>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="2-atm-withdrawal-and-reversal"></div><div class="heading-text">2. ATM withdrawal and reversal</div><a aria-label="Skip link to 2. ATM withdrawal and reversal" class="heading-anchor-icon fa fa-regular fa-anchor" href="#2-atm-withdrawal-and-reversal"></a></h3>
+<div class="CodeTabs CodeTabs_initial theme-undefined"><div class="CodeTabs-toolbar"><button type="button" value="json">Request</button><button type="button" value="json">Response</button></div><div class="CodeTabs-inner"><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;MESSAGE_TYPE&quot;: {
+        &quot;Message_Type&quot;: &quot;0400&quot;,
+        &quot;Message_Desc&quot;: &quot;Reversal Request&quot;
+    },
+    &quot;ISO_MSG&quot;: {
+        &quot;DE48&quot;: {
+            &quot;1&quot;: &quot;Z&quot;,
+            &quot;80&quot;: &quot;TV&quot;
+        },
+    },
+    &quot;RULES&quot;: []
+
+}</code></pre><pre><code class="rdmd-code lang-json theme-undefined" data-lang="json">{
+    &quot;DE11&quot;: &quot;000071&quot;,
+    &quot;DE2&quot;: &quot;818654321&quot;,
+}</code></pre></div></div>
+    </details>
+  </li>
+</ol>
+<div class="content-card-container">
+  
+  <a class="content-card" href="invoices" target="" title="">
+    <div class="content-card-content">
+
+      <i class="far fa-file-invoice"></i>
+      <span>
+        <h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="how-to-view-and-download-invoices"></div><div class="heading-text">How to View and Download Invoices</div><a aria-label="Skip link to How to View and Download Invoices" class="heading-anchor-icon fa fa-regular fa-anchor" href="#how-to-view-and-download-invoices"></a></h3>
+        <p>Access detailed invoices for VoIP, DID numbers, and subscriptions, and download them in PDF format</p>
+      </span>
+    </div>
+  </a>
+</div>"
+`;
+
+exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote>
+<figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/></span></span><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></figure>"
+`;
+
+exports[`Render engine regressions tests > jsx-attribute-entities (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote></div>
+<div class="readme-tailwind"><figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/></span></span><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></figure></div>"
+`;
+
+exports[`Render engine regressions tests > jsx-table-multiline-cells (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-table-with-multi-paragraph-cells"></div><div class="heading-text">JSX table with multi-paragraph cells</div><a aria-label="Skip link to JSX table with multi-paragraph cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-table-with-multi-paragraph-cells"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Item</th></tr></thead><tbody><tr><td><p>Line 1</p><p>Line 2</p><p>Line 3</p></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > jsx-table-multiline-cells (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-table-with-multi-paragraph-cells"></div><div class="heading-text">JSX table with multi-paragraph cells</div><a aria-label="Skip link to JSX table with multi-paragraph cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-table-with-multi-paragraph-cells"></a></h1>
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Item</th></tr></thead><tbody><tr><td style="text-align:left"><p>Line 1</p><p>Line 2</p><p>Line 3</p></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > jsx-table-unclosed-cells (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > jsx-table-unclosed-cells (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-table-with-asymmetric-and-unclosed-cell-tags"></div><div class="heading-text">JSX table with asymmetric and unclosed cell tags</div><a aria-label="Skip link to JSX table with asymmetric and unclosed cell tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-table-with-asymmetric-and-unclosed-cell-tags"></a></h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Header 1</th><th>Header 2</th></tr></thead><tbody><tr><td><a href="/docs/create-response" target="" title="" class="doc-link" data-sidebar="create-response">createResponse</a></td><td><span><p>Cell 2<br/>
+Cell 3</p></span></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > legacy-vars-in-table (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > legacy-vars-in-table (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="legacy-variables-inside-raw-table-cells"></div><div class="heading-text">Legacy variables inside raw table cells</div><a aria-label="Skip link to Legacy variables inside raw table cells" class="heading-anchor-icon fa fa-regular fa-anchor" href="#legacy-variables-inside-raw-table-cells"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td><strong>bold</strong><span>Acme Inc</span></td></tr></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > magic-blocks-table (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > magic-blocks-table (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="magic-block-tables"></div><div class="heading-text">Magic-block tables</div><a aria-label="Skip link to Magic-block tables" class="heading-anchor-icon fa fa-regular fa-anchor" href="#magic-block-tables"></a></h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">name</td><td style="text-align:left"><li>String</li></td></tr></tbody></table></div></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">id</td><td style="text-align:left"><p>Number</p></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > rich (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
+<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer &lt;&lt;apiKey&gt;&gt;</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;region&gt;&gt;</code> region.</p>
+<p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;name&gt;&gt;</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">{user.region}</code>
+interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
+<p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
+`;
+
+exports[`Render engine regressions tests > rich (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
+<p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer sk_test_abc123</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code> region.</p>
+<p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code><br/>
+interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
+<p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
+`;
+
+exports[`Render engine regressions tests > style-and-jsx-expressions (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="style-and-jsx-expressions"></div><div class="heading-text">Style and JSX Expressions</div><a aria-label="Skip link to Style and JSX Expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#style-and-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></div><div class="heading-text">HTML in JSX expressions should get rendered and also applying inline styles</div><a aria-label="Skip link to HTML in JSX expressions should get rendered and also applying inline styles" class="heading-anchor-icon fa fa-regular fa-anchor" href="#html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></a></h2>
+<style>.note { color: teal; }</style>
+<div class="notes"><p class="note">Hello<div class="detail">World</div></p></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="customer-doc-with-invalid-html-created-in-expressions"></div><div class="heading-text">Customer doc with invalid HTML created in expressions</div><a aria-label="Skip link to Customer doc with invalid HTML created in expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#customer-doc-with-invalid-html-created-in-expressions"></a></h2>
+<style>
+        .mf-grid-final {
+          display: grid !important;
+          grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+          gap: 24px;
+          margin-bottom: 56px;
+
+          font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif;
+          color: rgb(48, 53, 58);
+          font-size: 15px;
+          line-height: 22.5px;
+        }
+
+        .mf-card-link-final {
+          text-decoration: none !important;
+          color: inherit !important;
+          display: block;
+          height: 100%;
+        }
+
+        .mf-card-final {
+          padding: 22px !important;
+          border: 1px solid #ececec !important;
+          border-radius: 14px !important;
+          background: #fff !important;
+          transition: all 0.2s ease;
+          text-align: left !important;
+          height: 100%;
+        }
+
+        .mf-card-final:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .mf-inner-final {
+          display: grid !important;
+          grid-template-columns: 30px 1fr !important;
+          column-gap: 12px !important;
+          row-gap: 12px !important;
+          align-items: center !important;
+        }
+
+        .mf-icon-final {
+          grid-column: 1;
+          grid-row: 1;
+          width: 22px;
+          height: 22px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .mf-title-final {
+          grid-column: 2;
+          grid-row: 1;
+          margin: 0 !important;
+          font-size: 18px;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .mf-list-final {
+          grid-column: 1 / 3;
+          grid-row: 2;
+          margin: 0 !important;
+          padding: 0 !important;
+          list-style: none !important;
+        }
+
+        .mf-list-final li {
+          display: grid !important;
+          grid-template-columns: 30px 1fr !important;
+          column-gap: 12px !important;
+          margin-bottom: 6px;
+        }
+
+        .mf-list-final li::before {
+          content: &quot;•&quot;;
+          grid-column: 1;
+          justify-self: center;
+          font-size: 20px;
+          line-height: 22.5px;
+        }
+
+        .mf-list-final a {
+          grid-column: 2;
+          color: inherit;
+          text-decoration: none;
+          position: relative;
+          z-index: 2;
+        }
+
+        .mf-list-final a:hover {
+          text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+          .mf-grid-final {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      </style>
+<div class="mf-grid-final"><a href="https://example.com/docs/alpha-module" class="mf-card-link-final" target="_blank" rel="noopener noreferrer"><div class="mf-card-final"><div class="mf-inner-final"><img src="https://example.com/icons/alpha.png" alt="" class="mf-icon-final"/><h3 class="mf-title-final">Alpha Module</h3><ul class="mf-list-final"><li><a href="https://example.com" target="_blank" rel="noopener noreferrer">Cross-tenant alpha search</a></li></ul></div></div></a><a href="https://example.com/docs/beta-module" class="mf-card-link-final" target="_blank" rel="noopener noreferrer"><div class="mf-card-final"><div class="mf-inner-final"><img src="https://example.com/icons/beta.png" alt="" class="mf-icon-final"/><h3 class="mf-title-final">Beta Module</h3><ul class="mf-list-final"><li><a href="https://example.com" target="_blank" rel="noopener noreferrer">Copy beta items across tenants</a></li></ul></div></div></a></div>
+<style>
+      .config-section {
+        background: #f4f6f8;
+        padding: 40px 24px;
+        border-radius: 20px;
+        margin-bottom: 48px;
+
+        font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont,
+          &quot;Helvetica Neue&quot;, Arial, sans-serif;
+        color: rgb(48, 53, 58);
+      }
+
+      .config-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .config-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* ✅ Jetzt 3 Spalten */
+        gap: 24px;
+      }
+
+      .config-card {
+        display: block;
+        padding: 22px;
+        border: 1px solid #e7eaf0;
+        border-radius: 16px;
+        background: #fff;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+
+      .config-card * {
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+
+      .config-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+        border-color: #d7dce5;
+      }
+
+      .config-title {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .config-text {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+        color: #5f6670;
+      }
+
+      @media (max-width: 900px) {
+        .config-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 700px) {
+        .config-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+<section class="config-section"><div class="config-inner"><div class="config-grid"><a href="https://example.com/docs/topic-areas" class="config-card" target="_blank" rel="noopener noreferrer"><h3 class="config-title">Random Topic</h3><p class="config-text">Random Text</p></a><a href="https://example.com/docs/campaign-types" class="config-card" target="_blank" rel="noopener noreferrer"><h3 class="config-title">Random Topic 2</h3><p class="config-text">Random Text 2</p></a></div></div></section>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="customer-doc-with-complex-style-blocks"></div><div class="heading-text">Customer doc with complex <code class="rdmd-code lang-undefined theme-undefined">&lt;style&gt;</code> blocks</div><a aria-label="Skip link to Customer doc with complex ,[object Object], blocks" class="heading-anchor-icon fa fa-regular fa-anchor" href="#customer-doc-with-complex-style-blocks"></a></h2>
+<style>
+      .ems-grid-fix {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 36px;
+
+        font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif;
+        color: rgb(48, 53, 58);
+      }
+
+      .ems-card-fix {
+        padding: 22px;
+        border: 1px solid #ececec;
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .ems-card-fix:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      }
+
+      .ems-row-fix {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+      }
+
+      .ems-icon-fix {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+
+      .ems-content-fix h3 {
+        margin: 0 0 6px 0;
+        text-align: left !important;
+        font-family: inherit;
+      }
+
+      .ems-content-fix p {
+        margin: 0;
+        text-align: left !important;
+        font-family: inherit;
+      }
+
+      @media (max-width: 1400px) {
+        .ems-grid-fix {
+          grid-template-columns: 1fr;
+        }
+
+        .ems-row-fix {
+          grid-template-columns: 30px 1fr;
+        }
+
+        .ems-icon-fix {
+          display: block;
+        }
+      }
+    </style>
+<div class="ems-grid-fix"><a href="https://example.com/bogus-link-alpha" class="ems-card-fix"><div class="ems-row-fix"><img src="https://example.com/fake-icon-1.png" alt="" class="ems-icon-fix"/><div class="ems-content-fix"><h3>Copper Lantern</h3><p>Velvet thunder beside the marble orchard.</p></div></div></a><a href="https://example.com/bogus-link-beta" class="ems-card-fix"><div class="ems-row-fix"><img src="https://example.com/fake-icon-2.png" alt="" class="ems-icon-fix"/><div class="ems-content-fix"><h3>Silent Compass</h3><p>Paper rivers drift through amber corridors.</p></div></div></a><a href="https://example.com/bogus-link-gamma" class="ems-card-fix"><div class="ems-row-fix"><img src="https://example.com/fake-icon-3.png" alt="" class="ems-icon-fix"/><div class="ems-content-fix"><h3>Broken Telescope</h3><p>Winter hinges open on distant kitchen light.</p></div></div></a></div>"
+`;
+
+exports[`Render engine regressions tests > style-and-jsx-expressions (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="style-and-jsx-expressions"></div><div class="heading-text">Style and JSX Expressions</div><a aria-label="Skip link to Style and JSX Expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#style-and-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></div><div class="heading-text">HTML in JSX expressions should get rendered and also applying inline styles</div><a aria-label="Skip link to HTML in JSX expressions should get rendered and also applying inline styles" class="heading-anchor-icon fa fa-regular fa-anchor" href="#html-in-jsx-expressions-should-get-rendered-and-also-applying-inline-styles"></a></h2>
+<style>.note { color: teal; }</style>
+<div class="notes"><p class="note">Hello<div class="detail">World</div></p></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="customer-doc-with-invalid-html-created-in-expressions"></div><div class="heading-text">Customer doc with invalid HTML created in expressions</div><a aria-label="Skip link to Customer doc with invalid HTML created in expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#customer-doc-with-invalid-html-created-in-expressions"></a></h2>
+<style>
+        .mf-grid-final {
+          display: grid !important;
+          grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+          gap: 24px;
+          margin-bottom: 56px;
+
+          font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif;
+          color: rgb(48, 53, 58);
+          font-size: 15px;
+          line-height: 22.5px;
+        }
+
+        .mf-card-link-final {
+          text-decoration: none !important;
+          color: inherit !important;
+          display: block;
+          height: 100%;
+        }
+
+        .mf-card-final {
+          padding: 22px !important;
+          border: 1px solid #ececec !important;
+          border-radius: 14px !important;
+          background: #fff !important;
+          transition: all 0.2s ease;
+          text-align: left !important;
+          height: 100%;
+        }
+
+        .mf-card-final:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .mf-inner-final {
+          display: grid !important;
+          grid-template-columns: 30px 1fr !important;
+          column-gap: 12px !important;
+          row-gap: 12px !important;
+          align-items: center !important;
+        }
+
+        .mf-icon-final {
+          grid-column: 1;
+          grid-row: 1;
+          width: 22px;
+          height: 22px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .mf-title-final {
+          grid-column: 2;
+          grid-row: 1;
+          margin: 0 !important;
+          font-size: 18px;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .mf-list-final {
+          grid-column: 1 / 3;
+          grid-row: 2;
+          margin: 0 !important;
+          padding: 0 !important;
+          list-style: none !important;
+        }
+
+        .mf-list-final li {
+          display: grid !important;
+          grid-template-columns: 30px 1fr !important;
+          column-gap: 12px !important;
+          margin-bottom: 6px;
+        }
+
+        .mf-list-final li::before {
+          content: &quot;•&quot;;
+          grid-column: 1;
+          justify-self: center;
+          font-size: 20px;
+          line-height: 22.5px;
+        }
+
+        .mf-list-final a {
+          grid-column: 2;
+          color: inherit;
+          text-decoration: none;
+          position: relative;
+          z-index: 2;
+        }
+
+        .mf-list-final a:hover {
+          text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+          .mf-grid-final {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      </style>
+<div class="mf-grid-final"><a class="mf-card-link-final" rel="noopener noreferrer" href="https://example.com/docs/alpha-module" target="_blank" title=""><div class="mf-card-final"><div class="mf-inner-final"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/icons/alpha.png" title="" width="auto"/></span></span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="alpha-module"></div><div class="heading-text">Alpha Module</div><a aria-label="Skip link to Alpha Module" class="heading-anchor-icon fa fa-regular fa-anchor" href="#alpha-module"></a></h3><ul class="mf-list-final"><li><a rel="noopener noreferrer" href="https://example.com" target="_blank" title="">Cross-tenant alpha search</a></li></ul></div></div></a><a class="mf-card-link-final" rel="noopener noreferrer" href="https://example.com/docs/beta-module" target="_blank" title=""><div class="mf-card-final"><div class="mf-inner-final"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/icons/beta.png" title="" width="auto"/></span></span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="beta-module"></div><div class="heading-text">Beta Module</div><a aria-label="Skip link to Beta Module" class="heading-anchor-icon fa fa-regular fa-anchor" href="#beta-module"></a></h3><ul class="mf-list-final"><li><a rel="noopener noreferrer" href="https://example.com" target="_blank" title="">Copy beta items across tenants</a></li></ul></div></div></a></div>
+<style>
+      .config-section {
+        background: #f4f6f8;
+        padding: 40px 24px;
+        border-radius: 20px;
+        margin-bottom: 48px;
+
+        font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont,
+          &quot;Helvetica Neue&quot;, Arial, sans-serif;
+        color: rgb(48, 53, 58);
+      }
+
+      .config-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .config-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* ✅ Jetzt 3 Spalten */
+        gap: 24px;
+      }
+
+      .config-card {
+        display: block;
+        padding: 22px;
+        border: 1px solid #e7eaf0;
+        border-radius: 16px;
+        background: #fff;
+        transition: all 0.2s ease;
+        cursor: pointer;
+
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+
+      .config-card * {
+        text-decoration: none !important;
+        color: inherit !important;
+      }
+
+      .config-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.08);
+        border-color: #d7dce5;
+      }
+
+      .config-title {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .config-text {
+        margin: 0;
+        font-size: 14px;
+        line-height: 20px;
+        color: #5f6670;
+      }
+
+      @media (max-width: 900px) {
+        .config-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 700px) {
+        .config-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+<section class="config-section"><div class="config-inner"><div class="config-grid"><a class="config-card" rel="noopener noreferrer" href="https://example.com/docs/topic-areas" target="_blank" title=""><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="random-topic"></div><div class="heading-text">Random Topic</div><a aria-label="Skip link to Random Topic" class="heading-anchor-icon fa fa-regular fa-anchor" href="#random-topic"></a></h3><p class="config-text">Random Text</p></a><a class="config-card" rel="noopener noreferrer" href="https://example.com/docs/campaign-types" target="_blank" title=""><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="random-topic-2"></div><div class="heading-text">Random Topic 2</div><a aria-label="Skip link to Random Topic 2" class="heading-anchor-icon fa fa-regular fa-anchor" href="#random-topic-2"></a></h3><p class="config-text">Random Text 2</p></a></div></div></section>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="customer-doc-with-complex-style-blocks"></div><div class="heading-text">Customer doc with complex <code class="rdmd-code lang-undefined theme-undefined">&lt;style&gt;</code> blocks</div><a aria-label="Skip link to Customer doc with complex ,[object Object], blocks" class="heading-anchor-icon fa fa-regular fa-anchor" href="#customer-doc-with-complex-style-blocks"></a></h2>
+<style>
+      .ems-grid-fix {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 36px;
+
+        font-family: &quot;Segoe UI&quot;, system-ui, -apple-system, BlinkMacSystemFont, &quot;Helvetica Neue&quot;, Arial, sans-serif;
+        color: rgb(48, 53, 58);
+      }
+
+      .ems-card-fix {
+        padding: 22px;
+        border: 1px solid #ececec;
+        border-radius: 14px;
+        background: #fff;
+      }
+
+      .ems-card-fix:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      }
+
+      .ems-row-fix {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+      }
+
+      .ems-icon-fix {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+
+      .ems-content-fix h3 {
+        margin: 0 0 6px 0;
+        text-align: left !important;
+        font-family: inherit;
+      }
+
+      .ems-content-fix p {
+        margin: 0;
+        text-align: left !important;
+        font-family: inherit;
+      }
+
+      @media (max-width: 1400px) {
+        .ems-grid-fix {
+          grid-template-columns: 1fr;
+        }
+
+        .ems-row-fix {
+          grid-template-columns: 30px 1fr;
+        }
+
+        .ems-icon-fix {
+          display: block;
+        }
+      }
+    </style>
+<div class="ems-grid-fix"><a class="ems-card-fix" href="https://example.com/bogus-link-alpha" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-1.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="copper-lantern"></div><div class="heading-text">Copper Lantern</div><a aria-label="Skip link to Copper Lantern" class="heading-anchor-icon fa fa-regular fa-anchor" href="#copper-lantern"></a></h3><p>Velvet thunder beside the marble orchard.</p></div></div></a><a class="ems-card-fix" href="https://example.com/bogus-link-beta" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-2.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="silent-compass"></div><div class="heading-text">Silent Compass</div><a aria-label="Skip link to Silent Compass" class="heading-anchor-icon fa fa-regular fa-anchor" href="#silent-compass"></a></h3><p>Paper rivers drift through amber corridors.</p></div></div></a><a class="ems-card-fix" href="https://example.com/bogus-link-gamma" target="" title=""><div class="ems-row-fix"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img  " height="auto" loading="lazy" src="https://example.com/fake-icon-3.png" title="" width="auto"/></span></span><div class="ems-content-fix"><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="broken-telescope"></div><div class="heading-text">Broken Telescope</div><a aria-label="Skip link to Broken Telescope" class="heading-anchor-icon fa fa-regular fa-anchor" href="#broken-telescope"></a></h3><p>Winter hinges open on distant kitchen light.</p></div></div></a></div>"
+`;
+
+exports[`Render engine regressions tests > table-in-callout (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p><div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Scenario</th><th>Result</th></tr></thead><tbody><tr><td>Two adapters disagree</td><td>Higher-tier adapter wins</td></tr><tr><td>One adapter reports twice</td><td>Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote>"
+`;
+
+exports[`Render engine regressions tests > table-in-callout (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Scenario</th><th style="text-align:left">Result</th></tr></thead><tbody><tr><td style="text-align:left">Two adapters disagree</td><td style="text-align:left">Higher-tier adapter wins</td></tr><tr><td style="text-align:left">One adapter reports twice</td><td style="text-align:left">Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote></div>"
+`;
+
+exports[`Render engine regressions tests > table-unwrapped-rows (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-rows-missing-their-tr-and-tbody-wrappers"></div><div class="heading-text">Tables with rows missing their tr and tbody wrappers</div><a aria-label="Skip link to Tables with rows missing their tr and tbody wrappers" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-rows-missing-their-tr-and-tbody-wrappers"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><td>Hi</td><td>World</td></thead><tbody><td>Hello</td><td>Globe</td></tbody></table></div></div>
+<table><thead><th>IPv4</th><th>IPv6</th></thead><tr><td>2.16.0.0/13</td><td>2600::/12</td></tr></table>"
+`;
+
+exports[`Render engine regressions tests > table-unwrapped-rows (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-rows-missing-their-tr-and-tbody-wrappers"></div><div class="heading-text">Tables with rows missing their tr and tbody wrappers</div><a aria-label="Skip link to Tables with rows missing their tr and tbody wrappers" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-rows-missing-their-tr-and-tbody-wrappers"></a></h1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Hi</th><th>World</th></tr></thead><tbody><tr><td>Hello</td><td>Globe</td></tr></tbody></table></div></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>IPv4</th><th>IPv6</th></tr></thead><tbody><tr><td>2.16.0.0/13</td><td>2600::/12</td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > tables-with-html (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-inline-html"></div><div class="heading-text">Tables with inline HTML</div><a aria-label="Skip link to Tables with inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-inline-html"></a></h1>
+<table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody><tr><td colspan="2" class="hl"><code>action_name</code></td></tr><tr><td><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="cat" class="img  " height="auto" loading="lazy" src="https://example.com/cat.png" title="" width="auto"/></span></span>inline image</td><td><strong>bold</strong> after a <span>nested</span> tag</td></tr></tbody></table>"
+`;
+
+exports[`Render engine regressions tests > tables-with-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="tables-with-inline-html"></div><div class="heading-text">Tables with inline HTML</div><a aria-label="Skip link to Tables with inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#tables-with-inline-html"></a></h1>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Attribute</th><th>Description</th></tr></thead><tbody><tr><td colSpan="2" class="hl"><code class="rdmd-code lang-undefined theme-undefined">action_name</code></td></tr><tr><td><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="cat" class="img  " height="auto" loading="lazy" src="https://example.com/cat.png" title="" width="auto"/></span></span>inline image</td><td><strong>bold</strong> after a <span>nested</span> tag</td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > unclosed-tags (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > unclosed-tags (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="unclosed-and-orphan-tags"></div><div class="heading-text">Unclosed and orphan tags</div><a aria-label="Skip link to Unclosed and orphan tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#unclosed-and-orphan-tags"></a></h1>
+"
+`;
+
+exports[`Render engine regressions tests > variables-everywhere (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > variables-everywhere (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-many-contexts"></div><div class="heading-text">Variables in many contexts</div><a aria-label="Skip link to Variables in many contexts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-many-contexts"></a></h1>
+<p>Inline code: <code class="rdmd-code lang-undefined theme-undefined">Bearer sk_test_abc123</code> and <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code>.</p>
+<p>Standalone variable in a table cell:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>API key</td><td><span>sk_test_abc123</span></td></tr><tr><td>Region</td><td><span>us-east-1</span></td></tr></tbody></table></div></div>
+<p>Mermaid sequence diagram — <code class="rdmd-code lang-undefined theme-undefined">--</code> and <code class="rdmd-code lang-undefined theme-undefined">-</code> must NOT be substituted<br/>
+as legacy variables:</p>
+<pre class="mermaid-render mermaid_single">sequenceDiagram
+  Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
+  Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
+<p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;

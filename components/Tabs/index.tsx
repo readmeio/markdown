@@ -23,7 +23,7 @@ const Tabs = ({ children }: TabsProps) => {
         <nav className="TabGroup-nav">
           {tabs.map((tab, index: number) => (
             <button
-              key={tab.props.title}
+              key={tab.key}
               className={`TabGroup-tab${activeTab === index ? '_active' : ''}`}
               onClick={() => setActiveTab(index)}
             >
@@ -35,7 +35,14 @@ const Tabs = ({ children }: TabsProps) => {
           ))}
         </nav>
       </header>
-      <section>{tabs[activeTab]}</section>
+      <section>
+        {/* Keep every panel mounted so runtime Tailwind can scan inactive tabs' classes on first paint */}
+        {tabs.map((tab, index: number) => (
+          <div key={tab.key} hidden={index !== activeTab}>
+            {tab}
+          </div>
+        ))}
+      </section>
     </div>
   );
 };

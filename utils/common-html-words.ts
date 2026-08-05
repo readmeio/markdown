@@ -93,6 +93,41 @@ export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'html-blo
 export const STANDARD_HTML_TAGS = new Set(htmlTags) as Set<string>;
 
 /**
+ * Table structural tags. Blank lines inside these carry deliberate meaning for
+ * `mdxishTables` (e.g. splitting cell content into paragraphs, or deciding
+ * whether a table stays plain HTML vs a JSX `<Table>`), so transforms that
+ * neutralize or claim across blank lines must leave them alone.
+ */
+export const HTML_TABLE_STRUCTURE_TAGS = new Set([
+  'table',
+  'thead',
+  'tbody',
+  'tfoot',
+  'tr',
+  'td',
+  'th',
+  'caption',
+  'colgroup',
+]);
+
+/**
+ * Tags whose bodies a later mdxish transform keeps raw and never re-parses as
+ * markdown. Both layers depend on this property, not on the tags being figures:
+ * the transformer treats them as non-promotable, and the tokenizer must not claim
+ * markdown islands inside them (a claimed island would never be re-parsed and would
+ * leak as literal text). Currently just the figure tags, whose bodies are owned by
+ * the figure reassembly transform (`mdxishJsxToMdast`).
+ */
+export const NON_REPARSED_BODY_TAGS = new Set(['figure', 'figcaption']);
+
+/**
+ * The two HTML "foreign content" namespaces: SVG and MathML. Their descendants
+ * (`<path>`, `<mrow>`, …) are namespaced XML, not HTML tags or components. A closed
+ * set per the HTML spec, so transforms can treat these roots as opaque islands.
+ */
+export const FOREIGN_CONTENT_TAGS = ['svg', 'math'] as const;
+
+/**
  * HTML void elements — elements that have no closing tag and no children.
  *
  * @see https://html.spec.whatwg.org/multipage/syntax.html#void-elements

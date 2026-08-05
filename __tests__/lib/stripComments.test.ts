@@ -310,6 +310,96 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('preserves indented prose as prose, not a fenced code block, in mdxish mode', async () => {
+    // Without disabling indented code, the round-trip would re-emit the indented
+    // line as a ```-fenced block, which then renders as code (CX-3739).
+    const input = 'Intro.\n\n    indented prose line\n\n<!-- c -->\nAfter.';
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe('Intro.\n\nindented prose line\n\nAfter.');
+    expect(output).not.toContain('```');
+  });
+
+  it('does not escape custom components with array/object expression props in mdxish mode', async () => {
+    // Component should not be escaped when stripping comments, and whitespace preserved
+    const input = `<DosAndDonts
+      title="Your Section Title"
+      dos={[
+        { label: "Your first do item.", code: "Optional code example" },
+      ]}
+      donts={[
+        { label: "Your first dont item." },
+      ]}
+    />`;
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe(input);
+    expect(output).not.toContain('\\<');
+  });
+
+  it('still escapes lowercase literal angle brackets in mdxish mode', async () => {
+    const output = await stripComments('render a <b when a is less than b', { mdxish: true });
+    expect(output).toBe('render a \\<b when a is less than b');
+  });
+
+  describe('Custom components render correctly in mdxish mode', () => {
+    // Expressions should be preserved, and component should not be escaped with a backslash prefix
+    it.each([
+      { name: 'a literal < inside an expression', input: '<Card ok={a < b} />' },
+      { name: 'a literal < inside a quoted attribute', input: '<Card note="use a < b here" />' },
+      // eslint-disable-next-line no-template-curly-in-string
+      { name: 'a template literal attribute with interpolation', input: '<Card label={`Hello ${user.name}`} />' },
+      { name: 'a spread attribute', input: '<Card {...props} title="Hi" />' },
+      { name: 'a boolean shorthand attribute', input: '<Card disabled title="Hi" />' },
+      { name: 'an inline component surrounded by markdown', input: 'See the *shiny* <Anchor href={url}>link</Anchor> for **more**.' },
+      {
+        name: 'a component nested inside a <div>',
+        input: `<div>
+  <Callout icon="info" data={[{ a: 1 }]}>
+    Body text
+  </Callout>
+</div>`,
+      },
+      {
+        name: 'same-name components nested inside each other',
+        input: `<Accordion title="Outer">
+  <Accordion title="Inner">
+    Inner body
+  </Accordion>
+</Accordion>`,
+      },
+    ])('preserves $name without escaping', async ({ input }) => {
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toBe(input);
+      expect(output).not.toContain('\\<');
+    });
+
+    // A JSDoc block inside a component's expression is treated as code and not stripped
+    it('preserves a multi-line JSDoc block inside an expression attribute', async () => {
+      const input = `<Card
+  data={
+    /**
+     * A JSDoc comment inside the expression
+     */
+    values
+  }
+/>`;
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toBe(input);
+    });
+
+    it('strips an HTML comment inside a component body', async () => {
+      const input = `<Callout data={[{ a: 1 }]}>
+  <!-- strip me -->
+  Body
+</Callout>`;
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).not.toContain('<!-- strip me -->');
+      expect(output).toContain('<Callout data={[{ a: 1 }]}>');
+      expect(output).toContain('Body');
+    });
+  });
+
   // TODO: enable this test after fixing the heading parsing issue
   // https://linear.app/readme-io/issue/CX-2603/sanitize-comment-flag-causing-certain-emphasized-text-and-headings-to
   // eslint-disable-next-line vitest/no-disabled-tests
@@ -380,6 +470,75 @@ end"`);
     expect(output).toContain('data');
     expect(output).not.toContain('<!-- top comment -->');
     expect(output).not.toContain('<!-- bottom comment -->');
+  });
+
+  describe('HTMLBlock handling in mdxish mode', () => {
+    it('does not crash on multiline HTMLBlock content', async () => {
+      const input = `<HTMLBlock>{\`
+<div>hello</div>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+      expect(output).toContain('<div>hello</div>');
+    });
+
+    it('preserves HTMLBlock with attributes', async () => {
+      const input = `<HTMLBlock id="test">{\`
+<p>content</p>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock');
+      expect(output).toContain('<p>content</p>');
+    });
+
+    it('strips comments outside HTMLBlocks while preserving the block', async () => {
+      const input = `<!-- top comment -->
+
+<HTMLBlock>{\`
+<div>hello</div>
+\`}</HTMLBlock>
+
+<!-- bottom comment -->`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+      expect(output).not.toContain('<!-- top comment -->');
+      expect(output).not.toContain('<!-- bottom comment -->');
+    });
+
+    it('strips HTML comments inside HTMLBlock content', async () => {
+      const input = `<HTMLBlock>{\`
+<!-- authored HTML comment -->
+<div>hello</div>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).not.toContain('<!-- authored HTML comment -->');
+      expect(output).toContain('<div>hello</div>');
+    });
+
+    it('strips all comments including inside HTMLBlocks', async () => {
+      const input = `<div>
+<!-- strip me -->
+<HTMLBlock>{\`<!-- also strip me --><p>hi</p>\`}</HTMLBlock>
+</div>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).not.toContain('<!-- also strip me -->');
+      expect(output).not.toContain('<!-- strip me -->');
+      expect(output).toContain('<HTMLBlock>');
+    });
+
+    it('handles nested HTMLBlocks', async () => {
+      const input = `<HTMLBlock>{\`
+<HTMLBlock>{\`<div>nested</div>\`}</HTMLBlock>
+\`}</HTMLBlock>`;
+
+      const output = await stripComments(input, { mdxish: true });
+      expect(output).toContain('<HTMLBlock>');
+    });
   });
 
   describe('strip comments edge cases', () => {

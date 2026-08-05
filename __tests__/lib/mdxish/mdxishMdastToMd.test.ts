@@ -2,6 +2,7 @@ import type { Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
+import { roundTripMdxish } from '../../helpers';
 
 describe('mdxishMdastToMd', () => {
   it('should convert a simple paragraph', () => {
@@ -44,8 +45,9 @@ describe('mdxishMdastToMd', () => {
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toContain('> 📘 Info');
+    expect(result).toContain('<Callout icon="📘 Info" theme="info">');
     expect(result).toContain('Lorem ipsum dolor sit amet.');
+    expect(result).toContain('</Callout>');
   });
 
   it('should convert GFM mdast', () => {
@@ -143,7 +145,7 @@ describe('mdxishMdastToMd', () => {
   });
 
   describe('tables with flow content', () => {
-    it('should serialize a table with newlines in cells to JSX <Table>', () => {
+    it('should serialize a table with a fenced code block in a cell to JSX <Table>', () => {
       const mdast: MdastRoot = {
         type: 'root',
         children: [
@@ -215,7 +217,7 @@ describe('mdxishMdastToMd', () => {
       `);
     });
 
-    it('should serialize a table with newlines in cells to JSX <Table> and separate the lines with an empty line between them', () => {
+    it('should serialize a table with multiple paragraphs in a cell to JSX <Table> and separate the lines with an empty line between them', () => {
       const mdast: MdastRoot = {
         type: 'root',
         children: [
@@ -1015,6 +1017,284 @@ describe('mdxishMdastToMd', () => {
     });
   });
 
+  /**
+   * CX-3773: pasting multi-line text into a cell used to promote the whole table to `<Table>`
+   * for good. Line breaks are representable inline in GFM as `<br />`, so these build the
+   * mdast the editor hands to save and assert a pipe table comes back.
+   */
+  describe('cell content that stays a GFM table (CX-3773)', () => {
+    const tableWithCellChildren = (children: RootContent[]): MdastRoot => ({
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          align: ['left', 'left'],
+          children: [
+            {
+              type: 'tableRow',
+              children: [
+                { type: 'tableCell', children: [{ type: 'text', value: 'Field' }] },
+                { type: 'tableCell', children: [{ type: 'text', value: 'Required' }] },
+              ],
+            },
+            {
+              type: 'tableRow',
+              children: [
+                { type: 'tableCell', children: [{ type: 'text', value: 'postal_code' }] },
+                { type: 'tableCell', children },
+              ],
+            },
+          ],
+        } as Table,
+      ],
+    });
+
+    it('turns a pasted break node into <br />', () => {
+      const mdast = tableWithCellChildren([
+        { type: 'text', value: 'Required for US' },
+        { type: 'break' },
+        { type: 'text', value: 'Ignored elsewhere' },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required                               |
+        | :---------- | :------------------------------------- |
+        | postal_code | Required for US<br />Ignored elsewhere |
+        "
+      `);
+    });
+
+    it('turns a pasted newline inside a text node into <br />', () => {
+      const mdast = tableWithCellChildren([{ type: 'text', value: 'Required for US\nIgnored elsewhere' }]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required                               |
+        | :---------- | :------------------------------------- |
+        | postal_code | Required for US<br />Ignored elsewhere |
+        "
+      `);
+    });
+
+    it('keeps a bare list marker placeholder as JSX', () => {
+      const mdast = tableWithCellChildren([
+        { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: null, children: [] }] },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
+    });
+
+    it('still promotes a cell holding a list with real content', () => {
+      const mdast = tableWithCellChildren([
+        {
+          type: 'list',
+          ordered: false,
+          start: null,
+          spread: false,
+          children: [
+            { type: 'listItem', spread: false, checked: null, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'yes' }] }] },
+          ],
+        },
+      ]);
+
+      expect(mdxishMdastToMd(mdast)).toContain('<Table');
+    });
+
+    it('turns consecutive newlines into consecutive breaks', () => {
+      const mdast = tableWithCellChildren([{ type: 'text', value: 'one\n\ntwo' }]);
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "| Field       | Required           |
+        | :---------- | :----------------- |
+        | postal_code | one<br /><br />two |
+        "
+      `);
+    });
+  });
+
+  describe('underscores serialization', () => {
+    const paragraph = (value: string): MdastRoot => ({
+      type: 'root',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value }] }],
+    });
+
+    it('should not escape underscores flanked by word characters', () => {
+      expect(mdxishMdastToMd(paragraph('payroll_setup.pay_schedule_setup_not_complete'))).toBe(
+        'payroll_setup.pay_schedule_setup_not_complete\n',
+      );
+    });
+
+    it('should not escape consecutive intraword underscores', () => {
+      expect(mdxishMdastToMd(paragraph('leading__double__trailing'))).toBe('leading__double__trailing\n');
+    });
+
+    it('should not escape intraword underscores between non-ASCII letters', () => {
+      expect(mdxishMdastToMd(paragraph('café_touché'))).toBe('café_touché\n');
+    });
+
+    it('should still escape underscores at word boundaries that could open emphasis', () => {
+      expect(roundTripMdxish('_leading and trailing_')).toBe('_leading and trailing_\n');
+    });
+
+    it('should not escape intraword underscores inside table cells', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Category' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'pay_schedule_transition' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'entity_type' }] }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('pay_schedule_transition');
+      expect(result).toContain('entity_type');
+      expect(result).not.toContain('\\_');
+    });
+  });
+
+  describe('braces serialization', () => {
+    const paragraph = (value: string): MdastRoot => ({
+      type: 'root',
+      children: [{ type: 'paragraph', children: [{ type: 'text', value }] }],
+    });
+
+    it('should escape a lone literal open brace in text', () => {
+      expect(mdxishMdastToMd(paragraph('{label'))).toBe('\\{label\n');
+    });
+
+    it('should preserve escaped closed braces in text', () => {
+      expect(roundTripMdxish('a\\{b}c')).toBe('a\\{b\\}c\n');
+    });
+
+    it('should keep escaped braces stable across two round trips', () => {
+      const once = roundTripMdxish('vars \\{label}, \\{payment_period}\n', { newEditorTypes: true });
+      const twice = roundTripMdxish(once, { newEditorTypes: true });
+      expect(once).toBe(twice);
+    });
+
+    it('should not escape underscores that sit inside literal braces', () => {
+      expect(roundTripMdxish('for the %\\{payment_period} pay period.\n', { newEditorTypes: true })).not.toContain('\\_');
+    });
+
+    it('should not escape the braces of a readme-variable expression', () => {
+      expect(roundTripMdxish('Hello {user.name}!\n', { newEditorTypes: true })).toBe('Hello {user.name}!\n');
+    });
+
+    it('should escape literal braces inside table cells', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Title' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Vars' }] }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Run payroll%{label' }] }] },
+                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '{label}' }] }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      const result = mdxishMdastToMd(mdast);
+      expect(result).toContain('Run payroll%\\{label');
+      expect(result).toContain('\\{label\\}');
+    });
+
+    it('should preserve JSX table attributes while escaping braces in a cell', () => {
+      // A list in a cell forces JSX <Table> output; attribute braces must survive.
+      const out = roundTripMdxish(
+        [
+          '<Table align={["left"]}>',
+          '  <thead><tr><th style={{ textAlign: "left" }}>A</th></tr></thead>',
+          '  <tbody><tr><td style={{ textAlign: "left" }}>',
+          '',
+          '- x',
+          '- y',
+          '',
+          '  </td></tr></tbody>',
+          '</Table>',
+          '',
+        ].join('\n'),
+        { newEditorTypes: true },
+      );
+
+      expect(out).toContain('align={["left"]}');
+      expect(out).toContain('style={{ textAlign: "left" }}');
+      expect(out).not.toContain('align={\\[');
+    });
+  });
+
+  describe('git round-trip of a Callout with an unbalanced brace in a fence (CX-3704)', () => {
+    const md = `<Callout icon="⚠️" theme="warn">
+  Update your reverse-proxy config:
+
+  \`\`\`nginx
+  location / {
+      proxy_pass http://backend;
+  \`\`\`
+
+  Then restart the service.
+</Callout>
+
+- First list item
+- Second list item
+
+Final plain paragraph at end of file.
+`;
+
+    it('serializes back without corrupting the surrounding Markdown', () => {
+      const out = roundTripMdxish(md);
+      const lines = out.split('\n');
+
+      // `</Callout>` closes on its own line (not merged onto text).
+      expect(lines).toContain('</Callout>');
+      // No bullets escaped to `\*`.
+      expect(out).not.toContain('\\*');
+      // The list survives as a list (two items), not flattened prose.
+      expect(out).toContain('- First list item');
+      expect(out).toContain('- Second list item');
+      // Trailing prose is a paragraph, not wrapped in a code fence.
+      expect(out).toContain('Final plain paragraph at end of file.');
+      // The unbalanced brace stays inside the fenced code block.
+      expect(out).toContain('location / {');
+    });
+
+    it('is idempotent — re-saving does not re-corrupt the file', () => {
+      const once = roundTripMdxish(md);
+      const twice = roundTripMdxish(once);
+      expect(twice).toBe(once);
+    });
+  });
+
   it('should convert readme-anchor nodes back to <Anchor> JSX syntax', () => {
     const mdast: MdastRoot = {
       type: 'root',
@@ -1210,5 +1490,105 @@ describe('mdxishMdastToMd', () => {
     const result = mdxishMdastToMd(mdast);
     // There needs to be a space after the checkbox for the list item to be parsed as a checklist item
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
+  });
+});
+
+describe('mdxishMdastToMd callout JSX serialization', () => {
+  const callout = (hProperties: Record<string, unknown>, children: RootContent[]): MdastRoot => ({
+    type: 'root',
+    children: [
+      {
+        type: NodeTypes.callout,
+        data: { hName: 'Callout', hProperties },
+        children,
+      } as RootContent,
+    ],
+  });
+
+  it('always serializes a callout with a heading to JSX, persisting icon + theme', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Title here' }] },
+      { type: 'paragraph', children: [{ type: 'text', value: 'Body with markdown.' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout icon="📘" theme="info">
+  ### Title here
+
+  Body with markdown.
+</Callout>
+`,
+    );
+  });
+
+  it('drops the empty title slot for a body-only callout', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: true }, [
+      { type: 'paragraph', children: [{ type: 'text', value: '' }] },
+      { type: 'paragraph', children: [{ type: 'text', value: 'Content here' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout icon="📘" theme="info">
+  Content here
+</Callout>
+`,
+    );
+  });
+
+  it('serializes a custom fa-icon callout to JSX', () => {
+    const mdast = callout({ icon: 'fad fa-wagon-covered', theme: 'warn', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Heads up' }] },
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Callout icon="fad fa-wagon-covered" theme="warn">');
+    expect(result).toContain('### Heads up');
+  });
+
+  it('serializes a callout with font awesome icons to JSX', () => {
+    const mdast = callout({ icon: 'far fa-car-bolt', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Heads up' }] },
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toContain('<Callout icon="far fa-car-bolt" theme="info">');
+    expect(result).toContain('### Heads up');
+  });
+
+  it('fills a missing theme from the icon', () => {
+    const mdast = callout({ icon: '🚧', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Watch out' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="🚧" theme="warn">');
+  });
+
+  it('fills a missing icon from the theme', () => {
+    const mdast = callout({ theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'FYI' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="📘" theme="info">');
+  });
+
+  it('converts nested callouts in the body to JSX', () => {
+    const mdast = callout({ icon: '📘', theme: 'info', empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Outer' }] },
+      {
+        type: NodeTypes.callout,
+        data: { hName: 'Callout', hProperties: { icon: '🚧', theme: 'warn', empty: false } },
+        children: [{ type: 'heading', depth: 3, children: [{ type: 'text', value: 'Inner' }] }],
+      } as RootContent,
+    ]);
+
+    const result = mdxishMdastToMd(mdast);
+    expect(result).toBe(`<Callout icon="📘" theme="info">
+  ### Outer
+
+  <Callout icon="🚧" theme="warn">
+    ### Inner
+  </Callout>
+</Callout>
+`);
   });
 });
