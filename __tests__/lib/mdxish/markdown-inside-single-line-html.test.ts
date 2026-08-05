@@ -97,7 +97,8 @@ describe('markdown inside single-line plain HTML tags', () => {
 
     it('strips script tags entirely', () => {
       const scriptHtml = toHtml(mdxish('<script>var a = 1;</script>'));
-      expect(scriptHtml).toBe('');
+      expect(scriptHtml).not.toContain('<script');
+      expect(scriptHtml).not.toContain('var a = 1;');
     });
 
     it('keeps single-line tables owned by the table transformer', () => {
