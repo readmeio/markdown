@@ -5,7 +5,7 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS, NON_REPARSED_BODY_TAGS } from '../../../utils/common-html-words';
+import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
@@ -30,12 +30,14 @@ const plainBlockClaimTagNames = new Set(
   [...htmlBlockNames].filter(tag => !HTML_TABLE_STRUCTURE_TAGS.has(tag) && !HTML_VOID_ELEMENTS.has(tag)),
 );
 
-// Both are 4 columns per CommonMark, but they mean different things: a tab advances
-// to the next multiple of TAB_STOP_WIDTH, and INDENTED_CODE_MIN_COLUMNS is the depth
-// at which a line would fragment into indented code. Named separately so the two
-// concepts don't read as one incidental literal.
-const TAB_STOP_WIDTH = 4;
-const INDENTED_CODE_MIN_COLUMNS = 4;
+const foreignContentTags = new Set<string>(FOREIGN_CONTENT_TAGS);
+
+// Type-7 lowercase tags (a, span, button, unknown names): CommonMark ends their block
+// at a blank line, so the wrapper's children don't re-nest into one element. Only
+// claimable in block-wrapper shape (see `blockWrapperOpenerRest`), and never for voids
+// or raw/foreign-content bodies, which have dedicated owners.
+const isBlockWrapperClaimTagName = (tag: string): boolean =>
+  !htmlFlowTagNames.has(tag) && !HTML_VOID_ELEMENTS.has(tag) && !foreignContentTags.has(tag);
 
 function resolveToMdxComponent(events: Parameters<Resolver>[0]) {
   let index = events.length;
@@ -103,18 +105,8 @@ function createTokenize(mode: 'flow' | 'text') {
     // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
     let isPlainBlockClaim = false;
     let pendingBlankLine = false;
-    // Leading indent columns of the current plain-claim line, reset per line; ≥4 is
-    // where CommonMark would fragment the island as indented code. Tabs advance to the
-    // next 4-column stop — the same rule `expandIndentToColumns`
-    // (processor/transform/mdxish/indentation.ts) applies, kept in sync by hand since
-    // this side works on a `Code` stream, not a string. NB: do NOT swap this for
-    // `self.now().column`; micromark bumps the point column by 1 per `horizontalTab`
-    // code (the trailing `virtualSpace` codes don't move it), so it measures a tab as
-    // 1 column, reviving the tab-under-measurement bug this math exists to avoid.
-    let plainClaimIndentColumns = 0;
-    // True once a non-blank line follows the opener: a deep island below it is nested
-    // (cosmetic indent), not top-of-body indented code.
-    let sawPlainBlockBodyContent = false;
+    // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
+    let pendingBlockWrapperClaim = false;
 
     // Code span tracking
     let codeSpanOpenSize = 0;
@@ -395,15 +387,10 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr) {
-          // Plain lowercase block tags stay claimable in flow, gated per line by
-          // `plainClaimLineStart`; everything else falls through to CommonMark.
-          if (!isFlow || !plainBlockClaimTagNames.has(tagName)) return nok(code);
-          isPlainBlockClaim = true;
-        }
+        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
         effects.consume(code);
         onOpenerLine = isFlow;
-        return body;
+        return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
       }
 
       // Quoted attribute value
@@ -467,6 +454,34 @@ function createTokenize(mode: 'flow' | 'text') {
       return afterOpenTagName(code);
     }
 
+    // Whether a brace-less lowercase flow tag is claimable: type-6 tags immediately,
+    // type-7 tags pending the block-wrapper check; anything else is CommonMark's.
+    function claimBraceLessTag(): boolean {
+      if (!isFlow) return false;
+      if (plainBlockClaimTagNames.has(tagName)) {
+        isPlainBlockClaim = true;
+        return true;
+      }
+      if (isBlockWrapperClaimTagName(tagName)) {
+        pendingBlockWrapperClaim = true;
+        return true;
+      }
+      return false;
+    }
+
+    // A type-7 tag is claimed only as a block wrapper: opener alone on its line
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
+    function blockWrapperOpenerRest(code: Code): State | undefined {
+      if (markdownSpace(code)) {
+        effects.consume(code);
+        return blockWrapperOpenerRest;
+      }
+      if (!markdownLineEnding(code)) return nok(code);
+      pendingBlockWrapperClaim = false;
+      isPlainBlockClaim = true;
+      return body(code);
+    }
+
     // Continuation for multi-line opening tags
     function openTagContinuationStart(code: Code): State | undefined {
       return effects.check(nonLazyContinuationStart, openTagContinuationNonLazy, continuationAfter)(code);
@@ -516,8 +531,6 @@ function createTokenize(mode: 'flow' | 'text') {
 
       if (code !== codes.space && code !== codes.horizontalTab) {
         openerLineHasContent = true;
-        // Continuation content marks a later deep island as nested, not indented code.
-        if (!onOpenerLine) sawPlainBlockBodyContent = true;
       }
 
       if (code === codes.backslash) {
@@ -887,10 +900,7 @@ function createTokenize(mode: 'flow' | 'text') {
         return inBodyBraceExpr(code);
       }
 
-      if (isPlainBlockClaim) {
-        plainClaimIndentColumns = 0;
-        return plainClaimLineStart(code);
-      }
+      if (isPlainBlockClaim) return plainClaimLineStart(code);
       return bodyLineStart(code);
     }
 
@@ -916,13 +926,11 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     // Line-start gate for plain block claims. After a blank line the block may only
-    // continue on a tag line (`<…`); any markdown island (`**bold**`, `[block:…]`, a
-    // fence) refuses so CommonMark html-flow reparses it exactly as it does today.
+    // continue on a markup-only tag line (`<…`); anything else refuses, so CommonMark
+    // reparses it as markdown and rehype-raw re-nests it into the wrapper.
     function plainClaimLineStart(code: Code): State | undefined {
       // Leading whitespace only → treat as a blank line, matching CommonMark.
-      if (code === codes.space || code === codes.horizontalTab) {
-        plainClaimIndentColumns +=
-          code === codes.horizontalTab ? TAB_STOP_WIDTH - (plainClaimIndentColumns % TAB_STOP_WIDTH) : 1;
+      if (markdownSpace(code)) {
         effects.consume(code);
         return plainClaimLineStart;
       }
@@ -932,19 +940,6 @@ function createTokenize(mode: 'flow' | 'text') {
         return bodyContinuationStart(code);
       }
       if (pendingBlankLine) {
-        // A 4+ col island nested under other tags is cosmetic nesting indent, not code:
-        // keep claiming so promotion dedents + re-parses it as markdown (RM-17560).
-        // Tags whose bodies stay raw are excluded — a claimed island there would never
-        // be re-parsed and would leak as literal text.
-        if (
-          plainClaimIndentColumns >= INDENTED_CODE_MIN_COLUMNS &&
-          sawPlainBlockBodyContent &&
-          !NON_REPARSED_BODY_TAGS.has(tagName)
-        ) {
-          return plainClaimContinue(code);
-        }
-        // Otherwise only a markup-only tag line continues; markdown/prose falls back to
-        // CommonMark so it parses and rehype-raw re-nests it into the wrapper.
         if (code !== codes.lessThan) return nok(code);
         return effects.check(markupOnlyContinuation, plainClaimContinue, nok)(code);
       }
@@ -984,8 +979,10 @@ function createTokenize(mode: 'flow' | 'text') {
  * transformer. All other PascalCase is flow-only; ReadMe's custom components
  * are authored as block-level elements.
  *
- * Excludes tags handled by dedicated tokenizers: Table, HTMLBlock, Glossary,
- * Anchor.
+ * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
+ * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
+ * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.
  *
  * The resulting `html` mdast node is later restructured into an
  * `mdxJsxFlowElement` (block) or `mdxJsxTextElement` (inline) by the

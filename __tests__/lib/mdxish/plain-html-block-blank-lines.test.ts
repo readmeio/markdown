@@ -1,8 +1,9 @@
+import type { RMDXModule } from '../../../types';
 import type { Element } from 'hast';
 
 import { toHtml } from 'hast-util-to-html';
 
-import { mdxish } from '../../../lib';
+import { mdxish, compile, run } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 // The mdxComponent flow tokenizer claims plain lowercase block tags (no `{…}`
@@ -193,9 +194,9 @@ const x = 1;
     expect(html).toContain('<strong>super nested ul</strong>');
   });
 
-  it('claims a nested wrapper so a 4+ column markdown island parses, not fragments (RM-17560)', () => {
-    // 6-col nesting indent would let CommonMark swallow the island as indented code;
-    // being nested (prior body content), the block is claimed and its body re-parsed.
+  it('parses a 4+ column markdown island inside a nested wrapper, not fragments (RM-17560)', () => {
+    // The island falls back to CommonMark at the blank line and parses as markdown
+    // (indented code is disabled); rehype-raw re-nests it into the wrapper fragments.
     const md = `<ol>
   <li>
     <details>
@@ -220,7 +221,7 @@ const x = 1;
     expect(toHtml(ast)).not.toContain('&#x3C;/details>');
   });
 
-  it('claims a 4+ col island in a single 4-space-indented wrapper, no nesting (RM-17560)', () => {
+  it('parses a 4+ col island in a single 4-space-indented wrapper, no nesting (RM-17560)', () => {
     const md = `<div class="card">
     <p>Install the CLI:</p>
 
@@ -238,7 +239,7 @@ const x = 1;
     expect(toHtml(ast)).not.toContain('```');
   });
 
-  it('claims a 4+ col island under 2-space-nested layout tags (RM-17560)', () => {
+  it('parses a 4+ col island under 2-space-nested layout tags (RM-17560)', () => {
     const md = `<section>
   <article>
     <p>Release notes</p>
@@ -262,7 +263,7 @@ const x = 1;
     expect(toHtml(ast)).not.toContain('###');
   });
 
-  it('claims a 4+ col prose + fence island in a <details> without a list wrapper (RM-17560)', () => {
+  it('parses a 4+ col prose + fence island in a <details> without a list wrapper (RM-17560)', () => {
     const md = `<details>
     <summary>How do I authenticate?</summary>
 
@@ -299,10 +300,10 @@ const x = 1;
     expect(toHtml(ast)).not.toContain('```');
   });
 
-  it('keeps the CommonMark fallback for a deep island inside <figure> (non-promotable)', () => {
-    // Note: In this example the indented content would still be parsed as code
-    // Since this looks like an edge case, we'll leave it as is first since it
-    // requires a bigger refactor.
+  it('parses a deep island inside <figure> via the CommonMark fallback', () => {
+    // Figure bodies aren't re-parsed by promotion, but the island still renders:
+    // it falls back at the blank line and parses as markdown (indented code is
+    // disabled), landing between the figure's raw fragments.
     const md = `<figure>
   <figcaption>cap</figcaption>
 
@@ -320,6 +321,11 @@ const x = 1;
     expect(findElementByTagName(figure!, 'figcaption')).toMatchObject({
       children: [{ type: 'text', value: 'cap' }],
     });
+    expect(findElementByTagName(ast, 'h3')).toMatchObject({
+      children: [{ type: 'text', value: 'Heading' }],
+    });
+    expect(toHtml(ast)).toContain('const x = 1;');
+    expect(toHtml(ast)).not.toContain('```');
   });
 
   it('allows blank lines inside a brace expression body (e.g. a .map() callback)', () => {
@@ -430,6 +436,58 @@ const x = 1;
     });
   });
 
+  // `<a>` is a "transparent" element: inline when it wraps inline content, but a
+  // block wrapper when its opener sits alone on a line above block content (e.g.
+  // a link-styled "card"). Only the block-wrapper shape is claimed, so a blank
+  // line + 4-col indent inside it doesn't fragment into an indented code block.
+  it('keeps a block-wrapping <a> whole across a blank line + indented children', () => {
+    const md = `<div class="content-card-container">
+  <a href="invoices" class="content-card">
+    <div class="content-card-content">
+
+      <i class="far fa-file-invoice"></i>
+      <span>
+        <h3>How to View and Download Invoices</h3>
+        <p>Access detailed invoices for VoIP and DID numbers.</p>
+      </span>
+    </div>
+  </a>
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+    const anchor = findElementByTagName(ast, 'a');
+    expect(anchor).toMatchObject({ properties: { href: 'invoices', className: ['content-card'] } });
+    // The wrapped block content re-nests into the anchor instead of leaking out.
+    expect(findElementByTagName(anchor!, 'h3')).toMatchObject({
+      children: [{ type: 'text', value: 'How to View and Download Invoices' }],
+    });
+    expect(findElementByTagName(anchor!, 'p')).not.toBeNull();
+  });
+
+  it('leaves a lone inline <a> line as a paragraph-wrapped link (not a block claim)', () => {
+    const ast = mdxish('<a href="https://example.com">Example</a>');
+
+    expect(ast.children).toHaveLength(1);
+    expect((ast.children[0] as Element).tagName).toBe('p');
+    expect(findElementByTagName(ast, 'a')).toMatchObject({
+      properties: { href: 'https://example.com' },
+      children: [{ type: 'text', value: 'Example' }],
+    });
+  });
+
+  it('keeps an inline <a> inside prose inline', () => {
+    const ast = mdxish('Click <a href="/x">here</a> now');
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+    expect(findElementByTagName(ast, 'a')).toMatchObject({
+      properties: { href: '/x' },
+      children: [{ type: 'text', value: 'here' }],
+    });
+  });
+
   it('falls back cleanly when the wrapper tag never closes', () => {
     const md = `<div className="wrap">
   <p>one</p>
@@ -439,5 +497,57 @@ plain trailing text`;
     const html = toHtml(mdxish(md));
 
     expect(html).toContain('plain trailing text');
+  });
+
+  // A capitalized custom component is a block wrapper too: its indented children
+  // must survive a blank line rather than collapsing into an indented-code block.
+  describe('custom component wrappers', () => {
+    const components: Record<string, RMDXModule> = {
+      Card: run(compile('\nexport const Card = ({ children }) => {\n  return <div>{children}</div>;\n};\n\n<Card />\n')),
+    };
+
+    it('keeps an indented HTML island whole across a blank line', () => {
+      const md = `<Card href="report" title="Report">
+  <div class="stats">
+
+      <h3>Quarterly numbers</h3>
+      <p>Deeply indented HTML.</p>
+  </div>
+</Card>`;
+
+      const ast = mdxish(md, { components });
+
+      expect(findElementByTagName(ast, 'pre')).toBeNull();
+      const card = findElementByTagName(ast, 'Card');
+      expect(card).toMatchObject({ properties: { href: 'report', title: 'Report' } });
+      expect(findElementByTagName(card!, 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Quarterly numbers' }],
+      });
+      expect(findElementByTagName(card!, 'p')).toMatchObject({
+        children: [{ type: 'text', value: 'Deeply indented HTML.' }],
+      });
+    });
+
+    it('parses an indented markdown island (heading + fenced code) inside a component', () => {
+      const md = `<Card href="install">
+
+  ### Install the CLI
+
+  \`\`\`bash
+  npm install -g @readme/rdme
+  \`\`\`
+</Card>`;
+
+      const ast = mdxish(md, { components });
+
+      const card = findElementByTagName(ast, 'Card');
+      expect(findElementByTagName(card!, 'h3')).toMatchObject({
+        children: [{ type: 'text', value: 'Install the CLI' }],
+      });
+      // Only the fence body is code — the heading above it stays a real heading.
+      const code = findElementByTagName(card!, 'code');
+      expect(code).not.toBeNull();
+      expect(JSON.stringify(code)).toContain('npm install -g @readme/rdme');
+    });
   });
 });

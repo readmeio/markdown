@@ -310,6 +310,16 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('preserves indented prose as prose, not a fenced code block, in mdxish mode', async () => {
+    // Without disabling indented code, the round-trip would re-emit the indented
+    // line as a ```-fenced block, which then renders as code (CX-3739).
+    const input = 'Intro.\n\n    indented prose line\n\n<!-- c -->\nAfter.';
+
+    const output = await stripComments(input, { mdxish: true });
+    expect(output).toBe('Intro.\n\nindented prose line\n\nAfter.');
+    expect(output).not.toContain('```');
+  });
+
   it('does not escape custom components with array/object expression props in mdxish mode', async () => {
     // Component should not be escaped when stripping comments, and whitespace preserved
     const input = `<DosAndDonts
