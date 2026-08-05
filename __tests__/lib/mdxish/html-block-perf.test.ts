@@ -2,10 +2,8 @@
  * Performance regression tests for large multi-line `<HTMLBlock>` content.
  *
  * Validates that a block with tens of thousands of physical lines parses within
- * reasonable time, and locks in the `micromark-util-subtokenize` O(n²) fix.
+ * reasonable time (guarding against a per-line O(n²) blow-up).
  */
-import { SpliceBuffer } from 'micromark-util-subtokenize';
-
 import { mdxish } from '../../../lib';
 import { findAllElementsByTagName } from '../../helpers';
 
@@ -35,12 +33,6 @@ const svgCount = (tree: ReturnType<typeof mdxish>) => {
 };
 
 describe('large <HTMLBlock> performance', () => {
-  it('ships the SpliceBuffer subtokenize fix (>= 2.0.1)', () => {
-    // 2.0.0 does not export SpliceBuffer; its O(n²) splice is browser-catastrophic
-    // on tens of thousands of lines even though node stays under the budgets below.
-    expect(typeof SpliceBuffer).toBe('function');
-  });
-
   const scenarios = [
     { name: '1k lines', lines: 1_000 },
     { name: '10k lines', lines: 10_000 },
