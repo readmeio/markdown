@@ -250,6 +250,27 @@ export const toc = [
     expect(await screen.findByText('Profile {"plan":"enterprise"} 25')).toBeDefined();
   });
 
+  it('falls back to the variable name for nullish values in labels', async () => {
+    const md = `# Hello {user.nullValue}
+
+## Bye {user.undefinedValue}
+`;
+    const variables = {
+      user: {
+        nullValue: null,
+        undefinedValue: undefined,
+      },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
+
+    render(<Toc />);
+
+    expect(await screen.findByText('Hello nullValue')).toBeDefined();
+    expect(await screen.findByText('Bye undefinedValue')).toBeDefined();
+  });
+
   it('keeps mixed inline phrasing together', () => {
     const md = '## Hello {user.name}! N*ic*e [day](https://example.com)s';
     const variables = {

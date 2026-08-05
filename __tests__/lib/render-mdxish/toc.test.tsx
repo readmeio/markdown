@@ -152,6 +152,27 @@ describe('toc transformer', () => {
     expect(await screen.findByText('Profile {"plan":"enterprise"} 25')).toBeDefined();
   });
 
+  it('falls back to the variable name for nullish values in labels', async () => {
+    const md = `# Hello {user.nullValue}
+
+## Bye {user.undefinedValue}
+`;
+    const variables = {
+      user: {
+        nullValue: null,
+        undefinedValue: undefined,
+      },
+      defaults: [],
+    };
+
+    const { Toc } = renderMdxish(mdxish(md), { variables });
+
+    render(<Toc />);
+
+    expect(await screen.findByText('Hello nullValue')).toBeDefined();
+    expect(await screen.findByText('Bye undefinedValue')).toBeDefined();
+  });
+
   it('keeps adjacent legacy variable values and suffixes together', () => {
     const md = '## Hello <<name>>! Nice';
     const variables = {
