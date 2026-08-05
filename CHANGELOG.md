@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 14.14.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** don't serialise GFM tables -> JSX because of line breaks ([#1577](https://github.com/readmeio/markdown/issues/1577)) ([1ef7f10](https://github.com/readmeio/markdown/commit/1ef7f109bd54ddb44ccb6f184a4ee12813f9f70b))
+
 ## Version 14.14.1
 ### 🛠 Fixes & Updates
 
