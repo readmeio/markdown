@@ -1,4 +1,5 @@
 import { toHtml } from 'hast-util-to-html';
+import { removePosition } from 'unist-util-remove-position';
 
 import { mdxish } from '../../../lib';
 import { collectNodes, findAllElementsByTagName, findElementByTagName, parseMdxish } from '../../helpers';
@@ -16,6 +17,30 @@ describe('markdown inside single-line plain HTML tags', () => {
       children: [{ tagName: 'strong', children: [{ type: 'text', value: 'bold' }] }],
     });
     expect(html).not.toContain('**');
+  });
+
+  it('promotes a sibling wrapper that follows a wrapper with trailing content', () => {
+    // The first wrapper's trailing "t" is spliced in as a sibling mid-walk, shifting
+    // the second wrapper down. The transformer must still reach and promote it so its
+    // markdown parses instead of leaking as literal `**` (regression: the traversal
+    // used to stop early after a splice).
+    const ast = mdxish('- <div>**a**</div>t\n\n  <div>**b**</div>');
+    const html = toHtml(ast);
+
+    expect(findAllElementsByTagName(ast, 'strong')).toHaveLength(2);
+    expect(html).not.toContain('**');
+  });
+
+  it('promotes a nested {…}-attr tag unwrapped from a sole paragraph', () => {
+    const ast = mdxish('<div>hello <span attr={x}>**bold**</span></div>');
+    const html = toHtml(ast);
+
+    expect(findElementByTagName(ast, 'span')).toMatchObject({
+      tagName: 'span',
+      children: [{ tagName: 'strong', children: [{ type: 'text', value: 'bold' }] }],
+    });
+    expect(html).not.toContain('**');
+    expect(html).not.toContain('{x}');
   });
 
   it('preserves plain HTML attributes on the promoted wrapper', () => {
@@ -107,6 +132,35 @@ describe('markdown inside single-line plain HTML tags', () => {
       expect(findElementByTagName(ast, 'strong')).toMatchObject({
         children: [{ type: 'text', value: 'x' }],
       });
+    });
+
+    it('reassembles a raw table preceded by text on the same line (CX-3645)', () => {
+      const source = 'Bad request <table><tr><td>Error</td></tr></table>';
+      const mdast = parseMdxish(source, { safeMode: true });
+      removePosition(mdast, { force: true });
+
+      expect(mdast).toStrictEqual({
+        type: 'root',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { type: 'text', value: 'Bad request ' },
+              { type: 'html', value: '<table>' },
+              { type: 'html', value: '<tr>' },
+              { type: 'html', value: '<td>' },
+              { type: 'text', value: 'Error' },
+              { type: 'html', value: '</td>' },
+              { type: 'html', value: '</tr>' },
+              { type: 'html', value: '</table>' },
+            ],
+          },
+        ],
+      });
+
+      expect(toHtml(mdxish(source, { safeMode: true }))).toBe(
+        '<p>Bad request </p><table><tbody><tr><td>Error</td></tr></tbody></table><p></p>',
+      );
     });
 
     it('does not promote a wrapper holding a nested table', () => {

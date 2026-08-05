@@ -5,7 +5,7 @@ import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 // Markdown inside plain lowercase HTML must parse even when indented for
 // readability — at top level and nested inside custom components (whose bodies are
-// re-parsed). Guards HTML-flow swallowing and 4+-column indented-code fallout.
+// re-parsed). Guards HTML-flow swallowing and deep-indent fragmentation fallout.
 describe('markdown inside indented plain HTML blocks', () => {
   it('parses indented markdown in a <div> nested inside <Columns>/<Column>', () => {
     const md = `<Columns layout="auto">
@@ -88,6 +88,25 @@ describe('markdown inside indented plain HTML blocks', () => {
     expect(findElementByTagName(ast, 'a')).toMatchObject({ properties: { href: 'https://example.com' } });
   });
 
+  it('parses markdown directly after a deeply indented (4+ col) opening tag', () => {
+    const md = `<div>
+    <section>
+    ## Deep heading
+    </section>
+</div>`;
+
+    const ast = mdxish(md);
+
+    expect(findElementByTagName(ast, 'pre')).toBeNull();
+
+    // The heading must re-nest inside the wrapper, not float out beside it.
+    const section = findElementByTagName(ast, 'section');
+    expect(section).not.toBeNull();
+    expect(findElementByTagName(section!, 'h2')).toMatchObject({
+      children: [{ type: 'text', value: 'Deep heading' }],
+    });
+  });
+
   it('keeps deeply indented (4+ columns) HTML lines inside a wrapper as HTML (#1344)', () => {
     const md = `<div>
         <a class="glossary-letter" href="#a">A</a> |
@@ -101,9 +120,9 @@ describe('markdown inside indented plain HTML blocks', () => {
     expect(findAllElementsByTagName(ast, 'a')).toHaveLength(2);
   });
 
-  it('keeps content indented 4+ columns relative to its nested wrapper as an indented code block', () => {
-    // Relative indentation is preserved when component bodies are dedented, so
-    // content 4+ columns deeper than the surrounding tags still parses as code.
+  it('renders content indented 4+ columns inside a nested wrapper as prose, not code (CX-3739)', () => {
+    // Indented code blocks are disabled (matching MDX), so deep readability
+    // indentation never becomes code — code requires an explicit fence.
     const md = `<Column>
   <div>
 
@@ -114,7 +133,8 @@ describe('markdown inside indented plain HTML blocks', () => {
 
     const ast = mdxish(md);
 
-    expect(findElementByTagName(ast, 'code')).not.toBeNull();
+    expect(findElementByTagName(ast, 'code')).toBeNull();
+    expect(toHtml(ast)).toContain("const literal = 'code';");
   });
 
   it('does not treat deeply indented content as code when nested under unindented HTML', () => {
