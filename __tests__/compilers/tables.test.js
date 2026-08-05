@@ -66,21 +66,18 @@ describe('table compiler', () => {
         th 1
         🦉
       </th>
-
       <th style={{ textAlign: "center" }}>
         th 2
         🦉
       </th>
     </tr>
   </thead>
-
   <tbody>
     <tr>
       <td style={{ textAlign: "center" }}>
         cell 1
         🦉
       </td>
-
       <td style={{ textAlign: "center" }}>
         cell 2
         🦉
@@ -112,21 +109,18 @@ describe('table compiler', () => {
               th 1
               🦉
             </th>
-
             <th style={{ textAlign: "center" }}>
               th 2
               🦉
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "center" }}>
               cell 1
               🦉
             </td>
-
             <td style={{ textAlign: "center" }}>
               cell 2
               🦉
@@ -159,21 +153,18 @@ describe('table compiler', () => {
               th 1
               🦉
             </th>
-
             <th>
               th 2
               🦉
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td>
               cell 1
               🦉
             </td>
-
             <td>
               cell 2
               🦉
@@ -213,19 +204,16 @@ describe('table compiler', () => {
               * 2
               * 3
             </th>
-
             <th style={{ textAlign: "center" }}>
               th 2
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "center" }}>
               cell 1
             </td>
-
             <td style={{ textAlign: "center" }}>
               cell 2
             </td>
@@ -312,19 +300,16 @@ describe('table compiler', () => {
             <th>
               * list
             </th>
-
             <th>
               th 2
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td>
               cell 1
             </td>
-
             <td>
               cell 2
             </td>
@@ -384,19 +369,16 @@ describe('table compiler', () => {
                 force
                 jsx
               </th>
-
               <th style={{ textAlign: "left" }}>
 
               </th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <td style={{ textAlign: "left" }}>
                 \`foo | bar\`
               </td>
-
               <td style={{ textAlign: "left" }}>
 
               </td>
