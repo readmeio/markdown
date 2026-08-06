@@ -60,6 +60,57 @@ describe.each(engines)('strip scripts (%s engine)', (_, render) => {
   });
 });
 
+// Foreign-content and raw-text wrappers change how the parser treats a nested
+// `<script>`; `<math><mtext>` in particular is a text-integration point that
+// switches back to HTML parsing, which is the namespace-confusion bypass.
+describe.each(renderingEngines)('strip scripts nested in wrappers (%s engine)', (_, render) => {
+  it.each([
+    ['math/mtext', '<math><mtext><script>alert(1)</script></mtext></math>'],
+    ['svg', '<svg><script>alert(1)</script></svg>'],
+    ['noscript', '<noscript><script>alert(1)</script></noscript>'],
+    ['template', '<template><script>alert(1)</script></template>'],
+  ])('strips a <script> nested inside %s', (_wrapper, md) => {
+    const Content = render(md);
+    const html = renderToString(<Content />);
+
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('alert(1)');
+  });
+});
+
+// `CompileOpts` extends mdx's `CompileOptions`, so a caller can pass `rehypePlugins`.
+// Those must extend the pipeline rather than replace it, or the stripper disappears.
+describe('caller-supplied rehype plugins', () => {
+  it.each([['empty array', []] as const, ['null', null] as const])(
+    'cannot displace the script stripper (%s)',
+    (_label, rehypePlugins) => {
+      const Content = execute('<script>alert(1)</script>', { rehypePlugins }) as MDXContent;
+      const html = renderToString(<Content />);
+
+      expect(html).not.toContain('<script');
+      expect(html).not.toContain('alert(1)');
+    },
+  );
+
+  it('extends the pipeline rather than replacing it', () => {
+    const appendMarker = () => (tree: Root) => {
+      tree.children.push({
+        type: 'element',
+        tagName: 'p',
+        properties: {},
+        children: [{ type: 'text', value: 'caller-plugin-ran' }],
+      });
+    };
+
+    const Content = execute('# Heading', { rehypePlugins: [appendMarker] }) as MDXContent;
+    const html = renderToString(<Content />);
+
+    expect(html).toContain('caller-plugin-ran');
+    // `rehypeSlug` ships in the default rehype plugins; its id proves they survived.
+    expect(html).toContain('id="heading"');
+  });
+});
+
 describe('rehypeStripScripts plugin', () => {
   it('strips case-variant literal script nodes but not Script component references', () => {
     const tree: Root = {
