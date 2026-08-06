@@ -246,6 +246,57 @@ Second paragraph
       });
     });
 
+    describe('indented component bodies (RM-17790)', () => {
+      // The mdxish serializer writes component children at 2 columns, so this is the
+      // shape every editor save produces — a body whose lines share an indent too
+      // shallow for `safeDeindent` to strip.
+      const listNesting = (markdown: string) => {
+        const lists = collectNodes(parseWithPlugin(markdown), 'list') as Parent[];
+        return {
+          count: lists.length,
+          items: lists[0] ? lists[0].children.length : 0,
+        };
+      };
+
+      it.each([
+        ['unindented', ''],
+        ['two spaces', '  '],
+        ['three spaces', '   '],
+        ['four spaces', '    '],
+        ['a tab', '\t'],
+      ])('keeps a bullet list flat when the body is indented by %s', (_label, indent) => {
+        const markdown = `<Accordion title="Test">
+${indent}- test 1
+${indent}- test 2
+${indent}- test 3
+</Accordion>`;
+
+        expect(listNesting(markdown)).toStrictEqual({ count: 1, items: 3 });
+      });
+
+      it('still nests items indented deeper than their siblings', () => {
+        const markdown = `<Accordion title="Test">
+  - test 1
+    - nested
+  - test 2
+</Accordion>`;
+
+        expect(listNesting(markdown)).toStrictEqual({ count: 2, items: 2 });
+      });
+
+      it('keeps sibling paragraphs at the same level in an indented body', () => {
+        const markdown = `<Accordion title="Test">
+  First paragraph
+
+  Second paragraph
+</Accordion>`;
+        const tree = parseWithPlugin(markdown);
+
+        const [accordion] = collectNodes(tree, 'mdxJsxFlowElement') as Parent[];
+        expect(accordion.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
+      });
+    });
+
     describe('multiple components in combination', () => {
       it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
         const markdown = `
@@ -918,7 +969,7 @@ third\`} />`;
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({ name: 'MyComponent' });
       });
-    })
+    });
   });
 
   describe('fenced code blocks starting a continuation line', () => {
@@ -968,7 +1019,10 @@ After the callout.`;
       expect(code[0].value).toBe('{');
 
       // ...and `</Callout>` never leaks out as a stray html node.
-      const strayCloser = collectNodes(tree, n => n.type === 'html' && (n as { value?: string }).value === '</Callout>');
+      const strayCloser = collectNodes(
+        tree,
+        n => n.type === 'html' && (n as { value?: string }).value === '</Callout>',
+      );
       expect(strayCloser).toHaveLength(0);
 
       // Trailing content lands as a sibling after the callout, not inside it.
@@ -992,7 +1046,10 @@ After the callout.`;
           type: 'mdxJsxFlowElement',
           name: 'Component',
           children: [
-            { type: 'code', value: '  {' },
+            // The fence keeps its 2-column indent now that the body isn't dedented
+            // lopsidedly (RM-17790), so CommonMark strips that indent off its content —
+            // matching the identically shaped CX-3704 case above.
+            { type: 'code', value: '{' },
             { type: 'paragraph', children: [{ type: 'text', value: 'test' }] },
           ],
         },

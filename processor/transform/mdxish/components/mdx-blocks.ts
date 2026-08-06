@@ -66,13 +66,15 @@ function safeDeindent(text: string): string {
     .join('\n');
 }
 
+const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
+
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
+  const reparseSource = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(value)));
   const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
