@@ -150,7 +150,6 @@ describe('extension registration is centralised (CX-3708)', () => {
   it('finds every known sub-parser', () => {
     expect(registrationSites.map(site => site.path).sort()).toStrictEqual([
       'lib/mdxish.ts',
-      'lib/mdxishTags.ts',
       'lib/stripComments.ts',
       'processor/transform/mdxish/components/utils.ts',
       'processor/transform/mdxish/magic-blocks/magic-block-transformer.ts',

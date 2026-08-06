@@ -121,13 +121,6 @@ export const FEATURES = {
     'emptyTaskListItem',
   ],
 
-  /**
-   * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
-   * Omits `htmlBlockComponent` deliberately since it's not a custom component,
-   * and no components are meant to be nested inside it (it's just for raw HTML).
-   */
-  tags: BLOCK_CLAIMS.filter(feature => feature !== 'htmlBlockComponent'),
-
   /** `tables/mdxish-tables.ts` — table cells */
   tableCell: [...INLINE],
 
