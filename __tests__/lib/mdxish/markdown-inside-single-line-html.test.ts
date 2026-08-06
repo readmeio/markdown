@@ -118,12 +118,9 @@ describe('markdown inside single-line plain HTML tags', () => {
     it('keeps raw-content tag bodies literal', () => {
       const preHtml = toHtml(mdxish('<pre>**x**</pre>'));
       expect(preHtml).toContain('**x**');
-    });
 
-    it('strips script tags entirely', () => {
       const scriptHtml = toHtml(mdxish('<script>var a = 1;</script>'));
-      expect(scriptHtml).not.toContain('<script');
-      expect(scriptHtml).not.toContain('var a = 1;');
+      expect(scriptHtml).toContain('var a = 1;');
     });
 
     it('keeps single-line tables owned by the table transformer', () => {
@@ -264,7 +261,9 @@ describe('markdown inside single-line plain HTML tags', () => {
       // hast, so assert on the promoted mdast instead.
       const tree = parseMdxish('<CustomThing><div>**bold**</div></CustomThing>');
 
-      expect(collectNodes(tree, 'strong')).toMatchObject([{ children: [{ type: 'text', value: 'bold' }] }]);
+      expect(collectNodes(tree, 'strong')).toMatchObject([
+        { children: [{ type: 'text', value: 'bold' }] },
+      ]);
     });
   });
 });

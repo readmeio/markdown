@@ -4,18 +4,30 @@ import type { MDXContent } from 'mdx/types';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { unified } from 'unified';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { compile, mdxish, renderMdxish } from '../../lib';
-import { rehypeStripScripts } from '../../processor/plugin/strip-scripts';
-import { renderingEngines } from '../components/utils';
+import { rehypeStripTags, STRIPPED_TAG_NAMES } from '../../processor/plugin/strip-tags';
 import { execute, findElementByTagName } from '../helpers';
 
+// Stripping is opt-in, so every engine here passes `sanitize: true`. The default
+// (off) is covered by the `sanitize option` block below.
+const primaryEngines = [
+  ['mdx', (md: string) => execute(md, { sanitize: true }) as MDXContent] as const,
+  ['mdxish', (md: string) => renderMdxish(mdxish(md, { sanitize: true })).default as MDXContent] as const,
+];
+
 const engines = [
-  ...renderingEngines,
-  ['md', (md: string) => execute(md, { format: 'md' }) as MDXContent] as const,
-  ['mdxish newEditorTypes', (md: string) => renderMdxish(mdxish(md, { newEditorTypes: true })).default] as const,
-  ['mdxish safeMode', (md: string) => renderMdxish(mdxish(md, { safeMode: true })).default] as const,
+  ...primaryEngines,
+  ['md', (md: string) => execute(md, { format: 'md', sanitize: true }) as MDXContent] as const,
+  [
+    'mdxish newEditorTypes',
+    (md: string) => renderMdxish(mdxish(md, { newEditorTypes: true, sanitize: true })).default as MDXContent,
+  ] as const,
+  [
+    'mdxish safeMode',
+    (md: string) => renderMdxish(mdxish(md, { safeMode: true, sanitize: true })).default as MDXContent,
+  ] as const,
 ];
 
 describe.each(engines)('strip scripts (%s engine)', (_, render) => {
@@ -63,7 +75,7 @@ describe.each(engines)('strip scripts (%s engine)', (_, render) => {
 // Foreign-content and raw-text wrappers change how the parser treats a nested
 // `<script>`; `<math><mtext>` in particular is a text-integration point that
 // switches back to HTML parsing, which is the namespace-confusion bypass.
-describe.each(renderingEngines)('strip scripts nested in wrappers (%s engine)', (_, render) => {
+describe.each(primaryEngines)('strip scripts nested in wrappers (%s engine)', (_, render) => {
   it.each([
     ['math/mtext', '<math><mtext><script>alert(1)</script></mtext></math>'],
     ['svg', '<svg><script>alert(1)</script></svg>'],
@@ -78,13 +90,37 @@ describe.each(renderingEngines)('strip scripts nested in wrappers (%s engine)', 
   });
 });
 
+describe('sanitize option', () => {
+  const doc = '<script>alert(1)</script>';
+
+  const sanitizeEngines = [
+    ['mdx', (sanitize?: boolean) => execute(doc, { sanitize }) as MDXContent] as const,
+    ['mdxish', (sanitize?: boolean) => renderMdxish(mdxish(doc, { sanitize })).default as MDXContent] as const,
+  ];
+
+  it.each(sanitizeEngines)('%s: keeps the script by default', (_engine, render) => {
+    expect(renderToString(React.createElement(render(undefined)))).toContain('alert(1)');
+  });
+
+  it.each(sanitizeEngines)('%s: keeps the script when explicitly disabled', (_engine, render) => {
+    expect(renderToString(React.createElement(render(false)))).toContain('alert(1)');
+  });
+
+  it.each(sanitizeEngines)('%s: strips the script when enabled', (_engine, render) => {
+    const html = renderToString(React.createElement(render(true)));
+
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('alert(1)');
+  });
+});
+
 // `CompileOpts` extends mdx's `CompileOptions`, so a caller can pass `rehypePlugins`.
 // Those must extend the pipeline rather than replace it, or the stripper disappears.
 describe('caller-supplied rehype plugins', () => {
   it.each([['empty array', []] as const, ['null', null] as const])(
     'cannot displace the script stripper (%s)',
     (_label, rehypePlugins) => {
-      const Content = execute('<script>alert(1)</script>', { rehypePlugins }) as MDXContent;
+      const Content = execute('<script>alert(1)</script>', { rehypePlugins, sanitize: true }) as MDXContent;
       const html = renderToString(<Content />);
 
       expect(html).not.toContain('<script');
@@ -104,6 +140,7 @@ describe('caller-supplied rehype plugins', () => {
 
     const Content = execute('# Heading\n\n<script>alert(1)</script>', {
       rehypePlugins: [appendMarker],
+      sanitize: true,
     }) as MDXContent;
     const html = renderToString(<Content />);
 
@@ -115,7 +152,27 @@ describe('caller-supplied rehype plugins', () => {
   });
 });
 
-describe('rehypeStripScripts plugin', () => {
+// Only `script` ships in the set today; this proves adding an entry is all a future
+// vector needs, across both node shapes.
+describe('STRIPPED_TAG_NAMES drives what gets stripped', () => {
+  const doc = '<iframe src="https://example.com/evil"></iframe>';
+
+  afterEach(() => {
+    STRIPPED_TAG_NAMES.delete('iframe');
+  });
+
+  it.each(primaryEngines)('%s: leaves a tag that is not in the set', (_engine, render) => {
+    expect(renderToString(React.createElement(render(doc)))).toContain('<iframe');
+  });
+
+  it.each(primaryEngines)('%s: strips a tag once it is added to the set', (_engine, render) => {
+    STRIPPED_TAG_NAMES.add('iframe');
+
+    expect(renderToString(React.createElement(render(doc)))).not.toContain('<iframe');
+  });
+});
+
+describe('rehypeStripTags plugin', () => {
   it('strips case-variant literal script nodes but not Script component references', () => {
     const tree: Root = {
       type: 'root',
@@ -129,7 +186,7 @@ describe('rehypeStripScripts plugin', () => {
       ],
     };
 
-    const result = unified().use(rehypeStripScripts).runSync(tree);
+    const result = unified().use(rehypeStripTags).runSync(tree);
 
     expect(result.children).toMatchObject([{ name: 'Script' }, { tagName: 'p' }]);
   });
@@ -143,7 +200,7 @@ describe('HTMLBlock exemption', () => {
   const doc = '<HTMLBlock>{`<script>alert(1)</script>`}</HTMLBlock>';
 
   it('keeps HTMLBlock scripts in the mdxish html property', () => {
-    const htmlBlock = findElementByTagName(mdxish(doc), 'html-block');
+    const htmlBlock = findElementByTagName(mdxish(doc, { sanitize: true }), 'html-block');
 
     expect(htmlBlock).toMatchObject({
       properties: { html: '<script>alert(1)</script>' },
@@ -151,6 +208,6 @@ describe('HTMLBlock exemption', () => {
   });
 
   it('keeps HTMLBlock scripts in the compiled mdx output', () => {
-    expect(compile(doc)).toContain('<script>alert(1)</script>');
+    expect(compile(doc, { sanitize: true })).toContain('<script>alert(1)</script>');
   });
 });
