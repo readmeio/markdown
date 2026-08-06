@@ -1,33 +1,10 @@
-import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import { scanPascalCaseTags } from './utils/scanPascalCaseTags';
 
-import { remark } from 'remark';
-import { visit } from 'unist-util-visit';
-
-import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
-import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
-import { isMDXElement } from '../processor/utils';
-
-import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
-
-const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tags);
-
-const tags = (doc: string) => {
-  const set = new Set<string>();
-
-  const processor = remark()
-    .data('micromarkExtensions', micromarkExtensions)
-    .data('fromMarkdownExtensions', fromMarkdownExtensions)
-    .use(mdxishMdxComponentBlocks)
-    .use(mdxishTables);
-  const tree = processor.parse(doc);
-
-  visit(processor.runSync(tree), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (node.name?.match(/^[A-Z]/)) {
-      set.add(node.name);
-    }
-  });
-
-  return Array.from(set);
-};
+/**
+ * Returns unique PascalCase custom component names in an MDXish document.
+ * Uses a linear scan (skips fenced/inline code and magic blocks) instead of a
+ * full MDAST parse.
+ */
+const tags = (doc: string): string[] => scanPascalCaseTags(doc, { skipMagicBlocks: true });
 
 export default tags;

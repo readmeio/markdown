@@ -1,21 +1,12 @@
-import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import { RMDX_BUILTIN_COMPONENT_TAGS } from './rmdxBuiltinComponentTags';
+import { scanPascalCaseTags } from './utils/scanPascalCaseTags';
 
-import { visit } from 'unist-util-visit';
-
-import { isMDXElement } from '../processor/utils';
-
-import mdast from './mdast';
-
-const tags = (doc: string) => {
-  const set = new Set<string>();
-
-  visit(mdast(doc), isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (node.name?.match(/^[A-Z]/)) {
-      set.add(node.name);
-    }
-  });
-
-  return Array.from(set);
-};
+/**
+ * Returns unique PascalCase custom component names in an RMDX document.
+ * Built-in ReadMe components coerced by `readmeComponentsTransformer` are
+ * excluded so the result matches post-mdast semantics without a full parse.
+ */
+const tags = (doc: string): string[] =>
+  scanPascalCaseTags(doc, { exclude: RMDX_BUILTIN_COMPONENT_TAGS });
 
 export default tags;
