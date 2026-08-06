@@ -102,9 +102,13 @@ describe('caller-supplied rehype plugins', () => {
       });
     };
 
-    const Content = execute('# Heading', { rehypePlugins: [appendMarker] }) as MDXContent;
+    const Content = execute('# Heading\n\n<script>alert(1)</script>', {
+      rehypePlugins: [appendMarker],
+    }) as MDXContent;
     const html = renderToString(<Content />);
 
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('alert(1)');
     expect(html).toContain('caller-plugin-ran');
     // `rehypeSlug` ships in the default rehype plugins; its id proves they survived.
     expect(html).toContain('id="heading"');
