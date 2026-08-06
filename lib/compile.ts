@@ -40,7 +40,18 @@ const sanitizeSchema = deepmerge(defaultSchema, {
 
 const compile = (
   text: string,
-  { components = {}, missingComponents, copyButtons, useTailwind, hardBreaks, ...opts }: CompileOpts = {},
+  {
+    components = {},
+    missingComponents,
+    copyButtons,
+    useTailwind,
+    hardBreaks,
+    // Pulled out of `...opts` so a caller's plugins extend the pipeline instead of
+    // replacing it — otherwise the spread below would drop `rehypeStripScripts`.
+    remarkPlugins: userRemarkPlugins,
+    rehypePlugins: userRehypePlugins,
+    ...opts
+  }: CompileOpts = {},
 ) => {
   // Destructure at runtime to avoid circular dependency issues
   const { codeTabsTransformer, ...transforms } = defaultTransforms;
@@ -62,7 +73,13 @@ const compile = (
     remarkPlugins.push([tailwindTransformer, { components }]);
   }
 
-  const rehypePlugins: PluggableList = [...defaultRehypePlugins, [rehypeToc, { components }]];
+  remarkPlugins.push(...(userRemarkPlugins ?? []));
+
+  const rehypePlugins: PluggableList = [
+    ...defaultRehypePlugins,
+    [rehypeToc, { components }],
+    ...(userRehypePlugins ?? []),
+  ];
 
   if (opts.format === 'md') {
     /**
