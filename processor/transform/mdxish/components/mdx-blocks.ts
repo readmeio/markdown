@@ -66,6 +66,14 @@ function safeDeindent(text: string): string {
     .join('\n');
 }
 
+/**
+ * Drop the blank lines around a component body without touching the indentation of the
+ * first content line. `.trim()` would strip that one line's leading whitespace only,
+ * leaving a uniformly indented body lopsided — `  - a` / `  - b` reparses as `- a` /
+ * `  - b`, so every sibling after the first nests a level (RM-17790). Bodies shallower
+ * than 4 columns keep their indent by design (`safeDeindent`), and CommonMark treats it
+ * as insignificant, so preserving it costs nothing.
+ */
 const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
 
 /**
