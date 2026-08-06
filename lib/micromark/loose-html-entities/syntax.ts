@@ -2,7 +2,7 @@
 import type { CompileContext, Extension as FromMarkdownExtension, Handle } from 'mdast-util-from-markdown';
 import type { Code, Construct, Effects, Extension, State, TokenizeContext } from 'micromark-util-types';
 
-import { decodeHTMLStrict } from 'entities';
+import { decodeHTML } from 'entities';
 import { asciiAlphanumeric, asciiDigit, asciiHexDigit } from 'micromark-util-character';
 import { codes } from 'micromark-util-symbol';
 
@@ -18,13 +18,6 @@ const looseHtmlEntityConstruct: Construct = {
   name: 'looseHtmlEntity',
   tokenize: tokenizeLooseHtmlEntity,
 };
-
-function resolveEntity(name: string): string | undefined {
-  const input = `&${name};`;
-  const decoded = decodeHTMLStrict(input);
-
-  return decoded !== input ? decoded : undefined;
-}
 
 function tokenizeLooseHtmlEntity(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
   let length = 0;
@@ -101,29 +94,10 @@ function tokenizeLooseHtmlEntity(this: TokenizeContext, effects: Effects, ok: St
 
 function exitLooseHtmlEntity(this: CompileContext, token: Parameters<Handle>[0]): void {
   const raw = this.sliceSerialize(token);
-  const entityChars = raw.slice(1);
 
-  if (entityChars.startsWith('#')) {
-    const decoded = resolveEntity(entityChars);
-    if (decoded) {
-      this.enter({ type: 'text', value: decoded }, token);
-      this.exit(token);
-      return;
-    }
-  } else {
-    for (let len = entityChars.length; len >= 2; len -= 1) {
-      const candidate = entityChars.slice(0, len);
-      const decoded = resolveEntity(candidate);
-      if (decoded) {
-        const remainder = entityChars.slice(len);
-        this.enter({ type: 'text', value: decoded + remainder }, token);
-        this.exit(token);
-        return;
-      }
-    }
-  }
-
-  this.enter({ type: 'text', value: raw }, token);
+  // `decodeHTML` follows the HTML spec's legacy rules, where only a small
+  // whitelist of names may omit the semicolon, so `&partner_key` stays intact.
+  this.enter({ type: 'text', value: decodeHTML(raw) }, token);
   this.exit(token);
 }
 
