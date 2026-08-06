@@ -18,7 +18,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import { rehypeStripScripts } from '../processor/plugin/strip-scripts';
+import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -65,6 +65,12 @@ import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-cod
 export interface MdxishOpts {
   components?: CustomComponents;
   newEditorTypes?: boolean;
+  /**
+   * Strip content that would execute in the page (currently literal `<script>`
+   * elements). Defaults to `false` to preserve existing rendering for callers
+   * that may rely on raw HTML; opt in per project.
+   */
+  sanitize?: boolean;
   /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
    * This disables:
@@ -212,7 +218,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, safeMode = false, variables } = opts;
+  const { components: userComponents = {}, safeMode = false, sanitize = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -238,7 +244,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(restoreBooleanProperties)
     .use(safeMode ? undefined : resolveDeferredAttributeExpressionProps) // Evaluate deferred attribute expressions on mdx-jsx nodes (now past rehypeRaw's clone)
     .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
-    .use(rehypeStripScripts) // Remove literal <script> elements; this pipeline has no sanitization step
+    .use(sanitize ? rehypeStripTags : undefined) // Strip STRIPPED_TAG_NAMES elements; this pipeline has no sanitization step
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)

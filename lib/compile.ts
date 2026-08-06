@@ -10,7 +10,7 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import hardBreaksPlugin from '../processor/plugin/hard-breaks';
-import { rehypeStripScripts } from '../processor/plugin/strip-scripts';
+import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import { rehypeToc } from '../processor/plugin/toc';
 import {
   defaultTransforms,
@@ -26,6 +26,12 @@ export type CompileOpts = CompileOptions & {
   copyButtons?: boolean;
   hardBreaks?: boolean;
   missingComponents?: 'ignore' | 'throw';
+  /**
+   * Strip content that would execute in the page (currently literal `<script>`
+   * elements). Defaults to `false` to preserve existing rendering for callers
+   * that may rely on raw HTML; opt in per project.
+   */
+  sanitize?: boolean;
   useTailwind?: boolean;
 };
 
@@ -46,8 +52,9 @@ const compile = (
     copyButtons,
     useTailwind,
     hardBreaks,
+    sanitize = false,
     // Pulled out of `...opts` so a caller's plugins extend the pipeline instead of
-    // replacing it — otherwise the spread below would drop `rehypeStripScripts`.
+    // replacing it — otherwise the spread below would drop `rehypeStripTags`.
     remarkPlugins: userRemarkPlugins,
     rehypePlugins: userRehypePlugins,
     ...opts
@@ -102,7 +109,9 @@ const compile = (
   // In `mdx` format a literal <script> parses as JSX rather than raw HTML, so it
   // bypasses sanitization entirely — strip it in every format. Must stay last:
   // in `md` format raw HTML isn't an element until `rehypeRaw` has run.
-  rehypePlugins.push(rehypeStripScripts);
+  if (sanitize) {
+    rehypePlugins.push(rehypeStripTags);
+  }
 
   try {
     const vfile = mdxCompileSync(text, {
