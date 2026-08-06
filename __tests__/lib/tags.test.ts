@@ -62,4 +62,20 @@ This is phrasing: <Inline />
       expect(tags(mdx)).toStrictEqual(['Component', 'NestedComponent']);
     });
   });
+
+  it('omits built-in ReadMe components coerced by readmeComponents', () => {
+    const mdx = `
+<Callout icon="ℹ️">Note</Callout>
+
+<CustomThing />
+
+<Image src="https://example.com/a.png" />
+`;
+
+    expect(tags(mdx)).toStrictEqual(['CustomThing']);
+  });
+
+  it('ignores components inside fenced code blocks', () => {
+    expect(tags('```mdx\n<CustomThing />\n```\n\n<Outside />')).toStrictEqual(['Outside']);
+  });
 });
