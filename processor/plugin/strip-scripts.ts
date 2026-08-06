@@ -1,7 +1,7 @@
 import type { Nodes, Parents, Root } from 'hast';
 import type { Transformer } from 'unified';
 
-import { visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 /**
  * Whether a node would render as a literal DOM `<script>` element. Browsers match
@@ -39,7 +39,7 @@ export const rehypeStripScripts = (): Transformer<Root, Root> => {
   return (tree: Root) => {
     visit(tree, isScriptNode, (_node, index: number, parent: Parents) => {
       parent.children.splice(index, 1);
-      return index;
+      return [SKIP, index];
     });
   };
 };
