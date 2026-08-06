@@ -1,7 +1,26 @@
 import type { Element, Text } from 'hast';
+import type { Text as MdastText } from 'mdast';
 
-import { mdxish, mix } from '../../../lib';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+
+import { hast, mdxish, mix } from '../../../lib';
+import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from '../../../lib/micromark/loose-html-entities';
 import { collectNodes, roundTripMdxish } from '../../helpers';
+
+/**
+ * Runs the tokenizer on its own, without the surrounding MDXish pipeline, and
+ * returns the concatenated text it produced.
+ */
+const tokenizeLoosely = (source: string): string =>
+  collectNodes<MdastText>(
+    fromMarkdown(source, {
+      extensions: [looseHtmlEntity()],
+      mdastExtensions: [looseHtmlEntityFromMarkdown()],
+    }),
+    'text',
+  )
+    .map(node => node.value)
+    .join('');
 
 describe('HTML entity tokenizer', () => {
   it.each([
@@ -112,6 +131,31 @@ describe('HTML entity tokenizer', () => {
   });
 });
 
+// Regression coverage for #1359, which decoded any name in the HTML5 table
+// without a semicolon and so mangled query strings like `&partner_key`.
+describe('looseHtmlEntity tokenizer', () => {
+  it.each([
+    { name: '&nbsp', input: 'Hello&nbspWorld', expected: 'Hello World' },
+    { name: '&amp', input: 'Tom&ampJerry', expected: 'Tom&Jerry' },
+    { name: '&sect as a prefix', input: '&sectionId', expected: '§ionId' },
+    { name: '&not as a prefix', input: '&notit', expected: '¬it' },
+    { name: '&#160', input: 'Hello&#160World', expected: 'Hello World' },
+    { name: '&#xa0', input: 'Hello&#xa0World', expected: 'Hello World' },
+  ])('decodes $name, which the HTML spec allows without a semicolon', ({ input, expected }) => {
+    expect(tokenizeLoosely(input)).toBe(expected);
+  });
+
+  it.each([
+    { name: '&partner_key', input: 'a=1&partner_key=2' },
+    { name: '&part with no terminator', input: 'a&partb' },
+    { name: '&order', input: 'a=1&order=desc' },
+    { name: '&hellip', input: 'Wait&hellip really?' },
+    { name: 'an unknown name', input: 'Hello&xyzzy World' },
+  ])('leaves $name alone, because it needs a semicolon', ({ input }) => {
+    expect(tokenizeLoosely(input)).toBe(input);
+  });
+});
+
 describe('HTML entity tokenizer: names that require a semicolon', () => {
   const QUERY_STRING = 'api-base-url?partner_code=xxx&partner_key=xxx';
 
@@ -171,6 +215,36 @@ describe('HTML entity tokenizer: names that require a semicolon', () => {
 
     expect(html).toContain('partner_code=xxx&#x26;partner_key=xxx');
     expect(html).not.toContain('∂');
+  });
+
+  it.each([
+    { name: 'emphasis', input: `_${QUERY_STRING}_` },
+    { name: 'strong emphasis', input: `**${QUERY_STRING}**` },
+    { name: 'a link label', input: `[${QUERY_STRING}](https://example.com)` },
+    { name: 'a heading', input: `## ${QUERY_STRING}` },
+    { name: 'a list nested inside a callout', input: `> 📘 Auth\n>\n> - ${QUERY_STRING}` },
+    { name: 'a line with trailing whitespace', input: `${QUERY_STRING}   ` },
+  ])('keeps a query string intact inside $name', ({ input }) => {
+    const tree = mdxish(input);
+
+    const text = collectNodes<Text>(tree, 'text')
+      .map(node => node.value)
+      .join('');
+    expect(text).toContain(QUERY_STRING);
+  });
+
+  it('leaves an escaped ampersand as a single literal ampersand', () => {
+    const tree = mdxish('api-base-url?partner_code=xxx\\&partner_key=xxx');
+
+    const paragraph = tree.children[0] as Element;
+    expect((paragraph.children[0] as Text).value).toBe(QUERY_STRING);
+  });
+
+  it('matches the RMDX engine, which never decoded these names', () => {
+    const rmdxTree = hast(QUERY_STRING);
+
+    const paragraph = rmdxTree.children[0] as Element;
+    expect((paragraph.children[0] as Text).value).toBe(QUERY_STRING);
   });
 
   it('keeps a query string intact through a serialization round trip', () => {
