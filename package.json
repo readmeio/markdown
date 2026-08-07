@@ -216,6 +216,7 @@
     "@readme/markdown-legacy": {
       "@readme/variable": "^18.0.0"
     },
-    "conventional-changelog-conventionalcommits": ">= 8.0.0"
+    "conventional-changelog-conventionalcommits": ">= 8.0.0",
+    "micromark-util-subtokenize": "^2.0.1"
   }
 }
