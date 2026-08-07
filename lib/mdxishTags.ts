@@ -9,7 +9,7 @@ import { isMDXElement } from '../processor/utils';
 
 import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
 
-const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tags);
+const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.tags, { safeMode: true });
 
 const tags = (doc: string) => {
   const set = new Set<string>();

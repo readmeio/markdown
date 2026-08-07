@@ -18,6 +18,8 @@ export interface MdastOpts {
   components?: Record<string, string>;
   missingComponents?: 'ignore' | 'throw';
   remarkPlugins?: PluggableList;
+  // Needed to ensure no expression evaluation is done in the AST
+  // and no code is executed
   safeMode?: boolean;
 }
 
