@@ -9,7 +9,14 @@ editor save produces.
 - RM-17790 — bullet lists inside `<Accordion>` rendered with each item after
   the first nested a level deeper. `parseMdChildren` ran `.trim()` over the
   component body, which stripped the leading whitespace of the *first* line
-  only; a uniformly two-column body reparsed as `- first` / `  - second`, and
+  only, so a uniformly two-column body reparsed with its first item at column 0
+  and every later item still at column 2:
+
+  ```markdown
+  - first
+    - second
+  ```
+
   CommonMark reads that second line as a nested list. Two-column bodies are
   below `safeDeindent`'s four-column gate, so nothing had dedented them first.
   The `<Accordion>` body here is the customer doc from the ticket.

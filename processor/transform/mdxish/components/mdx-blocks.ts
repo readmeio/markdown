@@ -73,8 +73,12 @@ function safeDeindent(text: string): string {
  * `  - b`, so every sibling after the first nests a level (RM-17790). Bodies shallower
  * than 4 columns keep their indent by design (`safeDeindent`), and CommonMark treats it
  * as insignificant, so preserving it costs nothing.
+ *
+ * Both edges drop whole blank lines only. The trailing side stops at the last content
+ * line's own newline so its trailing spaces survive, they are the content of a fenced
+ * code block left unclosed by the component's end tag.
  */
-const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '');
+const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '');
 
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and

@@ -295,6 +295,20 @@ ${indent}- test 3
         const [accordion] = collectNodes(tree, 'mdxJsxFlowElement') as Parent[];
         expect(accordion.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
       });
+
+      it('keeps trailing spaces on the last line of a fence left unclosed by the end tag', () => {
+        const markdown = ['<Callout title="Test">', '  ```', '  value  ', '</Callout>'].join('\n');
+        const [code] = collectNodes(parseWithPlugin(markdown), 'code') as { value: string }[];
+
+        expect(code.value).toBe('value  ');
+      });
+
+      it('keeps a hard break that is interior to an indented body', () => {
+        const markdown = ['<Callout title="Test">', '  one  ', '  two  ', '</Callout>'].join('\n');
+        const [paragraph] = collectNodes(parseWithPlugin(markdown), 'paragraph') as Parent[];
+
+        expect(paragraph.children.map(child => child.type)).toStrictEqual(['text', 'break', 'text']);
+      });
     });
 
     describe('multiple components in combination', () => {
