@@ -67,12 +67,26 @@ function safeDeindent(text: string): string {
 }
 
 /**
+ * Drop the blank lines around a component body without touching the indentation of the
+ * first content line. `.trim()` would strip that one line's leading whitespace only,
+ * leaving a uniformly indented body lopsided — `  - a` / `  - b` reparses as `- a` /
+ * `  - b`, so every sibling after the first nests a level (RM-17790). Bodies shallower
+ * than 4 columns keep their indent by design (`safeDeindent`), and CommonMark treats it
+ * as insignificant, so preserving it costs nothing.
+ *
+ * Both edges drop whole blank lines only. The trailing side stops at the last content
+ * line's own newline so its trailing spaces survive, they are the content of a fenced
+ * code block left unclosed by the component's end tag.
+ */
+const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '');
+
+/**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
+  const reparseSource = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(value)));
   const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
