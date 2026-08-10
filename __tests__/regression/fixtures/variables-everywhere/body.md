@@ -21,7 +21,7 @@ sequenceDiagram
 Component attributes resolve at render time, and only for `{user.*}` — the
 legacy `<<...>>` form is MDX-invalid in an attribute and stays literal:
 
-<Accordion title={user.region} icon="fa-rocket">
+<Accordion title={`${user.region} / ${user.apiKey.toUpperCase()}`} icon="fa-rocket">
 Accordion body with <<apiKey>>
 </Accordion>
 

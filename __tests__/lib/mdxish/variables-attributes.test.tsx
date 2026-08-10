@@ -1,3 +1,5 @@
+// `${...}` in these strings is markdown source for a template literal, not a JS template
+/* eslint-disable no-template-curly-in-string */
 import type { Variables } from '../../../types';
 
 import '@testing-library/jest-dom';
@@ -116,11 +118,79 @@ Hi
     });
   });
 
+  describe('composite expressions', () => {
+    it.each([
+      [
+        'template literal',
+        '<Accordion title={`Hi ${user.name} from ${user.region}`}>\nHi\n</Accordion>',
+        'Hi Dimas from us-east-1',
+      ],
+      ['concatenation', '<Accordion title={"Hi " + user.name}>\nHi\n</Accordion>', 'Hi Dimas'],
+      ['ternary', '<Accordion title={user.name ? `Hey ${user.name}` : "Anon"}>\nHi\n</Accordion>', 'Hey Dimas'],
+      ['method call', '<Accordion title={user.name.toUpperCase()}>\nHi\n</Accordion>', 'DIMAS'],
+    ])('resolves a %s', (_label, md, expected) => {
+      expect(renderMd(md).querySelector('.Accordion-title')).toHaveTextContent(expected);
+    });
+
+    it('resolves on a plain HTML attribute', () => {
+      const container = renderMd('<a href={`/docs/${user.region}`}>link</a>');
+
+      expect(container.querySelector('a')).toHaveAttribute('href', '/docs/us-east-1');
+    });
+
+    it('resolves through a JSON round trip, as the MDX cache path does', () => {
+      const serverTree = JSON.parse(
+        JSON.stringify(mdxish('<Accordion title={`Hi ${user.name}`}>\nHi\n</Accordion>')),
+      ) as Parameters<typeof renderMdxish>[0];
+      const { default: Content } = renderMdxish(serverTree, { variables });
+
+      expect(render(<Content />).container.querySelector('.Accordion-title')).toHaveTextContent('Hi Dimas');
+    });
+
+    it('re-resolves when the same tree is rendered for a second reader', () => {
+      const tree = mdxish('<Accordion title={`Hi ${user.name}`}>\nHi\n</Accordion>');
+      const first = renderMdxish(tree, { variables });
+      const second = renderMdxish(tree, { variables: { defaults: [], user: { name: 'Alex' } } });
+
+      expect(render(<first.default />).container.querySelector('.Accordion-title')).toHaveTextContent('Hi Dimas');
+      expect(render(<second.default />).container.querySelector('.Accordion-title')).toHaveTextContent('Hi Alex');
+    });
+
+    it('is not supported in safeMode, which never evaluates expressions', () => {
+      const md = '<Accordion title={`Hi ${user.name}`}>\nHi\n</Accordion>';
+
+      expect(renderMd(md, { safeMode: true }).querySelector('.Accordion-title')).toHaveTextContent(
+        '{`Hi ${user.name}`}',
+      );
+    });
+  });
+
   describe('non-variable content', () => {
     it('keeps an unevaluatable attribute expression as literal braces', () => {
       const container = renderMd('<a href="#" title={someUnknownThing}>link</a>');
 
       expect(container.querySelector('a')).toHaveAttribute('title', '{someUnknownThing}');
+    });
+
+    it('does not retry an unresolved expression that never mentioned user', () => {
+      // Retrying every parse-time failure at render would newly execute it in the reader's
+      // browser, where globals differ from the server that parsed the cached tree
+      const serverTree = mdxish('<a href="#" title={someUnknownThing}>link</a>');
+      const { default: Content } = renderMdxish(serverTree, { variables });
+
+      expect(render(<Content />).container.querySelector('a')).toHaveAttribute('title', '{someUnknownThing}');
+    });
+
+    it('does not treat a member named user as the user binding', () => {
+      const container = renderMd('<a href="#" title={item.user}>link</a>');
+
+      expect(container.querySelector('a')).toHaveAttribute('title', '{item.user}');
+    });
+
+    it('does not substitute inside a template-literal interpolation left as text', () => {
+      const container = renderMd('<a href="#" title="Cost: ${user.name}">link</a>');
+
+      expect(container.querySelector('a')).toHaveAttribute('title', 'Cost: ${user.name}');
     });
 
     it('leaves mermaid blocks alone, which variablesCodeResolver deliberately skips', () => {

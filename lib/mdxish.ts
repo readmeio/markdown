@@ -97,10 +97,7 @@ const defaultTransformers: PluggableList = [
  * 6. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
  * 7. Replace snake_case component names with parser-safe placeholders
  */
-function preprocessContent(
-  content: string,
-  opts: { knownComponents: Set<string> },
-) {
+function preprocessContent(content: string, opts: { knownComponents: Set<string> }) {
   const { knownComponents } = opts;
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
@@ -119,12 +116,7 @@ function preprocessContent(
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const {
-    components: userComponents = {},
-    newEditorTypes = false,
-    safeMode = false,
-    useTailwind,
-  } = opts;
+  const { components: userComponents = {}, newEditorTypes = false, safeMode = false, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -266,6 +258,12 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   // Required for exported components to get rendered.
   if (vfile.data.mdxishScope) {
     hast.data = { ...hast.data, mdxishScope: vfile.data.mdxishScope };
+  }
+
+  // Lets the render stage re-evaluate attribute expressions this pass couldn't resolve
+  // (`title={`Hi ${user.name}`}`), which is the only way they resolve on the MDX cache path.
+  if (!safeMode) {
+    hast.data = { ...hast.data, expressionsEnabled: true };
   }
 
   return hast;

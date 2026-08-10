@@ -475,9 +475,7 @@ const x = 1;
       expect(outerRows.length).toBeGreaterThanOrEqual(1);
 
       const outerRow = outerRows[0];
-      const outerTds = outerRow.children.filter(
-        (c): c is Element => c.type === 'element' && c.tagName === 'td',
-      );
+      const outerTds = outerRow.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'td');
       expect(outerTds).toHaveLength(2);
 
       const nestedTables = findAllElementsByTagName(outerTds[0], 'table');
@@ -1052,9 +1050,13 @@ None of the following content will get rendered!`;
   </tbody>
 </table>`;
 
-      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
-        .filter((c): c is Element => (c as Element).tagName === 'tr')
-        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0]
+        .children.filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr =>
+          tr.children
+            .filter((c): c is Element => (c as Element).tagName === 'td')
+            .map(td => (td.children[0] as { value: string }).value),
+        );
 
       expect(bodyRows).toStrictEqual([
         ['Hello', 'Globe'],
@@ -1072,9 +1074,13 @@ None of the following content will get rendered!`;
 </tbody>
 </Table>`;
 
-      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0].children
-        .filter((c): c is Element => (c as Element).tagName === 'tr')
-        .map(tr => tr.children.filter((c): c is Element => (c as Element).tagName === 'td').map(td => (td.children[0] as { value: string }).value));
+      const bodyRows = findAllElementsByTagName(mdxish(doc) as unknown as Element, 'tbody')[0]
+        .children.filter((c): c is Element => (c as Element).tagName === 'tr')
+        .map(tr =>
+          tr.children
+            .filter((c): c is Element => (c as Element).tagName === 'td')
+            .map(td => (td.children[0] as { value: string }).value),
+        );
 
       expect(bodyRows).toStrictEqual([['1'], ['2'], ['3']]);
     });
@@ -1172,7 +1178,7 @@ None of the following content will get rendered!`;
             ],
           },
         ],
-        data: { quirksMode: false },
+        data: { expressionsEnabled: true, quirksMode: false },
       });
     });
   });
@@ -1271,23 +1277,20 @@ None of the following content will get rendered!`;
   });
 
   describe('tables with no <tbody> wrapper', () => {
-    it.each([['Table'], ['table']])(
-      'still renders all the body rows in a <%s> but <thead> exists',
-      tag => {
-        const doc = `<${tag}>
+    it.each([['Table'], ['table']])('still renders all the body rows in a <%s> but <thead> exists', tag => {
+      const doc = `<${tag}>
   <thead><tr><th>col</th></tr></thead>
   <tr><td>row 1</td></tr>
   <tr><td>row 2</td></tr>
 </${tag}>`;
 
-        const hast = mdxish(doc);
-        const tables = findAllElementsByTagName(hast, 'table');
-        expect(tables).toHaveLength(1);
+      const hast = mdxish(doc);
+      const tables = findAllElementsByTagName(hast, 'table');
+      expect(tables).toHaveLength(1);
 
-        const rows = findAllElementsByTagName(tables[0], 'tr');
-        expect(rows).toHaveLength(3);
-      },
-    );
+      const rows = findAllElementsByTagName(tables[0], 'tr');
+      expect(rows).toHaveLength(3);
+    });
 
     it.each([['Table'], ['table']])(
       'still renders all the body rows in a <%s> when <thead> also does not exist',

@@ -40,7 +40,11 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
     componentsForRehype[name] = value as React.ComponentType;
   });
 
-  const processor = createRehypeReactProcessor(componentsForRehype, variables);
+  const processor = createRehypeReactProcessor(componentsForRehype, {
+    expressionsEnabled: tree.data?.expressionsEnabled,
+    mdxishScope: localScope,
+    variables,
+  });
   const content = processor.stringify(tree) as React.ReactNode;
 
   const tocHast = headings.length > 0 ? tocToHast(headings, variables) : null;

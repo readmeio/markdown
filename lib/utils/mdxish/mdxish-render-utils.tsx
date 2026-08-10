@@ -11,6 +11,7 @@ import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
+import { createUserExpressionScope, evaluateUserExpression, type UserExpressionScope } from './mdxish-user-expressions';
 import { flattenVariables, resolveAttributeVariables } from './mdxish-variables';
 
 export interface RenderOpts {
@@ -70,20 +71,37 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
  */
 const CONTENT_BEARING_TAG_NAMES = new Set(['code', 'html-block']);
 
+interface AttributeResolution {
+  /**
+   * Present only when the tree was parsed with expression syntax live, which is what makes it safe
+   * to evaluate a whole-`{…}` prop. In safeMode such a prop is authored text, not an expression.
+   */
+  expressionScope?: UserExpressionScope;
+  resolvedVariables: Record<string, string>;
+}
+
 /**
- * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but
+ * Resolve variables in string-valued props. Body text is handled by the `Variable` component, but
  * attributes are plain strings, so they are substituted here — at render time, so that a
  * server-parsed (user-agnostic) tree resolves against the current reader's variables.
+ *
+ * A prop that is one whole expression is evaluated first, which is what makes composite forms like
+ * ``title={`Hi ${user.name}`}`` work; anything else falls back to substituting `{user.*}` in place.
  */
 function resolveVariablesInProps(
   props: Record<string, unknown>,
-  resolvedVariables: Record<string, string>,
+  resolution: AttributeResolution,
   tagName?: string,
 ): Record<string, unknown> {
   if (tagName && CONTENT_BEARING_TAG_NAMES.has(tagName)) return props;
+  const { expressionScope, resolvedVariables } = resolution;
 
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
     if (typeof value !== 'string') return [key, value];
+
+    const evaluated = expressionScope && evaluateUserExpression(value, expressionScope);
+    if (evaluated !== undefined) return [key, evaluated];
+
     return [key, resolveAttributeVariables(value, resolvedVariables)];
   });
 
@@ -104,7 +122,7 @@ function resolveVariablesInProps(
 function createElementPreservingHastProps(
   type: React.ElementType,
   props: PropsWithHastNode | null,
-  resolvedVariables: Record<string, string>,
+  resolution: AttributeResolution,
   children: React.ReactNode[],
 ): React.ReactElement {
   if (props?.node?.properties) {
@@ -115,20 +133,33 @@ function createElementPreservingHastProps(
     });
     // Strip undefined so positional args don't shadow node.properties.children
     const definedChildren = children.filter(c => c !== undefined);
-    const withVariables = resolveVariablesInProps(mergedProps, resolvedVariables, node.tagName);
+    const withVariables = resolveVariablesInProps(mergedProps, resolution, node.tagName);
     return React.createElement(type, withVariables, ...definedChildren);
   }
-  return React.createElement(type, props && resolveVariablesInProps(props, resolvedVariables), ...children);
+  return React.createElement(type, props && resolveVariablesInProps(props, resolution), ...children);
+}
+
+export interface RehypeReactOpts {
+  /** Mirrors the tree's `expressionsEnabled`; gates evaluating whole-`{…}` props. */
+  expressionsEnabled?: boolean;
+  mdxishScope?: object;
+  variables?: Variables;
 }
 
 /** Create a rehype-react processor */
-export function createRehypeReactProcessor(components: Record<string, React.ComponentType>, variables?: Variables) {
-  const resolvedVariables = flattenVariables(variables);
+export function createRehypeReactProcessor(
+  components: Record<string, React.ComponentType>,
+  { expressionsEnabled, mdxishScope, variables }: RehypeReactOpts = {},
+) {
+  const resolution: AttributeResolution = {
+    resolvedVariables: flattenVariables(variables),
+    ...(expressionsEnabled && { expressionScope: createUserExpressionScope(variables, mdxishScope) }),
+  };
 
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
     createElement: (type: React.ElementType, props: PropsWithHastNode | null, ...children: React.ReactNode[]) =>
-      createElementPreservingHastProps(type, props, resolvedVariables, children),
+      createElementPreservingHastProps(type, props, resolution, children),
     Fragment: React.Fragment,
     components,
     passNode: true,

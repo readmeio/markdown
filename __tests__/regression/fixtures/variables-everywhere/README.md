@@ -12,7 +12,8 @@ Mermaid block where `<<-->>` / `<<->>` arrows must NOT be substituted.
 - Standalone variables not parsed in table cells (only attached-to-paragraph worked)
 - CX-3789 — `{user.*}` in component attributes (`<Accordion title={user.name}>`) never
   resolved, because only text, expression, and code nodes were ever visited. Legacy
-  `<<...>>` stays literal in attributes by design
+  `<<...>>` stays literal in attributes by design. Composite expressions
+  (``title={`${user.a} ${user.b}`}``) are retained at parse time and evaluated at render
 
 ## What flips this fixture
 

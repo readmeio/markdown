@@ -51,6 +51,14 @@ declare module 'hast' {
   interface ElementContentMap {
     'mdx-jsx': MdxJsx;
   }
+  interface RootData {
+    /**
+     * Whether this tree was parsed with expression syntax live (i.e. not safeMode). Attribute
+     * expressions that failed to evaluate then are left as a literal `{source}` in `properties`;
+     * this flag is what lets the render stage know it may re-evaluate them.
+     */
+    expressionsEnabled?: boolean;
+  }
 }
 
 export type Callout = Omit<Blockquote, 'children' | 'type'> & {

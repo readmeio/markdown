@@ -2,7 +2,18 @@ import type { Variables } from '../../../types';
 
 import { MDX_VARIABLE_REGEXP } from '@readme/variable';
 
-const MDX_VARIABLE_REGEX = new RegExp(MDX_VARIABLE_REGEXP, 'giu');
+// The `$` guard skips template-literal interpolation: `${user.name}` embeds `{user.name}`, and
+// substituting it would leave a mangled `` `Hi $Dimas` `` behind. Those belong to an expression,
+// which either evaluated already or is meant to stay literal.
+const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'giu');
+
+// `user` as a standalone identifier, so a member access like `item.user` doesn't count.
+const USER_BINDING_REGEX = /(?<!\.)\buser\b/;
+
+/** Whether an expression reads the `user` binding, and so can only resolve once variables exist. */
+export function referencesUserBinding(source: string): boolean {
+  return USER_BINDING_REGEX.test(source);
+}
 
 /** Merge `defaults` and `user` into a single lookup, with user values taking precedence. */
 export function flattenVariables(variables?: Variables): Record<string, string> {

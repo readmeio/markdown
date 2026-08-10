@@ -17,7 +17,7 @@ import { isPlainObject, styleObjectToCssText } from './style-object-to-css';
  * (keyed by prop name) instead of evaluating eagerly, because an eager result can be a React
  * element or function that rehypeRaw's `structuredClone` passthrough rejects. Now that we're
  * past the clone, evaluate each source with a scope of `{ React, ...mdxishScope }` and write
- * the real value into `properties` (e.g. an array of objects whose fields are React elements).
+ * the real value into `properties` (e.g. an array of objects whose fields are React elements)
  *
  * Must run after `rehypeRaw` (past the clone) but before `normalizeMdxJsxNodes` rewrites these
  * `mdx-jsx` nodes into plain elements. Skipped in safeMode, which keeps expressions literal.
@@ -38,7 +38,7 @@ const resolveDeferredAttributeExpressionProps: Plugin<[], Root> = () => (tree, f
         properties[name] = name === 'style' && isPlainObject(result) ? styleObjectToCssText(result) : result;
       } catch {
         // Evaluation failed — keep the literal `{...}`, matching how `evaluateExpressions` falls
-        // back in body text. Variable references like `{user.name}` stay resolvable at render time.
+        // back in body text. That fallback stands unless the render stage resolves it.
         properties[name] = `{${source}}`;
       }
     });
