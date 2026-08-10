@@ -47,6 +47,8 @@ describe('evaluateLiteralExpression', () => {
     ['a spread', '{ ...spread }'],
     ['a computed key', '{ [key]: 1 }'],
     ['a regex', '/re/g'],
+    ['a bigint, which cannot be serialised', '1n'],
+    ['a prototype-replacing key', '{ __proto__: { admin: true } }'],
     ['an exponent, which can hang the process', '2 ** 1e9'],
     // acorn stops at the first expression, so trailing source could smuggle in a second one.
     ['trailing source', '1, globalThis.attributeCanary = true'],
@@ -87,6 +89,7 @@ describe('host access and command execution', () => {
   it('does not leak an environment variable into the tree', () => {
     process.env.CANARY_SECRET = 'canary-secret-value';
     const tree = JSON.stringify(mdast('<Callout icon={process.env.CANARY_SECRET} />'));
+    delete process.env.CANARY_SECRET;
 
     expect(tree).not.toContain('canary-secret-value');
     expect(tree).toContain('process.env.CANARY_SECRET');

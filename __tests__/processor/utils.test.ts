@@ -129,6 +129,7 @@ describe('getAttrs', () => {
         expressionAttribute('missing', 'undefined'),
         { type: 'mdxJsxAttribute', name: 'border', value: null },
         { type: 'mdxJsxAttribute', name: 'src', value: '/a.png' },
+        { type: 'mdxJsxAttribute', name: 'title', value: 'a &amp; b' },
         { type: 'mdxJsxExpressionAttribute', value: '...spread' },
       ],
       children: [],
@@ -141,6 +142,7 @@ describe('getAttrs', () => {
       missing: undefined,
       border: true,
       src: '/a.png',
+      title: 'a & b',
     });
   });
 });

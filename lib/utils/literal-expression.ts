@@ -15,8 +15,9 @@ const unsupported = (description: string) => new Error(`not a literal expression
 const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unknown => {
   switch (node.type) {
     case 'Literal':
-      // Regexes are the one `Literal` whose `value` isn't a plain JSON-ish value.
-      if ('regex' in node) throw unsupported('regex');
+      // Regex and bigint `Literal`s hold values a tree consumer can't serialise;
+      // a BigInt throws outright in `JSON.stringify`.
+      if ('regex' in node || 'bigint' in node) throw unsupported('regex or bigint literal');
       return node.value;
     case 'Identifier':
       if (node.name !== 'undefined') throw unsupported(`identifier \`${node.name}\``);
@@ -39,7 +40,10 @@ const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unkn
         if (property.type !== 'Property' || property.computed) throw unsupported('computed or spread property');
         const { key } = property;
         if (key.type !== 'Identifier' && key.type !== 'Literal') throw unsupported('property key');
-        memo[key.type === 'Identifier' ? key.name : String(key.value)] = resolveNode(property.value as Expression);
+        const name = key.type === 'Identifier' ? key.name : String(key.value);
+        // `__proto__` would replace the object's prototype rather than add a property.
+        if (name === '__proto__') throw unsupported('`__proto__` key');
+        memo[name] = resolveNode(property.value as Expression);
         return memo;
       }, {});
     default:
