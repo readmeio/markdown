@@ -1,3 +1,7 @@
+import { existsSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { hast, mdast } from '../../../lib';
@@ -65,5 +69,34 @@ describe('attribute expressions are never executed', () => {
     parse();
 
     expect(canaryScope.attributeCanary).toBe(false);
+  });
+});
+
+describe('host access and command execution', () => {
+  it.each([
+    ['reads an environment variable', 'process.env.CANARY_SECRET'],
+    ['reaches the environment through globalThis', 'globalThis.process.env.CANARY_SECRET'],
+    ['loads a built-in module', 'process.getBuiltinModule("child_process")'],
+    ['imports a module dynamically', 'import("node:fs")'],
+    // The classic sandbox escape: `constructor.constructor` is the `Function` constructor.
+    ['escapes through a constructor', '"".constructor.constructor("return process.env")()'],
+  ])('refuses an expression that %s', (_description, source) => {
+    expect(() => evaluateLiteralExpression(source)).toThrow('not a literal expression');
+  });
+
+  it('does not leak an environment variable into the tree', () => {
+    process.env.CANARY_SECRET = 'canary-secret-value';
+    const tree = JSON.stringify(mdast('<Callout icon={process.env.CANARY_SECRET} />'));
+
+    expect(tree).not.toContain('canary-secret-value');
+    expect(tree).toContain('process.env.CANARY_SECRET');
+  });
+
+  it('does not run a shell command', () => {
+    const marker = join(tmpdir(), 'rdmd-command-execution-canary');
+    rmSync(marker, { force: true });
+    mdast(`<Callout icon={process.getBuiltinModule("child_process").execSync("touch ${marker}")} />`);
+
+    expect(existsSync(marker)).toBe(false);
   });
 });
