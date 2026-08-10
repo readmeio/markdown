@@ -18,8 +18,9 @@ sequenceDiagram
   Client <<->> Server: Bidirectional solid
 ```
 
-Component attributes resolve at render time, and only for `{user.*}` — the
-legacy `<<...>>` form is MDX-invalid in an attribute and stays literal:
+Component attributes resolve at render time, and only for `{user.*}`. Legacy
+`<<...>>` in a quoted attribute is valid MDX, but is not resolved there and
+stays literal:
 
 <Accordion title={user.region} icon="fa-rocket">
 Accordion body with <<apiKey>>

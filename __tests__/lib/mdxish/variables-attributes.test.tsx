@@ -5,7 +5,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { mdxish, renderMdxish } from '../../../lib';
-import { findElementByTagName } from '../../helpers';
+import { execute, findElementByTagName } from '../../helpers';
 
 const variables: Variables = {
   defaults: [{ name: 'region', default: 'us-east-1' }],
@@ -40,7 +40,7 @@ describe('variables in component attributes', () => {
       expect(container.querySelector('.Card-title')).toHaveTextContent('Dimas');
     });
 
-    it('leaves legacy <<>> syntax alone, since attributes are MDX-only', () => {
+    it('leaves legacy <<>> syntax literal, since attributes resolve {user.*} only', () => {
       const container = renderMd('<Accordion title="<<name>>">\nHi\n</Accordion>', { safeMode });
 
       expect(container.querySelector('.Accordion-title')).toHaveTextContent('<<name>>');
@@ -73,6 +73,17 @@ describe('variables in component attributes', () => {
       // Attribute strings are literal, so the escape characters survive as authored
       expect(container.querySelector('.Accordion-title')).toHaveTextContent('\\{user.name\\}');
     });
+
+    // CX-3789: `${user.name}` embeds `{user.name}`, so substituting inside it used to leave a
+    // mangled `` `Hi $Dimas` ``. Composite expressions aren't resolved yet, so this stays literal.
+    it('does not substitute inside a template-literal interpolation', () => {
+      /* eslint-disable no-template-curly-in-string -- markdown source, not a JS template */
+      const md = '<Accordion title={`Hi ${user.name}`}>\nHi\n</Accordion>';
+      const expected = '{`Hi ${user.name}`}';
+      /* eslint-enable no-template-curly-in-string */
+
+      expect(renderMd(md, { safeMode }).querySelector('.Accordion-title')).toHaveTextContent(expected);
+    });
   });
 
   describe('formatting variations', () => {
@@ -94,6 +105,32 @@ Hi
       const container = renderMd('<Card title={user.name} href="/x"/>');
 
       expect(container.querySelector('.Card-title')).toHaveTextContent('Dimas');
+    });
+  });
+
+  describe('parity with the rmdx engine', () => {
+    const renderWithMdx = (md: string) => {
+      const Content = execute(md, {}, { variables }) as React.ComponentType;
+      return render(<Content />).container;
+    };
+
+    it.each([
+      ['a component attribute', '<Accordion title={user.name}>\nHi\n</Accordion>', '.Accordion-title'],
+      ['a nested Card title', '<Cards>\n  <Card title={user.name}>\n  Hi\n  </Card>\n</Cards>', '.Card-title'],
+    ])('resolves %s identically in rmdx and mdxish', (_label, md, selector) => {
+      const expected = renderWithMdx(md).querySelector(selector)?.textContent;
+
+      expect(expected).toContain('Dimas');
+      expect(renderMd(md).querySelector(selector)).toHaveTextContent(expected as string);
+    });
+
+    it('substitutes in a quoted attribute where rmdx leaves it literal', () => {
+      // Deliberate superset, not a parity bug: safeMode turns `title={user.name}` into the plain
+      // string `{user.name}`, so quoted values have to resolve for safeMode to work at all
+      const md = '<Accordion title="Hi {user.name}">\nHi\n</Accordion>';
+
+      expect(renderWithMdx(md).querySelector('.Accordion-title')).toHaveTextContent('Hi {user.name}');
+      expect(renderMd(md).querySelector('.Accordion-title')).toHaveTextContent('Hi Dimas');
     });
   });
 

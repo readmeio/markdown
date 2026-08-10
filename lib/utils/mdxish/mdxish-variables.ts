@@ -21,8 +21,8 @@ export function flattenVariables(variables?: Variables): Record<string, string> 
  * Resolve `{user.*}` in a JSX attribute value, matching how the `Variable` component resolves it in
  * body text: user value, then project default, then the uppercased name.
  *
- * Legacy `<<...>>` is deliberately not handled — attributes only exist on MDX components, which use
- * the `{user.*}` syntax.
+ * Legacy `<<...>>` is deliberately not handled here. It is valid inside a quoted attribute, but
+ * attributes are an MDX surface and `{user.*}` is the syntax authors use there.
  */
 export function resolveAttributeVariables(value: string, resolvedVariables: Record<string, string>): string {
   if (!value.includes('{user')) return value;
