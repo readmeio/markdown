@@ -7,6 +7,7 @@ const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'gu');
 
 // Bracket notation names the same variable as dot notation, so normalize it before substituting.
 // Escaped and `$`-prefixed forms are left alone so a reference that stays literal keeps its source.
+// A closing escape needs no lookahead: requiring a literal `]}` already rules out `]\}`.
 const BRACKET_NOTATION_REGEX = /(?<![$\\])\{user\[['"](\w+)['"]\]\}/gu;
 
 /**

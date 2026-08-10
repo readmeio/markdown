@@ -76,6 +76,8 @@ describe('variables in component attributes', () => {
     // A bracket reference that stays literal must keep its authored source, not the normalized form
     it.each([
       ['an escape', "\\{user['name']}"],
+      ['a closing escape', "{user['name']\\}"],
+      ['escapes on both ends', "\\{user['name']\\}"],
       /* eslint-disable-next-line no-template-curly-in-string -- markdown source, not a JS template */
       ['a template literal', "${user['name']}"],
     ])('leaves bracket notation behind %s as authored', (_case, title) => {
