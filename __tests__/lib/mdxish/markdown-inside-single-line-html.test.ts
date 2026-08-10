@@ -40,7 +40,8 @@ describe('markdown inside single-line plain HTML tags', () => {
       children: [{ tagName: 'strong', children: [{ type: 'text', value: 'bold' }] }],
     });
     expect(html).not.toContain('**');
-    expect(html).not.toContain('{x}');
+    // An unevaluatable attribute expression keeps its literal `{…}`, matching body-text fallback
+    expect(html).toContain('attr="{x}"');
   });
 
   it('preserves plain HTML attributes on the promoted wrapper', () => {
@@ -261,9 +262,7 @@ describe('markdown inside single-line plain HTML tags', () => {
       // hast, so assert on the promoted mdast instead.
       const tree = parseMdxish('<CustomThing><div>**bold**</div></CustomThing>');
 
-      expect(collectNodes(tree, 'strong')).toMatchObject([
-        { children: [{ type: 'text', value: 'bold' }] },
-      ]);
+      expect(collectNodes(tree, 'strong')).toMatchObject([{ children: [{ type: 'text', value: 'bold' }] }]);
     });
   });
 });
