@@ -11,6 +11,8 @@ import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
+import { flattenVariables, mayContainVariable, resolveAttributeVariables } from './mdxish-variables';
+
 export interface RenderOpts {
   baseUrl?: string;
   components?: CustomComponents;
@@ -62,6 +64,33 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 
 /**
+ * Tags whose props carry document content rather than attributes. `variablesCodeResolver` already
+ * resolved those at parse time (and deliberately skipped mermaid), so a second pass here would
+ * mangle code that merely looks like a variable, e.g. a mermaid `<<-->>` arrow.
+ */
+const CONTENT_BEARING_TAG_NAMES = new Set(['code', 'html-block']);
+
+/**
+ * Resolve `{user.*}` and `<<...>>` in string-valued props. Body text is handled by the `Variable`
+ * component, but attributes are plain strings, so they are substituted here — at render time, so
+ * that a server-parsed (user-agnostic) tree resolves against the current reader's variables.
+ */
+function resolveVariablesInProps(
+  props: Record<string, unknown>,
+  resolvedVariables: Record<string, string>,
+  tagName?: string,
+): Record<string, unknown> {
+  if (tagName && CONTENT_BEARING_TAG_NAMES.has(tagName)) return props;
+
+  const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
+    if (typeof value !== 'string' || !mayContainVariable(value)) return [key, value];
+    return [key, resolveAttributeVariables(value, resolvedVariables)];
+  });
+
+  return Object.fromEntries(resolvedEntries);
+}
+
+/**
  * Custom React.createElement wrapper that recovers real JS prop values for
  * custom components. rehype-react v6 uses hast-to-hyperscript, which stringifies
  * array-valued hast properties to space-separated strings (for className-style
@@ -75,7 +104,8 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 function createElementPreservingHastProps(
   type: React.ElementType,
   props: PropsWithHastNode | null,
-  ...children: React.ReactNode[]
+  resolvedVariables: Record<string, string>,
+  children: React.ReactNode[],
 ): React.ReactElement {
   if (props?.node?.properties) {
     const { node, ...rest } = props;
@@ -85,16 +115,20 @@ function createElementPreservingHastProps(
     });
     // Strip undefined so positional args don't shadow node.properties.children
     const definedChildren = children.filter(c => c !== undefined);
-    return React.createElement(type, mergedProps, ...definedChildren);
+    const withVariables = resolveVariablesInProps(mergedProps, resolvedVariables, node.tagName);
+    return React.createElement(type, withVariables, ...definedChildren);
   }
-  return React.createElement(type, props, ...children);
+  return React.createElement(type, props && resolveVariablesInProps(props, resolvedVariables), ...children);
 }
 
 /** Create a rehype-react processor */
-export function createRehypeReactProcessor(components: Record<string, React.ComponentType>) {
+export function createRehypeReactProcessor(components: Record<string, React.ComponentType>, variables?: Variables) {
+  const resolvedVariables = flattenVariables(variables);
+
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
-    createElement: createElementPreservingHastProps,
+    createElement: (type: React.ElementType, props: PropsWithHastNode | null, ...children: React.ReactNode[]) =>
+      createElementPreservingHastProps(type, props, resolvedVariables, children),
     Fragment: React.Fragment,
     components,
     passNode: true,
@@ -112,9 +146,7 @@ export function createTocComponent(tocHast: TocList): React.FC {
   const tocReactElement = tocProcessor.stringify(tocHast) as React.ReactNode;
 
   const TocComponent = () =>
-    tocReactElement ? (
-      <Components.TableOfContents>{tocReactElement}</Components.TableOfContents>
-    ) : null;
+    tocReactElement ? <Components.TableOfContents>{tocReactElement}</Components.TableOfContents> : null;
   TocComponent.displayName = 'Toc';
 
   return TocComponent;

@@ -1,0 +1,140 @@
+import type { Variables } from '../../../types';
+
+import { render } from '@testing-library/react';
+import React from 'react';
+
+import { mdxish, renderMdxish } from '../../../lib';
+import { findElementByTagName } from '../../helpers';
+
+const variables: Variables = {
+  defaults: [{ name: 'region', default: 'us-east-1' }],
+  user: { name: 'Dimas' },
+};
+
+const renderMd = (md: string, opts: { safeMode?: boolean } = {}) => {
+  const tree = mdxish(md, { ...opts, variables });
+  const { default: Content } = renderMdxish(tree, { variables });
+  return render(<Content />).container;
+};
+
+describe('variables in component attributes', () => {
+  describe.each([
+    ['safeMode', true],
+    ['unsafeMode', false],
+  ])('%s', (_label, safeMode) => {
+    it('resolves {user.*} in an Accordion title', () => {
+      const container = renderMd('<Accordion title={user.name}>\nHi\n</Accordion>', { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+    });
+
+    it('resolves {user.*} in a Card title nested inside Cards', () => {
+      const md = `<Cards>
+  <Card title={user.name} icon="fa-rocket">
+   Hi
+  </Card>
+</Cards>`;
+      const container = renderMd(md, { safeMode });
+
+      expect(container.querySelector('.Card-title')).toHaveTextContent('Dimas');
+    });
+
+    it('resolves legacy <<>> variables in an attribute', () => {
+      const container = renderMd('<Accordion title="<<name>>">\nHi\n</Accordion>', { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+    });
+
+    it('falls back to a project default, then the uppercased name', () => {
+      const md = '<Accordion title="<<region>> / <<nope>> / {user.missing}">\nHi\n</Accordion>';
+      const container = renderMd(md, { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('us-east-1 / NOPE / MISSING');
+    });
+
+    it('substitutes variables embedded in surrounding attribute text', () => {
+      const md = '<Accordion title="Hi <<name>>, you are in {user.region}">\nHi\n</Accordion>';
+      const container = renderMd(md, { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Hi Dimas, you are in us-east-1');
+    });
+
+    it('resolves attributes on plain HTML tags', () => {
+      const container = renderMd('<a href="/docs/{user.region}" title="<<name>>">link</a>', { safeMode });
+
+      expect(container.querySelector('a')).toHaveAttribute('href', '/docs/us-east-1');
+      expect(container.querySelector('a')).toHaveAttribute('title', 'Dimas');
+    });
+
+    it('leaves escaped variables unsubstituted', () => {
+      const container = renderMd('<Accordion title="\\<<name\\>> and \\{user.name\\}">\nHi\n</Accordion>', {
+        safeMode,
+      });
+
+      // Attribute strings are literal, so the escape characters survive as authored
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('\\<<name\\>> and \\{user.name\\}');
+    });
+  });
+
+  describe('formatting variations', () => {
+    it('resolves across a multi-line opening tag', () => {
+      const md = `<Accordion
+  title={user.name}
+  icon="fa-rocket"
+>
+
+Hi
+
+</Accordion>`;
+      const container = renderMd(md);
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+    });
+
+    it('resolves on a condensed self-closing tag', () => {
+      const container = renderMd('<Card title={user.name} href="/x"/>');
+
+      expect(container.querySelector('.Card-title')).toHaveTextContent('Dimas');
+    });
+  });
+
+  describe('resolution stays at render time', () => {
+    it('keeps the unresolved reference in the parsed tree', () => {
+      const tree = mdxish('<Accordion title={user.name}>\nHi\n</Accordion>', { variables });
+
+      expect(findElementByTagName(tree, 'Accordion')).toMatchObject({
+        tagName: 'Accordion',
+        properties: { title: '{user.name}' },
+      });
+    });
+
+    it('resolves a tree parsed without variables, as the MDX cache path does', () => {
+      const serverTree = mdxish('<Accordion title={user.name}>\nHi\n</Accordion>');
+      const { default: Content } = renderMdxish(serverTree, { variables });
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+    });
+  });
+
+  describe('non-variable content', () => {
+    it('keeps an unevaluatable attribute expression as literal braces', () => {
+      const container = renderMd('<a href="#" title={someUnknownThing}>link</a>');
+
+      expect(container.querySelector('a')).toHaveAttribute('title', '{someUnknownThing}');
+    });
+
+    it('does not substitute mermaid arrows that look like legacy variables', () => {
+      const md = '```mermaid\nsequenceDiagram\n  Client <<-->> Server: Bidirectional\n```';
+      const container = renderMd(md);
+
+      expect(container.querySelector('pre')).toHaveTextContent('Client <<-->> Server');
+    });
+
+    it('still resolves variables inside fenced code at parse time', () => {
+      const container = renderMd('```js\nconst key = "<<name>>";\n```');
+
+      expect(container.querySelector('pre')).toHaveTextContent('const key = "Dimas"');
+    });
+  });
+});
