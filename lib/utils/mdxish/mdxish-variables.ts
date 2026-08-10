@@ -2,7 +2,10 @@ import type { Variables } from '../../../types';
 
 import { MDX_VARIABLE_REGEXP } from '@readme/variable';
 
-const MDX_VARIABLE_REGEX = new RegExp(MDX_VARIABLE_REGEXP, 'giu');
+// The `$` guard skips template-literal interpolation: `${user.name}` embeds `{user.name}`, and
+// substituting it would leave a mangled `` `Hi $Name` `` behind. Those belong to an expression,
+// which either evaluated already or is meant to stay literal.
+const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'giu');
 
 /** Merge `defaults` and `user` into a single lookup, with user values taking precedence. */
 export function flattenVariables(variables?: Variables): Record<string, string> {
