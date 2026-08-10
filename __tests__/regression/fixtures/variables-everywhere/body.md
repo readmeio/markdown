@@ -18,14 +18,15 @@ sequenceDiagram
   Client <<->> Server: Bidirectional solid
 ```
 
-Component attributes, which resolve at render time rather than parse time:
+Component attributes resolve at render time, and only for `{user.*}` — the
+legacy `<<...>>` form is MDX-invalid in an attribute and stays literal:
 
 <Accordion title={user.region} icon="fa-rocket">
 Accordion body with <<apiKey>>
 </Accordion>
 
 <Cards>
-  <Card title="Key: <<apiKey>>" href="https://example.com/{user.region}">
+  <Card title="Key: {user.apiKey} / <<apiKey>>" href="https://example.com/{user.region}">
   Card body
   </Card>
 </Cards>

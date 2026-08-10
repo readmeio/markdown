@@ -11,7 +11,7 @@ import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
-import { flattenVariables, mayContainVariable, resolveAttributeVariables } from './mdxish-variables';
+import { flattenVariables, resolveAttributeVariables } from './mdxish-variables';
 
 export interface RenderOpts {
   baseUrl?: string;
@@ -64,16 +64,16 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 
 /**
- * Tags whose props carry document content rather than attributes. `variablesCodeResolver` already
- * resolved those at parse time (and deliberately skipped mermaid), so a second pass here would
- * mangle code that merely looks like a variable, e.g. a mermaid `<<-->>` arrow.
+ * Tags whose props carry document content rather than attributes. `variablesCodeResolver` owns
+ * those at parse time, where it deliberately leaves mermaid alone; resolving them again here
+ * would override that.
  */
 const CONTENT_BEARING_TAG_NAMES = new Set(['code', 'html-block']);
 
 /**
- * Resolve `{user.*}` and `<<...>>` in string-valued props. Body text is handled by the `Variable`
- * component, but attributes are plain strings, so they are substituted here — at render time, so
- * that a server-parsed (user-agnostic) tree resolves against the current reader's variables.
+ * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but
+ * attributes are plain strings, so they are substituted here — at render time, so that a
+ * server-parsed (user-agnostic) tree resolves against the current reader's variables.
  */
 function resolveVariablesInProps(
   props: Record<string, unknown>,
@@ -83,7 +83,7 @@ function resolveVariablesInProps(
   if (tagName && CONTENT_BEARING_TAG_NAMES.has(tagName)) return props;
 
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
-    if (typeof value !== 'string' || !mayContainVariable(value)) return [key, value];
+    if (typeof value !== 'string') return [key, value];
     return [key, resolveAttributeVariables(value, resolvedVariables)];
   });
 

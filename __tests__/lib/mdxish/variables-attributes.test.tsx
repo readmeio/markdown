@@ -1,5 +1,6 @@
 import type { Variables } from '../../../types';
 
+import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
@@ -39,40 +40,38 @@ describe('variables in component attributes', () => {
       expect(container.querySelector('.Card-title')).toHaveTextContent('Dimas');
     });
 
-    it('resolves legacy <<>> variables in an attribute', () => {
+    it('leaves legacy <<>> syntax alone, since attributes are MDX-only', () => {
       const container = renderMd('<Accordion title="<<name>>">\nHi\n</Accordion>', { safeMode });
 
-      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('<<name>>');
     });
 
     it('falls back to a project default, then the uppercased name', () => {
-      const md = '<Accordion title="<<region>> / <<nope>> / {user.missing}">\nHi\n</Accordion>';
+      const md = '<Accordion title="{user.region} / {user.missing}">\nHi\n</Accordion>';
       const container = renderMd(md, { safeMode });
 
-      expect(container.querySelector('.Accordion-title')).toHaveTextContent('us-east-1 / NOPE / MISSING');
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('us-east-1 / MISSING');
     });
 
     it('substitutes variables embedded in surrounding attribute text', () => {
-      const md = '<Accordion title="Hi <<name>>, you are in {user.region}">\nHi\n</Accordion>';
+      const md = '<Accordion title="Hi {user.name}, you are in {user.region}">\nHi\n</Accordion>';
       const container = renderMd(md, { safeMode });
 
       expect(container.querySelector('.Accordion-title')).toHaveTextContent('Hi Dimas, you are in us-east-1');
     });
 
     it('resolves attributes on plain HTML tags', () => {
-      const container = renderMd('<a href="/docs/{user.region}" title="<<name>>">link</a>', { safeMode });
+      const container = renderMd('<a href="/docs/{user.region}" title="{user.name}">link</a>', { safeMode });
 
       expect(container.querySelector('a')).toHaveAttribute('href', '/docs/us-east-1');
       expect(container.querySelector('a')).toHaveAttribute('title', 'Dimas');
     });
 
     it('leaves escaped variables unsubstituted', () => {
-      const container = renderMd('<Accordion title="\\<<name\\>> and \\{user.name\\}">\nHi\n</Accordion>', {
-        safeMode,
-      });
+      const container = renderMd('<Accordion title="\\{user.name\\}">\nHi\n</Accordion>', { safeMode });
 
       // Attribute strings are literal, so the escape characters survive as authored
-      expect(container.querySelector('.Accordion-title')).toHaveTextContent('\\<<name\\>> and \\{user.name\\}');
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('\\{user.name\\}');
     });
   });
 
@@ -124,11 +123,11 @@ Hi
       expect(container.querySelector('a')).toHaveAttribute('title', '{someUnknownThing}');
     });
 
-    it('does not substitute mermaid arrows that look like legacy variables', () => {
-      const md = '```mermaid\nsequenceDiagram\n  Client <<-->> Server: Bidirectional\n```';
+    it('leaves mermaid blocks alone, which variablesCodeResolver deliberately skips', () => {
+      const md = '```mermaid\nsequenceDiagram\n  Client <<-->> {user.name}: Bidirectional\n```';
       const container = renderMd(md);
 
-      expect(container.querySelector('pre')).toHaveTextContent('Client <<-->> Server');
+      expect(container.querySelector('pre')).toHaveTextContent('Client <<-->> {user.name}');
     });
 
     it('still resolves variables inside fenced code at parse time', () => {

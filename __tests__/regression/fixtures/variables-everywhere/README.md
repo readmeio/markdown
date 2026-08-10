@@ -10,8 +10,9 @@ Mermaid block where `<<-->>` / `<<->>` arrows must NOT be substituted.
 - PR #1471 — emphasis normalizer walking into `<code>` and converting underscores
 - PR #1423 — user variables on standalone lines in tables not resolving
 - Standalone variables not parsed in table cells (only attached-to-paragraph worked)
-- CX-3789 — variables in component attributes (`<Accordion title={user.name}>`) never
-  resolved, because only text, expression, and code nodes were ever visited
+- CX-3789 — `{user.*}` in component attributes (`<Accordion title={user.name}>`) never
+  resolved, because only text, expression, and code nodes were ever visited. Legacy
+  `<<...>>` stays literal in attributes by design
 
 ## What flips this fixture
 

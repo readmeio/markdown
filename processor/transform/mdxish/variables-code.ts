@@ -2,21 +2,45 @@ import type { Variables } from '../../../types';
 import type { Code, InlineCode } from 'mdast';
 import type { Plugin } from 'unified';
 
+import { MDX_VARIABLE_REGEXP, VARIABLE_REGEXP } from '@readme/variable';
 import { visit } from 'unist-util-visit';
 
-import { flattenVariables, replaceVariables } from '../../../lib/utils/mdxish/mdxish-variables';
+import { flattenVariables } from '../../../lib/utils/mdxish/mdxish-variables';
 
 interface Options {
   variables?: Variables;
 }
 
-function resolveCodeVariables(value: string, resolvedVariables: Record<string, string>): string {
-  return replaceVariables(value, ({ isMdxSyntax, name, source }) => {
-    if (name in resolvedVariables) return resolvedVariables[name];
+// Single combined regex so that resolved values from one pattern are never re-scanned by the other.
+const COMBINED_VARIABLE_REGEX = new RegExp(`${VARIABLE_REGEXP}|${MDX_VARIABLE_REGEXP}`, 'giu');
 
-    // Unresolved code variables echo the full reference, so `{user.missing}` reads as `USER.MISSING`
-    return (isMdxSyntax ? source.slice(1, -1) : name).toUpperCase();
-  });
+function resolveCodeVariables(value: string, resolvedVariables: Record<string, string>): string {
+  return value.replace(
+    COMBINED_VARIABLE_REGEX,
+    (
+      match: string,
+      legacyName: string,
+      mdxEscapePrefix: string,
+      mdxVarName: string,
+      mdxEscapeSuffix: string,
+    ): string => {
+      // Legacy variable: <<...>>
+      if (legacyName !== undefined) {
+        if (match.startsWith('\\<<') || match.endsWith('\\>>')) return match;
+
+        const name = legacyName.trim();
+        if (name.startsWith('glossary:')) return name.toUpperCase();
+
+        return name in resolvedVariables ? resolvedVariables[name] : name.toUpperCase();
+      }
+
+      // MDX variable: {user.*}
+      if (mdxEscapePrefix || mdxEscapeSuffix) return match;
+      if (mdxVarName in resolvedVariables) return resolvedVariables[mdxVarName];
+      const fullPath = match.slice(1, -1);
+      return fullPath.toUpperCase();
+    },
+  );
 }
 
 /**

@@ -1151,8 +1151,9 @@ as legacy variables:</p>
 <pre class="mermaid-render mermaid_single">sequenceDiagram
   Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
   Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
-<p>Component attributes, which resolve at render time rather than parse time:</p>
+<p>Component attributes resolve at render time, and only for <code class="rdmd-code lang-undefined theme-undefined">{user.*}</code> — the<br/>
+legacy <code class="rdmd-code lang-undefined theme-undefined">...</code> form is MDX-invalid in an attribute and stays literal:</p>
 <div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-rocket"></i>us-east-1</summary><div class="Accordion-content"><p>Accordion body with <span>sk_test_abc123</span></p></div></details></div>
-<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
+<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;
