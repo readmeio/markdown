@@ -6,7 +6,8 @@ import { MDX_VARIABLE_REGEXP } from '@readme/variable';
 const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'gu');
 
 // Bracket notation names the same variable as dot notation, so normalize it before substituting.
-const BRACKET_NOTATION_REGEX = /\{user\[['"](\w+)['"]\]\}/gu;
+// Escaped and `$`-prefixed forms are left alone so a reference that stays literal keeps its source.
+const BRACKET_NOTATION_REGEX = /(?<![$\\])\{user\[['"](\w+)['"]\]\}/gu;
 
 /**
  * Resolve `{user.*}` in a JSX attribute value against the same `user` binding the rmdx engine gets,

@@ -73,6 +73,17 @@ describe('variables in component attributes', () => {
       expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
     });
 
+    // A bracket reference that stays literal must keep its authored source, not the normalized form
+    it.each([
+      ['an escape', "\\{user['name']}"],
+      /* eslint-disable-next-line no-template-curly-in-string -- markdown source, not a JS template */
+      ['a template literal', "${user['name']}"],
+    ])('leaves bracket notation behind %s as authored', (_case, title) => {
+      const container = renderMd(`<Accordion title="${title}">\nHi\n</Accordion>`, { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent(title);
+    });
+
     it('leaves escaped variables unsubstituted', () => {
       const container = renderMd('<Accordion title="\\{user.name\\}">\nHi\n</Accordion>', { safeMode });
 

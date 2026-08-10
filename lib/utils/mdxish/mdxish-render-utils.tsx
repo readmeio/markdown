@@ -65,10 +65,10 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 
 /**
- * Code content is owned by `variablesCodeResolver` at parse time, where it deliberately leaves
- * mermaid alone; resolving it again here would override that.
+ * Code rides on a `value` prop, and `variablesCodeResolver` owns it at parse time where it
+ * deliberately leaves mermaid alone; resolving it again here would override that.
  */
-const CONTENT_BEARING_TAG_NAMES = new Set(['code']);
+const CODE_TAG_NAMES = new Set(['code']);
 
 /** Raw markup injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed — never interpolate. */
 const RAW_HTML_PROP_NAMES = new Set(['html']);
@@ -83,10 +83,11 @@ function resolveVariablesInProps(
   user: Record<string, string>,
   tagName?: string,
 ): Record<string, unknown> {
-  if (tagName && CONTENT_BEARING_TAG_NAMES.has(tagName)) return props;
+  const isCodeTag = Boolean(tagName && CODE_TAG_NAMES.has(tagName));
 
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
-    if (typeof value !== 'string' || RAW_HTML_PROP_NAMES.has(key)) return [key, value];
+    const isDocumentContent = RAW_HTML_PROP_NAMES.has(key) || (isCodeTag && key === 'value');
+    if (typeof value !== 'string' || isDocumentContent) return [key, value];
     return [key, resolveAttributeVariables(value, user)];
   });
 
