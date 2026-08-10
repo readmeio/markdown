@@ -67,6 +67,12 @@ describe('variables in component attributes', () => {
       expect(container.querySelector('a')).toHaveAttribute('title', 'Dimas');
     });
 
+    it('resolves bracket notation, which body text also accepts', () => {
+      const container = renderMd('<Accordion title="{user[\'name\']}">\nHi\n</Accordion>', { safeMode });
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('Dimas');
+    });
+
     it('leaves escaped variables unsubstituted', () => {
       const container = renderMd('<Accordion title="\\{user.name\\}">\nHi\n</Accordion>', { safeMode });
 
@@ -171,6 +177,29 @@ Hi
       const container = renderMd('```js\nconst key = "<<name>>";\n```');
 
       expect(container.querySelector('pre')).toHaveTextContent('const key = "Dimas"');
+    });
+
+    it('is case-sensitive, matching body text', () => {
+      const container = renderMd('<Accordion title="{USER.name} {user.name}">\nHi\n</Accordion>');
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('{USER.name} Dimas');
+    });
+  });
+
+  // Raw markup reaches `dangerouslySetInnerHTML`, so substituting a reader's values into it would
+  // hand them to whatever authored the markup.
+  describe('raw HTML props', () => {
+    it('leaves an Embed html prop literal', () => {
+      const md = '<Embed url="https://example.com" title="t" html="<img src=\'/x?k={user.name}\'/>" />';
+      const container = renderMd(md);
+
+      expect(container.querySelector('.embed-media')?.innerHTML).toBe('<img src="/x?k={user.name}">');
+    });
+
+    it('leaves an HTMLBlock literal', () => {
+      const container = renderMd('<HTMLBlock>{`<div>{user.name}</div>`}</HTMLBlock>');
+
+      expect(container.querySelector('.rdmd-html')?.innerHTML).toBe('<div>{user.name}</div>');
     });
   });
 });

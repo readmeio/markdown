@@ -1,34 +1,27 @@
-import type { Variables } from '../../../types';
-
 import { MDX_VARIABLE_REGEXP } from '@readme/variable';
 
 // The `$` guard skips template-literal interpolation: `${user.name}` embeds `{user.name}`, and
 // substituting it would leave a mangled `` `Hi $Name` `` behind. Those belong to an expression,
 // which either evaluated already or is meant to stay literal.
-const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'giu');
+const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'gu');
 
-/** Merge `defaults` and `user` into a single lookup, with user values taking precedence. */
-export function flattenVariables(variables?: Variables): Record<string, string> {
-  if (!variables) return {};
-
-  return {
-    ...Object.fromEntries((variables.defaults || []).map(({ name, default: value }) => [name, value])),
-    ...variables.user,
-  };
-}
+// Bracket notation names the same variable as dot notation, so normalize it before substituting.
+const BRACKET_NOTATION_REGEX = /\{user\[['"](\w+)['"]\]\}/gu;
 
 /**
- * Resolve `{user.*}` in a JSX attribute value, matching how the `Variable` component resolves it in
- * body text: user value, then project default, then the uppercased name.
+ * Resolve `{user.*}` in a JSX attribute value against the same `user` binding the rmdx engine gets,
+ * so both engines agree. Body text differs on empty values: `Variable` falls back to the default.
  *
- * Legacy `<<...>>` is deliberately not handled here. It is valid inside a quoted attribute, but
- * attributes are an MDX surface and `{user.*}` is the syntax authors use there.
+ * Legacy `<<...>>` is valid inside a quoted attribute but deliberately left literal — attributes are
+ * an MDX surface, and `{user.*}` is the syntax authors use there.
  */
-export function resolveAttributeVariables(value: string, resolvedVariables: Record<string, string>): string {
+export function resolveAttributeVariables(value: string, user: Record<string, string>): string {
   if (!value.includes('{user')) return value;
 
-  return value.replace(MDX_VARIABLE_REGEX, (source, escapePrefix: string, name: string, escapeSuffix: string) => {
-    if (escapePrefix || escapeSuffix) return source;
-    return resolvedVariables[name] ?? name.toUpperCase();
-  });
+  return value
+    .replace(BRACKET_NOTATION_REGEX, '{user.$1}')
+    .replace(MDX_VARIABLE_REGEX, (source, escapePrefix: string, name: string, escapeSuffix: string) => {
+      if (escapePrefix || escapeSuffix) return source;
+      return user[name];
+    });
 }

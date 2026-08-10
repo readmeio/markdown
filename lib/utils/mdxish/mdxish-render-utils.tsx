@@ -9,9 +9,10 @@ import { unified } from 'unified';
 
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
+import User from '../../../utils/user';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
-import { flattenVariables, resolveAttributeVariables } from './mdxish-variables';
+import { resolveAttributeVariables } from './mdxish-variables';
 
 export interface RenderOpts {
   baseUrl?: string;
@@ -64,11 +65,13 @@ export function exportComponentsForRehype(components: CustomComponents): Record<
 type PropsWithHastNode = Record<string, unknown> & { node?: Element };
 
 /**
- * Tags whose props carry document content rather than attributes. `variablesCodeResolver` owns
- * those at parse time, where it deliberately leaves mermaid alone; resolving them again here
- * would override that.
+ * Code content is owned by `variablesCodeResolver` at parse time, where it deliberately leaves
+ * mermaid alone; resolving it again here would override that.
  */
-const CONTENT_BEARING_TAG_NAMES = new Set(['code', 'html-block']);
+const CONTENT_BEARING_TAG_NAMES = new Set(['code']);
+
+/** Raw markup injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed — never interpolate. */
+const RAW_HTML_PROP_NAMES = new Set(['html']);
 
 /**
  * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but
@@ -77,14 +80,14 @@ const CONTENT_BEARING_TAG_NAMES = new Set(['code', 'html-block']);
  */
 function resolveVariablesInProps(
   props: Record<string, unknown>,
-  resolvedVariables: Record<string, string>,
+  user: Record<string, string>,
   tagName?: string,
 ): Record<string, unknown> {
   if (tagName && CONTENT_BEARING_TAG_NAMES.has(tagName)) return props;
 
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
-    if (typeof value !== 'string') return [key, value];
-    return [key, resolveAttributeVariables(value, resolvedVariables)];
+    if (typeof value !== 'string' || RAW_HTML_PROP_NAMES.has(key)) return [key, value];
+    return [key, resolveAttributeVariables(value, user)];
   });
 
   return Object.fromEntries(resolvedEntries);
@@ -101,34 +104,31 @@ function resolveVariablesInProps(
  * Only arrays win over `rest`, overwriting other shapes would undo correct
  * React conversions like `style="color:red"` → `{ color: 'red' }`.
  */
-function createElementPreservingHastProps(
-  type: React.ElementType,
-  props: PropsWithHastNode | null,
-  resolvedVariables: Record<string, string>,
-  children: React.ReactNode[],
-): React.ReactElement {
-  if (props?.node?.properties) {
-    const { node, ...rest } = props;
-    const mergedProps: Record<string, unknown> = { ...rest };
-    Object.entries(node.properties).forEach(([key, value]) => {
-      if (Array.isArray(value)) mergedProps[key] = value;
-    });
-    // Strip undefined so positional args don't shadow node.properties.children
-    const definedChildren = children.filter(c => c !== undefined);
-    const withVariables = resolveVariablesInProps(mergedProps, resolvedVariables, node.tagName);
-    return React.createElement(type, withVariables, ...definedChildren);
-  }
-  return React.createElement(type, props && resolveVariablesInProps(props, resolvedVariables), ...children);
-}
+const makeCreateElementPreservingHastProps = (user: Record<string, string>) =>
+  function createElementPreservingHastProps(
+    type: React.ElementType,
+    props: PropsWithHastNode | null,
+    ...children: React.ReactNode[]
+  ): React.ReactElement {
+    if (props?.node?.properties) {
+      const { node, ...rest } = props;
+      const mergedProps: Record<string, unknown> = { ...rest };
+      Object.entries(node.properties).forEach(([key, value]) => {
+        if (Array.isArray(value)) mergedProps[key] = value;
+      });
+      // Strip undefined so positional args don't shadow node.properties.children
+      const definedChildren = children.filter(c => c !== undefined);
+      const withVariables = resolveVariablesInProps(mergedProps, user, node.tagName);
+      return React.createElement(type, withVariables, ...definedChildren);
+    }
+    return React.createElement(type, props && resolveVariablesInProps(props, user), ...children);
+  };
 
 /** Create a rehype-react processor */
 export function createRehypeReactProcessor(components: Record<string, React.ComponentType>, variables?: Variables) {
-  const resolvedVariables = flattenVariables(variables);
-
   // @ts-expect-error - rehype-react types are incompatible with React.Fragment return type
   return unified().use(rehypeReact, {
-    createElement: (type: React.ElementType, props: PropsWithHastNode | null, ...children: React.ReactNode[]) =>
-      createElementPreservingHastProps(type, props, resolvedVariables, children),
+    createElement: makeCreateElementPreservingHastProps(User(variables)),
     Fragment: React.Fragment,
     components,
     passNode: true,
