@@ -2,14 +2,26 @@ import type { Expression, PrivateIdentifier, SpreadElement } from 'estree';
 
 import { jsxAcornParser } from './jsx-acorn-parser';
 
-const ARITHMETIC_OPERATORS: Record<string, (left, right) => unknown> = {
-  '+': (left, right) => left + right,
-  '-': (left, right) => left - right,
-  '*': (left, right) => left * right,
-  '/': (left, right) => left / right,
+const unsupported = (description: string) => new Error(`not a literal expression: ${description}`);
+
+/** Narrows a resolved value for arithmetic, so operands never coerce to `NaN` or `"[object Object]"`. */
+const asNumber = (value: unknown): number => {
+  if (typeof value !== 'number') throw unsupported('non-numeric operand');
+  return value;
 };
 
-const unsupported = (description: string) => new Error(`not a literal expression: ${description}`);
+const asOperand = (value: unknown): number | string => {
+  if (typeof value !== 'number' && typeof value !== 'string') throw unsupported('non-primitive operand');
+  return value;
+};
+
+const ARITHMETIC_OPERATORS: Record<string, (left: number | string, right: number | string) => number | string> = {
+  // `+` doubles as string concatenation, so it accepts a string on either side.
+  '+': (left, right) => (typeof left === 'number' && typeof right === 'number' ? left + right : `${left}${right}`),
+  '-': (left, right) => asNumber(left) - asNumber(right),
+  '*': (left, right) => asNumber(left) * asNumber(right),
+  '/': (left, right) => asNumber(left) / asNumber(right),
+};
 
 /** Resolve one estree node, recursing into arrays and objects. Throws for anything not on the allowlist. */
 const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unknown => {
@@ -27,11 +39,11 @@ const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unkn
       return node.quasis.map(quasi => quasi.value.cooked).join('');
     case 'UnaryExpression':
       if (node.operator !== '-') throw unsupported(`operator \`${node.operator}\``);
-      return -resolveNode(node.argument);
+      return -asNumber(resolveNode(node.argument));
     case 'BinaryExpression': {
       const applyOperator = ARITHMETIC_OPERATORS[node.operator];
       if (!applyOperator) throw unsupported(`operator \`${node.operator}\``);
-      return applyOperator(resolveNode(node.left), resolveNode(node.right));
+      return applyOperator(asOperand(resolveNode(node.left)), asOperand(resolveNode(node.right)));
     }
     case 'ArrayExpression':
       return node.elements.map(element => (element === null ? null : resolveNode(element)));

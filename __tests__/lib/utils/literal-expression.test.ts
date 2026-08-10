@@ -23,6 +23,7 @@ describe('evaluateLiteralExpression', () => {
     ['`backtick`', 'backtick'],
     ['1 + 1', 2],
     ["'https://' + 'example.com' + '/x'", 'https://example.com/x'],
+    ["'page-' + 2", 'page-2'],
     ['[]', []],
     ['["left","right"]', ['left', 'right']],
     ['[null,"center",null]', [null, 'center', null]],
@@ -48,6 +49,9 @@ describe('evaluateLiteralExpression', () => {
     ['a computed key', '{ [key]: 1 }'],
     ['a regex', '/re/g'],
     ['a bigint, which cannot be serialised', '1n'],
+    ['arithmetic on a string', "'a' - 1"],
+    ['arithmetic on an object', '{} + 1'],
+    ['a negated string', '-"abc"'],
     ['a prototype-replacing key', '{ __proto__: { admin: true } }'],
     ['an exponent, which can hang the process', '2 ** 1e9'],
     // acorn stops at the first expression, so trailing source could smuggle in a second one.
