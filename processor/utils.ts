@@ -14,6 +14,7 @@ import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
+import { evaluateLiteralExpression } from '../lib/utils/literal-expression';
 
 export { jsxAcornParser };
 
@@ -120,7 +121,7 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
         memo[attr.name] = decodeHTMLStrict(attr.value);
       } else if (attr.value?.value !== undefined) {
         try {
-          memo[attr.name] = evaluate(attr.value.value);
+          memo[attr.name] = evaluateLiteralExpression(attr.value.value);
         } catch {
           memo[attr.name] = attr.value.value;
         }

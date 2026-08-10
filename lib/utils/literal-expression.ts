@@ -1,0 +1,68 @@
+import type { Expression, PrivateIdentifier, SpreadElement } from 'estree';
+
+import { jsxAcornParser } from './jsx-acorn-parser';
+
+const ARITHMETIC_OPERATORS: Record<string, (left, right) => unknown> = {
+  '+': (left, right) => left + right,
+  '-': (left, right) => left - right,
+  '*': (left, right) => left * right,
+  '/': (left, right) => left / right,
+};
+
+const unsupported = (description: string) => new Error(`not a literal expression: ${description}`);
+
+/** Resolve one estree node, recursing into arrays and objects. Throws for anything not on the allowlist. */
+const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unknown => {
+  switch (node.type) {
+    case 'Literal':
+      // Regexes are the one `Literal` whose `value` isn't a plain JSON-ish value.
+      if ('regex' in node) throw unsupported('regex');
+      return node.value;
+    case 'Identifier':
+      if (node.name !== 'undefined') throw unsupported(`identifier \`${node.name}\``);
+      return undefined;
+    case 'TemplateLiteral':
+      if (node.expressions.length) throw unsupported('template substitution');
+      return node.quasis.map(quasi => quasi.value.cooked).join('');
+    case 'UnaryExpression':
+      if (node.operator !== '-') throw unsupported(`operator \`${node.operator}\``);
+      return -resolveNode(node.argument);
+    case 'BinaryExpression': {
+      const applyOperator = ARITHMETIC_OPERATORS[node.operator];
+      if (!applyOperator) throw unsupported(`operator \`${node.operator}\``);
+      return applyOperator(resolveNode(node.left), resolveNode(node.right));
+    }
+    case 'ArrayExpression':
+      return node.elements.map(element => (element === null ? null : resolveNode(element)));
+    case 'ObjectExpression':
+      return node.properties.reduce<Record<string, unknown>>((memo, property) => {
+        if (property.type !== 'Property' || property.computed) throw unsupported('computed or spread property');
+        const { key } = property;
+        if (key.type !== 'Identifier' && key.type !== 'Literal') throw unsupported('property key');
+        memo[key.type === 'Identifier' ? key.name : String(key.value)] = resolveNode(property.value as Expression);
+        return memo;
+      }, {});
+    default:
+      throw unsupported(node.type);
+  }
+};
+
+/**
+ * Resolve a JSX attribute expression's source to its value without executing it.
+ *
+ * Supports the literal syntax attributes actually use — `true`, `"a"`, `` `a` ``,
+ * `undefined`, `{ textAlign: "left" }`, `["left"]`, `1 + 1`, `'https://' + 'x.com'` —
+ * and refuses everything else, so no identifier, member access, call, assignment or
+ * function body can ever run. The trade-off is that expressions needing a scope or a
+ * method call (`{item.url}`, `{"a".toUpperCase()}`) throw; callers keep the raw source
+ * instead, and mdxish re-resolves them later with its scoped evaluator.
+ *
+ * @param source expression body, without the surrounding braces
+ * @throws if `source` is unparseable or isn't a supported literal expression
+ */
+export const evaluateLiteralExpression = (source: string): unknown => {
+  const expression = jsxAcornParser.parseExpressionAt(source, 0, { ecmaVersion: 'latest' });
+  // acorn stops at the first complete expression, so anything trailing means this isn't one.
+  if (expression.end !== source.trimEnd().length) throw unsupported('trailing content');
+  return resolveNode(expression as Expression);
+};
