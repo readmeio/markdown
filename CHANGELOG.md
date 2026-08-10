@@ -1,6 +1,39 @@
 Changelog
 ===
 
+## Version 15.0.0
+### ⚠ BREAKING CHANGES
+
+* ** consumers must now install `@readme/syntax-highlighter`
+v16 themselves; anyone on v15 or earlier must upgrade. `feat!` →
+released as a major so the change is visible in semver.
+
+## 🧪 QA tips
+
+- [ ] `npm run build` succeeds (sh resolved via devDependency); the
+emitted `dist` still contains only a bare
+`require("@readme/syntax-highlighter")` — **zero** CodeMirror
+`defineMode`.
+- [ ] Test suite passes standalone.
+- [ ] Consumer side (readme monorepo v16 PR to follow): once this
+republishes, `npm ls @readme/syntax-highlighter` shows the nested
+markdown copy gone, and the `readme-markdown` Hub chunk sheds its
+CodeMirror modes (measured ~126 KB brotli).
+
+## 📸 Screenshot or Loom
+
+N/A — dependency/packaging change, no runtime or UI impact. Verified via
+bundle measurement (see QA tips).
+
+### ✨ New & Improved
+
+* move @readme/syntax-highlighter to a peer dependency ([#1570](https://github.com/readmeio/markdown/issues/1570)) ([ceecb8a](https://github.com/readmeio/markdown/commit/ceecb8a53b245ef75a3df9cb92df96b42fded30a))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** only decode semicolon-less entities the HTML spec allows ([#1580](https://github.com/readmeio/markdown/issues/1580)) ([810b2e5](https://github.com/readmeio/markdown/commit/810b2e5ada36123b6cd0551732a9f52a58d39430)), closes [#1359](https://github.com/readmeio/markdown/issues/1359) [#160World](https://github.com/readmeio/markdown/issues/160World) [#xa0World](https://github.com/readmeio/markdown/issues/xa0World)
+* **mdxish:** resolve variables in component attributes ([#1584](https://github.com/readmeio/markdown/issues/1584)) ([fcb2ab5](https://github.com/readmeio/markdown/commit/fcb2ab509e966df5456578021b067c34e22af9ea))
+
 ## Version 14.14.2
 ### 🛠 Fixes & Updates
 
