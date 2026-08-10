@@ -2,7 +2,7 @@ import { existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { hast, mdast } from '../../../lib';
 import { evaluateLiteralExpression } from '../../../lib/utils/literal-expression';
@@ -75,6 +75,10 @@ describe('attribute expressions are never executed', () => {
 });
 
 describe('host access and command execution', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it.each([
     ['reads an environment variable', 'process.env.CANARY_SECRET'],
     ['reaches the environment through globalThis', 'globalThis.process.env.CANARY_SECRET'],
@@ -87,9 +91,8 @@ describe('host access and command execution', () => {
   });
 
   it('does not leak an environment variable into the tree', () => {
-    process.env.CANARY_SECRET = 'canary-secret-value';
+    vi.stubEnv('CANARY_SECRET', 'canary-secret-value');
     const tree = JSON.stringify(mdast('<Callout icon={process.env.CANARY_SECRET} />'));
-    delete process.env.CANARY_SECRET;
 
     expect(tree).not.toContain('canary-secret-value');
     expect(tree).toContain('process.env.CANARY_SECRET');
