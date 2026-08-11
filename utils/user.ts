@@ -14,7 +14,7 @@ export interface Variables {
  * so that `<<var>>` syntax doesn't produce `[object Object]` for structured data like
  * JWT `keys`.
  */
-const stringifyVariableValue = (value: unknown): string => {
+export const stringifyVariableValue = (value: unknown): string => {
   if (typeof value === 'string') return value;
   if (value == null) return '';
   if (typeof value === 'object') {
