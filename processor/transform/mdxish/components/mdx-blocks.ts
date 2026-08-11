@@ -29,6 +29,11 @@ const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
 // of a legacy `<<VARIABLE>>`.
 const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
 
+// Whole blank lines at a component body's edges. `\n` sits inside each group so a
+// match can only ever span complete lines, never part of a content line.
+const LEADING_BLANK_LINES_RE = /^(?:[ \t]*\n)+/;
+const TRAILING_BLANK_LINES_RE = /(?:\n[ \t]*)+$/;
+
 // Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
 // components), which expect their wrapper to stay raw.
 const hasNestedGenericComponentTag = (content: string): boolean =>
@@ -67,18 +72,14 @@ function safeDeindent(text: string): string {
 }
 
 /**
- * Drop the blank lines around a component body without touching the indentation of the
- * first content line. `.trim()` would strip that one line's leading whitespace only,
- * leaving a uniformly indented body lopsided — `  - a` / `  - b` reparses as `- a` /
- * `  - b`, so every sibling after the first nests a level (RM-17790). Bodies shallower
- * than 4 columns keep their indent by design (`safeDeindent`), and CommonMark treats it
- * as insignificant, so preserving it costs nothing.
- *
- * Both edges drop whole blank lines only. The trailing side stops at the last content
- * line's own newline so its trailing spaces survive, they are the content of a fenced
- * code block left unclosed by the component's end tag.
+ * Drop the blank lines at a component body's edges, keeping the first content line's
+ * indent: `.trim()` stripped that line alone, so a uniformly indented body reparsed
+ * lopsided and every list item after the first nested. The trailing pattern
+ * takes the last content line's newline but leaves its spaces, which are code content
+ * when a fence runs into the end tag.
  */
-const trimBlankEdges = (text: string): string => text.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '');
+const trimBlankEdges = (text: string): string =>
+  text.replace(LEADING_BLANK_LINES_RE, '').replace(TRAILING_BLANK_LINES_RE, '');
 
 /**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
@@ -288,7 +289,8 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Case 2: Self-contained block (closing tag in content)
     const closingTagIndex = isPlainLowercaseHtml ? plainClosingTagIndex : contentAfterTag.lastIndexOf(closingTagStr);
     if (closingTagIndex >= 0) {
-      // Untrimmed so parseMdChildren can dedent before trimming.
+      // Left as authored: parseMdChildren needs the original columns to dedent by, and
+      // it clears the blank edges itself.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = [];
