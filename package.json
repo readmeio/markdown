@@ -212,7 +212,6 @@
   "optionalDependencies": {
     "mermaid": "^11.12.0"
   },
-  "//micromark-util-subtokenize": "Transitive dep (via micromark) with no direct version to bump. Pinned to 2.0.4 — the latest release with the SpliceBuffer O(n) postprocessing fix, but before 2.1.0's list-indent / content-type AST changes we don't want to adopt in this change. Same override approach as conventional-changelog-conventionalcommits above; drop once micromark defaults to >=2.0.1. Open to alternatives (e.g. a direct dep) — shout if you feel strongly.",
   "overrides": {
     "@readme/markdown-legacy": {
       "@readme/variable": "^18.0.0"
