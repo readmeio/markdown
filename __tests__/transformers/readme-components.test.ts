@@ -82,4 +82,50 @@ Second
     const tree = mdast(mdx);
     expect(tree.children[0].type).toBe('readme-variable');
   });
+
+  // Every named component here (Callout, Code, Image, HTMLBlock, Table, Embed, Anchor,
+  // Recipe/TutorialTile, and the generic `types` map) runs its attributes through `getAttrs()`,
+  // which evaluates `{expr}` values with `new Function`. This transformer sits inside the shared
+  // `astProcessor` pipeline, so every consumer (mdast, hast, tags, plain, ...) was exposed
+  // regardless of what it does with the result — evaluation is a side effect of building the tree,
+  // not of using it. safeMode now flattens expressions to their source before any transformer
+  // runs. (GHSA-2prv-4jff-x46g)
+  describe('safeMode', () => {
+    const getHProp = (tree: ReturnType<typeof mdast>, key: string) =>
+      (tree.children[0].data as { hProperties?: Record<string, unknown> } | undefined)?.hProperties?.[key];
+
+    it('evaluates JSX attribute expressions by default', () => {
+      const tree = mdast('<Callout icon={String(1 + 3)} />');
+
+      expect(getHProp(tree, 'icon')).toBe('4');
+    });
+
+    it('does not evaluate JSX attribute expressions when safeMode is true', () => {
+      const tree = mdast('<Callout icon={String(1 + 3)} />', { safeMode: true });
+
+      expect(getHProp(tree, 'icon')).toBe('String(1 + 3)');
+    });
+
+    it('does not expose Node process globals when safeMode is true', () => {
+      const tree = mdast('<Callout icon={typeof process} />', { safeMode: true });
+
+      expect(getHProp(tree, 'icon')).toBe('typeof process');
+    });
+
+    it('still coerces Callout into an rdme-callout node when safeMode is true', () => {
+      const tree = mdast('<Callout icon="📘" />', { safeMode: true });
+
+      expect(tree.children[0].type).toBe('rdme-callout');
+    });
+
+    // `imageTransformer` runs from the shared `remarkPlugins` list, ahead of this transformer,
+    // and read attributes through its own unguarded `getAttrs()` call.
+    it('does not evaluate expressions read by the image transformer', () => {
+      globalThis.imgCanary = false;
+      const tree = mdast('<Image alt={(globalThis.imgCanary = true)} src="/x.png" />', { safeMode: true });
+
+      expect(globalThis.imgCanary).toBe(false);
+      expect(getHProp(tree, 'alt')).toBe('(globalThis.imgCanary = true)');
+    });
+  });
 });
