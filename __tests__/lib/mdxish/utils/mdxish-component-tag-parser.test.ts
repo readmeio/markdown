@@ -4,6 +4,7 @@ import * as rmdx from '@readme/markdown-legacy';
 
 import { mdxish } from '../../../../lib';
 import { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { extractText } from '../../../../processor/transform/extract-text';
 import { findElementByTagName, parseMdxishWithSource } from '../../../helpers';
 
 describe('parseAttributes', () => {
@@ -460,20 +461,37 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
     ['legacy RMDX', rmdx.hast],
   ])('RM-16375 unquoted native HTML attributes in %s', (_engine, parse) => {
     it.each([
-      ['<a href=https://example.com>', 'a', { href: 'https://example.com' }, undefined],
-      ['<a href=https://example.com>Example</a>', 'a', { href: 'https://example.com' }, 'Example'],
-      ['<span class=unquoted-class>Example</span>', 'span', { className: ['unquoted-class'] }, 'Example'],
-      ['<div class=unquoted-class>Example</div>', 'div', { className: ['unquoted-class'] }, 'Example'],
-    ])('should parse native HTML with unquoted attributes: %s', (source, tagName, properties, value) => {
+      ['opening tag', '<a href=https://example.com>', '', { type: 'root' }, 'a', { href: 'https://example.com' }, undefined],
+      ['paired tag', '<a href=https://example.com>Example</a>', '', { type: 'root' }, 'a', { href: 'https://example.com' }, 'Example'],
+      ['inline class', '<span class=unquoted-class>Example</span>', '', { type: 'root' }, 'span', { className: ['unquoted-class'] }, 'Example'],
+      ['block class', '<div class=unquoted-class>Example</div>', '', { type: 'root' }, 'div', { className: ['unquoted-class'] }, 'Example'],
+      ['self-closing tag', '<img src=https://example.com/image.png />', '', { type: 'root' }, 'img', { src: 'https://example.com/image.png' }, undefined],
+      ['attribute whitespace', '<div class = unquoted-class>Example</div>', '', { type: 'root' }, 'div', { className: ['unquoted-class'] }, 'Example'],
+      ['CRLF', '<div\r\n class=unquoted-class>\r\nExample\r\n</div>', '', { type: 'root' }, 'div', { className: ['unquoted-class'] }, undefined],
+      ['* emphasis', '*<a href=https://example.com>Example</a>*', 'em', { type: 'element', tagName: 'em' }, 'a', { href: 'https://example.com' }, 'Example'],
+      ['_ emphasis', '_<a href=https://example.com>Example</a>_', 'em', { type: 'element', tagName: 'em' }, 'a', { href: 'https://example.com' }, 'Example'],
+      ['nesting', 'Before <span class=outer><a href=https://example.com>Example</a></span> after', 'span', { type: 'element', tagName: 'span', properties: { className: ['outer'] } }, 'a', { href: 'https://example.com' }, 'Example'],
+      ['blank lines', '<div class=outer>\n\n<a href=https://example.com>Example</a>\n\n</div>', 'div', { type: 'element', tagName: 'div', properties: { className: ['outer'] } }, 'a', { href: 'https://example.com' }, 'Example'],
+      ['tab formatting', 'Before <a\thref\t=\thttps://example.com>Example</a> after', '', { type: 'root' }, 'a', { href: 'https://example.com' }, 'Example'],
+    ])('should parse the %s variant', (_case, source, parentTag, expectedParent, tagName, properties, value) => {
       const tree = parse(source);
-      const element = findElementByTagName(tree, tagName);
+      const parent = findElementByTagName(tree, parentTag) ?? tree;
 
-      expect(element).toMatchObject({
+      expect(parent).toMatchObject(expectedParent);
+
+      expect(findElementByTagName(parent, tagName)).toMatchObject({
         type: 'element',
         tagName,
         properties,
-        ...(value ? { children: [{ type: 'text', value }] } : {}),
+        ...(value !== undefined ? { children: [{ type: 'text', value }] } : {}),
       });
+    });
+
+    it('should leave an escaped opening tag as text', () => {
+      const tree = parse('Before \\<span class=inner>Example</span> after');
+
+      expect(findElementByTagName(tree, 'span')).toBeNull();
+      expect(extractText(tree)).toBe('Before <span class=inner>Example after');
     });
   });
 });
