@@ -80,7 +80,7 @@ const RAW_HTML_PROP_NAMES = new Set(['html']);
  */
 function resolveVariablesInProps(
   props: Record<string, unknown>,
-  user: Record<string, string>,
+  user: Record<string, unknown>,
   tagName?: string,
 ): Record<string, unknown> {
   const isCodeTag = Boolean(tagName && CODE_TAG_NAMES.has(tagName));
@@ -105,7 +105,7 @@ function resolveVariablesInProps(
  * Only arrays win over `rest`, overwriting other shapes would undo correct
  * React conversions like `style="color:red"` → `{ color: 'red' }`.
  */
-const makeCreateElementPreservingHastProps = (user: Record<string, string>) =>
+const makeCreateElementPreservingHastProps = (user: Record<string, unknown>) =>
   function createElementPreservingHastProps(
     type: React.ElementType,
     props: PropsWithHastNode | null,
