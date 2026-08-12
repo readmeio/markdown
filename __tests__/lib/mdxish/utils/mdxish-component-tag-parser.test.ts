@@ -1,5 +1,7 @@
 import type { MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 
+import * as rmdx from '@readme/markdown-legacy';
+
 import { mdxish } from '../../../../lib';
 import { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { findElementByTagName, parseMdxishWithSource } from '../../../helpers';
@@ -453,20 +455,25 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
     });
   });
 
-  it.each([
-    ['<a href=https://example.com>', 'a', { href: 'https://example.com' }, undefined],
-    ['<a href=https://example.com>Example</a>', 'a', { href: 'https://example.com' }, 'Example'],
-    ['<span class=unquoted-class>Example</span>', 'span', { className: ['unquoted-class'] }, 'Example'],
-    ['<div class=unquoted-class>Example</div>', 'div', { className: ['unquoted-class'] }, 'Example'],
-  ])('should parse native HTML with unquoted attributes: %s', (source, tagName, properties, value) => {
-    const hast = mdxish(source);
-    const element = findElementByTagName(hast, tagName);
+  describe.each([
+    ['MDXish', mdxish],
+    ['legacy RMDX', rmdx.hast],
+  ])('RM-16375 unquoted native HTML attributes in %s', (_engine, parse) => {
+    it.each([
+      ['<a href=https://example.com>', 'a', { href: 'https://example.com' }, undefined],
+      ['<a href=https://example.com>Example</a>', 'a', { href: 'https://example.com' }, 'Example'],
+      ['<span class=unquoted-class>Example</span>', 'span', { className: ['unquoted-class'] }, 'Example'],
+      ['<div class=unquoted-class>Example</div>', 'div', { className: ['unquoted-class'] }, 'Example'],
+    ])('should parse native HTML with unquoted attributes: %s', (source, tagName, properties, value) => {
+      const tree = parse(source);
+      const element = findElementByTagName(tree, tagName);
 
-    expect(element).toMatchObject({
-      type: 'element',
-      tagName,
-      properties,
-      ...(value ? { children: [{ type: 'text', value }] } : {}),
+      expect(element).toMatchObject({
+        type: 'element',
+        tagName,
+        properties,
+        ...(value ? { children: [{ type: 'text', value }] } : {}),
+      });
     });
   });
 });

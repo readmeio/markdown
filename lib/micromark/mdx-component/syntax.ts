@@ -94,8 +94,8 @@ function createTokenize(mode: 'flow' | 'text') {
     let depth = 0;
     let closingTagName = '';
     // Lowercase tags are claimed when they use JSX attribute expressions or
-    // unquoted HTML attribute values. CommonMark does not allow `/` in an
-    // unquoted value, so URLs otherwise split into text and an autolink.
+    // unquoted HTML attribute values, preventing URL-like values from being
+    // split into text and autolink nodes elsewhere in the MDXish pipeline.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
     let sawUnquotedAttr = false;
