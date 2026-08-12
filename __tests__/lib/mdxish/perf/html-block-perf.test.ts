@@ -51,15 +51,18 @@ describe('large <HTMLBlock> performance', () => {
   }, 30_000);
 
   it('parses in roughly linear time, not O(n²)', () => {
-    // Assert the scaling ratio, not a wall-clock budget: dividing the two timings
-    // cancels machine speed, so this is stable across dev/CI. 3× the lines should
-    // take ~3× the time; a per-line O(n²) regression pushes it toward ~9×.
+    // Assert the scaling ratio, not a wall-clock budget: dividing the timings
+    // cancels machine speed, so this is stable across dev/CI. N× the lines should
+    // take ~N× the time; a per-line O(n²) regression pushes the ratio toward N².
     const t10 = fastestParse(buildHtmlBlock(10_000).md);
     const t30 = fastestParse(buildHtmlBlock(30_000).md);
-    const ratio = t30 / t10;
+    const t57 = fastestParse(buildHtmlBlock(57_000).md);
+    const ratio30 = t30 / t10;
+    const ratio57 = t57 / t10;
     // eslint-disable-next-line no-console
-    console.log(`  30k/10k = ${ratio.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9)`);
+    console.log(`  30k/10k = ${ratio30.toFixed(2)}× (linear ≈ 3, quadratic ≈ 9) | 57k/10k = ${ratio57.toFixed(2)}× (linear ≈ 5.7, quadratic ≈ 32)`);
 
-    expect(ratio).toBeLessThan(5);
+    expect(ratio30).toBeLessThan(5);
+    expect(ratio57).toBeLessThan(10);
   }, 30_000);
 });
