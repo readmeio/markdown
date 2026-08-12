@@ -40,9 +40,9 @@
 
   .TabContent {
     color: var(--color-text-muted, #4f5a66);
-
-    > * + * {
-      margin-top: var(--markdown-spacing, 15px);
-    }
   }
+}
+
+:where(.TabGroup .TabContent > *:not(:last-child)) {
+  margin-bottom: var(--markdown-spacing, 15px);
 }

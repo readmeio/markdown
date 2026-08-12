@@ -1,5 +1,11 @@
 /* global page */
 
+const path = require('path');
+
+const sass = require('sass');
+
+const tabsStyles = sass.compile(path.resolve(__dirname, '../../components/Tabs/style.scss')).css;
+
 // eslint-disable-next-line no-promise-executor-return
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -63,5 +69,32 @@ describe('visual regression tests', () => {
 
       expect(image).toMatchImageSnapshot();
     }, 10000);
+  });
+
+  it('preserves component-owned top margins between adjacent TabContent children', async () => {
+    await page.setContent(`
+      <style>
+        ${tabsStyles}
+        .markdown-body pre { margin-top: 7px; }
+        .markdown-body blockquote { margin-top: 11px; }
+      </style>
+      <div class="markdown-body">
+        <div class="TabGroup">
+          <div class="TabContent">
+            <div>first</div>
+            <pre>code</pre>
+            <blockquote>quote</blockquote>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const margins = await page.$$eval('.TabContent > *', ([first, pre, blockquote]) => ({
+      blockquote: getComputedStyle(blockquote).marginTop,
+      defaultSpacing: getComputedStyle(first).marginBottom,
+      pre: getComputedStyle(pre).marginTop,
+    }));
+
+    expect(margins).toStrictEqual({ blockquote: '11px', defaultSpacing: '15px', pre: '7px' });
   });
 });
