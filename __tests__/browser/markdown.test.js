@@ -75,10 +75,11 @@ describe('visual regression tests', () => {
     await page.setContent(`
       <style>
         ${tabsStyles}
+        .configured-spacing { --markdown-spacing: 20px; }
         .markdown-body pre { margin-top: 7px; }
         .markdown-body blockquote { margin-top: 11px; }
       </style>
-      <div class="markdown-body">
+      <div class="markdown-body configured-spacing">
         <div class="TabGroup">
           <div class="TabContent">
             <div>first</div>
@@ -89,12 +90,21 @@ describe('visual regression tests', () => {
       </div>
     `);
 
-    const margins = await page.$$eval('.TabContent > *', ([first, pre, blockquote]) => ({
-      blockquote: getComputedStyle(blockquote).marginTop,
-      defaultSpacing: getComputedStyle(first).marginBottom,
-      pre: getComputedStyle(pre).marginTop,
+    const margins = await page.$$eval('.TabContent > *', ([, pre, blockquote]) => ({
+      blockquoteTop: getComputedStyle(blockquote).marginTop,
+      preBottom: getComputedStyle(pre).marginBottom,
+      preTop: getComputedStyle(pre).marginTop,
     }));
 
-    expect(margins).toStrictEqual({ blockquote: '11px', defaultSpacing: '15px', pre: '7px' });
+    expect(margins.blockquoteTop).toBe('11px');
+    expect(margins.preBottom).toBe('20px');
+    expect(margins.preTop).toBe('7px');
+
+    const fallbackSpacing = await page.$eval('.configured-spacing', element => {
+      element.classList.remove('configured-spacing');
+      return getComputedStyle(element.querySelector('pre')).marginBottom;
+    });
+
+    expect(fallbackSpacing).toBe('15px');
   });
 });
