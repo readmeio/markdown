@@ -2,7 +2,7 @@ import type { MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 
 import { mdxish } from '../../../../lib';
 import { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { parseMdxishWithSource } from '../../../helpers';
+import { findElementByTagName, parseMdxishWithSource } from '../../../helpers';
 
 describe('parseAttributes', () => {
   describe('boolean attributes', () => {
@@ -450,6 +450,23 @@ describe('lowercase html tags with JSX expressions are treated as MDX', () => {
         properties: { href: 'https://example.com' },
         children: [{ type: 'text', value: 'Example' }]
       }],
+    });
+  });
+
+  it.each([
+    ['<a href=https://example.com>', 'a', { href: 'https://example.com' }, undefined],
+    ['<a href=https://example.com>Example</a>', 'a', { href: 'https://example.com' }, 'Example'],
+    ['<span class=unquoted-class>Example</span>', 'span', { className: ['unquoted-class'] }, 'Example'],
+    ['<div class=unquoted-class>Example</div>', 'div', { className: ['unquoted-class'] }, 'Example'],
+  ])('should parse native HTML with unquoted attributes: %s', (source, tagName, properties, value) => {
+    const hast = mdxish(source);
+    const element = findElementByTagName(hast, tagName);
+
+    expect(element).toMatchObject({
+      type: 'element',
+      tagName,
+      properties,
+      ...(value ? { children: [{ type: 'text', value }] } : {}),
     });
   });
 });
