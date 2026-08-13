@@ -56,6 +56,22 @@ const intrawordAsteriskItalicRegex = /(\w)\*(?!\*)([a-zA-Z0-9]+)\*(?![\w*])/g;
 // Pattern for intraword **word** in words like hello**world**
 const intrawordAsteriskBoldRegex = /(\w)\*\*([a-zA-Z0-9]+)\*\*(?![\w*])/g;
 
+// All regex families, in match-precedence order: collected matches are
+// stable-sorted by match.index, so at an equal index the earlier row wins the
+// overlap filter — keep this order. `gate` is the character that must appear
+// in the text for the family to possibly match; it is checked first so a node
+// without that marker never pays for a full regex scan.
+const REGEX_FAMILIES = [
+  { regex: asteriskBoldRegex, isBold: true, marker: '**', gate: '*' },
+  { regex: underscoreBoldRegex, isBold: true, marker: '__', gate: '_' },
+  { regex: asteriskItalicRegex, isBold: false, marker: '*', gate: '*' },
+  { regex: underscoreItalicRegex, isBold: false, marker: '_', gate: '_' },
+  { regex: intrawordUnderscoreItalicRegex, isBold: false, isIntraword: true, marker: '_', gate: '_' },
+  { regex: intrawordUnderscoreBoldRegex, isBold: true, isIntraword: true, marker: '__', gate: '_' },
+  { regex: intrawordAsteriskItalicRegex, isBold: false, isIntraword: true, marker: '*', gate: '*' },
+  { regex: intrawordAsteriskBoldRegex, isBold: true, isIntraword: true, marker: '**', gate: '*' },
+] as const;
+
 /**
  * Finds opening emphasis marker in a text value.
  * Returns marker info if found, null otherwise.
@@ -324,34 +340,12 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     const allMatches: MatchInfo[] = [];
 
-    if (hasAsterisk) {
-      [...text.matchAll(asteriskBoldRegex)].forEach(match => {
-        allMatches.push({ isBold: true, marker: '**', match });
+    REGEX_FAMILIES.forEach(({ regex, gate, ...info }) => {
+      if (gate === '*' ? !hasAsterisk : !hasUnderscore) return;
+      [...text.matchAll(regex)].forEach(match => {
+        allMatches.push({ ...info, match });
       });
-      [...text.matchAll(asteriskItalicRegex)].forEach(match => {
-        allMatches.push({ isBold: false, marker: '*', match });
-      });
-      [...text.matchAll(intrawordAsteriskItalicRegex)].forEach(match => {
-        allMatches.push({ isBold: false, isIntraword: true, marker: '*', match });
-      });
-      [...text.matchAll(intrawordAsteriskBoldRegex)].forEach(match => {
-        allMatches.push({ isBold: true, isIntraword: true, marker: '**', match });
-      });
-    }
-    if (hasUnderscore) {
-      [...text.matchAll(underscoreBoldRegex)].forEach(match => {
-        allMatches.push({ isBold: true, marker: '__', match });
-      });
-      [...text.matchAll(underscoreItalicRegex)].forEach(match => {
-        allMatches.push({ isBold: false, marker: '_', match });
-      });
-      [...text.matchAll(intrawordUnderscoreItalicRegex)].forEach(match => {
-        allMatches.push({ isBold: false, isIntraword: true, marker: '_', match });
-      });
-      [...text.matchAll(intrawordUnderscoreBoldRegex)].forEach(match => {
-        allMatches.push({ isBold: true, isIntraword: true, marker: '__', match });
-      });
-    }
+    });
 
     if (allMatches.length === 0) return undefined;
 
