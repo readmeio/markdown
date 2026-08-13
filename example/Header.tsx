@@ -5,6 +5,12 @@ interface HeaderProps {
   theme: 'dark' | 'light' | 'system';
 }
 
+const THEME_OPTIONS: { icon: string; label: string; value: 'dark' | 'light' | 'system' }[] = [
+  { icon: 'fa-regular fa-sun', label: 'Light', value: 'light' },
+  { icon: 'fa-regular fa-moon', label: 'Dark', value: 'dark' },
+  { icon: 'fa-regular fa-desktop', label: 'System', value: 'system' },
+];
+
 function Header({ theme, setTheme }: HeaderProps) {
   return (
     <header className="rdmd-demo--header">
@@ -18,11 +24,21 @@ function Header({ theme, setTheme }: HeaderProps) {
         <a className={'Header-button'} href="https://rdmd.readme.io" id="docsLink" rel="noreferrer" target="_blank">
           Docs <i aria-label="Opens in a new tab" className="fa-regular fa-arrow-up-right" />
         </a>
-        <select className={'Header-select'} onChange={(e) => setTheme(e.target.value as 'dark' | 'light' | 'system')} value={theme}>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="system">System</option>
-        </select>
+        <div aria-label="Theme" className="Header-theme-group" role="group">
+          {THEME_OPTIONS.map(option => (
+            <button
+              key={option.value}
+              aria-label={option.label}
+              aria-pressed={theme === option.value}
+              className={`Header-theme-button${theme === option.value ? ' Header-theme-button_active' : ''}`}
+              onClick={() => setTheme(option.value)}
+              title={option.label}
+              type="button"
+            >
+              <i aria-hidden="true" className={option.icon} />
+            </button>
+          ))}
+        </div>
       </div>
     </header>
   );
