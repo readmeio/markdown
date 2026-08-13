@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.0.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** improve perf of parsing large HTMLBlocks ([#1578](https://github.com/readmeio/markdown/issues/1578)) ([def4f92](https://github.com/readmeio/markdown/commit/def4f92a74f9cd4254eed964a6ff5c3e5cab3b69))
+* stripped bullet list indent in a jsx block  ([#1583](https://github.com/readmeio/markdown/issues/1583)) ([feed88f](https://github.com/readmeio/markdown/commit/feed88fe6162e3cf8bdaafead13f4699c9882881))
+
 ## Version 15.0.0
 ### ⚠ BREAKING CHANGES
 

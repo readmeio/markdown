@@ -119,6 +119,8 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
       } else if (typeof attr.value === 'string') {
         memo[attr.name] = decodeHTMLStrict(attr.value);
       } else if (attr.value?.value !== undefined) {
+        // Expression values only survive to here when safeMode is off; `flattenAttributeExpressions`
+        // rewrites them to plain strings at the head of the pipeline otherwise.
         try {
           memo[attr.name] = evaluate(attr.value.value);
         } catch {
