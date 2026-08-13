@@ -72,6 +72,8 @@ const resolveNode = (node: Expression | PrivateIdentifier | SpreadElement): unkn
  * function body can ever run. The trade-off is that expressions needing a scope or a
  * method call (`{item.url}`, `{"a".toUpperCase()}`) throw, and callers keep the raw
  * source instead — the same fallback they already used for an expression that threw.
+ * mdxish rendering is unaffected, since it resolves those later with its scoped
+ * evaluator; only consumers reading attributes straight off the tree see the source.
  *
  * @param source expression body, without the surrounding braces
  * @throws if `source` is unparseable or isn't a supported literal expression

@@ -88,16 +88,17 @@ Second
   // which evaluates `{expr}` values with `new Function`. This transformer sits inside the shared
   // `astProcessor` pipeline, so every consumer (mdast, hast, tags, plain, ...) was exposed
   // regardless of what it does with the result — evaluation is a side effect of building the tree,
-  // not of using it. safeMode now flattens expressions to their source before any transformer
+  // not of using it. `getAttrs()` now resolves expressions by constant folding, so no consumer
+  // runs code at any flag setting; safeMode additionally flattens them before any transformer
   // runs. (GHSA-2prv-4jff-x46g)
   describe('safeMode', () => {
     const getHProp = (tree: ReturnType<typeof mdast>, key: string) =>
       (tree.children[0].data as { hProperties?: Record<string, unknown> } | undefined)?.hProperties?.[key];
 
-    it('evaluates JSX attribute expressions by default', () => {
+    it('does not evaluate JSX attribute expressions by default', () => {
       const tree = mdast('<Callout icon={String(1 + 3)} />');
 
-      expect(getHProp(tree, 'icon')).toBe('4');
+      expect(getHProp(tree, 'icon')).toBe('String(1 + 3)');
     });
 
     it('does not evaluate JSX attribute expressions when safeMode is true', () => {
