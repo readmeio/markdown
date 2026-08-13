@@ -115,7 +115,7 @@ describe('pathological input performance', () => {
         const tag = tagFor[type];
         const longWord = 'x'.repeat(80);
 
-        expect(mix(`${longWord}${marker} Wrong Bold${marker}`)).toContain(`<${tag}>Wrong Bold</${tag}>`);
+        expect(mix(`${longWord}${marker} Wrong Bold${marker}`)).toBe(`<p>${longWord} <${tag}>Wrong Bold</${tag}></p>`);
       },
     );
 
