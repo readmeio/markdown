@@ -213,6 +213,48 @@ exports[`Render engine regressions tests > htmlblock-in-table (mdxish) 1`] = `
 <div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tbody><tr><td><strong>bold</strong> still works</td><td><div class="rdmd-html"><div style="color: red;">Hello</div></div></td></tr></tbody></table></div></div></div>"
 `;
 
+exports[`Render engine regressions tests > indented-component-body-lists (mdx) 1`] = `
+"<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-regular fa-grid-2"></i>Dashboards</summary><div class="Accordion-content"><ul>
+<li><strong>New Preference Page Dashboard</strong> provides clients with metrics and insight on preference page interactions and performance.</li>
+<li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
+<li>Clients can also compare performance across various metrics using the comparison functionality.</li>
+</ul></div></details>
+<blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<li>first</li>
+<li>second<!-- -->
+<ul>
+<li>genuinely nested</li>
+</ul>
+</li>
+<li>third</li>
+</ul></blockquote>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>"
+`;
+
+exports[`Render engine regressions tests > indented-component-body-lists (mdxish) 1`] = `
+"<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-regular fa-grid-2"></i>Dashboards</summary><div class="Accordion-content"><ul>
+<li><strong>New Preference Page Dashboard</strong> provides clients with metrics and insight on preference page interactions and performance.</li>
+<li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
+<li>Clients can also compare performance across various metrics using the comparison functionality.</li>
+</ul></div></details></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<li>first</li>
+<li>second
+<ul>
+<li>genuinely nested</li>
+</ul>
+</li>
+<li>third</li>
+</ul></blockquote></div>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>"
+`;
+
 exports[`Render engine regressions tests > indented-content-is-not-code (mdx) 1`] = `
 "<div class="card"><p>Block two — indented 6 spaces after a blank line, so it renders as a raw code block instead of HTML.</p></div>
 <details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-info-circle"></i></summary><div class="Accordion-content"><ol start="4">
@@ -1151,5 +1193,10 @@ as legacy variables:</p>
 <pre class="mermaid-render mermaid_single">sequenceDiagram
   Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
   Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
+<p>Component attributes resolve at render time, and only for <code class="rdmd-code lang-undefined theme-undefined">{user.*}</code>. Legacy<br/>
+<code class="rdmd-code lang-undefined theme-undefined">...</code> in a quoted attribute is valid MDX, but is not resolved there and<br/>
+stays literal:</p>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-rocket"></i>us-east-1</summary><div class="Accordion-content"><p>Accordion body with <span>sk_test_abc123</span></p></div></details></div>
+<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;

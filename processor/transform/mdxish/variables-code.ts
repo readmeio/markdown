@@ -5,6 +5,8 @@ import type { Plugin } from 'unified';
 import { MDX_VARIABLE_REGEXP, VARIABLE_REGEXP } from '@readme/variable';
 import { visit } from 'unist-util-visit';
 
+import { flattenUserVariables } from '../../../utils/user';
+
 interface Options {
   variables?: Variables;
 }
@@ -18,7 +20,7 @@ function flattenVariables(variables?: Variables): Record<string, string> {
 
   return {
     ...Object.fromEntries((variables.defaults || []).map(d => [d.name, d.default])),
-    ...variables.user,
+    ...flattenUserVariables(variables.user),
   };
 }
 

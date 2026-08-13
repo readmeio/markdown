@@ -246,6 +246,29 @@ exports[`MDX↔MDXish equivalence > htmlblock-in-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > indented-component-body-lists 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "details",
+      "path": "/details[0]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > indented-content-is-not-code 1`] = `
 {
   "changes": [
@@ -1150,6 +1173,27 @@ exports[`MDX↔MDXish equivalence > variables-everywhere 1`] = `
       "kind": "extra",
       "left": null,
       "path": "/p[6]",
+      "right": "<p>…(9 children)…</p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[7]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[8]",
+      "right": "<div class="readme-tailwind">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[9]",
       "right": "<p>…(3 children)…</p>",
       "severity": "structural",
     },
