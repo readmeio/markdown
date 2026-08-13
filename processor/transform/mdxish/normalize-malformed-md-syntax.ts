@@ -20,19 +20,28 @@ const MARKER_PATTERNS = [
 // Pattern for ** bold **
 // Groups: 1=wordBefore, 2=marker, 3=contentWithSpaceAfter, 4=trailingSpace1, 5=contentWithSpaceBefore, 6=trailingSpace2, 7=afterChar
 // trailingSpace1 is for "** text **" pattern, trailingSpace2 is for "**text **" pattern
+//
+// The wordBefore and whitespace prefixes are deliberately bounded ({1,64} /
+// {0,8}) rather than unbounded (+ / *). An unbounded prefix makes matchAll
+// re-scan an arbitrarily long run from every character position, which turns
+// the pass O(n²) on text nodes containing huge unbroken tokens (pasted base64
+// payloads, minified code). Bounding the prefix caps the backtracking per
+// position; a prefix longer than the bound just starts the match later, and
+// the cut-off chars flow into the preceding text node instead — adjacent text
+// parts are merged before splicing, so the emitted AST is unchanged.
 const asteriskBoldRegex =
-  /([^*\s]+)?\s*(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
+  /([^*\s]{1,64})?\s{0,8}(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for __ bold __
 const underscoreBoldRegex =
-  /([^_\s]+)?\s*(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n])+?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n])+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n])+?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n])+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for * italic *
-const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+const asteriskItalicRegex = /([^*\s]{1,64})?\s{0,8}(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for _ italic _
 const underscoreItalicRegex =
-  /([^_\s]+)?\s*(_)(?!_)(?:\s+((?:[^_\n]|_(?! ))+?)(\s*)\2|((?:[^_\n]|_(?! ))+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(_)(?!_)(?:\s+((?:[^_\n]|_(?! ))+?)(\s*)\2|((?:[^_\n]|_(?! ))+?)(\s+)\2)(\S|$)?/g;
 
 // CommonMark ignores intraword underscores or asteriks, but we want to italicize/bold the inner part
 // Pattern for intraword _word_ in words like hello_world_
@@ -284,7 +293,8 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // parses as MDX JSX (not as an mdast `inlineCode` node).
     if (
       (parent.type === 'mdxJsxTextElement' || parent.type === 'mdxJsxFlowElement') &&
-      'name' in parent && parent.name === 'code'
+      'name' in parent &&
+      parent.name === 'code'
     ) {
       return undefined;
     }
@@ -298,6 +308,13 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     const text = node.value;
 
+    // The regexes below can't match without their marker character, but
+    // running them anyway costs a scan of the whole node — ruinous on huge
+    // pasted payloads (base64 attachments, minified code).
+    const hasAsterisk = text.includes('*');
+    const hasUnderscore = text.includes('_');
+    if (!hasAsterisk && !hasUnderscore) return undefined;
+
     interface MatchInfo {
       isBold: boolean;
       isIntraword?: boolean;
@@ -307,30 +324,34 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     const allMatches: MatchInfo[] = [];
 
-    [...text.matchAll(asteriskBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, marker: '**', match });
-    });
-    [...text.matchAll(underscoreBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, marker: '__', match });
-    });
-    [...text.matchAll(asteriskItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, marker: '*', match });
-    });
-    [...text.matchAll(underscoreItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, marker: '_', match });
-    });
-    [...text.matchAll(intrawordUnderscoreItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, isIntraword: true, marker: '_', match });
-    });
-    [...text.matchAll(intrawordUnderscoreBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, isIntraword: true, marker: '__', match });
-    });
-    [...text.matchAll(intrawordAsteriskItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, isIntraword: true, marker: '*', match });
-    });
-    [...text.matchAll(intrawordAsteriskBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, isIntraword: true, marker: '**', match });
-    });
+    if (hasAsterisk) {
+      [...text.matchAll(asteriskBoldRegex)].forEach(match => {
+        allMatches.push({ isBold: true, marker: '**', match });
+      });
+      [...text.matchAll(asteriskItalicRegex)].forEach(match => {
+        allMatches.push({ isBold: false, marker: '*', match });
+      });
+      [...text.matchAll(intrawordAsteriskItalicRegex)].forEach(match => {
+        allMatches.push({ isBold: false, isIntraword: true, marker: '*', match });
+      });
+      [...text.matchAll(intrawordAsteriskBoldRegex)].forEach(match => {
+        allMatches.push({ isBold: true, isIntraword: true, marker: '**', match });
+      });
+    }
+    if (hasUnderscore) {
+      [...text.matchAll(underscoreBoldRegex)].forEach(match => {
+        allMatches.push({ isBold: true, marker: '__', match });
+      });
+      [...text.matchAll(underscoreItalicRegex)].forEach(match => {
+        allMatches.push({ isBold: false, marker: '_', match });
+      });
+      [...text.matchAll(intrawordUnderscoreItalicRegex)].forEach(match => {
+        allMatches.push({ isBold: false, isIntraword: true, marker: '_', match });
+      });
+      [...text.matchAll(intrawordUnderscoreBoldRegex)].forEach(match => {
+        allMatches.push({ isBold: true, isIntraword: true, marker: '__', match });
+      });
+    }
 
     if (allMatches.length === 0) return undefined;
 
@@ -439,9 +460,22 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       }
     }
 
-    if (parts.length > 0) {
-      parent.children.splice(index, 1, ...parts);
-      return [SKIP, index + parts.length];
+    // Merge adjacent text parts so the emitted AST doesn't depend on where a
+    // match happened to start (the bounded prefixes above can shift a match
+    // start rightward, splitting what used to be a single text node).
+    const mergedParts = parts.reduce<typeof parts>((acc, part) => {
+      const prev = acc[acc.length - 1];
+      if (part.type === 'text' && prev?.type === 'text') {
+        prev.value += part.value;
+      } else {
+        acc.push(part);
+      }
+      return acc;
+    }, []);
+
+    if (mergedParts.length > 0) {
+      parent.children.splice(index, 1, ...mergedParts);
+      return [SKIP, index + mergedParts.length];
     }
 
     return undefined;

@@ -75,8 +75,7 @@ describe('normalize-malformed-md-syntax', () => {
         type: 'paragraph',
         children: [
           { type: 'strong', children: [{ type: 'text', value: 'text' }] },
-          { type: 'text', value: ' w' },
-          { type: 'text', value: 'ord' },
+          { type: 'text', value: ' word' },
         ],
       });
     });
@@ -177,8 +176,7 @@ describe('normalize-malformed-md-syntax', () => {
         type: 'paragraph',
         children: [
           { type: 'emphasis', children: [{ type: 'text', value: 'text' }] },
-          { type: 'text', value: ' w' },
-          { type: 'text', value: 'ord' },
+          { type: 'text', value: ' word' },
         ],
       });
     });
@@ -905,6 +903,74 @@ describe('normalize-malformed-md-syntax', () => {
       const strong = paragraph.children.find((c): c is Strong => c.type === 'strong');
       expect(strong).toBeDefined();
       expect(strong?.children.length).toBeGreaterThanOrEqual(5);
+    });
+  });
+});
+
+describe('pathological input performance', () => {
+  // A pasted base64 attachment body: one huge single-line token with no
+  // emphasis markers at all. Every character position used to trigger an
+  // unbounded prefix scan in the loose-emphasis regexes, making the pass
+  // O(n²) — a 520KB forum post pegged production SSR for ~30 minutes per
+  // render (developer.corrigo.com/discuss, 2026-08-13).
+  it('processes a large marker-free token in linear time', () => {
+    const blob = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.repeat(800);
+    const md = `Hi team,\n\nHere is the payload:\n\n${blob}`;
+    const tree = processor.parse(md);
+
+    const start = performance.now();
+    processor.runSync(tree);
+
+    expect(performance.now() - start).toBeLessThan(1500);
+  });
+
+  // Same shape, but the paragraph also contains a lone marker character, so
+  // marker-presence gating alone can't skip it: the scan itself must be
+  // bounded for the pass to stay linear.
+  it('processes a large unbroken token sharing a text node with a marker in linear time', () => {
+    const blob = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.repeat(800);
+    const md = `The value* of Blob.Body is ${blob}`;
+    const tree = processor.parse(md);
+
+    const start = performance.now();
+    processor.runSync(tree);
+
+    expect(performance.now() - start).toBeLessThan(1500);
+  });
+
+  // Bounding the wordBefore scan must not change normalization output, even
+  // for words longer than the scan bound.
+  it('still normalizes emphasis preceded by a word longer than the prefix scan bound', () => {
+    const longWord = 'x'.repeat(80);
+    const md = `${longWord}** Wrong Bold**`;
+    const tree = processor.parse(md);
+    processor.runSync(tree);
+    removePosition(tree, { force: true });
+
+    expect(tree.children[0]).toStrictEqual({
+      type: 'paragraph',
+      children: [
+        { type: 'text', value: `${longWord} ` },
+        { type: 'strong', children: [{ type: 'text', value: 'Wrong Bold' }] },
+      ],
+    });
+  });
+
+  // Bounding the whitespace scan must not change output either: extra spaces
+  // beyond the bound are preserved as leading text.
+  it('still normalizes emphasis preceded by a long run of spaces', () => {
+    const spaces = ' '.repeat(20);
+    const md = `Hello\n\nA${spaces}** World**`;
+    const tree = processor.parse(md);
+    processor.runSync(tree);
+    removePosition(tree, { force: true });
+
+    expect(tree.children[1]).toStrictEqual({
+      type: 'paragraph',
+      children: [
+        { type: 'text', value: `A${spaces}` },
+        { type: 'strong', children: [{ type: 'text', value: 'World' }] },
+      ],
     });
   });
 });
