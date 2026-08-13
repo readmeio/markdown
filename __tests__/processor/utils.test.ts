@@ -1,4 +1,10 @@
-import { toAttributes, pointAfter } from '../../processor/utils';
+import { toAttributes, pointAfter, getAttrs } from '../../processor/utils';
+
+const expressionAttribute = (name: string, value: string) => ({
+  type: 'mdxJsxAttribute',
+  name,
+  value: { type: 'mdxJsxAttributeValueExpression', value },
+});
 
 describe('toAttributes', () => {
   it('converts string values to string attributes', () => {
@@ -108,5 +114,35 @@ describe('pointAfter', () => {
   it('carries a non-zero start offset through unchanged in the same-line case', () => {
     const start = { line: 1, column: 1, offset: 1000 };
     expect(pointAfter(start, 'hello ')).toStrictEqual({ line: 1, column: 7, offset: 1006 });
+  });
+});
+
+describe('getAttrs', () => {
+  it('resolves literal expressions and keeps the raw source for everything else', () => {
+    const node = {
+      type: 'mdxJsxFlowElement',
+      name: 'Foo',
+      attributes: [
+        expressionAttribute('style', '{ color: "red" }'),
+        expressionAttribute('count', '1 + 2'),
+        expressionAttribute('icon', 'item.url'),
+        expressionAttribute('missing', 'undefined'),
+        { type: 'mdxJsxAttribute', name: 'border', value: null },
+        { type: 'mdxJsxAttribute', name: 'src', value: '/a.png' },
+        { type: 'mdxJsxAttribute', name: 'title', value: 'a &amp; b' },
+        { type: 'mdxJsxExpressionAttribute', value: '...spread' },
+      ],
+      children: [],
+    };
+
+    expect(getAttrs(node as never)).toStrictEqual({
+      style: { color: 'red' },
+      count: 3,
+      icon: 'item.url',
+      missing: undefined,
+      border: true,
+      src: '/a.png',
+      title: 'a & b',
+    });
   });
 });
