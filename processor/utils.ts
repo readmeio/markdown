@@ -14,6 +14,7 @@ import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
 import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
+import { evaluateLiteralExpression } from '../lib/utils/literal-expression';
 
 export { jsxAcornParser };
 
@@ -119,8 +120,10 @@ export const getAttrs = <T>(jsx: MdxJsxFlowElement | MdxJsxTextElement): T =>
       } else if (typeof attr.value === 'string') {
         memo[attr.name] = decodeHTMLStrict(attr.value);
       } else if (attr.value?.value !== undefined) {
+        // Expression values only survive to here when safeMode is off; `flattenAttributeExpressions`
+        // rewrites them to plain strings at the head of the pipeline otherwise.
         try {
-          memo[attr.name] = evaluate(attr.value.value);
+          memo[attr.name] = evaluateLiteralExpression(attr.value.value);
         } catch {
           memo[attr.name] = attr.value.value;
         }

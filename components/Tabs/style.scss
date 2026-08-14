@@ -42,3 +42,7 @@
     color: var(--color-text-muted, #4f5a66);
   }
 }
+
+:where(.TabGroup .TabContent > *:not(:last-child)) {
+  margin-bottom: var(--markdown-spacing, 15px);
+}
