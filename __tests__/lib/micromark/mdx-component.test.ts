@@ -26,6 +26,24 @@ const mdastTypes = (node: Nodes): string[] => [
 
 describe('RM-16375 unquoted native HTML attributes', () => {
   it.each([
+    'Pass <key=value> to the CLI.',
+    'Compare <a = b> and <c = d>.',
+  ])('does not claim tag-like prose: %s', source => {
+    expect(claimedComponents(source)).toStrictEqual([]);
+    expect(mdastTypes(parseMdast(source))).toStrictEqual(['root', 'paragraph', 'text']);
+  });
+
+  it.each([
+    '<Image src=https://example.com/a.png?w=1 align=center />',
+    '<Image value=foo"bar" />',
+    "<Image value=foo'bar' />",
+    '<Image value=foo`bar` />',
+  ])('continues to claim PascalCase components with permissive attribute values: %s', source => {
+    expect(claimedComponents(source)).toStrictEqual([source]);
+    expect(mdastTypes(parseMdast(source))).toStrictEqual(['root', 'html']);
+  });
+
+  it.each([
     ['flow', FLOW, [FLOW], ['root', 'html']],
     ['text', `Before ${LINK} after`, [LINK_OPEN], ['root', 'paragraph', 'text', 'html', 'text', 'html', 'text']],
   ])('claims %s input and emits the expected MDAST shape', (_context, source, claims, types) => {
