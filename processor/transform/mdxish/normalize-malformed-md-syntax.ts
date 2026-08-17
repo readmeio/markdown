@@ -29,19 +29,35 @@ const MARKER_PATTERNS = [
 // position; a prefix longer than the bound just starts the match later, and
 // the cut-off chars flow into the preceding text node instead — adjacent text
 // parts are merged before splicing, so the emitted AST is unchanged.
+//
+// The content quantifiers are bounded too ({1,500}). The underscore content
+// clauses can scan across `_` (needed for snake_case content), so without a
+// bound every `_` in a marker-dense token (base64url, snake_case identifiers)
+// re-scans to end-of-line looking for a closer — O(n²) again. Content already
+// can't cross a newline, and 500 chars covers any sentence-length emphasis
+// phrase; longer spans stay unnormalized rather than costing quadratic scans.
 const asteriskBoldRegex =
-  /([^*\s]{1,64})?\s{0,8}(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
+  /([^*\s]{1,64})?\s{0,8}(\*\*)(?:\s+((?:[^*\n]|\*(?!\*)){1,500}?)(\s*)\2|((?:[^*\n]|\*(?!\*)){1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for __ bold __
 const underscoreBoldRegex =
-  /([^_\s]{1,64})?\s{0,8}(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n])+?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n])+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n]){1,500}?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n]){1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for * italic *
-const asteriskItalicRegex = /([^*\s]{1,64})?\s{0,8}(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+const asteriskItalicRegex =
+  /([^*\s]{1,64})?\s{0,8}(\*)(?!\*)(?:\s+([^*\n]{1,500}?)(\s*)\2|([^*\n]{1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for _ italic _
 const underscoreItalicRegex =
-  /([^_\s]{1,64})?\s{0,8}(_)(?!_)(?:\s+((?:[^_\n]|_(?! ))+?)(\s*)\2|((?:[^_\n]|_(?! ))+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(_)(?!_)(?:\s+((?:[^_\n]|_(?! )){1,500}?)(\s*)\2|((?:[^_\n]|_(?! )){1,500}?)(\s+)\2)(\S|$)?/g;
+
+// Every loose alternation requires whitespace beside a marker — after the
+// opening (`** text**`) or before the closing (`**text **`) — so
+// marker-beside-whitespace is an exact gate for the loose families. A single
+// linear probe skips them entirely on marker-dense tokens whose markers are
+// all intraword (base64url payloads, snake_case identifiers).
+const asteriskBesideWhitespaceRegex = /\*\s|\s\*/;
+const underscoreBesideWhitespaceRegex = /_\s|\s_/;
 
 // CommonMark ignores intraword underscores or asteriks, but we want to italicize/bold the inner part
 // Pattern for intraword _word_ in words like hello_world_
@@ -58,18 +74,20 @@ const intrawordAsteriskBoldRegex = /(\w)\*\*([a-zA-Z0-9]+)\*\*(?![\w*])/g;
 
 // All regex families, in match-precedence order: collected matches are
 // stable-sorted by match.index, so at an equal index the earlier row wins the
-// overlap filter — keep this order. `gate` is the character that must appear
-// in the text for the family to possibly match; it is checked first so a node
-// without that marker never pays for a full regex scan.
+// overlap filter — keep this order. `gate` names the per-node precondition
+// (see the gate record in the visitor) checked before the family's regex
+// runs, so a node that can't possibly match never pays for a full scan: the
+// intraword families need their marker character present, and the loose
+// families additionally need that marker beside whitespace.
 const REGEX_FAMILIES = [
-  { regex: asteriskBoldRegex, isBold: true, marker: '**', gate: '*' },
-  { regex: underscoreBoldRegex, isBold: true, marker: '__', gate: '_' },
-  { regex: asteriskItalicRegex, isBold: false, marker: '*', gate: '*' },
-  { regex: underscoreItalicRegex, isBold: false, marker: '_', gate: '_' },
-  { regex: intrawordUnderscoreItalicRegex, isBold: false, isIntraword: true, marker: '_', gate: '_' },
-  { regex: intrawordUnderscoreBoldRegex, isBold: true, isIntraword: true, marker: '__', gate: '_' },
-  { regex: intrawordAsteriskItalicRegex, isBold: false, isIntraword: true, marker: '*', gate: '*' },
-  { regex: intrawordAsteriskBoldRegex, isBold: true, isIntraword: true, marker: '**', gate: '*' },
+  { regex: asteriskBoldRegex, isBold: true, marker: '**', gate: 'asteriskLoose' },
+  { regex: underscoreBoldRegex, isBold: true, marker: '__', gate: 'underscoreLoose' },
+  { regex: asteriskItalicRegex, isBold: false, marker: '*', gate: 'asteriskLoose' },
+  { regex: underscoreItalicRegex, isBold: false, marker: '_', gate: 'underscoreLoose' },
+  { regex: intrawordUnderscoreItalicRegex, isBold: false, isIntraword: true, marker: '_', gate: 'underscore' },
+  { regex: intrawordUnderscoreBoldRegex, isBold: true, isIntraword: true, marker: '__', gate: 'underscore' },
+  { regex: intrawordAsteriskItalicRegex, isBold: false, isIntraword: true, marker: '*', gate: 'asterisk' },
+  { regex: intrawordAsteriskBoldRegex, isBold: true, isIntraword: true, marker: '**', gate: 'asterisk' },
 ] as const;
 
 /**
@@ -331,6 +349,13 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     const hasUnderscore = text.includes('_');
     if (!hasAsterisk && !hasUnderscore) return undefined;
 
+    const gates: Record<(typeof REGEX_FAMILIES)[number]['gate'], boolean> = {
+      asterisk: hasAsterisk,
+      asteriskLoose: hasAsterisk && asteriskBesideWhitespaceRegex.test(text),
+      underscore: hasUnderscore,
+      underscoreLoose: hasUnderscore && underscoreBesideWhitespaceRegex.test(text),
+    };
+
     interface MatchInfo {
       isBold: boolean;
       isIntraword?: boolean;
@@ -341,7 +366,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     const allMatches: MatchInfo[] = [];
 
     REGEX_FAMILIES.forEach(({ regex, gate, ...info }) => {
-      if (gate === '*' ? !hasAsterisk : !hasUnderscore) return;
+      if (!gates[gate]) return;
       [...text.matchAll(regex)].forEach(match => {
         allMatches.push({ ...info, match });
       });

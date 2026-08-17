@@ -2,8 +2,8 @@ import { remark } from 'remark';
 import remarkParse from 'remark-parse';
 import { removePosition } from 'unist-util-remove-position';
 
-import { mix } from '../../lib';
-import normalizeEmphasisAST from '../../processor/transform/mdxish/normalize-malformed-md-syntax';
+import { mix } from '../../../../lib';
+import normalizeEmphasisAST from '../../../../processor/transform/mdxish/normalize-malformed-md-syntax';
 
 const processor = remark().use(remarkParse).use(normalizeEmphasisAST);
 
@@ -14,6 +14,12 @@ describe('pathological input performance', () => {
   // production SSR for ~30 minutes per render (developer.corrigo.com/discuss
   // Cloudflare 524 incident, 2026-08-13; reported in #support, no ticket).
   const BASE64_UNIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+  // The base64url alphabet swaps `+/` for `-_`: its underscores hit the
+  // underscore regex families, whose content clauses can scan across `_`
+  // (unlike `[^*\n]`, which stops at `*`) — so these blobs exercise the
+  // whitespace-adjacency gate and the bounded content quantifiers.
+  const BASE64URL_UNIT = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
   // Times only the transform (parse is not under test); best-of-N cancels
   // JIT/GC noise, matching __tests__/lib/mdxish/perf/html-block-perf.test.ts.
@@ -35,19 +41,34 @@ describe('pathological input performance', () => {
   // measure a meaningful ratio — the marker-free case early-exits in
   // microseconds, where dividing two timer-resolution readings is pure noise.
   // A pass that finishes 32KB in under 50ms is not a regression worth failing.
+  // Each builder takes a size factor n (the small run uses 125, the big run
+  // 500) and returns a ~64n-char pathological body.
   it.each([
-    ['a large marker-free token', (blob: string) => `Hi team,\n\nHere is the payload:\n\n${blob}`],
+    ['a large marker-free token', (n: number) => `Hi team,\n\nHere is the payload:\n\n${BASE64_UNIT.repeat(n)}`],
     // A lone marker character in the same paragraph means marker-presence
     // gating can't skip the node: the scan itself must be bounded.
-    ['a large unbroken token sharing a text node with a marker', (blob: string) => `The value* is ${blob}`],
+    ['a large unbroken token sharing a text node with a marker', (n: number) => `The value* is ${BASE64_UNIT.repeat(n)}`],
+    // base64url underscores are never beside whitespace, so the loose
+    // whitespace-adjacency gate must skip the underscore families entirely.
+    ['a large base64url token', (n: number) => `Hi team,\n\nHere is the payload:\n\n${BASE64URL_UNIT.repeat(n)}`],
+    // A loose `_ ` in the same text node defeats the gate: every `_` inside
+    // the blob starts a content scan, which must be bounded to stay linear.
+    [
+      'a large base64url token sharing a text node with a loose underscore',
+      (n: number) => `The value_ is ${BASE64URL_UNIT.repeat(n)}`,
+    ],
+    // Marker-dense short words instead of one unbroken token: each marker is
+    // intraword (never beside whitespace), so the gate must skip these too.
+    ['a marker-dense intraword-underscore paragraph', (n: number) => 'a_b '.repeat(16 * n)],
+    ['a marker-dense intraword-asterisk paragraph', (n: number) => 'a*b '.repeat(16 * n)],
   ])(
     'processes %s in linear time',
     (_label, buildMd) => {
       // Sizes are deliberately modest: vitest cannot preempt synchronous code,
       // so a reintroduced O(n²) scan must fail the ratio in seconds, not wedge
       // the suite for minutes.
-      const tSmall = fastestNormalize(buildMd(BASE64_UNIT.repeat(125)));
-      const tBig = fastestNormalize(buildMd(BASE64_UNIT.repeat(500)));
+      const tSmall = fastestNormalize(buildMd(125));
+      const tBig = fastestNormalize(buildMd(500));
 
       expect(tBig).toBeLessThan(Math.max(10 * tSmall, 50));
     },
@@ -119,6 +140,9 @@ describe('pathological input performance', () => {
       },
     );
 
+    // Only the marker-free alphabet renders verbatim: in a base64url blob,
+    // CommonMark itself emphasizes `_…_` spans whose underscores sit beside
+    // `-` (punctuation makes them flanking) — native parsing, not this pass.
     it('renders a paragraph containing a huge marker-free token verbatim', () => {
       const blob = BASE64_UNIT.repeat(125);
 
