@@ -59,8 +59,13 @@ describe('pathological input performance', () => {
     ],
     // Marker-dense short words instead of one unbroken token: each marker is
     // intraword (never beside whitespace), so the gate must skip these too.
+    // The asterisks are escaped to keep micromark from pairing them: unescaped
+    // intraword `*` parses into thousands of emphasis nodes, and walking that
+    // wide tree is dominated by (superlinear) upstream unist-util-visit
+    // overhead rather than this pass — unpinnable by a timing ratio. Both
+    // variants reach this pass as one flat marker-dense text node.
     ['a marker-dense intraword-underscore paragraph', (n: number) => 'a_b '.repeat(16 * n)],
-    ['a marker-dense intraword-asterisk paragraph', (n: number) => 'a*b '.repeat(16 * n)],
+    ['a marker-dense escaped-intraword-asterisk paragraph', (n: number) => 'a\\*b '.repeat(16 * n)],
   ])(
     'processes %s in linear time',
     (_label, buildMd) => {

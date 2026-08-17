@@ -315,6 +315,22 @@ function isInsideInlineHtmlCode(index: number | undefined, parent: Parent): bool
  * malformed emphasis syntax. This plugin post-processes the AST to handle these cases.
  */
 const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
+  // Back-scanning siblings for <code>…</code> html pairs costs O(children)
+  // per text node — O(children²) per parent, which bites on marker-dense
+  // paragraphs where micromark emits thousands of inline children. Most
+  // parents have no html children at all, so cache that check per parent and
+  // skip the back-scan entirely. The cached flag survives our splices: they
+  // only ever swap text nodes for text/strong/emphasis, never html.
+  const hasHtmlChild = new WeakMap<Parent, boolean>();
+  const mayBeInsideInlineHtmlCode = (index: number, parent: Parent): boolean => {
+    let flag = hasHtmlChild.get(parent);
+    if (flag === undefined) {
+      flag = parent.children.some(child => child.type === 'html');
+      hasHtmlChild.set(parent, flag);
+    }
+    return flag && isInsideInlineHtmlCode(index, parent);
+  };
+
   visit(tree, 'text', function visitor(node: Text, index, parent: Parent) {
     if (index === undefined || !parent) return undefined;
 
@@ -332,22 +348,23 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     ) {
       return undefined;
     }
-    // In GFM tables, inline <code>...</code> is represented as sibling `html`
-    // nodes rather than as an mdxJsxTextElement, so the check above doesn't
-    // apply. Scan backwards through siblings to see if we are enclosed by a
-    // <code>…</code> inline HTML pair.
-    if (isInsideInlineHtmlCode(index, parent)) {
-      return undefined;
-    }
-
     const text = node.value;
 
     // The regexes below can't match without their marker character, but
     // running them anyway costs a scan of the whole node — ruinous on huge
-    // pasted payloads (base64 attachments, minified code).
+    // pasted payloads (base64 attachments, minified code). Checked before the
+    // html-sibling scan so marker-free text never pays for that either.
     const hasAsterisk = text.includes('*');
     const hasUnderscore = text.includes('_');
     if (!hasAsterisk && !hasUnderscore) return undefined;
+
+    // In GFM tables, inline <code>...</code> is represented as sibling `html`
+    // nodes rather than as an mdxJsxTextElement, so the check above doesn't
+    // apply. Scan backwards through siblings to see if we are enclosed by a
+    // <code>…</code> inline HTML pair.
+    if (mayBeInsideInlineHtmlCode(index, parent)) {
+      return undefined;
+    }
 
     const gates: Record<(typeof REGEX_FAMILIES)[number]['gate'], boolean> = {
       asterisk: hasAsterisk,
