@@ -1592,3 +1592,42 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
 `);
   });
 });
+
+describe('mdxishMdastToMd bullet marker preservation', () => {
+  const item = (text: string): RootContent =>
+    ({
+      type: 'listItem',
+      spread: false,
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }],
+    }) as RootContent;
+
+  const list = (children: RootContent[], bullet?: string): RootContent =>
+    ({ type: 'list', ordered: false, spread: false, bullet, children }) as RootContent;
+
+  it('serializes a list with a stamped `*` marker using `*`', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n* b\n');
+  });
+
+  it('falls back to the default `-` marker when no marker is stamped', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a')])] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('- a\n');
+  });
+
+  it('does not leak a stamped marker into a following unstamped list', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a')], '*'), { type: 'paragraph', children: [{ type: 'text', value: 'x' }] }, list([item('b')])],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n\nx\n\n- b\n');
+  });
+
+  it('ignores an invalid stamped marker', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a')], 'x')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('- a\n');
+  });
+});

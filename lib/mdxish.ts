@@ -1,9 +1,11 @@
 import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
-import type { Root as MdastRoot } from 'mdast';
+import type { List, Parents, Root as MdastRoot } from 'mdast';
+import type { Info, State } from 'mdast-util-to-markdown';
 import type { PluggableList } from 'unified';
 
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+import { defaultHandlers } from 'mdast-util-to-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -97,10 +99,7 @@ const defaultTransformers: PluggableList = [
  * 6. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
  * 7. Replace snake_case component names with parser-safe placeholders
  */
-function preprocessContent(
-  content: string,
-  opts: { knownComponents: Set<string> },
-) {
+function preprocessContent(content: string, opts: { knownComponents: Set<string> }) {
   const { knownComponents } = opts;
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
@@ -119,12 +118,7 @@ function preprocessContent(
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const {
-    components: userComponents = {},
-    newEditorTypes = false,
-    safeMode = false,
-    useTailwind,
-  } = opts;
+  const { components: userComponents = {}, newEditorTypes = false, safeMode = false, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -189,6 +183,23 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
   extensions.push({ extensions: [mdxJsxToMarkdown()] });
 }
 
+const handlers = {
+  list(node: List & { bullet?: string }, parent: Parents | undefined, state: State, info: Info) {
+    const marker = node.bullet;
+    if (marker !== '*' && marker !== '-' && marker !== '+') {
+      return defaultHandlers.list(node, parent, state, info);
+    }
+
+    const saved = state.options.bullet;
+    state.options.bullet = marker;
+    try {
+      return defaultHandlers.list(node, parent, state, info);
+    } finally {
+      state.options.bullet = saved;
+    }
+  },
+};
+
 /**
  * Serializes an Mdast back into a markdown string.
  */
@@ -201,6 +212,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxJsxStringify)
     .use(remarkStringify, {
       bullet: '-',
+      handlers,
       emphasis: '_',
       // Escape literal braces in text so they don't parse as (often
       // unterminated) MDX expressions on the next round trip.
