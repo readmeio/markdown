@@ -1613,7 +1613,7 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
   it('serializes a list with a stamped `+` marker using `+`', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '+')] };
 
-    expect(mdxishMdastToMd(mdast)).toBe('* a\n* b\n');
+    expect(mdxishMdastToMd(mdast)).toBe('+ a\n+ b\n');
   });
 
   it('falls back to the default `-` marker when no marker is stamped', () => {
