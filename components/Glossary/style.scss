@@ -32,7 +32,8 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      .rm-ReadMe[data-color-mode='auto'] & {
+      .rm-ReadMe[data-color-mode='auto'] &,
+      .rm-ReadMe[data-color-mode='system'] & {
         --Glossary-bg: var(--Tooltip-bg, var(--gray0));
         --Glossary-color: var(--color-text-default, var(--white));
         --Glossary-shadow: var(
