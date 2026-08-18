@@ -1,4 +1,4 @@
-import type { Root as MdastRoot, RootContent, Table } from 'mdast';
+import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
@@ -1594,15 +1594,15 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
 });
 
 describe('mdxishMdastToMd bullet marker preservation', () => {
-  const item = (text: string): RootContent =>
+  const item = (text: string, nested?: List) =>
     ({
       type: 'listItem',
       spread: false,
-      children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }],
-    }) as RootContent;
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }, ...(nested ? [nested] : [])],
+    }) satisfies ListItem;
 
-  const list = (children: RootContent[], bullet?: string): RootContent =>
-    ({ type: 'list', ordered: false, spread: false, bullet, children }) as RootContent;
+  const list = (children: ListItem[], bullet?: string) =>
+    ({ type: 'list', ordered: false, spread: false, bullet, children }) satisfies List & { bullet?: string };
 
   it('serializes a list with a stamped `*` marker using `*`', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '*')] };
@@ -1623,6 +1623,12 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     };
 
     expect(mdxishMdastToMd(mdast)).toBe('* a\n\nx\n\n- b\n');
+  });
+
+  it('does not leak a stamped marker into a nested unstamped list', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a', list([item('b')]))], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  - b\n');
   });
 
   it('ignores an invalid stamped marker', () => {

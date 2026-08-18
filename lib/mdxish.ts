@@ -183,15 +183,15 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
   extensions.push({ extensions: [mdxJsxToMarkdown()] });
 }
 
+const DEFAULT_BULLET = '-';
+
 const handlers = {
   list(node: List & { bullet?: string }, parent: Parents | undefined, state: State, info: Info) {
     const marker = node.bullet;
-    if (marker !== '*' && marker !== '-' && marker !== '+') {
-      return defaultHandlers.list(node, parent, state, info);
-    }
-
     const saved = state.options.bullet;
-    state.options.bullet = marker;
+    // Always set the override (falling back to the default for unstamped
+    // lists) so a nested list can't inherit an ancestor's stamped marker.
+    state.options.bullet = marker === '*' || marker === '-' || marker === '+' ? marker : DEFAULT_BULLET;
     try {
       return defaultHandlers.list(node, parent, state, info);
     } finally {
@@ -211,7 +211,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
     .use(remarkStringify, {
-      bullet: '-',
+      bullet: DEFAULT_BULLET,
       handlers,
       emphasis: '_',
       // Escape literal braces in text so they don't parse as (often
