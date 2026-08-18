@@ -5,11 +5,11 @@ interface HeaderProps {
   theme: 'dark' | 'light' | 'system';
 }
 
-const THEME_OPTIONS: { icon: string; label: string; value: 'dark' | 'light' | 'system' }[] = [
+const THEME_OPTIONS = [
   { icon: 'fa-regular fa-sun', label: 'Light', value: 'light' },
   { icon: 'fa-regular fa-moon', label: 'Dark', value: 'dark' },
   { icon: 'fa-regular fa-desktop', label: 'System', value: 'system' },
-];
+] as const;
 
 function Header({ theme, setTheme }: HeaderProps) {
   return (
