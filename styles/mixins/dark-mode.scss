@@ -7,6 +7,19 @@
       April 2025
 */
 
+/**
+ * When nested inside a selector, this matches ANY ancestor with the attribute
+ * — not the nearest one. That's wrong once a consuming app can have two
+ * independent `data-color-mode` scopes in the same tree (e.g. readme's
+ * SuperHub admin shell sets it on `<html>` for the admin's own UI theme,
+ * while `.rm-ReadMe` independently carries the hub's own): a component
+ * nested in a light `.rm-ReadMe` can still match a dark `<html>` ancestor
+ * and render dark. None of this package's components carry `data-color-mode`
+ * on their own root, so use `when-color-mode-dark($root)` instead, passing
+ * the selector for whichever wrapper actually carries it in the consuming
+ * app — it anchors to that element specifically, so the nearest declared
+ * value always wins.
+ */
 @mixin dark-mode($global: false) {
   $root: &;
 
