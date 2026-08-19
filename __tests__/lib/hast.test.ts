@@ -28,7 +28,8 @@ describe('hast transformer', () => {
   });
 
   // JSX component attribute expressions were evaluated with `new Function` regardless of
-  // caller intent, and there was no way to opt out.
+  // caller intent. They now resolve by constant folding, so the default is safe too and
+  // safeMode only changes when the flattening happens, not whether code runs.
   describe('safeMode', () => {
     const getCalloutIcon = (tree: ReturnType<typeof hast>) => {
       const callout = tree.children.find(
@@ -37,10 +38,10 @@ describe('hast transformer', () => {
       return callout?.properties?.icon;
     };
 
-    it('evaluates JSX attribute expressions by default', () => {
+    it('does not evaluate JSX attribute expressions by default', () => {
       const tree = hast('<Callout icon={String(1 + 3)} />');
 
-      expect(getCalloutIcon(tree)).toBe('4');
+      expect(getCalloutIcon(tree)).toBe('String(1 + 3)');
     });
 
     it('does not evaluate JSX attribute expressions when safeMode is true', () => {

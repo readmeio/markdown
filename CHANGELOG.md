@@ -1,6 +1,14 @@
 Changelog
 ===
 
+## Version 15.0.2
+### 🛠 Fixes & Updates
+
+* **editor:** add spacing between items inside of tabs ([#1590](https://github.com/readmeio/markdown/issues/1590)) ([a1dbd12](https://github.com/readmeio/markdown/commit/a1dbd1251012eb4e2586ac64053abc7f4c4f85d8))
+* propagate safeMode thru components ([#1593](https://github.com/readmeio/markdown/issues/1593)) ([87761af](https://github.com/readmeio/markdown/commit/87761afbe4c62d2389f5a27d480ef3ff1db59f6b))
+* resolve attribute expressions without executing them ([#1585](https://github.com/readmeio/markdown/issues/1585)) ([50441cf](https://github.com/readmeio/markdown/commit/50441cf2d18de26f824ecc8849f2687edb990406))
+* support structured user variables ([#1488](https://github.com/readmeio/markdown/issues/1488)) ([279c200](https://github.com/readmeio/markdown/commit/279c200077010290432056d5857e67415080cfd4)), closes [mdx-renderer#317](https://github.com/readmeio/mdx-renderer/issues/317)
+
 ## Version 15.0.1
 ### 🛠 Fixes & Updates
 
