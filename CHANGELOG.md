@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 15.1.0
+### ✨ New & Improved
+
+* update dark mode mixin ([#1596](https://github.com/readmeio/markdown/issues/1596)) ([ee22605](https://github.com/readmeio/markdown/commit/ee226051d78a249e5deba1b48a8b913a265f8607))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** bound loose-emphasis normalization scans to stay linear ([#1594](https://github.com/readmeio/markdown/issues/1594)) ([09f5022](https://github.com/readmeio/markdown/commit/09f502250c032b72689ee9a9b4782b987befe3da))
+
 ## Version 15.0.2
 ### 🛠 Fixes & Updates
 
