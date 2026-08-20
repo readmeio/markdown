@@ -76,19 +76,16 @@ hello there [something]
               <th>
                 Response
               </th>
-
               <th>
 
               </th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
               <td>
                 \\{'Message': 'There are validation errors', 'Errors': ['ConsumerDetails: The ExternalId or CustomerID must have a value.']}
               </td>
-
               <td>
 
               </td>
