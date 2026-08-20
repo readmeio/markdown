@@ -37,6 +37,7 @@ export {
   tags,
 } from './lib';
 export type { MdxishOpts, RenderMdxishOpts, RunOpts } from './lib';
+export { default as Icon } from './components/Icon';
 export { default as Owlmoji } from './lib/owlmoji';
 export { Components, utils };
 export { tailwindCompiler } from './utils/tailwind-compiler';
