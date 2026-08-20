@@ -1,7 +1,7 @@
 import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { List, Parents, Root as MdastRoot } from 'mdast';
-import type { Info, State } from 'mdast-util-to-markdown';
+import type { Handlers, Info, State } from 'mdast-util-to-markdown';
 import type { PluggableList } from 'unified';
 
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
@@ -184,21 +184,23 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
 }
 
 const DEFAULT_BULLET = '-';
+const DEFAULT_BULLET_ORDERED = '.';
 
 const handlers = {
   list(node: List & { bullet?: string }, parent: Parents | undefined, state: State, info: Info) {
     const marker = node.bullet;
-    const saved = state.options.bullet;
-    // Always set the override (falling back to the default for unstamped
-    // lists) so a nested list can't inherit an ancestor's stamped marker.
+    const savedBullet = state.options.bullet;
+    const savedBulletOrdered = state.options.bulletOrdered;
     state.options.bullet = marker === '*' || marker === '-' || marker === '+' ? marker : DEFAULT_BULLET;
+    state.options.bulletOrdered = marker === '.' || marker === ')' ? marker : DEFAULT_BULLET_ORDERED;
     try {
       return defaultHandlers.list(node, parent, state, info);
     } finally {
-      state.options.bullet = saved;
+      state.options.bullet = savedBullet;
+      state.options.bulletOrdered = savedBulletOrdered;
     }
   },
-};
+} satisfies Handlers;
 
 /**
  * Serializes an Mdast back into a markdown string.
