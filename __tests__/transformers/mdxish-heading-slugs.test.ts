@@ -7,7 +7,7 @@ import { mdxish } from '../../lib';
 import { mdastV6Wrapper } from '../helpers';
 
 function findAllHeadings(tree: Root): { id: string }[] {
-  const headings: { id: string; }[] = [];
+  const headings: { id: string }[] = [];
   visit(tree, 'element', (node: Element) => {
     if (/^h[1-6]$/.test(node.tagName) && node.properties?.id) {
       headings.push({ id: String(node.properties.id) });
@@ -16,8 +16,8 @@ function findAllHeadings(tree: Root): { id: string }[] {
   return headings;
 }
 
-function findAllHeadingsInMdast(tree: Root): { id: string; }[] {
-  const headings: { id: string; }[] = [];
+function findAllHeadingsInMdast(tree: Root): { id: string }[] {
+  const headings: { id: string }[] = [];
   visit(tree, 'heading', (node: Heading) => {
     if (node.data?.hProperties?.id) {
       headings.push({ id: String(node.data.hProperties.id) });
@@ -167,12 +167,12 @@ describe('heading slugs', () => {
   });
 
   describe('MDX variables', () => {
-    it('should generate slugs from variable names, not resolved values', () => {
+    it('should exclude variables from the slug, matching legacy', () => {
       const md = '## Hello {user.name}';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('hello-username');
+      expect(headings[0].id).toBe('hello-');
     });
 
     it('should handle multiple headings with variables', () => {
@@ -180,8 +180,8 @@ describe('heading slugs', () => {
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(2);
-      expect(headings[0].id).toBe('hello-username');
-      expect(headings[1].id).toBe('goodbye-useremail');
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('goodbye-');
     });
 
     it('should deduplicate heading slugs', () => {
@@ -189,19 +189,29 @@ describe('heading slugs', () => {
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(2);
-      expect(headings[0].id).toBe('hello-username');
-      expect(headings[1].id).toBe('hello-username-1');
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('hello--1');
     });
 
-    it('should handle variable names with numbers and underscores', () => {
+    it('should deduplicate against headings that differ only by variable', () => {
+      const md = '## Hello {user.name}\n\n## Hello {user.email}';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('hello--1');
+    });
+
+    it('should exclude variable names with numbers and underscores', () => {
       const md = '## User {user.user_name_123}';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('user-useruser_name_123');
+      expect(headings[0].id).toBe('user-');
     });
 
-    it('should handle variable names with hyphens and special characters', () => {
+    it('should keep expressions that are not user variables in the slug', () => {
+      // `user.user-name` is not a valid {user.*} variable (hyphen), so it stays text
       const md = '## Welcome {user.user-name}';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
@@ -214,7 +224,7 @@ describe('heading slugs', () => {
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('hello-userfirstname-userlastname');
+      expect(headings[0].id).toBe('hello--');
     });
 
     it('should handle variable at the start of heading', () => {
@@ -222,25 +232,42 @@ describe('heading slugs', () => {
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('username-profile');
+      expect(headings[0].id).toBe('-profile');
     });
 
-    it('should handle variable with mixed case and camelCase', () => {
-      const md = '## User {user.firstName}';
+    it('should fall back to the variable name when the heading is only a variable', () => {
+      const md = '## {user.name}';
       const tree = mdxish(md);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('user-userfirstname');
+      expect(headings[0].id).toBe('username');
+    });
+
+    it('should deduplicate fallback slugs for variable-only headings', () => {
+      const md = '## {user.name}\n\n## {user.name}';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].id).toBe('username');
+      expect(headings[1].id).toBe('username-1');
+    });
+
+    it('should fall back to the variable name for a variable-only JSX heading', () => {
+      const md = '## <Variable name="x" />';
+      const tree = mdxish(md);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(1);
+      expect(headings[0].id).toBe('userx');
     });
   });
 
   describe('legacy variables', () => {
-    it('should use the variable name for the slug', () => {
+    it('should exclude the variable from the slug, matching legacy', () => {
       const content = '## Hello <<name>>';
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('hello-name');
+      expect(headings[0].id).toBe('hello-');
     });
 
     it('should handle multiple headings with legacy variables', () => {
@@ -248,8 +275,8 @@ describe('heading slugs', () => {
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(2);
-      expect(headings[0].id).toBe('hello-name');
-      expect(headings[1].id).toBe('goodbye-email');
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('goodbye-');
     });
 
     it('should deduplicate slugs from legacy variable headings', () => {
@@ -257,24 +284,24 @@ describe('heading slugs', () => {
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(2);
-      expect(headings[0].id).toBe('hello-name');
-      expect(headings[1].id).toBe('hello-name-1');
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('hello--1');
     });
 
-    it('should handle legacy variable names with numbers and underscores', () => {
+    it('should exclude legacy variable names with numbers and underscores', () => {
       const content = '## User <<user_name_123>>';
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('user-user_name_123');
+      expect(headings[0].id).toBe('user-');
     });
 
-    it('should handle legacy variable names with hyphens', () => {
+    it('should exclude legacy variable names with hyphens', () => {
       const content = '## Welcome <<user-name>>';
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('welcome-user-name');
+      expect(headings[0].id).toBe('welcome-');
     });
 
     it('should handle multiple legacy variables in a single heading', () => {
@@ -282,7 +309,7 @@ describe('heading slugs', () => {
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('hello-firstname-lastname');
+      expect(headings[0].id).toBe('hello--');
     });
 
     it('should handle legacy variable at the start of heading', () => {
@@ -290,15 +317,24 @@ describe('heading slugs', () => {
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('name-profile');
+      expect(headings[0].id).toBe('-profile');
     });
 
-    it('should handle legacy variable with mixed case and camelCase', () => {
-      const content = '## User <<firstName>>';
+    it('should fall back to the variable name when the heading is only a legacy variable', () => {
+      const content = '## <<apiKey>>';
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(1);
-      expect(headings[0].id).toBe('user-firstname');
+      expect(headings[0].id).toBe('apikey');
+    });
+
+    it('should deduplicate fallback slugs for variable-only headings', () => {
+      const content = '## <<apiKey>>\n\n## <<apiKey>>';
+      const tree = mdxish(content);
+      const headings = findAllHeadings(tree);
+      expect(headings).toHaveLength(2);
+      expect(headings[0].id).toBe('apikey');
+      expect(headings[1].id).toBe('apikey-1');
     });
 
     it('should handle multiple same headings with legacy variables should be incremented and match legacy', () => {
@@ -306,9 +342,9 @@ describe('heading slugs', () => {
       const tree = mdxish(content);
       const headings = findAllHeadings(tree);
       expect(headings).toHaveLength(3);
-      expect(headings[0].id).toBe('hello-name');
-      expect(headings[1].id).toBe('hello-name-1');
-      expect(headings[2].id).toBe('hello-name-2');
+      expect(headings[0].id).toBe('hello-');
+      expect(headings[1].id).toBe('hello--1');
+      expect(headings[2].id).toBe('hello--2');
     });
   });
 });
