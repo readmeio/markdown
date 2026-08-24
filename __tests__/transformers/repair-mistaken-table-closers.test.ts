@@ -117,6 +117,53 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
       expect(repairMistakenTableClosers(input)).toBe(input);
     });
 
+    it('does not rewrite <table> payload inside a raw-text element', () => {
+      const input = `<pre>
+<table>
+<tr><td>x</td></tr>
+<table>
+literal payload
+</pre>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('does not rewrite <table> text inside a <script> body', () => {
+      const input = `<script>
+const html = [
+<table>,
+<table>
+];
+</script>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('ignores raw-text payload when judging table depth after the block', () => {
+      const input = `<pre>
+<table>
+</pre>
+
+<table>
+<tr><td>x</td></tr>
+</table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('still repairs a mistaken closer after a closed raw-text block', () => {
+      const input = `<style>
+.x { color: red; }
+</style>
+
+<table>
+<tr><td>x</td></tr>
+<table>
+> note`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input.replace(/<table>\n> note/, '</table>\n> note'));
+    });
+
     it('does not rewrite a <table> that carries attributes', () => {
       const input = `<table>
 <tr><td>x</td></tr>

@@ -1,3 +1,5 @@
+import { htmlRawNames } from 'micromark-util-html-tag-name';
+
 import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/protect-code-blocks';
 
 /** A line that is only a bare `<table>` / `<Table>` opener (the common missing-slash typo). */
@@ -16,6 +18,11 @@ const TABLE_CLOSER_RE = /^<\/table(?=[\s>])/i;
 
 const TABLE_OPEN_RE = /<(?:table|Table)(?=[\s/>])[^>]*?(?<!\/)>/g;
 const TABLE_CLOSE_RE = /<\/(?:table|Table)(?=[\s>])[^>]*>/g;
+
+const RAW_TEXT_TAG_MATCHERS = htmlRawNames.map(tag => ({
+  open: new RegExp(`<${tag}(?=[\\s/>])[^>]*?(?<!/)>`, 'gi'),
+  close: new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'gi'),
+}));
 
 const countTableDelta = (line: string): number => {
   const opens = (line.match(TABLE_OPEN_RE) ?? []).length;
@@ -51,8 +58,25 @@ export function repairMistakenTableClosers(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
   const lines = protectedContent.split('\n');
   let depth = 0;
+  // Per-tag count of still-open raw-text elements at the current line boundary.
+  const rawTextDepths = RAW_TEXT_TAG_MATCHERS.map(() => 0);
 
   for (let i = 0; i < lines.length; i += 1) {
+    const insideRawText = rawTextDepths.some(d => d > 0);
+
+    RAW_TEXT_TAG_MATCHERS.forEach(({ open, close }, tagIndex) => {
+      const opens = (lines[i].match(open) ?? []).length;
+      const closes = (lines[i].match(close) ?? []).length;
+      // Reset lastIndex — module-scoped `/g` regexes.
+      open.lastIndex = 0;
+      close.lastIndex = 0;
+      rawTextDepths[tagIndex] = Math.max(0, rawTextDepths[tagIndex] + opens - closes);
+    });
+
+    // A `<table>` inside a raw-text body is payload text: never rewrite it, and
+    // never let it skew the table depth used to judge later openers.
+    if (insideRawText) continue;
+
     const match = BARE_TABLE_OPENER_RE.exec(lines[i]);
     if (match && depth > 0) {
       const next = nextNonEmptyLine(lines, i + 1);
