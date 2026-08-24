@@ -45,6 +45,13 @@ export const REACT_HTML_PROP_BOUNDARIES = getWordBoundariesFromProps(reactHtmlAt
 export const CSS_STYLE_PROP_BOUNDARIES = getWordBoundariesFromProps(reactNativeStylingProps as string[]);
 
 /**
+ * Full CSS/styling prop names (e.g. `fontWeight`, `color`, `textAlign`). Used to skip
+ * styling props when extracting authored copy for search — their values (`bold`, `center`)
+ * are config, not content. Excludes web-only `content`, which is a real text prop.
+ */
+export const CSS_STYLE_PROP_NAMES = new Set<string>(reactNativeStylingProps as string[]);
+
+/**
  * Custom component prop word boundaries not in React HTML or CSS boundaries.
  */
 export const CUSTOM_PROP_BOUNDARIES = [
