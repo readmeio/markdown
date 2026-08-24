@@ -572,6 +572,19 @@ exports[`Render engine regressions tests > magic-blocks-table (mdxish) 1`] = `
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">id</td><td style="text-align:left"><p>Number</p></td></tr></tbody></table></div></div>"
 `;
 
+exports[`Render engine regressions tests > mistaken-table-closer (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > mistaken-table-closer (mdxish) 1`] = `
+"<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><th>Option</th><th>Description</th></tr><tr><td>foo</td><td>bar</td></tr></table></div></div>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>This behavior is not required for any Enhanced TLS certificates.</li>
+<li>There are no options for this behavior.</li>
+</ul>
+</blockquote>"
+`;
+
 exports[`Render engine regressions tests > rich (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
 <p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer &lt;&lt;apiKey&gt;&gt;</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;region&gt;&gt;</code> region.</p>

@@ -43,6 +43,7 @@ import { normalizeCompactHeadings } from '../processor/transform/mdxish/normaliz
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
 import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
+import { repairMistakenTableClosers } from '../processor/transform/mdxish/repair-mistaken-table-closers';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
@@ -106,6 +107,7 @@ function preprocessContent(
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
   let result = normalizeClosingTagWhitespace(content);
+  result = repairMistakenTableClosers(result);
   result = normalizeTableSeparator(result);
   // Before terminateHtmlFlowBlocks: a blank line inside an <svg>/<math> island
   // would otherwise fragment it (children spill out as an indented code block once
