@@ -212,6 +212,17 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
       expect(repairMistakenTableClosers(input)).toBe(input);
     });
 
+    it('does not rewrite <table> inside a tilde-fenced code block', () => {
+      const input = `~~~
+<table>
+<tr><th>Option</th><th>Description</th></tr>
+<tr><td>foo</td><td>bar</td></tr>
+<table>
+~~~`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
     it('does not rewrite <table> payload inside a raw-text element', () => {
       const input = `<pre>
 <table>
