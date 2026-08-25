@@ -87,10 +87,28 @@ export const CUSTOM_PROP_BOUNDARIES = [
 export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'html-block', 'rdme-pin']);
 
 /**
- * Standard HTML tags that should never be treated as custom components.
- * Uses the html-tags package, converted to a Set<string> for efficient lookups.
+ * Deprecated tags the `html-tags` package omits. Browsers (and the MDX engine)
+ * still render them, so mdxish must not mistake them for unknown components and
+ * drop them from the tree (CX-3699).
  */
-export const STANDARD_HTML_TAGS = new Set(htmlTags) as Set<string>;
+export const DEPRECATED_HTML_TAGS = new Set([
+  'acronym',
+  'big',
+  'blink',
+  'center',
+  'dir',
+  'font',
+  'marquee',
+  'nobr',
+  'strike',
+  'tt',
+]);
+
+/**
+ * Standard HTML tags that should never be treated as custom components.
+ * Uses the html-tags package plus the deprecated tags it omits.
+ */
+export const STANDARD_HTML_TAGS: Set<string> = new Set([...htmlTags, ...DEPRECATED_HTML_TAGS]);
 
 /**
  * Table structural tags. Blank lines inside these carry deliberate meaning for
