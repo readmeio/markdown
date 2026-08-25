@@ -1,13 +1,13 @@
 # Mistaken table closer (`<table>` for `</table>`)
 
-Akamai behavior docs typo the table closer as a second opening
-`<table>` instead of `</table>`. Without repair, the HTML flow block
-swallows the following Notes callout as raw text.
+Customer docs typo the table closer as a second opening `<table>`
+instead of `</table>`. Without repair, the HTML flow block swallows the
+following Notes callout as raw text.
 
 ## Source bug
 
-- CX-3850 — malformed table close tag breaks Notes callouts across
-  Akamai behavior/criterion docs (all versions)
+- CX-3850 — malformed table close tag breaks Notes callouts across a
+  customer's behavior/criterion docs (all versions)
 
 ## MDX side is empty by design
 
@@ -19,5 +19,6 @@ bare second `<table>` to `</table>` before `jsxTable` /
 ## What flips this fixture
 
 Any change to `repairMistakenTableClosers`, its placement in
-`preprocessContent`, or the nested-table keep-out heuristic (do not
-rewrite when the next line starts a real nested table body).
+`preprocessContent`, or the typo heuristic (a bare opener alone on its
+line, at table depth ≥ 1, whose element ends implicitly without table-
+structure children).

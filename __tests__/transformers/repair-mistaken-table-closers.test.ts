@@ -2,7 +2,7 @@ import { repairMistakenTableClosers } from '../../processor/transform/mdxish/rep
 
 describe('repairMistakenTableClosers (string-level preprocessor)', () => {
   describe('rewrites a bare <table> that is a missing-slash closer', () => {
-    it('rewrites the Akamai-style closer before a Notes blockquote', () => {
+    it('rewrites the mistyped closer before a Notes blockquote (CX-3850)', () => {
       const input = `<table>
 <tr><th>Option</th><th>Description</th></tr>
 <tr><td>foo</td><td>bar</td></tr>
@@ -57,6 +57,74 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
         '<Table>\n<tr><td>x</td></tr>\n</Table>\n> note',
       );
     });
+
+    it('rewrites a mistyped closer with whitespace in the tag (<table >)', () => {
+      expect(repairMistakenTableClosers('<table>\n<tr><td>x</td></tr>\n<table >\n> note')).toBe(
+        '<table>\n<tr><td>x</td></tr>\n</table>\n> note',
+      );
+    });
+
+    it('rewrites both closers of back-to-back mistyped tables', () => {
+      const input = `<table>
+<tr><td>a</td></tr>
+<table>
+
+<table>
+<tr><td>b</td></tr>
+<table>
+> note`;
+
+      expect(repairMistakenTableClosers(input)).toBe(`<table>
+<tr><td>a</td></tr>
+</table>
+
+<table>
+<tr><td>b</td></tr>
+</table>
+> note`);
+    });
+
+    it('rewrites a mistyped closer inside a component body, preserving indentation', () => {
+      const input = `<Accordion title="t">
+  <table>
+  <tr><td>x</td></tr>
+  <table>
+  note text
+</Accordion>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(`<Accordion title="t">
+  <table>
+  <tr><td>x</td></tr>
+  </table>
+  note text
+</Accordion>`);
+    });
+
+    it('rewrites a mistyped closer inside a Tab panel', () => {
+      const input = `<Tabs>
+<Tab title="a">
+<table>
+<tr><td>x</td></tr>
+<table>
+> note
+</Tab>
+</Tabs>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input.replace('<table>\n> note', '</table>\n> note'));
+    });
+
+    it('rewrites a mistyped closer even when a well-formed table follows', () => {
+      const input = `<table>
+<tr><td>a</td></tr>
+<table>
+> note
+
+<table>
+<tr><td>b</td></tr>
+</table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input.replace('<table>\n> note', '</table>\n> note'));
+    });
   });
 
   describe('leaves real nested tables alone', () => {
@@ -108,6 +176,33 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
       expect(repairMistakenTableClosers('<table>\n<tr><td>x</td></tr>\n</table>')).toBe(
         '<table>\n<tr><td>x</td></tr>\n</table>',
       );
+    });
+
+    it('does not rewrite a nested table whose rows are preceded by a comment', () => {
+      const input = `<table><tr><td>
+<table>
+<!-- c -->
+<tr><td>x</td></tr>
+</table>
+</td></tr></table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('does not rewrite a nested table whose rows are preceded by a <div>', () => {
+      const input = `<table><tr><td>
+<table>
+<div>heading</div>
+<tr><td>x</td></tr>
+</table>
+</td></tr></table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('does not rewrite a blockquoted opener (quote prefix means the line is not bare)', () => {
+      const input = '> <table>\n> <tr><td>x</td></tr>\n> <table>\n>\n> note';
+      expect(repairMistakenTableClosers(input)).toBe(input);
     });
   });
 
@@ -201,6 +296,16 @@ payload
 <table class="x">
 > note`;
 
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('does not let a <table> inside an attribute value pollute table depth', () => {
+      const input = '<div data-x="<table>">\ntext\n\n<table>\ncaption text\n</table>';
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('keeps an HTMLBlock body byte-exact', () => {
+      const input = '<HTMLBlock>{`\n<table>\n<tr><td>x</td></tr>\n<table>\nafter text\n`}</HTMLBlock>';
       expect(repairMistakenTableClosers(input)).toBe(input);
     });
   });
