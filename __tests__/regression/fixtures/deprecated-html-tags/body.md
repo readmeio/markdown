@@ -34,6 +34,8 @@ Inline legacy formatting: <font color="red" size="4">**red**</font>, <big>big</b
   <center><big>**nested inside plain HTML**</big></center>
 </div>
 
+<object data="movie.swf"><param name="quality" value="high" /></object>
+
 > 📘 Callout
 >
 > <center>**centered in a callout**</center>

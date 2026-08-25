@@ -7,10 +7,23 @@ import React from 'react';
 import { compile, mdxish, renderMdxish, run } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
-// Deprecated-but-still-rendered tags (`<center>`, `<font>`, `<big>`, …) are missing
-// from the `html-tags` package, so mdxish treated them as unknown components and
-// removed them from the tree — a `<center>` inside a `<Card>` emptied the whole card.
-// See CX-3699 and DEPRECATED_HTML_TAGS in utils/common-html-words.ts.
+// Samples of deprecated-but-still-rendered tags (`<center>`, `<font>`, `<big>`, …).
+// Mainly using center as an example because it's a commonly used deprecated tag.
+const SAMPLE_LEGACY_TAGS = [
+  'acronym',
+  'applet',
+  'basefont',
+  'big',
+  'center',
+  'dir',
+  'font',
+  'listing',
+  'marquee',
+  'noembed',
+  'rtc',
+  'strike',
+  'xmp',
+];
 const renderToDom = (md: string, components: CustomComponents = {}) => {
   const Content = renderMdxish(mdxish(md, { components }), { components }).default;
   return render(<Content />);
@@ -48,7 +61,11 @@ describe('deprecated html tags', () => {
       const { container } = renderToDom('> 📘 Note\n>\n> <center>**centered**</center>');
 
       const callout = container.querySelector('.callout');
-      expect(within(callout as HTMLElement).getByText('centered').closest('center')).toBeInTheDocument();
+      expect(
+        within(callout as HTMLElement)
+          .getByText('centered')
+          .closest('center'),
+      ).toBeInTheDocument();
     });
 
     it('renders a <center> inside a JSX <Callout> body', () => {
@@ -109,6 +126,23 @@ describe('deprecated html tags', () => {
   });
 
   describe('inside html trees', () => {
+    it.each(SAMPLE_LEGACY_TAGS)('keeps a <%s> instead of dropping it as an unknown component', tag => {
+      const tree = mdxish(`<div class="wrap"><${tag} title="t">kept</${tag}></div>`);
+
+      expect(findElementByTagName(tree, tag)).not.toBeNull();
+    });
+
+    // `param` is declared in HTML_VOID_ELEMENTS and repaired by closeSelfClosingHtmlTags,
+    // so dropping it as an unknown component contradicted the same module. (CX-3699)
+    it('keeps a void <param> inside an <object>', () => {
+      const tree = mdxish('<object data="movie.swf"><param name="quality" value="high" /></object>');
+
+      expect(findElementByTagName(tree, 'param')).toMatchObject({
+        tagName: 'param',
+        properties: { name: 'quality', value: 'high' },
+      });
+    });
+
     it('keeps a <center> nested in plain HTML wrappers', () => {
       const tree = mdxish('<div class="outer">\n  <section>\n    <center>**deep**</center>\n  </section>\n</div>');
 
@@ -151,7 +185,9 @@ describe('deprecated html tags', () => {
       const center = findElementByTagName(tree, 'center');
 
       expect(findElementByTagName(center!, 'a')).toMatchObject({ properties: { href: 'https://example.com' } });
-      expect(findElementByTagName(center!, 'img')).toMatchObject({ properties: { src: 'https://example.com/logo.png' } });
+      expect(findElementByTagName(center!, 'img')).toMatchObject({
+        properties: { src: 'https://example.com/logo.png' },
+      });
     });
 
     it('leaves deprecated tags inside code untouched', () => {

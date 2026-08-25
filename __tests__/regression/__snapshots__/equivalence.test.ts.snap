@@ -227,6 +227,13 @@ exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
       "right": "<br>",
       "severity": "structural",
     },
+    {
+      "kind": "tag",
+      "left": "object",
+      "path": "/object[6]",
+      "right": "p",
+      "severity": "structural",
+    },
   ],
   "severity": "structural",
   "status": "differ",

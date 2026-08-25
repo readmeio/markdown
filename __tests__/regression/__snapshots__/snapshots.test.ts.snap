@@ -84,6 +84,7 @@ exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
 <strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
 <div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<object data="movie.swf"><param name="quality" value="high"/></object>
 <blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
 `;
 
@@ -115,6 +116,7 @@ exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
 
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
 <div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<p><object data="movie.swf"><param name="quality" value="high"/></object></p>
 <blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
 `;
 
