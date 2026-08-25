@@ -123,7 +123,8 @@ const NON_STANDARD_TAGS = new Set<string>([
 export const STANDARD_HTML_TAGS: Set<string> = new Set([
   ...htmlTags,
   ...Object.values(parse5Html.TAG_NAMES),
-  'acronym',  // Obselete tag not included either of the above sources.
+  'acronym',  // Obselete tag not included either of the above sources. Add here if we have missed any.
+  'blink',
 ].filter(tag => !NON_STANDARD_TAGS.has(tag)));
 
 /**

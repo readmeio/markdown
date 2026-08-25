@@ -11,6 +11,7 @@ import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 // Mainly using center as an example because it's a commonly used deprecated tag.
 const SAMPLE_LEGACY_TAGS = [
   'acronym',
+  'blink',
   'applet',
   'basefont',
   'big',
