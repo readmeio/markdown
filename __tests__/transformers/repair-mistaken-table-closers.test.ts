@@ -265,6 +265,19 @@ payload
       expect(repairMistakenTableClosers(input)).toBe(input.replace('<table>\n> note', '</table>\n> note'));
     });
 
+    it('still repairs a later typo after an unclosed payload <table> in an opaque block', () => {
+      const input = `<pre>
+<table>
+</pre>
+
+<table>
+<tr><td>x</td></tr>
+<table>
+> note`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input.replace('<table>\n> note', '</table>\n> note'));
+    });
+
     it('ignores raw-text payload when judging table depth after the block', () => {
       const input = `<pre>
 <table>
