@@ -5,11 +5,7 @@ import { protectCodeBlocks, restoreCodeBlocks } from '../../../lib/utils/mdxish/
 /** A line that is only a bare `<table>` / `<Table>` opener (the common missing-slash typo). */
 const BARE_TABLE_OPENER_RE = /^(\s*)<(table|Table)>\s*$/;
 
-/**
- * Openers that begin a real nested table body. A bare `<table>` followed by one
- * of these is left alone; followed by anything else (markdown, `</td>`, EOF) it
- * is treated as a mistaken `</table>`.
- */
+/** A bare `<table>` followed by one of these starts a real nested table and is left alone. */
 const NESTED_TABLE_BODY_START_RE =
   /^<(?:thead|tbody|tfoot|tr|th|td|caption|colgroup|col|table|Table)(?=[\s/>])/i;
 
@@ -19,10 +15,43 @@ const TABLE_CLOSER_RE = /^<\/table(?=[\s>])/i;
 const TABLE_OPEN_RE = /<(?:table|Table)(?=[\s/>])[^>]*?(?<!\/)>/g;
 const TABLE_CLOSE_RE = /<\/(?:table|Table)(?=[\s>])[^>]*>/g;
 
-const RAW_TEXT_TAG_MATCHERS = htmlRawNames.map(tag => ({
-  open: new RegExp(`<${tag}(?=[\\s/>])[^>]*?(?<!/)>`, 'gi'),
-  close: new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'gi'),
-}));
+const RAW_TEXT_OPENER_RE = new RegExp(`<(${htmlRawNames.join('|')})(?=[\\s/>])[^>]*?(?<!/)>`, 'i');
+
+const RAW_TEXT_CLOSERS = Object.fromEntries(
+  htmlRawNames.map(tag => [tag, new RegExp(`</${tag}(?=[\\s>])[^>]*>`, 'i')]),
+);
+
+interface StripRawTextResult {
+  openRawTag: string | null;
+  visible: string;
+}
+
+/**
+ * Returns the parts of a line outside raw-text (<pre>/<script>/<style>/<textarea>) payload —
+ * a `<table>` inside those bodies must not count toward table depth. Raw text cannot nest.
+ */
+function stripRawTextPayload(line: string, openRawTag: string | null): StripRawTextResult {
+  let visible = '';
+  let rest = line;
+  let tag = openRawTag;
+
+  while (rest.length > 0) {
+    if (tag !== null) {
+      const closer = RAW_TEXT_CLOSERS[tag].exec(rest);
+      if (!closer) return { visible, openRawTag: tag };
+      rest = rest.slice(closer.index + closer[0].length);
+      tag = null;
+    } else {
+      const opener = RAW_TEXT_OPENER_RE.exec(rest);
+      if (!opener) break;
+      visible += rest.slice(0, opener.index);
+      rest = rest.slice(opener.index + opener[0].length);
+      tag = opener[1].toLowerCase();
+    }
+  }
+
+  return { visible: visible + (tag === null ? rest : ''), openRawTag: tag };
+}
 
 const countTableDelta = (line: string): number => {
   const opens = (line.match(TABLE_OPEN_RE) ?? []).length;
@@ -58,26 +87,15 @@ export function repairMistakenTableClosers(content: string) {
   const { protectedContent, protectedCode } = protectCodeBlocks(content);
   const lines = protectedContent.split('\n');
   let depth = 0;
-  // Per-tag count of still-open raw-text elements at the current line boundary.
-  const rawTextDepths = RAW_TEXT_TAG_MATCHERS.map(() => 0);
+  let openRawTag: string | null = null;
 
   for (let i = 0; i < lines.length; i += 1) {
-    const insideRawText = rawTextDepths.some(d => d > 0);
+    const stripped = stripRawTextPayload(lines[i], openRawTag);
+    // Only a line with no raw-text involvement can be a mistyped closer.
+    const isFullyVisible = openRawTag === null && stripped.visible === lines[i];
+    openRawTag = stripped.openRawTag;
 
-    RAW_TEXT_TAG_MATCHERS.forEach(({ open, close }, tagIndex) => {
-      const opens = (lines[i].match(open) ?? []).length;
-      const closes = (lines[i].match(close) ?? []).length;
-      // Reset lastIndex — module-scoped `/g` regexes.
-      open.lastIndex = 0;
-      close.lastIndex = 0;
-      rawTextDepths[tagIndex] = Math.max(0, rawTextDepths[tagIndex] + opens - closes);
-    });
-
-    // A `<table>` inside a raw-text body is payload text: never rewrite it, and
-    // never let it skew the table depth used to judge later openers.
-    if (insideRawText) continue;
-
-    const match = BARE_TABLE_OPENER_RE.exec(lines[i]);
+    const match = isFullyVisible ? BARE_TABLE_OPENER_RE.exec(lines[i]) : null;
     if (match && depth > 0) {
       const next = nextNonEmptyLine(lines, i + 1);
       const isRealNestedOpener =
@@ -88,7 +106,8 @@ export function repairMistakenTableClosers(content: string) {
       }
     }
 
-    depth = Math.max(0, depth + countTableDelta(lines[i]));
+    // A repaired closer must decrement, so count post-rewrite `lines[i]` when visible.
+    depth = Math.max(0, depth + countTableDelta(isFullyVisible ? lines[i] : stripped.visible));
   }
 
   return restoreCodeBlocks(lines.join('\n'), protectedCode);

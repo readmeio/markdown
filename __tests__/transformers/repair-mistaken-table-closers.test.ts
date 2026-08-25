@@ -139,6 +139,37 @@ const html = [
       expect(repairMistakenTableClosers(input)).toBe(input);
     });
 
+    it('does not count a <table> sharing a line with a raw-text opener (<pre><table>)', () => {
+      const input = `<pre><table></pre>
+
+<table>
+caption text
+</table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('does not count payload in a same-line raw-text span (<script>…</script>)', () => {
+      const input = `<script>render("<table>")</script>
+
+<table>
+caption text
+</table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
+    });
+
+    it('counts a <table> opening after a same-line raw-text closer (</pre><table>)', () => {
+      const input = `<pre>
+payload
+</pre><table>
+<tr><td>x</td></tr>
+<table>
+> note`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input.replace('<table>\n> note', '</table>\n> note'));
+    });
+
     it('ignores raw-text payload when judging table depth after the block', () => {
       const input = `<pre>
 <table>
