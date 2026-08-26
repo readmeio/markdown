@@ -184,7 +184,7 @@
     "vitest": "^4.1.11",
     "webpack": "^5.104.1",
     "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^5.2.4",
+    "webpack-dev-server": "^6.0.0",
     "webpack-merge": "^5.8.0"
   },
   "license": "MIT",
