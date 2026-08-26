@@ -186,8 +186,21 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
 const DEFAULT_BULLET = '-';
 const DEFAULT_BULLET_ORDERED = '.';
 
+/** The list markers the readme editor records from source text. */
+export type ListMarker = ')' | '*' | '+' | '-' | '.';
+
+/**
+ * mdast doesn't record a list's marker, so the readme editor stamps it on the
+ * node as this non-standard `bullet` field for the handler below to honor.
+ */
+export type ListWithMarker = List & { bullet?: ListMarker };
+
 const handlers = {
-  list(node: List & { bullet?: string }, parent: Parents | undefined, state: State, info: Info) {
+  // Serialize each list with its stamped marker. remark-stringify only reads
+  // markers from `state.options`, so swap them in per list: unstamped or
+  // invalid stamps get the defaults, which also keeps a stamped marker from
+  // leaking into nested or following lists.
+  list(node: ListWithMarker, parent: Parents | undefined, state: State, info: Info) {
     const marker = node.bullet;
     const savedBullet = state.options.bullet;
     const savedBulletOrdered = state.options.bulletOrdered;

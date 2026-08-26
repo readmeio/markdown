@@ -1,3 +1,4 @@
+import type { ListMarker, ListWithMarker } from '../../../lib';
 import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
@@ -1693,8 +1694,8 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
       children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }, ...(nested ? [nested] : [])],
     }) satisfies ListItem;
 
-  const list = (children: ListItem[], bullet?: string) =>
-    ({ type: 'list', ordered: false, spread: false, bullet, children }) satisfies List & { bullet?: string };
+  const list = (children: ListItem[], bullet?: ListMarker) =>
+    ({ type: 'list', ordered: false, spread: false, bullet, children }) satisfies ListWithMarker;
 
   it('serializes a list with a stamped `*` marker using `*`', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '*')] };
@@ -1740,13 +1741,14 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
   });
 
   it('ignores an invalid stamped marker', () => {
-    const mdast: MdastRoot = { type: 'root', children: [list([item('a')], 'x')] };
+    // Cast because 'x' is deliberately outside the ListMarker contract
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a')], 'x' as ListMarker)] };
 
     expect(mdxishMdastToMd(mdast)).toBe('- a\n');
   });
 
-  const orderedList = (children: ListItem[], bullet?: string) =>
-    ({ type: 'list', ordered: true, spread: false, bullet, children }) satisfies List & { bullet?: string };
+  const orderedList = (children: ListItem[], bullet?: ListMarker) =>
+    ({ type: 'list', ordered: true, spread: false, bullet, children }) satisfies ListWithMarker;
 
   it('serializes an ordered list with a stamped `)` delimiter using `)`', () => {
     const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a'), item('b')], ')')] };
@@ -1771,5 +1773,12 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([task], '*')] };
 
     expect(mdxishMdastToMd(mdast)).toBe('* [ ] a\n');
+  });
+
+  it('keeps the checkbox on an ordered task list with a stamped `)` delimiter', () => {
+    const task: ListItem = { ...item('a'), checked: false };
+    const mdast: MdastRoot = { type: 'root', children: [orderedList([task], ')')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('1) [ ] a\n');
   });
 });
