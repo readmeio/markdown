@@ -645,6 +645,29 @@ exports[`MDX↔MDXish equivalence > magic-blocks-table 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > mistaken-table-closer 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[0]",
+      "right": "<div class="rdmd-table">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/blockquote[1]",
+      "right": "<blockquote>…(2 children)…</blockquote>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > rich 1`] = `
 {
   "changes": [

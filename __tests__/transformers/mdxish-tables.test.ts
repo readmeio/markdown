@@ -1,5 +1,5 @@
 import type { Html, Root, Text } from 'mdast';
-import type { MdxFlowExpression, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { MdxFlowExpression, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
 
@@ -355,6 +355,50 @@ Just one line.
           ],
         },
       ],
+    });
+  });
+
+  describe('given a mistaken <table> closer', () => {
+    const mistaken = `<table>
+<tr><th>Option</th><th>Description</th></tr>
+<tr><td>foo</td><td>bar</td></tr>
+<table>
+> **Notes:**
+>
+> * This behavior is not required for any Enhanced TLS certificates.
+> * There are no options for this behavior.`;
+
+    it('rewrites the closer in preprocess so Notes is not swallowed', () => {
+      const { parserReadyContent } = mdxishAstProcessor(mistaken);
+      expect(parserReadyContent).toContain('</table>');
+      expect(parserReadyContent).not.toMatch(/<\/tr>\n<table>\n>/);
+    });
+
+    it('parses the table and the following Notes blockquote', () => {
+      const ast = astProcessor(mistaken);
+      expect(ast.children.map(c => c.type)).toEqual(
+        expect.arrayContaining(['mdxJsxFlowElement', 'blockquote']),
+      );
+      const table = ast.children.find(
+        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && c.name === 'table',
+      );
+      expect(table?.children?.length).toBeGreaterThan(0);
+      const notes = ast.children.find(c => c.type === 'blockquote');
+      expect(notes).toMatchObject({
+        type: 'blockquote',
+        children: expect.arrayContaining([
+          expect.objectContaining({ type: 'paragraph' }),
+          expect.objectContaining({ type: 'list' }),
+        ]),
+      });
+    });
+
+    it('renders table cells and the Notes callout body', () => {
+      const html = toHtml(mdxish(mistaken));
+      expect(html).toContain('Option');
+      expect(html).toContain('foo');
+      expect(html).toContain('Notes:');
+      expect(html).toContain('Enhanced TLS certificates');
     });
   });
 

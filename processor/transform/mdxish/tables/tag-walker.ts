@@ -5,7 +5,7 @@ import { Parser } from 'htmlparser2';
  */
 export const maskNonTagRegions = (html: string): string =>
   html
-    .replace(/```[\s\S]*?```|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
+    .replace(/```[\s\S]*?```|~{3,}[\s\S]*?~{3,}|``(?:[^`]|`(?!`))*``|`[^`\n]*`/g, m => ' '.repeat(m.length))
     // `<<NAME>>` is legacy variable syntax — without masking,
     // htmlparser2 sees the inner `<NAME>` as a tag. Blanking any `<<` also
     // covers malformed variants like `<<string>`.

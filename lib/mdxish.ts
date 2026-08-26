@@ -43,6 +43,7 @@ import { normalizeCompactHeadings } from '../processor/transform/mdxish/normaliz
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-jsx-nodes';
 import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
+import { repairMistakenTableClosers } from '../processor/transform/mdxish/repair-mistaken-table-closers';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
 import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
@@ -90,12 +91,13 @@ const defaultTransformers: PluggableList = [
  *
  * Runs a series of string-level transformations before micromark/remark parsing:
  * 1. Canonicalize closing tags with stray whitespace (e.g., `</ td >` → `</td>`)
- * 2. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
- * 3. Collapse blank lines inside `<svg>`/`<math>` so their children aren't fragmented
- * 4. Terminate HTML flow blocks so subsequent content isn't swallowed
- * 5. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
- * 6. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 7. Replace snake_case component names with parser-safe placeholders
+ * 2. Repair mistyped table closers (a bare second `<table>` meant as `</table>`)
+ * 3. Normalize malformed table separator syntax (e.g., `|: ---` → `| :---`)
+ * 4. Collapse blank lines inside `<svg>`/`<math>` so their children aren't fragmented
+ * 5. Terminate HTML flow blocks so subsequent content isn't swallowed
+ * 6. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
+ * 7. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
+ * 8. Replace snake_case component names with parser-safe placeholders
  */
 function preprocessContent(
   content: string,
@@ -106,6 +108,7 @@ function preprocessContent(
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
   let result = normalizeClosingTagWhitespace(content);
+  result = repairMistakenTableClosers(result);
   result = normalizeTableSeparator(result);
   // Before terminateHtmlFlowBlocks: a blank line inside an <svg>/<math> island
   // would otherwise fragment it (children spill out as an indented code block once
