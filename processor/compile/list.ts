@@ -14,12 +14,14 @@ export type ListMarker = '-' | '.' | ')' | '*' | '+';
  */
 export type ListWithMarker = List & { marker?: ListMarker };
 
-// Serialize each list with its stamped marker. remark-stringify only reads
-// markers from `state.options`, so swap the stamped one in for this list's
-// subtree. An unstamped list leaves the options untouched, so a nested list
-// inherits the nearest stamped ancestor's marker and matches the document's
-// style; a following sibling list can't inherit because the stamped list
-// restores the configured defaults in `finally` when it finishes.
+/**
+ * Serialize each list with its stamped marker. remark-stringify only reads
+ * markers from `state.options`, so swap the stamped one in for this list's
+ * subtree. An unstamped list leaves the options untouched, so a nested list
+ * inherits the nearest stamped ancestor's marker and matches the document's
+ * style; a following sibling list can't inherit because the stamped list
+ * restores the configured defaults in `finally` when it finishes.
+ */
 const list = ((node: ListWithMarker, parent: Parents | undefined, state: State, info: Info) => {
   const { marker } = node;
   const savedBullet = state.options.bullet;
