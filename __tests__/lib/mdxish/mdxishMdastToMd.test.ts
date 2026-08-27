@@ -1694,8 +1694,8 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
       children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }, ...(nested ? [nested] : [])],
     }) satisfies ListItem;
 
-  const list = (children: ListItem[], bullet?: ListMarker) =>
-    ({ type: 'list', ordered: false, spread: false, bullet, children }) satisfies ListWithMarker;
+  const list = (children: ListItem[], marker?: ListMarker) =>
+    ({ type: 'list', ordered: false, spread: false, marker, children }) satisfies ListWithMarker;
 
   it('serializes a list with a stamped `*` marker using `*`', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '*')] };
@@ -1728,10 +1728,19 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     expect(mdxishMdastToMd(mdast)).toBe('* a\n\nx\n\n- b\n');
   });
 
-  it('does not leak a stamped marker into a nested unstamped list', () => {
+  it('lets a nested unstamped list inherit the parent marker', () => {
     const mdast: MdastRoot = { type: 'root', children: [list([item('a', list([item('b')]))], '*')] };
 
-    expect(mdxishMdastToMd(mdast)).toBe('* a\n  - b\n');
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  * b\n');
+  });
+
+  it('inherits from the nearest stamped ancestor, not the outermost', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', list([item('b', list([item('c')]))], '+'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  + b\n    + c\n');
   });
 
   it('serializes a nested list with their own bullet marker', () => {
@@ -1747,8 +1756,8 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     expect(mdxishMdastToMd(mdast)).toBe('- a\n');
   });
 
-  const orderedList = (children: ListItem[], bullet?: ListMarker) =>
-    ({ type: 'list', ordered: true, spread: false, bullet, children }) satisfies ListWithMarker;
+  const orderedList = (children: ListItem[], marker?: ListMarker) =>
+    ({ type: 'list', ordered: true, spread: false, marker, children }) satisfies ListWithMarker;
 
   it('serializes an ordered list with a stamped `)` delimiter using `)`', () => {
     const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a'), item('b')], ')')] };
@@ -1762,10 +1771,10 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     expect(mdxishMdastToMd(mdast)).toBe('1. a\n');
   });
 
-  it('does not leak a stamped delimiter into a nested unstamped ordered list', () => {
+  it('lets a nested unstamped ordered list inherit the parent delimiter', () => {
     const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a', orderedList([item('b')]))], ')')] };
 
-    expect(mdxishMdastToMd(mdast)).toBe('1) a\n   1. b\n');
+    expect(mdxishMdastToMd(mdast)).toBe('1) a\n   1) b\n');
   });
 
   it('serializes a task list with a stamped `*` marker using `*`', () => {
@@ -1780,5 +1789,54 @@ describe('mdxishMdastToMd bullet marker preservation', () => {
     const mdast: MdastRoot = { type: 'root', children: [orderedList([task], ')')] };
 
     expect(mdxishMdastToMd(mdast)).toBe('1) [ ] a\n');
+  });
+
+  it('keeps each stamped marker across three levels of nesting', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', list([item('b', list([item('c')], '-'))], '+'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  + b\n    - c\n');
+  });
+
+  it('keeps stamped markers when ordered and unordered levels interleave', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', orderedList([item('b', list([item('c')], '+'))], ')'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  1) b\n     + c\n');
+  });
+
+  it('keeps a stamped marker on a list inside a callout', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: NodeTypes.callout,
+          data: { hName: 'Callout', hProperties: { icon: '📘', theme: 'info', empty: true } },
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }, list([item('a'), item('b')], '*')],
+        } as RootContent,
+      ],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('<Callout icon="📘" theme="info">\n  * a\n  * b\n</Callout>\n');
+  });
+
+  it('keeps a stamped delimiter on a list inside a JSX component', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Accordion',
+          attributes: [{ type: 'mdxJsxAttribute', name: 'title', value: 'More' }],
+          children: [orderedList([item('a'), item('b')], ')')],
+        },
+      ],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('<Accordion title="More">\n  1) a\n  2) b\n</Accordion>\n');
   });
 });

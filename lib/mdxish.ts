@@ -1,11 +1,9 @@
 import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
-import type { List, Parents, Root as MdastRoot } from 'mdast';
-import type { Handlers, Info, State } from 'mdast-util-to-markdown';
+import type { Root as MdastRoot } from 'mdast';
 import type { PluggableList } from 'unified';
 
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
-import { defaultHandlers } from 'mdast-util-to-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -16,6 +14,7 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
+import { DEFAULT_BULLET } from '../processor/compile/list';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
@@ -183,38 +182,6 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
   extensions.push({ extensions: [mdxJsxToMarkdown()] });
 }
 
-const DEFAULT_BULLET = '-';
-const DEFAULT_BULLET_ORDERED = '.';
-
-/** The list markers the readme editor records from source text. */
-export type ListMarker = ')' | '*' | '+' | '-' | '.';
-
-/**
- * mdast doesn't record a list's marker, so the readme editor stamps it on the
- * node as this non-standard `bullet` field for the handler below to honor.
- */
-export type ListWithMarker = List & { bullet?: ListMarker };
-
-const handlers = {
-  // Serialize each list with its stamped marker. remark-stringify only reads
-  // markers from `state.options`, so swap them in per list: unstamped or
-  // invalid stamps get the defaults, which also keeps a stamped marker from
-  // leaking into nested or following lists.
-  list(node: ListWithMarker, parent: Parents | undefined, state: State, info: Info) {
-    const marker = node.bullet;
-    const savedBullet = state.options.bullet;
-    const savedBulletOrdered = state.options.bulletOrdered;
-    state.options.bullet = marker === '*' || marker === '-' || marker === '+' ? marker : DEFAULT_BULLET;
-    state.options.bulletOrdered = marker === '.' || marker === ')' ? marker : DEFAULT_BULLET_ORDERED;
-    try {
-      return defaultHandlers.list(node, parent, state, info);
-    } finally {
-      state.options.bullet = savedBullet;
-      state.options.bulletOrdered = savedBulletOrdered;
-    }
-  },
-} satisfies Handlers;
-
 /**
  * Serializes an Mdast back into a markdown string.
  */
@@ -227,7 +194,6 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxJsxStringify)
     .use(remarkStringify, {
       bullet: DEFAULT_BULLET,
-      handlers,
       emphasis: '_',
       // Escape literal braces in text so they don't parse as (often
       // unterminated) MDX expressions on the next round trip.
