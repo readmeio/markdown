@@ -1,4 +1,5 @@
-import type { Root as MdastRoot, RootContent, Table } from 'mdast';
+import type { ListMarker, ListWithMarker } from '../../../lib';
+import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
@@ -156,14 +157,23 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Field' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Description' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Field' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Description' }] }],
+                  },
                 ],
               },
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'orderby' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'orderby' }] }],
+                  },
                   {
                     type: 'tableCell',
                     children: [
@@ -236,35 +246,35 @@ describe('mdxishMdastToMd', () => {
                         children: [
                           {
                             type: 'text',
-                            value: 'Line 1'
-                          }
-                        ]
+                            value: 'Line 1',
+                          },
+                        ],
                       },
                       {
                         type: 'paragraph',
                         children: [
                           {
                             type: 'text',
-                            value: 'Line 2'
-                          }
-                        ]
+                            value: 'Line 2',
+                          },
+                        ],
                       },
                       {
                         type: 'paragraph',
                         children: [
                           {
                             type: 'text',
-                            value: 'Line 3'
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          } as Table
-        ]
+                            value: 'Line 3',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          } as Table,
+        ],
       };
 
       const serialized = mdxishMdastToMd(mdast);
@@ -300,13 +310,19 @@ describe('mdxishMdastToMd', () => {
                 type: 'tableRow',
                 children: [
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Name' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Items' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Items' }] }],
+                  },
                 ],
               },
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'groceries' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'groceries' }] }],
+                  },
                   {
                     type: 'tableCell',
                     children: [
@@ -315,8 +331,16 @@ describe('mdxishMdastToMd', () => {
                         ordered: false,
                         spread: false,
                         children: [
-                          { type: 'listItem', spread: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'apples' }] }] },
-                          { type: 'listItem', spread: false, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'bananas' }] }] },
+                          {
+                            type: 'listItem',
+                            spread: false,
+                            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'apples' }] }],
+                          },
+                          {
+                            type: 'listItem',
+                            spread: false,
+                            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'bananas' }] }],
+                          },
                         ],
                       },
                     ],
@@ -390,7 +414,10 @@ describe('mdxishMdastToMd', () => {
                       },
                     ],
                   },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'right' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'right' }] }],
+                  },
                 ],
               },
             ],
@@ -521,7 +548,10 @@ describe('mdxishMdastToMd', () => {
                 type: 'tableRow',
                 children: [
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Key' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }],
+                  },
                 ],
               },
               {
@@ -687,7 +717,10 @@ describe('mdxishMdastToMd', () => {
                       },
                     ],
                   },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'plain' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'plain' }] }],
+                  },
                 ],
               },
             ],
@@ -714,8 +747,14 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Header' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Content' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Header' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Content' }] }],
+                  },
                 ],
               },
               {
@@ -753,7 +792,10 @@ describe('mdxishMdastToMd', () => {
                 type: 'tableRow',
                 children: [
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Lang' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Example' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Example' }] }],
+                  },
                 ],
               },
               {
@@ -765,9 +807,7 @@ describe('mdxishMdastToMd', () => {
                     children: [
                       {
                         type: 'code-tabs',
-                        children: [
-                          { type: 'code', lang: 'js', meta: null, value: 'console.log("hi")' },
-                        ],
+                        children: [{ type: 'code', lang: 'js', meta: null, value: 'console.log("hi")' }],
                       } as unknown as MdastRoot['children'][number],
                     ],
                   },
@@ -821,8 +861,14 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Image' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Image' }] }],
+                  },
                 ],
               },
               {
@@ -861,7 +907,10 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Column' }] }],
+                  },
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'HTML' }] }] },
                 ],
               },
@@ -961,7 +1010,10 @@ describe('mdxishMdastToMd', () => {
                       },
                     ],
                   },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }],
+                  },
                 ],
               },
               {
@@ -999,7 +1051,10 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Alice' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Alice' }] }],
+                  },
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '30' }] }] },
                 ],
               },
@@ -1077,7 +1132,13 @@ describe('mdxishMdastToMd', () => {
 
     it('keeps a bare list marker placeholder as JSX', () => {
       const mdast = tableWithCellChildren([
-        { type: 'list', ordered: false, start: null, spread: false, children: [{ type: 'listItem', spread: false, checked: null, children: [] }] },
+        {
+          type: 'list',
+          ordered: false,
+          start: null,
+          spread: false,
+          children: [{ type: 'listItem', spread: false, checked: null, children: [] }],
+        },
       ]);
 
       expect(mdxishMdastToMd(mdast)).toContain('<Table');
@@ -1091,7 +1152,12 @@ describe('mdxishMdastToMd', () => {
           start: null,
           spread: false,
           children: [
-            { type: 'listItem', spread: false, checked: null, children: [{ type: 'paragraph', children: [{ type: 'text', value: 'yes' }] }] },
+            {
+              type: 'listItem',
+              spread: false,
+              checked: null,
+              children: [{ type: 'paragraph', children: [{ type: 'text', value: 'yes' }] }],
+            },
           ],
         },
       ]);
@@ -1146,15 +1212,27 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Category' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Category' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Value' }] }],
+                  },
                 ],
               },
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'pay_schedule_transition' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'entity_type' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'pay_schedule_transition' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'entity_type' }] }],
+                  },
                 ],
               },
             ],
@@ -1190,7 +1268,9 @@ describe('mdxishMdastToMd', () => {
     });
 
     it('should not escape underscores that sit inside literal braces', () => {
-      expect(roundTripMdxish('for the %\\{payment_period} pay period.\n', { newEditorTypes: true })).not.toContain('\\_');
+      expect(roundTripMdxish('for the %\\{payment_period} pay period.\n', { newEditorTypes: true })).not.toContain(
+        '\\_',
+      );
     });
 
     it('should not escape the braces of a readme-variable expression', () => {
@@ -1208,15 +1288,24 @@ describe('mdxishMdastToMd', () => {
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Title' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Title' }] }],
+                  },
                   { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Vars' }] }] },
                 ],
               },
               {
                 type: 'tableRow',
                 children: [
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Run payroll%{label' }] }] },
-                  { type: 'tableCell', children: [{ type: 'paragraph', children: [{ type: 'text', value: '{label}' }] }] },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Run payroll%{label' }] }],
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ type: 'text', value: '{label}' }] }],
+                  },
                 ],
               },
             ],
@@ -1382,7 +1471,9 @@ Final plain paragraph at end of file.
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toBe('<Anchor label="example" target="_blank" href="https://example.com" title="Example Site">example</Anchor>\n');
+    expect(result).toBe(
+      '<Anchor label="example" target="_blank" href="https://example.com" title="Example Site">example</Anchor>\n',
+    );
   });
 
   it('should handle multiple anchor nodes in the same paragraph', () => {
@@ -1415,7 +1506,9 @@ Final plain paragraph at end of file.
     };
 
     const result = mdxishMdastToMd(mdast);
-    expect(result).toBe('<Anchor target="_blank" href="https://one.com">one</Anchor> and <Anchor target="_blank" href="https://two.com">two</Anchor>\n');
+    expect(result).toBe(
+      '<Anchor target="_blank" href="https://one.com">one</Anchor> and <Anchor target="_blank" href="https://two.com">two</Anchor>\n',
+    );
   });
 
   it('should convert gfm checklist nodes and retain checkboxes that have no text after them', () => {
@@ -1590,5 +1683,160 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
   </Callout>
 </Callout>
 `);
+  });
+});
+
+describe('mdxishMdastToMd bullet marker preservation', () => {
+  const item = (text: string, nested?: List) =>
+    ({
+      type: 'listItem',
+      spread: false,
+      children: [{ type: 'paragraph', children: [{ type: 'text', value: text }] }, ...(nested ? [nested] : [])],
+    }) satisfies ListItem;
+
+  const list = (children: ListItem[], marker?: ListMarker) =>
+    ({ type: 'list', ordered: false, spread: false, marker, children }) satisfies ListWithMarker;
+
+  it('serializes a list with a stamped `*` marker using `*`', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n* b\n');
+  });
+
+  it('serializes a list with a stamped `+` marker using `+`', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a'), item('b')], '+')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('+ a\n+ b\n');
+  });
+
+  it('falls back to the default `-` marker when no marker is stamped', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a')])] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('- a\n');
+  });
+
+  it('does not leak a stamped marker into a following unstamped list', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        list([item('a')], '*'),
+        { type: 'paragraph', children: [{ type: 'text', value: 'x' }] },
+        list([item('b')]),
+      ],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n\nx\n\n- b\n');
+  });
+
+  it('lets a nested unstamped list inherit the parent marker', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a', list([item('b')]))], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  * b\n');
+  });
+
+  it('inherits from the nearest stamped ancestor, not the outermost', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', list([item('b', list([item('c')]))], '+'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  + b\n    + c\n');
+  });
+
+  it('serializes a nested list with their own bullet marker', () => {
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a', list([item('b')], '+'))], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  + b\n');
+  });
+
+  it('ignores an invalid stamped marker', () => {
+    // Cast because 'x' is deliberately outside the ListMarker contract
+    const mdast: MdastRoot = { type: 'root', children: [list([item('a')], 'x' as ListMarker)] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('- a\n');
+  });
+
+  const orderedList = (children: ListItem[], marker?: ListMarker) =>
+    ({ type: 'list', ordered: true, spread: false, marker, children }) satisfies ListWithMarker;
+
+  it('serializes an ordered list with a stamped `)` delimiter using `)`', () => {
+    const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a'), item('b')], ')')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('1) a\n2) b\n');
+  });
+
+  it('falls back to the default `.` delimiter when no delimiter is stamped', () => {
+    const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a')])] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('1. a\n');
+  });
+
+  it('lets a nested unstamped ordered list inherit the parent delimiter', () => {
+    const mdast: MdastRoot = { type: 'root', children: [orderedList([item('a', orderedList([item('b')]))], ')')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('1) a\n   1) b\n');
+  });
+
+  it('serializes a task list with a stamped `*` marker using `*`', () => {
+    const task: ListItem = { ...item('a'), checked: false };
+    const mdast: MdastRoot = { type: 'root', children: [list([task], '*')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* [ ] a\n');
+  });
+
+  it('keeps the checkbox on an ordered task list with a stamped `)` delimiter', () => {
+    const task: ListItem = { ...item('a'), checked: false };
+    const mdast: MdastRoot = { type: 'root', children: [orderedList([task], ')')] };
+
+    expect(mdxishMdastToMd(mdast)).toBe('1) [ ] a\n');
+  });
+
+  it('keeps each stamped marker across three levels of nesting', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', list([item('b', list([item('c')], '-'))], '+'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  + b\n    - c\n');
+  });
+
+  it('keeps stamped markers when ordered and unordered levels interleave', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [list([item('a', orderedList([item('b', list([item('c')], '+'))], ')'))], '*')],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('* a\n  1) b\n     + c\n');
+  });
+
+  it('keeps a stamped marker on a list inside a callout', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: NodeTypes.callout,
+          data: { hName: 'Callout', hProperties: { icon: '📘', theme: 'info', empty: true } },
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: '' }] }, list([item('a'), item('b')], '*')],
+        } as RootContent,
+      ],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('<Callout icon="📘" theme="info">\n  * a\n  * b\n</Callout>\n');
+  });
+
+  it('keeps a stamped delimiter on a list inside a JSX component', () => {
+    const mdast: MdastRoot = {
+      type: 'root',
+      children: [
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Accordion',
+          attributes: [{ type: 'mdxJsxAttribute', name: 'title', value: 'More' }],
+          children: [orderedList([item('a'), item('b')], ')')],
+        },
+      ],
+    };
+
+    expect(mdxishMdastToMd(mdast)).toBe('<Accordion title="More">\n  1) a\n  2) b\n</Accordion>\n');
   });
 });

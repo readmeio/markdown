@@ -3,9 +3,12 @@ import type { Info, State } from 'mdast-util-to-markdown';
 
 import { defaultHandlers } from 'mdast-util-to-markdown';
 
-// Matches '*', '-', '+', '1.', '2.', '3.', etc. followed by a newline or 1-3 spaces
-// to be replaced with the marker and a space like `- [ ]`
-const listMarkerRegex = /^(?:[*+-]|\d+\.)(?:([\r\n]| {1,3})|$)/;
+// Matches '*', '-', '+', '1.', '1)', etc. followed by a newline or 1-3 spaces
+// to be replaced with the marker and a space like `- [ ]`. The ')' delimiter is
+// reachable because the list handler honors stamped markers (see ListWithMarker
+// in ./list.ts); without it here, checkbox injection below silently no-ops for
+// ordered ')' task lists.
+const listMarkerRegex = /^(?:[*+-]|\d+[.)])(?:([\r\n]| {1,3})|$)/;
 
 /**
  * List-item serializer intended for checklist items
