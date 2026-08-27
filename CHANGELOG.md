@@ -1,6 +1,16 @@
 Changelog
 ===
 
+## Version 15.2.0
+### ✨ New & Improved
+
+* preserve per-list bullet markers in mdxishMdastToMd ([#1595](https://github.com/readmeio/markdown/issues/1595)) ([2a453bd](https://github.com/readmeio/markdown/commit/2a453bd9adfe91f6c93a21b25eda31fc7906ddde))
+
+### 🛠 Fixes & Updates
+
+* **deps:** patch Dependabot security vulnerabilities ([#1600](https://github.com/readmeio/markdown/issues/1600)) ([14fbea0](https://github.com/readmeio/markdown/commit/14fbea010bc74baca2ecee630595b04bbcb82a2a))
+* **mdxish:** repair mistaken table closers ([#1597](https://github.com/readmeio/markdown/issues/1597)) ([c82dfec](https://github.com/readmeio/markdown/commit/c82dfec92041fbff1bcba30a4ceeb98b5ca64118))
+
 ## Version 15.1.0
 ### ✨ New & Improved
 
