@@ -1,0 +1,9 @@
+.Icon-emoji {
+  // Apple Color Emoji paints about 4:3 larger in Safari than Chromium.
+  // Use WebKit's Apple-specific system-font support to avoid browser sniffing.
+  @supports (hanging-punctuation: first) and (font: -apple-system-body) and (-webkit-appearance: none) {
+    display: inline-block;
+    transform: scale(0.79);
+    transform-origin: center;
+  }
+}

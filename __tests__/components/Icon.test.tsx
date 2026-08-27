@@ -5,8 +5,13 @@ import React from 'react';
 import { expect } from 'vitest';
 
 import Icon from '../../components/Icon';
+import { Icon as ExportedIcon } from '../../index';
 
 describe('Icon', () => {
+  it('is available as a direct public export without joining the component registry', () => {
+    expect(ExportedIcon).toBe(Icon);
+  });
+
   describe('Font Awesome icons', () => {
     it('renders an <i> for a bare fa- icon with the fa-duotone fa-solid fallback', () => {
       const { container } = render(<Icon className="Test-icon" icon="fa-book" />);
@@ -53,7 +58,13 @@ describe('Icon', () => {
       const { container } = render(<Icon className="Test-icon" icon="🚀" />);
       const icon = container.querySelector('span.Test-icon');
       expect(icon).toBeInTheDocument();
+      expect(icon).toHaveClass('Icon-emoji');
       expect(icon).toHaveTextContent('🚀');
+    });
+
+    it('renders an emoji without requiring a caller class', () => {
+      const { container } = render(<Icon icon="🚀" />);
+      expect(container.querySelector('span.Icon-emoji')).toHaveTextContent('🚀');
     });
 
     it('does not render an <i> for an emoji', () => {
