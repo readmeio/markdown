@@ -14,6 +14,7 @@ import { unified } from 'unified';
 import { VFile } from 'vfile';
 
 import { mdxishCompilers } from '../processor/compile';
+import { DEFAULT_BULLET } from '../processor/compile/list';
 import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-table-cell-paragraphs';
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
@@ -99,10 +100,7 @@ const defaultTransformers: PluggableList = [
  * 7. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
  * 8. Replace snake_case component names with parser-safe placeholders
  */
-function preprocessContent(
-  content: string,
-  opts: { knownComponents: Set<string> },
-) {
+function preprocessContent(content: string, opts: { knownComponents: Set<string> }) {
   const { knownComponents } = opts;
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
@@ -122,12 +120,7 @@ function preprocessContent(
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const {
-    components: userComponents = {},
-    newEditorTypes = false,
-    safeMode = false,
-    useTailwind,
-  } = opts;
+  const { components: userComponents = {}, newEditorTypes = false, safeMode = false, useTailwind } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -203,7 +196,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
     .use(remarkStringify, {
-      bullet: '-',
+      bullet: DEFAULT_BULLET,
       emphasis: '_',
       // Escape literal braces in text so they don't parse as (often
       // unterminated) MDX expressions on the next round trip.

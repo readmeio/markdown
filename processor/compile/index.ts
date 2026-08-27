@@ -9,6 +9,7 @@ import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
+import list from './list';
 import listItem from './list-item';
 import plain from './plain';
 import text from './text';
@@ -37,6 +38,7 @@ function compilers(this: Processor, mdxish = false) {
 
     // needed only for mdxish
     ...(mdxish && { [NodeTypes.anchor]: anchor }),
+    ...(mdxish && { list }),
     ...(mdxish && { listItem }),
     ...(mdxish && { text }),
     ...(mdxish && { [NodeTypes.variable]: variable }),

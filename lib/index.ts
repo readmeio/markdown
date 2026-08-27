@@ -11,6 +11,7 @@ export { default as mdastV6 } from './mdastV6';
 export { default as mdx } from './mdx';
 export { default as mix } from './mix';
 export { default as mdxish, mdxishAstProcessor, mdxishMdastToMd } from './mdxish';
+export type { ListMarker, ListWithMarker } from '../processor/compile/list';
 export type { MdxishOpts } from './mdxish';
 export { default as extractToc } from './extractToc';
 export { default as migrate } from './migrate';
