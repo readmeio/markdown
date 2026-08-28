@@ -66,6 +66,12 @@ import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-cod
 
 export interface MdxishOpts {
   components?: CustomComponents;
+  /**
+   * Whether a single newline renders as a `<br>`. Defaults to `true`, matching legacy rdmd.
+   * Turn it off for CommonMark semantics, where only a blank line breaks — what content
+   * soft-wrapped to a line-length limit (OpenAPI descriptions, linted markdown) expects.
+   */
+  hardBreaks?: boolean;
   newEditorTypes?: boolean;
   /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
@@ -217,7 +223,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, safeMode = false, variables } = opts;
+  const { components: userComponents = {}, hardBreaks: enableHardBreaks = true, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -233,7 +239,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
-    .use(hardBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
+    .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
