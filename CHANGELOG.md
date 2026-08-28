@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.2.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** anchor serialization throwing when there are readme node children ([#1601](https://github.com/readmeio/markdown/issues/1601)) ([635ca8f](https://github.com/readmeio/markdown/commit/635ca8fe4c6dadb8fe14bbe25fea32759063abb4))
+
 ## Version 15.2.0
 ### ✨ New & Improved
 
