@@ -23,6 +23,7 @@ import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
+import mdxishAnchorToJsx from '../processor/transform/mdxish/anchor-to-jsx';
 import mdxishCalloutToJsx from '../processor/transform/mdxish/callout-to-jsx';
 import { closeSelfClosingHtmlTags } from '../processor/transform/mdxish/close-self-closing-html-tags';
 import { collapseForeignContentBlankLines } from '../processor/transform/mdxish/collapse-foreign-content-blank-lines';
@@ -193,6 +194,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(remarkGfm)
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
+    .use(mdxishAnchorToJsx)
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
     .use(remarkStringify, {

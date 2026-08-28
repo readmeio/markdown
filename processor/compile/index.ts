@@ -2,7 +2,6 @@ import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
 
-import anchor from './anchor';
 import callout from './callout';
 import codeTabs from './code-tabs';
 import compatibility from './compatibility';
@@ -37,7 +36,6 @@ function compilers(this: Processor, mdxish = false) {
     yaml: compatibility,
 
     // needed only for mdxish
-    ...(mdxish && { [NodeTypes.anchor]: anchor }),
     ...(mdxish && { list }),
     ...(mdxish && { listItem }),
     ...(mdxish && { text }),
