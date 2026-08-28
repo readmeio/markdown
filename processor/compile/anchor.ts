@@ -1,11 +1,10 @@
 import type { Anchor } from '../../types';
-import type { Nodes } from 'mdast';
-
-import { toMarkdown } from 'mdast-util-to-markdown';
+import type { Parents } from 'mdast';
+import type { Handle, Info, State } from 'mdast-util-to-markdown';
 
 import { formatProps, getHProps } from '../utils';
 
-const anchor = (node: Anchor) => {
+const anchor = ((node: Anchor, _parent: Parents | undefined, state: State, info: Info) => {
   const { href, label, target, title } = getHProps<Anchor['data']['hProperties']>(node);
 
   const attrs = {
@@ -15,14 +14,16 @@ const anchor = (node: Anchor) => {
     ...(title && { title }),
   };
 
-  // Serialize children (phrasing content) back to markdown
-  // Wrap in paragraph to satisfy RootContent type requirement
-  const children = toMarkdown({
-    type: 'paragraph',
-    children: node.children,
-  }).trim();
+  const openingTag = `<Anchor ${formatProps(attrs)}>`;
 
-  return `<Anchor ${formatProps(attrs)}>${children}</Anchor>`;
-};
+  // Serialize the label through the caller's state so readme nodes (variables,
+  // emoji, glossary) reach their handlers instead of throwing as unknown.
+  const tracker = state.createTracker(info);
+  tracker.move(openingTag);
+  const children = tracker.move(state.containerPhrasing(node, { after: '<', before: '>', ...tracker.current() }));
+  tracker.move('</Anchor>');
+
+  return `${openingTag}${children}</Anchor>`;
+}) satisfies Handle;
 
 export default anchor;
