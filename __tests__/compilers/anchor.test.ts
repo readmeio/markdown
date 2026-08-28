@@ -61,6 +61,12 @@ describe('mdxish anchor compiler', () => {
         '<Anchor target="_blank" href="https://one.com">one</Anchor> and <Anchor target="_blank" href="https://two.com">two</Anchor>\n',
       );
     });
+
+    it('should serialize an anchor with no label as self-closing', () => {
+      const mdast = paragraph([anchorNode({ href: 'https://example.com' }, [])]);
+
+      expect(mdxishMdastToMd(mdast)).toBe('<Anchor href="https://example.com" />\n');
+    });
   });
 
   describe('labels', () => {
@@ -146,6 +152,14 @@ describe('mdxish anchor compiler', () => {
         'Read the <Anchor target="_blank" href="https://example.com">  {user.company} docs  </Anchor> now.\n',
       );
       expect(roundTripMdxish(once, { newEditorTypes: true })).toBe(once);
+    });
+
+    it('should keep a table holding an anchor promoted to JSX', () => {
+      const md = '| a | b |\n| :- | :- |\n| <Anchor href="https://example.com">{user.company}</Anchor> | y |\n';
+
+      expect(roundTripMdxish(md, { newEditorTypes: true })).toContain(
+        '<td>\n        <Anchor href="https://example.com">{user.company}</Anchor>\n      </td>',
+      );
     });
 
     it('should round-trip a variable in a label nested in a callout', () => {
