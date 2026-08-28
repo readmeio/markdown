@@ -4,14 +4,14 @@ import { findAllElementsByTagName } from '../../helpers';
 // Shape lifted from a real OpenAPI `description`: prose soft-wrapped to a line-length
 // limit, paragraphs separated by a blank line, and a single trailing space left on most
 // lines (two would be an intentional markdown hard break; one is a wrap artifact).
-const SOFT_WRAPPED = [
+const SOFT_WRAPPED = ([
   'Enrich Contacts can be used to retrieve detailed information about up to 25 records. ',
   'Best practice is to first use Search Contacts to identify the records you want to ',
   'enrich, and then use the Contact IDs as the input.',
   '',
   'Once you have indicated which records you want to enrich, you must then select which ',
   'fields you want to return using the `outputFields` list.',
-].join('\n');
+] as const).join('\n');
 
 describe('hardBreaks', () => {
   it('breaks on every newline by default, matching legacy rdmd', () => {
