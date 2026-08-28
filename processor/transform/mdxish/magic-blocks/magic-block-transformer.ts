@@ -114,14 +114,20 @@ const preprocessBody = (text: string): string => {
 
 const bodyExtensions = mdxishExtensions(FEATURES.magicBlockBody);
 
-/** Markdown parser */
-const contentParser = unified()
-  .data('micromarkExtensions', bodyExtensions.micromarkExtensions)
-  .data('fromMarkdownExtensions', bodyExtensions.fromMarkdownExtensions)
-  .use(remarkParse)
-  .use(hardBreaks)
-  .use(remarkGfm)
-  .use(normalizeEmphasisAST);
+/** Markdown parser. Both variants are hoisted so neither is rebuilt per block. */
+const buildContentParser = (useHardBreaks: boolean) =>
+  unified()
+    .data('micromarkExtensions', bodyExtensions.micromarkExtensions)
+    .data('fromMarkdownExtensions', bodyExtensions.fromMarkdownExtensions)
+    .use(remarkParse)
+    .use(useHardBreaks ? hardBreaks : undefined)
+    .use(remarkGfm)
+    .use(normalizeEmphasisAST);
+
+const contentParser = buildContentParser(true);
+const softBreakContentParser = buildContentParser(false);
+
+const contentParserFor = (useHardBreaks: boolean) => (useHardBreaks ? contentParser : softBreakContentParser);
 
 /**
  * Markdown to HTML processor (mdast → hast → HTML string).
@@ -257,7 +263,7 @@ const escapeLeadingListMarkers = (text: string): string =>
  * so `<ul><li>_text_</li></ul>` won't convert underscores to emphasis.
  * We parse first, then visit html nodes and process their text content.
  */
-const parseTableCell = (text: string): MdastNode[] => {
+const parseTableCell = (text: string, useHardBreaks = true): MdastNode[] => {
   if (!text.trim()) return [{ type: 'text', value: '' }];
 
   // Convert \n (and surrounding whitespace) to <br> inside HTML blocks so
@@ -267,7 +273,8 @@ const parseTableCell = (text: string): MdastNode[] => {
     .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
   const processed = escapeLeadingListMarkers(normalized);
-  const tree = contentParser.runSync(contentParser.parse(processed)) as MdastRoot;
+  const parser = contentParserFor(useHardBreaks);
+  const tree = parser.runSync(parser.parse(processed)) as MdastRoot;
 
   // Process markdown inside HTML blocks that have non-tag inner text (e.g. `<div>**x**`
   // or `<ul><li>_x_</li></ul>`). Pure bare tags like "<i>" or "<br>" are left for rehypeRaw
@@ -290,9 +297,10 @@ const parseTableCell = (text: string): MdastNode[] => {
   return result;
 };
 
-const parseBlock = (text: string): MdastNode[] => {
+const parseBlock = (text: string, useHardBreaks = true): MdastNode[] => {
   if (!text.trim()) return textToBlock('');
-  const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  const parser = contentParserFor(useHardBreaks);
+  const tree = parser.runSync(parser.parse(text)) as MdastRoot;
   return tree.children as MdastNode[];
 };
 
@@ -328,7 +336,7 @@ function transformMagicBlock(
   rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
-  const { compatibilityMode = false, safeMode = false } = options;
+  const { compatibilityMode = false, hardBreaks: useHardBreaks = true, safeMode = false } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
   // This allows the editor to show appropriate placeholder UI instead of nothing
@@ -424,7 +432,7 @@ function transformMagicBlock(
         ? {
             children: [
               block,
-              { children: parseBlock(imgData.caption), data: { hName: 'figcaption' }, type: 'figcaption' },
+              { children: parseBlock(imgData.caption, useHardBreaks), data: { hName: 'figcaption' }, type: 'figcaption' },
             ],
             data: { hName: 'figure' },
             type: 'figure',
@@ -459,7 +467,7 @@ function transformMagicBlock(
       const children: MdastNode[] = [];
 
       if (hasTitle) {
-        const titleBlocks = parseBlock(calloutJson.title || '');
+        const titleBlocks = parseBlock(calloutJson.title || '', useHardBreaks);
         if (titleBlocks.length > 0 && titleBlocks[0].type === 'paragraph') {
           const firstTitle = titleBlocks[0] as { children?: MdastNode[] };
           const heading = {
@@ -483,7 +491,7 @@ function transformMagicBlock(
       }
 
       if (hasBody) {
-        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''));
+        const bodyBlocks = parseBlock(preprocessBody(calloutJson.body || ''), useHardBreaks);
         children.push(...bodyBlocks);
       }
 
@@ -521,7 +529,7 @@ function transformMagicBlock(
 
       const tokenizeCell = compatibilityMode
         ? textToBlock
-        : parseTableCell;
+        : (text: string) => parseTableCell(text, useHardBreaks);
       const tableChildren = Array.from({ length: rows + 1 }, (_, y) => ({
         children: Array.from({ length: cols }, (__, x) => ({
           children: sparseData[y]?.[x] ? tokenizeCell(preprocessBody(sparseData[y][x])) : [{ type: 'text', value: '' }],

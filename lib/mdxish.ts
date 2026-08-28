@@ -127,7 +127,13 @@ function preprocessContent(content: string, opts: { knownComponents: Set<string>
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const { components: userComponents = {}, newEditorTypes = false, safeMode = false, useTailwind } = opts;
+  const {
+    components: userComponents = {},
+    hardBreaks: enableHardBreaks = true,
+    newEditorTypes = false,
+    safeMode = false,
+    useTailwind,
+  } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -162,7 +168,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies
     // (e.g. code/image/embed inside <Tabs>) get visited too
-    .use(magicBlockTransformer)
+    .use(magicBlockTransformer, { hardBreaks: enableHardBreaks })
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
