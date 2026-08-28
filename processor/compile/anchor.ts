@@ -20,8 +20,7 @@ const anchor = ((node: Anchor, _parent: Parents | undefined, state: State, info:
   // emoji, glossary) reach their handlers instead of throwing as unknown.
   const tracker = state.createTracker(info);
   tracker.move(openingTag);
-  const children = tracker.move(state.containerPhrasing(node, { after: '<', before: '>', ...tracker.current() }));
-  tracker.move('</Anchor>');
+  const children = state.containerPhrasing(node, { ...tracker.current(), after: '<', before: '>' });
 
   return `${openingTag}${children}</Anchor>`;
 }) satisfies Handle;

@@ -17,10 +17,9 @@ const paragraph = (children: PhrasingContent[]): MdastRoot => ({
 });
 
 /** The attributes the editor stamps on a link opened in a new tab. */
-const newTab = { href: 'https://example.com', target: '_blank' };
+const newTab = { href: 'https://example.com', target: '_blank' } as const;
 
-// Currently the compiler is only used for mdxish, so we just use 
-// mdxish engines
+// The anchor handler is only registered for mdxish, so there's no mdx fork here.
 describe('mdxish anchor compiler', () => {
   describe('attributes', () => {
     it('should serialize a readme-anchor node as <Anchor> JSX', () => {
@@ -137,7 +136,8 @@ describe('mdxish anchor compiler', () => {
     });
 
     it('should round-trip a variable in a loosely formatted label', () => {
-      const md = 'Read the <Anchor  href="https://example.com"   target="_blank" >  {user.company} docs  </Anchor> now.\n';
+      const md =
+        'Read the <Anchor  href="https://example.com"   target="_blank" >  {user.company} docs  </Anchor> now.\n';
 
       const once = roundTripMdxish(md, { newEditorTypes: true });
 
