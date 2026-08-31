@@ -4,8 +4,13 @@ export const HTML_TAG_RE = /<\/?([a-zA-Z][a-zA-Z0-9-]*)((?:[^>"']*(?:"[^"]*"|'[^
 /** Matches an HTML element from its opening tag to the matching closing tag. */
 export const HTML_ELEMENT_BLOCK_RE = /<([a-zA-Z][a-zA-Z0-9-]*)[\s>][\s\S]*?<\/\1>/g;
 
+export const NEWLINE_RE = /\n/g;
+
 /** Matches a newline with surrounding horizontal whitespace. */
 export const NEWLINE_WITH_WHITESPACE_RE = /[^\S\n]*\n[^\S\n]*/g;
+
+/** Matches a run of two or more newlines (a blank line) with surrounding horizontal whitespace. */
+export const BLANK_LINE_RE = /[^\S\n]*\n(?:[^\S\n]*\n)+[^\S\n]*/g;
 
 /** Matches a closing block-level tag followed by non-tag text or by a newline then non-blank content. */
 export const CLOSE_BLOCK_TAG_BOUNDARY_RE = /<\/([a-zA-Z][a-zA-Z0-9-]*)>\s*(?:(?!<)(\S)|\n([^\n]))/g;
