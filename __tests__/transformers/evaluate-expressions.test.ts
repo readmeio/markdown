@@ -1,3 +1,7 @@
+import type { RMDXModule } from '../../types';
+
+import React from 'react';
+
 import { mix } from '../../lib';
 
 describe('evaluateExpressions', () => {
@@ -69,5 +73,73 @@ describe('evaluateExpressions', () => {
     const content = 'Hello {nonexistent}!';
     const html = mix(content);
     expect(html).toContain('{nonexistent}');
+  });
+
+  describe('component and variable scope', () => {
+    const asModule = (Component: React.ComponentType): RMDXModule =>
+      ({ default: Component, Toc: null, toc: [] }) as unknown as RMDXModule;
+
+    const variables = { user: { name: 'Dee', apps: [{ client_id: '1', name: 'Widgets' }] }, defaults: [] };
+
+    it('should render a built-in component referenced inside an expression', () => {
+      const html = mix('{true ? <Callout theme="info">yes</Callout> : null}');
+
+      expect(html).toContain('callout_info');
+      expect(html).toContain('yes');
+      expect(html).not.toContain('{true ?');
+    });
+
+    it('should render components returned from an iterator', () => {
+      const html = mix('{[1, 2].map(i => <Callout theme="info" key={i}>{i}</Callout>)}');
+
+      expect(html.match(/callout_info/g)).toHaveLength(2);
+      expect(html).not.toContain('.map(');
+    });
+
+    it('should render a caller-supplied component inside an expression', () => {
+      const Block = () => React.createElement('span', { className: 'custom-block' }, 'custom');
+      const html = mix('{<MyBlock />}', { components: { MyBlock: asModule(Block) } });
+
+      expect(html).toContain('custom-block');
+      expect(html).not.toContain('{<MyBlock />}');
+    });
+
+    it('should bind a snake_case component under its PascalCase name', () => {
+      const Block = () => React.createElement('span', { className: 'custom-block' }, 'custom');
+      const html = mix('{<MyBlock />}', { components: { my_block: asModule(Block) } });
+
+      expect(html).toContain('custom-block');
+    });
+
+    it('should expose the user variables object to expressions', () => {
+      const html = mix('{user.apps.map(app => <Callout theme="info" key={app.name}>{app.name}</Callout>)}', {
+        variables,
+      });
+
+      expect(html).toContain('Widgets');
+      expect(html).toContain('callout_info');
+    });
+
+    it('should keep expressions literal when no variables are supplied', () => {
+      const html = mix('{user.apps.length}');
+
+      expect(html).toContain('{user.apps.length}');
+    });
+
+    it('should keep expressions literal in safeMode', () => {
+      const html = mix('{true ? <Callout theme="info">yes</Callout> : null}', { safeMode: true });
+
+      expect(html).toContain('{true ?');
+      expect(html).not.toContain('callout_info');
+    });
+
+    it('should ignore component names that are not valid JS identifiers', () => {
+      // Every scope key becomes a `new Function` parameter, so an unbindable name must be
+      // skipped rather than turned into a syntax error for every expression on the page.
+      const Block = () => React.createElement('span', null, 'custom');
+      const html = mix('{1 + 1}', { components: { 'my-block': asModule(Block) } });
+
+      expect(html).toContain('2');
+    });
   });
 });
