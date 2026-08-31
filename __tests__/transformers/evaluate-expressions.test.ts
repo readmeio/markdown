@@ -150,6 +150,16 @@ describe('evaluateExpressions', () => {
       expect(html).toContain('Anon!');
     });
 
+    it('should resolve a component whose registered key differs only in casing', () => {
+      // `getComponentName` matches case-insensitively, so `<MyComponent/>` finds `mycomponent`
+      // as a plain tag; an expression has to reach the same component.
+      const Block = () => React.createElement('span', { className: 'custom-block' }, 'custom');
+      const html = mix('{<MyComponent />}', { components: { mycomponent: asModule(Block) } });
+
+      expect(html).toContain('custom-block');
+      expect(html).not.toContain('{<MyComponent />}');
+    });
+
     it('should ignore component names that are not valid JS identifiers', () => {
       // Every scope key becomes a `new Function` parameter, so an unbindable name must be
       // skipped rather than turned into a syntax error for every expression on the page.

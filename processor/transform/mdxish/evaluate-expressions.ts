@@ -9,7 +9,7 @@ import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
-import { toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
+import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
 import User from '../../../utils/user';
 
 import { reactElementToHast } from './react-element-to-hast';
@@ -20,20 +20,16 @@ interface Options {
 }
 
 /**
- * JSX only compiles a *capitalized* tag to a variable reference (`<Callout/>` becomes
- * `React.createElement(Callout)`), so those are the only component names an expression can fail
- * to resolve; a lowercase tag becomes a string type and is matched against the components hash
- * later by `rehypeMdxishComponents`. Binding only capitalized names also keeps reserved words
- * (`default`, `class`) out of the scope, which matters because `evaluate` passes every scope key
- * as a `new Function` parameter — one invalid identifier is a syntax error for the whole page.
+ * Only capitalized tags compile to a variable reference; a lowercase one becomes a string and is
+ * matched later by `rehypeMdxishComponents`. Also keeps reserved words out of the scope, since
+ * `evaluate` passes every key as a `new Function` parameter and one bad name breaks every
+ * expression on the page.
  */
 const COMPONENT_IDENTIFIER = /^[A-Z][A-Za-z0-9_$]*$/;
 
 /**
- * Bind the components hash to the identifiers an author writes in JSX. Without this a
- * component inside `{...}` is an unresolved reference, the evaluation throws, and the
- * expression falls back to literal text. snake_case keys are bound under their PascalCase
- * form too, mirroring how `getComponentName` resolves tag names.
+ * Bind components to the identifiers an author writes in JSX; without this a component inside
+ * `{...}` is unresolved and the expression falls back to literal text.
  */
 const componentScope = (components: CustomComponents = {}): Record<string, unknown> => {
   const exact: Record<string, unknown> = {};
@@ -49,10 +45,34 @@ const componentScope = (components: CustomComponents = {}): Record<string, unkno
     if (pascalCase !== name && COMPONENT_IDENTIFIER.test(pascalCase)) aliases[pascalCase] = Component;
   });
 
-  // An exact key outranks a name another key normalizes onto, matching `getComponentName`'s
-  // match priority. Without this a caller-supplied `code_tabs` would claim `CodeTabs` and
-  // `{<CodeTabs/>}` would render a different component than a plain `<CodeTabs/>`.
+  // Exact keys outrank normalized ones, matching `getComponentName`'s priority — otherwise a
+  // caller's `code_tabs` claims `CodeTabs` and shadows the built-in.
   return { ...aliases, ...exact };
+};
+
+const CAPITALIZED_IDENTIFIER = /\b[A-Z][A-Za-z0-9_$]*\b/g;
+
+/**
+ * Resolve names the keyed bindings missed. Keys can't cover case-insensitive matches — the map
+ * holds `mycomponent` while the author writes `<MyComponent/>` — so defer to `getComponentName`,
+ * keeping expressions in step with the plain-tag path.
+ */
+const resolveByComponentName = (
+  expression: string,
+  scope: Record<string, unknown>,
+  components: CustomComponents,
+): Record<string, unknown> => {
+  const resolved: Record<string, unknown> = {};
+
+  Array.from(expression.matchAll(CAPITALIZED_IDENTIFIER), match => match[0]).forEach(name => {
+    if (name in scope || name in resolved) return;
+
+    const key = getComponentName(name, components);
+    const Component = key ? components[key]?.default : undefined;
+    if (typeof Component === 'function') resolved[name] = Component;
+  });
+
+  return Object.keys(resolved).length ? { ...scope, ...resolved } : scope;
 };
 
 /**
@@ -86,13 +106,11 @@ const evaluateExpressions: Plugin<[Options?], Root> =
   (tree, file: VFile) => {
     const scope: Record<string, unknown> = {
       ...componentScope(components),
-      // `User` applies the same defaults-then-uppercase fallback the MDX path binds in
-      // `run.tsx`, so a missing property resolves identically on both engines. Only bound when
-      // the caller supplied variables at all: the proxy never throws, so binding it
-      // unconditionally would resolve `user.*` on surfaces that render without variables
-      // instead of leaving the expression as literal text.
+      // `User` matches the fallback the MDX path binds in `run.tsx`. Only when variables were
+      // supplied: the proxy never throws, so an unconditional bind would resolve `user.*` on
+      // surfaces that render without them instead of leaving literal text.
       ...(variables ? { user: User(variables) } : {}),
-      // In-document exports win over both, matching the precedence `renderMdxish` applies.
+      // In-document exports win, matching `renderMdxish`.
       ...file.data.mdxishScope,
       React,
     };
@@ -106,7 +124,7 @@ const evaluateExpressions: Plugin<[Options?], Root> =
       if (!expression) return;
 
       try {
-        const result = evalExpression(expression, scope);
+        const result = evalExpression(expression, resolveByComponentName(expression, scope, components ?? {}));
         if (isRenderable(result)) {
           // Stash hast built straight from the React tree; `mdxExpressionHandler` emits it and it 
           // passes through rehypeRaw/parse5 step later in the pipeline. This ensures that the 
