@@ -142,6 +142,104 @@ exports[`MDX↔MDXish equivalence > convergent 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "CardsGrid",
+      "path": "/div[1]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "attrName": "style",
+      "kind": "attr",
+      "left": "--CardsGrid-cardWidth:200px;--CardsGrid-columns:3",
+      "path": "/div[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "Card Card_card",
+      "path": "/div[1]/div[0]",
+      "right": "CardsGrid",
+      "severity": "structural",
+    },
+    {
+      "attrName": "style",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/div[0]",
+      "right": "--CardsGrid-cardWidth:200px;--CardsGrid-columns:3",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "Card-content",
+      "path": "/div[1]/div[0]/div[0]",
+      "right": "Card Card_card",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "center",
+      "path": "/div[1]/div[0]/div[0]/center[0]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/div[0]/div[1]",
+      "right": "<div class="Card Card_card">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/div[1]/div[0]/div[2]",
+      "right": "<div class="Card Card_card">…(1 children)…</div>",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<div class="Card Card_card">…(1 children)…</div>",
+      "path": "/div[1]/div[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<div class="Card Card_card">…(1 children)…</div>",
+      "path": "/div[1]/div[2]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]/br[5]",
+      "right": "<br>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "object",
+      "path": "/object[6]",
+      "right": "p",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > divergent 1`] = `
 {
   "status": "match",
