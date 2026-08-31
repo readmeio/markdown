@@ -41,15 +41,86 @@ describe('hardBreaks', () => {
     expect(findAllElementsByTagName(ast, 'br')).toHaveLength(1);
   });
 
-  // Magic block bodies are parsed by their own processor, so the option has to reach it too.
-  it.each([
-    ['callout', '[block:callout]{"type":"info","title":"Note","body":"line one\\nline two<br />line three"}[/block]'],
-    ['parameters', '[block:parameters]{"data":{"h-0":"Col","0-0":"line one\\nline two<br />line three"},"cols":1,"rows":1}[/block]'],
-  ])('applies to a %s magic block body', (_name, md) => {
-    const withHardBreaks = mdxish(md);
-    expect(findAllElementsByTagName(withHardBreaks, 'br')).toHaveLength(2);
+  describe('applies line break option inside readme components', () => {
+    it('in callout', () => {
+      const md = `<Callout type="info" title="Note">
+  line one
+  line two
+</Callout>
+      `;
+      const ast = mdxish(md, { hardBreaks: false });
+      expect(findAllElementsByTagName(ast, 'br')).toHaveLength(0);
+    });
 
+    it('in tables', () => {
+      const md = `<Table>
+          <thead>
+            <tr>
+              <th>
+                Name
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                line one
+                line two
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+      `;
+      const ast = mdxish(md, { hardBreaks: false });
+
+      const tableCell = findAllElementsByTagName(ast, 'td')[0];
+      expect(findAllElementsByTagName(tableCell, 'br')).toHaveLength(0);
+    });
+  });
+
+  it('does not affect line breaks in code blocks', () => {
+    const md = '```javascript\nline one\nline two\n```';
+    const ast = mdxish(md, { hardBreaks: false });
+    const code = findAllElementsByTagName(ast, 'code')[0];
+
+    expect(code.properties.value).toBe('line one\nline two');
+  });
+  
+  // HTMLBlocks are left & opaque and no custom processing is applied to their content,
+  // so the option should not affect them.
+  it('does not affect line breaks in HTMLBlock', () => {
+    const content = `<div>
+line one
+line two
+</div>`;
+    const md = `<HTMLBlock>{\`${content}\`}</HTMLBlock>`;
+
+    const withHardBreaks = mdxish(md);
     const withoutHardBreaks = mdxish(md, { hardBreaks: false });
-    expect(findAllElementsByTagName(withoutHardBreaks, 'br')).toHaveLength(1);
+
+    expect(findAllElementsByTagName(withHardBreaks, 'html-block')[0].properties.html).toBe(content);
+    expect(findAllElementsByTagName(withoutHardBreaks, 'html-block')[0].properties.html).toBe(content);
+  });
+
+  // Magic block bodies are parsed by their own processor, so the option has to reach it too.
+  describe('in magic blocks', () => {
+    it.each([
+      ['callout', '[block:callout]{"type":"info","title":"Note","body":"line one\\nline two<br />line three"}[/block]'],
+      ['parameters', '[block:parameters]{"data":{"h-0":"Col","0-0":"line one\\nline two<br />line three"},"cols":1,"rows":1}[/block]'],
+    ])('applies to a %s magic block body', (_name, md) => {
+      const withHardBreaks = mdxish(md);
+      const withoutHardBreaks = mdxish(md, { hardBreaks: false });
+
+      expect(findAllElementsByTagName(withHardBreaks, 'br')).toHaveLength(2);
+      expect(findAllElementsByTagName(withoutHardBreaks, 'br')).toHaveLength(1);
+    });
+
+    it('applies to newline inside html elements in a table cell', () => {
+      const md = '[block:parameters]{"data":{"h-0":"Col","0-0":"<div>line one\\nline two</div>"},"cols":1,"rows":1}[/block]';
+      const ast = mdxish(md, { hardBreaks: false });
+
+      expect(findAllElementsByTagName(ast, 'br')).toHaveLength(0);
+    });
   });
 });

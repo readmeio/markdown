@@ -270,7 +270,7 @@ const parseTableCell = (text: string, useHardBreaks = true): MdastNode[] => {
   // CommonMark doesn't split them on blank lines.
   const escaped = processBackslashEscapes(text);
   const normalized = escaped
-    .replace(HTML_ELEMENT_BLOCK_RE, match => match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>'))
+    .replace(HTML_ELEMENT_BLOCK_RE, match => useHardBreaks ? match.replace(NEWLINE_WITH_WHITESPACE_RE, '<br>') : match)
     .replace(CLOSE_BLOCK_TAG_BOUNDARY_RE, separateBlockTagFromContent);
   const processed = escapeLeadingListMarkers(normalized);
   const parser = contentParserFor(useHardBreaks);
