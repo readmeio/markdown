@@ -19,60 +19,29 @@ interface Options {
   variables?: Variables;
 }
 
-/**
- * Only capitalized tags compile to a variable reference; a lowercase one becomes a string and is
- * matched later by `rehypeMdxishComponents`. Also keeps reserved words out of the scope, since
- * `evaluate` passes every key as a `new Function` parameter and one bad name breaks every
- * expression on the page.
- */
-const COMPONENT_IDENTIFIER = /^[A-Z][A-Za-z0-9_$]*$/;
+/** Names in JSX tag position (`<Foo`, `<Foo.Bar`) — the only identifiers that mean a component. */
+const JSX_TAG = /<\s*([A-Z][A-Za-z0-9_$]*)/g;
 
 /**
- * Bind components to the identifiers an author writes in JSX; without this a component inside
- * `{...}` is unresolved and the expression falls back to literal text.
+ * Bind the components a given expression actually references as tags. Scoped per expression on
+ * purpose: binding the whole hash would shadow same-named globals (a `math` component would
+ * break `{Math.max(1, 2)}`) and pad `evaluate`'s `new Function` parameter list. Resolution defers
+ * to `getComponentName` so an expression and a plain tag always reach the same component.
  */
-const componentScope = (components: CustomComponents = {}): Record<string, unknown> => {
-  const exact: Record<string, unknown> = {};
-  const aliases: Record<string, unknown> = {};
+const componentScope = (expression: string, components: CustomComponents): Record<string, unknown> => {
+  const scope: Record<string, unknown> = {};
 
-  Object.entries(components).forEach(([name, mod]) => {
-    const Component = mod?.default;
-    if (typeof Component !== 'function') return;
+  Array.from(expression.matchAll(JSX_TAG), match => match[1]).forEach(name => {
+    if (name in scope) return;
 
-    if (COMPONENT_IDENTIFIER.test(name)) exact[name] = Component;
-
-    const pascalCase = toPascalCase(name);
-    if (pascalCase !== name && COMPONENT_IDENTIFIER.test(pascalCase)) aliases[pascalCase] = Component;
-  });
-
-  // Exact keys outrank normalized ones, matching `getComponentName`'s priority — otherwise a
-  // caller's `code_tabs` claims `CodeTabs` and shadows the built-in.
-  return { ...aliases, ...exact };
-};
-
-const CAPITALIZED_IDENTIFIER = /\b[A-Z][A-Za-z0-9_$]*\b/g;
-
-/**
- * Resolve names the keyed bindings missed. Keys can't cover case-insensitive matches — the map
- * holds `mycomponent` while the author writes `<MyComponent/>` — so defer to `getComponentName`,
- * keeping expressions in step with the plain-tag path.
- */
-const resolveByComponentName = (
-  expression: string,
-  scope: Record<string, unknown>,
-  components: CustomComponents,
-): Record<string, unknown> => {
-  const resolved: Record<string, unknown> = {};
-
-  Array.from(expression.matchAll(CAPITALIZED_IDENTIFIER), match => match[0]).forEach(name => {
-    if (name in scope || name in resolved) return;
-
-    const key = getComponentName(name, components);
+    // `getComponentName` normalizes the tag, never the key, so it can't match `<MyBlock/>` to a
+    // `my_block` entry; compare the key's PascalCase form for that direction.
+    const key = getComponentName(name, components) ?? Object.keys(components).find(k => toPascalCase(k) === name);
     const Component = key ? components[key]?.default : undefined;
-    if (typeof Component === 'function') resolved[name] = Component;
+    if (typeof Component === 'function') scope[name] = Component;
   });
 
-  return Object.keys(resolved).length ? { ...scope, ...resolved } : scope;
+  return scope;
 };
 
 /**
@@ -104,8 +73,7 @@ const createTextNode = (result: unknown, position: Position | undefined): Text =
 const evaluateExpressions: Plugin<[Options?], Root> =
   ({ components, variables }: Options = {}) =>
   (tree, file: VFile) => {
-    const scope: Record<string, unknown> = {
-      ...componentScope(components),
+    const baseScope: Record<string, unknown> = {
       // `User` matches the fallback the MDX path binds in `run.tsx`. Only when variables were
       // supplied: the proxy never throws, so an unconditional bind would resolve `user.*` on
       // surfaces that render without them instead of leaving literal text.
@@ -124,7 +92,8 @@ const evaluateExpressions: Plugin<[Options?], Root> =
       if (!expression) return;
 
       try {
-        const result = evalExpression(expression, resolveByComponentName(expression, scope, components ?? {}));
+        const scope = { ...componentScope(expression, components ?? {}), ...baseScope };
+        const result = evalExpression(expression, scope);
         if (isRenderable(result)) {
           // Stash hast built straight from the React tree; `mdxExpressionHandler` emits it and it 
           // passes through rehypeRaw/parse5 step later in the pipeline. This ensures that the 

@@ -160,6 +160,15 @@ describe('evaluateExpressions', () => {
       expect(html).not.toContain('{<MyComponent />}');
     });
 
+    it('should not let a component shadow a same-named JS global', () => {
+      // Only names in tag position are bound, so a `math` component can't capture `Math`.
+      const Block = () => React.createElement('span', null, 'custom');
+      const html = mix('{Math.max(1, 2)}', { components: { math: asModule(Block) } });
+
+      expect(html).toContain('<p>2</p>');
+      expect(html).not.toContain('{Math.max');
+    });
+
     it('should ignore component names that are not valid JS identifiers', () => {
       // Every scope key becomes a `new Function` parameter, so an unbindable name must be
       // skipped rather than turned into a syntax error for every expression on the page.
