@@ -70,7 +70,6 @@ export interface RecipeJson extends MagicBlockJson {
 
 export interface MagicBlockTransformerOptions {
   compatibilityMode?: boolean;
-  /** Whether a newline in a block body renders as a `<br>`. Mirrors the same option on `mdxish()`. */
   hardBreaks?: boolean;
   safeMode?: boolean;
 }

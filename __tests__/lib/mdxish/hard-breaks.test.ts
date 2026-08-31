@@ -43,10 +43,13 @@ describe('hardBreaks', () => {
 
   // Magic block bodies are parsed by their own processor, so the option has to reach it too.
   it.each([
-    ['callout', '[block:callout]{"type":"info","title":"Note","body":"line one\\nline two"}[/block]'],
-    ['parameters', '[block:parameters]{"data":{"h-0":"Col","0-0":"line one\\nline two"},"cols":1,"rows":1}[/block]'],
+    ['callout', '[block:callout]{"type":"info","title":"Note","body":"line one\\nline two<br />line three"}[/block]'],
+    ['parameters', '[block:parameters]{"data":{"h-0":"Col","0-0":"line one\\nline two<br />line three"},"cols":1,"rows":1}[/block]'],
   ])('applies to a %s magic block body', (_name, md) => {
-    expect(findAllElementsByTagName(mdxish(md), 'br')).toHaveLength(1);
-    expect(findAllElementsByTagName(mdxish(md, { hardBreaks: false }), 'br')).toHaveLength(0);
+    const withHardBreaks = mdxish(md);
+    expect(findAllElementsByTagName(withHardBreaks, 'br')).toHaveLength(2);
+
+    const withoutHardBreaks = mdxish(md, { hardBreaks: false });
+    expect(findAllElementsByTagName(withoutHardBreaks, 'br')).toHaveLength(1);
   });
 });

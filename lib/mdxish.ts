@@ -67,7 +67,7 @@ import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-cod
 export interface MdxishOpts {
   components?: CustomComponents;
   /**
-   * Whether a single newline renders as a `<br>`. Defaults to `true`, matching legacy rdmd.
+   * Whether a single newline (\n) renders as a `<br>`. Defaults to `true`, matching legacy rdmd.
    * Turn it off for CommonMark semantics, where only a blank line breaks — what content
    * soft-wrapped to a line-length limit (OpenAPI descriptions, linted markdown) expects.
    */
