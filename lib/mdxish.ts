@@ -72,6 +72,7 @@ export interface MdxishOpts {
    * soft-wrapped to a line-length limit (OpenAPI descriptions, linted markdown) expects.
    *
    * Only applies to `mdxish()`; `mdxishAstProcessor` never hard-breaks its MDAST.
+   * There's no use for it right now but it can be revisited if needed.
    */
   hardBreaks?: boolean;
   newEditorTypes?: boolean;
