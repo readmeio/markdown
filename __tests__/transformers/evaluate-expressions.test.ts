@@ -133,6 +133,23 @@ describe('evaluateExpressions', () => {
       expect(html).not.toContain('callout_info');
     });
 
+    it('should prefer an exact component key over a name another key normalizes onto', () => {
+      const Exact = () => React.createElement('span', { className: 'exact' }, 'exact');
+      const Normalized = () => React.createElement('span', { className: 'normalized' }, 'normalized');
+      const html = mix('{<CodeTabs />}', {
+        components: { CodeTabs: asModule(Exact), code_tabs: asModule(Normalized) },
+      });
+
+      expect(html).toContain('exact');
+      expect(html).not.toContain('normalized');
+    });
+
+    it('should apply variable defaults for a user property that is not set', () => {
+      const html = mix("{user.name + '!'}", { variables: { user: {}, defaults: [{ default: 'Anon', name: 'name' }] } });
+
+      expect(html).toContain('Anon!');
+    });
+
     it('should ignore component names that are not valid JS identifiers', () => {
       // Every scope key becomes a `new Function` parameter, so an unbindable name must be
       // skipped rather than turned into a syntax error for every expression on the page.

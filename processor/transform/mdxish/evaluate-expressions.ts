@@ -10,6 +10,7 @@ import { visit } from 'unist-util-visit';
 
 import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
 import { toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
+import User from '../../../utils/user';
 
 import { reactElementToHast } from './react-element-to-hast';
 
@@ -35,18 +36,23 @@ const COMPONENT_IDENTIFIER = /^[A-Z][A-Za-z0-9_$]*$/;
  * form too, mirroring how `getComponentName` resolves tag names.
  */
 const componentScope = (components: CustomComponents = {}): Record<string, unknown> => {
-  const scope: Record<string, unknown> = {};
+  const exact: Record<string, unknown> = {};
+  const aliases: Record<string, unknown> = {};
 
   Object.entries(components).forEach(([name, mod]) => {
     const Component = mod?.default;
     if (typeof Component !== 'function') return;
 
-    [name, toPascalCase(name)].forEach(binding => {
-      if (COMPONENT_IDENTIFIER.test(binding)) scope[binding] = Component;
-    });
+    if (COMPONENT_IDENTIFIER.test(name)) exact[name] = Component;
+
+    const pascalCase = toPascalCase(name);
+    if (pascalCase !== name && COMPONENT_IDENTIFIER.test(pascalCase)) aliases[pascalCase] = Component;
   });
 
-  return scope;
+  // An exact key outranks a name another key normalizes onto, matching `getComponentName`'s
+  // match priority. Without this a caller-supplied `code_tabs` would claim `CodeTabs` and
+  // `{<CodeTabs/>}` would render a different component than a plain `<CodeTabs/>`.
+  return { ...aliases, ...exact };
 };
 
 /**
@@ -80,9 +86,12 @@ const evaluateExpressions: Plugin<[Options?], Root> =
   (tree, file: VFile) => {
     const scope: Record<string, unknown> = {
       ...componentScope(components),
-      // Only bound when the caller supplied variables at all, so surfaces that render without
-      // them keep the existing literal-text fallback rather than resolving `user` to `{}`.
-      ...(variables ? { user: variables.user } : {}),
+      // `User` applies the same defaults-then-uppercase fallback the MDX path binds in
+      // `run.tsx`, so a missing property resolves identically on both engines. Only bound when
+      // the caller supplied variables at all: the proxy never throws, so binding it
+      // unconditionally would resolve `user.*` on surfaces that render without variables
+      // instead of leaving the expression as literal text.
+      ...(variables ? { user: User(variables) } : {}),
       // In-document exports win over both, matching the precedence `renderMdxish` applies.
       ...file.data.mdxishScope,
       React,
