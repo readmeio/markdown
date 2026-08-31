@@ -70,6 +70,8 @@ export interface MdxishOpts {
    * Whether a single newline (\n) renders as a `<br>`. Defaults to `true`, matching legacy rdmd.
    * Turn it off for CommonMark semantics, where only a blank line breaks — what content
    * soft-wrapped to a line-length limit (OpenAPI descriptions, linted markdown) expects.
+   *
+   * Only applies to `mdxish()`; `mdxishAstProcessor` never hard-breaks its MDAST.
    */
   hardBreaks?: boolean;
   newEditorTypes?: boolean;
