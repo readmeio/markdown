@@ -66,6 +66,15 @@ import { protectCodeBlocks, restoreCodeBlocks } from './utils/mdxish/protect-cod
 
 export interface MdxishOpts {
   components?: CustomComponents;
+  /**
+   * Whether a single newline (\n) renders as a `<br>`. Defaults to `true`, matching legacy rdmd.
+   * Turn it off for CommonMark semantics, where only a blank line breaks — what content
+   * soft-wrapped to a line-length limit (OpenAPI descriptions, linted markdown) expects.
+   *
+   * Only applies to `mdxish()`; `mdxishAstProcessor` never hard-breaks its MDAST.
+   * There's no use for it right now but it can be revisited if needed.
+   */
+  hardBreaks?: boolean;
   newEditorTypes?: boolean;
   /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
@@ -121,7 +130,13 @@ function preprocessContent(content: string, opts: { knownComponents: Set<string>
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
-  const { components: userComponents = {}, newEditorTypes = false, safeMode = false, useTailwind } = opts;
+  const {
+    components: userComponents = {},
+    hardBreaks: enableHardBreaks = true,
+    newEditorTypes = false,
+    safeMode = false,
+    useTailwind,
+  } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -156,7 +171,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies
     // (e.g. code/image/embed inside <Tabs>) get visited too
-    .use(magicBlockTransformer)
+    .use(magicBlockTransformer, { hardBreaks: enableHardBreaks })
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
     .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
@@ -217,7 +232,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, safeMode = false, variables } = opts;
+  const { components: userComponents = {}, hardBreaks: enableHardBreaks = true, safeMode = false, variables } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -233,8 +248,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
 
   processor
     .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
-    .use(hardBreaks) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
-    // `undefined` short-circuits `.use` before it reads the options, so safeMode still skips this
+    .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
