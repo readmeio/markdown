@@ -8,7 +8,7 @@ import type { VFile } from 'vfile';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
-import { evalExpression } from '../../../lib/utils/mdxish/mdxish-expression';
+import { evalExpression, jsxComponentNames } from '../../../lib/utils/mdxish/mdxish-expression';
 import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
 import User from '../../../utils/user';
 
@@ -19,21 +19,16 @@ interface Options {
   variables?: Variables;
 }
 
-/** Names in JSX tag position (`<Foo`, `<Foo.Bar`) — the only identifiers that mean a component. */
-const JSX_TAG = /<\s*([A-Z][A-Za-z0-9_$]*)/g;
-
 /**
- * Bind the components a given expression actually references as tags. Scoped per expression on
- * purpose: binding the whole hash would shadow same-named globals (a `math` component would
- * break `{Math.max(1, 2)}`) and pad `evaluate`'s `new Function` parameter list. Resolution defers
- * to `getComponentName` so an expression and a plain tag always reach the same component.
+ * Bind the components a given expression actually uses as tags. Scoped per expression on purpose:
+ * binding the whole hash would shadow same-named globals (a `math` component would break
+ * `{Math.max(1, 2)}`) and pad `evaluate`'s `new Function` parameter list. Resolution defers to
+ * `getComponentName` so an expression and a plain tag always reach the same component.
  */
 const componentScope = (expression: string, components: CustomComponents): Record<string, unknown> => {
   const scope: Record<string, unknown> = {};
 
-  Array.from(expression.matchAll(JSX_TAG), match => match[1]).forEach(name => {
-    if (name in scope) return;
-
+  jsxComponentNames(expression).forEach(name => {
     // `getComponentName` normalizes the tag, never the key, so it can't match `<MyBlock/>` to a
     // `my_block` entry; compare the key's PascalCase form for that direction.
     const key = getComponentName(name, components) ?? Object.keys(components).find(k => toPascalCase(k) === name);

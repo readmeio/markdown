@@ -21,6 +21,54 @@ const containsJsxNode = (value: unknown): boolean => {
   return Object.values(value).some(containsJsxNode);
 };
 
+/** Read the component name off a JSX element name node (`Foo`, `Foo.Bar`, `foo:Bar`). */
+const jsxElementName = (name: unknown): string | undefined => {
+  if (name === null || typeof name !== 'object') return undefined;
+  const node = name as { name?: unknown; namespace?: unknown; object?: unknown; type?: string };
+
+  if (node.type === 'JSXIdentifier') return typeof node.name === 'string' ? node.name : undefined;
+  // `<Foo.Bar/>` and `<foo:Bar/>` resolve through their leftmost part.
+  if (node.type === 'JSXMemberExpression') return jsxElementName(node.object);
+  if (node.type === 'JSXNamespacedName') return jsxElementName(node.namespace);
+  return undefined;
+};
+
+/**
+ * Collect the capitalized names an expression uses as JSX tags. Parsed rather than pattern
+ * matched: `{count < Max ? <Foo/> : <Bar/>}` puts a capitalized name straight after a `<` without
+ * it being a tag, and only the parser can tell the two apart. Unparseable input yields nothing —
+ * evaluation is about to throw on it anyway.
+ */
+export const jsxComponentNames = (expression: string): string[] => {
+  let program: Program;
+  try {
+    program = parseExpression(expression);
+  } catch {
+    return [];
+  }
+
+  const names = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (value === null || typeof value !== 'object') return;
+
+    const node = value as { name?: unknown; type?: string };
+    if (node.type === 'JSXOpeningElement') {
+      const name = jsxElementName(node.name);
+      // Lowercase tags compile to a string type, never a variable reference.
+      if (name && /^[A-Z]/.test(name)) names.add(name);
+    }
+
+    Object.values(node).forEach(walk);
+  };
+
+  walk(program);
+  return Array.from(names);
+};
+
 /** Convert a program's JSX into `React.createElement` calls and evaluate it. `scope` must provide `React`. */
 const evalJsxProgram = (program: Program, scope: Record<string, unknown>) => {
   buildJsx(program, { runtime: 'classic', pragma: 'React.createElement', pragmaFrag: 'React.Fragment' });

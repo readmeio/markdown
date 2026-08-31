@@ -169,6 +169,14 @@ describe('evaluateExpressions', () => {
       expect(html).not.toContain('{Math.max');
     });
 
+    it('should not treat a less-than comparison as a JSX tag', () => {
+      const Block = () => React.createElement('span', null, 'custom');
+      const html = mix("{1 < Infinity ? 'yes' : 'no'}", { components: { infinity: asModule(Block) } });
+
+      expect(html).toContain('yes');
+      expect(html).not.toContain('no');
+    });
+
     it('should ignore component names that are not valid JS identifiers', () => {
       // Every scope key becomes a `new Function` parameter, so an unbindable name must be
       // skipped rather than turned into a syntax error for every expression on the page.
