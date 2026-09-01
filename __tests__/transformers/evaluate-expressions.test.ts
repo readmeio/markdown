@@ -132,6 +132,39 @@ describe('evaluateExpressions', () => {
       ]);
     });
 
+    it('should keep the blocks around a multiline expression intact', () => {
+      const tree = mdxish(['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'));
+
+      expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
+        { tagName: 'h1', children: [{ type: 'text', value: 'Title' }] },
+        { tagName: 'Callout', properties: { theme: 'info' } },
+        { tagName: 'h2', children: [{ type: 'text', value: 'After' }] },
+      ]);
+    });
+
+    it('should evaluate a multiline expression inside a list item', () => {
+      const tree = mdxish(['- one', '- {true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '- three'].join('\n'));
+
+      const items = findAllElementsByTagName(tree, 'li');
+      expect(items).toHaveLength(3);
+      expect(items[1].children.filter(child => child.type === 'element')).toMatchObject([
+        { tagName: 'Callout', properties: { theme: 'info' } },
+      ]);
+    });
+
+    it('should keep a failed multiline expression literal without breaking the blocks around it', () => {
+      const tree = mdxish(['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
+
+      const paragraphs = tree.children.filter(child => child.type === 'element');
+      expect(paragraphs).toMatchObject([
+        { tagName: 'p', children: [{ type: 'text', value: 'Before' }] },
+        { tagName: 'p' },
+        { tagName: 'p', children: [{ type: 'text', value: 'After' }] },
+      ]);
+      // The whole run stays as one literal block rather than half-evaluating into the document.
+      expect(findElementByTagName(tree, 'Callout')).toBeNull();
+    });
+
     it('should lift a block-level result out of the paragraph it was parsed in', () => {
       // `<p>` holds phrasing content only, so a browser closes it before the `<div>` a component
       // renders. Leaving the wrapper in place reparents the DOM and breaks hydration.
