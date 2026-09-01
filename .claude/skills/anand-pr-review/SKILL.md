@@ -1,6 +1,6 @@
 ---
 name: anand-pr-review
-description: Reviews ONE pull request against the enforced readmeio/markdown standards plus a thermo-nuclear structural pass, honoring prior bot review threads as settled context, and writes every confirmed inline finding plus the prior threads it proved settled to review.json; later deterministic steps submit it as a COMMENT review and resolve those threads.
+description: Reviews ONE pull request against the enforced readmeio/markdown standards, honoring prior bot review threads as settled context, and writes every confirmed inline finding plus the prior threads it proved settled to review.json; later deterministic steps submit it as a COMMENT review and resolve those threads.
 ---
 
 # anand-pr-review — review one PR
@@ -119,16 +119,14 @@ On `INITIAL` and `RESET` runs, `origin` must be `CURRENT_DIFF` for every comment
 valid only on `INCREMENTAL` runs, and the posting step rejects any other use. Do not blame an author
 for a prior miss. Publish a missed `BLOCKER` or `SHOULD-FIX` only when it still materially matters.
 
-## Review with BOTH lenses — fan out, verify, consolidate
+## Review with the standards lens — fan out, verify, consolidate
 
-This is the same analysis Anand's local `reviewing-my-prs` runs do per PR: parallel dimension reviewers across both lenses, adversarial verification of every candidate, one consolidated list. The lens skills also work standalone in local sessions, so use only their **rules, probes, and checklists** — ignore their output-format, verdict, and approval sections; the ONLY output here is `review.json` below. Generate candidates broadly, then publish selectively under the materiality bar below.
+This is the same analysis Anand's local `reviewing-my-prs` runs do per PR: parallel dimension reviewers, adversarial verification of every candidate, one consolidated list. The lens skill also works standalone in local sessions, so use only its **rules, probes, and checklists** — ignore its output-format, verdict, and approval sections; the ONLY output here is `review.json` below. Generate candidates broadly, then publish selectively under the materiality bar below.
 
 **Size the fan-out to the PR:**
 
-- Small / mechanical / already-iterated (≲ a few files, low subtlety) → review the diff directly for the **standards lens**, **plus one parallel thermo-nuclear subagent** (thermo rules + diff inline). Even tiny PRs get the thermo pass — that's exactly where file-size/spaghetti creep slips in.
-- Anything larger → **fan out parallel dimension-reviewer subagents (Task tool) covering BOTH lenses**, each seeded with the diff and its dimension's rules; pick dimensions that fit the changed files:
-  - **STANDARDS** — `../reviewing-markdown-prs/SKILL.md` + the matching sections of its `CHECKLIST.md` (route each changed file via that skill's file→standard table) — e.g. pipeline/AST correctness (tokenizers over string hacks, mdx/mdxish engine parity, legacy `v6` behavior parity), reuse/simplicity, types, sanitization/`safeMode` security, tests + fixtures across both engines, compat/export surface.
-  - **THERMO-NUCLEAR** (structural) — `../thermo-nuclear-code-quality-review/SKILL.md` — e.g. `thermo:simplification`/code-judo, `thermo:file-size`, `thermo:spaghetti-branching`, `thermo:abstraction-boundaries`. **Scope strictly to this PR's changed lines/files — never flag pre-existing code.**
+- Small / mechanical / already-iterated (≲ a few files, low subtlety) → review the diff directly against the lens.
+- Anything larger → **fan out parallel dimension-reviewer subagents (Task tool)**, each seeded with the diff and its dimension's rules from `../reviewing-markdown-prs/SKILL.md` + the matching sections of its `CHECKLIST.md` (route each changed file via that skill's file→standard table); pick dimensions that fit the changed files — e.g. pipeline/AST correctness (tokenizers over string hacks, mdx/mdxish engine parity, legacy `v6` behavior parity), reuse/simplicity, types, sanitization/`safeMode` security, tests + fixtures across both engines, compat/export surface. **Scope strictly to this PR's changed lines/files — never flag pre-existing code.**
 
 **NEVER end a turn while any subagent is outstanding.** This runs headless: `end_turn` exits the
 process immediately, there is no next turn, and pending subagent-completion notifications can never
@@ -147,9 +145,9 @@ If subagents are unavailable, run the same dimensions as sequential passes — n
 
 Each dimension reviewer must inspect every routed file and return all substantive candidates in one response, not stop after the first few. Consolidate those candidates, then run an **independent coverage sweep** over the full diff: check every changed file and applicable standards dimension, with extra scrutiny on files or dimensions that produced no candidate. Add any missed candidates before verification. This sweep is for completeness, not for inventing cosmetic feedback.
 
-**Adversarially verify every candidate finding against the real code and prior-decision ledger** before keeping it — fan verification out to parallel verifier subagents when there are more than a handful of candidates (verify inline on tiny PRs): open the file at head, confirm the line, confirm no existing helper already does it, confirm it's this PR's changed code, classify its origin against the review delta, and confirm it neither duplicates nor contradicts an earlier decision. Respect stack context: surface whose consumer arrives in an already-pushed stacked PR, and temporary old/new coexistence from a deliberate stack split, are not dead code or duplication when the description or a thread says so — that's the accepted way this team splits unreviewably large diffs. **Default to refuted** — drop a finding unless it clearly holds. For thermo findings also require: behavior-preserving, genuinely simpler (not just moved), and in-scope for THIS PR. Only confirmed findings reach the review; this kills false positives (parent-branch lines, acknowledged tradeoffs, already-fixed feedback, ambitious-but-out-of-scope rewrites).
+**Adversarially verify every candidate finding against the real code and prior-decision ledger** before keeping it — fan verification out to parallel verifier subagents when there are more than a handful of candidates (verify inline on tiny PRs): open the file at head, confirm the line, confirm no existing helper already does it, confirm it's this PR's changed code, classify its origin against the review delta, and confirm it neither duplicates nor contradicts an earlier decision. Respect stack context: surface whose consumer arrives in an already-pushed stacked PR, and temporary old/new coexistence from a deliberate stack split, are not dead code or duplication when the description or a thread says so — that's the accepted way this team splits unreviewably large diffs. **Default to refuted** — drop a finding unless it clearly holds. For structural/simplification findings also require: behavior-preserving, genuinely simpler (not just moved), and in-scope for THIS PR. Only confirmed findings reach the review; this kills false positives (parent-branch lines, acknowledged tradeoffs, already-fixed feedback, ambitious-but-out-of-scope rewrites).
 
-Consolidate into one list and dedupe overlaps — the same cast/duplication/wrong-layer issue caught by both lenses collapses into ONE comment (keep the clearest framing + the strongest fix). Findings that share one root cause also collapse into ONE comment naming the root cause — authors have called out "five findings in a row that are the same root cause in different clothes" as churn; per-symptom comments waste review rounds. Assign each comment a severity: 🔴→`BLOCKER`, 🟡→`SHOULD-FIX`. There is no third tier — a candidate that doesn't clear the `SHOULD-FIX` bar is dropped, not downgraded. A third copy of the same block/string/gate/handler/predicate/helper is a `BLOCKER`; a second copy needs a concrete drift or ownership cost and is normally `SHOULD-FIX`.
+Consolidate into one list and dedupe overlaps — the same cast/duplication/wrong-layer issue caught by multiple dimensions collapses into ONE comment (keep the clearest framing + the strongest fix). Findings that share one root cause also collapse into ONE comment naming the root cause — authors have called out "five findings in a row that are the same root cause in different clothes" as churn; per-symptom comments waste review rounds. Assign each comment a severity: 🔴→`BLOCKER`, 🟡→`SHOULD-FIX`. There is no third tier — a candidate that doesn't clear the `SHOULD-FIX` bar is dropped, not downgraded. A third copy of the same block/string/gate/handler/predicate/helper is a `BLOCKER`; a second copy needs a concrete drift or ownership cost and is normally `SHOULD-FIX`.
 
 Apply a strict materiality bar before publishing:
 
@@ -203,10 +201,10 @@ new issues.
 - **`severity` is REQUIRED on every comment** (`BLOCKER` | `SHOULD-FIX`). It is prepended as a bold label downstream, so do **not** hand-write the severity in the body. Never emit `NIT` — the posting step suppresses it.
 - **`origin` is REQUIRED on every comment** (`CURRENT_DIFF` | `PRIOR_MISS`). It is internal
   provenance: the posting step removes it and identifies delayed findings to the author.
-- **Comment `body` is posted verbatim:** terse, ≤40 words, with lowercase prose; preserve the exact casing and spelling of identifiers, paths, API names, quoted errors, and code in suggestion blocks. Lead with the point then the fix, using plain words rather than taxonomy; a pointed question or a ```suggestion``` block is great; no emoji, no `[std]`/`[thermo]` tags.
+- **Comment `body` is posted verbatim:** terse, ≤40 words, with lowercase prose; preserve the exact casing and spelling of identifiers, paths, API names, quoted errors, and code in suggestion blocks. Lead with the point then the fix, using plain words rather than taxonomy; a pointed question or a ```suggestion``` block is great; no emoji, no `[std]`-style dimension tags.
 - **Findings exist → `"body": ""`.** Never write a summary; the inline comments ARE the review.
 - **Zero new findings → `"comments": []`** and `body` = one short sentence confirming the fresh pass
-  found nothing else (for example, "reviewed against both lenses — no new issues found."). This is
+  found nothing else (for example, "reviewed against the repo standards lens — no new issues found."). This is
   the only case where a comment lands on the PR itself, and it hands the PR straight to the human
   reviewer.
 - **`resolve` is REQUIRED** — `[]` when nothing settles. One entry per thread the comment pass

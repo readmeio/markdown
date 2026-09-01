@@ -1,7 +1,7 @@
 name: anand-review
 
-# Attach the "anand-review" label to a PR to trigger an automated review by Anand's two-lens
-# reviewer. One LLM pass reviews the current code — honoring prior bot threads as settled context,
+# Attach the "anand-review" label to a PR to trigger an automated review by Anand's reviewer.
+# One LLM pass reviews the current code — honoring prior bot threads as settled context,
 # never re-litigating them — and writes the findings to review.json. A deterministic step posts
 # them as a COMMENT review, then the label is removed whether the run succeeds or errors.
 #
@@ -177,7 +177,6 @@ jobs:
           mkdir -p "$RUNNER_TEMP/trusted-review-skills"
           cp -R .claude/skills/anand-pr-review "$RUNNER_TEMP/trusted-review-skills/"
           cp -R .claude/skills/reviewing-markdown-prs "$RUNNER_TEMP/trusted-review-skills/"
-          cp -R .claude/skills/thermo-nuclear-code-quality-review "$RUNNER_TEMP/trusted-review-skills/"
           cp .github/scripts/fetch-review-context.sh "$RUNNER_TEMP/fetch-review-context.sh"
           cp .github/scripts/retry.sh "$RUNNER_TEMP/retry.sh"
           cp .github/scripts/verify-review-context.sh "$RUNNER_TEMP/verify-review-context.sh"
