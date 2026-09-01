@@ -1,4 +1,5 @@
 import type { CustomComponents, Variables } from '../../../types';
+import type { ElementContent } from 'hast';
 import type { Root, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
@@ -31,9 +32,10 @@ const componentScope = (expression: string, components: CustomComponents): Recor
   jsxComponentNames(expression).forEach(name => {
     // `getComponentName` normalizes the tag, never the key, so it can't match `<MyBlock/>` to a
     // `my_block` entry; compare the key's PascalCase form for that direction.
-    const key = getComponentName(name, components) ?? Object.keys(components).find(k => toPascalCase(k) === name);
-    const Component = key ? components[key]?.default : undefined;
-    if (typeof Component === 'function') scope[name] = Component;
+    const tagName = getComponentName(name, components) ?? Object.keys(components).find(k => toPascalCase(k) === name);
+    if (!tagName) return;
+
+    scope[name] = (props: Record<string, unknown>) => React.createElement(tagName, props);
   });
 
   return scope;
@@ -48,6 +50,18 @@ const isRenderable = (value: unknown): boolean => {
   if (React.isValidElement(value)) return true;
   return Array.isArray(value) && value.some(isRenderable);
 };
+
+/**
+ * Whether an expression evaluated to block-level content. Components count as block-level
+ * unless they're on the inline list, matching the assumption the rest of the component
+ * pipeline makes.
+ */
+const isBlockResult = (children: ElementContent[]): boolean =>
+  children.some(child => {
+    if (child.type !== 'element' && child.type !== 'mdx-jsx') return false;
+    const { tagName } = child as { tagName: string };
+    return !STANDARD_HTML_TAGS.has(tagName.toLowerCase()) && !INLINE_COMPONENT_TAGS.has(tagName);
+  });
 
 /** Turn a non-renderable evaluation result into a text node. */
 const createTextNode = (result: unknown, position: Position | undefined): Text => {
@@ -105,6 +119,23 @@ const evaluateExpressions: Plugin<[Options?], Root> =
         const processed = expression.replace(/\\([!-/:-@[-`{-~])/g, '$1');
         parent.children.splice(index, 1, { type: 'text', value: `{${processed}}`, position });
       }
+    });
+
+    // A text expression is parsed inside a paragraph, but its result can be block content: a
+    // `<Tabs>` renders a `<div>`, and a browser closes the `<p>` before it, so the DOM it builds
+    // no longer matches what was rendered and hydration fails. Lift the expression out when
+    // that's all the paragraph holds.
+    visit(tree, 'paragraph', (node, index, parent) => {
+      if (!parent || index === null || index === undefined) return;
+
+      const meaningful = node.children.filter(child => !(child.type === 'text' && !child.value.trim()));
+      const [only] = meaningful;
+      if (meaningful.length !== 1 || only.type !== 'mdxTextExpression') return;
+
+      const hChildren = only.data?.hChildren as ElementContent[] | undefined;
+      if (!hChildren || !isBlockResult(hChildren)) return;
+
+      parent.children.splice(index, 1, only);
     });
 
     return tree;
