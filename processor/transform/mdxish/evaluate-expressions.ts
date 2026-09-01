@@ -9,8 +9,10 @@ import type { VFile } from 'vfile';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
+import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
 import { evalExpression, jsxComponentNames } from '../../../lib/utils/mdxish/mdxish-expression';
 import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
+import { STANDARD_HTML_TAGS } from '../../../utils/common-html-words';
 import User from '../../../utils/user';
 
 import { reactElementToHast } from './react-element-to-hast';
