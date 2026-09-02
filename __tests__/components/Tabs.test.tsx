@@ -129,6 +129,47 @@ describe('Tabs', () => {
       expect(container.querySelector('a')).toHaveTextContent('link');
     });
 
+    it('restarts GIF playback when a tab becomes active', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![demo](https://example.com/demo.gif)</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const gif = container.querySelector('img[src$=".gif"]') as HTMLImageElement;
+      expect(gif).toBeInTheDocument();
+      const setSrc = vi.spyOn(gif, 'src', 'set');
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      // Cleared then restored: the only way to rewind an animated image to frame 0
+      expect(setSrc.mock.calls.map(([value]) => value)).toStrictEqual(['', 'https://example.com/demo.gif']);
+      expect(gif.src).toBe('https://example.com/demo.gif');
+      setSrc.mockRestore();
+    });
+
+    it('leaves non-animated images alone when a tab becomes active', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![still](https://example.com/still.png)</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const png = container.querySelector('img[src$=".png"]') as HTMLImageElement;
+      const setSrc = vi.spyOn(png, 'src', 'set');
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      expect(setSrc).not.toHaveBeenCalled();
+      setSrc.mockRestore();
+    });
+
     it('renders Tabs after sibling content without crashing', () => {
       const md = `
 Hello
