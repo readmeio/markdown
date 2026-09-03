@@ -151,18 +151,24 @@ describe('Tabs', () => {
       setSrc.mockRestore();
     });
 
-    it('leaves non-animated images alone when a tab becomes active', () => {
+    it.each([
+      ['png', 'https://example.com/still.png'],
+      // .webp and .png are almost always static, so they're left alone even though
+      // both formats can hold an animation
+      ['webp', 'https://example.com/still.webp'],
+      ['jpg with a query string', 'https://example.com/still.jpg?w=200'],
+    ])('leaves a %s alone when a tab becomes active', (_, src) => {
       const md = `
 <Tabs>
   <Tab title="First">First tab content</Tab>
-  <Tab title="Second">![still](https://example.com/still.png)</Tab>
+  <Tab title="Second">![still](${src})</Tab>
 </Tabs>
 `;
       const Component = renderContent(md);
       const { container } = render(<Component />);
 
-      const png = container.querySelector('img[src$=".png"]') as HTMLImageElement;
-      const setSrc = vi.spyOn(png, 'src', 'set');
+      const image = container.querySelector('img') as HTMLImageElement;
+      const setSrc = vi.spyOn(image, 'src', 'set');
 
       fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
 

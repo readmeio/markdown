@@ -1,10 +1,14 @@
 import { useEffect, useRef } from 'react';
 
-/** Animated formats whose playback position we can only reset by reloading the element. */
-const ANIMATED_IMAGE_SRC = /\.(gif|webp|apng)(\?|#|$)/i;
+/**
+ * GIF is the one extension that implies animation. `.webp` and `.png` (the extension an APNG
+ * ships under) are overwhelmingly static, so matching them would reload far more images than
+ * it rewinds; telling those apart needs the bytes, not the URL.
+ */
+const ANIMATED_IMAGE_SRC = /\.gif(\?|#|$)/i;
 
 /**
- * Restarts animated images inside the panel that just became active.
+ * Restarts GIF playback inside the panel that just became active.
  *
  * Tabs keep every panel mounted, so an <img> is never re-created and a GIF is
  * shown mid-loop (or frozen on its last frame) when its tab is re-selected.
