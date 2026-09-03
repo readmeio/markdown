@@ -1,8 +1,8 @@
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 
 import Accordion from '../../components/Accordion';
 
@@ -99,6 +99,63 @@ describe('Accordion', () => {
         </Accordion>,
       );
       expect(container.querySelector('i.Accordion-icon')).toBeNull();
+    });
+  });
+
+  describe('animated images', () => {
+    const open = (container: HTMLElement) => {
+      const details = container.querySelector('details') as HTMLDetailsElement;
+      details.open = true;
+      fireEvent(details, new Event('toggle'));
+    };
+
+    it('restarts GIF playback when the accordion is opened', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="demo" src="https://example.com/demo.gif" />
+        </Accordion>,
+      );
+      const gif = container.querySelector('img') as HTMLImageElement;
+      const setSrc = vi.spyOn(gif, 'src', 'set');
+
+      open(container);
+
+      // Cleared then restored: the only way to rewind an animated image to frame 0
+      expect(setSrc.mock.calls.map(([value]) => value)).toStrictEqual(['', 'https://example.com/demo.gif']);
+      setSrc.mockRestore();
+    });
+
+    it('leaves a still image alone when the accordion is opened', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="still" src="https://example.com/still.png" />
+        </Accordion>,
+      );
+      const png = container.querySelector('img') as HTMLImageElement;
+      const setSrc = vi.spyOn(png, 'src', 'set');
+
+      open(container);
+
+      expect(setSrc).not.toHaveBeenCalled();
+      setSrc.mockRestore();
+    });
+
+    it('does not restart playback when the accordion is closed again', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="demo" src="https://example.com/demo.gif" />
+        </Accordion>,
+      );
+      const details = container.querySelector('details') as HTMLDetailsElement;
+      open(container);
+
+      const gif = container.querySelector('img') as HTMLImageElement;
+      const setSrc = vi.spyOn(gif, 'src', 'set');
+      details.open = false;
+      fireEvent(details, new Event('toggle'));
+
+      expect(setSrc).not.toHaveBeenCalled();
+      setSrc.mockRestore();
     });
   });
 
