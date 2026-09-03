@@ -1,4 +1,4 @@
-import type { Parents, Text } from 'mdast';
+import type { PhrasingContent, TableCell, Text } from 'mdast';
 import type { Info, State } from 'mdast-util-to-markdown';
 
 import { mdast, mdx } from '../../index';
@@ -14,7 +14,15 @@ const roundTrip = (doc: string) => {
   return mdxishResult;
 };
 
-const table = (cell: string, header = 'a') => `| ${header} |\n| :- |\n| ${cell} |\n`;
+/**
+ * Builds a one-column table in the exact layout the serializer emits (columns padded to the
+ * widest cell, delimiter row stretched to match), so a round trip can be asserted as identity.
+ */
+const table = (cell: string, header = 'a') => {
+  const width = Math.max(cell.length, header.length);
+
+  return `| ${header.padEnd(width)} |\n| :${'-'.repeat(width - 1)} |\n| ${cell.padEnd(width)} |\n`;
+};
 
 describe('table cell block markers', () => {
   describe('round trips (RM-17203)', () => {
@@ -25,37 +33,33 @@ describe('table cell block markers', () => {
       ['a block quote', '\\> quote'],
       ['a bare dash', '\\-'],
     ])('should keep %s escaped in a cell', (_, cell) => {
-      expect(roundTrip(table(cell))).toContain(`| ${cell} |`);
+      expect(roundTrip(table(cell))).toBe(table(cell));
     });
 
     it('should keep an escaped marker in a header cell', () => {
-      expect(roundTrip('| \\- h |\n| :- |\n| x |\n')).toContain('| \\- h |');
+      expect(roundTrip(table('x', '\\- h'))).toBe(table('x', '\\- h'));
     });
 
     it('should escape a leading marker the author left unescaped', () => {
-      expect(roundTrip(table('- one'))).toContain('| \\- one |');
+      expect(roundTrip(table('- one'))).toBe(table('\\- one'));
     });
 
     it('should keep an escaped marker after a <br />', () => {
-      expect(roundTrip('| a | b |\n| :- | :- |\n| \\- one<br />\\- two | x |\n')).toContain('| \\- one<br />\\- two |');
-    });
+      const doc = '| a                  | b  |\n| :----------------- | :- |\n| \\- one<br />\\- two | x  |\n';
 
-    it('should be stable across a second round trip', () => {
-      const once = roundTrip(table('\\- one'));
-
-      expect(roundTrip(once)).toBe(once);
+      expect(roundTrip(doc)).toBe(doc);
     });
 
     it('should not escape a marker in the middle of a cell', () => {
-      expect(roundTrip(table('foo - bar'))).toContain('| foo - bar |');
+      expect(roundTrip(table('foo - bar'))).toBe(table('foo - bar'));
     });
 
     it('should not escape a dash that cannot open a list', () => {
-      expect(roundTrip(table('-foo'))).toContain('| -foo |');
+      expect(roundTrip(table('-foo'))).toBe(table('-foo'));
     });
 
     it('should not escape an emphasized marker, which is no longer at the cell start', () => {
-      expect(roundTrip(table('**- one**'))).toContain('| **- one** |');
+      expect(roundTrip(table('**- one**'))).toBe(table('**- one**'));
     });
 
     it('should leave an escaped marker outside a table alone', () => {
@@ -72,11 +76,11 @@ describe('table cell block markers', () => {
     const inParagraph = { stack: ['paragraph', 'phrasing'] } as State;
     const cellStart = { before: '|', after: '|' } as Info;
     const midCell = { before: 'x', after: '|' } as Info;
-    const node = { type: 'text', value: '' } satisfies Text;
-    const parent = { type: 'tableCell', children: [node] } as unknown as Parents;
+    const node: Text = { type: 'text', value: '' };
+    const cell = (...children: PhrasingContent[]): TableCell => ({ type: 'tableCell', children });
 
     const escape = (serialized: string, state = inCell, info = cellStart) =>
-      escapeCellStartBlockMarker(serialized, node, parent, state, info);
+      escapeCellStartBlockMarker(serialized, node, cell(node), state, info);
 
     it.each(['- one', '+ one', '# one', '###### one', '> quote', '-', '#'])('should escape `%s`', serialized => {
       expect(escape(serialized)).toBe(`\\${serialized}`);
@@ -98,21 +102,16 @@ describe('table cell block markers', () => {
       expect(escape('- one', inCell, midCell)).toBe('- one');
     });
 
-    it.each([
+    it.each<[string, PhrasingContent]>([
       ['a break node', { type: 'break' }],
       ['a raw <br>', { type: 'html', value: '<br />' }],
-      ['a JSX <br>', { type: 'mdxJsxTextElement', name: 'br', children: [] }],
+      ['a JSX <br>', { type: 'mdxJsxTextElement', name: 'br', attributes: [], children: [] }],
     ])('should escape text following %s', (_, previous) => {
-      const withBreak = { type: 'tableCell', children: [previous, node] } as unknown as Parents;
-
-      expect(escapeCellStartBlockMarker('- two', node, withBreak, inCell, midCell)).toBe('\\- two');
+      expect(escapeCellStartBlockMarker('- two', node, cell(previous, node), inCell, midCell)).toBe('\\- two');
     });
 
     it('should not escape text following a non-break sibling', () => {
-      const withCode = {
-        type: 'tableCell',
-        children: [{ type: 'inlineCode', value: 'x' }, node],
-      } as unknown as Parents;
+      const withCode = cell({ type: 'inlineCode', value: 'x' }, node);
 
       expect(escapeCellStartBlockMarker('- two', node, withCode, inCell, midCell)).toBe('- two');
     });
