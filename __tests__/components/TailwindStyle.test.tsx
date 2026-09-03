@@ -31,11 +31,30 @@ describe('TailwindStyle', () => {
         );
       });
     });
+
+    it('passes darkModeRootSelector through to tailwindCompiler', async () => {
+      render(
+        <TailwindStyle darkModeDataAttribute="data-color-mode" darkModeRootSelector=".rm-ReadMe">
+          <div className={`${tailwindPrefix} dark:text-blue-500`} />
+        </TailwindStyle>,
+      );
+
+      await waitFor(() => {
+        expect(tailwindCompiler).toHaveBeenCalledWith(
+          expect.arrayContaining(['dark:text-blue-500']),
+          expect.objectContaining({ darkModeDataAttribute: 'data-color-mode', darkModeRootSelector: '.rm-ReadMe' }),
+        );
+      });
+    });
   });
 
   describe('MutationObserver', () => {
     it('collects classes when a direct .readme-tailwind node is added', async () => {
-      const { container } = render(<TailwindStyle><div /></TailwindStyle>);
+      const { container } = render(
+        <TailwindStyle>
+          <div />
+        </TailwindStyle>,
+      );
 
       vi.clearAllMocks();
 
@@ -55,7 +74,11 @@ describe('TailwindStyle', () => {
       // inserting a parent wrapper whose children contain TailwindRoot elements.
       // addedNodes only contains the parent — without the fix, the nested .readme-tailwind
       // was never traversed and its Tailwind classes were never compiled.
-      const { container } = render(<TailwindStyle><div /></TailwindStyle>);
+      const { container } = render(
+        <TailwindStyle>
+          <div />
+        </TailwindStyle>,
+      );
 
       vi.clearAllMocks();
 
@@ -102,7 +125,11 @@ describe('TailwindStyle', () => {
     });
 
     it('collects classes when a class attribute is updated on an existing element', async () => {
-      const { container } = render(<TailwindStyle><div /></TailwindStyle>);
+      const { container } = render(
+        <TailwindStyle>
+          <div />
+        </TailwindStyle>,
+      );
 
       const target = document.createElement('div');
       target.classList.add(tailwindPrefix);
@@ -117,10 +144,7 @@ describe('TailwindStyle', () => {
       });
 
       await waitFor(() => {
-        expect(tailwindCompiler).toHaveBeenCalledWith(
-          expect.arrayContaining(['p-4', 'shadow-md']),
-          expect.anything(),
-        );
+        expect(tailwindCompiler).toHaveBeenCalledWith(expect.arrayContaining(['p-4', 'shadow-md']), expect.anything());
       });
     });
   });

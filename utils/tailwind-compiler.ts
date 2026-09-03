@@ -54,7 +54,13 @@ async function loadModule(): Promise<never> {
   throw new Error('The browser build does not support plugins or config files.');
 }
 
-async function createCompiler({ darkModeDataAttribute }: { darkModeDataAttribute?: string | null }) {
+async function createCompiler({
+  darkModeDataAttribute,
+  darkModeRootSelector,
+}: {
+  darkModeDataAttribute?: string | null;
+  darkModeRootSelector?: string | null;
+}) {
   let css = `
 @layer theme, base, components, utilities;
 
@@ -63,9 +69,12 @@ async function createCompiler({ darkModeDataAttribute }: { darkModeDataAttribute
 `;
 
   if (darkModeDataAttribute) {
+    // Anchors `dark:` to `darkModeRootSelector`'s own attribute instead of any ancestor's,
+    // when supplied — see the `darkModeRootSelector` param doc below for why there's no default.
+    const root = darkModeRootSelector || '';
     css += `
 
-@custom-variant dark (&:where([${darkModeDataAttribute}=dark], [${darkModeDataAttribute}=dark] *));`;
+@custom-variant dark (&:where(${root}[${darkModeDataAttribute}=dark], ${root}[${darkModeDataAttribute}=dark] *));`;
   }
 
   return tailwindcss.compile(css, {
@@ -77,9 +86,28 @@ async function createCompiler({ darkModeDataAttribute }: { darkModeDataAttribute
 
 export async function tailwindCompiler(
   classes: string[],
-  { prefix, darkModeDataAttribute }: { darkModeDataAttribute?: string | null; prefix: string },
+  {
+    prefix,
+    darkModeDataAttribute,
+    darkModeRootSelector,
+  }: {
+    darkModeDataAttribute?: string | null;
+    /**
+     * Scopes the `dark:` variant to `darkModeRootSelector[darkModeDataAttribute=dark]`
+     * (self or descendant) instead of matching `[darkModeDataAttribute=dark]` on *any*
+     * ancestor. Matches `when-color-mode-dark($root)` in `styles/mixins/when-color-mode-dark.scss`
+     * — see that mixin's doc comment for the full rationale (two independent
+     * `data-color-mode` scopes on one page, e.g. readme's SuperHub admin shell vs. the
+     * hub content it's previewing) and why there's no default: this package ships one
+     * precompiled stylesheet, so whatever a caller passes is permanent for every
+     * installer, and readme (this package's only real consumer today) is expected to
+     * pass its hub color-mode root, `.rm-ReadMe`.
+     */
+    darkModeRootSelector?: string | null;
+    prefix: string;
+  },
 ) {
-  const compiler = await createCompiler({ darkModeDataAttribute });
+  const compiler = await createCompiler({ darkModeDataAttribute, darkModeRootSelector });
   const css = compiler.build(Array.from(classes));
 
   return postcss([prefixer({ prefix })]).process(css, { from: undefined });
