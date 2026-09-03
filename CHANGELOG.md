@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.4.0
+### ✨ New & Improved
+
+* support scoping the dark: variant to a root selector in tailwindCompiler ([#1608](https://github.com/readmeio/markdown/issues/1608)) ([df0f409](https://github.com/readmeio/markdown/commit/df0f4092bb2bc4e382cef300d603e17f8c165a50)), closes [#1596](https://github.com/readmeio/markdown/issues/1596)
+
 ## Version 15.3.0
 ### ✨ New & Improved
 
