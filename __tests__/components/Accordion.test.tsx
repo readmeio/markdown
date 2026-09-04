@@ -2,9 +2,10 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { expect, vi } from 'vitest';
+import { expect } from 'vitest';
 
 import Accordion from '../../components/Accordion';
+import { gifRestartWrites, spyOnImageSrc } from '../helpers';
 
 import { renderingEngines } from './utils';
 
@@ -115,14 +116,12 @@ describe('Accordion', () => {
           <img alt="demo" src="https://example.com/demo.gif" />
         </Accordion>,
       );
-      const gif = container.querySelector('img') as HTMLImageElement;
-      const setSrc = vi.spyOn(gif, 'src', 'set');
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
 
       open(container);
 
-      // Cleared then restored: the only way to rewind an animated image to frame 0
-      expect(setSrc.mock.calls.map(([value]) => value)).toStrictEqual(['', 'https://example.com/demo.gif']);
-      setSrc.mockRestore();
+      expect(srcSpy.writes).toStrictEqual(gifRestartWrites('https://example.com/demo.gif'));
+      srcSpy.restore();
     });
 
     it('leaves a still image alone when the accordion is opened', () => {
@@ -131,13 +130,12 @@ describe('Accordion', () => {
           <img alt="still" src="https://example.com/still.png" />
         </Accordion>,
       );
-      const png = container.querySelector('img') as HTMLImageElement;
-      const setSrc = vi.spyOn(png, 'src', 'set');
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
 
       open(container);
 
-      expect(setSrc).not.toHaveBeenCalled();
-      setSrc.mockRestore();
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
     });
 
     it('does not restart playback when the accordion is closed again', () => {
@@ -149,13 +147,12 @@ describe('Accordion', () => {
       const details = container.querySelector('details') as HTMLDetailsElement;
       open(container);
 
-      const gif = container.querySelector('img') as HTMLImageElement;
-      const setSrc = vi.spyOn(gif, 'src', 'set');
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
       details.open = false;
       fireEvent(details, new Event('toggle'));
 
-      expect(setSrc).not.toHaveBeenCalled();
-      setSrc.mockRestore();
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
     });
   });
 

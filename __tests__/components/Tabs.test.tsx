@@ -8,6 +8,7 @@ import React from 'react';
 import Tabs, { Tab } from '../../components/Tabs';
 import { mdxish } from '../../lib';
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../lib/mdxish';
+import { gifRestartWrites, spyOnImageSrc } from '../helpers';
 
 import { captureMdxishProps, renderingEngines } from './utils';
 
@@ -141,14 +142,13 @@ describe('Tabs', () => {
 
       const gif = container.querySelector('img[src$=".gif"]') as HTMLImageElement;
       expect(gif).toBeInTheDocument();
-      const setSrc = vi.spyOn(gif, 'src', 'set');
+      const srcSpy = spyOnImageSrc(gif);
 
       fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
 
-      // Cleared then restored: the only way to rewind an animated image to frame 0
-      expect(setSrc.mock.calls.map(([value]) => value)).toStrictEqual(['', 'https://example.com/demo.gif']);
+      expect(srcSpy.writes).toStrictEqual(gifRestartWrites('https://example.com/demo.gif'));
       expect(gif.src).toBe('https://example.com/demo.gif');
-      setSrc.mockRestore();
+      srcSpy.restore();
     });
 
     it.each([
@@ -167,13 +167,12 @@ describe('Tabs', () => {
       const Component = renderContent(md);
       const { container } = render(<Component />);
 
-      const image = container.querySelector('img') as HTMLImageElement;
-      const setSrc = vi.spyOn(image, 'src', 'set');
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
 
       fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
 
-      expect(setSrc).not.toHaveBeenCalled();
-      setSrc.mockRestore();
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
     });
 
     it('renders Tabs after sibling content without crashing', () => {
