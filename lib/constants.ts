@@ -61,6 +61,47 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
 export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
 
 /**
+ * HTML tags that are phrasing content, so they belong inside a `<p>` and their adjacent
+ * whitespace is significant. Includes the inline void/replaced elements (`br`, `wbr`, `img`,
+ * `input`) since the space around them renders. Anything not listed is treated as block-level.
+ */
+export const INLINE_HTML_TAGS = new Set([
+  'a',
+  'abbr',
+  'b',
+  'bdi',
+  'bdo',
+  'br',
+  'cite',
+  'code',
+  'data',
+  'del',
+  'dfn',
+  'em',
+  'i',
+  'img',
+  'input',
+  'ins',
+  'kbd',
+  'mark',
+  'q',
+  'rp',
+  'rt',
+  'ruby',
+  's',
+  'samp',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'time',
+  'u',
+  'var',
+  'wbr',
+]);
+
+/**
  * PascalCase tags that have their own dedicated tokenizer / transformer
  * and must not be claimed by the generic `mdxComponent` construct.
  * Subject to change as we add more dedicated tokenizers.

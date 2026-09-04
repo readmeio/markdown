@@ -132,6 +132,34 @@ describe('evaluateExpressions', () => {
       ]);
     });
 
+    it('should evaluate a conditional whose branches sit on their own lines', () => {
+      // The shape authors actually paste. Each branch opens a line with `<`, which used to end
+      // the paragraph the expression lived in and split the run into separate blocks.
+      const tree = mdxish(
+        [
+          'Before',
+          '',
+          '{true ? (',
+          '  <Callout theme="info">',
+          '    Yes',
+          '  </Callout>',
+          ') : (',
+          '  <Callout theme="warn">',
+          '    No',
+          '  </Callout>',
+          ')}',
+          '',
+          'After',
+        ].join('\n'),
+      );
+
+      expect(tree.children.filter(child => child.type === 'element')).toMatchObject([
+        { tagName: 'p', children: [{ type: 'text', value: 'Before' }] },
+        { tagName: 'Callout', properties: { theme: 'info' } },
+        { tagName: 'p', children: [{ type: 'text', value: 'After' }] },
+      ]);
+    });
+
     it('should keep the blocks around a multiline expression intact', () => {
       const tree = mdxish(['# Title', '', '{true', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', '## After'].join('\n'));
 
@@ -179,6 +207,30 @@ describe('evaluateExpressions', () => {
       const html = mix('Total: {5 * 10} items');
 
       expect(html).toBe('<p>Total: 50 items</p>');
+    });
+
+    it.each([
+      ['a component named after an HTML tag', '{<Table><tr><td>a</td></tr></Table>}', '<table>'],
+      ['a block HTML element', '{true ? <div className="x">y</div> : null}', '<div class="x">y</div>'],
+    ])('should lift %s out of its paragraph', (_name, doc, expected) => {
+      const html = mix(doc);
+
+      expect(html).toContain(expected);
+      expect(html).not.toContain('<p>');
+    });
+
+    it('should wrap a multiline expression with an inline result in a paragraph', () => {
+      // Reformatting `{cond ? <a/> : null}` across lines must not change the block structure.
+      const html = mix('Before\n\n{true ? (\n  <a href="x">link</a>\n) : null}\n\nAfter');
+
+      expect(html).toBe('<p>Before</p>\n<p><a href="x">link</a></p>\n<p>After</p>');
+    });
+
+    it.each([
+      ['a blockquote', '> {1 +\n> 1}', '<blockquote>\n<p>2</p>\n</blockquote>'],
+      ['a list item', '- {1 +\n  1}\n\n- two', '<ul>\n<li>\n<p>2</p>\n</li>\n<li>\n<p>two</p>\n</li>\n</ul>'],
+    ])('should wrap a multiline text result in a paragraph inside %s', (_name, doc, expected) => {
+      expect(mix(doc)).toBe(expected);
     });
 
     it('should render a caller-supplied component inside an expression', () => {
@@ -279,6 +331,32 @@ describe('evaluateExpressions', () => {
 
       expect(html).toContain('yes');
       expect(html).not.toContain('no');
+    });
+
+    it('should leave a hyphenated tag to the component pipeline instead of binding it', () => {
+      // `My-Block` compiles to a string type, and is not a legal `new Function` parameter name.
+      const tree = mdxish('{<My-Block />}', { components: { MyBlock: asModule(Block) } });
+
+      expect(findElementByTagName(tree, 'MyBlock')).toMatchObject({ tagName: 'MyBlock' });
+    });
+
+    it('should keep a member-expression tag literal when its object is not in scope', () => {
+      // A stub for `Callout` would make `Callout.Foo` undefined and drop the content silently.
+      const html = mix('x {<Callout.Foo />} y');
+
+      expect(html).toContain('Callout.Foo');
+      expect(html).toContain('x {');
+    });
+
+    it('should warn when a component cannot be rendered at all', () => {
+      // A registered component is bound as a stub and rendered later; an exported one is invoked
+      // here, and one that throws even under React's own renderer has to be dropped audibly.
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      mix("export const Boom = () => { throw new Error('boom'); };\n\n{<Boom />}");
+
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Could not render'), expect.any(Error));
+      warn.mockRestore();
     });
   });
 });

@@ -30,6 +30,7 @@ import { createHash } from 'node:crypto';
 import { ElementType, isTag } from 'domelementtype';
 import { parseDocument } from 'htmlparser2';
 
+import { INLINE_HTML_TAGS } from '../constants';
 
 /* ---------- internal canonical node types ---------- */
 
@@ -72,51 +73,6 @@ const NOISE_ATTRS = new Set(['data-reactroot', 'data-testid', 'suppresshydration
 
 const CONTENT_ATTRS = new Set(['href', 'src', 'id', 'value', 'alt', 'title']);
 
-// Inline-level tags whose adjacent whitespace is significant relative to
-// surrounding siblings — e.g. the space in `a <em>b</em> c` lives at the edges
-// of the text nodes around <em>, and the space before/after an inline <br> or
-// <img> is a real rendered space. normalizeBoundaryWhitespace() treats a text
-// node's edge as a block boundary (and trims it) only when the neighbour is
-// block-level; inline neighbours (and inline element edges) keep their
-// whitespace. Includes the inline-level void/replaced elements (br, wbr, img,
-// input) so whitespace around them is preserved. Bare <span>s are flattened
-// into their parent before normalization, so their edge whitespace flows up
-// intact regardless.
-const INLINE_TAGS = new Set([
-  'a',
-  'abbr',
-  'b',
-  'bdi',
-  'bdo',
-  'br',
-  'cite',
-  'code',
-  'data',
-  'del',
-  'dfn',
-  'em',
-  'i',
-  'img',
-  'input',
-  'ins',
-  'kbd',
-  'mark',
-  'q',
-  'rp',
-  'rt',
-  'ruby',
-  's',
-  'samp',
-  'small',
-  'span',
-  'strong',
-  'sub',
-  'sup',
-  'time',
-  'u',
-  'var',
-  'wbr',
-]);
 
 /* ---------- canonicalization ---------- */
 
@@ -153,7 +109,7 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
   // Root node (Document type = 'root') or element. HTML tag names are
   // case-insensitive, but htmlparser2's xmlMode preserves the source casing, so
   // lowercase here — exactly as attribute names are lowercased below. Otherwise
-  // an uppercase tag would miss VOID_TAGS / INLINE_TAGS / heading-id
+  // an uppercase tag would miss VOID_TAGS / INLINE_HTML_TAGS / heading-id
   // classification and case-only tag differences (`<DIV>` vs `<div>`) would
   // surface as spurious structural diffs.
   const tag = isRoot ? '#root' : (node as Element).name.toLowerCase();
@@ -233,7 +189,7 @@ function walkAndCanonicalize(node: AnyNode, opts: DiffOptions, isRoot: boolean):
   // edges + between block siblings) while keeping whitespace that is a real
   // rendered space at inline boundaries (see normalizeBoundaryWhitespace).
   const normalized = VOID_TAGS.has(tag) ? [] : normalizeTextEquivalent(children, opts);
-  const finalChildren = normalizeBoundaryWhitespace(normalized, INLINE_TAGS.has(tag));
+  const finalChildren = normalizeBoundaryWhitespace(normalized, INLINE_HTML_TAGS.has(tag));
 
   // Bottom-up hash — recomputed after children are in their final form
   const hash = hashElement(tag, attrs, finalChildren);
@@ -304,12 +260,12 @@ function normalizeTextEquivalent(children: CanonNode[], opts: DiffOptions): Cano
 
 /**
  * A canonical node is "block-level" if it is an element whose tag is not in
- * INLINE_TAGS. Text nodes and inline elements are inline-level. Unknown tags
+ * INLINE_HTML_TAGS. Text nodes and inline elements are inline-level. Unknown tags
  * are treated as block (the conservative choice — block boundaries strip more
  * whitespace, matching how custom block components render).
  */
 function isBlockLevel(node: CanonNode): boolean {
-  return node.type === 'element' && !INLINE_TAGS.has(node.tag);
+  return node.type === 'element' && !INLINE_HTML_TAGS.has(node.tag);
 }
 
 /**
@@ -338,7 +294,7 @@ function trimInlineEdge(node: CanonNode, side: 'leading' | 'trailing'): CanonNod
   }
 
   // Only reach through inline elements; block elements own their edges.
-  if (!INLINE_TAGS.has(node.tag) || node.children.length === 0) return node;
+  if (!INLINE_HTML_TAGS.has(node.tag) || node.children.length === 0) return node;
 
   const idx = side === 'leading' ? 0 : node.children.length - 1;
   const edge = node.children[idx];
