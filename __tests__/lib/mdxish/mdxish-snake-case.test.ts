@@ -263,14 +263,13 @@ More markdown after the component.`;
       const snakeComponent = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(snakeComponent).toBeDefined();
 
-      // The unknown component inside code block should remain as-is (not transformed to placeholder)
+      // The unknown component inside code block should remain as-is 
       const codeBlock = hast.children.find(child => child.type === 'element' && child.tagName === 'pre');
       expect(codeBlock).toBeDefined();
 
       const codeElement = (codeBlock as Element).children[0] as Element;
       const textNode = codeElement.children[0] as { type: string; value: string };
       expect(textNode.value).toContain('Unknown_Component');
-      expect(textNode.value).not.toContain('MDXishSnakeCase');
     });
 
     it('should preserve known snake_case tags inside code blocks', () => {
@@ -284,14 +283,13 @@ More markdown after the component.`;
 
       const hast = mdxish(doc, { components });
 
-      // The code block content should show the original tag name (restored)
+      // The code block content should show the original tag name 
       const codeBlock = hast.children.find(child => child.type === 'element' && child.tagName === 'pre');
       expect(codeBlock).toBeDefined();
 
       const codeElement = (codeBlock as Element).children[0] as Element;
       const textNode = codeElement.children[0] as { type: string; value: string };
       expect(textNode.value).toContain('Snake_case');
-      expect(textNode.value).not.toContain('MDXishSnakeCase');
     });
 
     it('should preserve known snake_case tags inside code blocks with language specifier', () => {
@@ -316,10 +314,9 @@ More markdown after the component.`;
       const codeTabs = hast.children.find(child => child.type === 'element' && child.tagName === 'CodeTabs');
       expect(codeTabs).toBeDefined();
 
-      // Verify the code content contains the original name, not the placeholder
+      // Verify the code content contains the original name
       const codeTabsStr = JSON.stringify(codeTabs);
       expect(codeTabsStr).toContain('Snake_case_name');
-      expect(codeTabsStr).not.toContain('MDXishSnakeCase');
     });
 
     it('should preserve inline code with snake_case tags', () => {
@@ -343,28 +340,6 @@ More markdown after the component.`;
 
       const textNode = inlineCode.children[0] as { type: string; value: string };
       expect(textNode.value).toContain('Snake_case');
-      expect(textNode.value).not.toContain('MDXishSnakeCase');
-    });
-
-    it('should not collide with existing MDXishSnakeCase component names', () => {
-      const doc = `<Snake_case />
-
-<MDXishSnakeCase0 />`;
-
-      const components = makeComponents('Snake_case', 'MDXishSnakeCase0');
-
-      const hast = mdxish(doc, { components });
-
-      // Both components should render correctly without collision
-      const snakeCase = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'Snake_case',
-      );
-      const existingPlaceholder = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'MDXishSnakeCase0',
-      );
-
-      expect(snakeCase).toBeDefined();
-      expect(existingPlaceholder).toBeDefined();
     });
   });
 

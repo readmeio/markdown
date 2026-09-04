@@ -28,9 +28,6 @@ It applies seven transforms in sequence (the function carries a matching docstri
 1. **`normalizeCompactHeadings()`**
 
    Normalizes compact ATX headings that omit the space after the hashes (e.g. `#Heading` → `# Heading`) so they are recognized as headings rather than paragraph text.
-1. **`processSnakeCaseComponent()`**
-
-   Remark's parser rejects tag names containing underscores (e.g. `<my_component>`). This step replaces known snake_case component names with safe placeholder names (`<MDXishSnakeCase0>`) and returns a mapping so they can be restored later by the `restoreSnakeCaseComponentNames` transformer in the run phase.
 
 > **Note:** Earlier revisions of this pipeline also ran a `preprocessJSXExpressions()` string transform to escape stray/unbalanced braces. That step was removed (#1429, #1531). MDX expressions are now handled at the parser level by the lenient expression tokenizer (`mdxExprTextOnly` = `mdxExpressionLenient()`), and attribute expressions flow through as `mdxJsxAttributeValueExpression` nodes that are evaluated later.
 
@@ -47,7 +44,6 @@ It applies seven transforms in sequence (the function carries a matching docstri
 │  terminateHtmlFlowBlocks       — fix HTML flow           │  parsing
 │  closeSelfClosingHtmlTags      — <i /> → <i></i>         │
 │  normalizeCompactHeadings      — #Heading → # Heading    │
-│  processSnakeCaseComponent     — placeholder swap        │
 └─────────────────────────────┬─────────────────────────────┘
                               │
                               ▼
@@ -55,8 +51,6 @@ It applies seven transforms in sequence (the function carries a matching docstri
                               │
                               ▼
                     MDAST transformers...
-                         ...
-                    restoreSnakeCaseComponentNames  ◄── undo (7)
 ```
 
 ### Processor Pipeline
@@ -95,16 +89,16 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
   │                       │                                  │
   │  remarkParse          │  remarkFrontmatter               │
   │   micromarkExts:      │  normalizeEmphasisAST            │
-  │    · jsxTable         │  mdxishSelfClosingBlocks         │
-  │    · magicBlock       │  mdxishMdxComponentBlocks        │
-  │    · mdxComponent     │  mdxishInlineMdxHtmlBlocks       │
-  │    · gemoji           │  restoreSnakeCaseComponentNames  │
-  │    · legacyVariable   │  mdxishTables                    │
-  │    · looseHtmlEntity  │  mdxishHtmlBlocks                │
-  │    · htmlBlockComp.   │  magicBlockTransformer           │
-  │    · mdxExprTextOnly? │  imageTransformer                │
-  │    · mdxjsEsm?        │  defaultTransformers             │
-  │    · jsxComment?      │    (callouts, codeTabs, embeds)  │
+  │    · jsxTable         │  mdxishMdxComponentBlocks        │
+  │    · magicBlock       │  mdxishInlineMdxHtmlBlocks       │
+  │    · mdxComponent     │  mdxishTables                    │
+  │    · gemoji           │  mdxishHtmlBlocks                │
+  │    · legacyVariable   │  magicBlockTransformer           │
+  │    · looseHtmlEntity  │  imageTransformer                │
+  │    · htmlBlockComp.   │  defaultTransformers             │
+  │    · mdxExprTextOnly? │    (callouts, codeTabs, embeds)  │
+  │    · mdxjsEsm?        │                                  │
+  │    · jsxComment?      │                                  │
   │                       │  mdxishInlineMdxComponents?      │
   │   fromMarkdownExts:   │  mdxishJsxToMdast?               │
   │    · jsxTable         │  variablesTextTransformer        │
@@ -171,7 +165,6 @@ mdContent (raw input)
 │    terminateHtmlFlowBlocks        │
 │    closeSelfClosingHtmlTags       │
 │    normalizeCompactHeadings       │
-│    processSnakeCaseComponent      │
 └──────────────┬────────────────────┘
                │ parserReadyContent
                ▼

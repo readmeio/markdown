@@ -7,7 +7,6 @@ import { VFile } from 'vfile';
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes, parseMdxish } from '../helpers';
 
 interface MdxJsxFlowElement extends Parent {
@@ -27,7 +26,6 @@ const parseWithPlugin = (markdown: string): Root => {
     .data('micromarkExtensions', [mdxComponent()])
     .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
-    .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
   processor.runSync(tree, new VFile({ value: markdown }));
@@ -1560,6 +1558,37 @@ Second paragraph
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(1);
       });
+    });
+  });
+
+  describe('stray `<` before a tag', () => {
+    const elementNames = (md: string) =>
+      [
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxFlowElement'),
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxTextElement'),
+      ].map(node => node.name);
+
+    it('does not claim a stray `<word` as the tag that a later `>` closes', () => {
+      // The opener scan bails at `<`; it used to run on to the `>` of `<i …>` and
+      // claim a bogus `b` element (and rescan the line per stray `<`: quadratic).
+      expect(elementNames('a <b and <i data-a={1}>x</i> more')).toStrictEqual(['i']);
+    });
+
+    it('still allows `<` inside a brace or quoted attribute', () => {
+      expect(elementNames('<div title="<x>" data-a={a < b}>\n\nhi\n\n</div>')).toStrictEqual(['div']);
+    });
+  });
+
+  describe('nested expression attribute detection', () => {
+    // The regex needs only one name char before `=`; `[\w-]+` backtracked quadratically
+    // over huge base64 attributes (see lib/mdxish/perf/pathological-input-perf.test.ts).
+    it('still detects a nested expression attribute with whitespace around `=`', () => {
+      const md = `<div>
+  <span data-index = {1}>x</span>
+</div>`;
+      const tree = parseWithPlugin(md);
+      const [div] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(div.name).toBe('div');
     });
   });
 });

@@ -10,13 +10,14 @@ import { HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
  *
  * The attribute portion skips over quoted strings (`"..."` and `'...'`) so that
  * a `/>` inside an attribute value (e.g. `title="use /> here"`) does not cause
- * a premature match.
+ * a premature match. It stops at an unquoted `<`: otherwise every `<x` in prose
+ * with no `/>` after it scans to the end of the document (quadratic).
  *
  * Only matches lowercase tag names to avoid interfering with PascalCase
  * JSX custom components (e.g. `<MyComponent />`), which are handled
  * separately by components/mdx-blocks.
  */
-const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^>"']*(?:"[^"]*"|'[^']*'))*[^>"']*)?)?\s*\/>/g;
+const SELF_CLOSING_TAG_RE = /<([a-z][a-z0-9-]*)((?:\s+(?:[^<>"']*(?:"[^"]*"|'[^']*'))*[^<>"']*)?)?\s*\/>/g;
 
 /**
  * String-level preprocessor that converts self-closing non-void HTML tags

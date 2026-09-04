@@ -30,8 +30,6 @@ import { collapseForeignContentBlankLines } from '../processor/transform/mdxish/
 import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
 import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
-import mdxishSelfClosingBlocks from '../processor/transform/mdxish/components/self-closing-blocks';
-import { processSnakeCaseComponent } from '../processor/transform/mdxish/components/snake-case-components';
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
@@ -47,7 +45,6 @@ import normalizeMdxJsxNodes from '../processor/transform/mdxish/normalize-mdx-js
 import { removeJSXComments } from '../processor/transform/mdxish/remove-jsx-comments';
 import { repairMistakenTableClosers } from '../processor/transform/mdxish/repair-mistaken-table-closers';
 import resolveDeferredAttributeExpressionProps from '../processor/transform/mdxish/resolve-deferred-attribute-expression-props';
-import restoreSnakeCaseComponentNames from '../processor/transform/mdxish/restore-snake-case-component-name';
 import {
   preserveBooleanProperties,
   restoreBooleanProperties,
@@ -108,10 +105,8 @@ const defaultTransformers: PluggableList = [
  * 5. Terminate HTML flow blocks so subsequent content isn't swallowed
  * 6. Close invalid "self-closing" HTML tags (e.g., `<i />` → `<i></i>`)
  * 7. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
- * 8. Replace snake_case component names with parser-safe placeholders
  */
-function preprocessContent(content: string, opts: { knownComponents: Set<string> }) {
-  const { knownComponents } = opts;
+function preprocessContent(content: string) {
 
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
@@ -126,7 +121,7 @@ function preprocessContent(content: string, opts: { knownComponents: Set<string>
   result = closeSelfClosingHtmlTags(result);
   result = normalizeCompactHeadings(result);
 
-  return processSnakeCaseComponent(result, { knownComponents });
+  return result;
 }
 
 export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
@@ -143,10 +138,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     ...userComponents,
   };
 
-  // Build set of known component names for snake_case filtering
-  const knownComponents = new Set(Object.keys(components));
-
-  const { content: parserReadyContent, mapping: snakeCaseMapping } = preprocessContent(mdContent, { knownComponents });
+  const parserReadyContent = preprocessContent(mdContent);
 
   // Create string map for tailwind transformer
   const tempComponentsMap = Object.entries(components).reduce((acc, [key, value]) => {
@@ -162,10 +154,8 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(remarkParse)
     .use(remarkFrontmatter)
     .use(normalizeEmphasisAST)
-    .use(mdxishSelfClosingBlocks)
     .use(mdxishMdxComponentBlocks, { safeMode })
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
-    .use(restoreSnakeCaseComponentNames, { mapping: snakeCaseMapping })
     .use(mdxishTables)
     .use(mdxishHtmlBlocks) // Convert every <HTMLBlock> shape → html-block
     // The next few transformers must appear after mdxishMdxComponentBlocks
