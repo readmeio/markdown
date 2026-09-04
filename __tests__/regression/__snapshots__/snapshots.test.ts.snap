@@ -76,6 +76,50 @@ exports[`Render engine regressions tests > convergent (mdxish) 1`] = `
 <p>Both engines should render this identically.</p>"
 `;
 
+exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
+<div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div>
+<center><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2><p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p></center>
+<p>Inline legacy formatting: <font color="red" size="4"><strong>red</strong></font>, <big>big</big>,
+<strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
+<div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<object data="movie.swf"><param name="quality" value="high"/></object>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+`;
+
+exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
+<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div></div>
+<center>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2>
+<p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p>
+</center>
+<p>Inline legacy formatting: <font color="red" size="4"><strong>red</strong></font>, <big>big</big>,<br/>
+<strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
+<div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<p><object data="movie.swf"><param name="quality" value="high"/></object></p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+`;
+
 exports[`Render engine regressions tests > divergent (mdx) 1`] = `
 "<pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre>
 <p>Some prose after the HTML block.</p>"

@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 15.4.0
+### ✨ New & Improved
+
+* support scoping the dark: variant to a root selector in tailwindCompiler ([#1608](https://github.com/readmeio/markdown/issues/1608)) ([df0f409](https://github.com/readmeio/markdown/commit/df0f4092bb2bc4e382cef300d603e17f8c165a50)), closes [#1596](https://github.com/readmeio/markdown/issues/1596)
+
+## Version 15.3.0
+### ✨ New & Improved
+
+* **mdxish:** optional support for new line breaks ([#1602](https://github.com/readmeio/markdown/issues/1602)) ([9c7f6c5](https://github.com/readmeio/markdown/commit/9c7f6c5b7cdb0e59c69904e02bc524b1dcaae7af))
+* **mdxish:** render deprecated html tags instead of dropping them ([#1599](https://github.com/readmeio/markdown/issues/1599)) ([8f76c28](https://github.com/readmeio/markdown/commit/8f76c2806286ad2ed856a122ba31c09452cc7909))
+
 ## Version 15.2.1
 ### 🛠 Fixes & Updates
 
