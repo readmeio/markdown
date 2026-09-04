@@ -11,7 +11,7 @@ import htmlBlock from './html-block';
 import list from './list';
 import listItem from './list-item';
 import plain from './plain';
-import text from './text';
+import mdxishText, { text } from './text';
 import variable from './variable';
 
 function compilers(this: Processor, mdxish = false) {
@@ -33,12 +33,13 @@ function compilers(this: Processor, mdxish = false) {
     html: compatibility,
     i: compatibility,
     plain,
+    text,
     yaml: compatibility,
 
     // needed only for mdxish
     ...(mdxish && { list }),
     ...(mdxish && { listItem }),
-    ...(mdxish && { text }),
+    ...(mdxish && { text: mdxishText }),
     ...(mdxish && { [NodeTypes.variable]: variable }),
   };
 
