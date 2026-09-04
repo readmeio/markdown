@@ -311,6 +311,12 @@ describe('closeSelfClosingHtmlTags (string-level preprocessor)', () => {
       const input = '<DIV />';
       expect(closeSelfClosingHtmlTags(input)).toBe(input);
     });
+
+    it('does not let a stray `<word` swallow a later self-closing tag as its attributes', () => {
+      // The attribute scan stops at `<`; it used to run to the `/>` of `<i />` and
+      // emit `<b and\n<i></b>`. It also made prose full of `<` quadratic to scan.
+      expect(closeSelfClosingHtmlTags('a <b and\n<i />')).toBe('a <b and\n<i></i>');
+    });
   });
 
   describe('markdown context', () => {

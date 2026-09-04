@@ -408,6 +408,11 @@ function createTokenize(mode: 'flow' | 'text') {
         return inBraceExpr;
       }
 
+      // A raw `<` can't sit in an opening tag (only inside quotes/braces, handled
+      // above). Bailing here bounds each attempt to the next `<`, so prose full of
+      // stray `<` doesn't rescan the rest of the line per tag start (quadratic).
+      if (code === codes.lessThan) return nok(code);
+
       effects.consume(code);
       return afterOpenTagName;
     }
