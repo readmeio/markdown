@@ -5,7 +5,12 @@ import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
-import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
+import {
+  FOREIGN_CONTENT_TAGS,
+  HTML_TABLE_STRUCTURE_TAGS,
+  HTML_VOID_ELEMENTS,
+  STANDARD_HTML_TAGS,
+} from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
@@ -93,13 +98,14 @@ function createTokenize(mode: 'flow' | 'text') {
     let tagName = '';
     let depth = 0;
     let closingTagName = '';
-    // For lowercase tags we only want to claim the block if it uses JSX
-    // attribute expression syntax (`attr={...}`). Plain HTML should fall
-    // through to CommonMark html-flow. Flow mode claims any PascalCase block
-    // component; text mode claims only inline PascalCase components
-    // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
+    // Lowercase tags are claimed when they use JSX attribute expressions or
+    // unquoted HTML attribute values, preventing URL-like values from being
+    // split into text and autolink nodes elsewhere in the MDXish pipeline.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
+    let sawUnquotedAttr = false;
+    let awaitingAttrValue = false;
+    let sawAttributeName = false;
 
     // A plain lowercase block tag claimed without a `{…}` attribute, gated by
     // `plainClaimLineStart`: after a blank line it may only continue on a tag line.
@@ -316,6 +322,7 @@ function createTokenize(mode: 'flow' | 'text') {
         tagName = String.fromCharCode(code);
         isLowercaseTag = false;
         sawBraceAttr = false;
+        sawUnquotedAttr = false;
         effects.consume(code);
         return tagNameRest;
       }
@@ -327,6 +334,7 @@ function createTokenize(mode: 'flow' | 'text') {
         tagName = String.fromCharCode(code);
         isLowercaseTag = true;
         sawBraceAttr = false;
+        sawUnquotedAttr = false;
         effects.consume(code);
         return tagNameRest;
       }
@@ -368,9 +376,12 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null) return nok(code);
 
       // Everything except a flow-mode PascalCase block component must carry a
-      // `{…}` brace attribute to be claimed; plain HTML falls through to
-      // CommonMark.
-      const requiresBraceAttr = isLowercaseTag || !isFlow;
+      // `{…}` expression or unquoted attribute to be claimed; quoted HTML falls
+      // through to CommonMark.
+      const requiresSpecialAttr = isLowercaseTag || !isFlow;
+      const hasClaimableAttr =
+        sawBraceAttr ||
+        (sawUnquotedAttr && STANDARD_HTML_TAGS.has(tagName) && (!isFlow || htmlFlowTagNames.has(tagName)));
 
       if (markdownLineEnding(code)) {
         if (!isFlow) return nok(code);
@@ -380,21 +391,34 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // Self-closing />
       if (code === codes.slash) {
-        if (requiresBraceAttr && !sawBraceAttr) return nok(code);
+        if (awaitingAttrValue) {
+          awaitingAttrValue = false;
+          sawUnquotedAttr = true;
+          effects.consume(code);
+          return inUnquotedAttr;
+        }
+        if (requiresSpecialAttr && !hasClaimableAttr) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
 
       // End of opening tag
       if (code === codes.greaterThan) {
-        if (requiresBraceAttr && !sawBraceAttr && !claimBraceLessTag()) return nok(code);
+        if (awaitingAttrValue) return nok(code);
+        if (requiresSpecialAttr && !hasClaimableAttr && !claimBraceLessTag()) return nok(code);
+        if (isFlow && isLowercaseTag && sawUnquotedAttr && !sawBraceAttr && plainBlockClaimTagNames.has(tagName)) {
+          isPlainBlockClaim = true;
+        }
         effects.consume(code);
+        if (!isFlow && isLowercaseTag && sawUnquotedAttr && !sawBraceAttr) return doneOpeningTag;
         onOpenerLine = isFlow;
         return pendingBlockWrapperClaim ? blockWrapperOpenerRest : body;
       }
 
       // Quoted attribute value
       if (code === codes.quotationMark || code === codes.apostrophe) {
+        awaitingAttrValue = false;
+        sawAttributeName = false;
         quoteChar = code;
         effects.consume(code);
         return inQuotedAttr;
@@ -402,14 +426,62 @@ function createTokenize(mode: 'flow' | 'text') {
 
       // JSX expression attribute
       if (code === codes.leftCurlyBrace) {
+        awaitingAttrValue = false;
+        sawAttributeName = false;
         braceDepth = 1;
         sawBraceAttr = true;
         effects.consume(code);
         return inBraceExpr;
       }
 
+      if (code === codes.equalsTo) {
+        if (!isLowercaseTag) {
+          effects.consume(code);
+          return afterOpenTagName;
+        }
+        if (awaitingAttrValue || !sawAttributeName) return nok(code);
+        awaitingAttrValue = true;
+        sawAttributeName = false;
+        effects.consume(code);
+        return afterOpenTagName;
+      }
+
+      if (awaitingAttrValue && !markdownSpace(code)) {
+        if (code === codes.lessThan || code === codes.graveAccent) return nok(code);
+        awaitingAttrValue = false;
+        sawUnquotedAttr = true;
+        effects.consume(code);
+        return inUnquotedAttr;
+      }
+
+      if (isLowercaseTag && !markdownSpace(code)) sawAttributeName = true;
       effects.consume(code);
       return afterOpenTagName;
+    }
+
+    function inUnquotedAttr(code: Code): State | undefined {
+      if (
+        code === null ||
+        code === codes.quotationMark ||
+        code === codes.apostrophe ||
+        code === codes.lessThan ||
+        code === codes.equalsTo ||
+        code === codes.graveAccent
+      ) {
+        return nok(code);
+      }
+      if (code === codes.greaterThan || markdownLineEnding(code) || markdownSpace(code)) {
+        sawAttributeName = false;
+        return afterOpenTagName(code);
+      }
+      effects.consume(code);
+      return inUnquotedAttr;
+    }
+
+    function doneOpeningTag(code: Code): State | undefined {
+      effects.exit('mdxComponentData');
+      effects.exit('mdxComponent');
+      return ok(code);
     }
 
     function inQuotedAttr(code: Code): State | undefined {
