@@ -1,0 +1,7 @@
+{
+  "variables": {
+    "defaults": [{ "name": "companyName", "default": "Your Company" }],
+    "user": { "companyName": "Acme Inc", "planName": "Enterprise" }
+  },
+  "glossary": []
+}

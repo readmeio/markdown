@@ -149,6 +149,29 @@ describe('variablesTextTransformer', () => {
     });
   });
 
+  // Block-level wrappers used to leave their body raw, so a lone `{user.*}`
+  // never reached this transformer and rendered as literal braces.
+  describe('inline HTML wrappers', () => {
+    it.each(['div', 'p', 'h1', 'h2', 'h3', 'span'])('resolves a sole {user.name} inside <%s>', tag => {
+      const tree = mdxish(`<${tag}>{user.name}</${tag}>`);
+      const variables = findAllElementsByTagName(tree, 'variable');
+      expect(variables).toHaveLength(1);
+      expect(variables[0].properties?.name).toBe('name');
+    });
+
+    it('keeps a sole {user.name} as phrasing content, not its own paragraph', () => {
+      const tree = mdxish('<p>{user.name}</p>');
+      const paragraph = findElementByTagName(tree, 'p');
+      expect(paragraph!.children).toStrictEqual([expect.objectContaining({ tagName: 'variable' })]);
+    });
+
+    it.each(['{1 + 1}', '{ color: red }'])('leaves %s inside a <div> literal', expression => {
+      const tree = mdxish(`<div>${expression}</div>`);
+      expect(findElementByTagName(tree, 'variable')).toBeNull();
+      expect((findElementByTagName(tree, 'div')!.children[0] as Text).value).toBe(expression);
+    });
+  });
+
   describe('code block protection', () => {
     it('does not parse {user.name} inside a fenced code block', () => {
       const tree = mdxish('```\n{user.name}\n```');
