@@ -11,7 +11,7 @@ import type {
 
 import { factorySpace } from 'micromark-factory-space';
 import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
-import { codes, constants, types } from 'micromark-util-symbol';
+import { codes, types } from 'micromark-util-symbol';
 
 type Variant = 'mdxFlowExpression' | 'mdxTextExpression';
 
@@ -51,18 +51,6 @@ function tokenizeLineContinues(this: TokenizeContext, effects: Effects, ok: Stat
 
   function prefixed(code: Code): State | undefined {
     if (code === codes.eof || markdownLineEnding(code)) return nok(code);
-
-    // Indented code can't interrupt, so neither can anything else on an indented line.
-    const tail = self.events[self.events.length - 1];
-    if (
-      self.parser.constructs.disable?.null?.includes('codeIndented') !== true &&
-      tail &&
-      tail[1].type === types.linePrefix &&
-      tail[2].sliceSerialize(tail[1], true).length >= constants.tabSize
-    ) {
-      return ok(code);
-    }
-
     return effects.interrupt(flowInterrupters(self.parser.constructs.flow), nok, ok)(code);
   }
 }
