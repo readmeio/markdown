@@ -219,6 +219,14 @@ describe('evaluateExpressions', () => {
       expect(html).not.toContain('<p>');
     });
 
+    it.each([
+      ['a form control', '{<button>x</button>}', '<p><button>x</button></p>'],
+      ['embedded content', '{<video src="v.mp4"></video>}', '<p><video src="v.mp4"></video></p>'],
+      ['a multiline form control', '{true ? (\n  <label>x</label>\n) : null}', '<p><label>x</label></p>'],
+    ])('should keep %s in its paragraph as HTML phrasing content', (_name, doc, expected) => {
+      expect(mix(doc)).toBe(expected);
+    });
+
     it('should wrap a multiline expression with an inline result in a paragraph', () => {
       // Reformatting `{cond ? <a/> : null}` across lines must not change the block structure.
       const html = mix('Before\n\n{true ? (\n  <a href="x">link</a>\n) : null}\n\nAfter');

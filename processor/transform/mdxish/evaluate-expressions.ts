@@ -6,10 +6,11 @@ import type { Plugin } from 'unified';
 import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
+import { phrasing } from 'hast-util-phrasing';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS, INLINE_HTML_TAGS } from '../../../lib/constants';
+import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
 import { evalExpression, jsxComponentNames } from '../../../lib/utils/mdxish/mdxish-expression';
 import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
 import User from '../../../utils/user';
@@ -52,6 +53,8 @@ const isRenderable = (value: unknown): boolean => {
   return Array.isArray(value) && value.some(isRenderable);
 };
 
+const isPhrasingTag = (tagName: string): boolean => phrasing({ type: 'element', tagName, properties: {}, children: [] });
+
 /**
  * Whether an expression evaluated to block-level content. A capitalized tag is a component,
  * block-level unless it's on the inline list (so a `Table` component isn't mistaken for an inline
@@ -61,8 +64,7 @@ const isBlockResult = (children: ElementContent[]): boolean =>
   children.some(child => {
     if (child.type !== 'element' && child.type !== 'mdx-jsx') return false;
     const { tagName } = child as { tagName: string };
-    const inline = /^[A-Z]/.test(tagName) ? INLINE_COMPONENT_TAGS : INLINE_HTML_TAGS;
-    return !inline.has(tagName);
+    return /^[A-Z]/.test(tagName) ? !INLINE_COMPONENT_TAGS.has(tagName) : !isPhrasingTag(tagName);
   });
 
 const JSX_ELEMENT_TYPES = new Set(['mdxJsxFlowElement', 'mdxJsxTextElement']);
