@@ -1257,3 +1257,19 @@ stays literal:</p>
 <div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-inline-html"></div><div class="heading-text">Variables in inline HTML</div><a aria-label="Skip link to Variables in inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-inline-html"></a></h1>
+<p><span>Inline: <span>Acme Inc</span></span></p>
+<div><span>Acme Inc</span></div>
+<p><span>Acme Inc</span></p>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname"></a></h3>
+<div><span>Acme Inc</span></div>
+<p>Plan: <span>Enterprise</span></p>
+<div><strong>bold</strong> and <span>Acme Inc</span></div>
+<div style="color:red"><span>Acme Inc</span></div>
+<div>{ color: red }</div>
+<div>{1 + 1}</div>"
+`;

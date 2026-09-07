@@ -204,6 +204,26 @@ describe('legacy variables resolution', () => {
       expect(findElementByTagName(parent, 'variable')).toBeNull();
     });
 
+    // A single-line block tag is one raw html node, and the wrapper used to be
+    // promoted only when its body held some *other* markdown construct — so a body that
+    // was nothing but a variable reached parse5, which reads `<<name>>` as `<` + `<name>`.
+    it.each(['div', 'p', 'h1', 'h2', 'h3', 'span'])('should resolve <<variable>> alone inside <%s>', tag => {
+      const tree = mdxish(`<${tag}><<name>></${tag}>`);
+
+      const variableNode = findElementByTagName(tree, 'variable');
+      expect(variableNode).not.toBeNull();
+      expect(variableNode!.properties.name).toBe('name');
+      expect(findElementByTagName(tree, 'name')).toBeNull();
+    });
+
+    it('should resolve <<variable>> alone inside a block tag with attributes', () => {
+      const tree = mdxish('<div style="color: red"><<name>></div>');
+
+      const div = findElementByTagName(tree, 'div');
+      expect(div!.properties.style).toBe('color: red');
+      expect(findElementByTagName(div!, 'variable')!.properties.name).toBe('name');
+    });
+
     it('should parse <<variable>> next to HTML tags', () => {
       const md = '<<name>> <div>world</div>';
       const tree = mdxish(md);

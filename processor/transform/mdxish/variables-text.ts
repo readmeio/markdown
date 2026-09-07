@@ -1,5 +1,5 @@
 import type { Variable } from '../../../types';
-import type { Parent, Text } from 'mdast';
+import type { Node, Paragraph, Parent, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
@@ -17,6 +17,15 @@ import { NodeTypes } from '../../../enums';
  * Captures the field name in group 1 (dot notation) or group 2 (bracket notation)
  */
 const USER_VAR_REGEX = /\{user\.(\w+)\}|\{user\[['"](\w+)['"]\]\}/g;
+
+export function soleUserVariableExpression(node: Node): { name: string; wrapped: string } | null {
+  if (node.type !== 'mdxFlowExpression' && node.type !== 'mdxTextExpression') return null;
+  const { value } = node as MdxFlowExpression | MdxTextExpression;
+  const wrapped = `{${(value ?? '').trim()}}`;
+  const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
+  if (matches.length !== 1) return null;
+  return { name: matches[0][1] || matches[0][2], wrapped };
+}
 
 function makeVariableNode(varName: string, rawValue: string): Variable {
   return {
@@ -42,11 +51,14 @@ function makeVariableNode(varName: string, rawValue: string): Variable {
  */
 function visitExpressionNode(node: MdxFlowExpression | MdxTextExpression, index: number | undefined, parent: Parent) {
   if (index === undefined || !parent) return;
-  const wrapped = `{${(node.value ?? '').trim()}}`;
-  const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
-  if (matches.length !== 1) return;
-  const varName = matches[0][1] || matches[0][2];
-  parent.children.splice(index, 1, makeVariableNode(varName, wrapped));
+  const match = soleUserVariableExpression(node);
+  if (!match) return;
+  const variable = makeVariableNode(match.name, match.wrapped);
+  // A flow expression sits in a block slot; the variable renders inline, so give it the same
+  // paragraph its one-line `{user.*}` form gets. Table cells unwrap a sole paragraph.
+  const replacement: Paragraph | Variable =
+    node.type === 'mdxFlowExpression' ? { type: 'paragraph', children: [variable], position: node.position } : variable;
+  parent.children.splice(index, 1, replacement);
 }
 
 const variablesTextTransformer: Plugin = () => tree => {
