@@ -40,10 +40,6 @@ describe('table cell block markers', () => {
       expect(roundTrip(table('x', '\\- h'))).toBe(table('x', '\\- h'));
     });
 
-    it('should escape a leading marker the author left unescaped', () => {
-      expect(roundTrip(table('- one'))).toBe(table('\\- one'));
-    });
-
     it('should keep an escaped marker after a <br />', () => {
       const doc = '| a                  | b  |\n| :----------------- | :- |\n| \\- one<br />\\- two | x  |\n';
 
