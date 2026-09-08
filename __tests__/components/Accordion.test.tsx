@@ -1,10 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { expect } from 'vitest';
 
 import Accordion from '../../components/Accordion';
+import { gifRestartWrites, spyOnImageSrc } from '../helpers';
 
 import { renderingEngines } from './utils';
 
@@ -99,6 +100,59 @@ describe('Accordion', () => {
         </Accordion>,
       );
       expect(container.querySelector('i.Accordion-icon')).toBeNull();
+    });
+  });
+
+  describe('animated images', () => {
+    const open = (container: HTMLElement) => {
+      const details = container.querySelector('details') as HTMLDetailsElement;
+      details.open = true;
+      fireEvent(details, new Event('toggle'));
+    };
+
+    it('restarts GIF playback when the accordion is opened', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="demo" src="https://example.com/demo.gif" />
+        </Accordion>,
+      );
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
+
+      open(container);
+
+      expect(srcSpy.writes).toStrictEqual(gifRestartWrites('https://example.com/demo.gif'));
+      srcSpy.restore();
+    });
+
+    it('leaves a still image alone when the accordion is opened', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="still" src="https://example.com/still.png" />
+        </Accordion>,
+      );
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
+
+      open(container);
+
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
+    });
+
+    it('does not restart playback when the accordion is closed again', () => {
+      const { container } = render(
+        <Accordion title="Section">
+          <img alt="demo" src="https://example.com/demo.gif" />
+        </Accordion>,
+      );
+      const details = container.querySelector('details') as HTMLDetailsElement;
+      open(container);
+
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
+      details.open = false;
+      fireEvent(details, new Event('toggle'));
+
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
     });
   });
 

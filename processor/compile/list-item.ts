@@ -1,5 +1,5 @@
-import type { List, ListItem } from 'mdast';
-import type { Info, State } from 'mdast-util-to-markdown';
+import type { ListItem, Parents } from 'mdast';
+import type { Handle, Info, State } from 'mdast-util-to-markdown';
 
 import { defaultHandlers } from 'mdast-util-to-markdown';
 
@@ -18,7 +18,7 @@ const listMarkerRegex = /^(?:[*+-]|\d+[.)])(?:([\r\n]| {1,3})|$)/;
  * with their checkbox intact (for example, `- [ ]`) instead of dropping it
  * We can add more adjustments if needed
  */
-const listItem = (node: ListItem, parent?: List, state?: State, info?: Info) => {
+const listItem = ((node: ListItem, parent: Parents | undefined, state: State, info: Info) => {
   const head = node.children[0];
   const isCheckbox = typeof node.checked === 'boolean' && head && head.type === 'paragraph';
   if (!isCheckbox) {
@@ -46,6 +46,6 @@ const listItem = (node: ListItem, parent?: List, state?: State, info?: Info) => 
   });
 
   return value;
-};
+}) satisfies Handle;
 
 export default listItem;

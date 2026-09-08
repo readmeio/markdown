@@ -22,8 +22,9 @@ import {
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
-const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. One name
+// char suffices for existence — `[\w-]+` backtracked quadratically over huge attributes.
+const NESTED_ATTR_EXPRESSION_RE = /[\w-]\s*=\s*\{/;
 
 // Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
 // of a legacy `<<VARIABLE>>`.

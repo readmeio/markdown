@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+import useRestartAnimatedImages from '../../hooks/useRestartAnimatedImages';
 import Icon from '../Icon';
 
 import './style.scss';
@@ -14,6 +15,7 @@ interface TabsProps {
 
 const Tabs = ({ children }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(0);
+  const panelRefs = useRestartAnimatedImages(activeTab);
   // React passes `children` as a single element when there's only one child, so normalize.
   const tabs = React.Children.toArray(children) as React.ReactElement[];
 
@@ -38,7 +40,13 @@ const Tabs = ({ children }: TabsProps) => {
       <section>
         {/* Keep every panel mounted so runtime Tailwind can scan inactive tabs' classes on first paint */}
         {tabs.map((tab, index: number) => (
-          <div key={tab.key} hidden={index !== activeTab}>
+          <div
+            key={tab.key}
+            ref={el => {
+              panelRefs.current[index] = el;
+            }}
+            hidden={index !== activeTab}
+          >
             {tab}
           </div>
         ))}
