@@ -110,6 +110,42 @@ hello
 });
 
 /**
+ * A component's plain-text child is recursively re-parsed as its own
+ * standalone markdown document (via `processMarkdown`), so nested
+ * markdown/JSX inside it that happens to start with the literal word
+ * `export` (e.g. "export Lorem Ipsum") can be mistaken for a JS
+ * export statement.
+ */
+describe('recovering from "export"/"import" text inside a component', () => {
+  it('does not crash when a component text child begins with the literal word "export"', () => {
+    const md = 'See the <Anchor href="/x">export Lorem Ipsum</Anchor> feature.';
+    expect(() => mdxish(md)).not.toThrow();
+    expect(mix(md)).toContain('export Lorem Ipsum');
+  });
+
+  it('does not crash for other built-in components whose text child begins with "export"', () => {
+    // Must be inline (preceded by other text) so CommonMark's raw inline-html
+    // tokenizer — not the flow-level component tokenizer — claims the tag and
+    // routes it through the vulnerable `rehypeMdxishComponents` code path.
+    const md = 'Some text <Callout>export Lorem Ipsum</Callout> more text.';
+    expect(() => mdxish(md)).not.toThrow();
+    expect(mix(md)).toContain('export Lorem Ipsum');
+  });
+
+  it('does not crash when a self-closing component is immediately followed by "export" text', () => {
+    const md = 'Some text <Anchor href="/x" /> export Lorem Ipsum more text.';
+    expect(() => mdxish(md)).not.toThrow();
+    expect(mix(md)).toContain('export Lorem Ipsum');
+  });
+
+  it('does not crash when an image caption begins with "export" and preserves the caption text', () => {
+    const md = '<Image src="test.png" alt="test" caption="export Lorem Ipsum" />';
+    expect(() => mdxish(md)).not.toThrow();
+    expect(mix(md)).toContain('export Lorem Ipsum');
+  });
+});
+
+/**
  * Tests for smartCamelCase prop normalization.
  *
  * HTML lowercases attribute names, so `iconColor` becomes `iconcolor`.

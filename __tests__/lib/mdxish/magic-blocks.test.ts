@@ -505,6 +505,20 @@ ${JSON.stringify(
         expect(html).toContain('<em>foo</em>');
       });
 
+      it('renders a 4-space-indented cell line as prose, not a code block (CX-3739)', () => {
+        const html = getCellHtml('Detail.\n\n    const value = 1;');
+        expect(html).not.toContain('<pre>');
+        expect(html).not.toContain('<code>');
+        expect(html).toContain('const value = 1;');
+      });
+
+      it('does not render an indented leading dash as a bullet list in a cell', () => {
+        const html = getCellHtml('Intro\n\n    - foo');
+        expect(html).not.toContain('<ul>');
+        expect(html).not.toContain('<li>');
+        expect(html).toContain('- foo');
+      });
+
       it('renders block-level HTML as list when it appears inline after text (e.g. "Note: <ul><li>...</li></ul>")', () => {
         const input =
           'Note the following: <ul><li>A **Live** status means the domain is externally accessible (HTTP request passes)</li><li>A **Not Live** status means the domain is not exposed and cannot be reached from the internet (HTTP request fails)</li></ul>';
@@ -1956,12 +1970,17 @@ asdasdasd
       expect(() => mdxish(md)).not.toThrow();
     });
 
+    // CPU-bound robustness guard (no latency assertion): parsing 10k chars
+    // takes ~2s in isolation but can exceed the 5s default under full-suite
+    // parallel contention in CI. A generous explicit timeout still catches a
+    // genuine hang/catastrophic-backtracking regression while tolerating
+    // worker contention.
     it('should handle very long content without crashing', () => {
       const longContent = 'a'.repeat(10000);
       const md = `[block:callout]{"body":"${longContent}"}[/block]`;
 
       expect(() => mdxish(md)).not.toThrow();
-    });
+    }, 30000);
 
     it('should handle multiple blocks in sequence', () => {
       const md = '[block:callout]{}[/block][block:callout]{}[/block]';

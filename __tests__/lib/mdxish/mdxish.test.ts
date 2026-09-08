@@ -3,7 +3,7 @@ import type { Element, Root, Text } from 'hast';
 
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { extractText } from '../../../processor/transform/extract-text';
-import { findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('mdxish should render', () => {
   describe('invalid mdx syntax', () => {
@@ -398,6 +398,24 @@ Line 2`;
       expect((paragraph.children[2] as Text).value).toBe('\nLine 2');
     });
 
+    it('converts CRLF line endings into <br> elements', () => {
+      const tree = mdxish('Line 1\r\nLine 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(1);
+    });
+
+    it('does not convert standalone carriage returns into <br> elements', () => {
+      const tree = mdxish('Line 1\rLine 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(0);
+    });
+
+    it('does not double explicit breaks separated by standalone carriage returns', () => {
+      const tree = mdxish('Line 1\r<br />\r<br />Line 2');
+
+      expect(findAllElementsByTagName(tree, 'br')).toHaveLength(2);
+    });
+
     it('handles multiple soft line breaks and retains lone \\n nodes', () => {
       const md = `A
 B
@@ -556,7 +574,7 @@ b
 });
 
 describe('html tags rendering', () => {
-  describe('given various attribute formats', () => {
+  describe('various tag attribute formats', () => {
     const expectedAnchor = {
       type: 'element',
       tagName: 'a',
@@ -592,6 +610,66 @@ describe('html tags rendering', () => {
         href: 'https://example.com',
       },
       children: [{ type: 'text', value: 'Example' }],
+    });
+  });
+
+  describe('inline-ness vs block-ness of html tags', () => {
+    const elementNames = (parent: Element | Root) =>
+      parent.children.filter((c): c is Element => c.type === 'element').map(c => c.tagName);
+
+    const expectSingleParagraph = (tree: Root): Element => {
+      const paragraphs = tree.children.filter((c): c is Element => c.type === 'element' && c.tagName === 'p');
+      expect(paragraphs).toHaveLength(1);
+      return paragraphs[0];
+    };
+
+    describe('icon tag', () => {
+      it('keeps a paired icon tag inline with a trailing link', () => {
+        const md =
+          '<i class="fa fa-check fa-lg" style={{ color: "#ff9f3a" }}></i> <a href="https://example.com">3-D Secure</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps a self-closing icon tag inline with a trailing link', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}/> <a href="https://example.com">link</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps an icon tag inline with trailing plain text', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}></i> done';
+        const paragraph = expectSingleParagraph(mdxish(md));
+        expect(elementNames(paragraph)).toStrictEqual(['i']);
+        const trailing = paragraph.children.at(-1);
+        expect(trailing).toMatchObject({ type: 'text', value: ' done' });
+      });
+
+      it('keeps the icon inline despite condensed/tab whitespace before the link', () => {
+        const md = '<i style={{ color: "red" }}></i>\t \t<a href="https://example.com">link</a>';
+        expect(elementNames(expectSingleParagraph(mdxish(md)))).toStrictEqual(['i', 'a']);
+      });
+
+      it('keeps the icon inline inside a list item', () => {
+        const md = '- <i style={{ color: "red" }}></i> <a href="https://example.com">link</a>';
+        const listItem = findElementByTagName(mdxish(md), 'li');
+        expect(listItem).toBeDefined();
+        expect(elementNames(listItem!)).toStrictEqual(['i', 'a']);
+      });
+
+      it('leaves a standalone icon (no trailing content) as its own block', () => {
+        const md = '<i class="fa fa-check" style={{ color: "red" }}></i>';
+        expect(elementNames(mdxish(md))).toStrictEqual(['i']);
+      });
+    });
+
+    // Block-level HTML tags (CommonMark html-block type 6) stay flow even with
+    // trailing content, so a `<div>` isn't invalidly nested inside a paragraph.
+    it('keeps a block-level tag as its own block with trailing content as a sibling', () => {
+      expect(elementNames(mdxish('<div style={{ color: "red" }}>box</div> trailing'))).toStrictEqual(['div', 'p']);
+    });
+
+    // Raw-content tags (CommonMark html-block type 1, e.g. <pre>) also stay flow.
+    it('keeps a raw-content tag as its own block with trailing content as a sibling', () => {
+      expect(elementNames(mdxish('<pre data={{ a: 1 }}>code</pre> trailing'))).toStrictEqual(['pre', 'p']);
     });
   });
 });

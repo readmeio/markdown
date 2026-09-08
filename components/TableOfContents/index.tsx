@@ -83,6 +83,34 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
         && scrollParent.scrollTop + scrollParent.clientHeight >= scrollParent.scrollHeight - SCROLL_BOTTOM_TOLERANCE;
     };
 
+    /**
+     * Keeps the active link visible within the TOC's own scroll container —
+     * the same result as `scrollIntoView({ block: 'nearest' })`, but scoped to
+     * a single scroller. `scrollIntoView` adjusts *every* scrollable ancestor,
+     * and starting a scroll on the page's content scroller cancels any
+     * in-flight smooth scroll there — e.g. the hub's scroll-to-top reset when
+     * navigating between pages (CX-3667).
+     */
+    const scrollTOCLinkIntoView = (link: HTMLAnchorElement) => {
+      const tocScroller = getScrollParent(link);
+      // Without a TOC-local scroll area, the link's nearest scrollable
+      // ancestor is the window (`getScrollParent`'s fallback) or the scroller
+      // holding the page content — never auto-scroll those just to reveal a
+      // TOC link.
+      if (!(tocScroller instanceof HTMLElement) || tocScroller.contains(headings[0])) return;
+
+      const scrollerRect = tocScroller.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      if (linkRect.top < scrollerRect.top) {
+        tocScroller.scrollTo?.({ top: tocScroller.scrollTop + (linkRect.top - scrollerRect.top), behavior: 'smooth' });
+      } else if (linkRect.bottom > scrollerRect.bottom) {
+        tocScroller.scrollTo?.({
+          top: tocScroller.scrollTop + (linkRect.bottom - scrollerRect.bottom),
+          behavior: 'smooth',
+        });
+      }
+    };
+
     const activate = (id: string | null) => {
       if (id === activeId) return;
       if (activeId) linkMap.get(activeId)?.forEach(a => a.classList.remove('active'));
@@ -100,7 +128,7 @@ function useScrollHighlight(navRef: React.RefObject<HTMLElement | null>) {
           nav.style.setProperty('--ToC-border-active-height', `${linkRect.height}px`);
           nav.style.setProperty('--ToC-border-active-top', `${linkRect.top - navRect.top}px`);
 
-          link.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+          scrollTOCLinkIntoView(link);
         }
       }
     };

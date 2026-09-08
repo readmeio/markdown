@@ -14,9 +14,11 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
 interface Props {
   children: React.ReactNode;
   darkModeDataAttribute?: string | null;
+  /** See the matching param on `tailwindCompiler` in `utils/tailwind-compiler.ts`. */
+  darkModeRootSelector?: string | null;
 }
 
-const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
+const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
   const [stylesheet, setStylesheet] = useState('');
   const classesSet = useRef(new Set<string>());
   const ref = useRef<HTMLStyleElement>(null);
@@ -43,6 +45,7 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
       const sheet = await tailwindCompiler(classes, {
         prefix: `.${tailwindPrefix}`,
         darkModeDataAttribute,
+        darkModeRootSelector,
       });
       /* @note: don't insert an empty stylesheet */
       if (sheet.css.match(/^@layer utilities;/m)) return;
@@ -51,7 +54,7 @@ const TailwindStyle = ({ children, darkModeDataAttribute }: Props) => {
     };
 
     run();
-  }, [classes, darkModeDataAttribute]);
+  }, [classes, darkModeDataAttribute, darkModeRootSelector]);
 
   /*
    * @note: execute once on load

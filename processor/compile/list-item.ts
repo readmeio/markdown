@@ -1,11 +1,14 @@
-import type { List, ListItem } from 'mdast';
-import type { Info, State } from 'mdast-util-to-markdown';
+import type { ListItem, Parents } from 'mdast';
+import type { Handle, Info, State } from 'mdast-util-to-markdown';
 
 import { defaultHandlers } from 'mdast-util-to-markdown';
 
-// Matches '*', '-', '+', '1.', '2.', '3.', etc. followed by a newline or 1-3 spaces
-// to be replaced with the marker and a space like `- [ ]`
-const listMarkerRegex = /^(?:[*+-]|\d+\.)(?:([\r\n]| {1,3})|$)/;
+// Matches '*', '-', '+', '1.', '1)', etc. followed by a newline or 1-3 spaces
+// to be replaced with the marker and a space like `- [ ]`. The ')' delimiter is
+// reachable because the list handler honors stamped markers (see ListWithMarker
+// in ./list.ts); without it here, checkbox injection below silently no-ops for
+// ordered ')' task lists.
+const listMarkerRegex = /^(?:[*+-]|\d+[.)])(?:([\r\n]| {1,3})|$)/;
 
 /**
  * List-item serializer intended for checklist items
@@ -15,7 +18,7 @@ const listMarkerRegex = /^(?:[*+-]|\d+\.)(?:([\r\n]| {1,3})|$)/;
  * with their checkbox intact (for example, `- [ ]`) instead of dropping it
  * We can add more adjustments if needed
  */
-const listItem = (node: ListItem, parent?: List, state?: State, info?: Info) => {
+const listItem = ((node: ListItem, parent: Parents | undefined, state: State, info: Info) => {
   const head = node.children[0];
   const isCheckbox = typeof node.checked === 'boolean' && head && head.type === 'paragraph';
   if (!isCheckbox) {
@@ -43,6 +46,6 @@ const listItem = (node: ListItem, parent?: List, state?: State, info?: Info) => 
   });
 
   return value;
-};
+}) satisfies Handle;
 
 export default listItem;

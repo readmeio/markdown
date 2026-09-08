@@ -3,6 +3,8 @@ import childTests from '../__tests__/fixtures/child-tests.mdx';
 import codeBlockTests from '../__tests__/fixtures/code-block-tests.md';
 import exportTests from '../__tests__/fixtures/export-tests.mdx';
 import imageTests from '../__tests__/fixtures/image-tests.mdx';
+import markdownInHtmlTests from '../__tests__/fixtures/markdown-in-html-tests.mdx';
+import reusableContentSpacingTests from '../__tests__/fixtures/reusable-content-spacing-tests.mdx';
 import sanitizingTests from '../__tests__/fixtures/sanitizing-tests.md';
 import tableOfContentsTests from '../__tests__/fixtures/table-of-contents-tests.md';
 import tailwindRootTests from '../__tests__/fixtures/tailwind-root-tests.mdx';
@@ -16,6 +18,7 @@ import embeds from '../docs/embeds.md';
 import features from '../docs/features.md';
 import gettingStarted from '../docs/getting-started.md';
 import headings from '../docs/headings.md';
+import htmlBlocks from '../docs/html-blocks.md';
 import images from '../docs/images.md';
 import lists from '../docs/lists.md';
 import mdxComponents from '../docs/mdx-components.mdx';
@@ -37,12 +40,15 @@ const fixtures = Object.entries({
   features,
   gettingStarted,
   headings,
+  htmlBlocks,
   images,
   imageTests,
   lists,
+  markdownInHtmlTests,
   mdxComponents,
   builtInComponents,
   mermaid,
+  reusableContentSpacingTests,
   sanitizingTests,
   tableOfContentsTests,
   tables,

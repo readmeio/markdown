@@ -40,6 +40,35 @@ describe('Cards', () => {
       expect(container.querySelector('.Card-arrow')).toBeInTheDocument();
     });
 
+    it('renders the link with LinkComponent when one is given', () => {
+      const LinkComponent = ({
+        children,
+        className,
+        href,
+        target,
+      }: React.PropsWithChildren<{ className?: string; href?: string; target?: string }>) => (
+        <a className={className} href={`/ai-ml${href}`} target={target}>
+          {children}
+        </a>
+      );
+      const { container } = render(
+        <CardsGrid>
+          <Card href="/docs/f" LinkComponent={LinkComponent} title="Link">Linked</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('a.Card')).toHaveAttribute('href', '/ai-ml/docs/f');
+    });
+
+    it('ignores LinkComponent when there is no href', () => {
+      const LinkComponent = ({ children }: React.PropsWithChildren) => <a href="/nope">{children}</a>;
+      const { container } = render(
+        <CardsGrid>
+          <Card LinkComponent={LinkComponent} title="Static">Static</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('div.Card')).toBeInTheDocument();
+    });
+
     it('renders Card as a div when no href', () => {
       const { container } = render(
         <CardsGrid>

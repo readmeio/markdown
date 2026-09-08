@@ -75,8 +75,7 @@ describe('normalize-malformed-md-syntax', () => {
         type: 'paragraph',
         children: [
           { type: 'strong', children: [{ type: 'text', value: 'text' }] },
-          { type: 'text', value: ' w' },
-          { type: 'text', value: 'ord' },
+          { type: 'text', value: ' word' },
         ],
       });
     });
@@ -177,8 +176,7 @@ describe('normalize-malformed-md-syntax', () => {
         type: 'paragraph',
         children: [
           { type: 'emphasis', children: [{ type: 'text', value: 'text' }] },
-          { type: 'text', value: ' w' },
-          { type: 'text', value: 'ord' },
+          { type: 'text', value: ' word' },
         ],
       });
     });

@@ -20,7 +20,7 @@ export type { RenderOpts as RenderMdxishOpts };
  * @param opts - The options for the render
  * @returns The React component
  *
- * @see {@link https://github.com/readmeio/rmdx/blob/main/docs/mdxish-flow.md}
+ * @see .claude/context/MDXish/Processor Overview.md
  */
 const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
   const { components: userComponents = {}, variables, ...contextOpts } = opts;
@@ -40,7 +40,7 @@ const renderMdxish = (tree: Root, opts: RenderOpts = {}): RMDXModule => {
     componentsForRehype[name] = value as React.ComponentType;
   });
 
-  const processor = createRehypeReactProcessor(componentsForRehype);
+  const processor = createRehypeReactProcessor(componentsForRehype, variables);
   const content = processor.stringify(tree) as React.ReactNode;
 
   const tocHast = headings.length > 0 ? tocToHast(headings, variables) : null;

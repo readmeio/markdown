@@ -1,4 +1,4 @@
-@import '../../styles/mixins/dark-mode.scss';
+@import '../../styles/mixins/when-color-mode-dark.scss';
 
 @mixin callout($l-offset: 1.25rem) {
   --Callout-bg: var(--background);
@@ -21,7 +21,7 @@
     --Callout-border: var(--border, #{lighten(#6a737d, 12.5%)});
     --Callout-title: var(--title, var(--text, var(--color-text-default)));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: rgba(var(--gray100-rgb), 0.05);
     }
   }
@@ -31,7 +31,7 @@
     --Callout-border: var(--border, rgba(var(--blue-rgb), 1));
     --Callout-title: var(--title, var(--blue20));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--blue-rgb), 0.075));
       --Callout-title: var(--title, var(--blue90));
     }
@@ -43,7 +43,7 @@
     --Callout-border: var(--border, rgba(var(--yellow-rgb), 1));
     --Callout-title: var(--title, var(--yellow10));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--yellow-rgb), 0.075));
       --Callout-title: var(--title, var(--yellow70));
     }
@@ -56,7 +56,7 @@
     --Callout-border: var(--border, rgba(var(--green-rgb), 1));
     --Callout-title: var(--title, var(--green10));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--green-rgb), 0.075));
       --Callout-title: var(--title, var(--green80));
     }
@@ -68,7 +68,7 @@
     --Callout-border: var(--border, rgba(var(--red-rgb), 1));
     --Callout-title: var(--title, var(--red20));
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Callout-bg: var(--background, rgba(var(--red-rgb), 0.05));
       --Callout-title: var(--title, var(--red90));
     }

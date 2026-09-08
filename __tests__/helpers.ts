@@ -93,6 +93,29 @@ export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
   parseMdxishWithSource(doc, opts).tree;
 
 /**
+ * Parses markdown and returns a `sliceOf` that resolves each node's coordinate space the
+ * way a consumer must: a node's offsets index into the nearest `data.reparseSource` on
+ * itself or an ancestor, falling back to the post-preprocess document source.
+ */
+export const parseMdxishWithResolvedSources = (doc: string, opts: MdxishOpts = {}) => {
+  const { source, tree } = parseMdxishWithSource(doc, opts);
+  const sourceByNode = new Map<Node, string>();
+
+  const resolve = (node: Node, inherited: string) => {
+    const resolved = node.data?.reparseSource ?? inherited;
+    sourceByNode.set(node, resolved);
+    if ('children' in node) (node.children as Node[]).forEach(child => resolve(child, resolved));
+  };
+  resolve(tree, source);
+
+  return {
+    tree,
+    sliceOf: (node: Node): string | undefined =>
+      sourceByNode.get(node)?.slice(node.position?.start.offset, node.position?.end.offset),
+  };
+};
+
+/**
  * Round-trips markdown: parse → MDAST → serialize back to markdown.
  */
 export const roundTripMdxish = (doc: string, opts: MdxishOpts = {}): string =>
@@ -116,3 +139,24 @@ export const collectNodes = <T extends Node = Node>(
   });
   return out;
 };
+
+/**
+ * Spies on an <img>'s `src` setter so tests can assert whether `useRestartAnimatedImages`
+ * rewound it (see `gifRestartWrites`) or left it untouched (no writes).
+ */
+export const spyOnImageSrc = (img: HTMLImageElement) => {
+  const spy = vi.spyOn(img, 'src', 'set');
+  return {
+    /** Every value written to `src`, in order. */
+    get writes(): string[] {
+      return spy.mock.calls.map(([value]) => value);
+    },
+    restore: () => spy.mockRestore(),
+  };
+};
+
+/**
+ * The `src` writes a GIF restart produces: cleared, then restored. Reassigning `src` is the
+ * only way to rewind an animated image to frame 0.
+ */
+export const gifRestartWrites = (src: string) => ['', src];

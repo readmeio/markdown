@@ -241,6 +241,165 @@ isEven(4) = {isEven(4)}.`;
 > <Inner />`;
         expect(renderToHtml(md)).toContain('<strong>nested</strong>');
       });
+      
+      it('renders an `export default function` whose JSX ternary spans block elements', () => {
+        const md = `export default function Page() {
+  const selected = "";
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <div style={{ flexGrow: 1 }}>
+        {selected === '' ? (
+          <div>
+            <p>
+              Empty state.<br />
+              Pick something.
+            </p>
+          </div>
+        ) : (
+          <p>Has a selection.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+<Page />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe(
+          '<div style="display:flex"><div style="flex-grow:1"><div><p>Empty state.<br/>Pick something.</p></div></div></div>',
+        );
+      });
+
+      it('handles the same brace-spanning ternary in an `export const` arrow component', () => {
+        const md = `export const Panel = () => {
+  const active = true;
+
+  return (
+    <div>
+      {active ? (
+        <span>on</span>
+      ) : (
+        <span>off</span>
+      )}
+    </div>
+  );
+};
+
+<Panel />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe('<div><span>on</span></div>');
+      });
+
+      it('handles a brace-spanning ternary condensed onto one JSX return line', () => {
+        const md = `export default function Compact() {
+  const show = false;
+  return (<div>{show ? (<b>yes</b>) : (<i>no</i>)}</div>);
+}
+
+<Compact />`;
+        expect(() => mdxish(md)).not.toThrow();
+        expect(renderToHtml(md, { newEditorTypes: true })).toBe('<div><i>no</i></div>');
+      });
+    });
+  });
+
+  describe('library imports', () => {
+    it('resolves a named React import used inside an exported component (RM-16919)', () => {
+      const md = `import { useState } from 'react';
+
+export const Counter = () => {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>Add</button>
+      <p>{count}</p>
+    </div>
+  );
+};
+
+<Counter />`;
+      const html = renderToHtml(md);
+      expect(html).toContain('<button>Add</button>');
+      expect(html).toContain('<p>0</p>');
+    });
+
+    it('resolves a default React import', () => {
+      const md = `import React from 'react';
+
+export const Boxed = () => React.createElement('span', null, 'boxed');
+
+<Boxed />`;
+      expect(renderToHtml(md)).toContain('<span>boxed</span>');
+    });
+
+    it('resolves a namespace React import', () => {
+      const md = `import * as ReactLib from 'react';
+
+export const Boxed = () => ReactLib.createElement('span', null, 'ns');
+
+<Boxed />`;
+      expect(renderToHtml(md)).toContain('<span>ns</span>');
+    });
+
+    it('resolves an aliased named import', () => {
+      const md = `import { useState as useLocalState } from 'react';
+
+export const Counter = () => {
+  const [count] = useLocalState(7);
+  return <p>{count}</p>;
+};
+
+<Counter />`;
+      expect(renderToHtml(md)).toContain('<p>7</p>');
+    });
+
+    it('removes the import declaration from the rendered output', () => {
+      const md = `import { useState } from 'react';
+
+export const foo = "hello";
+
+Value: {foo}.`;
+      const html = mix(md);
+      expect(html).not.toContain('import {');
+      expect(html).toContain('Value: hello.');
+    });
+
+    it('keeps import bindings across multiple exports', () => {
+      const md = `import { useState, useMemo } from 'react';
+
+export const useSeed = () => useState(1);
+export const Doubler = () => {
+  const doubled = useMemo(() => 2 * 2, []);
+  return <p>{doubled}</p>;
+};
+
+<Doubler />`;
+      expect(renderToHtml(md)).toContain('<p>4</p>');
+    });
+
+    it('tolerates a condensed single-line import + export', () => {
+      const md = "import { useState } from 'react';export const Counter = () => { const [n] = useState(3); return <em>{n}</em>; };\n\n<Counter />";
+      expect(renderToHtml(md)).toContain('<em>3</em>');
+    });
+
+    it('warns and skips an unsupported library without breaking the rest of the doc', () => {
+      const md = `import { clamp } from 'lodash';
+
+export const greeting = "hi";
+
+{greeting}`;
+      const html = mix(md);
+      expect(html).not.toContain('import {');
+      expect(html).toContain('hi');
+    });
+
+    it('does not resolve imports in safeMode and keeps them as literal text', () => {
+      const md = `import { useState } from 'react';
+
+Plain text.`;
+      const html = mix(md, { safeMode: true });
+      expect(html).toContain("import { useState } from 'react';");
     });
   });
 

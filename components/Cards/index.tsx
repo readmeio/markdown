@@ -6,6 +6,8 @@ import './style.scss';
 
 interface CardProps
   extends React.PropsWithChildren<{
+    // Optional link component wrapper so that the link can be formatted & processed by the parent
+    LinkComponent?: React.ElementType;
     badge?: string;
     href?: string;
     icon?: string;
@@ -15,8 +17,18 @@ interface CardProps
     title?: string;
   }> {}
 
-export const Card = ({ badge, children, href, kind = 'card', icon, iconColor, target, title }: CardProps) => {
-  const Tag = href ? 'a' : 'div';
+export const Card = ({
+  badge,
+  children,
+  href,
+  kind = 'card',
+  icon,
+  iconColor,
+  LinkComponent = 'a',
+  target,
+  title,
+}: CardProps) => {
+  const Tag = href ? LinkComponent : 'div';
 
   return (
     <Tag className={`Card Card_${kind}`} href={href} target={target}>

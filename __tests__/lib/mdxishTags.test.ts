@@ -55,6 +55,12 @@ This is phrasing: <Inline />
     expect(mdxishTags(mdx)).toStrictEqual([]);
   });
 
+  it('captures snake_case components', () => {
+    const mdx = '<Snake_case_component>Snake case component</Snake_case_component>';
+
+    expect(mdxishTags(mdx)).toStrictEqual(['Snake_case_component']);
+  });
+
   it('captures components and nested components', () => {
     const mdx = '<Component>Hello<NestedComponent /></Component>';
 
@@ -157,6 +163,97 @@ This is phrasing: <Inline />
   </table>`;
 
       expect(mdxishTags(mdx)).toStrictEqual(['TableBlock']);
+    });
+  });
+
+  describe('inside HTML tags', () => {
+    it('captures components inside <p> tags', () => {
+      const mdx = '<p><Component /></p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('captures components inside multi-line <div> wrappers', () => {
+      const mdx = `<div>
+  <Component />
+</div>`;
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('captures components nested through multiple HTML levels', () => {
+      const mdx = '<div><section><Component /></section></div>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('does not treat legacy <<VARIABLE>> syntax as a component', () => {
+      const mdx = '<p>Hello <<NAME>>!</p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual([]);
+    });
+
+    it('captures snake_case components', () => {
+      const mdx = '<p><Snake_case_component /></p>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Snake_case_component']);
+    });
+  });
+
+  describe('in nested components', () => {
+    it('captures nested components', () => {
+      const mdx = '<Component><NestedComponent><SubNestedComponent /></NestedComponent></Component>';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component', 'NestedComponent', 'SubNestedComponent']);
+    });
+  });
+
+  // Tag extraction never uses evaluated attribute values, so it always parses in safeMode —
+  // attribute expressions must never reach `new Function`. (GHSA-2prv-4jff-x46g)
+  describe('attribute expressions are never evaluated', () => {
+    it('does not evaluate an attribute expression', () => {
+      globalThis.tagCanary = false;
+      const mdx = '<Component value={(globalThis.tagCanary = true)} />';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+      expect(globalThis.tagCanary).toBe(false);
+    });
+
+    it('does not throw when an attribute expression references an undefined global', () => {
+      const mdx = '<Component value={process.env.SOME_CANARY} />';
+
+      expect(() => mdxishTags(mdx)).not.toThrow();
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('still returns tag names for expression-valued attributes', () => {
+      const mdx = '<Component theme={true} size={1 + 1} empty quotes={`hello`} />';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+  });
+
+  describe('deeply indented components', () => {
+    it('captures a 4+ column indented component at the top level', () => {
+      const mdx = '      <MyComponent />';
+  
+      expect(mdxishTags(mdx)).toStrictEqual(['MyComponent']);
+    });
+
+    it('captures a 4+ column indented component nested in a parent component', () => {
+      const mdx = `
+<ParentComponent>
+              <MyComponent />
+</ParentComponent>
+
+        <ComponentOne>
+          <ComponentTwo>
+            Hello
+          </ComponentTwo>
+        </ComponentOne>
+`;
+
+      expect(mdxishTags(mdx)).toStrictEqual(['ParentComponent', 'MyComponent', 'ComponentOne', 'ComponentTwo']);
     });
   });
 });

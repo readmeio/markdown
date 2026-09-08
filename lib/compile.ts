@@ -5,11 +5,11 @@ import { compileSync as mdxCompileSync } from '@mdx-js/mdx';
 import deepmerge from 'deepmerge';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import remarkBreaks from 'remark-breaks';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
+import hardBreaksPlugin from '../processor/plugin/hard-breaks';
 import { rehypeToc } from '../processor/plugin/toc';
 import {
   defaultTransforms,
@@ -47,7 +47,7 @@ const compile = (
   const remarkPlugins: PluggableList = [
     remarkFrontmatter,
     remarkGfm,
-    ...(hardBreaks ? [remarkBreaks] : []),
+    ...(hardBreaks ? [hardBreaksPlugin] : []),
     ...Object.values(transforms),
     [codeTabsTransformer, { copyButtons }],
     [

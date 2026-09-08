@@ -115,16 +115,20 @@ The engine also supports the legacy JSON-based "magic block" syntax for backward
 	}
 	[/block]
 
-This is a legacy format that should be transpiled to newer ReadMe-flavored syntax. Supported magic blocks include:
+This is a legacy format that should be transpiled to newer ReadMe-flavored syntax. The tokenizer's recognized block types are the source of truth (@lib/micromark/magic-block/syntax.ts#34-45):
 
-| Feature       | Magic Block Name       |
-|---------------|------------------------|
-| Heading       | `[block:api-header]`   |
-| Callout       | `[block:callout]`      |
-| Embed         | `[block:embed]`        |
-| Custom HTML   | `[block:html]`         |
-| Image         | `[block:image]`        |
-| Table         | `[block:parameters]`   |
+| Feature       | Magic Block Name                            |
+|---------------|---------------------------------------------|
+| Heading       | `[block:api-header]`                         |
+| Callout       | `[block:callout]`                            |
+| Code Block    | `[block:code]`                               |
+| Embed         | `[block:embed]`                              |
+| Custom HTML   | `[block:html]`                               |
+| Image         | `[block:image]`                              |
+| Table         | `[block:parameters]` (also `[block:table]`)  |
+| Tutorial Tile | `[block:tutorial-tile]` (also `[block:recipe]`) |
+
+`parameters` is the fully-featured table block; `table` is a recognized alias. `recipe` and `tutorial-tile` both compile to a `Recipe` component. Any recognized-but-unhandled block falls back to a generic `<div>` wrapper.
 
 ## Additional Features
 

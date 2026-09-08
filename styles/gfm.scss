@@ -268,6 +268,17 @@
     margin-bottom: 0 !important;
   }
 
+  // When a TailwindRoot-wrapped custom block sits at the document edge, its
+  // inner margins would collapse through the zeroed wrapper — trim them too.
+  & > .readme-tailwind:first-child > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child {
+    margin-top: 0 !important;
+  }
+
+  & > .readme-tailwind:last-child > :last-child {
+    margin-bottom: 0 !important;
+  }
+
   blockquote,
   dl,
   p,
@@ -392,7 +403,10 @@
     border-bottom: 0;
   }
 
-  > * {
+  // Custom blocks (e.g. reusable content) render inside a flow TailwindRoot
+  // div, so spacing must pierce the wrapper to reach their block children.
+  > *,
+  > .readme-tailwind > * {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: var(--markdown-spacing, 15px);
   }

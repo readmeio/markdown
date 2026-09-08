@@ -124,6 +124,55 @@ there`;
       expect(findElementByTagName(tree, 'script')).toBeNull();
     });
 
+    it('preserves a raw <table> inside a multiline HTMLBlock (CX-3701)', () => {
+      const tree = mdxish('<HTMLBlock>{`\n<table><tr><td>hello</td></tr></table>\n`}</HTMLBlock>');
+
+      expect(htmlBlockPayloads(tree)).toStrictEqual(['<table><tr><td>hello</td></tr></table>']);
+      // The inner table must NOT be lifted out into a real/JSX table node.
+      expect(findElementByTagName(tree, 'table')).toBeNull();
+      expectFullyConverted(tree);
+    });
+
+    it('preserves a <style> + styled <table> inside a multiline HTMLBlock (CX-3701 snippet A)', () => {
+      const md = [
+        '<HTMLBlock>{`',
+        '<style> .demo { color: #0062df; } </style>',
+        '<table class="demo"><tr><td>hello</td></tr></table>',
+        '`}</HTMLBlock>',
+      ].join('\n');
+      const tree = mdxish(md);
+
+      expect(htmlBlockPayloads(tree)).toStrictEqual([
+        '<style> .demo { color: #0062df; } </style>\n<table class="demo"><tr><td>hello</td></tr></table>',
+      ]);
+      expect(findElementByTagName(tree, 'table')).toBeNull();
+      expectFullyConverted(tree);
+    });
+
+    it('preserves a pretty-printed, blank-line-separated <table> inside HTMLBlock (CX-3701)', () => {
+      const md = [
+        '<HTMLBlock>{`',
+        '<table>',
+        '  <thead>',
+        '    <tr><th>Country</th></tr>',
+        '  </thead>',
+        '',
+        '  <tr>',
+        '    <td>Afghanistan</td>',
+        '  </tr>',
+        '`}</HTMLBlock>',
+      ].join('\n');
+      const tree = mdxish(md);
+
+      const [payload] = htmlBlockPayloads(tree);
+      // Body is preserved byte-for-byte, blank line and indentation included.
+      expect(payload).toBe(
+        '<table>\n  <thead>\n    <tr><th>Country</th></tr>\n  </thead>\n\n  <tr>\n    <td>Afghanistan</td>\n  </tr>',
+      );
+      expect(findElementByTagName(tree, 'table')).toBeNull();
+      expectFullyConverted(tree);
+    });
+
     it('unescapes backticks inside the content', () => {
       const tree = mdxish('<HTMLBlock>{`<code>const x = \\`tpl\\`;</code>`}</HTMLBlock>');
 

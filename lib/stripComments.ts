@@ -1,6 +1,5 @@
 import { VARIABLE_REGEXP } from '@readme/variable';
-import { mdxExpressionFromMarkdown, mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
-import { mdxExpression } from 'micromark-extension-mdx-expression';
+import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
@@ -10,8 +9,7 @@ import { unified } from 'unified';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
 import { stripCommentsTransformer } from '../processor/transform/stripComments';
 
-import { jsxTableFromMarkdown } from './mdast-util/jsx-table';
-import { jsxTable } from './micromark/jsx-table';
+import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
 import { extractMagicBlocks, restoreMagicBlocks } from './utils/extractMagicBlocks';
 
 interface Opts {
@@ -27,13 +25,17 @@ async function stripComments(doc: string, { mdx, mdxish }: Opts = {}): Promise<s
 
   const processor = unified();
 
-  // we still require these two extensions because:
-  // 1. we can rely on remarkMdx to parse MDXish
-  // 2. we need to parse JSX comments into mdxTextExpression nodes so that the transformers can pick them up
+  // We can't lean on remarkMdx for MDXish, so these tokenizers keep each
+  // construct in one node across the parse/stringify round trip: JSX comments
+  // become mdxTextExpression nodes the transformer can find, `<HTMLBlock>` is
+  // claimed before htmlFlow intercepts its inner tags, and a custom component
+  // stays whole instead of having its tag escaped.
   if (mdxish) {
+    const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.stripComments);
+
     processor
-      .data('micromarkExtensions', [jsxTable(), mdxExpression({ allowEmpty: true })])
-      .data('fromMarkdownExtensions', [jsxTableFromMarkdown(), mdxExpressionFromMarkdown()])
+      .data('micromarkExtensions', micromarkExtensions)
+      .data('fromMarkdownExtensions', fromMarkdownExtensions)
       .data('toMarkdownExtensions', [mdxExpressionToMarkdown()]);
   }
 

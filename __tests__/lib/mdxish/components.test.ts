@@ -5,6 +5,7 @@ import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { mdxish, compile, run } from '../../../lib';
+import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
 describe('end-to-end tests in the mdxish pipeline for various types and variations of MDX components', () => {
   // Create & compile example component
@@ -337,6 +338,28 @@ labore et dolore magna aliqua.`,
     ]);
   });
 
+  it('should render a component nested inside a plain HTML wrapper', () => {
+    const md = '<p><ExampleComponent body="This is a body" /></p>';
+    const tree = mdxish(md, { components: exampleComponents });
+
+    expect(tree.children).toMatchObject([
+      {
+        type: 'element',
+        tagName: 'p',
+        children: [
+          {
+            type: 'element',
+            tagName: 'ExampleComponent',
+            properties: {
+              body: 'This is a body',
+            },
+            children: [],
+          },
+        ],
+      },
+    ]);
+  });
+
   it('should not identify an MDX component syntax inside a code block', () => {
     const md = '```jsx\n<ExampleComponent body="This is a body" />\n```';
     const tree = mdxish(md, { components: exampleComponents });
@@ -348,5 +371,100 @@ labore et dolore magna aliqua.`,
       }
     });
     expect(exampleComponentNode).toBeUndefined();
+  });
+
+  describe('inline components with expression attributes', () => {
+    it('should concatenate expression attributes', () => {
+      const md = "<Anchor label=\"Merchant Sign-Up API Documentation\" target=\"_blank\" href={'https://' + 'www.example.com' + '/reference/sign-up-api'}>Link</Anchor>";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const anchor = findElementByTagName(tree, 'Anchor');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          label: 'Merchant Sign-Up API Documentation',
+          target: '_blank',
+          href: 'https://www.example.com/reference/sign-up-api',
+        },
+        children: [{ type: 'text', value: 'Link' }],
+      });
+    });
+
+    it('should render an Anchor whose href is a concatenation expression', () => {
+      const md =
+        "<Anchor label=\"Docs\" target=\"_blank\" href={'https://' + user.docsUrl + '/x'}>Docs</Anchor>.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const anchor = findElementByTagName(tree, 'Anchor');
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          label: 'Docs',
+          target: '_blank',
+          href: "'https://' + user.docsUrl + '/x'",
+        },
+        children: [{ type: 'text', value: 'Docs' }],
+      });
+    });
+
+    it('should keep trailing text after the closing tag as a sibling', () => {
+      const md = "Start <Anchor href={'a' + 'b'}>Link</Anchor> done.";
+      const tree = mdxish(md, { newEditorTypes: true });
+      const paragraph = tree.children[0] as Element;
+      const [start, anchor, trailing] = paragraph.children;
+      expect(start).toMatchObject({ type: 'text', value: 'Start ' });
+      expect(anchor).toMatchObject({
+        type: 'element',
+        tagName: 'Anchor',
+        properties: {
+          href: 'ab',
+        },
+        children: [{ type: 'text', value: 'Link' }],
+      });
+      expect(trailing).toMatchObject({ type: 'text', value: ' done.' });
+    });
+  });
+
+  describe('fenced code with an unbalanced brace inside a Callout (CX-3704)', () => {
+    const md = `<Callout icon="⚠️" theme="warn">
+  **Title line**
+
+  Intro paragraph inside the callout.
+
+  \`\`\`
+  {
+  \`\`\`
+
+  Closing paragraph inside the callout.
+</Callout>
+
+* **After-marker bullet**
+
+  Indented continuation after the callout.
+
+Final plain paragraph at end of file.`;
+
+    it('closes the callout at </Callout> and renders following content outside it', () => {
+      const tree = mdxish(md);
+
+      // Exactly one Callout, and the content after </Callout> is NOT swallowed.
+      const callouts = findAllElementsByTagName(tree, 'Callout');
+      expect(callouts).toHaveLength(1);
+
+      // The after-marker bullet renders as a real list, not a literal `*`
+      // paragraph, and that list lives OUTSIDE the callout.
+      expect(findAllElementsByTagName(tree, 'ul')).toHaveLength(1);
+      expect(findAllElementsByTagName(callouts[0], 'ul')).toHaveLength(0);
+
+      // The unbalanced `{` stays inside a code block within the callout.
+      const pre = findElementByTagName(callouts[0], 'pre');
+      expect(pre).not.toBeNull();
+      expect(JSON.stringify(pre)).toContain('{');
+    });
+
+    it('does not strand a literal </Callout> in the output', () => {
+      const tree = mdxish(md);
+      expect(JSON.stringify(tree)).not.toContain('</Callout>');
+    });
   });
 });

@@ -1,4 +1,10 @@
-import { toAttributes } from '../../processor/utils';
+import { toAttributes, pointAfter, getAttrs } from '../../processor/utils';
+
+const expressionAttribute = (name: string, value: string) => ({
+  type: 'mdxJsxAttribute',
+  name,
+  value: { type: 'mdxJsxAttributeValueExpression', value },
+});
 
 describe('toAttributes', () => {
   it('converts string values to string attributes', () => {
@@ -75,5 +81,68 @@ describe('toAttributes', () => {
 
     expect(attrs).toHaveLength(1);
     expect(attrs[0].name).toBe('name');
+  });
+});
+
+describe('pointAfter', () => {
+  it('returns the start point unchanged when nothing is consumed', () => {
+    const start = { line: 5, column: 3, offset: 40 };
+    expect(pointAfter(start, '')).toStrictEqual({ line: 5, column: 3, offset: 40 });
+  });
+
+  it('advances only the column and offset when the consumed run stays on the start line', () => {
+    const start = { line: 5, column: 3, offset: 40 };
+    expect(pointAfter(start, '0123')).toStrictEqual({ line: 5, column: 7, offset: 44 });
+  });
+
+  it('advances the line and resets the column relative to the last newline when the run crosses lines', () => {
+    const start = { line: 1, column: 1, offset: 0 };
+    // "ab\ncdef\nghi" ends on the 3rd line, 3 chars past its newline.
+    expect(pointAfter(start, 'ab\ncdef\nghi')).toStrictEqual({ line: 3, column: 4, offset: 11 });
+  });
+
+  it('places the column at 1 when the run ends right after a trailing newline', () => {
+    const start = { line: 1, column: 1, offset: 0 };
+    expect(pointAfter(start, 'ab\n')).toStrictEqual({ line: 2, column: 1, offset: 3 });
+  });
+
+  it('treats a missing start offset as 0', () => {
+    const start = { line: 2, column: 5 };
+    expect(pointAfter(start, 'xy')).toStrictEqual({ line: 2, column: 7, offset: 2 });
+  });
+
+  it('carries a non-zero start offset through unchanged in the same-line case', () => {
+    const start = { line: 1, column: 1, offset: 1000 };
+    expect(pointAfter(start, 'hello ')).toStrictEqual({ line: 1, column: 7, offset: 1006 });
+  });
+});
+
+describe('getAttrs', () => {
+  it('resolves literal expressions and keeps the raw source for everything else', () => {
+    const node = {
+      type: 'mdxJsxFlowElement',
+      name: 'Foo',
+      attributes: [
+        expressionAttribute('style', '{ color: "red" }'),
+        expressionAttribute('count', '1 + 2'),
+        expressionAttribute('icon', 'item.url'),
+        expressionAttribute('missing', 'undefined'),
+        { type: 'mdxJsxAttribute', name: 'border', value: null },
+        { type: 'mdxJsxAttribute', name: 'src', value: '/a.png' },
+        { type: 'mdxJsxAttribute', name: 'title', value: 'a &amp; b' },
+        { type: 'mdxJsxExpressionAttribute', value: '...spread' },
+      ],
+      children: [],
+    };
+
+    expect(getAttrs(node as never)).toStrictEqual({
+      style: { color: 'red' },
+      count: 3,
+      icon: 'item.url',
+      missing: undefined,
+      border: true,
+      src: '/a.png',
+      title: 'a & b',
+    });
   });
 });

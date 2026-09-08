@@ -2,15 +2,16 @@ import type { Processor } from 'unified';
 
 import { NodeTypes } from '../../enums';
 
-import anchor from './anchor';
 import callout from './callout';
 import codeTabs from './code-tabs';
 import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
 import htmlBlock from './html-block';
+import list from './list';
 import listItem from './list-item';
 import plain from './plain';
+import mdxishText, { text } from './text';
 import variable from './variable';
 
 function compilers(this: Processor, mdxish = false) {
@@ -19,7 +20,6 @@ function compilers(this: Processor, mdxish = false) {
   const toMarkdownExtensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
 
   const handlers = {
-    ...(mdxish && { [NodeTypes.anchor]: anchor }),
     [NodeTypes.callout]: callout,
     [NodeTypes.codeTabs]: codeTabs,
     [NodeTypes.embedBlock]: embed,
@@ -27,15 +27,20 @@ function compilers(this: Processor, mdxish = false) {
     [NodeTypes.glossary]: compatibility,
     [NodeTypes.htmlBlock]: htmlBlock,
     [NodeTypes.reusableContent]: compatibility,
-    ...(mdxish && { [NodeTypes.variable]: variable }),
     embed: compatibility,
     escape: compatibility,
     figure: compatibility,
     html: compatibility,
     i: compatibility,
-    ...(mdxish && { listItem }),
     plain,
+    text,
     yaml: compatibility,
+
+    // needed only for mdxish
+    ...(mdxish && { list }),
+    ...(mdxish && { listItem }),
+    ...(mdxish && { text: mdxishText }),
+    ...(mdxish && { [NodeTypes.variable]: variable }),
   };
 
   toMarkdownExtensions.push({ extensions: [{ handlers }] });
