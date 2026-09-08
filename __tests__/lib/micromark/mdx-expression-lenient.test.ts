@@ -128,6 +128,9 @@ describe('mdxExpressionLenient tokenizer', () => {
     it.each([
       ['a parenthesized branch', conditional],
       ['a tag at column zero', '{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}'],
+      ['a body at column zero', '{true ? (\n<Callout theme="info">\nYes\n</Callout>\n) : null}'],
+      ['a deeply indented body', '{true ? (\n        <Callout theme="info">\n                Yes\n        </Callout>\n) : null}'],
+      ['an unevenly indented body', '{true ? (\n  <Callout theme="info">\n           Yes\n      More\n  </Callout>\n) : null}'],
       ['a callback returning a tag', '{[1].map(i => (\n  <Callout theme="info" key={i}>Yes</Callout>\n))}'],
       ['nested components', '{true ? (\n  <Tabs>\n    <Tab title="One">Yes</Tab>\n  </Tabs>\n) : null}'],
     ])('evaluates %s without leaking the expression syntax', (_name, doc) => {
@@ -181,6 +184,8 @@ describe('mdxExpressionLenient tokenizer', () => {
       ['a fenced code block', '{foo\n```\ncode }\n```', '<pre>'],
       ['a heading', '{foo\n# heading }', '<h1'],
       ['a thematic break', '{foo\n***\n}', '<hr>'],
+      ['a list', '{foo\n- item }', '<ul>'],
+      ['a blockquote', '{foo\n> quote }', '<blockquote>'],
     ])('lets %s interrupt the run rather than swallowing it', (_name, doc, tag) => {
       expect(flowExpressions(doc)).toHaveLength(0);
       expect(mix(doc)).toContain(tag);

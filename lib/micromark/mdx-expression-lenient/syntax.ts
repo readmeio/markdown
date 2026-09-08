@@ -169,7 +169,6 @@ export function mdxExpressionLenient(): Extension {
       [codes.leftCurlyBrace]: {
         name: 'mdxFlowExpression',
         tokenize: tokenizeExpression('mdxFlowExpression'),
-        concrete: true,
       },
     },
     text: {
