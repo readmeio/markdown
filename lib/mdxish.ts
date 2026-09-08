@@ -107,7 +107,6 @@ const defaultTransformers: PluggableList = [
  * 7. Normalize compact ATX headings (e.g., `#Heading` → `# Heading`)
  */
 function preprocessContent(content: string) {
-
   // Runs first so `jsxTable` sees a literal `</table>` (and the HTML-line
   // classification in `terminateHtmlFlowBlocks` is accurate)
   let result = normalizeClosingTagWhitespace(content);

@@ -1,12 +1,8 @@
 /**
- * Performance regression tests for inputs that made mdxish superlinear.
- *
- * 1. Huge attribute values: a `<Card imageSrc="data:image/svg+xml;base64,…">` inlines
- *    tens of KB of base64 in one attribute. `mdx-blocks`' nested-expression check
- *    backtracked quadratically over the unbroken run (the sportradar reference
- *    overview spent 2.5s of its render there).
- * 2. Stray `<` in prose: the mdx-component opener scan and `closeSelfClosingHtmlTags`
- *    both ran on past a raw `<`, rescanning the rest of the line/document per `<`.
+ * Performance regression tests for inputs that made mdxish superlinear (RM-16374, CX-3879):
+ * huge attribute values (a tens-of-KB base64 data URI backtracked quadratically in
+ * `mdx-blocks`' nested-expression check) and stray `<` in prose (the mdx-component opener
+ * scan and `closeSelfClosingHtmlTags` rescanned the rest of the line/document per `<`).
  *
  * Assert scaling ratios rather than wall-clock budgets so this stays machine independent.
  */

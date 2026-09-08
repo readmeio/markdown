@@ -263,7 +263,7 @@ More markdown after the component.`;
       const snakeComponent = hast.children.find(child => child.type === 'element' && child.tagName === 'Snake_case');
       expect(snakeComponent).toBeDefined();
 
-      // The unknown component inside code block should remain as-is 
+      // The unknown component inside code block should remain as-is
       const codeBlock = hast.children.find(child => child.type === 'element' && child.tagName === 'pre');
       expect(codeBlock).toBeDefined();
 
@@ -283,7 +283,7 @@ More markdown after the component.`;
 
       const hast = mdxish(doc, { components });
 
-      // The code block content should show the original tag name 
+      // The code block content should show the original tag name
       const codeBlock = hast.children.find(child => child.type === 'element' && child.tagName === 'pre');
       expect(codeBlock).toBeDefined();
 

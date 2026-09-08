@@ -1569,8 +1569,7 @@ Second paragraph
       ].map(node => node.name);
 
     it('does not claim a stray `<word` as the tag that a later `>` closes', () => {
-      // The opener scan bails at `<`; it used to run on to the `>` of `<i …>` and
-      // claim a bogus `b` element (and rescan the line per stray `<`: quadratic).
+      // The opener scan bails at `<`; it used to claim a bogus `b` element here.
       expect(elementNames('a <b and <i data-a={1}>x</i> more')).toStrictEqual(['i']);
     });
 
@@ -1580,8 +1579,7 @@ Second paragraph
   });
 
   describe('nested expression attribute detection', () => {
-    // The regex needs only one name char before `=`; `[\w-]+` backtracked quadratically
-    // over huge base64 attributes (see lib/mdxish/perf/pathological-input-perf.test.ts).
+    // One name char before `=` suffices; `[\w-]+` backtracked quadratically (see perf tests).
     it('still detects a nested expression attribute with whitespace around `=`', () => {
       const md = `<div>
   <span data-index = {1}>x</span>

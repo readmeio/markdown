@@ -10,8 +10,8 @@ import { HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
  *
  * The attribute portion skips over quoted strings (`"..."` and `'...'`) so that
  * a `/>` inside an attribute value (e.g. `title="use /> here"`) does not cause
- * a premature match. It stops at an unquoted `<`: otherwise every `<x` in prose
- * with no `/>` after it scans to the end of the document (quadratic).
+ * a premature match, and stops at an unquoted `<` so a stray `<x` in prose
+ * doesn't scan to the end of the document (quadratic).
  *
  * Only matches lowercase tag names to avoid interfering with PascalCase
  * JSX custom components (e.g. `<MyComponent />`), which are handled
