@@ -33,29 +33,42 @@ const flowInterrupters = (flow: ConstructRecord): ConstructRecord => {
 /**
  * Lookahead run at every line ending of a flow run, mirroring the paragraph continuation check
  * in `micromark-core-commonmark/lib/content.js`: `ok` when the next line continues the run,
- * `nok` when it is blank (including whitespace-only) or would start a fenced code block,
- * heading, or thematic break — which the run must then leave alone rather than swallow.
+ * `nok` when it would start a fenced code block, heading, or thematic break — which the run
+ * must then leave alone rather than swallow. A blank line (including whitespace-only) ends the
+ * run too, unless `blankContinues`: see `nestedLineContinues`.
  */
-function tokenizeLineContinues(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const self = this;
+function tokenizeLineContinues(blankContinues: boolean) {
+  return function tokenize(this: TokenizeContext, effects: Effects, ok: State, nok: State): State {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
 
-  return start;
+    return start;
 
-  function start(code: Code): State | undefined {
-    effects.enter(types.lineEnding);
-    effects.consume(code);
-    effects.exit(types.lineEnding);
-    return factorySpace(effects, prefixed, types.linePrefix);
-  }
+    function start(code: Code): State | undefined {
+      effects.enter(types.lineEnding);
+      effects.consume(code);
+      effects.exit(types.lineEnding);
+      return factorySpace(effects, prefixed, types.linePrefix);
+    }
 
-  function prefixed(code: Code): State | undefined {
-    if (code === codes.eof || markdownLineEnding(code)) return nok(code);
-    return effects.interrupt(flowInterrupters(self.parser.constructs.flow), nok, ok)(code);
-  }
+    // The paragraph rule also exempts lines indented 4+ columns (indented code can't interrupt);
+    // mdxish disables indented code, so an indented line may still start a block here.
+    function prefixed(code: Code): State | undefined {
+      if (code === codes.eof) return nok(code);
+      if (markdownLineEnding(code)) return blankContinues ? ok(code) : nok(code);
+      return effects.interrupt(flowInterrupters(self.parser.constructs.flow), nok, ok)(code);
+    }
+  };
 }
 
-const lineContinues: Construct = { tokenize: tokenizeLineContinues, partial: true };
+const lineContinues: Construct = { tokenize: tokenizeLineContinues(false), partial: true };
+
+/**
+ * Inside an open `{`, `(` or `[` a blank line is JavaScript formatting (between statements in a
+ * callback, inside a JSX branch), so it may not end the run. At depth zero it's far more likely
+ * a prose paragraph break after a stray `{`, and ending the run there keeps the paragraphs apart.
+ */
+const nestedLineContinues: Construct = { tokenize: tokenizeLineContinues(true), partial: true };
 
 /**
  * Lenient MDX expression tokenizer (agnostic / no acorn).
@@ -77,6 +90,7 @@ function tokenizeExpression(variant: Variant) {
     // value for this attempt, and the state functions below don't receive `this` at all.
     const { interrupt } = this;
     let depth = 0;
+    let nesting = 0;
     let multiline = false;
 
     return start;
@@ -101,7 +115,8 @@ function tokenizeExpression(variant: Variant) {
         // A text run lives in a paragraph micromark has already bounded. A flow run bounds
         // itself: a blank line or an interrupting block ends it, so a stray `{` can't claim
         // the rest of the document, and `{\n\n}` stays two literal paragraphs.
-        return isFlow ? effects.check(lineContinues, lineEnding, end)(code) : lineEnding(code);
+        if (!isFlow) return lineEnding(code);
+        return effects.check(depth > 0 || nesting > 0 ? nestedLineContinues : lineContinues, lineEnding, end)(code);
       }
 
       if (code === codes.rightCurlyBrace && depth === 0) return close(code);
@@ -136,6 +151,8 @@ function tokenizeExpression(variant: Variant) {
 
       if (code === codes.leftCurlyBrace) depth += 1;
       else if (code === codes.rightCurlyBrace) depth -= 1;
+      else if (code === codes.leftParenthesis || code === codes.leftSquareBracket) nesting += 1;
+      else if (code === codes.rightParenthesis || code === codes.rightSquareBracket) nesting -= 1;
 
       effects.consume(code);
       return inside;

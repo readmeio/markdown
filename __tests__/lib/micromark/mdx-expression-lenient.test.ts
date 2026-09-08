@@ -191,6 +191,21 @@ describe('mdxExpressionLenient tokenizer', () => {
       expect(mix(doc)).toContain(tag);
     });
 
+    it.each([
+      ['a JSX branch', '{true ? (\n  <Callout theme="info">\n    Yes\n\n  </Callout>\n) : null}'],
+      ['a callback body', '{[1].map(n => {\n  const label = "Yes";\n\n  return <Callout theme="info" key={n}>{label}</Callout>;\n})}'],
+    ])('keeps a blank line inside %s as part of the run', (_name, doc) => {
+      expect(flowExpressions(doc)).toHaveLength(1);
+      expect(mix(doc)).toBe('<Callout theme="info"><p>Yes</p></Callout>');
+    });
+
+    it('ends the run at a blank line when no bracket is open, so prose about braces stays prose', () => {
+      const html = mix('{ is the opening delimiter.\n\nSome **bold** prose.\n\nClose it with }.');
+
+      expect(html).toContain('<p>{ is the opening delimiter.</p>');
+      expect(html).toContain('<strong>bold</strong>');
+    });
+
     it('does not let a component tag interrupt the run', () => {
       expect(flowExpressions('{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}')).toHaveLength(1);
     });
