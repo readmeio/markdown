@@ -60,6 +60,7 @@
     "gemoji": "^8.1.0",
     "github-slugger": "^2.0.0",
     "hast-util-from-html": "^2.0.1",
+    "hast-util-raw": "^9.1.0",
     "hast-util-sanitize": "^4.0.0",
     "hastscript": "^9.0.0",
     "html-tags": "^5.1.0",
