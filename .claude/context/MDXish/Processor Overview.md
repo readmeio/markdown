@@ -4,11 +4,11 @@
 
 ### Preprocessing Step
 
-> **See**: `preprocessContent` — @lib/mdxish.ts#120
+> **See**: `preprocessContent` — @lib/mdxish.ts#109
 
 `preprocessContent` is a string-level preprocessor that runs before the markdown is handed to remarkParse. It exists because several syntactic patterns in ReadMe's flavor of markdown would confuse or break the standard CommonMark/MDX parser if fed to it directly. By patching the raw string first, these issues are sidestepped.
 
-It applies seven transforms in sequence (the function carries a matching docstring at @lib/mdxish.ts#107):
+It applies seven transforms in sequence (the function carries a matching docstring at @lib/mdxish.ts#96):
 
 1. **`normalizeClosingTagWhitespace()`**
 
@@ -28,9 +28,6 @@ It applies seven transforms in sequence (the function carries a matching docstri
 1. **`normalizeCompactHeadings()`**
 
    Normalizes compact ATX headings that omit the space after the hashes (e.g. `#Heading` → `# Heading`) so they are recognized as headings rather than paragraph text.
-1. **`processSnakeCaseComponent()`**
-
-   Remark's parser rejects tag names containing underscores (e.g. `<my_component>`). This step replaces known snake_case component names with safe placeholder names (`<MDXishSnakeCase0>`) and returns a mapping so they can be restored later by the `restoreSnakeCaseComponentNames` transformer in the run phase.
 
 > **Note:** Earlier revisions of this pipeline also ran a `preprocessJSXExpressions()` string transform to escape stray/unbalanced braces. That step was removed (#1429, #1531). MDX expressions are now handled at the parser level by the lenient expression tokenizer (`mdxExprTextOnly` = `mdxExpressionLenient()`), and attribute expressions flow through as `mdxJsxAttributeValueExpression` nodes that are evaluated later.
 
@@ -47,7 +44,6 @@ It applies seven transforms in sequence (the function carries a matching docstri
 │  terminateHtmlFlowBlocks       — fix HTML flow           │  parsing
 │  closeSelfClosingHtmlTags      — <i /> → <i></i>         │
 │  normalizeCompactHeadings      — #Heading → # Heading    │
-│  processSnakeCaseComponent     — placeholder swap        │
 └─────────────────────────────┬─────────────────────────────┘
                               │
                               ▼
@@ -55,13 +51,11 @@ It applies seven transforms in sequence (the function carries a matching docstri
                               │
                               ▼
                     MDAST transformers...
-                         ...
-                    restoreSnakeCaseComponentNames  ◄── undo (7)
 ```
 
 ### Processor Pipeline
 
-> **See**: `mdxishAstProcessor` — @lib/mdxish.ts#141 (parser setup #166, `.use` chain #208)
+> **See**: `mdxishAstProcessor` — @lib/mdxish.ts#126 (parser setup #150, `.use` chain #153)
 
 The core Xish engine which parses Markdown and converts it to an MDAST object. This is the base processor used for both the editor and rendering flows. `mdxishAstProcessor` returns the *configured but un-run* processor (plus `parserReadyContent`); callers run it, or `mdxish()` extends it further (see below).
 
@@ -95,16 +89,16 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
   │                       │                                  │
   │  remarkParse          │  remarkFrontmatter               │
   │   micromarkExts:      │  normalizeEmphasisAST            │
-  │    · jsxTable         │  mdxishSelfClosingBlocks         │
-  │    · magicBlock       │  mdxishMdxComponentBlocks        │
-  │    · mdxComponent     │  mdxishInlineMdxHtmlBlocks       │
-  │    · gemoji           │  restoreSnakeCaseComponentNames  │
-  │    · legacyVariable   │  mdxishTables                    │
-  │    · looseHtmlEntity  │  mdxishHtmlBlocks                │
-  │    · htmlBlockComp.   │  magicBlockTransformer           │
-  │    · mdxExprTextOnly? │  imageTransformer                │
-  │    · mdxjsEsm?        │  defaultTransformers             │
-  │    · jsxComment?      │    (callouts, codeTabs, embeds)  │
+  │    · jsxTable         │  mdxishMdxComponentBlocks        │
+  │    · magicBlock       │  mdxishInlineMdxHtmlBlocks       │
+  │    · mdxComponent     │  mdxishTables                    │
+  │    · gemoji           │  mdxishHtmlBlocks                │
+  │    · legacyVariable   │  magicBlockTransformer           │
+  │    · looseHtmlEntity  │  imageTransformer                │
+  │    · htmlBlockComp.   │  defaultTransformers             │
+  │    · mdxExprTextOnly? │    (callouts, codeTabs, embeds)  │
+  │    · mdxjsEsm?        │                                  │
+  │    · jsxComment?      │                                  │
   │                       │  mdxishInlineMdxComponents?      │
   │   fromMarkdownExts:   │  mdxishJsxToMdast?               │
   │    · jsxTable         │  variablesTextTransformer        │
@@ -130,7 +124,7 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
 
 ### Preprocessing Step
 
-> **See**: @lib/mdxish.ts#291
+> **See**: @lib/mdxish.ts#232
 
 These three lines are a protect-strip-restore pattern that removes JSX comments (`{/* ... */}`) from the markdown before anything else processes it. Here's the step-by-step:
 
@@ -171,7 +165,6 @@ mdContent (raw input)
 │    terminateHtmlFlowBlocks        │
 │    closeSelfClosingHtmlTags       │
 │    normalizeCompactHeadings       │
-│    processSnakeCaseComponent      │
 └──────────────┬────────────────────┘
                │ parserReadyContent
                ▼
@@ -180,7 +173,7 @@ mdContent (raw input)
 
 ### Processor Pipeline
 
-> **See**: `mdxish` — @lib/mdxish.ts#282 (appended `.use` chain #297)
+> **See**: `mdxish` — @lib/mdxish.ts#223 (appended `.use` chain #238)
 
 `mdxish()` takes the base processor from `mdxishAstProcessor()` and appends the remaining MDAST transformers, the MDAST → HAST bridge (`remarkRehype`), and the HAST (rehype) transformers, then runs it and returns the resulting HAST tree. As with the base processor there is no compiler/stringify stage — a tree is returned directly.
 
@@ -229,7 +222,7 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
 
 ## `mdxishMdastToMd()`
 
-> **See**: @lib/mdxish.ts#256
+> **See**: @lib/mdxish.ts#196
 
 The reverse direction: serializes an MDAST back into a markdown string (used by the editor's "view as markdown" / round-trip path). It runs a small `remark`/`remark-stringify` pipeline that re-serializes the ReadMe-flavored nodes back to their authored JSX before stringifying:
 
@@ -243,7 +236,7 @@ Most of MDXish's flavored syntax is recognized at **parse time** by custom micro
 
 ### How an extension is wired
 
-Each extension is a **pair**, registered through the two arrays in `mdxishAstProcessor` (@lib/mdxish.ts#168):
+Each extension is a **pair**, registered through the two arrays in `mdxishAstProcessor` (@lib/mdxish.ts#151):
 
 - a micromark tokenizer in `lib/micromark/*` (listed under `micromarkExtensions`) that emits the raw tokens, and
 - a fromMarkdown handler in `lib/mdast-util/*` (listed under `fromMarkdownExtensions`) that turns those tokens into an MDAST node.

@@ -408,6 +408,10 @@ function createTokenize(mode: 'flow' | 'text') {
         return inBraceExpr;
       }
 
+      // A raw `<` can't sit in an opening tag (quotes/braces are handled above);
+      // bailing bounds each attempt to the next `<` instead of rescanning the line.
+      if (code === codes.lessThan) return nok(code);
+
       effects.consume(code);
       return afterOpenTagName;
     }
