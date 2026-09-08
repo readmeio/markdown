@@ -6,6 +6,7 @@ import type { Plugin } from 'unified';
 import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
+import { fromHtml } from 'hast-util-from-html';
 import { phrasing } from 'hast-util-phrasing';
 import React from 'react';
 import { visit } from 'unist-util-visit';
@@ -58,10 +59,12 @@ const isPhrasingTag = (tagName: string): boolean => phrasing({ type: 'element', 
 /**
  * Whether an expression evaluated to block-level content. A capitalized tag is a component,
  * block-level unless it's on the inline list (so a `Table` component isn't mistaken for an inline
- * `<table>`); a lowercase tag is HTML, block-level unless it's phrasing content.
+ * `<table>`); a lowercase tag is HTML, block-level unless it's phrasing content. A `raw` node is
+ * HTML from `renderFallbackHtml`, so it's parsed and judged by the same rule.
  */
 const isBlockResult = (children: ElementContent[]): boolean =>
   children.some(child => {
+    if (child.type === 'raw') return isBlockResult(fromHtml(child.value, { fragment: true }).children as ElementContent[]);
     if (child.type !== 'element' && child.type !== 'mdx-jsx') return false;
     const { tagName } = child as { tagName: string };
     return /^[A-Z]/.test(tagName) ? !INLINE_COMPONENT_TAGS.has(tagName) : !isPhrasingTag(tagName);

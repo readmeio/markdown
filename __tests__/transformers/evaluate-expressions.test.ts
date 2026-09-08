@@ -227,6 +227,26 @@ describe('evaluateExpressions', () => {
       expect(mix(doc)).toBe(expected);
     });
 
+    // Hook-using and `memo`/`forwardRef` components can't be called directly, so their output
+    // arrives as a `raw` HTML node; it still has to be classified, or a `<div>` lands in a `<p>`.
+    const hookComponent =
+      'export const Counter = () => { const [n] = React.useState(1); return <div className="c">{n}</div>; };';
+    const memoComponent = 'export const Boxed = React.memo(() => <div className="m">m</div>);';
+
+    it.each([
+      ['a single-line hook component', `${hookComponent}\n\n{<Counter />}`, '<div class="c">1</div>'],
+      ['a multiline hook component', `${hookComponent}\n\n{true ? (\n  <Counter />\n) : null}`, '<div class="c">1</div>'],
+      ['a multiline memo component', `${memoComponent}\n\n{true ? (\n  <Boxed />\n) : null}`, '<div class="m">m</div>'],
+    ])('should keep %s rendered through the fallback out of a paragraph', (_name, doc, expected) => {
+      expect(mix(doc)).toBe(expected);
+    });
+
+    it('should keep an inline fallback-rendered result in its paragraph', () => {
+      const html = mix('export const Tag = React.memo(() => <span>s</span>);\n\n{true ? (\n  <Tag />\n) : null}');
+
+      expect(html).toBe('<p><span>s</span></p>');
+    });
+
     it('should wrap a multiline expression with an inline result in a paragraph', () => {
       // Reformatting `{cond ? <a/> : null}` across lines must not change the block structure.
       const html = mix('Before\n\n{true ? (\n  <a href="x">link</a>\n) : null}\n\nAfter');
