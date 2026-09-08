@@ -232,6 +232,19 @@ describe('GFM footnotes', () => {
   });
 
   describe('mdxish compiler', () => {
+    // Depth-first search for the first element with the given tag name.
+    const findElement = (root: ReturnType<typeof mdxish>, tag: string): Element | undefined => {
+      const stack: (typeof root.children)[number][] = [...root.children];
+      while (stack.length) {
+        const node = stack.shift();
+        if (node?.type === 'element') {
+          if (node.tagName === tag) return node;
+          stack.unshift(...node.children);
+        }
+      }
+      return undefined;
+    };
+
     it('processes single footnote', () => {
       const markdown = 'Text with footnote[^1]\n\n[^1]: Footnote definition';
       const hast = mdxish(markdown);
@@ -273,35 +286,28 @@ describe('GFM footnotes', () => {
       expect(footnoteDef).toBeDefined();
     });
 
-    it('processes footnote reference inside a GFM pipe-table cell', () => {
+    // A lowercase `<table>` goes through the html node path that `mdxishTables`
+    // rewrites, unlike a GFM pipe table which parses straight into an mdast table.
+    it('processes footnote reference inside a lowercase <table> cell', () => {
       const markdown = [
-        '| Term         | Definition    |',
-        '| ------------ | ------------- |',
-        '| Example[^1]  | See footnote  |',
+        '<table>',
+        '  <thead>',
+        '    <tr><th>Term</th><th>Definition</th></tr>',
+        '  </thead>',
+        '  <tbody>',
+        '    <tr>',
+        '      <td>Example[^1]</td>',
+        '      <td>See footnote</td>',
+        '    </tr>',
+        '  </tbody>',
+        '</table>',
         '',
         '[^1]: This footnote should render.',
       ].join('\n');
       const hast = mdxish(markdown);
 
-      const findElement = (root: typeof hast, tag: string): Element | undefined => {
-        const stack: typeof hast.children = [...root.children];
-        while (stack.length) {
-          const node = stack.shift();
-          if (node?.type === 'element') {
-            if (node.tagName === tag) return node;
-            stack.unshift(...node.children);
-          }
-        }
-        return undefined;
-      };
-
-      const footnoteRef = findElement(hast, 'sup');
-      expect(footnoteRef).toBeDefined();
-
-      const footnoteSection = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'section',
-      ) as Element | undefined;
-      expect(footnoteSection).toBeDefined();
+      expect(findElement(hast, 'sup')).toBeDefined();
+      expect(hast.children.some(child => child.type === 'element' && child.tagName === 'section')).toBe(true);
     });
 
     it('processes footnote reference inside a JSX <Table> cell', () => {
@@ -322,25 +328,30 @@ describe('GFM footnotes', () => {
       ].join('\n');
       const hast = mdxish(markdown);
 
-      const findElement = (root: typeof hast, tag: string): Element | undefined => {
-        const stack: typeof hast.children = [...root.children];
-        while (stack.length) {
-          const node = stack.shift();
-          if (node?.type === 'element') {
-            if (node.tagName === tag) return node;
-            stack.unshift(...node.children);
-          }
-        }
-        return undefined;
-      };
+      expect(findElement(hast, 'sup')).toBeDefined();
+      expect(hast.children.some(child => child.type === 'element' && child.tagName === 'section')).toBe(true);
+    });
 
-      const footnoteRef = findElement(hast, 'sup');
-      expect(footnoteRef).toBeDefined();
+    // Regression: an unterminated code fence in a cell would swallow the appended
+    // footnote placeholder def, leaking `[^1]: x` into the rendered code (RM-16727).
+    it('does not leak footnote placeholders into an unterminated code fence cell', () => {
+      const markdown = [
+        '<Table>',
+        '  <thead><tr><th>H</th></tr></thead>',
+        '  <tbody><tr><td>```js',
+        'const a = 1;</td></tr></tbody>',
+        '</Table>',
+        '',
+        '[^1]: A real footnote.',
+        '',
+        'Body[^1]',
+      ].join('\n');
+      const hast = mdxish(markdown);
 
-      const footnoteSection = hast.children.find(
-        child => child.type === 'element' && child.tagName === 'section',
-      ) as Element | undefined;
-      expect(footnoteSection).toBeDefined();
+      const code = findElement(hast, 'code');
+      const codeText = code?.children.map(child => (child.type === 'text' ? child.value : '')).join('');
+      expect(codeText?.trimEnd()).toBe('const a = 1;');
+      expect(codeText).not.toContain('[^1]');
     });
   });
 });

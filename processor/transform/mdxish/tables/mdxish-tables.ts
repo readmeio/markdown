@@ -20,6 +20,12 @@ import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
+import {
+  appendFootnotePlaceholders,
+  collectFootnoteIds,
+  prependFootnotePlaceholders,
+  stripPrependedFootnotes,
+} from './footnotes';
 import { normalizeTagSpacing } from './normalize-tag-spacing';
 import { remapPositionsThroughLayers } from './remap-positions';
 import { repairExpressionEscapes } from './repair-expression-escapes';
@@ -79,29 +85,6 @@ const tableRepairs: ((html: string) => RepairResult)[] = [
   escapeStrayLessThan,
   escapeCrossingEmphasis,
 ];
-
-/**
- * Collect outer-tree footnote ids so cell re-parses can be primed with
- * placeholder defs and recognize `[^id]` as a `footnoteReference`.
- */
-const collectFootnoteIds = (tree: Node): string[] => {
-  const ids = new Set<string>();
-  visit(tree, 'footnoteDefinition', (definition: FootnoteDefinition) => {
-    if (definition.identifier) ids.add(definition.identifier);
-  });
-  return [...ids];
-};
-
-/**
- * Append placeholder defs so the isolated cell parse tokenizes `[^id]` as a
- * `footnoteReference`, `remark-gfm` requires the def in the same parse context.
- */
-const appendFootnotePlaceholders = (value: string, ids: string[]): string => {
-  if (ids.length === 0) return value;
-  const placeholders = ids.map(id => `[^${id}]: x`).join('\n');
-  const separator = value.endsWith('\n') ? '\n' : '\n\n';
-  return `${value}${separator}${placeholders}`;
-};
 
 /**
  * Parse the HTML node that contains the full table substring
@@ -220,10 +203,10 @@ const processTableNode = (
     // gate this behind a try/catch to ensure that malformed syntaxes do not
     // crash the page
     try {
-      const inputForParse = appendFootnotePlaceholders(textContent, outerFootnoteIds);
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(inputForParse)) as Root;
-      // Synthetic placeholder definitions belong to the outer document, not the cell
-      const cleanedChildren = parsed.children.filter(child => child.type !== 'footnoteDefinition');
+      const { input, offset, line } = prependFootnotePlaceholders(textContent, outerFootnoteIds);
+      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(input)) as Root;
+      // Placeholder definitions belong to the outer document, not the cell.
+      const cleanedChildren = stripPrependedFootnotes(parsed.children, offset, line);
       if (cleanedChildren.length > 0) {
         cell.children = cleanedChildren as MdxJsxTableCell['children'];
         if (hasFlowContent(cleanedChildren as Node[])) {
