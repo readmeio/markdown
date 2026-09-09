@@ -233,6 +233,7 @@ describe('legacy variables resolution', () => {
       ['blank lines around the variable', '<div>\n\n<<name>>\n\n</div>'],
       ['an indented body', '<div>\n    <<name>>\n</div>'],
       ['trailing spaces after the variable', '<div><<name>>   </div>'],
+      ['a triple-bracket variable and a blank line', '<div><<<name>>>\n\n</div>'],
     ])('should resolve <<variable>> in a wrapper with %s', (_, md) => {
       const tree = mdxish(md);
 

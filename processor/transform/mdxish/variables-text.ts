@@ -29,7 +29,7 @@ export function soleUserVariableExpression(node: Node): { name: string; wrapped:
   const { value } = node as MdxFlowExpression | MdxTextExpression;
   const wrapped = `{${(value ?? '').trim()}}`;
   const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
-  if (matches.length !== 1) return null;
+  if (matches.length !== 1 || matches[0][0] !== wrapped) return null;
   return { name: matches[0][1] || matches[0][2], wrapped };
 }
 
