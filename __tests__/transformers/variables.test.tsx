@@ -54,6 +54,14 @@ describe('variables transformer', () => {
     });
   });
 
+  it('wraps a variable parsed from a multiline expression in a paragraph', () => {
+    // The one-line `{user.name}` renders inside a `<p>`; splitting it across lines must not
+    // change that.
+    expect(rmdx.mix('{user.name\n}', { variables: { user: { name: 'Dee' }, defaults: [] } })).toBe(
+      '<p><variable name="name"></variable></p>',
+    );
+  });
+
   it('does not parse regular expressions into variables', () => {
     const mdx = '{notUser.name}';
 

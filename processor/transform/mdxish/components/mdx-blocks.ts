@@ -1,4 +1,5 @@
 import type { Node, Parent, RootContent } from 'mdast';
+import type { MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
@@ -306,6 +307,15 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         }
       }
       if (isPlainLowercaseHtml && !containsMarkdownConstruct(parsedChildren)) return;
+      // A body that is nothing but `{user.*}` parses as a flow expression, which
+      // `variables-text` gives a paragraph of its own. Inside a lowercase wrapper that
+      // is phrasing content, so re-type it before it gets block-wrapped.
+      if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'mdxFlowExpression') {
+        const inline: MdxTextExpression = { ...parsedChildren[0], type: 'mdxTextExpression' };
+        // Phrasing content in a flow element's child slot, the same shape the sole-paragraph
+        // unwrap below produces — hence the widening through `Node[]`.
+        parsedChildren = [inline] as Node[] as MdxJsxFlowElement['children'];
+      }
       // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
       let unwrappedSoleParagraph = false;
