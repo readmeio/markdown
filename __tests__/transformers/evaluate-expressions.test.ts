@@ -180,6 +180,33 @@ describe('evaluateExpressions', () => {
       ]);
     });
 
+    // Component bodies are re-parsed with upstream's flow tokenizer, so a multiline expression
+    // inside one takes a different path from the document root and has regressed before.
+    it.each([
+      ['a Callout', '<Callout>\n{true ? (\n  <b>x</b>\n) : null}\n</Callout>', '<Callout><b>x</b></Callout>'],
+      [
+        'a Tab',
+        '<Tabs>\n<Tab title="a">\n{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}\n</Tab>\n</Tabs>',
+        '<Tabs><Tab title="a"><Callout theme="info"><p>Yes</p></Callout></Tab></Tabs>',
+      ],
+      [
+        'an Accordion, from a .map()',
+        '<Accordion title="t">\n{[1, 2].map(n => (\n  <Callout key={n} theme="ok">{n}</Callout>\n))}\n</Accordion>',
+        '<Accordion title="t"><Callout theme="ok"><p>1</p></Callout><Callout theme="ok"><p>2</p></Callout></Accordion>',
+      ],
+      ['a Table cell', '<Table>\n<tr>\n<td>\n{1 +\n1}\n</td>\n</tr>\n</Table>', '<table><tr><td>2</td></tr></table>'],
+    ])('should evaluate a multiline expression inside %s', (_name, doc, expected) => {
+      expect(mix(doc)).toBe(expected);
+    });
+
+    it('should evaluate a multiline expression inside a custom component', () => {
+      const doc = '<MyBlock>\n{true ? (\n  <Callout theme="info">Yes</Callout>\n) : null}\n</MyBlock>';
+
+      expect(mix(doc, { components: { MyBlock: asModule(Block) } })).toBe(
+        '<MyBlock><Callout theme="info"><p>Yes</p></Callout></MyBlock>',
+      );
+    });
+
     it('should keep a failed multiline expression literal without breaking the blocks around it', () => {
       const tree = mdxish(['Before', '', '{nope', '  ? <Callout theme="info">inside</Callout>', '  : null}', '', 'After'].join('\n'));
 

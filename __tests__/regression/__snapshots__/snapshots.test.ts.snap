@@ -629,6 +629,51 @@ exports[`Render engine regressions tests > mistaken-table-closer (mdxish) 1`] = 
 </blockquote>"
 `;
 
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info">Ask your CSM for a higher limit.</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<!-- -->
+<blockquote class="callout callout_okay" theme="okay">Region <!-- -->us</blockquote><blockquote class="callout callout_okay" theme="okay">Region <!-- -->eu</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay">US</blockquote><blockquote class="callout callout_okay" theme="okay">EU</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<a href="/reference">API reference</a>
+<!-- -->GET / POST<!-- -->
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info">Enterprise tab</blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay">us</blockquote><blockquote class="callout callout_okay" theme="okay">eu</blockquote></div></details>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info">Inside a custom component</blockquote></blockquote></div>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td>Ada</td></tr></table></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<blockquote class="callout callout_default" theme="default">Ada</blockquote>
+<!-- -->Ada"
+`;
+
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info"><p>Ask your CSM for a higher limit.</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>Region us</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>Region eu</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>US</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>EU</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<p><a href="/reference" target="" title="">API reference</a></p>
+<p>GET / POST</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="readme-tailwind"><div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info"><p>Enterprise tab</p></blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div></div>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay"><p>us</p></blockquote><blockquote class="callout callout_okay" theme="okay"><p>eu</p></blockquote></div></details></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info"><p>Inside a custom component</p></blockquote></blockquote></div>
+<div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td><span>Ada</span></td></tr></table></div></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_default" theme="default"><span>Ada</span></blockquote></div>
+<p><span>Ada</span></p>"
+`;
+
 exports[`Render engine regressions tests > rich (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
 <p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer &lt;&lt;apiKey&gt;&gt;</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;region&gt;&gt;</code> region.</p>

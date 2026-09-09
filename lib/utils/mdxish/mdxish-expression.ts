@@ -4,6 +4,7 @@ import { buildJsx } from 'estree-util-build-jsx';
 import { toJs } from 'estree-util-to-js';
 
 import { evaluate, jsxAcornParser } from '../../../processor/utils';
+import { componentNamePattern } from '../../constants';
 
 const parseExpression = (expression: string): Program =>
   jsxAcornParser.parse(expression, { ecmaVersion: 'latest', sourceType: 'module' }) as Program;
@@ -21,17 +22,12 @@ const containsJsxNode = (value: unknown): boolean => {
   return Object.values(value).some(containsJsxNode);
 };
 
-// A capitalized name `buildJsx` compiles to a variable reference, so it is also a legal
-// `new Function` parameter. Hyphenated tags (`<My-Block/>`) are JSXIdentifiers too but compile
-// to a string type, and a hyphen in the parameter list would be a SyntaxError.
-const COMPONENT_IDENTIFIER = /^[A-Z][\w$]*$/;
-
 const jsxElementName = (name: unknown): string | undefined => {
   if (name === null || typeof name !== 'object') return undefined;
   const node = name as { name?: unknown; type?: string };
 
   if (node.type !== 'JSXIdentifier' || typeof node.name !== 'string') return undefined;
-  return COMPONENT_IDENTIFIER.test(node.name) ? node.name : undefined;
+  return componentNamePattern.test(node.name) ? node.name : undefined;
 };
 
 /**

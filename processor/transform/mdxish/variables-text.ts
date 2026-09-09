@@ -1,5 +1,5 @@
 import type { Variable } from '../../../types';
-import type { Paragraph, Parent, Text } from 'mdast';
+import type { Parent, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
@@ -46,12 +46,7 @@ function visitExpressionNode(node: MdxFlowExpression | MdxTextExpression, index:
   const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
   if (matches.length !== 1) return;
   const varName = matches[0][1] || matches[0][2];
-  const variable = makeVariableNode(varName, wrapped);
-  // A flow expression sits in a block slot; the variable renders inline, so give it the same
-  // paragraph its one-line `{user.*}` form gets. Table cells unwrap a sole paragraph.
-  const replacement: Paragraph | Variable =
-    node.type === 'mdxFlowExpression' ? { type: 'paragraph', children: [variable], position: node.position } : variable;
-  parent.children.splice(index, 1, replacement);
+  parent.children.splice(index, 1, makeVariableNode(varName, wrapped));
 }
 
 const variablesTextTransformer: Plugin = () => tree => {
