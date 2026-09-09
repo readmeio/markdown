@@ -37,9 +37,6 @@ const injectTailwindRoot =
     if (!(node.name in components)) return;
     if (!('children' in parent)) return;
 
-    // mdxish tokenizes an inline `<Image />` as a flow element, so decide the
-    // wrapper from context: a block `div` inside inline flow gets split out of
-    // its `<p>` by the browser and drops onto its own line (RM-18331).
     const attrs = {
       flow: node.type === 'mdxJsxFlowElement' && !isInlineInContext(index, parent),
     };
