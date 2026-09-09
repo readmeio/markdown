@@ -84,6 +84,22 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
 > note`);
     });
 
+    it('rewrites the mistyped closer when it trails </thead> on a one-line table (CX-3850)', () => {
+      const input = `<table><thead><th class="page-label-version">Version: <code>v2026-07-21</code></th></thead><table>
+
+> **Notes:**`;
+
+      expect(repairMistakenTableClosers(input)).toBe(`<table><thead><th class="page-label-version">Version: <code>v2026-07-21</code></th></thead></table>
+
+> **Notes:**`);
+    });
+
+    it('rewrites the mistyped closer when it trails a complete row on one line', () => {
+      expect(repairMistakenTableClosers('<table><tr><td>x</td></tr><table>\n> note')).toBe(
+        '<table><tr><td>x</td></tr></table>\n> note',
+      );
+    });
+
     it('rewrites a mistyped closer inside a component body, preserving indentation', () => {
       const input = `<Accordion title="t">
   <table>
@@ -176,6 +192,14 @@ describe('repairMistakenTableClosers (string-level preprocessor)', () => {
       expect(repairMistakenTableClosers('<table>\n<tr><td>x</td></tr>\n</table>')).toBe(
         '<table>\n<tr><td>x</td></tr>\n</table>',
       );
+    });
+
+    it('does not rewrite an inline nested table that closes properly', () => {
+      const input = `<table><tr><td><table>
+<tr><td>x</td></tr>
+</table></td></tr></table>`;
+
+      expect(repairMistakenTableClosers(input)).toBe(input);
     });
 
     it('does not rewrite a nested table whose rows are preceded by a comment', () => {
@@ -312,6 +336,11 @@ payload
 > note`;
 
       expect(repairMistakenTableClosers(input)).toBe(input.replace(/<table>\n> note/, '</table>\n> note'));
+    });
+
+    it('does not rewrite an opener that trails prose rather than markup', () => {
+      const input = '<table>\n<tr><td>x</td></tr>\nsee also <table>\n> note';
+      expect(repairMistakenTableClosers(input)).toBe(input);
     });
 
     it('does not rewrite a <table> that carries attributes', () => {
