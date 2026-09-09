@@ -5,7 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { compile, run } from '../../index';
 
 describe('toc transformer', () => {
-  it('parses out a toc with max depth of 2', () => {
+  it('parses out a toc with max depth of 3', () => {
     const md = `
 # Title
 
@@ -13,16 +13,19 @@ describe('toc transformer', () => {
 
 ### Third
 
+#### Fourth
+
 ## Second Subheading
 `;
     const { Toc } = run(compile(md));
 
     render(<Toc />);
 
-    expect(screen.findByText('Title')).toBeDefined();
-    expect(screen.findByText('Subheading')).toBeDefined();
-    expect(screen.queryByText('Third')).toBeNull();
-    expect(screen.findByText('Second Subheading')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Title' })).toHaveAttribute('href', '#title');
+    expect(screen.getByRole('link', { name: 'Subheading' })).toHaveAttribute('href', '#subheading');
+    expect(screen.getByRole('link', { name: 'Third' })).toHaveAttribute('href', '#third');
+    expect(screen.queryByText('Fourth')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Second Subheading' })).toHaveAttribute('href', '#second-subheading');
   });
 
   it('parses a toc from components', () => {
