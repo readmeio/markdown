@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.5.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep inline <Image> inline under the tailwind wrapper ([#1616](https://github.com/readmeio/markdown/issues/1616)) ([9e9772f](https://github.com/readmeio/markdown/commit/9e9772f64144e8032380d5c57d98d538527821b8))
+* repair broken table follow-up ([#1613](https://github.com/readmeio/markdown/issues/1613)) ([87b62b8](https://github.com/readmeio/markdown/commit/87b62b8193528aa8ec2ca5e42ebfc8c79ea64625))
+
 ## Version 15.5.0
 ### ✨ New & Improved
 
