@@ -165,6 +165,27 @@ describe('variablesTextTransformer', () => {
       expect(paragraph!.children).toStrictEqual([expect.objectContaining({ tagName: 'variable' })]);
     });
 
+    it.each([
+      ['closing tag on its own line', '<div>{user.name}\n</div>'],
+      ['blank line before the closing tag', '<div>{user.name}\n\n</div>'],
+      ['blank lines around the reference', '<div>\n\n{user.name}\n\n</div>'],
+      ['an indented body', '<div>\n    {user.name}\n</div>'],
+    ])('resolves {user.name} in a wrapper with %s', (_, md) => {
+      const tree = mdxish(md);
+      expect(findAllElementsByTagName(tree, 'variable')).toHaveLength(1);
+    });
+
+    it('resolves every {user.*} in a deep tree of mixed tags', () => {
+      const tree = mdxish('<div class="card"><h2>{user.name}</h2><p>text {user.email}</p><ul><li>{user.name}</li></ul></div>');
+      expect(findAllElementsByTagName(tree, 'variable')).toHaveLength(3);
+    });
+
+    it('resolves {user.name} wrapped in HTML inside a component', () => {
+      const tree = mdxish('<Callout theme="info"><div>{user.name}</div></Callout>');
+      const div = findElementByTagName(tree, 'div');
+      expect(findAllElementsByTagName(div!, 'variable')).toHaveLength(1);
+    });
+
     it.each(['{1 + 1}', '{ color: red }'])('leaves %s inside a <div> literal', expression => {
       const tree = mdxish(`<div>${expression}</div>`);
       expect(findElementByTagName(tree, 'variable')).toBeNull();

@@ -1271,5 +1271,18 @@ exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
 <div><strong>bold</strong> and <span>Acme Inc</span></div>
 <div style="color:red"><span>Acme Inc</span></div>
 <div>{ color: red }</div>
-<div>{1 + 1}</div>"
+<div>{1 + 1}</div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapper-layouts"></div><div class="heading-text">Wrapper layouts</div><a aria-label="Skip link to Wrapper layouts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapper-layouts"></a></h2>
+<div><span>Acme Inc</span></div>
+<div><span>Acme Inc</span></div>
+<div>
+<p><span>Acme Inc</span></p>
+</div>
+<div><span>Acme Inc</span></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="bigger-trees"></div><div class="heading-text">Bigger trees</div><a aria-label="Skip link to Bigger trees" class="heading-anchor-icon fa fa-regular fa-anchor" href="#bigger-trees"></a></h2>
+<div class="card"><h4 class="heading heading-4 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname-1"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname-1"></a></h4><p>Plan: <span>Enterprise</span></p><ul><li><span>Acme Inc</span></li></ul></div>
+<div><section><ul><li><span>Acme Inc</span></li></ul></section></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapped-in-html-inside-a-component"></div><div class="heading-text">Wrapped in HTML inside a component</div><a aria-label="Skip link to Wrapped in HTML inside a component" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapped-in-html-inside-a-component"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>"
 `;

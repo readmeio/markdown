@@ -736,6 +736,15 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Tag detection inside body ──────────────────────────────────────────
 
     function bodyLessThan(code: Code): State | undefined {
+      // A second `<` opens legacy variable syntax (`<<var>>`), not a tag. Consuming it
+      // here keeps the inner `<var>` out of the nested-tag depth counting, which would
+      // otherwise leave the body unbalanced and lose the claim on this block.
+      if (code === codes.lessThan) {
+        effects.consume(code);
+        atLineStart = false;
+        return body;
+      }
+
       if (code === codes.slash) {
         if (onOpenerLine) openerLineCloses += 1;
         effects.consume(code);

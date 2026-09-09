@@ -510,16 +510,25 @@ More content here
         ]);
       });
 
-      it('should promote a wrapper around a sole {user.*} reference without block-wrapping it', () => {
+      it('should promote a wrapper around a sole {user.*} reference', () => {
         const tree = parseWithPlugin('<p>{user.name}</p>');
 
         expect(tree.children).toMatchObject([
           {
             type: 'mdxJsxFlowElement',
             name: 'p',
-            children: [{ type: 'mdxTextExpression', value: 'user.name' }],
+            children: [{ type: 'mdxFlowExpression', value: 'user.name' }],
           },
         ]);
+      });
+
+      // The body scanner used to read the inner `<name>` of `<<name>>` as a nested opening
+      // tag, leaving the block unbalanced so the tokenizer dropped its claim and CommonMark
+      // split it at the blank line — after which the closer was a separate html node.
+      it('should keep a wrapper whose body holds a <<VARIABLE>> in one node across a blank line', () => {
+        const tree = parseWithPlugin('<div><<NAME>>\n\n</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'mdxJsxFlowElement', name: 'div' }]);
       });
 
       it('should not promote a wrapper around an expression that names no variable', () => {

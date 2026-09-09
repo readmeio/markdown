@@ -224,6 +224,40 @@ describe('legacy variables resolution', () => {
       expect(findElementByTagName(div!, 'variable')!.properties.name).toBe('name');
     });
 
+    // The wrapper's shape decides whether the tokenizer keeps the block in one html node,
+    // so each layout is its own parse path.
+    it.each([
+      ['closing tag on its own line', '<div><<name>>\n</div>'],
+      ['blank line before the closing tag', '<div><<name>>\n\n</div>'],
+      ['opening and closing tags on their own lines', '<div>\n<<name>>\n</div>'],
+      ['blank lines around the variable', '<div>\n\n<<name>>\n\n</div>'],
+      ['an indented body', '<div>\n    <<name>>\n</div>'],
+      ['trailing spaces after the variable', '<div><<name>>   </div>'],
+    ])('should resolve <<variable>> in a wrapper with %s', (_, md) => {
+      const tree = mdxish(md);
+
+      expect(findElementByTagName(tree, 'variable')!.properties.name).toBe('name');
+      expect(findElementByTagName(tree, 'name')).toBeNull();
+    });
+
+    it('should resolve every <<variable>> in a deep tree of mixed tags', () => {
+      const tree = mdxish(
+        '<div class="card"><h2><<first>></h2><p>text <<second>></p><ul><li><<third>></li></ul></div>',
+      );
+
+      expect(countVariableNodes(tree)).toBe(3);
+      ['first', 'second', 'third'].forEach(name => {
+        expect(findElementByTagName(tree, name)).toBeNull();
+      });
+    });
+
+    it('should resolve <<variable>> wrapped in HTML inside a component', () => {
+      const tree = mdxish('<Callout theme="info"><div><<name>></div></Callout>');
+
+      const div = findElementByTagName(tree, 'div');
+      expect(findElementByTagName(div!, 'variable')!.properties.name).toBe('name');
+    });
+
     it('should parse <<variable>> next to HTML tags', () => {
       const md = '<<name>> <div>world</div>';
       const tree = mdxish(md);
