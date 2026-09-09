@@ -519,6 +519,24 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 </div>"
 `;
 
+exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
+"<p>An inline <span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>Line 2</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
+exports[`Render engine regressions tests > inline-image-tailwind (mdxish) 1`] = `
+"<p>An inline <span class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>Line 2</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
 <blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>

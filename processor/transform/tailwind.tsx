@@ -1,10 +1,12 @@
-import type { PhrasingContent, BlockContent, Root } from 'mdast';
+import type { PhrasingContent, BlockContent, Parents, Root, RootContent } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Plugin } from 'unified';
 import type { VFile } from 'vfile';
 
+import { phrasing } from 'mdast-util-phrasing';
 import { visit, SKIP } from 'unist-util-visit';
 
+import { INLINE_ONLY_PARENT_TYPES } from '../../lib/constants';
 import { isMDXElement, toAttributes, getExports } from '../utils';
 
 interface TailwindRootOptions {
@@ -16,6 +18,18 @@ type Visitor =
   | ((node: MdxJsxFlowElement, index: number, parent: BlockContent) => undefined | void)
   | ((node: MdxJsxTextElement, index: number, parent: PhrasingContent) => undefined | void);
 
+/** Whitespace-only text is layout between blocks, not inline flow. */
+const isInlineContent = (node: RootContent) => phrasing(node) && !(node.type === 'text' && node.value.trim() === '');
+
+/**
+ * Whether the child at `index` sits in inline flow: its parent only allows
+ * phrasing content (e.g. a paragraph), or it is flanked by phrasing siblings
+ * (e.g. `<div>text <Image /> text</div>`, whose children skip the paragraph).
+ */
+const isInlineInContext = (index: number, parent: Parents) =>
+  INLINE_ONLY_PARENT_TYPES.has(parent.type) ||
+  parent.children.some((sibling, siblingIndex) => siblingIndex !== index && isInlineContent(sibling));
+
 const injectTailwindRoot =
   ({ components = {} }): Visitor =>
   (node, index, parent) => {
@@ -23,8 +37,11 @@ const injectTailwindRoot =
     if (!(node.name in components)) return;
     if (!('children' in parent)) return;
 
+    // mdxish tokenizes an inline `<Image />` as a flow element, so decide the
+    // wrapper from context: a block `div` inside inline flow gets split out of
+    // its `<p>` by the browser and drops onto its own line (RM-18331).
     const attrs = {
-      flow: node.type === 'mdxJsxFlowElement',
+      flow: node.type === 'mdxJsxFlowElement' && !isInlineInContext(index, parent),
     };
 
     const wrapper = {
