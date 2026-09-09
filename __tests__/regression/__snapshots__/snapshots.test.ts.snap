@@ -626,6 +626,14 @@ exports[`Render engine regressions tests > mistaken-table-closer (mdxish) 1`] = 
 <li>This behavior is not required for any Enhanced TLS certificates.</li>
 <li>There are no options for this behavior.</li>
 </ul>
+</blockquote>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><th class="page-label-version">Version: <code class="rdmd-code lang-undefined theme-undefined">v2026-07-21</code></th><th class="page-label-includes">Includes use: Yes</th></thead></table></div></div>
+<p><strong>Behavior name:</strong> Auto Domain Validation</p>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>This behavior is not required for any Enhanced TLS certificates.</li>
+</ul>
 </blockquote>"
 `;
 
