@@ -612,6 +612,100 @@ exports[`MDX↔MDXish equivalence > indented-markdown-islands-in-html 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > inline-image-tailwind 1`] = `
+{
+  "changes": [
+    {
+      "attrName": "aria-label",
+      "kind": "attr",
+      "left": "Expand image",
+      "path": "/p[0]/span[1]",
+      "right": null,
+      "severity": "cosmetic",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "closed img lightbox",
+      "path": "/p[0]/span[1]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "attrName": "role",
+      "kind": "attr",
+      "left": "button",
+      "path": "/p[0]/span[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "attrName": "tabindex",
+      "kind": "attr",
+      "left": "0",
+      "path": "/p[0]/span[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "attrName": "aria-label",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[0]/span[1]/span[0]",
+      "right": "Expand image",
+      "severity": "cosmetic",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "lightbox-inner",
+      "path": "/p[0]/span[1]/span[0]",
+      "right": "closed img lightbox",
+      "severity": "structural",
+    },
+    {
+      "attrName": "role",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[0]/span[1]/span[0]",
+      "right": "button",
+      "severity": "structural",
+    },
+    {
+      "attrName": "tabindex",
+      "kind": "attr",
+      "left": null,
+      "path": "/p[0]/span[1]/span[0]",
+      "right": "0",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "img",
+      "path": "/p[0]/span[1]/span[0]/img[0]",
+      "right": "span",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "span",
+      "path": "/span[2]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "span",
+      "path": "/span[4]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > jsx-attribute-entities 1`] = `
 {
   "changes": [
