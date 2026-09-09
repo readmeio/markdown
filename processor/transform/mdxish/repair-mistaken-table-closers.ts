@@ -18,14 +18,21 @@ interface OpenTable {
   start: number;
 }
 
-/** The opener shares its line with nothing but whitespace. */
-const isAloneOnLine = (content: string, start: number, end: number): boolean => {
-  const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+/** The opener is immediately preceded by a complete tag, so the prefix is markup and not prose. */
+const PREFIX_ENDS_WITH_TAG_RE = /<[^<>]*>\s*$/;
+
+/**
+ * The opener finishes its line, preceded by nothing but whitespace or by markup.
+ * Requiring markup (not merely "something") keeps a markdown block prefix such as
+ * a `>` quote marker from qualifying, while allowing the closer to trail a cell or
+ * `</thead>` on a single-line table.
+ */
+const endsLineAfterMarkup = (content: string, start: number, end: number): boolean => {
   const lineEnd = content.indexOf('\n', end);
-  return (
-    content.slice(lineStart, start).trim() === '' &&
-    content.slice(end, lineEnd === -1 ? content.length : lineEnd).trim() === ''
-  );
+  if (content.slice(end, lineEnd === -1 ? content.length : lineEnd).trim() !== '') return false;
+
+  const prefix = content.slice(content.lastIndexOf('\n', start - 1) + 1, start);
+  return prefix.trim() === '' || PREFIX_ENDS_WITH_TAG_RE.test(prefix);
 };
 
 /**
@@ -34,7 +41,7 @@ const isAloneOnLine = (content: string, start: number, end: number): boolean => 
  * Customer docs (CX-3850) close tables with a second bare opener; without this,
  * the never-terminated HTML flow block swallows the markdown that follows.
  *
- * A candidate is a bare opener alone on its line while a table is already open.
+ * A candidate is a bare opener that finishes its line while a table is already open.
  * It is judged a typo only when its element ends implicitly (no explicit
  * `</table>`) without ever acquiring table-structure children — so genuine
  * nested tables, whatever precedes their rows, are left alone.
@@ -64,7 +71,7 @@ export function repairMistakenTableClosers(content: string) {
           end,
           hasStructureChild: false,
           isCandidate:
-            stack.length > 0 && BARE_OPENER_SOURCE_RE.test(source) && isAloneOnLine(content, start, end),
+            stack.length > 0 && BARE_OPENER_SOURCE_RE.test(source) && endsLineAfterMarkup(content, start, end),
         });
       } else if (opaqueDepth === 0 && tableTags.has(lower) && stack.length > 0) {
         stack[stack.length - 1].hasStructureChild = true;
