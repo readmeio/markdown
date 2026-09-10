@@ -1328,3 +1328,41 @@ stays literal:</p>
 <div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-inline-html"></div><div class="heading-text">Variables in inline HTML</div><a aria-label="Skip link to Variables in inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-inline-html"></a></h1>
+<p><span>Inline: <span>Acme Inc</span></span></p>
+<div><span>Acme Inc</span></div>
+<p><span>Acme Inc</span></p>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname"></a></h3>
+<div><span>Acme Inc</span></div>
+<p>Plan: <span>Enterprise</span></p>
+<div><strong>bold</strong> and <span>Acme Inc</span></div>
+<div style="color:red"><span>Acme Inc</span></div>
+<div>{ color: red }</div>
+<div>{1 + 1}</div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapper-layouts"></div><div class="heading-text">Wrapper layouts</div><a aria-label="Skip link to Wrapper layouts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapper-layouts"></a></h2>
+<div><span>Acme Inc</span></div>
+<div><span>Acme Inc</span></div>
+<div>
+<p><span>Acme Inc</span></p>
+</div>
+<div><span>Acme Inc</span></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="bigger-trees"></div><div class="heading-text">Bigger trees</div><a aria-label="Skip link to Bigger trees" class="heading-anchor-icon fa fa-regular fa-anchor" href="#bigger-trees"></a></h2>
+<div class="card"><h4 class="heading heading-4 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname-1"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname-1"></a></h4><p>Plan: <span>Enterprise</span></p><ul><li><span>Acme Inc</span></li></ul></div>
+<div><section><ul><li><span>Acme Inc</span></li></ul></section></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapped-in-html-inside-a-component"></div><div class="heading-text">Wrapped in HTML inside a component</div><a aria-label="Skip link to Wrapped in HTML inside a component" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapped-in-html-inside-a-component"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="glossary-terms"></div><div class="heading-text">Glossary terms</div><a aria-label="Skip link to Glossary terms" class="heading-anchor-icon fa fa-regular fa-anchor" href="#glossary-terms"></a></h2>
+<p><span><span class="GlossaryItem-trigger">owlbert</span></span></p>
+<div><span class="GlossaryItem-trigger">owlbert</span></div>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="owlbert"></div><div class="heading-text"><span class="GlossaryItem-trigger">owlbert</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#owlbert"></a></h3>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="mixed-expression-bodies"></div><div class="heading-text">Mixed expression bodies</div><a aria-label="Skip link to Mixed expression bodies" class="heading-anchor-icon fa fa-regular fa-anchor" href="#mixed-expression-bodies"></a></h2>
+<div><span>Acme Inc</span> 2</div>
+<div>{color: red} <span>Acme Inc</span></div>
+<div>{1 + 1} {2 + 2}</div>
+<div><span>Acme Inc</span> <span>Enterprise</span></div>"
+`;
