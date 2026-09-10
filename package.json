@@ -48,6 +48,7 @@
   "dependencies": {
     "@mdx-js/mdx": "^3.0.0",
     "@readme/variable": "^18.0.0",
+    "copy-to-clipboard": "^3.3.2",
     "gemoji": "^8.1.0",
     "mdast-util-mdx": "^3.0.0",
     "mdast-util-to-markdown": "^2.1.2",
@@ -102,7 +103,6 @@
     "babel-loader": "^9.1.2",
     "browserify-fs": "^1.0.0",
     "codemirror": "^5.54.0",
-    "copy-to-clipboard": "^3.3.2",
     "core-js": "^2.6.12",
     "css-loader": "^7.1.2",
     "debug": "^4.3.4",
