@@ -1,0 +1,7 @@
+{
+  "variables": {
+    "defaults": [{ "name": "plan", "default": "free" }],
+    "user": { "name": "Ada", "plan": "enterprise" }
+  },
+  "glossary": []
+}

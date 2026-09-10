@@ -1,18 +1,19 @@
 import type { CustomComponents, Variables } from '../../../types';
 import type { ElementContent } from 'hast';
-import type { Root, Text } from 'mdast';
+import type { Paragraph, PhrasingContent, Root, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
+import { fromHtml } from 'hast-util-from-html';
+import { phrasing } from 'hast-util-phrasing';
 import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
 import { evalExpression, jsxComponentNames } from '../../../lib/utils/mdxish/mdxish-expression';
 import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
-import { STANDARD_HTML_TAGS } from '../../../utils/common-html-words';
 import User from '../../../utils/user';
 
 import { reactElementToHast } from './react-element-to-hast';
@@ -53,17 +54,31 @@ const isRenderable = (value: unknown): boolean => {
   return Array.isArray(value) && value.some(isRenderable);
 };
 
+const isPhrasingTag = (tagName: string): boolean => phrasing({ type: 'element', tagName, properties: {}, children: [] });
+
 /**
- * Whether an expression evaluated to block-level content. Components count as block-level
- * unless they're on the inline list, matching the assumption the rest of the component
- * pipeline makes.
+ * Whether an expression evaluated to block-level content. A capitalized tag is a component,
+ * block-level unless it's on the inline list (so a `Table` component isn't mistaken for an inline
+ * `<table>`); a lowercase tag is HTML, block-level unless it's phrasing content. A `raw` node is
+ * HTML from `renderFallbackHtml`, so it's parsed and judged by the same rule.
  */
 const isBlockResult = (children: ElementContent[]): boolean =>
   children.some(child => {
+    if (child.type === 'raw') return isBlockResult(fromHtml(child.value, { fragment: true }).children as ElementContent[]);
     if (child.type !== 'element' && child.type !== 'mdx-jsx') return false;
     const { tagName } = child as { tagName: string };
-    return !STANDARD_HTML_TAGS.has(tagName.toLowerCase()) && !INLINE_COMPONENT_TAGS.has(tagName);
+    return /^[A-Z]/.test(tagName) ? !INLINE_COMPONENT_TAGS.has(tagName) : !isPhrasingTag(tagName);
   });
+
+const JSX_ELEMENT_TYPES = new Set(['mdxJsxFlowElement', 'mdxJsxTextElement']);
+
+const wrapInParagraph = (child: PhrasingContent): Paragraph => ({
+  type: 'paragraph',
+  children: [child],
+  position: child.position,
+});
+
+const placeText = (text: Text, needsBlock: boolean): Paragraph | Text => (needsBlock ? wrapInParagraph(text) : text);
 
 /** Turn a non-renderable evaluation result into a text node. */
 const createTextNode = (result: unknown, position: Position | undefined): Text => {
@@ -102,6 +117,8 @@ const evaluateExpressions: Plugin<[Options?], Root> =
       const expression = value?.trim();
       if (!expression) return;
 
+      const needsBlock = expressionNode.type === 'mdxFlowExpression' && !JSX_ELEMENT_TYPES.has(parent.type);
+
       try {
         const scope = { ...componentScope(expression, components ?? {}), ...baseScope };
         const result = evalExpression(expression, scope);
@@ -110,16 +127,24 @@ const evaluateExpressions: Plugin<[Options?], Root> =
           // passes through rehypeRaw/parse5 step later in the pipeline. This ensures that the 
           // expression result is not parsed by parse5 and fragmenting the nesting that is valid JSX 
           // but invalid HTML — e.g. an `<a>` wrapping `<a>`.
-          expressionNode.data = { ...expressionNode.data, hChildren: reactElementToHast(result) };
+          const hChildren = reactElementToHast(result);
+          expressionNode.data = { ...expressionNode.data, hChildren };
+          // An inline result in a block slot renders inside a `<p>`, as its one-line form does.
+          // Retyping it as a text expression makes it legal paragraph content.
+          if (needsBlock && !isBlockResult(hChildren)) {
+            const inline: MdxTextExpression = { ...expressionNode, type: 'mdxTextExpression' };
+            parent.children.splice(index, 1, wrapInParagraph(inline));
+          }
         } else {
-          parent.children.splice(index, 1, createTextNode(result, position));
+          parent.children.splice(index, 1, placeText(createTextNode(result, position), needsBlock));
         }
       } catch (_error) {
         // Evaluation failed — fall back to literal `{...}` text. The expression
         // parser treats contents as code, so backslash escapes aren't applied;
         // restore them here so e.g. `{\!}` round-trips to `{!}`.
         const processed = expression.replace(/\\([!-/:-@[-`{-~])/g, '$1');
-        parent.children.splice(index, 1, { type: 'text', value: `{${processed}}`, position });
+        const literal: Text = { type: 'text', value: `{${processed}}`, position };
+        parent.children.splice(index, 1, placeText(literal, needsBlock));
       }
     });
 

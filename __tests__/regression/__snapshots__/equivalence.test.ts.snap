@@ -881,6 +881,137 @@ exports[`MDX↔MDXish equivalence > mistaken-table-closer 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > multiline-jsx-expressions 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "#text("Ask your CSM for a higher limit.")",
+      "path": "/blockquote[2]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("Region us")",
+      "path": "/blockquote[4]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("Region eu")",
+      "path": "/blockquote[5]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("US")",
+      "path": "/blockquote[7]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("EU")",
+      "path": "/blockquote[8]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "a",
+      "path": "/a[10]",
+      "right": "p",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text(" GET / POST")",
+      "path": "/#text[11]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "TabGroup",
+      "path": "/div[13]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "header",
+      "path": "/div[13]/header[0]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<section>…(2 children)…</section>",
+      "path": "/div[13]/section[1]",
+      "right": null,
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "details",
+      "path": "/details[14]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("Inside a custom component")",
+      "path": "/div[15]/blockquote[0]/blockquote[1]/#text[0]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "rdmd-table",
+      "path": "/div[16]",
+      "right": "readme-tailwind",
+      "severity": "structural",
+    },
+    {
+      "attrName": "class",
+      "kind": "attr",
+      "left": "rdmd-table-inner",
+      "path": "/div[16]/div[0]",
+      "right": "rdmd-table",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "table",
+      "path": "/div[16]/div[0]/table[0]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[18]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "#text("Ada")",
+      "path": "/#text[19]",
+      "right": "<p>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > rich 1`] = `
 {
   "changes": [
