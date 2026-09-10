@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 15.5.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep inline <Image> inline under the tailwind wrapper ([#1616](https://github.com/readmeio/markdown/issues/1616)) ([9e9772f](https://github.com/readmeio/markdown/commit/9e9772f64144e8032380d5c57d98d538527821b8))
+* repair broken table follow-up ([#1613](https://github.com/readmeio/markdown/issues/1613)) ([87b62b8](https://github.com/readmeio/markdown/commit/87b62b8193528aa8ec2ca5e42ebfc8c79ea64625))
+
+## Version 15.5.0
+### ✨ New & Improved
+
+* **tabs:** restart GIF playback when a tab is selected ([#1606](https://github.com/readmeio/markdown/issues/1606)) ([59b7d72](https://github.com/readmeio/markdown/commit/59b7d7270eb419cd1e4b401e12fdbff438b1a032))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** harden mdx attribute regex & removed unused transformers ([#1610](https://github.com/readmeio/markdown/issues/1610)) ([1720cf1](https://github.com/readmeio/markdown/commit/1720cf1a6e2c94d0971253881c9d50e449d11c8c))
+* keep escaped block markers in GFM table cells in roundtrips ([#1607](https://github.com/readmeio/markdown/issues/1607)) ([5f436d5](https://github.com/readmeio/markdown/commit/5f436d53b9650009e4fa6ef4a1e4ad6f0352f0c2)), closes [#1546](https://github.com/readmeio/markdown/issues/1546)
+* **mdxish:** resolve components and user variables in expression scope ([#1603](https://github.com/readmeio/markdown/issues/1603)) ([1f308a7](https://github.com/readmeio/markdown/commit/1f308a7df3f4fcfdd2460efd4f696c02283bee30))
+
 ## Version 15.4.0
 ### ✨ New & Improved
 
