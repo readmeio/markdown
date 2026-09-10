@@ -4,18 +4,8 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-var-requires': 'off',
     'import/extensions': 'off',
-    'import/no-extraneous-dependencies': [
-      'warn',
-      {
-        devDependencies: [
-          '**/*.spec.[tj]s',
-          '**/*.test.[tj]s',
-          '**/*.test.[tj]sx',
-          '**/vitest.*.[tj]s',
-          '**/webpack..*.js',
-          './example/**',
-        ],
-      },
-    ],
+    // Webpack bundles the whole tree into dist, so source imports are build-time only.
+    // The rule still catches imports of packages that are declared nowhere.
+    'import/no-extraneous-dependencies': ['warn', { devDependencies: true }],
   },
 };
