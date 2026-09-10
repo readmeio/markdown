@@ -1284,5 +1284,14 @@ exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
 <div><section><ul><li><span>Acme Inc</span></li></ul></section></div>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapped-in-html-inside-a-component"></div><div class="heading-text">Wrapped in HTML inside a component</div><a aria-label="Skip link to Wrapped in HTML inside a component" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapped-in-html-inside-a-component"></a></h2>
 <div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>"
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="glossary-terms"></div><div class="heading-text">Glossary terms</div><a aria-label="Skip link to Glossary terms" class="heading-anchor-icon fa fa-regular fa-anchor" href="#glossary-terms"></a></h2>
+<p><span><span class="GlossaryItem-trigger">owlbert</span></span></p>
+<div><span class="GlossaryItem-trigger">owlbert</span></div>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="owlbert"></div><div class="heading-text"><span class="GlossaryItem-trigger">owlbert</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#owlbert"></a></h3>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="mixed-expression-bodies"></div><div class="heading-text">Mixed expression bodies</div><a aria-label="Skip link to Mixed expression bodies" class="heading-anchor-icon fa fa-regular fa-anchor" href="#mixed-expression-bodies"></a></h2>
+<div><span>Acme Inc</span> 2</div>
+<div>{color: red} <span>Acme Inc</span></div>
+<div>{1 + 1} {2 + 2}</div>
+<div><span>Acme Inc</span> <span>Enterprise</span></div>"
 `;

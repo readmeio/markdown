@@ -30,8 +30,16 @@ Two independent causes, both of which this fixture pins:
   (`<div>` / blank line / variable / blank line / `</div>`) keeps its `<p>` — that is
   ordinary markdown-in-HTML-block behavior and is unchanged by the fix.
 - Variables nested several tags deep, and variables wrapped in HTML inside a component.
+- Glossary terms (`<<glossary:owlbert>>`) behave the same as variables — they were in
+  the same "plain content" list and broke the same way.
 - Braces that name no variable (`{ color: red }`, `{1 + 1}`) stay literal, so the
   custom CSS authors write in these fields is untouched.
+- Mixed bodies: a reference alongside other expressions promotes the wrapper, after
+  which the siblings evaluate (`{1 + 1}` → `2`) and CSS-shaped braces stay literal but
+  are re-serialized (`{ color: red }` → `{color: red}`). That is how promotion has
+  always behaved — `<div>**bold** { color: red }</div>` does the same on `next`; a
+  reference is just a new way to trigger it. A body with no reference at all is
+  untouched.
 
 ## MDX side is empty by design
 

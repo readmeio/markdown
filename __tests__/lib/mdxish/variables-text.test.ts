@@ -3,6 +3,15 @@ import type { Element, Text } from 'hast';
 import { mdxish } from '../../../lib';
 import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
 
+/** Concatenated text of a subtree, for asserting what stayed literal vs. evaluated. */
+const textOf = (node: Element): string =>
+  node.children
+    .map(child => {
+      if (child.type === 'text') return child.value;
+      return child.type === 'element' ? textOf(child) : '';
+    })
+    .join('');
+
 describe('variablesTextTransformer', () => {
   describe('mdxTextExpression nodes (safeMode: false)', () => {
     it('parses {user.email} into a variable node', () => {
@@ -184,6 +193,42 @@ describe('variablesTextTransformer', () => {
       const tree = mdxish('<Callout theme="info"><div>{user.name}</div></Callout>');
       const div = findElementByTagName(tree, 'div');
       expect(findAllElementsByTagName(div!, 'variable')).toHaveLength(1);
+    });
+
+    // A body mixing a reference with other expressions: the reference is what earns the
+    // promotion, and once promoted the body is ordinary markdown — so sibling expressions
+    // evaluate exactly as they already do in any other promoted wrapper.
+    it('resolves the reference and evaluates a sibling expression', () => {
+      const tree = mdxish('<div>{user.name} {1 + 1}</div>');
+      const div = findElementByTagName(tree, 'div');
+
+      expect(findAllElementsByTagName(div!, 'variable')).toHaveLength(1);
+      expect(textOf(div!)).toContain('2');
+    });
+
+    it('resolves the reference and leaves a CSS-shaped sibling literal', () => {
+      const tree = mdxish('<div>{ color: red } {user.name}</div>');
+      const div = findElementByTagName(tree, 'div');
+
+      expect(findAllElementsByTagName(div!, 'variable')).toHaveLength(1);
+      expect(textOf(div!)).toContain('color: red');
+    });
+
+    it('leaves a body of only non-reference expressions untouched', () => {
+      const tree = mdxish('<div>{1 + 1} {2 + 2}</div>');
+      const div = findElementByTagName(tree, 'div');
+
+      expect(findAllElementsByTagName(div!, 'variable')).toHaveLength(0);
+      expect(textOf(div!)).toBe('{1 + 1} {2 + 2}');
+    });
+
+    it('resolves both references when a body holds two', () => {
+      const tree = mdxish('<div>{user.name} and {user.email}</div>');
+
+      expect(findAllElementsByTagName(tree, 'variable').map(v => v.properties?.name)).toStrictEqual([
+        'name',
+        'email',
+      ]);
     });
 
     it.each(['{1 + 1}', '{ color: red }'])('leaves %s inside a <div> literal', expression => {

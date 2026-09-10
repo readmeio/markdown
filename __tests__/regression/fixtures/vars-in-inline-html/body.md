@@ -50,3 +50,21 @@
 </Callout>
 
 <Callout theme="info"><div>{user.companyName}</div></Callout>
+
+## Glossary terms
+
+<span><<glossary:owlbert>></span>
+
+<div><<glossary:owlbert>></div>
+
+<h3><<glossary:owlbert>></h3>
+
+## Mixed expression bodies
+
+<div>{user.companyName} {1 + 1}</div>
+
+<div>{ color: red } {user.companyName}</div>
+
+<div>{1 + 1} {2 + 2}</div>
+
+<div><<companyName>> {user.planName}</div>

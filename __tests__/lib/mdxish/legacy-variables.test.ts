@@ -483,5 +483,31 @@ My name is not <<name>>!
       expect(glossaryNode.tagName).toBe('Glossary');
       expect(glossaryNode.properties.term).toBe('parliament of the United Kingdom');
     });
+
+    // Glossary terms were listed as "plain content" alongside variables, so a wrapper
+    // holding nothing but a term was left raw and parse5 ate it the same way.
+    it.each(['div', 'p', 'h1', 'h2', 'h3', 'span'])(
+      'should resolve <<glossary:term>> alone inside <%s>',
+      tag => {
+        const tree = mdxish(`<${tag}><<glossary:parliament>></${tag}>`);
+
+        const glossaryNode = findElementByTagName(tree, 'Glossary');
+        expect(glossaryNode).not.toBeNull();
+        expect(glossaryNode!.properties.term).toBe('parliament');
+      },
+    );
+
+    it('should resolve <<glossary:term>> in a wrapper with a blank line before the closing tag', () => {
+      const tree = mdxish('<div><<glossary:parliament>>\n\n</div>');
+
+      expect(findElementByTagName(tree, 'Glossary')!.properties.term).toBe('parliament');
+    });
+
+    it('should resolve <<glossary:term>> wrapped in HTML inside a component', () => {
+      const tree = mdxish('<Callout theme="info"><div><<glossary:parliament>></div></Callout>');
+
+      const div = findElementByTagName(tree, 'div');
+      expect(findElementByTagName(div!, 'Glossary')!.properties.term).toBe('parliament');
+    });
   });
 });
