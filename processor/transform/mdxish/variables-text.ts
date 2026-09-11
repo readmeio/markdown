@@ -1,5 +1,5 @@
 import type { Variable } from '../../../types';
-import type { Parent, Text } from 'mdast';
+import type { Node, Parent, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
@@ -17,6 +17,21 @@ import { NodeTypes } from '../../../enums';
  * Captures the field name in group 1 (dot notation) or group 2 (bracket notation)
  */
 const USER_VAR_REGEX = /\{user\.(\w+)\}|\{user\[['"](\w+)['"]\]\}/g;
+
+/**
+ * The lone `{user.<field>}` reference an expression node holds, or `null` when the node isn't an
+ * expression or holds anything else (`{1 + 1}`, a CSS-looking body, two references in one brace).
+ * Exported so promotion gates can tell a variable reference apart from an expression that must
+ * stay literal.
+ */
+export function soleUserVariableExpression(node: Node): { name: string; wrapped: string } | null {
+  if (node.type !== 'mdxFlowExpression' && node.type !== 'mdxTextExpression') return null;
+  const { value } = node as MdxFlowExpression | MdxTextExpression;
+  const wrapped = `{${(value ?? '').trim()}}`;
+  const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
+  if (matches.length !== 1 || matches[0][0] !== wrapped) return null;
+  return { name: matches[0][1] || matches[0][2], wrapped };
+}
 
 function makeVariableNode(varName: string, rawValue: string): Variable {
   return {
@@ -42,11 +57,9 @@ function makeVariableNode(varName: string, rawValue: string): Variable {
  */
 function visitExpressionNode(node: MdxFlowExpression | MdxTextExpression, index: number | undefined, parent: Parent) {
   if (index === undefined || !parent) return;
-  const wrapped = `{${(node.value ?? '').trim()}}`;
-  const matches = [...wrapped.matchAll(USER_VAR_REGEX)];
-  if (matches.length !== 1) return;
-  const varName = matches[0][1] || matches[0][2];
-  parent.children.splice(index, 1, makeVariableNode(varName, wrapped));
+  const match = soleUserVariableExpression(node);
+  if (!match) return;
+  parent.children.splice(index, 1, makeVariableNode(match.name, match.wrapped));
 }
 
 const variablesTextTransformer: Plugin = () => tree => {

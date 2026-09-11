@@ -4,6 +4,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
+import { NodeTypes } from '../../enums';
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
@@ -492,10 +493,48 @@ More content here
         ]);
       });
 
-      it('should not promote a wrapper around a legacy <<VARIABLE>>', () => {
+      // Left raw, parse5 reads `<<NAME>>` as a stray `<` plus a `<NAME>` tag.
+      it('should promote a wrapper around a legacy <<VARIABLE>>', () => {
         const tree = parseWithPlugin('<p>Hello <<NAME>>!</p>');
 
-        expect(tree.children).toMatchObject([{ type: 'html', value: '<p>Hello <<NAME>>!</p>' }]);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [
+              { type: 'text', value: 'Hello ' },
+              { type: NodeTypes.variable, data: { hProperties: { name: 'NAME', isLegacy: true } } },
+              { type: 'text', value: '!' },
+            ],
+          },
+        ]);
+      });
+
+      it('should promote a wrapper around a sole {user.*} reference', () => {
+        const tree = parseWithPlugin('<p>{user.name}</p>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [{ type: 'mdxFlowExpression', value: 'user.name' }],
+          },
+        ]);
+      });
+
+      // The body scanner used to read the inner `<name>` of `<<name>>` as a nested opening
+      // tag, leaving the block unbalanced so the tokenizer dropped its claim and CommonMark
+      // split it at the blank line — after which the closer was a separate html node.
+      it('should keep a wrapper whose body holds a <<VARIABLE>> in one node across a blank line', () => {
+        const tree = parseWithPlugin('<div><<NAME>>\n\n</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'mdxJsxFlowElement', name: 'div' }]);
+      });
+
+      it('should not promote a wrapper around an expression that names no variable', () => {
+        const tree = parseWithPlugin('<div>{ color: red }</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div>{ color: red }</div>' }]);
       });
 
       it('should not promote a wrapper whose only component has a dedicated transformer', () => {
