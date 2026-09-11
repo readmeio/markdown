@@ -216,8 +216,11 @@ const stringifyOptions = {
 } satisfies StringifyOptions;
 
 /**
- * Builds a serializer for the mdxish dialect. `parserTree` adds the plugins only a
- * PARSER-produced tree needs; without it the chain covers the editor's vocabulary.
+ * Builds a serializer for the mdxish dialect. The `*ToJsx` transformers rewrite readme nodes with
+ * no markdown spelling into JSX, and `mdxishCompilers` handles the ones that stay themselves.
+ *
+ * `parserTree` adds the plugins only a parsed document carries (legacy magic blocks, expressions) —
+ * the tree you get from parsing a doc, rewriting its text elsewhere, and writing it back out.
  */
 const createMdxishSerializer = ({ parserTree = false } = {}) =>
   unified()
