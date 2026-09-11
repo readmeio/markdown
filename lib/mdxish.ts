@@ -3,7 +3,9 @@ import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
 import type { PluggableList } from 'unified';
 
+import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+import { mdxjsEsmToMarkdown } from 'mdast-util-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -19,6 +21,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import { divTransformer, readmeToMdx } from '../processor/transform';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -213,6 +216,45 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     });
   return processor.stringify(processor.runSync(mdast));
 }
+
+/**
+ * Registers serialization for expression and ESM nodes, which only PARSER-produced trees carry —
+ * the editor never emits them, so {@link mdxishMdastToMd} leaves them unregistered.
+ */
+function mdxExpressionStringify(this: ReturnType<typeof unified>) {
+  const data = this.data();
+  const extensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
+  extensions.push({ extensions: [mdxExpressionToMarkdown(), mdxjsEsmToMarkdown()] });
+}
+
+const mdastToMdProcessor = unified()
+  .use(remarkGfm)
+  .use(mdxishCalloutToJsx)
+  .use(mdxishTablesToJsx)
+  .use(mdxishAnchorToJsx)
+  .use(divTransformer)
+  .use(readmeToMdx)
+  .use(mdxishCompilers)
+  .use(mdxJsxStringify)
+  .use(mdxExpressionStringify)
+  .use(remarkStringify, {
+    bullet: DEFAULT_BULLET,
+    emphasis: '_',
+    // Escape literal braces so they don't parse as MDX expressions on the next round trip.
+    unsafe: [
+      { character: '{', inConstruct: 'phrasing' },
+      { character: '}', inConstruct: 'phrasing' },
+    ],
+  });
+
+/**
+ * Serializes a PARSER-produced mdast in the same mdxish dialect {@link mdxishMdastToMd} writes. The
+ * two differ only in input vocabulary: the editor never emits the figures, image blocks, recipes,
+ * pins, expressions, or exports a parsed document carries.
+ */
+export const mdastToMd = (tree: MdastRoot) => {
+  return mdastToMdProcessor.stringify(mdastToMdProcessor.runSync(tree));
+};
 
 /**
  * Processes markdown content with MDX syntax support and returns a HAST.
