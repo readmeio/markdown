@@ -7,6 +7,8 @@ import { fromHtml } from 'hast-util-from-html';
 
 import { MDX_COMMENT_REGEX } from '../processor/transform/stripComments';
 
+import { componentPropText } from './utils/component-prop-text';
+
 /* @note: adapted from https://github.com/rehypejs/rehype-minify/blob/main/packages/hast-util-to-string/index.js
  */
 
@@ -31,6 +33,9 @@ interface Options {
 }
 
 const STRIP_TAGS = ['script', 'style'];
+
+/** MDX/React components are capitalized; intrinsic HTML elements are lowercase. */
+const COMPONENT_TAG_RE = /^[A-Z]/;
 
 /** Valid JS identifier: starts with $, _, or a letter; followed by $, _, letters, digits, etc. */
 const JS_IDENTIFIER_RE = /^[$_\p{L}][$_\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Pc}\u200C\u200D]*$/u;
@@ -123,6 +128,14 @@ function one(node: Nodes, opts: Options) {
       }
       default:
         break;
+    }
+
+    // Custom components (e.g. `<Banner message="…" />`) aren't rendered in safeMode, so
+    // index their authored string props alongside any children, mirroring built-ins above.
+    if (COMPONENT_TAG_RE.test(node.tagName)) {
+      const propText = componentPropText(node);
+      const children = 'children' in node ? all(node, opts) : '';
+      return [propText, children].filter(Boolean).join(' ');
     }
   }
 
