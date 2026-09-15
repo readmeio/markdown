@@ -1,4 +1,5 @@
-import type { Parent, Root } from 'mdast';
+import type { Parent, Root, Table } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -79,6 +80,63 @@ describe('mdxish-tables-to-jsx', () => {
 
       expect(tables).toHaveLength(1);
       expect(collectNodes(tree, 'table')).toHaveLength(0);
+    });
+  });
+
+  // GFM pipe syntax has no way to express a column width, so a table that
+  // carries one must take the JSX path even when every cell is plain text.
+  describe('tables with column widths', () => {
+    const tableWithWidths = (widths: (string | null)[]): Root => {
+      const tree = parseWithPlugin('| a | b |\n| --- | --- |\n| c | d |');
+      const table = collectNodes<Parent>(tree, 'table')[0];
+      table.data = { widths };
+      return tree;
+    };
+
+    const runPlugin = (tree: Root): Root => {
+      mdxishTablesToJsx()(tree);
+      return tree;
+    };
+
+    it('promotes a plain text table to JSX when any column has a width', () => {
+      const tree = runPlugin(tableWithWidths(['30%', null]));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
+      expect(collectNodes(tree, (n) => (n as { name?: string }).name === 'Table')).toHaveLength(1);
+    });
+
+    it('keeps the table as GFM when every width is empty', () => {
+      const tree = runPlugin(tableWithWidths([null, null]));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+    });
+
+    it('writes the width onto the header cell style and leaves body cells alone', () => {
+      const tree = runPlugin(tableWithWidths(['30%', null]));
+      const [th1, th2] = collectNodes<MdxJsxFlowElement>(tree, (n) => (n as { name?: string }).name === 'th');
+      const tds = collectNodes<MdxJsxFlowElement>(tree, (n) => (n as { name?: string }).name === 'td');
+
+      expect(th1.attributes).toStrictEqual([
+        {
+          type: 'mdxJsxAttribute',
+          name: 'style',
+          value: { type: 'mdxJsxAttributeValueExpression', value: '{ width: "30%" }' },
+        },
+      ]);
+      expect(th2.attributes).toStrictEqual([]);
+      tds.forEach((td) => expect(td.attributes ?? []).toStrictEqual([]));
+    });
+
+    it('combines a width with a non-default alignment in one style object', () => {
+      const tree = tableWithWidths(['30%', null]);
+      collectNodes<Table>(tree, 'table')[0].align = ['center', null];
+      runPlugin(tree);
+      const [th1] = collectNodes<MdxJsxFlowElement>(tree, (n) => (n as { name?: string }).name === 'th');
+
+      expect(th1.attributes[0]).toMatchObject({
+        name: 'style',
+        value: { value: '{ textAlign: "center", width: "30%" }' },
+      });
     });
   });
 

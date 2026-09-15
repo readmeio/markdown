@@ -593,8 +593,35 @@ const wrapBareCellsInRow = (node: Node): void => {
   });
 };
 
+interface CellSizingAttrs {
+  style?: Record<string, unknown> | string;
+  width?: number | string;
+}
+
 /**
- * Converts a JSX <Table> element to an MDAST table node with alignment.
+ * Reads a header cell's column width. Accepts the shape the serializer writes
+ * (`style={{ width: "30%" }}`) as well as the hand-authored forms customers already use
+ * (`style="width: 30%"`, `width="30%"`), so opening a table in the editor never drops them.
+ */
+const getCellWidth = (cell: MdxJsxFlowElement): string | null => {
+  const { style, width } = getAttrs<CellSizingAttrs>(cell);
+
+  let value: unknown = width;
+  if (style && typeof style === 'object') {
+    value = style.width;
+  } else if (typeof style === 'string') {
+    value = /(?:^|;)\s*width\s*:\s*([^;]+)/i.exec(style)?.[1];
+  }
+
+  // React (and the HTML `width` attribute) treat a bare number as pixels.
+  if (typeof value === 'number') return `${value}px`;
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const trimmed = value.trim();
+  return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+};
+
+/**
+ * Converts a JSX <Table> element to an MDAST table node with alignment and column widths.
  * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
@@ -611,6 +638,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
   const align = Array.isArray(alignAttr) ? alignAttr : null;
 
   const rows: TableRow[] = [];
+  const widths: (string | null)[] = [];
 
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name !== 'thead' && child.name !== 'tbody') return;
@@ -619,6 +647,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       if (row.name !== 'tr') return;
 
       const cells: TableCell[] = [];
+      const isHeaderRow = rows.length === 0;
 
       visit(row as Node, isTableCell, (cell: MdxJsxFlowElement & { name: 'td' | 'th' }) => {
         const parsedChildren = unwrapSoleParagraph(cell.children as Node[]);
@@ -628,6 +657,8 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
           children: parsedChildren,
           position: cell.position,
         } as TableCell);
+
+        if (isHeaderRow) widths.push(getCellWidth(cell));
       });
 
       rows.push({
@@ -649,6 +680,7 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
     align: alignArray,
     position: jsx.position,
     children: rows,
+    ...(widths.some(Boolean) && { data: { widths } }),
   };
 };
 

@@ -11,15 +11,24 @@ import { hasChildren, normalizeCellChildrenForGfm } from './gfm-cell-normalizati
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
-const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
-  if (!align || align === 'left') return null;
+type CellAlign = 'center' | 'left' | 'right' | null;
+
+/**
+ * Builds a cell's `style={{ ... }}` attribute. `left` is the browser default so it is
+ * omitted; a width only ever lands on the header row, which is enough to size the column.
+ */
+const cellStyle = (align: CellAlign, width: string | null = null) => {
+  const declarations: string[] = [];
+  if (align && align !== 'left') declarations.push(`textAlign: ${JSON.stringify(align)}`);
+  if (width) declarations.push(`width: ${JSON.stringify(width)}`);
+  if (declarations.length === 0) return null;
 
   return {
     type: 'mdxJsxAttribute',
     name: 'style',
     value: {
       type: 'mdxJsxAttributeValueExpression',
-      value: `{ textAlign: "${align}" }`,
+      value: `{ ${declarations.join(', ')} }`,
     },
   };
 };
@@ -89,7 +98,10 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return undefined;
       });
 
-      if (!requiresJsxTable) {
+      const widths = table.data?.widths ?? [];
+      const hasWidths = widths.some(Boolean);
+
+      if (!requiresJsxTable && !hasWidths) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
@@ -99,7 +111,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       visit(table, isTableCell, flattenBreaksToNewlines);
 
-      const styles = table.align.map(alignToStyle);
+      const headerStyles = table.align?.map((align, i) => cellStyle(align, widths[i] ?? null)) ?? [];
+      const bodyStyles = table.align?.map(align => cellStyle(align)) ?? [];
 
       const head: MdxJsxFlowElement = {
         attributes: [],
@@ -116,7 +129,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 type: 'mdxJsxFlowElement',
                 name: 'th',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(headerStyles[cellIndex] && { attributes: [headerStyles[cellIndex]] }),
               } as MdxJsxFlowElement;
             }),
           },
@@ -137,7 +150,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 type: 'mdxJsxFlowElement',
                 name: 'td',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(bodyStyles[cellIndex] && { attributes: [bodyStyles[cellIndex]] }),
               };
             }),
           } as MdxJsxFlowElement;
