@@ -1,7 +1,8 @@
-import type { Figure, Gemoji, ImageBlock } from '../../types';
-import type { Image, Paragraph, Root } from 'mdast';
+import type { Figure, Gemoji, ImageBlock, ImageBlockAttrs } from '../../types';
+import type { Image, Paragraph, Root, Table } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
+import { NodeTypes } from '../../enums';
 import imagesToJsx from '../../processor/transform/mdxish/images-to-jsx';
 
 const run = (children: Root['children']): Root => {
@@ -12,21 +13,38 @@ const run = (children: Root['children']): Root => {
 
 const attr = (node: MdxJsxFlowElement, name: string) => node.attributes.find(a => 'name' in a && a.name === name)?.value;
 
+/**
+ * An `image-block` carries its attributes on the node and mirrored into `data.hProperties`.
+ * The caption `children` are node content rather than an html property, so they stay off `hProperties`.
+ */
+const imageBlock = ({ children, ...attrs }: ImageBlockAttrs): ImageBlock => ({
+  type: NodeTypes.imageBlock,
+  ...attrs,
+  children,
+  data: { hName: 'img', hProperties: { ...attrs } },
+});
+
 describe('images-to-jsx transformer', () => {
   it('rewrites a figure into an Image element with the caption as children', () => {
-    const figure = {
-      type: 'figure',
+    const caption: Paragraph = { type: 'paragraph', children: [{ type: 'text', value: 'A caption' }] };
+    const figure: Figure = {
+      type: NodeTypes.figure,
+      data: { hName: 'figure' },
       children: [
         {
-          type: 'image-block',
-          src: 'https://x.io/a.png',
+          ...imageBlock({
+            src: 'https://x.io/a.png',
+            alt: 'Alt',
+            title: '',
+            align: 'center',
+            className: 'border',
+            width: '80%',
+          }),
           url: 'https://x.io/a.png',
-          alt: 'Alt',
-          data: { hProperties: { align: 'center', className: 'border', width: '80%' } },
         },
-        { type: 'figcaption', children: [{ type: 'text', value: 'A caption' }] },
+        { type: NodeTypes.figcaption, data: { hName: 'figcaption' }, children: [caption] },
       ],
-    } as unknown as Figure;
+    };
 
     const [image] = run([figure]).children as [MdxJsxFlowElement];
 
@@ -38,17 +56,18 @@ describe('images-to-jsx transformer', () => {
     // `className: 'border'` becomes the `border` prop, not a class
     expect(attr(image, 'border')).toBeDefined();
     // The caption stays child content so readme nodes inside it reach their own handlers
-    expect(image.children).toStrictEqual([{ type: 'text', value: 'A caption' }]);
+    expect(image.children).toStrictEqual([caption]);
   });
 
   it('rewrites an image-block with readme attributes into an Image element', () => {
-    const block = {
-      type: 'image-block',
+    const block = imageBlock({
       src: 'https://x.io/a.png',
       alt: 'Alt',
-      data: { hProperties: { align: 'left', width: '50%' } },
+      title: '',
+      align: 'left',
+      width: '50%',
       children: [{ type: 'text', value: 'Cap' }],
-    } as unknown as ImageBlock;
+    });
 
     const [image] = run([block]).children as [MdxJsxFlowElement];
 
@@ -59,14 +78,7 @@ describe('images-to-jsx transformer', () => {
   });
 
   it('rewrites an attribute-less image-block into a plain markdown image', () => {
-    const block = {
-      type: 'image-block',
-      src: 'https://x.io/a.png',
-      alt: 'Alt',
-      title: 'Title',
-      data: { hProperties: {} },
-      children: [],
-    } as unknown as ImageBlock;
+    const block = imageBlock({ src: 'https://x.io/a.png', alt: 'Alt', title: 'Title', children: [] });
 
     const [image] = run([block]).children as [Image];
 
@@ -89,12 +101,12 @@ describe('images-to-jsx transformer', () => {
 
   it('leaves an image inside a table cell unwrapped', () => {
     const cellImage: Image = { type: 'image', url: 'https://x.io/a.png', alt: 'Alt' };
-    const table = {
+    const table: Table = {
       type: 'table',
       children: [{ type: 'tableRow', children: [{ type: 'tableCell', children: [cellImage] }] }],
-    } as unknown as Root['children'][number];
+    };
 
-    const [result] = run([table]).children as [{ children: [{ children: [{ children: Image[] }] }] }];
+    const [result] = run([table]).children as [Table];
 
     expect(result.children[0].children[0].children[0]).toBe(cellImage);
   });
