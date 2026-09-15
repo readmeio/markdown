@@ -186,23 +186,13 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
 }
 
 /**
- * Registers the mdx-jsx serialization extension so remark-stringify
- * can convert JSX nodes (e.g. `<Table>`) to markdown.
+ * Registers serialization for the node types remark-stringify can't write on its own:
+ * JSX elements (e.g. `<Table>`), MDX expressions, and ESM exports.
  */
-function mdxJsxStringify(this: ReturnType<typeof unified>) {
+function mdxStringifyExtensions(this: ReturnType<typeof unified>) {
   const data = this.data();
   const extensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
-  extensions.push({ extensions: [mdxJsxToMarkdown()] });
-}
-
-/**
- * Registers serialization for expression and ESM nodes, which only PARSER-produced trees carry —
- * the editor never emits them, so an editor-tree serializer leaves them unregistered.
- */
-function mdxExpressionStringify(this: ReturnType<typeof unified>) {
-  const data = this.data();
-  const extensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
-  extensions.push({ extensions: [mdxExpressionToMarkdown(), mdxjsEsmToMarkdown()] });
+  extensions.push({ extensions: [mdxJsxToMarkdown(), mdxExpressionToMarkdown(), mdxjsEsmToMarkdown()] });
 }
 
 const stringifyOptions = {
@@ -217,44 +207,25 @@ const stringifyOptions = {
 } satisfies StringifyOptions;
 
 /**
- * Builds a serializer for the mdxish dialect. The `*ToJsx` transformers rewrite readme nodes with
- * no markdown spelling into JSX, and `mdxishCompilers` handles the ones that stay themselves.
- *
- * `parserTree` adds the plugins only a parsed document carries (legacy magic blocks, expressions) —
- * the tree you get from parsing a doc, rewriting its text elsewhere, and writing it back out.
+ * Serializes an Mdast back into a markdown string, whether the tree came from the editor or the
+ * parser. The `*ToJsx` transformers rewrite readme nodes with no markdown spelling into JSX, and
+ * `mdxishCompilers` handles the ones that stay themselves. `divTransformer` and
+ * `mdxishImagesToJsx` cover nodes only a parsed document carries — on an editor tree nothing
+ * matches their visitors, so one chain serves both shapes without forking by consumer.
  */
-const createMdxishSerializer = ({ parserTree = false } = {}) =>
-  unified()
+export function mdxishMdastToMd(mdast: MdastRoot) {
+  const processor = unified()
     .use(remarkGfm)
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
-    .use(parserTree ? divTransformer : undefined)
-    .use(parserTree ? mdxishImagesToJsx : undefined)
+    .use(divTransformer)
+    .use(mdxishImagesToJsx)
     .use(mdxishCompilers)
-    .use(mdxJsxStringify)
-    .use(parserTree ? mdxExpressionStringify : undefined)
+    .use(mdxStringifyExtensions)
     .use(remarkStringify, stringifyOptions);
-
-const mdxishMdastToMdProcessor = createMdxishSerializer();
-
-/**
- * Serializes an Mdast back into a markdown string.
- */
-export function mdxishMdastToMd(mdast: MdastRoot) {
-  return mdxishMdastToMdProcessor.stringify(mdxishMdastToMdProcessor.runSync(mdast));
+  return processor.stringify(processor.runSync(mdast));
 }
-
-const mdastToMdProcessor = createMdxishSerializer({ parserTree: true });
-
-/**
- * Serializes a PARSER-produced mdast in the same mdxish dialect {@link mdxishMdastToMd} writes. The
- * two differ only in input vocabulary: the editor never emits the figures, image blocks, recipes,
- * pins, expressions, or exports a parsed document carries.
- */
-export const mdastToMd = (tree: MdastRoot) => {
-  return mdastToMdProcessor.stringify(mdastToMdProcessor.runSync(tree));
-};
 
 /**
  * Processes markdown content with MDX syntax support and returns a HAST.

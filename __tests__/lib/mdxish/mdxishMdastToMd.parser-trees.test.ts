@@ -1,14 +1,12 @@
-import type { Root as MdastRoot } from 'mdast';
-
-import { mdastToMd, mdxishMdastToMd } from '../../../lib';
+import { mdxishMdastToMd } from '../../../lib';
 import { parseMdxish } from '../../helpers';
 
-/** Round-trips markdown through the mdxish parser and the round-trip serializer. */
-const roundTrip = (doc: string): string => mdastToMd(parseMdxish(doc));
+/** Round-trips markdown through the mdxish parser and back out through the serializer. */
+const roundTrip = (doc: string): string => mdxishMdastToMd(parseMdxish(doc));
 
 const PIPE_ROW = /^\|.*\|$/m;
 
-describe('mdastToMd', () => {
+describe('mdxishMdastToMd on parser-produced trees', () => {
   describe('tables (RM-18383)', () => {
     // The old tablesToJsx sampled only the FIRST cell and bailed on an empty one, so a table
     // whose block content sits in later cells collapsed into a flattened pipe table.
@@ -197,7 +195,7 @@ describe('mdastToMd', () => {
       expect(emphasisValues).toContain('用語');
     });
 
-    it('matches the editor serializer byte-for-byte on editor-vocabulary content', () => {
+    it('is stable across a second round trip on editor-vocabulary content', () => {
       const doc = [
         '# Title',
         '',
@@ -219,10 +217,9 @@ describe('mdastToMd', () => {
         '```',
         '',
       ].join('\n');
-      const tree = parseMdxish(doc);
+      const once = roundTrip(doc);
 
-      // Both serializers mutate their input, so each gets its own clone.
-      expect(mdastToMd(structuredClone(tree) as MdastRoot)).toBe(mdxishMdastToMd(structuredClone(tree) as MdastRoot));
+      expect(roundTrip(once)).toBe(once);
     });
   });
 });

@@ -21,7 +21,6 @@ export {
   INLINE_ONLY_PARENT_TYPES,
   run,
   mdast,
-  mdastToMd,
   mdastV6,
   mdx,
   mdxish,
