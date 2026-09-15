@@ -36,14 +36,10 @@ const toImageJsx = (attributes: MdxJsxAttribute[], children: MdxJsxFlowElement['
  * from the two node types around it and has no rule for phrasing-next-to-flow, so it emits none and
  * glues the image to whatever follows (`![a](src)# Heading`), which then cascades through the rest
  * of the document. Wrapping restores a block for it to join against.
- *
- * An image whose parent is inline-only (a paragraph, a table cell) already has a block around it,
- * so it is placed as-is.
  */
 const placeImage = (parent: Parent, index: number, image: Image): void => {
-  parent.children[index] = INLINE_ONLY_PARENT_TYPES.has(parent.type)
-    ? image
-    : ({ type: 'paragraph', children: [image] } satisfies Paragraph);
+  const wrapped: Paragraph = { type: 'paragraph', children: [image] };
+  parent.children[index] = INLINE_ONLY_PARENT_TYPES.has(parent.type) ? image : wrapped;
 };
 
 /**
@@ -98,7 +94,9 @@ const imagesToJsx = (): Transform => tree => {
     }
 
     // An attribute-less `[block:image]` parses straight to an `image` in a flow slot, so it needs
-    // the same wrap. Editor images already sit in a paragraph, so `placeImage` leaves them put.
+    // the same wrap. Editor images always arrive inside a paragraph and are left alone.
+    if (INLINE_ONLY_PARENT_TYPES.has(parent.type)) return undefined;
+
     placeImage(parent, index, node);
     // Step over the paragraph just created, or the visitor walks back into the same image.
     return [SKIP, index + 1];
