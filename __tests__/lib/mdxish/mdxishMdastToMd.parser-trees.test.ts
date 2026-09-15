@@ -175,6 +175,68 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       expect(result).toContain('width="50%"');
       expect(result).toContain('\n\n# Heading\n\n');
     });
+
+    it('keeps the HTMLBlock wrapper on an html magic block, gate included', () => {
+      const doc = ['[block:html]', JSON.stringify({ html: '<style>.x{color:red}</style>' }), '[/block]'].join('\n');
+
+      const result = roundTrip(doc);
+
+      expect(result).toContain('<HTMLBlock runScripts="false">');
+      expect(result).toContain('<style>.x{color:red}</style>');
+    });
+
+    it('serializes a legacy callout magic block as a Callout element', () => {
+      const doc = ['[block:callout]', JSON.stringify({ type: 'info', title: 'Heads up', body: 'The body.' }), '[/block]'].join(
+        '\n',
+      );
+
+      const result = roundTrip(doc);
+
+      expect(result).toContain('<Callout icon="📘"');
+      expect(result).toContain('Heads up');
+      expect(result).toContain('The body.');
+    });
+
+    it('serializes a multi-language code magic block as named adjacent fences', () => {
+      const doc = [
+        '[block:code]',
+        JSON.stringify({
+          codes: [
+            { code: 'a=1', language: 'python', name: 'first' },
+            { code: 'b=2', language: 'js', name: 'second' },
+          ],
+        }),
+        '[/block]',
+      ].join('\n');
+
+      expect(roundTrip(doc)).toBe('```python first\na=1\n```\n```js second\nb=2\n```\n');
+    });
+
+    it('serializes an embed magic block as an Embed element', () => {
+      const doc = [
+        '[block:embed]',
+        JSON.stringify({ html: false, url: 'https://youtu.be/abc', title: 'Vid', favicon: 'https://y.t/f.ico' }),
+        '[/block]',
+      ].join('\n');
+
+      const result = roundTrip(doc);
+
+      expect(result).toContain('<Embed url="https://youtu.be/abc"');
+      expect(result).toContain('title="Vid"');
+    });
+
+    // `[block:table]` has no case in the magic-block transformer's main switch, so it parses into
+    // the `div` fallback. `divTransformer` keeps that from reaching remark-stringify as an
+    // unhandled node — the output is degenerate, but it must not throw.
+    it('serializes a legacy table magic block without throwing', () => {
+      const doc = ['[block:table]', JSON.stringify({ foo: 'bar' }), '[/block]'].join('\n');
+
+      expect(() => roundTrip(doc)).not.toThrow();
+    });
+
+    it('round-trips frontmatter verbatim', () => {
+      expect(roundTrip('---\ntitle: Hi\n---\n\nBody text\n')).toBe('---\ntitle: Hi\n---\n\nBody text\n');
+    });
   });
 
   describe('mdxish dialect', () => {
@@ -184,6 +246,23 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       expect(result).toContain('<Callout');
       expect(result).toContain('Nota');
       expect(result).not.toContain('> 📘');
+    });
+
+    it('round-trips a gemoji shortcode verbatim', () => {
+      expect(roundTrip('A :joy: shortcode\n')).toBe('A :joy: shortcode\n');
+    });
+
+    // `mdxishCompilers` owns the `variable` handler and writes `{user.<name>}`. Pinned so an edit
+    // there can't quietly change what a parsed doc round-trips to.
+    it('writes variables as expressions and stays stable across a second pass', () => {
+      const once = roundTrip('Hello <<user>> there\n');
+
+      expect(once).toContain('{user.user}');
+      expect(roundTrip(once)).toBe(once);
+    });
+
+    it('serializes a glossary term as a Glossary element', () => {
+      expect(roundTrip('See <<glossary:merchantId>> here\n')).toContain('<Glossary>merchantId</Glossary>');
     });
 
     it('keeps CJK-adjacent emphasis parseable through the round trip', () => {
