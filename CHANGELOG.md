@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.6.0
+### ✨ New & Improved
+
+* **mdxish:** serialize parser-produced trees through the mdxish dialect ([#1618](https://github.com/readmeio/markdown/issues/1618)) ([7986e7d](https://github.com/readmeio/markdown/commit/7986e7d98785eee18c5a052ca064c702a0e5ce82)), closes [readmeio/ai#1130](https://github.com/readmeio/ai/issues/1130)
+
 ## Version 15.5.2
 ### 🛠 Fixes & Updates
 
