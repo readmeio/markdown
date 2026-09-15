@@ -208,11 +208,7 @@ const stringifyOptions = {
 } satisfies StringifyOptions;
 
 /**
- * Serializes an Mdast back into a markdown string, whether the tree came from the editor or the
- * parser. The `*ToJsx` transformers rewrite readme nodes with no markdown spelling into JSX, and
- * `mdxishCompilers` handles the ones that stay themselves. `divTransformer`, `unwrapPins`, and
- * `mdxishImagesToJsx` cover nodes only a parsed document carries — on an editor tree nothing
- * matches their visitors, so one chain serves both shapes without forking by consumer.
+ * Serializes an Mdast back into a markdown string.
  */
 export function mdxishMdastToMd(mdast: MdastRoot) {
   const processor = unified()
