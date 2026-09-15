@@ -137,6 +137,35 @@ describe('mdastToMd', () => {
       expect(result).toContain('<Recipe');
       expect(result).toContain('slug="send-a-message"');
     });
+
+    it('serializes an attribute-less image block as plain markdown', () => {
+      const doc = ['[block:image]', JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }), '[/block]'].join(
+        '\n',
+      );
+
+      expect(roundTrip(doc)).toContain('![Alt](https://x.io/a.png)');
+    });
+
+    it('keeps block separation around an image carrying readme attributes', () => {
+      const doc = [
+        'Intro paragraph.',
+        '',
+        '[block:image]',
+        JSON.stringify({ images: [{ image: ['https://x.io/a.png', null, null], align: 'left', sizing: '50%' }] }),
+        '[/block]',
+        '',
+        '# Heading',
+        '',
+        'Trailing paragraph.',
+        '',
+      ].join('\n');
+
+      const result = roundTrip(doc);
+
+      expect(result).toContain('align="left"');
+      expect(result).toContain('width="50%"');
+      expect(result).toContain('\n\n# Heading\n\n');
+    });
   });
 
   describe('mdxish dialect', () => {

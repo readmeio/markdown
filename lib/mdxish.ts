@@ -22,7 +22,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import { divTransformer, readmeToMdx } from '../processor/transform';
+import { divTransformer } from '../processor/transform';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -38,6 +38,7 @@ import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
+import mdxishImagesToJsx from '../processor/transform/mdxish/images-to-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
@@ -229,7 +230,7 @@ const createMdxishSerializer = ({ parserTree = false } = {}) =>
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
     .use(parserTree ? divTransformer : undefined)
-    .use(parserTree ? readmeToMdx : undefined)
+    .use(parserTree ? mdxishImagesToJsx : undefined)
     .use(mdxishCompilers)
     .use(mdxJsxStringify)
     .use(parserTree ? mdxExpressionStringify : undefined)
