@@ -136,6 +136,17 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       expect(result).toContain('slug="send-a-message"');
     });
 
+    // A sidebar magic block parses into an `rdme-pin` wrapper the mdxish dialect has no
+    // spelling for, so it unwraps to its content — matching readmeToMdx's behavior
+    // (readmeio/markdown#1618, greptile P1).
+    it('unwraps a pinned magic block instead of throwing', () => {
+      const doc = ['[block:code]', JSON.stringify({ sidebar: true, codes: [{ code: 'const x = 1', language: 'javascript' }] }), '[/block]'].join(
+        '\n',
+      );
+
+      expect(roundTrip(doc)).toContain('const x = 1');
+    });
+
     it('serializes an attribute-less image block as plain markdown', () => {
       const doc = ['[block:image]', JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }), '[/block]'].join(
         '\n',

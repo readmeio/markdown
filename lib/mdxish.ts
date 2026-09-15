@@ -58,6 +58,7 @@ import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/tables/normalize-table-separator';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
+import unwrapPins from '../processor/transform/mdxish/unwrap-pins';
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
@@ -209,7 +210,7 @@ const stringifyOptions = {
 /**
  * Serializes an Mdast back into a markdown string, whether the tree came from the editor or the
  * parser. The `*ToJsx` transformers rewrite readme nodes with no markdown spelling into JSX, and
- * `mdxishCompilers` handles the ones that stay themselves. `divTransformer` and
+ * `mdxishCompilers` handles the ones that stay themselves. `divTransformer`, `unwrapPins`, and
  * `mdxishImagesToJsx` cover nodes only a parsed document carries — on an editor tree nothing
  * matches their visitors, so one chain serves both shapes without forking by consumer.
  */
@@ -220,6 +221,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
     .use(divTransformer)
+    .use(unwrapPins)
     .use(mdxishImagesToJsx)
     .use(mdxishCompilers)
     .use(mdxStringifyExtensions)
