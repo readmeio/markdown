@@ -1,0 +1,20 @@
+{
+  "variables": {
+    "defaults": [
+      {
+        "name": "companyName",
+        "default": "Your Company"
+      }
+    ],
+    "user": {
+      "companyName": "Acme Inc",
+      "planName": "Enterprise"
+    }
+  },
+  "glossary": [
+    {
+      "term": "owlbert",
+      "definition": "ReadMe's mascot."
+    }
+  ]
+}
