@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.5.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep multi-line JSX expressions in one block ([#1609](https://github.com/readmeio/markdown/issues/1609)) ([5cbdafd](https://github.com/readmeio/markdown/commit/5cbdafd5d668a10918d7040f61aa51c9223363a7))
+* resolve variables inside single-line block HTML tags ([#1614](https://github.com/readmeio/markdown/issues/1614)) ([08c0b50](https://github.com/readmeio/markdown/commit/08c0b50505223a61f0ee70d5001f2d204b89b2e8))
+
 ## Version 15.5.1
 ### 🛠 Fixes & Updates
 
