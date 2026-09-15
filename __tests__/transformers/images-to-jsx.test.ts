@@ -1,5 +1,5 @@
 import type { Figure, Gemoji, ImageBlock } from '../../types';
-import type { Image, Root } from 'mdast';
+import type { Image, Paragraph, Root } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import imagesToJsx from '../../processor/transform/mdxish/images-to-jsx';
@@ -71,11 +71,32 @@ describe('images-to-jsx transformer', () => {
     const [image] = run([block]).children as [Image];
 
     expect(image).toStrictEqual({
-      type: 'image',
-      url: 'https://x.io/a.png',
-      title: 'Title',
-      alt: 'Alt',
+      type: 'paragraph',
+      children: [{ type: 'image', url: 'https://x.io/a.png', title: 'Title', alt: 'Alt' }],
     });
+  });
+
+  // An `image` is phrasing content. Left bare in a flow slot, the serializer has no rule to
+  // separate it from the next block and glues them together (`![a](src)# Heading`).
+  it('wraps a flow-position image in a paragraph so it stays its own block', () => {
+    const bare: Image = { type: 'image', url: 'https://x.io/a.png', alt: 'Alt' };
+
+    const [wrapped] = run([bare, { type: 'heading', depth: 1, children: [{ type: 'text', value: 'H' }] }])
+      .children as [Paragraph];
+
+    expect(wrapped).toStrictEqual({ type: 'paragraph', children: [bare] });
+  });
+
+  it('leaves an image inside a table cell unwrapped', () => {
+    const cellImage: Image = { type: 'image', url: 'https://x.io/a.png', alt: 'Alt' };
+    const table = {
+      type: 'table',
+      children: [{ type: 'tableRow', children: [{ type: 'tableCell', children: [cellImage] }] }],
+    } as unknown as Root['children'][number];
+
+    const [result] = run([table]).children as [{ children: [{ children: [{ children: Image[] }] }] }];
+
+    expect(result.children[0].children[0].children[0]).toBe(cellImage);
   });
 
   it('rewrites an inline image that picked up readme attributes into an Image element', () => {

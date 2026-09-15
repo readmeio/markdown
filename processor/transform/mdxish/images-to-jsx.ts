@@ -1,13 +1,14 @@
 import type { Figure, Gemoji, ImageBlock, ImageBlockAttrs } from '../../../types';
-import type { Image } from 'mdast';
+import type { Image, Paragraph } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Parent } from 'unist';
 
 import { toMarkdown } from 'mdast-util-to-markdown';
-import { visit } from 'unist-util-visit';
+import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
+import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { toAttributes } from '../../utils';
 
 const IMAGE_ATTRS = ['align', 'alt', 'border', 'caption', 'className', 'height', 'lazy', 'src', 'title', 'width'];
@@ -28,6 +29,18 @@ const toImageJsx = (attributes: MdxJsxAttribute[], children: MdxJsxFlowElement['
   attributes,
   children,
 });
+
+/**
+ * An `image` is phrasing content, but the nodes it replaces here (`image-block`, and a plain
+ * `[block:image]`) sit where flow content belongs. `mdast-util-to-markdown` picks a block separator
+ * from the two node types around it and has no rule for phrasing-next-to-flow, so it emits none and
+ * glues the image to whatever follows (`![a](src)# Heading`), which then cascades through the rest
+ * of the document. Wrapping restores a block for it to join against.
+ */
+const placeImage = (parent: Parent, index: number, image: Image): void => {
+  const wrapped: Paragraph = { type: 'paragraph', children: [image] };
+  parent.children[index] = INLINE_ONLY_PARENT_TYPES.has(parent.type) ? image : wrapped;
+};
 
 /**
  * Serializes the three image shapes a parsed document carries. An image that picked up readme
@@ -55,25 +68,38 @@ const imagesToJsx = (): Transform => tree => {
     );
   });
 
-  visit(tree, 'image', (node: ReadmeImage, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return;
+  visit(tree, 'image', (n, index, parent: Parent | undefined) => {
+    const node = n as ReadmeImage;
+    if (!parent || index === undefined) return undefined;
 
     const hProperties = node.data?.hProperties;
-    if (!hProperties) return;
 
     // A `:joy:`-style shortcode round-trips as a gemoji rather than the image it parsed into.
-    if (hProperties.className === 'emoji' && node.title) {
+    if (hProperties?.className === 'emoji' && node.title) {
       const emoji: Gemoji = {
         type: NodeTypes.emoji,
         name: node.title.replace(EMOJI_COLONS, '$1'),
         value: node.title,
       };
       parent.children[index] = emoji;
-      return;
+      return undefined;
     }
 
-    const attributes = toAttributes({ ...node, ...hProperties, src: node.url }, IMAGE_ATTRS);
-    if (hasExtra(attributes)) parent.children[index] = toImageJsx(attributes);
+    if (hProperties) {
+      const attributes = toAttributes({ ...node, ...hProperties, src: node.url }, IMAGE_ATTRS);
+      if (hasExtra(attributes)) {
+        parent.children[index] = toImageJsx(attributes);
+        return undefined;
+      }
+    }
+
+    // An attribute-less `[block:image]` parses straight to an `image` in a flow slot, so it needs
+    // the same wrap. Editor images always arrive inside a paragraph and are left alone.
+    if (INLINE_ONLY_PARENT_TYPES.has(parent.type)) return undefined;
+
+    placeImage(parent, index, node);
+    // Step over the paragraph just created, or the visitor walks back into the same image.
+    return [SKIP, index + 1];
   });
 
   visit(tree, NodeTypes.imageBlock, (node: ImageBlock, index, parent: Parent | undefined) => {
@@ -90,13 +116,12 @@ const imagesToJsx = (): Transform => tree => {
       return;
     }
 
-    const plain: Image = {
+    placeImage(parent, index, {
       type: 'image',
       url: node.src,
       ...(node.title && { title: node.title }),
       ...(node.alt && { alt: node.alt }),
-    };
-    parent.children[index] = plain;
+    });
   });
 
   return tree;

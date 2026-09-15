@@ -1988,6 +1988,32 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       expect(roundTripMdxish(doc)).toContain('const x = 1');
     });
 
+    // A plain image is phrasing content, so it has to keep a block wrapper or the serializer runs
+    // it straight into the next block (`![Alt](src)# Heading`) and the rest of the doc collapses.
+    it('keeps block separation around plain images in every flow position', () => {
+      const doc = [
+        '![Alt](https://x.io/a.png)',
+        '',
+        '# Heading',
+        '',
+        '> ![note](https://x.io/n.png)',
+        '>',
+        '> Quoted caption.',
+        '',
+        '- item',
+        '- ![shot](https://x.io/s.png)',
+        '',
+        'Trailing paragraph.',
+        '',
+      ].join('\n');
+
+      const result = roundTripMdxish(doc);
+
+      expect(result).toContain('![Alt](https://x.io/a.png)\n\n# Heading');
+      expect(result).toContain('> ![note](https://x.io/n.png)\n>\n> Quoted caption.');
+      expect(result.split('\n').every(line => line.length < 120)).toBe(true);
+    });
+
     it('serializes an attribute-less image block as plain markdown', () => {
       const doc = ['[block:image]', JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }), '[/block]'].join(
         '\n',
