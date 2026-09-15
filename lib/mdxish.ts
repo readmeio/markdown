@@ -22,7 +22,6 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import { divTransformer } from '../processor/transform';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -213,12 +212,16 @@ const stringifyOptions = {
 export function mdxishMdastToMd(mdast: MdastRoot) {
   const processor = unified()
     .use(remarkGfm)
+    // Readme nodes with no markdown spelling go out as JSX, the same tags mdxish re-parses.
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
-    .use(divTransformer)
+    // The rest only a PARSER tree carries.
+    // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
     .use(unwrapPins)
+    // Figures, image blocks, and images that picked up readme attributes while parsing.
     .use(mdxishImagesToJsx)
+    // Handlers for the readme nodes that stay themselves (variables, emoji, html-blocks, lists).
     .use(mdxishCompilers)
     .use(mdxStringifyExtensions)
     .use(remarkStringify, stringifyOptions);
