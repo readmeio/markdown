@@ -590,6 +590,7 @@ describe('mdxishAstProcessor', () => {
           'a width attribute beside an alignment-only style string',
           '<th style="text-align: center" width="30%">Name</th>',
         ],
+        ['a style object left as a string, as safe mode does', '<th style=\'{ width: "30%" }\'>Name</th>'],
         ['a width attribute beside an empty style width', '<th style={{ width: "" }} width="30%">Name</th>'],
         [
           'a width attribute beside a blank style width declaration',
@@ -608,6 +609,14 @@ describe('mdxishAstProcessor', () => {
         const table = parse(jsxTable(`${header}\n<th>Description</th>`));
 
         expect(table.data?.widths).toStrictEqual(['200px', null]);
+      });
+
+      it('keeps widths when safe mode leaves attribute expressions unevaluated', () => {
+        const md = jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true, safeMode: true });
+        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+        expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
       });
 
       it('leaves data unset when no header cell has a width', () => {

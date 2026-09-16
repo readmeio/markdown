@@ -619,7 +619,7 @@ const getCellWidth = (cell: MdxJsxFlowElement): string | null => {
   if (isPlainObject(style)) {
     styleWidth = style.width;
   } else if (typeof style === 'string') {
-    styleWidth = /(?:^|;)\s*width\s*:\s*([^;]+)/i.exec(style)?.[1];
+    styleWidth = /(?:^|[{;,])\s*["']?width["']?\s*:\s*["']?([^;,}"']+)/i.exec(style)?.[1];
   }
   // A style whose width is missing or empty must not hide a `width` attribute beside it
   return normalizeWidth(styleWidth) ?? normalizeWidth(width);
