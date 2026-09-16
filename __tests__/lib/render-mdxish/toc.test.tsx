@@ -20,9 +20,9 @@ describe('toc transformer', () => {
 
     render(<Toc />);
 
-    expect(screen.findByText('Title')).toBeDefined();
-    expect(screen.findByText('Subheading')).toBeDefined();
-    expect(screen.findByText('Third')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Title' })).toHaveAttribute('href', '#title');
+    expect(screen.getByRole('link', { name: 'Subheading' })).toHaveAttribute('href', '#subheading');
+    expect(screen.getByRole('link', { name: 'Third' })).toHaveAttribute('href', '#third');
     expect(screen.queryByText('Fourth')).toBeNull();
   });
 
