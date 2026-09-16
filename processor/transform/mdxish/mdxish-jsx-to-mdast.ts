@@ -12,6 +12,7 @@ import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
+import { isPlainObject } from './style-object-to-css';
 import { unwrapSoleParagraph } from './tables/utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
@@ -598,6 +599,14 @@ interface CellSizingAttrs {
   width?: number | string;
 }
 
+/** A usable CSS width, or null. React (and the HTML `width` attribute) treat a bare number as pixels. */
+const normalizeWidth = (value: unknown): string | null => {
+  if (typeof value === 'number') return `${value}px`;
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const trimmed = value.trim();
+  return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+};
+
 /**
  * Reads a header cell's column width. Accepts the shape the serializer writes
  * (`style={{ width: "30%" }}`) as well as the hand-authored forms customers already use
@@ -606,18 +615,14 @@ interface CellSizingAttrs {
 const getCellWidth = (cell: MdxJsxFlowElement): string | null => {
   const { style, width } = getAttrs<CellSizingAttrs>(cell);
 
-  let value: unknown = width;
-  if (style && typeof style === 'object') {
-    value = style.width;
+  let styleWidth: unknown;
+  if (isPlainObject(style)) {
+    styleWidth = style.width;
   } else if (typeof style === 'string') {
-    value = /(?:^|;)\s*width\s*:\s*([^;]+)/i.exec(style)?.[1];
+    styleWidth = /(?:^|;)\s*width\s*:\s*([^;]+)/i.exec(style)?.[1];
   }
-
-  // React (and the HTML `width` attribute) treat a bare number as pixels.
-  if (typeof value === 'number') return `${value}px`;
-  if (typeof value !== 'string' || !value.trim()) return null;
-  const trimmed = value.trim();
-  return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+  // A style whose width is missing or empty must not hide a `width` attribute beside it
+  return normalizeWidth(styleWidth) ?? normalizeWidth(width);
 };
 
 /**

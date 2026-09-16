@@ -582,6 +582,19 @@ describe('mdxishAstProcessor', () => {
       it.each([
         ['a string style attribute', '<th style="text-align: center; width: 30%">Name</th>'],
         ['a width attribute', '<th width="30%">Name</th>'],
+        [
+          'a width attribute beside an alignment-only style object',
+          '<th style={{ textAlign: "center" }} width="30%">Name</th>',
+        ],
+        [
+          'a width attribute beside an alignment-only style string',
+          '<th style="text-align: center" width="30%">Name</th>',
+        ],
+        ['a width attribute beside an empty style width', '<th style={{ width: "" }} width="30%">Name</th>'],
+        [
+          'a width attribute beside a blank style width declaration',
+          '<th style="width: ; text-align: center" width="30%">Name</th>',
+        ],
       ])('reads widths from %s', (_label, header) => {
         const table = parse(jsxTable(`${header}\n<th>Description</th>`));
 
