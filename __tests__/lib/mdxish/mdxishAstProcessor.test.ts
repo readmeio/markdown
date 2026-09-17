@@ -611,6 +611,24 @@ describe('mdxishAstProcessor', () => {
         expect(table.data?.widths).toStrictEqual(['200px', null]);
       });
 
+      it.each([
+        [
+          'a CSS function with commas in a style string',
+          '<th style="width: clamp(100px, 50%, 60vw); text-align: center">Name</th>',
+          'clamp(100px, 50%, 60vw)',
+        ],
+        [
+          'a CSS function with commas in a stringified style object',
+          '<th style=\'{ textAlign: "center", width: "var(--w, 240px)" }\'>Name</th>',
+          'var(--w, 240px)',
+        ],
+        ['a width declared after another property', '<th style="text-align: center; width: 30%">Name</th>', '30%'],
+      ])('keeps the whole value for %s', (_label, header, expected) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual([expected, null]);
+      });
+
       it('keeps widths when safe mode leaves attribute expressions unevaluated', () => {
         const md = jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>');
         const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true, safeMode: true });

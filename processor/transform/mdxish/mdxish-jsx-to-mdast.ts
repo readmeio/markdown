@@ -608,6 +608,24 @@ const normalizeWidth = (value: unknown): string | null => {
 };
 
 /**
+ * Pulls `width` out of a style that is still a string: either a CSS declaration list
+ * (`width: 30%; text-align: center`) or a style object safe mode left unevaluated
+ * (`{ width: "30%" }`). Values are taken whole, so functions with commas such as
+ * `clamp(100px, 50%, 60vw)` or `var(--w, 240px)` survive.
+ */
+const widthFromStyleString = (style: string): string | undefined => {
+  const trimmed = style.trim();
+  if (trimmed.startsWith('{')) {
+    return /["']?width["']?\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,}]+))/i.exec(trimmed)?.slice(1).find(Boolean);
+  }
+
+  return trimmed
+    .split(';')
+    .map(declaration => declaration.split(/:(.*)/s))
+    .find(([property]) => property.trim().toLowerCase() === 'width')?.[1];
+};
+
+/**
  * Reads a header cell's column width. Accepts the shape the serializer writes
  * (`style={{ width: "30%" }}`) as well as the hand-authored forms customers already use
  * (`style="width: 30%"`, `width="30%"`), so opening a table in the editor never drops them.
@@ -619,7 +637,7 @@ const getCellWidth = (cell: MdxJsxFlowElement): string | null => {
   if (isPlainObject(style)) {
     styleWidth = style.width;
   } else if (typeof style === 'string') {
-    styleWidth = /(?:^|[{;,])\s*["']?width["']?\s*:\s*["']?([^;,}"']+)/i.exec(style)?.[1];
+    styleWidth = widthFromStyleString(style);
   }
   // A style whose width is missing or empty must not hide a `width` attribute beside it
   return normalizeWidth(styleWidth) ?? normalizeWidth(width);
