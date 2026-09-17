@@ -89,13 +89,23 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return undefined;
       });
 
-      if (!requiresJsxTable) {
+      const stayLowercase = table.data?.lowercaseTable === true;
+
+      // We transform to GFM tables if:
+      // 1. If it doesn't contain complex elements that the syntax can't represent
+      // 2. The original table is not lowercase HTML <table>, because we want to 
+      // preserve original tables as much as possible
+      if (!requiresJsxTable && !stayLowercase) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
         table.type = 'table';
         return;
       }
+
+      // Nothing to build a JSX table from; leave the empty node to the GFM stringifier.
+      const [headerRow, ...bodyRows] = table.children;
+      if (!headerRow) return;
 
       visit(table, isTableCell, flattenBreaksToNewlines);
 
@@ -110,7 +120,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
             attributes: [],
             type: 'mdxJsxFlowElement',
             name: 'tr',
-            children: table.children[0].children.map((cell, cellIndex) => {
+            children: headerRow.children.map((cell, cellIndex) => {
               return {
                 attributes: [],
                 type: 'mdxJsxFlowElement',
@@ -127,7 +137,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
         attributes: [],
         type: 'mdxJsxFlowElement',
         name: 'tbody',
-        children: table.children.splice(1).map(row => {
+        children: bodyRows.map(row => {
           return {
             attributes: [],
             type: 'mdxJsxFlowElement',
@@ -157,8 +167,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       const jsx: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
-        name: 'Table',
-        attributes: table.align.find(a => a) ? attributes : [],
+        name: stayLowercase ? 'table' : 'Table',
+        attributes: !stayLowercase && table.align.find(a => a) ? attributes : [],
         children: [head, body],
       };
 
