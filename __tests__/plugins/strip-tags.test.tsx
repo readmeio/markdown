@@ -110,8 +110,29 @@ describe('strip tags', () => {
     });
   });
 
-  // MDX rejects `<!-- -->` at parse time (it wants `{/* */}`), so only mdxish can
-  // reach this case.
+  describe.each(primaryEngines)('%s engine, JSX authored in code', (_, render) => {
+    it.each([
+      ['a flow expression', '{<script>alert(1)</script>}'],
+      ['an inline expression', 'hello {<script>alert(1)</script>} world'],
+      ['an exported component', 'export const X = () => <script>alert(1)</script>;\n\n<X />'],
+      ['an exported fragment', 'export const X = () => <><script>alert(1)</script></>;\n\n<X />'],
+    ])('strips a <script> in %s', (_label, doc) => {
+      const html = renderToString(React.createElement(render(doc)));
+
+      expect(html).not.toContain('<script');
+      expect(html).not.toContain('alert(1)');
+    });
+
+    it('strips a <script> nested in an exported component while keeping its siblings', () => {
+      const doc = 'export const X = () => <div><script>alert(1)</script><span>safe</span></div>;\n\n<X />';
+      const html = renderToString(React.createElement(render(doc)));
+
+      expect(html).not.toContain('<script');
+      expect(html).toContain('<span>safe</span>');
+    });
+  });
+
+  // MDX rejects `<!-- -->` at parse time (it wants `{/* */}`), so only mdxish can reach this case.
   it('mdxish: does not render a <script> inside an HTML comment', () => {
     const Content = renderMdxish(mdxish('<!-- <script>alert(1)</script> -->', { sanitize: true }))
       .default as MDXContent;

@@ -10,7 +10,7 @@ import remarkGfm from 'remark-gfm';
 
 import MdxSyntaxError from '../errors/mdx-syntax-error';
 import hardBreaksPlugin from '../processor/plugin/hard-breaks';
-import { rehypeStripTags } from '../processor/plugin/strip-tags';
+import { recmaStripTags, rehypeStripTags } from '../processor/plugin/strip-tags';
 import { rehypeToc } from '../processor/plugin/toc';
 import {
   defaultTransforms,
@@ -27,8 +27,9 @@ export type CompileOpts = CompileOptions & {
   hardBreaks?: boolean;
   missingComponents?: 'ignore' | 'throw';
   /**
-   * Strip content that would execute in the page (currently literal `<script>`
-   * elements). Defaults to `false` to preserve existing rendering for callers
+   * Strip content that would execute in the page (currently `<script>`
+   * elements, whether written as a literal tag or as JSX inside an expression
+   * or export). Defaults to `false` to preserve existing rendering for callers
    * that may rely on raw HTML; opt in per project.
    */
   sanitize?: boolean;
@@ -57,6 +58,7 @@ const compile = (
     // replacing it — otherwise the spread below would drop `rehypeStripTags`.
     remarkPlugins: userRemarkPlugins,
     rehypePlugins: userRehypePlugins,
+    recmaPlugins: userRecmaPlugins,
     ...opts
   }: CompileOpts = {},
 ) => {
@@ -106,11 +108,16 @@ const compile = (
     rehypePlugins.push([rehypeSanitize, sanitizeSchema]);
   }
 
+  const recmaPlugins: PluggableList = [...(userRecmaPlugins ?? [])];
+
   // In `mdx` format a literal <script> parses as JSX rather than raw HTML, so it
   // bypasses sanitization entirely — strip it in every format. Must stay last:
-  // in `md` format raw HTML isn't an element until `rehypeRaw` has run.
+  // in `md` format raw HTML isn't an element until `rehypeRaw` has run. A tag
+  // inside an expression or export is code, not an element, so the recma pass
+  // catches it in the compiled program instead.
   if (sanitize) {
     rehypePlugins.push(rehypeStripTags);
+    recmaPlugins.push(recmaStripTags);
   }
 
   try {
@@ -119,6 +126,7 @@ const compile = (
       providerImportSource: '#',
       remarkPlugins,
       rehypePlugins,
+      recmaPlugins,
       ...opts,
     });
 
