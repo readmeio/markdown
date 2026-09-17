@@ -37,9 +37,9 @@ const resolveDeferredAttributeExpressionProps: Plugin<[], Root> = () => (tree, f
         // a JS object, which must be serialized or it renders as the literal "[object Object]".
         properties[name] = name === 'style' && isPlainObject(result) ? styleObjectToCssText(result) : result;
       } catch {
-        // Evaluation failed — fall back to the raw expression source so the attribute
-        // renders as readable text rather than disappearing.
-        properties[name] = source;
+        // Evaluation failed — keep the literal `{...}`, matching how `evaluateExpressions` falls
+        // back in body text. Variable references like `{user.name}` stay resolvable at render time.
+        properties[name] = `{${source}}`;
       }
     });
 

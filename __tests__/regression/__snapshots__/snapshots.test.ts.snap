@@ -76,6 +76,50 @@ exports[`Render engine regressions tests > convergent (mdxish) 1`] = `
 <p>Both engines should render this identically.</p>"
 `;
 
+exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
+<div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div>
+<center><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2><p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p></center>
+<p>Inline legacy formatting: <font color="red" size="4"><strong>red</strong></font>, <big>big</big>,
+<strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
+<div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<object data="movie.swf"><param name="quality" value="high"/></object>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+`;
+
+exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="deprecated-html-tags"></div><div class="heading-text">Deprecated HTML tags</div><a aria-label="Skip link to Deprecated HTML tags" class="heading-anchor-icon fa fa-regular fa-anchor" href="#deprecated-html-tags"></a></h1>
+<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:3"><div class="Card Card_card"><div class="Card-content"><center><strong>Centralized Model Management and Visibility</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Precise Control Over Model Access</strong></center></div></div><div class="Card Card_card"><div class="Card-content"><center><strong>Unified Security and Permissions in the JFrog Platform</strong></center></div></div></div></div>
+<center>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-blank-line-separated-island-inside-a-center"></div><div class="heading-text">A blank-line separated island inside a <code class="rdmd-code lang-undefined theme-undefined">&lt;center&gt;</code></div><a aria-label="Skip link to A blank-line separated island inside a ,[object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-blank-line-separated-island-inside-a-center"></a></h2>
+<p><a href="https://example.com" target="" title=""><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="logo" class="img  " height="auto" loading="lazy" src="https://example.com/logo.png" title="" width="auto"/></span></span></a></p>
+</center>
+<p>Inline legacy formatting: <font color="red" size="4"><strong>red</strong></font>, <big>big</big>,<br/>
+<strike>gone</strike>, <tt>mono</tt>, <acronym title="HyperText Markup Language">HTML</acronym>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
+<div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
+<p><object data="movie.swf"><param name="quality" value="high"/></object></p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+`;
+
 exports[`Render engine regressions tests > divergent (mdx) 1`] = `
 "<pre class="html-unsafe"><code>&lt;div class=&quot;example&quot;&gt;Hello&lt;/div&gt;</code></pre>
 <p>Some prose after the HTML block.</p>"
@@ -211,6 +255,48 @@ exports[`Render engine regressions tests > htmlblock-in-table (mdx) 1`] = `
 exports[`Render engine regressions tests > htmlblock-in-table (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="htmlblock-inside-a-table-cell"></div><div class="heading-text">HTMLBlock inside a table cell</div><a aria-label="Skip link to HTMLBlock inside a table cell" class="heading-anchor-icon fa fa-regular fa-anchor" href="#htmlblock-inside-a-table-cell"></a></h1>
 <div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tbody><tr><td><strong>bold</strong> still works</td><td><div class="rdmd-html"><div style="color: red;">Hello</div></div></td></tr></tbody></table></div></div></div>"
+`;
+
+exports[`Render engine regressions tests > indented-component-body-lists (mdx) 1`] = `
+"<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-regular fa-grid-2"></i>Dashboards</summary><div class="Accordion-content"><ul>
+<li><strong>New Preference Page Dashboard</strong> provides clients with metrics and insight on preference page interactions and performance.</li>
+<li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
+<li>Clients can also compare performance across various metrics using the comparison functionality.</li>
+</ul></div></details>
+<blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<li>first</li>
+<li>second<!-- -->
+<ul>
+<li>genuinely nested</li>
+</ul>
+</li>
+<li>third</li>
+</ul></blockquote>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>"
+`;
+
+exports[`Render engine regressions tests > indented-component-body-lists (mdxish) 1`] = `
+"<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-regular fa-grid-2"></i>Dashboards</summary><div class="Accordion-content"><ul>
+<li><strong>New Preference Page Dashboard</strong> provides clients with metrics and insight on preference page interactions and performance.</li>
+<li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
+<li>Clients can also compare performance across various metrics using the comparison functionality.</li>
+</ul></div></details></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<li>first</li>
+<li>second
+<ul>
+<li>genuinely nested</li>
+</ul>
+</li>
+<li>third</li>
+</ul></blockquote></div>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>"
 `;
 
 exports[`Render engine regressions tests > indented-content-is-not-code (mdx) 1`] = `
@@ -433,6 +519,24 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 </div>"
 `;
 
+exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
+"<p>An inline <span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>Line 2</p>
+<span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
+exports[`Render engine regressions tests > inline-image-tailwind (mdxish) 1`] = `
+"<p>An inline <span class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></span> image should stay on the same line as this text.</p>
+<p>Line 1</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>Line 2</p>
+<div class="readme-tailwind"><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span></div>
+<p>A plain inline <span>span</span> tag stays inline as regular HTML.</p>"
+`;
+
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
 <blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
@@ -528,6 +632,72 @@ exports[`Render engine regressions tests > magic-blocks-table (mdxish) 1`] = `
 
 
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th style="text-align:left">Field</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left">id</td><td style="text-align:left"><p>Number</p></td></tr></tbody></table></div></div>"
+`;
+
+exports[`Render engine regressions tests > mistaken-table-closer (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > mistaken-table-closer (mdxish) 1`] = `
+"<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><th>Option</th><th>Description</th></tr><tr><td>foo</td><td>bar</td></tr></table></div></div>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>This behavior is not required for any Enhanced TLS certificates.</li>
+<li>There are no options for this behavior.</li>
+</ul>
+</blockquote>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><th class="page-label-version">Version: <code class="rdmd-code lang-undefined theme-undefined">v2026-07-21</code></th><th class="page-label-includes">Includes use: Yes</th></thead></table></div></div>
+<p><strong>Behavior name:</strong> Auto Domain Validation</p>
+<blockquote>
+<p><strong>Notes:</strong></p>
+<ul>
+<li>This behavior is not required for any Enhanced TLS certificates.</li>
+</ul>
+</blockquote>"
+`;
+
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info">Ask your CSM for a higher limit.</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<!-- -->
+<blockquote class="callout callout_okay" theme="okay">Region <!-- -->us</blockquote><blockquote class="callout callout_okay" theme="okay">Region <!-- -->eu</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay">US</blockquote><blockquote class="callout callout_okay" theme="okay">EU</blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<a href="/reference">API reference</a>
+<!-- -->GET / POST<!-- -->
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info">Enterprise tab</blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay">us</blockquote><blockquote class="callout callout_okay" theme="okay">eu</blockquote></div></details>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info">Inside a custom component</blockquote></blockquote></div>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td>Ada</td></tr></table></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<blockquote class="callout callout_default" theme="default">Ada</blockquote>
+<!-- -->Ada"
+`;
+
+exports[`Render engine regressions tests > multiline-jsx-expressions (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="multiline-jsx-expressions"></div><div class="heading-text">Multiline JSX expressions</div><a aria-label="Skip link to Multiline JSX expressions" class="heading-anchor-icon fa fa-regular fa-anchor" href="#multiline-jsx-expressions"></a></h1>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-conditional-whose-branch-sits-on-its-own-line"></div><div class="heading-text">A conditional whose branch sits on its own line</div><a aria-label="Skip link to A conditional whose branch sits on its own line" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-conditional-whose-branch-sits-on-its-own-line"></a></h2>
+<blockquote class="callout callout_info" theme="info"><p>Ask your CSM for a higher limit.</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-list-rendered-from-data"></div><div class="heading-text">A list rendered from data</div><a aria-label="Skip link to A list rendered from data" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-list-rendered-from-data"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>Region us</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>Region eu</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="a-callback-body-with-a-blank-line-between-statements"></div><div class="heading-text">A callback body with a blank line between statements</div><a aria-label="Skip link to A callback body with a blank line between statements" class="heading-anchor-icon fa fa-regular fa-anchor" href="#a-callback-body-with-a-blank-line-between-statements"></a></h2>
+<blockquote class="callout callout_okay" theme="okay"><p>US</p></blockquote>
+<blockquote class="callout callout_okay" theme="okay"><p>EU</p></blockquote>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-and-text-results-keep-their-paragraph"></div><div class="heading-text">Inline and text results keep their paragraph</div><a aria-label="Skip link to Inline and text results keep their paragraph" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-and-text-results-keep-their-paragraph"></a></h2>
+<p><a href="/reference" target="" title="">API reference</a></p>
+<p>GET / POST</p>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
+<div class="readme-tailwind"><div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info"><p>Enterprise tab</p></blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div></div>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay"><p>us</p></blockquote><blockquote class="callout callout_okay" theme="okay"><p>eu</p></blockquote></div></details></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info"><p>Inside a custom component</p></blockquote></blockquote></div>
+<div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td><span>Ada</span></td></tr></table></div></div></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_default" theme="default"><span>Ada</span></blockquote></div>
+<p><span>Ada</span></p>"
 `;
 
 exports[`Render engine regressions tests > rich (mdx) 1`] = `
@@ -1151,5 +1321,48 @@ as legacy variables:</p>
 <pre class="mermaid-render mermaid_single">sequenceDiagram
   Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
   Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
+<p>Component attributes resolve at render time, and only for <code class="rdmd-code lang-undefined theme-undefined">{user.*}</code>. Legacy<br/>
+<code class="rdmd-code lang-undefined theme-undefined">...</code> in a quoted attribute is valid MDX, but is not resolved there and<br/>
+stays literal:</p>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i><i class="Accordion-icon fa-duotone fa-solid fa-rocket"></i>us-east-1</summary><div class="Accordion-content"><p>Accordion body with <span>sk_test_abc123</span></p></div></details></div>
+<div class="readme-tailwind"><div class="CardsGrid" style="--CardsGrid-cardWidth:200px;--CardsGrid-columns:auto-fit"><a class="Card Card_card" href="https://example.com/us-east-1"><div class="Card-content"><div class="Card-title">Key: sk_test_abc123 / &lt;&lt;apiKey&gt;&gt;<i aria-hidden="true" class="Card-arrow fa-regular fa-arrow-right"></i></div><p>Card body</p></div></a></div></div>
 <p>Closing prose with a glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
+`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > vars-in-inline-html (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="variables-in-inline-html"></div><div class="heading-text">Variables in inline HTML</div><a aria-label="Skip link to Variables in inline HTML" class="heading-anchor-icon fa fa-regular fa-anchor" href="#variables-in-inline-html"></a></h1>
+<p><span>Inline: <span>Acme Inc</span></span></p>
+<div><span>Acme Inc</span></div>
+<p><span>Acme Inc</span></p>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname"></a></h3>
+<div><span>Acme Inc</span></div>
+<p>Plan: <span>Enterprise</span></p>
+<div><strong>bold</strong> and <span>Acme Inc</span></div>
+<div style="color:red"><span>Acme Inc</span></div>
+<div>{ color: red }</div>
+<div>{1 + 1}</div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapper-layouts"></div><div class="heading-text">Wrapper layouts</div><a aria-label="Skip link to Wrapper layouts" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapper-layouts"></a></h2>
+<div><span>Acme Inc</span></div>
+<div><span>Acme Inc</span></div>
+<div>
+<p><span>Acme Inc</span></p>
+</div>
+<div><span>Acme Inc</span></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="bigger-trees"></div><div class="heading-text">Bigger trees</div><a aria-label="Skip link to Bigger trees" class="heading-anchor-icon fa fa-regular fa-anchor" href="#bigger-trees"></a></h2>
+<div class="card"><h4 class="heading heading-4 header-scroll"><div class="heading-anchor anchor waypoint" id="companyname-1"></div><div class="heading-text"><span>Acme Inc</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#companyname-1"></a></h4><p>Plan: <span>Enterprise</span></p><ul><li><span>Acme Inc</span></li></ul></div>
+<div><section><ul><li><span>Acme Inc</span></li></ul></section></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="wrapped-in-html-inside-a-component"></div><div class="heading-text">Wrapped in HTML inside a component</div><a aria-label="Skip link to Wrapped in HTML inside a component" class="heading-anchor-icon fa fa-regular fa-anchor" href="#wrapped-in-html-inside-a-component"></a></h2>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="info"><div><span>Acme Inc</span></div></blockquote></div>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="glossary-terms"></div><div class="heading-text">Glossary terms</div><a aria-label="Skip link to Glossary terms" class="heading-anchor-icon fa fa-regular fa-anchor" href="#glossary-terms"></a></h2>
+<p><span><span class="GlossaryItem-trigger">owlbert</span></span></p>
+<div><span class="GlossaryItem-trigger">owlbert</span></div>
+<h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="owlbert"></div><div class="heading-text"><span class="GlossaryItem-trigger">owlbert</span></div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-regular fa-anchor" href="#owlbert"></a></h3>
+<h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="mixed-expression-bodies"></div><div class="heading-text">Mixed expression bodies</div><a aria-label="Skip link to Mixed expression bodies" class="heading-anchor-icon fa fa-regular fa-anchor" href="#mixed-expression-bodies"></a></h2>
+<div><span>Acme Inc</span> 2</div>
+<div>{color: red} <span>Acme Inc</span></div>
+<div>{1 + 1} {2 + 2}</div>
+<div><span>Acme Inc</span> <span>Enterprise</span></div>"
 `;

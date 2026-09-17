@@ -10,6 +10,10 @@ interface Props extends React.PropsWithChildren {
   terms: GlossaryTerm[];
 }
 
+/** Tippy portals to document.body by default, which would break the
+ *  `.rm-ReadMe[data-color-mode] …` descendant selectors in style.scss. */
+const appendToReadMeRoot = (ref: Element) => ref.closest('.rm-ReadMe') ?? document.body;
+
 const Glossary = ({ children, term: termProp, terms }: Props) => {
   const term = (Array.isArray(children) ? children[0] : children) || termProp;
 
@@ -21,6 +25,7 @@ const Glossary = ({ children, term: termProp, terms }: Props) => {
 
   return (
     <Tooltip
+      appendTo={appendToReadMeRoot}
       content={
         <div className="GlossaryItem-tooltip-content">
           <strong className="GlossaryItem-term">{foundTerm.term}</strong> - {foundTerm.definition}

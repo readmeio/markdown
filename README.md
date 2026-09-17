@@ -99,6 +99,7 @@ Extends [`CompileOptions`](https://mdxjs.com/packages/mdx/#compileoptions)
 - **`safeMode`** (`boolean`, optional)—extract script tags from `HTMLBlock`s
 - **`components`** (`Record<string, string>`, optional)—an object of tag names to mdx.
 - **`copyButtons`** (`Boolean`, optional) — add a copy button to code blocks
+- **`hardBreaks`** (`boolean`, optional)—render every newline as a `<br>`. `mdxish` defaults to `true`
 
 ### `RunOpts`
 

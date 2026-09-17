@@ -35,6 +35,7 @@ __tests__/regression/fixtures/
 ├── compact-headings/           ← #Heading-without-space migration coverage
 ├── htmlblock-with-script/      ← <HTMLBlock> static-content parse path
 ├── style-and-jsx-expressions/  ← <style>{`...`}</style>, style={{}}, nested .map() JSX, invalid HTML nesting
+├── deprecated-html-tags/       ← <center>, <font>, <big>… kept instead of dropped as unknown components
 │
 │  ── Table regression fixtures ──
 ├── jsx-table-multiline-cells/  ← blank-line paragraphs preserved in a <Table> cell

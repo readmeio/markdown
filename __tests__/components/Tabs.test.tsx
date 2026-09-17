@@ -8,6 +8,7 @@ import React from 'react';
 import Tabs, { Tab } from '../../components/Tabs';
 import { mdxish } from '../../lib';
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../lib/mdxish';
+import { gifRestartWrites, spyOnImageSrc } from '../helpers';
 
 import { captureMdxishProps, renderingEngines } from './utils';
 
@@ -127,6 +128,51 @@ describe('Tabs', () => {
 
       expect(container.querySelector('strong')).toHaveTextContent('bold');
       expect(container.querySelector('a')).toHaveTextContent('link');
+    });
+
+    it('restarts GIF playback when a tab becomes active', () => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![demo](https://example.com/demo.gif)</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const gif = container.querySelector('img[src$=".gif"]') as HTMLImageElement;
+      expect(gif).toBeInTheDocument();
+      const srcSpy = spyOnImageSrc(gif);
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      expect(srcSpy.writes).toStrictEqual(gifRestartWrites('https://example.com/demo.gif'));
+      expect(gif.src).toBe('https://example.com/demo.gif');
+      srcSpy.restore();
+    });
+
+    it.each([
+      ['png', 'https://example.com/still.png'],
+      // .webp and .png are almost always static, so they're left alone even though
+      // both formats can hold an animation
+      ['webp', 'https://example.com/still.webp'],
+      ['jpg with a query string', 'https://example.com/still.jpg?w=200'],
+    ])('leaves a %s alone when a tab becomes active', (_, src) => {
+      const md = `
+<Tabs>
+  <Tab title="First">First tab content</Tab>
+  <Tab title="Second">![still](${src})</Tab>
+</Tabs>
+`;
+      const Component = renderContent(md);
+      const { container } = render(<Component />);
+
+      const srcSpy = spyOnImageSrc(container.querySelector('img') as HTMLImageElement);
+
+      fireEvent.click(container.querySelectorAll('.TabGroup-nav button')[1]);
+
+      expect(srcSpy.writes).toStrictEqual([]);
+      srcSpy.restore();
     });
 
     it('renders Tabs after sibling content without crashing', () => {

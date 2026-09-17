@@ -408,6 +408,10 @@ function createTokenize(mode: 'flow' | 'text') {
         return inBraceExpr;
       }
 
+      // A raw `<` can't sit in an opening tag (quotes/braces are handled above);
+      // bailing bounds each attempt to the next `<` instead of rescanning the line.
+      if (code === codes.lessThan) return nok(code);
+
       effects.consume(code);
       return afterOpenTagName;
     }
@@ -732,6 +736,15 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Tag detection inside body ──────────────────────────────────────────
 
     function bodyLessThan(code: Code): State | undefined {
+      // A second `<` means legacy variable syntax (`<<var>>`), not a tag: the name that
+      // follows belongs to the variable. Counting it as a nested opener would leave the
+      // body unbalanced and lose the claim on this block.
+      if (code === codes.lessThan) {
+        effects.consume(code);
+        atLineStart = false;
+        return bodyAngleRun;
+      }
+
       if (code === codes.slash) {
         if (onOpenerLine) openerLineCloses += 1;
         effects.consume(code);
@@ -752,6 +765,16 @@ function createTokenize(mode: 'flow' | 'text') {
       // `<Callout>x <strong>y</strong></Callout>` should pair with `</strong>`.
       if (code !== null && isAlpha(code) && onOpenerLine) {
         openerLineOpens += 1;
+      }
+
+      atLineStart = false;
+      return body(code);
+    }
+
+    function bodyAngleRun(code: Code): State | undefined {
+      if (code === codes.lessThan) {
+        effects.consume(code);
+        return bodyAngleRun;
       }
 
       atLineStart = false;

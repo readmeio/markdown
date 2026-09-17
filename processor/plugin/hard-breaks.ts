@@ -13,7 +13,9 @@ import { findAndReplace } from 'mdast-util-find-and-replace';
  * as `\r<br>`. Treating both characters as hard breaks doubles the spacing.
  */
 const hardBreaks: Plugin<[], Root> = () => tree => {
-  findAndReplace(tree, [/\r?\n/g, () => ({ type: 'break' })]);
+  // Skip `html-block`: its opaque payload is rendered verbatim, so turning its newlines
+  // into `break` nodes is unnecessary and costly on large blocks.
+  findAndReplace(tree, [/\r?\n/g, () => ({ type: 'break' })], { ignore: ['html-block'] });
 };
 
 export default hardBreaks;

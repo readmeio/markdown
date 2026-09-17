@@ -4,10 +4,10 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { VFile } from 'vfile';
 
+import { NodeTypes } from '../../enums';
 import { mdxComponentFromMarkdown } from '../../lib/mdast-util/mdx-component';
 import { mdxComponent } from '../../lib/micromark/mdx-component';
 import mdxishComponentBlocks from '../../processor/transform/mdxish/components/mdx-blocks';
-import mdxishSelfClosingBlocks from '../../processor/transform/mdxish/components/self-closing-blocks';
 import { collectNodes, parseMdxish } from '../helpers';
 
 interface MdxJsxFlowElement extends Parent {
@@ -27,7 +27,6 @@ const parseWithPlugin = (markdown: string): Root => {
     .data('micromarkExtensions', [mdxComponent()])
     .data('fromMarkdownExtensions', [mdxComponentFromMarkdown()])
     .use(remarkParse)
-    .use(mdxishSelfClosingBlocks)
     .use(mdxishComponentBlocks);
   const tree = processor.parse(markdown);
   processor.runSync(tree, new VFile({ value: markdown }));
@@ -246,6 +245,71 @@ Second paragraph
       });
     });
 
+    describe('indented component bodies (RM-17790)', () => {
+      // The mdxish serializer writes component children at 2 columns, so this is the
+      // shape every editor save produces — a body whose lines share an indent too
+      // shallow for `safeDeindent` to strip.
+      const listNesting = (markdown: string) => {
+        const lists = collectNodes(parseWithPlugin(markdown), 'list') as Parent[];
+        return {
+          count: lists.length,
+          items: lists[0] ? lists[0].children.length : 0,
+        };
+      };
+
+      it.each([
+        ['unindented', ''],
+        ['two spaces', '  '],
+        ['three spaces', '   '],
+        ['four spaces', '    '],
+        ['a tab', '\t'],
+      ])('keeps a bullet list flat when the body is indented by %s', (_label, indent) => {
+        const markdown = `<Accordion title="Test">
+${indent}- test 1
+${indent}- test 2
+${indent}- test 3
+</Accordion>`;
+
+        expect(listNesting(markdown)).toStrictEqual({ count: 1, items: 3 });
+      });
+
+      it('still nests items indented deeper than their siblings', () => {
+        const markdown = `<Accordion title="Test">
+  - test 1
+    - nested
+  - test 2
+</Accordion>`;
+
+        expect(listNesting(markdown)).toStrictEqual({ count: 2, items: 2 });
+      });
+
+      it('keeps sibling paragraphs at the same level in an indented body', () => {
+        const markdown = `<Accordion title="Test">
+  First paragraph
+
+  Second paragraph
+</Accordion>`;
+        const tree = parseWithPlugin(markdown);
+
+        const [accordion] = collectNodes(tree, 'mdxJsxFlowElement') as Parent[];
+        expect(accordion.children.map(child => child.type)).toStrictEqual(['paragraph', 'paragraph']);
+      });
+
+      it('keeps trailing spaces on the last line of a fence left unclosed by the end tag', () => {
+        const markdown = ['<Callout title="Test">', '  ```', '  value  ', '</Callout>'].join('\n');
+        const [code] = collectNodes(parseWithPlugin(markdown), 'code') as { value: string }[];
+
+        expect(code.value).toBe('value  ');
+      });
+
+      it('keeps a hard break that is interior to an indented body', () => {
+        const markdown = ['<Callout title="Test">', '  one  ', '  two  ', '</Callout>'].join('\n');
+        const [paragraph] = collectNodes(parseWithPlugin(markdown), 'paragraph') as Parent[];
+
+        expect(paragraph.children.map(child => child.type)).toStrictEqual(['text', 'break', 'text']);
+      });
+    });
+
     describe('multiple components in combination', () => {
       it('should convert outer and nested components to mdxJsxFlowElement nodes', () => {
         const markdown = `
@@ -429,10 +493,48 @@ More content here
         ]);
       });
 
-      it('should not promote a wrapper around a legacy <<VARIABLE>>', () => {
+      // Left raw, parse5 reads `<<NAME>>` as a stray `<` plus a `<NAME>` tag.
+      it('should promote a wrapper around a legacy <<VARIABLE>>', () => {
         const tree = parseWithPlugin('<p>Hello <<NAME>>!</p>');
 
-        expect(tree.children).toMatchObject([{ type: 'html', value: '<p>Hello <<NAME>>!</p>' }]);
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [
+              { type: 'text', value: 'Hello ' },
+              { type: NodeTypes.variable, data: { hProperties: { name: 'NAME', isLegacy: true } } },
+              { type: 'text', value: '!' },
+            ],
+          },
+        ]);
+      });
+
+      it('should promote a wrapper around a sole {user.*} reference', () => {
+        const tree = parseWithPlugin('<p>{user.name}</p>');
+
+        expect(tree.children).toMatchObject([
+          {
+            type: 'mdxJsxFlowElement',
+            name: 'p',
+            children: [{ type: 'mdxFlowExpression', value: 'user.name' }],
+          },
+        ]);
+      });
+
+      // The body scanner used to read the inner `<name>` of `<<name>>` as a nested opening
+      // tag, leaving the block unbalanced so the tokenizer dropped its claim and CommonMark
+      // split it at the blank line — after which the closer was a separate html node.
+      it('should keep a wrapper whose body holds a <<VARIABLE>> in one node across a blank line', () => {
+        const tree = parseWithPlugin('<div><<NAME>>\n\n</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'mdxJsxFlowElement', name: 'div' }]);
+      });
+
+      it('should not promote a wrapper around an expression that names no variable', () => {
+        const tree = parseWithPlugin('<div>{ color: red }</div>');
+
+        expect(tree.children).toMatchObject([{ type: 'html', value: '<div>{ color: red }</div>' }]);
       });
 
       it('should not promote a wrapper whose only component has a dedicated transformer', () => {
@@ -918,7 +1020,7 @@ third\`} />`;
         expect(mdxNodes).toHaveLength(1);
         expect(mdxNodes[0]).toMatchObject({ name: 'MyComponent' });
       });
-    })
+    });
   });
 
   describe('fenced code blocks starting a continuation line', () => {
@@ -968,7 +1070,10 @@ After the callout.`;
       expect(code[0].value).toBe('{');
 
       // ...and `</Callout>` never leaks out as a stray html node.
-      const strayCloser = collectNodes(tree, n => n.type === 'html' && (n as { value?: string }).value === '</Callout>');
+      const strayCloser = collectNodes(
+        tree,
+        n => n.type === 'html' && (n as { value?: string }).value === '</Callout>',
+      );
       expect(strayCloser).toHaveLength(0);
 
       // Trailing content lands as a sibling after the callout, not inside it.
@@ -992,7 +1097,10 @@ After the callout.`;
           type: 'mdxJsxFlowElement',
           name: 'Component',
           children: [
-            { type: 'code', value: '  {' },
+            // The fence keeps its 2-column indent now that the body isn't dedented
+            // lopsidedly (RM-17790), so CommonMark strips that indent off its content —
+            // matching the identically shaped CX-3704 case above.
+            { type: 'code', value: '{' },
             { type: 'paragraph', children: [{ type: 'text', value: 'test' }] },
           ],
         },
@@ -1489,6 +1597,35 @@ Second paragraph
         const tree = parseMdxish(md);
         expect(counts(tree).callouts).toBe(1);
       });
+    });
+  });
+
+  describe('stray `<` before a tag', () => {
+    const elementNames = (md: string) =>
+      [
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxFlowElement'),
+        ...collectNodes<MdxJsxFlowElement>(parseMdxish(md), 'mdxJsxTextElement'),
+      ].map(node => node.name);
+
+    it('does not claim a stray `<word` as the tag that a later `>` closes', () => {
+      // The opener scan bails at `<`; it used to claim a bogus `b` element here.
+      expect(elementNames('a <b and <i data-a={1}>x</i> more')).toStrictEqual(['i']);
+    });
+
+    it('still allows `<` inside a brace or quoted attribute', () => {
+      expect(elementNames('<div title="<x>" data-a={a < b}>\n\nhi\n\n</div>')).toStrictEqual(['div']);
+    });
+  });
+
+  describe('nested expression attribute detection', () => {
+    // One name char before `=` suffices; `[\w-]+` backtracked quadratically (see perf tests).
+    it('still detects a nested expression attribute with whitespace around `=`', () => {
+      const md = `<div>
+  <span data-index = {1}>x</span>
+</div>`;
+      const tree = parseWithPlugin(md);
+      const [div] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+      expect(div.name).toBe('div');
     });
   });
 });

@@ -18,8 +18,9 @@
       0 1px 3px rgba(0, 0, 0, 0.025)
     );
 
-    /* what the dark-mode mixin does in the readme project */
-    [data-color-mode='dark'] & {
+    /* Anchored to '.rm-ReadMe' itself, not any ancestor — see the warning on
+       the `dark-mode` mixin in styles/mixins/dark-mode.scss. */
+    .rm-ReadMe[data-color-mode='dark'] & {
       --Glossary-bg: var(--gray15);
       --Glossary-color: var(--color-text-default, var(--white));
       --Glossary-shadow: var(
@@ -31,7 +32,8 @@
     }
 
     @media (prefers-color-scheme: dark) {
-      [data-color-mode='auto'] & {
+      .rm-ReadMe[data-color-mode='auto'] &,
+      .rm-ReadMe[data-color-mode='system'] & {
         --Glossary-bg: var(--Tooltip-bg, var(--gray0));
         --Glossary-color: var(--color-text-default, var(--white));
         --Glossary-shadow: var(

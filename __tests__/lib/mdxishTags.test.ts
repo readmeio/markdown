@@ -208,6 +208,31 @@ This is phrasing: <Inline />
     });
   });
 
+  // Tag extraction never uses evaluated attribute values, so it always parses in safeMode —
+  // attribute expressions must never reach `new Function`. (GHSA-2prv-4jff-x46g)
+  describe('attribute expressions are never evaluated', () => {
+    it('does not evaluate an attribute expression', () => {
+      globalThis.tagCanary = false;
+      const mdx = '<Component value={(globalThis.tagCanary = true)} />';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+      expect(globalThis.tagCanary).toBe(false);
+    });
+
+    it('does not throw when an attribute expression references an undefined global', () => {
+      const mdx = '<Component value={process.env.SOME_CANARY} />';
+
+      expect(() => mdxishTags(mdx)).not.toThrow();
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+
+    it('still returns tag names for expression-valued attributes', () => {
+      const mdx = '<Component theme={true} size={1 + 1} empty quotes={`hello`} />';
+
+      expect(mdxishTags(mdx)).toStrictEqual(['Component']);
+    });
+  });
+
   describe('deeply indented components', () => {
     it('captures a 4+ column indented component at the top level', () => {
       const mdx = '      <MyComponent />';

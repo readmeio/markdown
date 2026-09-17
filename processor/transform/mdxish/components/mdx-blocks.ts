@@ -22,12 +22,18 @@ import {
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
-const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. One name
+// char suffices for existence — `[\w-]+` backtracked quadratically over huge attributes.
+const NESTED_ATTR_EXPRESSION_RE = /[\w-]\s*=\s*\{/;
 
 // Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
 // of a legacy `<<VARIABLE>>`.
 const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
+
+// Whole blank lines at a component body's edges. `\n` sits inside each group so a
+// match can only ever span complete lines, never part of a content line.
+const LEADING_BLANK_LINES_RE = /^(?:[ \t]*\n)+/;
+const TRAILING_BLANK_LINES_RE = /(?:\n[ \t]*)+$/;
 
 // Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
 // components), which expect their wrapper to stay raw.
@@ -67,12 +73,22 @@ function safeDeindent(text: string): string {
 }
 
 /**
+ * Drop the blank lines at a component body's edges, keeping the first content line's
+ * indent: `.trim()` stripped that line alone, so a uniformly indented body reparsed
+ * lopsided and every list item after the first nested. The trailing pattern
+ * takes the last content line's newline but leaves its spaces, which are code content
+ * when a fence runs into the end tag.
+ */
+const trimBlankEdges = (text: string): string =>
+  text.replace(LEADING_BLANK_LINES_RE, '').replace(TRAILING_BLANK_LINES_RE, '');
+
+/**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
+  const reparseSource = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(value)));
   const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
@@ -274,7 +290,8 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Case 2: Self-contained block (closing tag in content)
     const closingTagIndex = isPlainLowercaseHtml ? plainClosingTagIndex : contentAfterTag.lastIndexOf(closingTagStr);
     if (closingTagIndex >= 0) {
-      // Untrimmed so parseMdChildren can dedent before trimming.
+      // Left as authored: parseMdChildren needs the original columns to dedent by, and
+      // it clears the blank edges itself.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = [];
