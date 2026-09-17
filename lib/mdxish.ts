@@ -22,6 +22,7 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
+import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
 import embedTransformer from '../processor/transform/embeds';
@@ -78,6 +79,12 @@ export interface MdxishOpts {
    */
   hardBreaks?: boolean;
   newEditorTypes?: boolean;
+  /**
+   * Strip content that would execute in the page (currently literal `<script>`
+   * elements). Defaults to `false` to preserve existing rendering for callers
+   * that may rely on raw HTML; opt in per project.
+   */
+  sanitize?: boolean;
   /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
    * This disables:
@@ -235,7 +242,13 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
  * @see .claude/context/MDXish/Processor Overview.md
  */
 export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
-  const { components: userComponents = {}, hardBreaks: enableHardBreaks = true, safeMode = false, variables } = opts;
+  const {
+    components: userComponents = {},
+    hardBreaks: enableHardBreaks = true,
+    safeMode = false,
+    sanitize = false,
+    variables,
+  } = opts;
 
   const components: CustomComponents = {
     ...loadComponents(),
@@ -250,7 +263,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
   const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   processor
-    .use(safeMode ? undefined : evaluateExports) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
+    .use(safeMode ? undefined : evaluateExports, { sanitize }) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
@@ -261,6 +274,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(restoreBooleanProperties)
     .use(safeMode ? undefined : resolveDeferredAttributeExpressionProps) // Evaluate deferred attribute expressions on mdx-jsx nodes (now past rehypeRaw's clone)
     .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
+    .use(sanitize ? rehypeStripTags : undefined) // Strip STRIPPED_TAG_NAMES elements; this pipeline has no sanitization step
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
     .use(mdxishMermaidTransformer) // Add mermaid-render className to pre wrappers
     .use(generateSlugForHeadings)
