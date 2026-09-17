@@ -56,13 +56,6 @@ const canCellBeGfm = (children: TableCell['children']): boolean => {
   return !containsLiteralNewline(children);
 };
 
-/**
- * A lowercase `<table>` has no `align` prop, so an aligned table falls back to `<Table>`.
- * Temporary: once alignment is stored on lowercase tables too, the stamp alone decides.
- */
-const canStayLowercaseTable = (table: Table): boolean =>
-  table.data?.lowercaseTable === true && table.align.every(align => !align || align === 'left');
-
 /** On the promote path a `break` would serialize as a dangling `\`, so collapse it to a newline. */
 const flattenBreaksToNewlines = (cell: TableCell): void => {
   visit(cell, 'break', (_, index, parent) => {
@@ -96,14 +89,23 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return undefined;
       });
 
-      // A table authored as lowercase `<table>` keeps that spelling even when a pipe table could hold it.
-      if (!requiresJsxTable && !table.data?.lowercaseTable) {
+      const stayLowercase = table.data?.lowercaseTable === true;
+
+      // We transform to GFM tables if:
+      // 1. If it doesn't contain complex elements that the syntax can't represent
+      // 2. The original table is not lowercase HTML <table>, because we want to 
+      // preserve original tables as much as possible
+      if (!requiresJsxTable && !stayLowercase) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
         table.type = 'table';
         return;
       }
+
+      // Nothing to build a JSX table from; leave the empty node to the GFM stringifier.
+      const [headerRow, ...bodyRows] = table.children;
+      if (!headerRow) return;
 
       visit(table, isTableCell, flattenBreaksToNewlines);
 
@@ -118,7 +120,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
             attributes: [],
             type: 'mdxJsxFlowElement',
             name: 'tr',
-            children: table.children[0].children.map((cell, cellIndex) => {
+            children: headerRow.children.map((cell, cellIndex) => {
               return {
                 attributes: [],
                 type: 'mdxJsxFlowElement',
@@ -135,7 +137,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
         attributes: [],
         type: 'mdxJsxFlowElement',
         name: 'tbody',
-        children: table.children.splice(1).map(row => {
+        children: bodyRows.map(row => {
           return {
             attributes: [],
             type: 'mdxJsxFlowElement',
@@ -163,7 +165,6 @@ const mdxishTablesToJsx = (): Transform => tree => {
         },
       ];
 
-      const stayLowercase = canStayLowercaseTable(table);
       const jsx: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
         name: stayLowercase ? 'table' : 'Table',

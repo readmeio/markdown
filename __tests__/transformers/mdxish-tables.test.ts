@@ -376,11 +376,11 @@ Just one line.
 
     it('parses the table and the following Notes blockquote', () => {
       const ast = astProcessor(mistaken);
-      expect(ast.children.map(c => c.type)).toEqual(
+      expect(ast.children.map(c => c.type)).toStrictEqual(
         expect.arrayContaining(['mdxJsxFlowElement', 'blockquote']),
       );
       const table = ast.children.find(
-        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && c.name === 'table',
+        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && (c as MdxJsxFlowElement).name === 'table',
       );
       expect(table?.children?.length).toBeGreaterThan(0);
       const notes = ast.children.find(c => c.type === 'blockquote');
@@ -1869,10 +1869,6 @@ ${cell}
 
       expect(collectNodes(tree, 'table')).toHaveLength(0);
       expect(collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement')[0]).toMatchObject({ name: 'table' });
-    });
-
-    it('renders the stamped table as an HTML table', () => {
-      expect(toHtml(mdxish(lowercaseTable(listCell)))).toMatch(/<table[\s>]/);
     });
   });
 

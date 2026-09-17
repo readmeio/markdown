@@ -3,7 +3,7 @@ import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdas
 
 import { NodeTypes } from '../../../enums';
 import { mdxishMdastToMd } from '../../../lib';
-import { parseMdxish, roundTripMdxish } from '../../helpers';
+import { collectNodes, parseMdxish, roundTripMdxish } from '../../helpers';
 
 describe('mdxishMdastToMd', () => {
   it('should convert a simple paragraph', () => {
@@ -1583,6 +1583,96 @@ Final plain paragraph at end of file.
     const result = mdxishMdastToMd(mdast);
     // There needs to be a space after the checkbox for the list item to be parsed as a checklist item
     expect(result).toBe('- [ ] hi\n- [ ] \n- [x] there\n- [x] \n- normal\n');
+  });
+
+  describe('lowercase <table> serialization', () => {
+    const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
+
+    const lowercaseTableWithCell = (cell: string, openTag = '<table>'): string =>
+      [
+        openTag,
+        '<thead>',
+        '<tr>',
+        '<th>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>',
+        cell,
+        '</td>',
+        '</tr>',
+        '</tbody>',
+        '</table>',
+        '',
+      ].join('\n');
+
+    it('serializes a lowercase <table> back as lowercase <table>', () => {
+      // The table has to reach the editable mdast form; a raw html node would pass through untouched.
+      expect(collectNodes(parseMdxish(lowercaseTableWithCell(listCell)), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).toMatch(/\n<\/table>\n$/);
+      expect(markdown).not.toContain('<Table');
+      expect(markdown).not.toContain('align=');
+    });
+
+    it('keeps the thead/tbody structure and the list inside the lowercase <table>', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+
+      expect(markdown).toContain('<thead>');
+      expect(markdown).toContain('<tbody>');
+      expect(markdown).toContain('<li>one</li>');
+    });
+
+    it('serializes a phrasing-only lowercase <table> as <table> instead of a GFM pipe table', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell('plain'));
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).not.toMatch(/^\|/m);
+    });
+
+    it('serializes a <Table> back as <Table>', () => {
+      const markdown = roundTripMdxish(lowercaseTableWithCell(listCell, '<Table>').replace('</table>', '</Table>'));
+
+      expect(markdown).toMatch(/^<Table>\n/);
+      expect(markdown).not.toContain('<table');
+    });
+
+    it('serializes a GFM table that gains flow content as <Table>', () => {
+      expect(roundTripMdxish('| H |\n| --- |\n| <Image src="x.png" /> |')).toMatch(/^<Table/);
+    });
+
+    it('is stable across repeated round trips', () => {
+      const once = roundTripMdxish(lowercaseTableWithCell(listCell));
+      const twice = roundTripMdxish(once);
+
+      expect(twice).toBe(once);
+      expect(roundTripMdxish(twice)).toBe(once);
+    });
+
+    it.each([
+      [
+        'a compact header row',
+        lowercaseTableWithCell(listCell).replace(
+          /<tr>\n<th>Name<\/th>\n<th>Notes<\/th>\n<\/tr>/,
+          '<tr><th>Name</th><th>Notes</th></tr>',
+        ),
+      ],
+      ['indented sections', lowercaseTableWithCell(listCell).replace(/^(<thead>|<tbody>|<\/thead>|<\/tbody>)$/gm, '  $1')],
+      ['blank lines around the list', lowercaseTableWithCell(`\n${listCell}\n`)],
+    ])('keeps the lowercase spelling with %s', (_label, source) => {
+      expect(collectNodes(parseMdxish(source), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(source);
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).not.toContain('<Table');
+    });
   });
 });
 
