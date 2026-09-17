@@ -1,11 +1,12 @@
-import type { Parent, Root } from 'mdast';
+import type { Parent, Root, Root as MdastRoot, Table, TableCell } from 'mdast';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { mdxishMdastToMd } from '../../lib';
 import mdxishTablesToJsx from '../../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
-import { collectNodes, roundTripMdxish } from '../helpers';
+import { collectNodes, parseMdxish, roundTripMdxish } from '../helpers';
 
 /**
  * A pipe table cannot express a multi-line cell, so the CX-3773 cases have to start
@@ -247,6 +248,126 @@ describe('mdxish-tables-to-jsx', () => {
 
       expect(collectNodes(tree, 'table')).toHaveLength(1);
       expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+    });
+  });
+
+  describe('lowercase tables serialization', () => {
+    const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
+
+    const lowercaseTableWithCell = (cell: string, openTag = '<table>'): string =>
+      [
+        openTag,
+        '<thead>',
+        '<tr>',
+        '<th>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>',
+        cell,
+        '</td>',
+        '</tr>',
+        '</tbody>',
+        '</table>',
+        '',
+      ].join('\n');
+  
+    const flowTable = (align: Table['align'], lowercaseTable: boolean): MdastRoot => ({
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          align,
+          ...(lowercaseTable && { data: { lowercaseTable: true } }),
+          children: [
+            { type: 'tableRow', children: [{ type: 'tableCell', children: [{ type: 'text', value: 'H' }] }] },
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableCell',
+                  // A code block has no single-line GFM form, so this table must serialize as JSX.
+                  children: [{ type: 'code', value: 'x' } as unknown as TableCell['children'][number]],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  
+    describe('a flow-content cell', () => {
+      it('serializes a lowercase <table> back as lowercase <table>', () => {
+        expect(collectNodes(parseMdxish(lowercaseTableWithCell(listCell)), 'table')).toHaveLength(1);
+  
+        const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+  
+        expect(markdown).toMatch(/^<table>\n/);
+        expect(markdown).toMatch(/\n<\/table>\n$/);
+        expect(markdown).not.toContain('<Table');
+        expect(markdown).not.toContain('align=');
+      });
+  
+      it('keeps the thead/tbody structure and the list inside the lowercase <table>', () => {
+        const markdown = roundTripMdxish(lowercaseTableWithCell(listCell));
+  
+        expect(markdown).toContain('<thead>');
+        expect(markdown).toContain('<tbody>');
+        expect(markdown).toContain('<li>one</li>');
+      });
+  
+      it('serializes a <Table> back as <Table>', () => {
+        const markdown = roundTripMdxish(
+          lowercaseTableWithCell(listCell, '<Table>').replace('</table>', '</Table>'),
+        );
+  
+        expect(markdown).toMatch(/^<Table>\n/);
+        expect(markdown).not.toContain('<table');
+      });
+  
+      it('serializes a GFM table that gains flow content as <Table>', () => {
+        expect(roundTripMdxish('| H |\n| --- |\n| <Image src="x.png" /> |')).toMatch(/^<Table/);
+      });
+  
+      it('is stable across repeated round trips', () => {
+        const once = roundTripMdxish(lowercaseTableWithCell(listCell));
+        const twice = roundTripMdxish(once);
+  
+        expect(twice).toBe(once);
+        expect(roundTripMdxish(twice)).toBe(once);
+      });
+  
+      it.each([
+        ['a compact header row', lowercaseTableWithCell(listCell).replace(/<tr>\n<th>Name<\/th>\n<th>Notes<\/th>\n<\/tr>/, '<tr><th>Name</th><th>Notes</th></tr>')],
+        ['indented sections', lowercaseTableWithCell(listCell).replace(/^(<thead>|<tbody>|<\/thead>|<\/tbody>)$/gm, '  $1')],
+        ['blank lines around the list', lowercaseTableWithCell(`\n${listCell}\n`)],
+      ])('keeps the lowercase spelling with %s', (_label, source) => {
+        // The table has to reach the editable mdast form; a raw html node would pass through untouched.
+        expect(collectNodes(parseMdxish(source), 'table')).toHaveLength(1);
+  
+        const markdown = roundTripMdxish(source);
+  
+        expect(markdown).toMatch(/^<table>\n/);
+        expect(markdown).not.toContain('<Table');
+      });
+    });
+  
+    describe('when lowercase cannot be kept', () => {  
+      it('emits <Table> when the stamp is absent', () => {
+        expect(mdxishMdastToMd(flowTable([null], false))).toMatch(/^<Table>\n/);
+      });
+    });
+  
+    describe('phrasing-only cells', () => {
+      it('keeps a lowercase <table> lowercase instead of promoting it to a GFM pipe table', () => {
+        const markdown = roundTripMdxish(lowercaseTableWithCell('plain'));
+  
+        expect(markdown).toMatch(/^<table>\n/);
+        expect(markdown).not.toMatch(/^\|/m);
+      });
     });
   });
 });

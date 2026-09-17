@@ -56,6 +56,13 @@ const canCellBeGfm = (children: TableCell['children']): boolean => {
   return !containsLiteralNewline(children);
 };
 
+/**
+ * A lowercase `<table>` has no `align` prop, so an aligned table falls back to `<Table>`.
+ * Temporary: once alignment is stored on lowercase tables too, the stamp alone decides.
+ */
+const canStayLowercaseTable = (table: Table): boolean =>
+  table.data?.lowercaseTable === true && table.align.every(align => !align || align === 'left');
+
 /** On the promote path a `break` would serialize as a dangling `\`, so collapse it to a newline. */
 const flattenBreaksToNewlines = (cell: TableCell): void => {
   visit(cell, 'break', (_, index, parent) => {
@@ -89,7 +96,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return undefined;
       });
 
-      if (!requiresJsxTable) {
+      // A table authored as lowercase `<table>` keeps that spelling even when a pipe table could hold it.
+      if (!requiresJsxTable && !table.data?.lowercaseTable) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
@@ -155,10 +163,11 @@ const mdxishTablesToJsx = (): Transform => tree => {
         },
       ];
 
+      const stayLowercase = canStayLowercaseTable(table);
       const jsx: MdxJsxFlowElement = {
         type: 'mdxJsxFlowElement',
-        name: 'Table',
-        attributes: table.align.find(a => a) ? attributes : [],
+        name: stayLowercase ? 'table' : 'Table',
+        attributes: !stayLowercase && table.align.find(a => a) ? attributes : [],
         children: [head, body],
       };
 
