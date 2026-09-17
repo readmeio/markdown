@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.7.0
+### ✨ New & Improved
+
+* **MdxishEditor:** retain lowercase <table> syntax during serialization ([#1620](https://github.com/readmeio/markdown/issues/1620)) ([7457885](https://github.com/readmeio/markdown/commit/7457885ebe103fac32919d1cd453920becf9204c))
+* show three heading levels in the table of contents ([#1615](https://github.com/readmeio/markdown/issues/1615)) ([474c005](https://github.com/readmeio/markdown/commit/474c005934c952ce46afea6f4a4cb8c62f200d24))
+
 ## Version 15.6.0
 ### ✨ New & Improved
 
