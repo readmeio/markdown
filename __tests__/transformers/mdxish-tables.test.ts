@@ -1,4 +1,4 @@
-import type { Html, Root, Text } from 'mdast';
+import type { Html, Root, Table, Text } from 'mdast';
 import type { MdxFlowExpression, MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
 import { toHtml } from 'hast-util-to-html';
@@ -376,11 +376,11 @@ Just one line.
 
     it('parses the table and the following Notes blockquote', () => {
       const ast = astProcessor(mistaken);
-      expect(ast.children.map(c => c.type)).toEqual(
+      expect(ast.children.map(c => c.type)).toStrictEqual(
         expect.arrayContaining(['mdxJsxFlowElement', 'blockquote']),
       );
       const table = ast.children.find(
-        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && c.name === 'table',
+        (c): c is MdxJsxFlowElement => c.type === 'mdxJsxFlowElement' && (c as MdxJsxFlowElement).name === 'table',
       );
       expect(table?.children?.length).toBeGreaterThan(0);
       const notes = ast.children.find(c => c.type === 'blockquote');
@@ -1800,6 +1800,76 @@ the /{customer\\_id}/config/clients operation
     const html = toHtml(mdxish(md));
     expect(html).toContain('<code>code</code>');
     expect(html).toContain('<strong>bold</strong>');
+  });
+
+  // RM-18524: the serializer needs to know a table was authored as lowercase `<table>` so it
+  // can write that spelling back instead of `<Table>`.
+  describe('lowercase <table> origin stamp', () => {
+    const lowercaseTable = (cell: string): string => `<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Foo</td>
+      <td>
+${cell}
+      </td>
+    </tr>
+  </tbody>
+</table>`;
+
+    const listCell = '<ul>\n<li>one</li>\n<li>two</li>\n</ul>';
+
+    it('stamps data.lowercaseTable on a lowercase <table> with a flow-content cell', () => {
+      const [table] = collectNodes<Table>(astProcessor(lowercaseTable(listCell)), 'table');
+
+      expect(table).toMatchObject({
+        type: 'table',
+        align: [null, null],
+        data: { lowercaseTable: true },
+        children: [
+          { type: 'tableRow', children: [{ type: 'tableCell' }, { type: 'tableCell' }] },
+          {
+            type: 'tableRow',
+            children: [
+              { type: 'tableCell', children: [{ type: 'text', value: 'Foo' }] },
+              { type: 'tableCell', children: [{ type: 'mdxJsxFlowElement', name: 'ul' }] },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('stamps a phrasing-only lowercase <table> too', () => {
+      const [table] = collectNodes<Table>(astProcessor(lowercaseTable('plain')), 'table');
+
+      expect(table.data).toStrictEqual({ lowercaseTable: true });
+    });
+
+    it('does not stamp a JSX <Table>', () => {
+      const source = lowercaseTable(listCell).replace('<table>', '<Table>').replace('</table>', '</Table>');
+      const [table] = collectNodes<Table>(astProcessor(source), 'table');
+
+      expect(table.type).toBe('table');
+      expect(table.data?.lowercaseTable).toBeUndefined();
+    });
+
+    it('does not stamp a GFM pipe table', () => {
+      const [table] = collectNodes<Table>(astProcessor('| a | b |\n| --- | --- |\n| c | d |'), 'table');
+
+      expect(table.data?.lowercaseTable).toBeUndefined();
+    });
+
+    it('leaves a lowercase <table> with cell attributes as a JSX element', () => {
+      const tree = astProcessor(lowercaseTable(listCell).replace('<td>Foo</td>', '<td class="x">Foo</td>'));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
+      expect(collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement')[0]).toMatchObject({ name: 'table' });
+    });
   });
 
   describe('<pre> formatting inside HTML table cells', () => {
