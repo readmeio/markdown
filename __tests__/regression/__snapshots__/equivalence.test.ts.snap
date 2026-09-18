@@ -105,6 +105,22 @@ exports[`MDX↔MDXish equivalence > compact-headings 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > components-under-list-items 1`] = `
+{
+  "changes": [
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/ul[0]",
+      "right": "<ul>…(3 children)…</ul>",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > consecutive-emojis-fa 1`] = `
 {
   "changes": [
