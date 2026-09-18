@@ -1,9 +1,12 @@
 import type { CustomComponents, Variables } from '../types';
 import type { Root } from 'hast';
 import type { Root as MdastRoot } from 'mdast';
+import type { Options as StringifyOptions } from 'remark-stringify';
 import type { PluggableList } from 'unified';
 
+import { mdxExpressionToMarkdown } from 'mdast-util-mdx-expression';
 import { mdxJsxToMarkdown } from 'mdast-util-mdx-jsx';
+import { mdxjsEsmToMarkdown } from 'mdast-util-mdxjs-esm';
 import rehypeRaw from 'rehype-raw';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -34,6 +37,7 @@ import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
+import mdxishImagesToJsx from '../processor/transform/mdxish/images-to-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
@@ -53,6 +57,7 @@ import mdxishTables from '../processor/transform/mdxish/tables/mdxish-tables';
 import mdxishTablesToJsx from '../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
 import { normalizeTableSeparator } from '../processor/transform/mdxish/tables/normalize-table-separator';
 import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate-html-flow-blocks';
+import unwrapPins from '../processor/transform/mdxish/unwrap-pins';
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
 import tailwindTransformer from '../processor/transform/tailwind';
@@ -181,14 +186,25 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
 }
 
 /**
- * Registers the mdx-jsx serialization extension so remark-stringify
- * can convert JSX nodes (e.g. `<Table>`) to markdown.
+ * Registers serialization for the node types remark-stringify can't write on its own:
+ * JSX elements (e.g. `<Table>`), MDX expressions, and ESM exports.
  */
-function mdxJsxStringify(this: ReturnType<typeof unified>) {
+function mdxStringifyExtensions(this: ReturnType<typeof unified>) {
   const data = this.data();
   const extensions = data.toMarkdownExtensions || (data.toMarkdownExtensions = []);
-  extensions.push({ extensions: [mdxJsxToMarkdown()] });
+  extensions.push({ extensions: [mdxJsxToMarkdown(), mdxExpressionToMarkdown(), mdxjsEsmToMarkdown()] });
 }
+
+const stringifyOptions = {
+  bullet: DEFAULT_BULLET,
+  emphasis: '_',
+  // Escape literal braces in text so they don't parse as (often
+  // unterminated) MDX expressions on the next round trip.
+  unsafe: [
+    { character: '{', inConstruct: 'phrasing' },
+    { character: '}', inConstruct: 'phrasing' },
+  ],
+} satisfies StringifyOptions;
 
 /**
  * Serializes an Mdast back into a markdown string.
@@ -196,21 +212,19 @@ function mdxJsxStringify(this: ReturnType<typeof unified>) {
 export function mdxishMdastToMd(mdast: MdastRoot) {
   const processor = unified()
     .use(remarkGfm)
+    // Readme nodes with no markdown spelling go out as JSX, the same tags mdxish re-parses.
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
+    // The rest only a PARSER tree carries.
+    // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
+    .use(unwrapPins)
+    // Figures, image blocks, and images that picked up readme attributes while parsing.
+    .use(mdxishImagesToJsx)
+    // Handlers for the readme nodes that stay themselves (variables, emoji, html-blocks, lists).
     .use(mdxishCompilers)
-    .use(mdxJsxStringify)
-    .use(remarkStringify, {
-      bullet: DEFAULT_BULLET,
-      emphasis: '_',
-      // Escape literal braces in text so they don't parse as (often
-      // unterminated) MDX expressions on the next round trip.
-      unsafe: [
-        { character: '{', inConstruct: 'phrasing' },
-        { character: '}', inConstruct: 'phrasing' },
-      ],
-    });
+    .use(mdxStringifyExtensions)
+    .use(remarkStringify, stringifyOptions);
   return processor.stringify(processor.runSync(mdast));
 }
 

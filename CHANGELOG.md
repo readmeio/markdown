@@ -1,6 +1,23 @@
 Changelog
 ===
 
+## Version 15.7.0
+### ✨ New & Improved
+
+* **MdxishEditor:** retain lowercase <table> syntax during serialization ([#1620](https://github.com/readmeio/markdown/issues/1620)) ([7457885](https://github.com/readmeio/markdown/commit/7457885ebe103fac32919d1cd453920becf9204c))
+* show three heading levels in the table of contents ([#1615](https://github.com/readmeio/markdown/issues/1615)) ([474c005](https://github.com/readmeio/markdown/commit/474c005934c952ce46afea6f4a4cb8c62f200d24))
+
+## Version 15.6.0
+### ✨ New & Improved
+
+* **mdxish:** serialize parser-produced trees through the mdxish dialect ([#1618](https://github.com/readmeio/markdown/issues/1618)) ([7986e7d](https://github.com/readmeio/markdown/commit/7986e7d98785eee18c5a052ca064c702a0e5ce82)), closes [readmeio/ai#1130](https://github.com/readmeio/ai/issues/1130)
+
+## Version 15.5.2
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep multi-line JSX expressions in one block ([#1609](https://github.com/readmeio/markdown/issues/1609)) ([5cbdafd](https://github.com/readmeio/markdown/commit/5cbdafd5d668a10918d7040f61aa51c9223363a7))
+* resolve variables inside single-line block HTML tags ([#1614](https://github.com/readmeio/markdown/issues/1614)) ([08c0b50](https://github.com/readmeio/markdown/commit/08c0b50505223a61f0ee70d5001f2d204b89b2e8))
+
 ## Version 15.5.1
 ### 🛠 Fixes & Updates
 

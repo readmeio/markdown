@@ -124,7 +124,7 @@ export const rehypeToc = ({ components = {} }: Options): Transformer<Root, Root>
   };
 };
 
-const MAX_DEPTH = 2;
+const MAX_DEPTH = 3;
 
 /**
  * Get the depth of a heading element based on its tag name.

@@ -341,6 +341,8 @@ const processTableNode = (
     type: 'table',
     position,
     children,
+    // Remember the author's spelling so the serializer can write `<table>` back instead of `<Table>`
+    ...(node.name === 'table' && { data: { lowercaseTable: true } }),
   };
 
   parent.children[index] = mdNode;
