@@ -170,6 +170,24 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 ## Releases
 
+Only members of `@readmeio/mdxish` (or whoever is allowed to deploy the `release` environment) can cut a release. An admin must create that environment under **Settings → Environments** and set **Restrict who can deploy** before the first run; until then, any write collaborator can click the button.
+
+1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main` (the existing Release workflow publishes to npm).
+2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml) (it merges `main` back into `next`) and [Update Downstream Dependencies](https://github.com/readmeio/markdown/actions/workflows/update-downstream-deps.yml).
+3. Review and merge the ReadMe PR that bumps `@readme/markdown` via `make upgrade-markdown`. Do not merge it until ReadMe CI is green.
+
+Manual retries of the ReadMe bump use the same **Run workflow** button on Update Downstream Dependencies (same `release` environment gate).
+
+Required for the ReadMe bump (repo variable + secret, not the environment):
+
+- `vars.DEPLOY_MARKDOWN_APP_ID`
+- `secrets.DEPLOY_MARKDOWN_PRIVATE_KEY`
+
+The GitHub App must be installed on `readmeio/readme` with permission to push and open PRs. Cut release needs `secrets.GH_TOKEN` on the `release` environment (a PAT or app token that can push `main`/`next` and trigger the Release workflow).
+
+<details>
+<summary>Emergency: cut a release by hand</summary>
+
 First, update `main` with what’s on `next`:
 
 ```
@@ -181,7 +199,7 @@ git merge --no-ff next
 git push
 ```
 
-WAIT until the build is finished, then update `next`:
+WAIT until the Release workflow finishes (it syncs `main` back to `next`). If that sync fails:
 
 ```
 git pull
@@ -189,3 +207,11 @@ git switch next
 git merge main
 git push
 ```
+
+Then in `readmeio/readme` on `next`:
+
+```
+make upgrade-markdown
+```
+
+</details>
