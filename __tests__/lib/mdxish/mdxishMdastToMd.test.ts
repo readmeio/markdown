@@ -145,6 +145,100 @@ describe('mdxishMdastToMd', () => {
     expect(result).toBe('{user.name} - {user.email}\n');
   });
 
+  describe('tables with column widths', () => {
+    it('should serialize a plain table with widths to JSX <Table> with the width on each header cell', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, 'center', null],
+            data: { widths: ['20%', null, '50%'] },
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Name' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Type' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Description' }] },
+                ],
+              },
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'id' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'string' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'Unique identifier' }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toMatchInlineSnapshot(`
+        "<Table align={[null,"center",null]}>
+          <thead>
+            <tr>
+              <th style={{ width: "20%" }}>
+                Name
+              </th>
+
+              <th style={{ textAlign: "center" }}>
+                Type
+              </th>
+
+              <th style={{ width: "50%" }}>
+                Description
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                id
+              </td>
+
+              <td style={{ textAlign: "center" }}>
+                string
+              </td>
+
+              <td>
+                Unique identifier
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+        "
+      `);
+    });
+
+    it('should keep a table without widths as GFM', () => {
+      const mdast: MdastRoot = {
+        type: 'root',
+        children: [
+          {
+            type: 'table',
+            align: [null, null],
+            data: { widths: [null, null] },
+            children: [
+              {
+                type: 'tableRow',
+                children: [
+                  { type: 'tableCell', children: [{ type: 'text', value: 'a' }] },
+                  { type: 'tableCell', children: [{ type: 'text', value: 'b' }] },
+                ],
+              },
+            ],
+          } as Table,
+        ],
+      };
+
+      expect(mdxishMdastToMd(mdast)).toBe('| a | b |\n| - | - |\n');
+    });
+  });
+
   describe('tables with flow content', () => {
     it('should serialize a table with a fenced code block in a cell to JSX <Table>', () => {
       const mdast: MdastRoot = {

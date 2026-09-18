@@ -241,11 +241,7 @@ declare module 'mdast' {
   }
 
   interface TableData {
-    /**
-     * Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. GFM pipe syntax
-     * can't express a width, so a table carrying any width serializes as JSX `<Table>`
-     * with the value on each header cell's `style`.
-     */
+    /** Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. */
     widths?: (string | null)[];
   }
 

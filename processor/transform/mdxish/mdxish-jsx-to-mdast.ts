@@ -45,6 +45,13 @@ const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
 const FIGCAPTION_OPEN_REGEX = /^<figcaption>$/;
 const FIGCAPTION_CLOSE_REGEX = /^<\/figcaption>$/;
 
+/** `width` inside a style object that stayed a string, e.g. `{ textAlign: "center", width: "30%" }` */
+const STYLE_OBJECT_WIDTH_REGEX = /["']?width["']?\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,}]+))/i;
+/** Splits a CSS declaration at its first colon only, so `url(http://…)` values stay intact */
+const CSS_DECLARATION_REGEX = /:(.*)/s;
+/** A bare number such as `200` or `12.5`, which React and the HTML `width` attribute read as pixels */
+const UNITLESS_NUMBER_REGEX = /^\d+(?:\.\d+)?$/;
+
 /**
  * Extracts an image or image-block from a node. If the node itself is an image/image-block,
  * it is returned directly. If the node is a paragraph, its children are searched for one.
@@ -599,12 +606,12 @@ interface CellSizingAttrs {
   width?: number | string;
 }
 
-/** A usable CSS width, or null. React (and the HTML `width` attribute) treat a bare number as pixels. */
-const normalizeWidth = (value: unknown): string | null => {
+/** A usable CSS width, or null. Bare numbers become pixels. */
+export const normalizeWidth = (value: unknown): string | null => {
   if (typeof value === 'number') return `${value}px`;
   if (typeof value !== 'string' || !value.trim()) return null;
   const trimmed = value.trim();
-  return /^\d+(?:\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+  return UNITLESS_NUMBER_REGEX.test(trimmed) ? `${trimmed}px` : trimmed;
 };
 
 /**
@@ -613,15 +620,15 @@ const normalizeWidth = (value: unknown): string | null => {
  * (`{ width: "30%" }`). Values are taken whole, so functions with commas such as
  * `clamp(100px, 50%, 60vw)` or `var(--w, 240px)` survive.
  */
-const widthFromStyleString = (style: string): string | undefined => {
+export const widthFromStyleString = (style: string): string | undefined => {
   const trimmed = style.trim();
   if (trimmed.startsWith('{')) {
-    return /["']?width["']?\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,}]+))/i.exec(trimmed)?.slice(1).find(Boolean);
+    return STYLE_OBJECT_WIDTH_REGEX.exec(trimmed)?.slice(1).find(Boolean);
   }
 
   return trimmed
     .split(';')
-    .map(declaration => declaration.split(/:(.*)/s))
+    .map(declaration => declaration.split(CSS_DECLARATION_REGEX))
     .find(([property]) => property.trim().toLowerCase() === 'width')?.[1];
 };
 
