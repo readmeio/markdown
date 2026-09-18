@@ -1,4 +1,5 @@
-import type { Parent, Root, Root as MdastRoot, TableCell } from 'mdast';
+import type { Parent, Root, Root as MdastRoot, Table, TableCell } from 'mdast';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -75,10 +76,69 @@ describe('mdxish-tables-to-jsx', () => {
     it('converts a table containing a self-closing JSX component to JSX', () => {
       const tree = parseWithPlugin('| Header |\n| --- |\n| <Image src="x.png" /> |');
       const jsxElements = collectNodes(tree, 'mdxJsxFlowElement');
-      const tables = jsxElements.filter((n) => (n as { name?: string }).name === 'Table');
+      const tables = jsxElements.filter(n => (n as { name?: string }).name === 'Table');
 
       expect(tables).toHaveLength(1);
       expect(collectNodes(tree, 'table')).toHaveLength(0);
+    });
+  });
+
+  // GFM pipe syntax has no way to express a column width, so a table that
+  // carries one must take the JSX path even when every cell is plain text.
+  describe('tables with column widths', () => {
+    const tableWithWidths = (widths: (string | null)[]): Root => {
+      const tree = parseWithPlugin('| a | b |\n| --- | --- |\n| c | d |');
+      const table = collectNodes<Parent>(tree, 'table')[0];
+      table.data = { widths };
+      return tree;
+    };
+
+    const runPlugin = (tree: Root): Root => {
+      mdxishTablesToJsx()(tree);
+      return tree;
+    };
+
+    // In these assertions a `table` node is a GFM pipe table, while an element named `Table`
+    // is the JSX component the plugin promotes to.
+    it('promotes a plain text table to JSX when any column has a width', () => {
+      const tree = runPlugin(tableWithWidths(['30%', null]));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
+      expect(collectNodes(tree, n => (n as { name?: string }).name === 'Table')).toHaveLength(1);
+    });
+
+    it('keeps the table as GFM when every width is empty', () => {
+      const tree = runPlugin(tableWithWidths([null, null]));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+    });
+
+    it('writes the width onto the header cell style and leaves body cells alone', () => {
+      const tree = runPlugin(tableWithWidths(['30%', null]));
+      const [th1, th2] = collectNodes<MdxJsxFlowElement>(tree, n => (n as { name?: string }).name === 'th');
+      const tds = collectNodes<MdxJsxFlowElement>(tree, n => (n as { name?: string }).name === 'td');
+
+      expect(th1.attributes).toStrictEqual([
+        {
+          type: 'mdxJsxAttribute',
+          name: 'style',
+          value: { type: 'mdxJsxAttributeValueExpression', value: '{ width: "30%" }' },
+        },
+      ]);
+      expect(th2.attributes).toStrictEqual([]);
+      tds.forEach(td => expect(td.attributes ?? []).toStrictEqual([]));
+    });
+
+    it('combines a width with a non-default alignment in one style object', () => {
+      const tree = tableWithWidths(['30%', null]);
+      collectNodes<Table>(tree, 'table')[0].align = ['center', null];
+      runPlugin(tree);
+      const [th1] = collectNodes<MdxJsxFlowElement>(tree, n => (n as { name?: string }).name === 'th');
+
+      expect(th1.attributes[0]).toMatchObject({
+        name: 'style',
+        value: { value: '{ textAlign: "center", width: "30%" }' },
+      });
     });
   });
 
@@ -187,11 +247,9 @@ describe('mdxish-tables-to-jsx', () => {
 
   describe('JSX Table structure', () => {
     it('generates thead, tbody, tr, th, and td elements', () => {
-      const tree = parseWithPlugin(
-        '| H1 | H2 |\n| --- | --- |\n| <Image src="a.png" /> | text |',
-      );
+      const tree = parseWithPlugin('| H1 | H2 |\n| --- | --- |\n| <Image src="a.png" /> | text |');
       const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & { name: string })[];
-      const names = jsxElements.map((n) => n.name);
+      const names = jsxElements.map(n => n.name);
 
       expect(names).toContain('Table');
       expect(names).toContain('thead');
@@ -209,23 +267,21 @@ describe('mdxish-tables-to-jsx', () => {
         attributes: { name: string; value: { value: string } }[];
         name: string;
       })[];
-      const tableNode = jsxElements.find((n) => n.name === 'Table');
+      const tableNode = jsxElements.find(n => n.name === 'Table');
 
       expect(tableNode).toBeDefined();
-      const alignAttr = tableNode!.attributes.find((a) => a.name === 'align');
+      const alignAttr = tableNode!.attributes.find(a => a.name === 'align');
       expect(alignAttr).toBeDefined();
       expect(JSON.parse(alignAttr!.value.value)).toStrictEqual(['left', 'center', 'right']);
     });
 
     it('omits the align attribute when all columns are left-aligned', () => {
-      const tree = parseWithPlugin(
-        '| A | B |\n| --- | --- |\n| <Image src="a.png" /> | x |',
-      );
+      const tree = parseWithPlugin('| A | B |\n| --- | --- |\n| <Image src="a.png" /> | x |');
       const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & {
         attributes: { name: string }[];
         name: string;
       })[];
-      const tableNode = jsxElements.find((n) => n.name === 'Table');
+      const tableNode = jsxElements.find(n => n.name === 'Table');
 
       expect(tableNode).toBeDefined();
       expect(tableNode!.attributes).toHaveLength(0);
@@ -237,7 +293,7 @@ describe('mdxish-tables-to-jsx', () => {
       const md = '| Header |\n| --- |\n| text <Image src="a.png" /> |';
       const tree = parseWithPlugin(md);
       const jsxElements = collectNodes(tree, 'mdxJsxFlowElement') as (Parent & { name?: string })[];
-      const tableNode = jsxElements.find((n) => n.name === 'Table');
+      const tableNode = jsxElements.find(n => n.name === 'Table');
 
       expect(tableNode).toBeDefined();
     });
