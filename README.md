@@ -173,17 +173,8 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 Only `@readmeio/mdxish` should approve a release. An admin must create the `release` environment under **Settings → Environments** and set **Required reviewers** to that team (and optionally prevent self-review). Until then, any write collaborator can click the button and the job will run without waiting.
 
 1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main` (the existing Release workflow publishes to npm).
-2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml) (it merges `main` back into `next`) and [Update Downstream Dependencies](https://github.com/readmeio/markdown/actions/workflows/update-downstream-deps.yml).
-3. Review and merge the ReadMe PR that bumps `@readme/markdown` via `make upgrade-markdown`. Do not merge it until ReadMe CI is green.
-
-Manual retries of the ReadMe bump use the same **Run workflow** button on Update Downstream Dependencies (same `release` environment gate).
-
-Required for the ReadMe bump (repo variable + secret, not the environment):
-
-- `vars.DEPLOY_MARKDOWN_APP_ID`
-- `secrets.DEPLOY_MARKDOWN_PRIVATE_KEY`
-
-The GitHub App must be installed on `readmeio/readme` with permission to push and open PRs.
+2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml). It publishes, then merges `main` back into `next`.
+3. In `readmeio/readme` on `next`, run `make upgrade-markdown` and open a PR. That bump is still manual (a public repo should not hold write credentials to the private app repo).
 
 Cut release and Release both use the **repo** secret `GH_TOKEN` (the PAT semantic-release already uses). Do not add a second copy on the environment, and do not delete that repo secret — the built-in `GITHUB_TOKEN` cannot push to `main` and then start the Release workflow.
 
