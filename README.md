@@ -170,7 +170,7 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 ## Releases
 
-Only members of `@readmeio/mdxish` (or whoever is allowed to deploy the `release` environment) can cut a release. An admin must create that environment under **Settings → Environments** and set **Restrict who can deploy** before the first run; until then, any write collaborator can click the button.
+Only `@readmeio/mdxish` should approve a release. An admin must create the `release` environment under **Settings → Environments** and set **Required reviewers** to that team (and optionally prevent self-review). Until then, any write collaborator can click the button and the job will run without waiting.
 
 1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main` (the existing Release workflow publishes to npm).
 2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml) (it merges `main` back into `next`) and [Update Downstream Dependencies](https://github.com/readmeio/markdown/actions/workflows/update-downstream-deps.yml).
@@ -183,7 +183,9 @@ Required for the ReadMe bump (repo variable + secret, not the environment):
 - `vars.DEPLOY_MARKDOWN_APP_ID`
 - `secrets.DEPLOY_MARKDOWN_PRIVATE_KEY`
 
-The GitHub App must be installed on `readmeio/readme` with permission to push and open PRs. Cut release needs `secrets.GH_TOKEN` on the `release` environment (a PAT or app token that can push `main`/`next` and trigger the Release workflow).
+The GitHub App must be installed on `readmeio/readme` with permission to push and open PRs.
+
+Cut release and Release both use the **repo** secret `GH_TOKEN` (the PAT semantic-release already uses). Do not add a second copy on the environment, and do not delete that repo secret — the built-in `GITHUB_TOKEN` cannot push to `main` and then start the Release workflow.
 
 <details>
 <summary>Emergency: cut a release by hand</summary>
