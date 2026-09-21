@@ -3,11 +3,8 @@ name: Cut release
 on:
   workflow_dispatch:
 
-# Public repo: anyone with write can see this button. The `release` environment
-# (Settings → Environments) should require review from @readmeio/mdxish.
-# Uses the repo-level GH_TOKEN secret (same PAT Release already uses). Do not
-# put a second copy on the environment — Release is not bound to `release` and
-# would not see an environment-only secret.
+# `release` environment: required reviewers (mdxish). GH_TOKEN is the repo PAT;
+# GITHUB_TOKEN cannot push main and then start the Release workflow.
 permissions:
   contents: read
 
