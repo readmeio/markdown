@@ -8,7 +8,7 @@ import { codes, types } from 'micromark-util-symbol';
 import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
 import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
-import { markupOnlyContinuation, nonLazyContinuationStart } from './continuation-checks';
+import { markupOnlyContinuation } from './continuation-checks';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
@@ -488,15 +488,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     // Continuation for multi-line opening tags
     function openTagContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, openTagContinuationNonLazy, continuationAfter)(code);
-    }
-
-    function openTagContinuationNonLazy(code: Code): State | undefined {
-      sawLineEnding = true;
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return openTagContinuationBefore;
+      return continueOnNextLine(code, openTagContinuationBefore);
     }
 
     function openTagContinuationBefore(code: Code): State | undefined {
@@ -630,15 +622,7 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function fencedCodeContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, fencedCodeContinuationNonLazy, continuationAfter)(code);
-    }
-
-    function fencedCodeContinuationNonLazy(code: Code): State | undefined {
-      sawLineEnding = true;
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return fencedCodeContinuationBefore;
+      return continueOnNextLine(code, fencedCodeContinuationBefore);
     }
 
     function fencedCodeContinuationBefore(code: Code): State | undefined {
@@ -896,15 +880,7 @@ function createTokenize(mode: 'flow' | 'text') {
     // ── Body continuation (line endings) ───────────────────────────────────
 
     function bodyContinuationStart(code: Code): State | undefined {
-      return effects.check(nonLazyContinuationStart, bodyContinuationNonLazy, continuationAfter)(code);
-    }
-
-    function bodyContinuationNonLazy(code: Code): State | undefined {
-      sawLineEnding = true;
-      effects.enter(types.lineEnding);
-      effects.consume(code);
-      effects.exit(types.lineEnding);
-      return bodyContinuationBefore;
+      return continueOnNextLine(code, bodyContinuationBefore);
     }
 
     function bodyContinuationBefore(code: Code): State | undefined {
@@ -974,14 +950,18 @@ function createTokenize(mode: 'flow' | 'text') {
       return bodyLineStart(code);
     }
 
-    // ── Shared lazy continuation failure ───────────────────────────────────
+    // ── Shared line-ending continuation ────────────────────────────────────
 
-    function continuationAfter(code: Code): State | undefined {
-      if (code === null) {
-        return nok(code);
-      }
-      effects.exit('mdxComponent');
-      return ok(code);
+    // Consumes one line ending and resumes at `nextLine`. Lazy lines (under-indented
+    // under a list item or blockquote) continue too: a claim only ends at its closing
+    // tag, and an unclosed one fails whole at EOF instead of leaving a truncated opener (CX-3940).
+    function continueOnNextLine(code: Code, nextLine: State): State | undefined {
+      if (!markdownLineEnding(code)) return nok(code);
+      sawLineEnding = true;
+      effects.enter(types.lineEnding);
+      effects.consume(code);
+      effects.exit(types.lineEnding);
+      return nextLine;
     }
   };
 }
