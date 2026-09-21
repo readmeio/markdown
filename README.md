@@ -170,13 +170,11 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 ## Releases
 
-Only `@readmeio/mdxish` should approve a release. An admin must create the `release` environment under **Settings → Environments** and set **Required reviewers** to that team (and optionally prevent self-review). Until then, any write collaborator can click the button and the job will run without waiting.
+`@readmeio/mdxish` reviews the Cut release job, then:
 
-1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main` (the existing Release workflow publishes to npm).
+1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main`; Release publishes to npm.
 2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml). It publishes, then merges `main` back into `next`.
-3. In `readmeio/readme` on `next`, run `make upgrade-markdown` and open a PR. That bump is still manual (a public repo should not hold write credentials to the private app repo).
-
-Cut release and Release both use the **repo** secret `GH_TOKEN` (the PAT semantic-release already uses). Do not add a second copy on the environment, and do not delete that repo secret — the built-in `GITHUB_TOKEN` cannot push to `main` and then start the Release workflow.
+3. In `readmeio/readme` on `next`, run `make upgrade-markdown` and open a PR.
 
 <details>
 <summary>Emergency: cut a release by hand</summary>
