@@ -816,6 +816,44 @@ hello
         expect(tag.type).toBe('mdxJsxFlowElement');
         expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag>\n    body\n  </Tag>');
       });
+
+      // A multi-line self-closing tag has the same stripped prefixes; its end used to be
+      // measured against the html value alone and fell short by exactly the `/>` (CX-3940).
+      describe('multi-line self-closing tag inside a container', () => {
+        it.each([
+          ['a list item', '- four\n  <Tag\n  attr="x"\n  />', '<Tag\n  attr="x"\n  />'],
+          [
+            'a list item indented past the content column',
+            '- four\n    <Tag\n    attr="x"\n    />',
+            '  <Tag\n    attr="x"\n    />',
+          ],
+          ['an ordered list item', '1. four\n   <Tag attr="x"\n   />', '<Tag attr="x"\n   />'],
+          ['a blockquote', '> <Tag\n> attr="x"\n> />', '<Tag\n> attr="x"\n> />'],
+          ['a nested list item', '- a\n  - four\n    <Tag\n    attr="x"\n    />', '<Tag\n    attr="x"\n    />'],
+        ])('position spans the full tag inside %s', (_, markdown, expectedSource) => {
+          const tree = parseWithPlugin(markdown);
+
+          const [tag] = collectNodes<MdxJsxFlowElement>(tree, 'mdxJsxFlowElement');
+          expect(tag).toMatchObject({
+            name: 'Tag',
+            attributes: [{ type: 'mdxJsxAttribute', name: 'attr', value: 'x' }],
+          });
+          expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe(expectedSource);
+        });
+
+        it('ends at the tag when trailing content follows inside a list item', () => {
+          const markdown = '- <Tag\n  attr="x"\n  /> trailing';
+          const tree = parseWithPlugin(markdown);
+
+          const listItem = (tree.children[0] as Parent).children[0] as Parent;
+          expect(listItem.children).toMatchObject([
+            { type: 'mdxJsxFlowElement', name: 'Tag' },
+            { type: 'paragraph', children: [{ type: 'text', value: 'trailing' }] },
+          ]);
+          const tag = listItem.children[0] as MdxJsxFlowElement;
+          expect(markdown.slice(tag.position!.start.offset, tag.position!.end.offset)).toBe('<Tag\n  attr="x"\n  />');
+        });
+      });
     });
   });
 
