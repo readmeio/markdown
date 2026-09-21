@@ -170,7 +170,16 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 ## Releases
 
-First, update `main` with what’s on `next`:
+`@readmeio/mdxish` reviews the Cut release job, then:
+
+1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main`; Release publishes to npm.
+2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml). It publishes, then fast-forwards `next` to that release. If `next` moved during publish, merge `main` into `next` by hand.
+3. Still manual: in `readmeio/readme` on `next`, run `make upgrade-markdown` and open a PR.
+
+<details>
+<summary>Merge <code>next</code> into <code>main</code> by hand</summary>
+
+Same as steps 1–2 if you are not using Cut release:
 
 ```
 git switch next
@@ -181,7 +190,7 @@ git merge --no-ff next
 git push
 ```
 
-WAIT until the build is finished, then update `next`:
+Wait until Release finishes (it syncs `main` back to `next`). If that sync fails:
 
 ```
 git pull
@@ -189,3 +198,7 @@ git switch next
 git merge main
 git push
 ```
+
+Then do step 3.
+
+</details>

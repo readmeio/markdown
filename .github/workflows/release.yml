@@ -51,15 +51,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-      # Merge latest release back to next.
+      # Fast-forward next to the release commit. If next moved during publish,
+      # this push fails and you merge main into next by hand.
       #
       - name: Sync main to next
-        if: "github.ref == 'refs/heads/main'"
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
           branch: refs/heads/next
-        continue-on-error: true
+          github_token: ${{ secrets.GH_TOKEN }}
 
       # Sync docs to rdmd.readme.io
       #
