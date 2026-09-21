@@ -51,21 +51,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-      # Merge the version-bump commit back to next (fast-forward when possible).
+      # Fast-forward next to the release commit. If next moved during publish,
+      # this push fails and you merge main into next by hand.
       #
       - name: Sync main to next
         if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git config user.name 'github-actions[bot]'
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git fetch --unshallow origin 2>/dev/null || true
-          git fetch origin main next
-          git checkout -B next origin/next
-          git merge origin/main -m 'build: sync main into next'
-          git push origin next
+        continue-on-error: true
+        uses: ad-m/github-push-action@master
+        with:
+          branch: refs/heads/next
+          github_token: ${{ secrets.GH_TOKEN }}
 
       # Sync docs to rdmd.readme.io
       #
