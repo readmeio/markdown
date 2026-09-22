@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.7.2
+### 🛠 Fixes & Updates
+
+* **callout:** keep list-leading body beside the floated icon ([#1624](https://github.com/readmeio/markdown/issues/1624)) ([fd64bad](https://github.com/readmeio/markdown/commit/fd64bad90c45649eb43b61f78453bf7bfd161f99)), closes [#825](https://github.com/readmeio/markdown/issues/825)
+
 ## Version 15.7.1
 ### 🛠 Fixes & Updates
 
