@@ -50,32 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
 
-      # Push release changes to the remote.
-      #
-      - name: Push to remote
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
-
-      # Fast-forward next to the release commit. If next moved during publish,
-      # this push fails and you merge main into next by hand.
-      #
-      - name: Sync main to next
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true
-        uses: ad-m/github-push-action@master
-        with:
-          branch: refs/heads/next
-          github_token: ${{ secrets.GH_TOKEN }}
-
-      # Sync docs to rdmd.readme.io
-      #
-      - name: Sync docs to rdmd.readme.io
-        uses: readmeio/rdme@v10
-        with:
-          rdme: docs upload ./docs --key=${{ secrets.RDME_KEY }} --version=2
-
+      # Right after publish so a later push/docs failure cannot skip it.
       # Optional: vars.CONSUMER_DISPATCH_REPOS (comma-separated owner/repo) +
       # secrets.CONSUMER_DISPATCH_TOKEN (contents:write on those repos).
       - name: Notify consumers
@@ -122,3 +97,29 @@ jobs:
             fi
           done
           exit "${failed}"
+
+      # Push release changes to the remote.
+      #
+      - name: Push to remote
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      # Fast-forward next to the release commit. If next moved during publish,
+      # this push fails and you merge main into next by hand.
+      #
+      - name: Sync main to next
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: ad-m/github-push-action@master
+        with:
+          branch: refs/heads/next
+          github_token: ${{ secrets.GH_TOKEN }}
+
+      # Sync docs to rdmd.readme.io
+      #
+      - name: Sync docs to rdmd.readme.io
+        uses: readmeio/rdme@v10
+        with:
+          rdme: docs upload ./docs --key=${{ secrets.RDME_KEY }} --version=2
