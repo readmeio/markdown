@@ -50,11 +50,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} # auth push to remote repo
 
-      # Right after publish so a later push/docs failure cannot skip it.
-      # Optional: vars.CONSUMER_DISPATCH_REPOS (comma-separated owner/repo) +
-      # secrets.CONSUMER_DISPATCH_TOKEN (contents:write on those repos).
+      # After publish so later failures cannot skip it. continue-on-error so
+      # a dispatch failure cannot skip push / next sync / docs.
       - name: Notify consumers
         if: vars.CONSUMER_DISPATCH_REPOS != ''
+        continue-on-error: true
         env:
           CONSUMER_DISPATCH_REPOS: ${{ vars.CONSUMER_DISPATCH_REPOS }}
           GH_TOKEN: ${{ secrets.CONSUMER_DISPATCH_TOKEN }}
