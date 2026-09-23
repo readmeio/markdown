@@ -5,6 +5,7 @@ const path = require('path');
 const sass = require('sass');
 
 const tabsStyles = sass.compile(path.resolve(__dirname, '../../components/Tabs/style.scss')).css;
+const markdownStyles = sass.compile(path.resolve(__dirname, '../../styles/main.scss')).css;
 
 // eslint-disable-next-line no-promise-executor-return
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -106,5 +107,36 @@ describe('visual regression tests', () => {
     });
 
     expect(fallbackSpacing).toBe('15px');
+  });
+
+  it('keeps a list-leading callout body on the same line as the floated icon', async () => {
+    await page.setContent(`
+      <style>${markdownStyles}</style>
+      <div class="markdown-body">
+        <blockquote class="callout callout_info" theme="📘">
+          <span class="callout-icon">📘</span>
+          <ul><li>first</li><li>second</li></ul>
+        </blockquote>
+        <blockquote class="callout callout_warn" theme="🚧">
+          <span class="callout-icon">🚧</span>
+          <p class="callout-heading empty"></p>
+          <ol><li>first</li><li>second</li></ol>
+        </blockquote>
+      </div>
+    `);
+
+    const tops = await page.$$eval('.callout', callouts =>
+      callouts.map(callout => {
+        const icon = callout.querySelector('.callout-icon').getBoundingClientRect();
+        const [first, second] = [...callout.querySelectorAll('li')].map(li => li.getBoundingClientRect());
+        return { first: first.top - icon.top, second: second.top - icon.top };
+      }),
+    );
+
+    tops.forEach(({ first, second }) => {
+      // the first item sits beside the icon; the rest still clear it
+      expect(Math.abs(first)).toBeLessThan(4);
+      expect(second).toBeGreaterThan(first);
+    });
   });
 });

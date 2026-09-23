@@ -1,6 +1,17 @@
 Changelog
 ===
 
+## Version 15.7.2
+### 🛠 Fixes & Updates
+
+* **callout:** keep list-leading body beside the floated icon ([#1624](https://github.com/readmeio/markdown/issues/1624)) ([fd64bad](https://github.com/readmeio/markdown/commit/fd64bad90c45649eb43b61f78453bf7bfd161f99)), closes [#825](https://github.com/readmeio/markdown/issues/825)
+
+## Version 15.7.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep components under list items claimed across lazy lines ([#1621](https://github.com/readmeio/markdown/issues/1621)) ([1a7e823](https://github.com/readmeio/markdown/commit/1a7e823d4af206ba324424153f2d32e577f2581f))
+* **MdxishEditor:** self closing components under a list having its closing tag trimmed  ([#1622](https://github.com/readmeio/markdown/issues/1622)) ([0e1e8fd](https://github.com/readmeio/markdown/commit/0e1e8fdb78bbb0392ce3327d39c6a91663e050c4)), closes [#1621](https://github.com/readmeio/markdown/issues/1621)
+
 ## Version 15.7.0
 ### ✨ New & Improved
 

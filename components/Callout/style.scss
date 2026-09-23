@@ -161,6 +161,11 @@
     }
   }
 
+  > .callout-icon + :is(ul, ol) > li:first-child,
+  > .callout-heading.empty + :is(ul, ol) > li:first-child {
+    clear: none;
+  }
+
   .callout-icon + .heading {
     color: var(--Callout-title);
   }

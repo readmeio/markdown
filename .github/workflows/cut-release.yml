@@ -1,0 +1,57 @@
+name: Cut release
+
+on:
+  workflow_dispatch:
+
+# `release` environment: required reviewers (mdxish). GH_TOKEN is the repo PAT;
+# GITHUB_TOKEN cannot push main and then start the Release workflow.
+permissions:
+  contents: read
+
+concurrency:
+  cancel-in-progress: false
+  group: cut-release
+
+jobs:
+  cut-release:
+    if: github.repository == 'readmeio/markdown'
+    environment: release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Configure git
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin main next
+
+      - name: Require green CI on next
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          conclusion="$(gh run list --repo "${GITHUB_REPOSITORY}" --branch next --workflow CI --limit 1 --json conclusion --jq '.[0].conclusion // empty')"
+          if [ "${conclusion}" != 'success' ]; then
+            echo "Latest CI run on next is '${conclusion:-missing}', expected success."
+            exit 1
+          fi
+
+      - name: Merge next into main
+        run: |
+          if git merge-base --is-ancestor origin/next origin/main; then
+            echo 'next is already contained in main; nothing to release.'
+            exit 1
+          fi
+          git checkout -B main origin/main
+          git merge --no-ff origin/next -m 'build: merge next into main'
+          git push origin main
