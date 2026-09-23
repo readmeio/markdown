@@ -660,6 +660,34 @@ describe('mdxishAstProcessor', () => {
         expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
       });
 
+      it('keeps a lowercase table editable after a width is set on it', () => {
+        const lowercase = `<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+  </tbody>
+</table>`;
+        const table = parse(lowercase);
+        expect(table.data?.lowercaseTable).toBe(true);
+
+        table.data = { ...table.data, widths: ['30%', null] };
+        const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
+        expect(markdown).toContain('<Table>');
+        expect(markdown).toContain('<th style={{ width: "30%" }}>');
+
+        const reopened = parse(markdown);
+        expect(reopened.type).toBe('table');
+        expect(reopened.data?.widths).toStrictEqual(['30%', null]);
+      });
+
       it('leaves data unset when no header cell has a width', () => {
         const table = parse(jsxTable('<th style={{ textAlign: "center" }}>Name</th>\n<th>Description</th>'));
 

@@ -100,7 +100,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       const widths = table.data?.widths ?? [];
       const hasWidths = widths.some(Boolean);
-      const stayLowercase = table.data?.lowercaseTable === true;
+      const hasCellStyles = hasWidths || table.align.some(align => align && align !== 'left');
+      const stayLowercase = table.data?.lowercaseTable === true && !hasCellStyles;
 
       // We transform to GFM tables if:
       // 1. If it doesn't contain complex elements that the syntax can't represent

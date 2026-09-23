@@ -407,6 +407,20 @@ describe('mdxish-tables-to-jsx', () => {
       expect(toJsx(parseMdxish(source)).children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Table' });
     });
 
+    // Lowercase cells can't carry attributes and still parse back as a table, so anything
+    // that needs a cell style has to be written as <Table>.
+    it.each([
+      ['a column width', { align: [null], widths: ['30%'] }],
+      ['a non-default alignment', { align: ['center' as const], widths: [null] }],
+    ])('promotes a stamped table to a Table element when it gains %s', (_label, { align, widths }) => {
+      const tree = flowTable(true);
+      const table = tree.children[0] as Table;
+      table.align = align;
+      table.data = { ...table.data, widths };
+
+      expect(toJsx(tree).children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Table' });
+    });
+
     it('leaves a stamped table with no rows untouched instead of throwing', () => {
       const tree: MdastRoot = {
         type: 'root',
@@ -414,7 +428,12 @@ describe('mdxish-tables-to-jsx', () => {
       };
 
       expect(() => toJsx(tree)).not.toThrow();
-      expect(tree.children[0]).toStrictEqual({ type: 'table', align: [], data: { lowercaseTable: true }, children: [] });
+      expect(tree.children[0]).toStrictEqual({
+        type: 'table',
+        align: [],
+        data: { lowercaseTable: true },
+        children: [],
+      });
     });
   });
 });
