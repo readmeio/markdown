@@ -4,7 +4,7 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
-import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/mdxish-jsx-to-mdast';
+import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
 
 describe('normalizeWidth', () => {
   it.each([
@@ -40,6 +40,12 @@ describe('widthFromStyleString', () => {
     ['an unquoted object value', '{ width: 30 }', '30 '],
   ])('reads %s', (_label, style, expected) => {
     expect(widthFromStyleString(style)).toBe(expected);
+  });
+
+  it('does not mistake minWidth or maxWidth for width in a stringified object', () => {
+    expect(widthFromStyleString('{ minWidth: "10px", maxWidth: "50%" }')).toBeUndefined();
+    expect(widthFromStyleString('{ minWidth: "10px", width: "30%" }')).toBe('30%');
+    expect(widthFromStyleString('{"width":"30%"}')).toBe('30%');
   });
 
   it.each([

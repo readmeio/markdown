@@ -12,7 +12,7 @@ import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { isPlainObject } from './style-object-to-css';
+import { getCellWidth } from './tables/cell-width';
 import { unwrapSoleParagraph } from './tables/utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
@@ -44,13 +44,6 @@ const FIGURE_COMPLETE_REGEX = /^<figure(\s[^>]*)?>[\s\S]*<\/figure>\s*$/;
 const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
 const FIGCAPTION_OPEN_REGEX = /^<figcaption>$/;
 const FIGCAPTION_CLOSE_REGEX = /^<\/figcaption>$/;
-
-/** `width` inside a style object that stayed a string, e.g. `{ textAlign: "center", width: "30%" }` */
-const STYLE_OBJECT_WIDTH_REGEX = /["']?width["']?\s*:\s*(?:"([^"]*)"|'([^']*)'|([^,}]+))/i;
-/** Splits a CSS declaration at its first colon only, so `url(http://…)` values stay intact */
-const CSS_DECLARATION_REGEX = /:(.*)/s;
-/** A bare number such as `200` or `12.5`, which React and the HTML `width` attribute read as pixels */
-const UNITLESS_NUMBER_REGEX = /^\d+(?:\.\d+)?$/;
 
 /**
  * Extracts an image or image-block from a node. If the node itself is an image/image-block,
@@ -601,57 +594,8 @@ const wrapBareCellsInRow = (node: Node): void => {
   });
 };
 
-interface CellSizingAttrs {
-  style?: Record<string, unknown> | string;
-  width?: number | string;
-}
-
-/** A usable CSS width, or null. Bare numbers become pixels. */
-export const normalizeWidth = (value: unknown): string | null => {
-  if (typeof value === 'number') return `${value}px`;
-  if (typeof value !== 'string' || !value.trim()) return null;
-  const trimmed = value.trim();
-  return UNITLESS_NUMBER_REGEX.test(trimmed) ? `${trimmed}px` : trimmed;
-};
-
 /**
- * Pulls `width` out of a style that is still a string: either a CSS declaration list
- * (`width: 30%; text-align: center`) or a style object safe mode left unevaluated
- * (`{ width: "30%" }`). Values are taken whole, so functions with commas such as
- * `clamp(100px, 50%, 60vw)` or `var(--w, 240px)` survive.
- */
-export const widthFromStyleString = (style: string): string | undefined => {
-  const trimmed = style.trim();
-  if (trimmed.startsWith('{')) {
-    return STYLE_OBJECT_WIDTH_REGEX.exec(trimmed)?.slice(1).find(Boolean);
-  }
-
-  return trimmed
-    .split(';')
-    .map(declaration => declaration.split(CSS_DECLARATION_REGEX))
-    .find(([property]) => property.trim().toLowerCase() === 'width')?.[1];
-};
-
-/**
- * Reads a header cell's column width. Accepts the shape the serializer writes
- * (`style={{ width: "30%" }}`) as well as the hand-authored forms customers already use
- * (`style="width: 30%"`, `width="30%"`), so opening a table in the editor never drops them.
- */
-const getCellWidth = (cell: MdxJsxFlowElement): string | null => {
-  const { style, width } = getAttrs<CellSizingAttrs>(cell);
-
-  let styleWidth: unknown;
-  if (isPlainObject(style)) {
-    styleWidth = style.width;
-  } else if (typeof style === 'string') {
-    styleWidth = widthFromStyleString(style);
-  }
-  // A style whose width is missing or empty must not hide a `width` attribute beside it
-  return normalizeWidth(styleWidth) ?? normalizeWidth(width);
-};
-
-/**
- * Converts a JSX <Table> element to an MDAST table node with alignment and column widths.
+ * Converts a JSX <Table> element to an MDAST table node with alignment and widths.
  * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {

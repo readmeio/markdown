@@ -13,11 +13,13 @@ const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
 
 type CellAlign = 'center' | 'left' | 'right' | null;
 
-/**
- * Builds a cell's `style={{ ... }}` attribute. `left` is the browser default so it is
- * omitted; a width only ever lands on the header row, which is enough to size the column.
- */
-const cellStyle = (align: CellAlign, width: string | null = null) => {
+/** `left` is the browser default, so it's omitted. Lowercase tables get the HTML string form. */
+const cellStyle = (align: CellAlign, width: string | null = null, { html = false } = {}) => {
+  if (html) {
+    if (!width) return null;
+    return { type: 'mdxJsxAttribute', name: 'style', value: `width: ${width}` };
+  }
+
   const declarations: string[] = [];
   if (align && align !== 'left') declarations.push(`textAlign: ${JSON.stringify(align)}`);
   if (width) declarations.push(`width: ${JSON.stringify(width)}`);
@@ -100,14 +102,15 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       const widths = table.data?.widths ?? [];
       const hasWidths = widths.some(Boolean);
-      const hasCellStyles = hasWidths || table.align.some(align => align && align !== 'left');
-      const stayLowercase = table.data?.lowercaseTable === true && !hasCellStyles;
+      // Lowercase cells can carry a width but not an alignment, so an aligned table becomes <Table>
+      const hasAlignment = table.align.some(align => align && align !== 'left');
+      const stayLowercase = table.data?.lowercaseTable === true && !hasAlignment;
 
       // We transform to GFM tables if:
       // 1. If it doesn't contain complex elements that the syntax can't represent
       // 2. The original table is not lowercase HTML <table>, because we want to
       // preserve original tables as much as possible
-      // 3. No column carries a width, which GFM pipe syntax cannot express
+      // 3. No column has a width, which GFM can't express
       if (!requiresJsxTable && !stayLowercase && !hasWidths) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
@@ -122,8 +125,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       visit(table, isTableCell, flattenBreaksToNewlines);
 
-      const headerStyles = table.align.map((align, i) => cellStyle(align, widths[i] ?? null));
-      const bodyStyles = table.align.map(align => cellStyle(align));
+      const headerStyles = table.align.map((align, i) => cellStyle(align, widths[i] ?? null, { html: stayLowercase }));
+      const bodyStyles = table.align.map(align => cellStyle(align, null, { html: stayLowercase }));
 
       const head: MdxJsxFlowElement = {
         attributes: [],

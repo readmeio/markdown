@@ -660,12 +660,10 @@ describe('mdxishAstProcessor', () => {
         expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
       });
 
-      it('keeps a lowercase table editable after a width is set on it', () => {
-        const lowercase = `<table>
+      const lowercase = (headers: string) => `<table>
   <thead>
     <tr>
-      <th>Name</th>
-      <th>Description</th>
+${headers}
     </tr>
   </thead>
   <tbody>
@@ -675,17 +673,46 @@ describe('mdxishAstProcessor', () => {
     </tr>
   </tbody>
 </table>`;
-        const table = parse(lowercase);
+
+      it.each([
+        ['an HTML style width', '<th style="width: 30%">Name</th>'],
+        ['a width attribute', '<th width="30%">Name</th>'],
+      ])('reads %s off a lowercase table and keeps it editable', (_label, header) => {
+        const table = parse(lowercase(`      ${header}\n      <th>Description</th>`));
+
+        expect(table.type).toBe('table');
+        expect(table.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it('keeps a lowercase table as JSX when a header cell carries more than a width', () => {
+        const table = parse(
+          lowercase('      <th style="width: 30%; color: red">Name</th>\n      <th>Description</th>'),
+        );
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
+      it('leaves lowercase tables with widths as JSX on the render path, so the attribute still renders', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md);
+        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+        expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+      });
+
+      it('writes a width set in the editor back onto a lowercase table in HTML form', () => {
+        const table = parse(lowercase('      <th>Name</th>\n      <th>Description</th>'));
         expect(table.data?.lowercaseTable).toBe(true);
 
         table.data = { ...table.data, widths: ['30%', null] };
         const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
-        expect(markdown).toContain('<Table>');
-        expect(markdown).toContain('<th style={{ width: "30%" }}>');
+        expect(markdown).toMatch(/^<table>/);
+        expect(markdown).toContain('<th style="width: 30%">');
+        expect(markdown).not.toContain('<Table');
 
         const reopened = parse(markdown);
         expect(reopened.type).toBe('table');
-        expect(reopened.data?.widths).toStrictEqual(['30%', null]);
+        expect(reopened.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
       });
 
       it('leaves data unset when no header cell has a width', () => {

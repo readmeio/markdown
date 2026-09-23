@@ -18,6 +18,7 @@ import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
+import { getCellWidth, hasOnlyWidthAttributes } from './cell-width';
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
 import { normalizeTagSpacing } from './normalize-tag-spacing';
@@ -154,11 +155,17 @@ const hasFlowContent = (nodes: Node[]): boolean => {
  * Process a Table node: re-parse text-only cell content, then output as
  * a markdown table (phrasing-only) or keep as JSX <Table> (has flow content).
  */
+interface MdxishTablesOptions {
+  /** Convert width-only header attributes into `data.widths`; the hub keeps them as JSX instead. */
+  newEditorTypes?: boolean;
+}
+
 const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
   index: number,
   parent: Parents,
-  documentPosition?: Node['position'],
+  documentPosition: Node['position'] | undefined,
+  { newEditorTypes = false }: MdxishTablesOptions,
 ): void => {
   if (node.name !== 'Table' && node.name !== 'table') return;
 
@@ -213,11 +220,22 @@ const processTableNode = (
   // mdast table/tableRow/tableCell does not represent HTML attributes (class, style, etc).
   // If any structural table HTML child carries attributes, keep the table as JSX so their attributes
   // are preserved through to the rendered output.
+  // Exception: first-row cells carrying only a width, which the editor keeps in `data.widths`
   let hasStructuralAttributes = false;
+  let headerRowElement: MdxJsxFlowElement | MdxJsxTextElement | undefined;
+  visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name === 'tr' && !headerRowElement) headerRowElement = child;
+  });
+  const widthOnlyCells = new Set<Node>();
+  if (newEditorTypes && headerRowElement) {
+    visit(headerRowElement as Node, isTableCell, (cell: MdxJsxTableCell) => {
+      if (hasOnlyWidthAttributes(cell)) widthOnlyCells.add(cell);
+    });
+  }
   visit(node as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'thead') hasThead = true;
     if (tableTags.has(child.name) && Array.isArray(child.attributes) && child.attributes.length > 0) {
-      hasStructuralAttributes = true;
+      if (!widthOnlyCells.has(child)) hasStructuralAttributes = true;
     }
   });
 
@@ -336,13 +354,25 @@ const processTableNode = (
       ? align.slice(0, columnCount).concat(new Array(Math.max(0, columnCount - align.length)).fill(null))
       : new Array(columnCount).fill(null);
 
+  const widths: (string | null)[] = [];
+  if (widthOnlyCells.size > 0 && headerRowElement) {
+    visit(headerRowElement as Node, isTableCell, (cell: MdxJsxTableCell) => {
+      widths.push(getCellWidth(cell));
+    });
+  }
+
+  const data = {
+    // Remember the author's spelling so the serializer can write `<table>` back instead of `<Table>`
+    ...(node.name === 'table' && { lowercaseTable: true }),
+    ...(widths.some(Boolean) && { widths }),
+  };
+
   const mdNode: Table = {
     align: alignArray,
     type: 'table',
     position,
     children,
-    // Remember the author's spelling so the serializer can write `<table>` back instead of `<Table>`
-    ...(node.name === 'table' && { data: { lowercaseTable: true } }),
+    ...(Object.keys(data).length > 0 && { data }),
   };
 
   parent.children[index] = mdNode;
@@ -385,7 +415,7 @@ const repairAndReparse = (node: Html): Root | undefined => {
  * When cell content contains block-level nodes (callouts, code blocks, etc.), the table
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
-const mdxishTables = (): Transform => tree => {
+const mdxishTables = (options: MdxishTablesOptions = {}): Transform => tree => {
   // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
   // html nodes so the main pass below treats them like top-level tables.
   visit(tree, 'html', (_node, index, parent) => {
@@ -418,7 +448,7 @@ const mdxishTables = (): Transform => tree => {
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-        processTableNode(tableNode, index, parent as Parents, node.position);
+        processTableNode(tableNode, index, parent as Parents, node.position, options);
         return EXIT;
       });
     } else if (node.value.startsWith('<table')) {
