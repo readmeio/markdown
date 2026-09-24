@@ -600,6 +600,8 @@ const wrapBareCellsInRow = (node: Node): void => {
  * else stays JSX so it still renders.
  */
 const lowercaseTableIsConvertible = (jsx: MdxJsxFlowElement): boolean => {
+  if (jsx.attributes.length > 0) return false;
+
   let headerRow: MdxJsxFlowElement | MdxJsxTextElement | undefined;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (child.name === 'tr' && !headerRow) headerRow = child;
@@ -615,7 +617,9 @@ const lowercaseTableIsConvertible = (jsx: MdxJsxFlowElement): boolean => {
   let convertible = true;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
     if (!tableTags.has(child.name || '') || child.attributes.length === 0) return;
-    if (!headerCells.has(child) || !hasOnlyWidthAttributes(child)) convertible = false;
+    if (!headerCells.has(child) || !hasOnlyWidthAttributes(child) || getCellWidth(child) === null) {
+      convertible = false;
+    }
   });
   return convertible;
 };

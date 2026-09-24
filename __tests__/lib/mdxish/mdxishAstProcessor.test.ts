@@ -705,6 +705,21 @@ ${headers}
         expect(parse(md).type).toBe('mdxJsxFlowElement');
       });
 
+      it('keeps a lowercase table as JSX when the table element itself has attributes', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<table>',
+          '<table class="x">',
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when a width attribute has no readable value', () => {
+        const table = parse(lowercase('      <th width="auto">Name</th>\n      <th>Description</th>'));
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
       it('keeps a lowercase table as JSX when a header cell carries more than a width', () => {
         const table = parse(
           lowercase('      <th style="width: 30%; color: red">Name</th>\n      <th>Description</th>'),
