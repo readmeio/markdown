@@ -98,6 +98,12 @@ describe('safeMode: html blocks never render raw', () => {
     expect(node).toMatchObject({ properties: { html: RAW_HTML, safeMode: 'true' } });
   });
 
+  it('keeps runScripts alongside the stamped safeMode', () => {
+    const md = `<HTMLBlock runScripts="true">{\`${RAW_HTML}\`}</HTMLBlock>`;
+    const node = findElementByTagName(mdxish(md, { safeMode: true }), 'html-block');
+    expect(node).toMatchObject({ properties: { html: RAW_HTML, runScripts: true, safeMode: 'true' } });
+  });
+
   it.each([
     ['[block:html] magic block', magicBlock],
     ['<HTMLBlock>', htmlBlock],

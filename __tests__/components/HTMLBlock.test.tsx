@@ -5,7 +5,6 @@ import { renderToStaticMarkup, renderToString } from 'react-dom/server';
 import { vi, type Mock } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
-import { mdxish, renderMdxish } from '../../lib';
 
 import { renderingEngines } from './utils';
 
@@ -88,14 +87,6 @@ describe('HTML Block', () => {
     const Component = renderContent(md);
     expect(renderToStaticMarkup(<Component />)).toBe(
       '<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>',
-    );
-  });
-
-  it('mdxish: renders the html in a `<pre>` tag when the document is parsed in safeMode', () => {
-    const md = '<HTMLBlock>{`<img src=x onerror=mockFn()>`}</HTMLBlock>';
-    const Component = renderMdxish(mdxish(md, { safeMode: true })).default;
-    expect(renderToStaticMarkup(<Component />)).toBe(
-      '<pre class="html-unsafe"><code>&lt;img src=x onerror=mockFn()&gt;</code></pre>',
     );
   });
 });
