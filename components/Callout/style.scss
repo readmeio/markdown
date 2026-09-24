@@ -83,6 +83,12 @@
     padding-left: 1.3em;
   }
 
+  // A column (grid item) holds its last child's margin inside, which would stack on
+  // the gap below Columns; not every column has one (e.g. bare text), so drop it instead.
+  > .Columns > .Column > :last-child {
+    margin-bottom: 0;
+  }
+
   h3 a,
   .callout-heading a {
     color: inherit;
@@ -240,9 +246,9 @@
 
 // Zero specificity (like TabContent) so it only spaces blocks without their own
 // margin, e.g. the table wrapper that relies on the top-level `> *` rule.
-// Code blocks and columns are skipped: their box already holds its last child's 15px
-// margin (gfm `pre` / `.Column` grid item), so spacing them again would double the gap.
-// NOTE: if that inner margin is ever removed, drop them here so they keep their spacing.
-:where(.callout > :not(.callout-icon, .CodeTabs, .Columns, :last-child)) {
+// Code blocks are skipped: gfm's `pre` margin already leaves 15px inside their box,
+// so spacing them again would double the gap. NOTE: if that margin is ever removed,
+// drop `.CodeTabs` here so code blocks keep their spacing.
+:where(.callout > :not(.callout-icon, .CodeTabs, :last-child)) {
   margin-bottom: var(--markdown-spacing, 15px);
 }
