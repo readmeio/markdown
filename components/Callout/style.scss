@@ -239,7 +239,10 @@
 }
 
 // Zero specificity (like TabContent) so it only spaces blocks without their own
-// margin, e.g. table and code-tabs wrappers that rely on the top-level `> *` rule.
-:where(.callout > :not(.callout-icon, :last-child)) {
+// margin, e.g. the table wrapper that relies on the top-level `> *` rule.
+// Code blocks are skipped: gfm's `pre` margin already leaves 15px inside their box,
+// so spacing them again would double the gap. NOTE: if that margin is ever removed,
+// drop `.CodeTabs` here so code blocks keep their spacing.
+:where(.callout > :not(.callout-icon, .CodeTabs, :last-child)) {
   margin-bottom: var(--markdown-spacing, 15px);
 }
