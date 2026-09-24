@@ -161,6 +161,11 @@
     }
   }
 
+  > .callout-icon + :is(ul, ol) > li:first-child,
+  > .callout-heading.empty + :is(ul, ol) > li:first-child {
+    clear: none;
+  }
+
   .callout-icon + .heading {
     color: var(--Callout-title);
   }
@@ -231,4 +236,10 @@
   @include calloutCustomIcons;
   border-top-right-radius: var(--markdown-radius);
   border-bottom-right-radius: var(--markdown-radius);
+}
+
+// Zero specificity (like TabContent) so it only spaces blocks without their own
+// margin, e.g. table and code-tabs wrappers that rely on the top-level `> *` rule.
+:where(.callout > :not(.callout-icon, :last-child)) {
+  margin-bottom: var(--markdown-spacing, 15px);
 }

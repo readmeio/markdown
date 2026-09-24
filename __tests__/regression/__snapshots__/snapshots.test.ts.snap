@@ -48,6 +48,26 @@ exports[`Render engine regressions tests > compact-headings (mdxish) 1`] = `
 <h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="normal-h3"></div><div class="heading-text">Normal h3</div><a aria-label="Skip link to Normal h3" class="heading-anchor-icon fa fa-regular fa-anchor" href="#normal-h3"></a></h3>"
 `;
 
+exports[`Render engine regressions tests > components-under-list-items (mdx) 1`] = `""`;
+
+exports[`Render engine regressions tests > components-under-list-items (mdxish) 1`] = `
+"<ul>
+<li>
+<p>one</p>
+<div class="readme-tailwind"><ol class="steps"><li class="step"><p>First, install the dependencies.</p></li></ol></div>
+</li>
+<li>
+<p>two</p>
+<div class="readme-tailwind"><pre><code>Test content
+</code></pre></div>
+</li>
+<li>
+<p>three</p>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This is an MDX-style callout component.</p></blockquote></div>
+</li>
+</ul>"
+`;
+
 exports[`Render engine regressions tests > consecutive-emojis-fa (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
 <p>Consecutive gemojis: <!-- -->😁<!-- -->:grin: should both render side by side.</p>

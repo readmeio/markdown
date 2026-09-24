@@ -5,6 +5,7 @@ const path = require('path');
 const sass = require('sass');
 
 const tabsStyles = sass.compile(path.resolve(__dirname, '../../components/Tabs/style.scss')).css;
+const markdownStyles = sass.compile(path.resolve(__dirname, '../../styles/main.scss')).css;
 
 // eslint-disable-next-line no-promise-executor-return
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -106,5 +107,59 @@ describe('visual regression tests', () => {
     });
 
     expect(fallbackSpacing).toBe('15px');
+  });
+
+  it('keeps a list-leading callout body on the same line as the floated icon', async () => {
+    await page.setContent(`
+      <style>${markdownStyles}</style>
+      <div class="markdown-body">
+        <blockquote class="callout callout_info" theme="📘">
+          <span class="callout-icon">📘</span>
+          <ul><li>first</li><li>second</li></ul>
+        </blockquote>
+        <blockquote class="callout callout_warn" theme="🚧">
+          <span class="callout-icon">🚧</span>
+          <p class="callout-heading empty"></p>
+          <ol><li>first</li><li>second</li></ol>
+        </blockquote>
+      </div>
+    `);
+
+    const tops = await page.$$eval('.callout', callouts =>
+      callouts.map(callout => {
+        const icon = callout.querySelector('.callout-icon').getBoundingClientRect();
+        const [first, second] = [...callout.querySelectorAll('li')].map(li => li.getBoundingClientRect());
+        return { first: first.top - icon.top, second: second.top - icon.top };
+      }),
+    );
+
+    tops.forEach(({ first, second }) => {
+      // the first item sits beside the icon; the rest still clear it
+      expect(Math.abs(first)).toBeLessThan(4);
+      expect(second).toBeGreaterThan(first);
+    });
+  });
+
+  // CX-3988: margin-less block wrappers (tables, code tabs) sat flush against the next block in callouts
+  it('spaces margin-less blocks inside a callout like at the top level', async () => {
+    await page.setContent(`
+      <style>${markdownStyles}</style>
+      <div class="markdown-body">
+        <blockquote class="callout callout_info" theme="📘">
+          <span class="callout-icon">📘</span>
+          <h3 class="callout-heading">Title</h3>
+          <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>cell</td></tr></table></div></div>
+          <div class="CodeTabs">code</div>
+          <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>last</td></tr></table></div></div>
+        </blockquote>
+      </div>
+    `);
+
+    const marginsBottom = await page.$$eval('.callout > *', children =>
+      children.map(child => getComputedStyle(child).marginBottom),
+    );
+
+    // the icon and heading keep their own margins; the last child stays flush
+    expect(marginsBottom).toStrictEqual(['0px', '10px', '15px', '15px', '0px']);
   });
 });
