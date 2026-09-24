@@ -139,4 +139,27 @@ describe('visual regression tests', () => {
       expect(second).toBeGreaterThan(first);
     });
   });
+
+  // CX-3988: margin-less block wrappers (tables, code tabs) sat flush against the next block in callouts
+  it('spaces margin-less blocks inside a callout like at the top level', async () => {
+    await page.setContent(`
+      <style>${markdownStyles}</style>
+      <div class="markdown-body">
+        <blockquote class="callout callout_info" theme="📘">
+          <span class="callout-icon">📘</span>
+          <h3 class="callout-heading">Title</h3>
+          <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>cell</td></tr></table></div></div>
+          <div class="CodeTabs">code</div>
+          <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>last</td></tr></table></div></div>
+        </blockquote>
+      </div>
+    `);
+
+    const marginsBottom = await page.$$eval('.callout > *', children =>
+      children.map(child => getComputedStyle(child).marginBottom),
+    );
+
+    // the icon and heading keep their own margins; the last child stays flush
+    expect(marginsBottom).toStrictEqual(['0px', '10px', '15px', '15px', '0px']);
+  });
 });
