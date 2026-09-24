@@ -5,6 +5,7 @@ const path = require('path');
 const sass = require('sass');
 
 const tabsStyles = sass.compile(path.resolve(__dirname, '../../components/Tabs/style.scss')).css;
+const columnsStyles = sass.compile(path.resolve(__dirname, '../../components/Columns/style.scss')).css;
 const markdownStyles = sass.compile(path.resolve(__dirname, '../../styles/main.scss')).css;
 
 // eslint-disable-next-line no-promise-executor-return
@@ -143,13 +144,14 @@ describe('visual regression tests', () => {
   // CX-3988: margin-less block wrappers (e.g. tables) sat flush against the next block in callouts
   it('spaces margin-less blocks inside a callout like at the top level', async () => {
     await page.setContent(`
-      <style>${markdownStyles}</style>
+      <style>${markdownStyles}${columnsStyles}</style>
       <div class="markdown-body">
         <blockquote class="callout callout_info" theme="📘">
           <span class="callout-icon">📘</span>
           <h3 class="callout-heading">Title</h3>
           <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>cell</td></tr></table></div></div>
           <div class="CodeTabs CodeTabs_initial"><div class="CodeTabs-inner"><pre><code>code</code></pre></div></div>
+          <div class="Columns"><div class="Column"><p>column</p></div></div>
           <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>last</td></tr></table></div></div>
         </blockquote>
       </div>
@@ -159,14 +161,18 @@ describe('visual regression tests', () => {
       children.map(child => getComputedStyle(child).marginBottom),
     );
 
-    // the icon and heading keep their own margins; code blocks and the last child stay flush
-    expect(marginsBottom).toStrictEqual(['0px', '10px', '15px', '0px', '0px']);
+    // the icon and heading keep their own margins; code blocks, columns, and the last child stay flush
+    expect(marginsBottom).toStrictEqual(['0px', '10px', '15px', '0px', '0px', '0px']);
 
-    // code blocks already get their gap from the pre margin inside the box, so it isn't doubled
-    const codeGap = await page.$eval('.CodeTabs', code =>
-      Math.round(code.nextElementSibling.getBoundingClientRect().top - code.querySelector('pre').getBoundingClientRect().bottom),
+    // code blocks and columns already hold a 15px margin inside their box, so the gap isn't doubled
+    const innerGaps = await page.$$eval('.callout > :is(.CodeTabs, .Columns)', blocks =>
+      blocks.map(block =>
+        Math.round(
+          block.nextElementSibling.getBoundingClientRect().top - block.querySelector('pre, p').getBoundingClientRect().bottom,
+        ),
+      ),
     );
 
-    expect(codeGap).toBe(15);
+    expect(innerGaps).toStrictEqual([15, 15]);
   });
 });
