@@ -575,6 +575,226 @@ describe('mdxishAstProcessor', () => {
       expect(tableNode.align).toStrictEqual([null, 'center', null]);
     });
 
+    describe('column widths', () => {
+      const parse = (md: string): Table => {
+        const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true });
+        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+        return ast.children[0] as Table;
+      };
+
+      const jsxTable = (headerCells: string): string => `<Table>
+  <thead>
+    <tr>
+      ${headerCells}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+  </tbody>
+</Table>`;
+
+      it('reads widths from the header cell style object', () => {
+        const table = parse(jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>'));
+
+        expect(table.data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      it.each([
+        ['a string style attribute', '<th style="text-align: center; width: 30%">Name</th>'],
+        ['a width attribute', '<th width="30%">Name</th>'],
+        [
+          'a width attribute beside an alignment-only style object',
+          '<th style={{ textAlign: "center" }} width="30%">Name</th>',
+        ],
+        [
+          'a width attribute beside an alignment-only style string',
+          '<th style="text-align: center" width="30%">Name</th>',
+        ],
+        ['a style object left as a string, as safe mode does', '<th style=\'{ width: "30%" }\'>Name</th>'],
+        ['a width attribute beside an empty style width', '<th style={{ width: "" }} width="30%">Name</th>'],
+        [
+          'a width attribute beside a blank style width declaration',
+          '<th style="width: ; text-align: center" width="30%">Name</th>',
+        ],
+      ])('reads widths from %s', (_label, header) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      it('reads a width attribute the way HTML does, dropping anything after the dimension', () => {
+        const table = parse(jsxTable('<th width="30%; color: red">Name</th>\n<th width="200 px">Description</th>'));
+
+        expect(table.data?.widths).toStrictEqual(['30%', '200px']);
+      });
+
+      it.each([
+        ['a numeric style value', '<th style={{ width: 200 }}>Name</th>'],
+        ['a unitless width attribute', '<th width="200">Name</th>'],
+      ])('treats %s as pixels', (_label, header) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual(['200px', null]);
+      });
+
+      it.each([
+        [
+          'a CSS function with commas in a style string',
+          '<th style="width: clamp(100px, 50%, 60vw); text-align: center">Name</th>',
+          'clamp(100px, 50%, 60vw)',
+        ],
+        [
+          'a CSS function with commas in a stringified style object',
+          '<th style=\'{ textAlign: "center", width: "var(--w, 240px)" }\'>Name</th>',
+          'var(--w, 240px)',
+        ],
+        ['a width declared after another property', '<th style="text-align: center; width: 30%">Name</th>', '30%'],
+      ])('keeps the whole value for %s', (_label, header, expected) => {
+        const table = parse(jsxTable(`${header}\n<th>Description</th>`));
+
+        expect(table.data?.widths).toStrictEqual([expected, null]);
+      });
+
+      it('keeps widths when safe mode leaves attribute expressions unevaluated', () => {
+        const md = jsxTable('<th style={{ width: "30%" }}>Name</th>\n<th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md, { newEditorTypes: true, safeMode: true });
+        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+        expect((ast.children[0] as Table).data?.widths).toStrictEqual(['30%', null]);
+      });
+
+      const lowercase = (headers: string) => `<table>
+  <thead>
+    <tr>
+${headers}
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+  </tbody>
+</table>`;
+
+      it.each([
+        ['an HTML style width', '<th style="width: 30%">Name</th>'],
+        ['a width attribute', '<th width="30%">Name</th>'],
+      ])('reads %s off a lowercase table and keeps it editable', (_label, header) => {
+        const table = parse(lowercase(`      ${header}\n      <th>Description</th>`));
+
+        expect(table.type).toBe('table');
+        expect(table.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it.each([
+        ['a width on a body cell', '<td width="30%">a</td>'],
+        ['an attribute on the body section', '<tbody class="x"><tr><td>a</td>'],
+      ])('keeps a lowercase table as JSX when %s is present', (_label, body) => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<tbody>\n    <tr>\n      <td>a</td>',
+          `<tbody>\n    <tr>\n      ${body}`.replace(
+            '<tbody>\n    <tr>\n      <tbody class="x"><tr>',
+            '<tbody class="x">\n    <tr>',
+          ),
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when the table element itself has attributes', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<table>',
+          '<table class="x">',
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when a width attribute has no readable value', () => {
+        const table = parse(lowercase('      <th width="auto">Name</th>\n      <th>Description</th>'));
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
+      it('keeps a lowercase table as JSX when a header cell carries more than a width', () => {
+        const table = parse(
+          lowercase('      <th style="width: 30%; color: red">Name</th>\n      <th>Description</th>'),
+        );
+
+        expect(table.type).toBe('mdxJsxFlowElement');
+      });
+
+      it('leaves lowercase tables with widths as JSX on the render path, so the attribute still renders', () => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>');
+        const { processor, parserReadyContent } = mdxishAstProcessor(md);
+        const ast = processor.runSync(processor.parse(parserReadyContent)) as Root;
+
+        expect(ast.children[0].type).toBe('mdxJsxFlowElement');
+      });
+
+      it('writes a width set in the editor back onto a lowercase table in HTML form', () => {
+        const table = parse(lowercase('      <th>Name</th>\n      <th>Description</th>'));
+        expect(table.data?.lowercaseTable).toBe(true);
+
+        table.data = { ...table.data, widths: ['30%', null] };
+        const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
+        expect(markdown).toMatch(/^<table>/);
+        expect(markdown).toContain('<th style="width: 30%">');
+        expect(markdown).not.toContain('<Table');
+
+        const reopened = parse(markdown);
+        expect(reopened.type).toBe('table');
+        expect(reopened.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it('leaves data unset when no header cell has a width', () => {
+        const table = parse(jsxTable('<th style={{ textAlign: "center" }}>Name</th>\n<th>Description</th>'));
+
+        expect(table.data).toBeUndefined();
+      });
+
+      it('preserves widths through a serialize → parse roundtrip', () => {
+        const mdast: Root = {
+          type: 'root',
+          children: [
+            {
+              type: 'table',
+              align: [null, 'right'],
+              data: { widths: ['25%', '75%'] },
+              children: [
+                {
+                  type: 'tableRow',
+                  children: [
+                    { type: 'tableCell', children: [{ type: 'text', value: 'Name' }] },
+                    { type: 'tableCell', children: [{ type: 'text', value: 'Desc' }] },
+                  ],
+                },
+                {
+                  type: 'tableRow',
+                  children: [
+                    { type: 'tableCell', children: [{ type: 'text', value: 'foo' }] },
+                    { type: 'tableCell', children: [{ type: 'text', value: 'bar' }] },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+
+        const markdown = mdxishMdastToMd(mdast);
+        expect(markdown).toContain('<th style={{ width: "25%" }}>');
+        expect(markdown).toContain('<th style={{ textAlign: "right", width: "75%" }}>');
+
+        const table = parse(markdown);
+        expect(table.align).toStrictEqual([null, 'right']);
+        expect(table.data?.widths).toStrictEqual(['25%', '75%']);
+      });
+    });
+
     it('should keep header-less JSX Tables as JSX elements', () => {
       const md = `<Table>
   <tbody>

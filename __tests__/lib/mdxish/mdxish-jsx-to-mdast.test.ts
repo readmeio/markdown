@@ -4,6 +4,59 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
+import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
+
+describe('normalizeWidth', () => {
+  it.each([
+    ['a percentage', '30%', '30%'],
+    ['a length with padding around it', '  200px ', '200px'],
+    ['a bare number', 200, '200px'],
+    ['a numeric string', '12.5', '12.5px'],
+    ['a CSS function', 'clamp(100px, 50%, 60vw)', 'clamp(100px, 50%, 60vw)'],
+  ])('normalizes %s', (_label, value, expected) => {
+    expect(normalizeWidth(value)).toBe(expected);
+  });
+
+  it.each([
+    ['an empty string', ''],
+    ['whitespace', '   '],
+    ['a value smuggling another declaration', '30%; color: red'],
+    ['a stringified object', '{ width: "30%" }'],
+    ['undefined', undefined],
+    ['null', null],
+    ['an array', ['30%']],
+    ['an object', { width: '30%' }],
+  ])('returns null for %s', (_label, value) => {
+    expect(normalizeWidth(value)).toBeNull();
+  });
+});
+
+describe('widthFromStyleString', () => {
+  it.each([
+    ['a lone declaration', 'width: 30%', ' 30%'],
+    ['a declaration after another property', 'text-align: center; width: 30%', ' 30%'],
+    ['an uppercase property', 'WIDTH: 30%', ' 30%'],
+    ['a value with commas', 'width: clamp(100px, 50%, 60vw)', ' clamp(100px, 50%, 60vw)'],
+    ['a double-quoted object value', '{ textAlign: "center", width: "var(--w, 240px)" }', 'var(--w, 240px)'],
+    ['a single-quoted object value', "{ width: '30%' }", '30%'],
+    ['an unquoted object value', '{ width: 30 }', '30 '],
+  ])('reads %s', (_label, style, expected) => {
+    expect(widthFromStyleString(style)).toBe(expected);
+  });
+
+  it('does not mistake minWidth or maxWidth for width in a stringified object', () => {
+    expect(widthFromStyleString('{ minWidth: "10px", maxWidth: "50%" }')).toBeUndefined();
+    expect(widthFromStyleString('{ minWidth: "10px", width: "30%" }')).toBe('30%');
+    expect(widthFromStyleString('{"width":"30%"}')).toBe('30%');
+  });
+
+  it.each([
+    ['a declaration list without width', 'text-align: center; min-width: 10px'],
+    ['an object without width', '{ textAlign: "center" }'],
+  ])('returns undefined for %s', (_label, style) => {
+    expect(widthFromStyleString(style)).toBeUndefined();
+  });
+});
 
 describe('mdxish-jsx-to-mdast transformer', () => {
   const processWithNewTypes = (md: string): Root => {
@@ -12,7 +65,6 @@ describe('mdxish-jsx-to-mdast transformer', () => {
   };
 
   describe('with newEditorTypes enabled', () => {
-
     describe('Image component', () => {
       it('should transform <Image /> to image-block node', () => {
         const md = '<Image src="test.png" alt="Test" />';
@@ -146,7 +198,8 @@ describe('mdxish-jsx-to-mdast transformer', () => {
       });
 
       it('should parse caption with markdown and HTML entities into children', () => {
-        const md = '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
+        const md =
+          '<Image src="test.png" alt="test" caption="With **Default Handling** enabled, the `default` value &#x22;Buster&#x22; is used." />';
         const ast = processWithNewTypes(md);
 
         const imageNode = ast.children[0] as ImageBlock;
@@ -672,7 +725,6 @@ Some callout content
       expect(imageNode.src).toBe('https://example.com/image.jpg');
       expect(imageNode.alt).toBe('Alt text');
     });
-
   });
 
   describe('magic-block image promotion in tableCells (RM-16543)', () => {
@@ -731,7 +783,7 @@ Some callout content
         const node = stack.shift()!;
         if (predicate(node)) return node;
         if ('children' in node && Array.isArray((node as { children?: unknown[] }).children)) {
-          stack.push(...((node as { children: RootContent[] }).children));
+          stack.push(...(node as { children: RootContent[] }).children);
         }
       }
       return undefined;
@@ -755,28 +807,40 @@ Some callout content
 
     it('keeps `![](url)` inside a link as inline `image`', () => {
       const ast = processWithNewTypes('[![Logo](https://example.com/logo.png)](https://example.com)');
-      const link = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'link' } => n.type === 'link');
+      const link = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'link' } => n.type === 'link',
+      );
       expect(link).toBeDefined();
       expect(link!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside emphasis as inline `image`', () => {
       const ast = processWithNewTypes('*![Logo](https://example.com/logo.png)*');
-      const em = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'emphasis' } => n.type === 'emphasis');
+      const em = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'emphasis' } => n.type === 'emphasis',
+      );
       expect(em).toBeDefined();
       expect(em!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside strong as inline `image`', () => {
       const ast = processWithNewTypes('**![Logo](https://example.com/logo.png)**');
-      const strong = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'strong' } => n.type === 'strong');
+      const strong = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'strong' } => n.type === 'strong',
+      );
       expect(strong).toBeDefined();
       expect(strong!.children[0].type).toBe('image');
     });
 
     it('keeps `![](url)` inside delete (GFM strikethrough) as inline `image`', () => {
       const ast = processWithNewTypes('~~![Logo](https://example.com/logo.png)~~');
-      const del = findFirst(ast, (n): n is RootContent & { children: RootContent[]; type: 'delete' } => n.type === 'delete');
+      const del = findFirst(
+        ast,
+        (n): n is RootContent & { children: RootContent[]; type: 'delete' } => n.type === 'delete',
+      );
       expect(del).toBeDefined();
       expect(del!.children[0].type).toBe('image');
     });
