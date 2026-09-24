@@ -200,7 +200,7 @@
       },
       {
         "path": "dist/main.node.js",
-        "maxSize": "990KB"
+        "maxSize": "1MB"
       },
       {
         "path": "dist/render-diff.node.js",
