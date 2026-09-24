@@ -44,9 +44,7 @@ describe('mdxish html blocks transformer', () => {
     });
 
     it('extracts multiple attributes', () => {
-      const tree = mdxish(
-        '<HTMLBlock safeMode={true} runScripts="true">{`<p>content</p>`}</HTMLBlock>',
-      );
+      const tree = mdxish('<HTMLBlock safeMode={true} runScripts="true">{`<p>content</p>`}</HTMLBlock>');
       const htmlBlock = findElementByTagName(tree, 'html-block');
       expect(htmlBlock).toMatchObject({
         properties: { html: '<p>content</p>', safeMode: 'true', runScripts: true },
@@ -58,6 +56,50 @@ describe('mdxish html blocks transformer', () => {
       const htmlBlock = findElementByTagName(tree, 'html-block');
       expect(htmlBlock).toMatchObject({
         properties: { html: '<p>content</p>' },
+      });
+    });
+  });
+
+  describe('safeMode parse option', () => {
+    const opts = { safeMode: true };
+
+    it('stamps safeMode when the element has no attribute', () => {
+      const tree = mdxish('<HTMLBlock>{`<p>content</p>`}</HTMLBlock>', opts);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: '<p>content</p>', safeMode: 'true' },
+      });
+    });
+
+    it('wins over an author-supplied safeMode="false"', () => {
+      const tree = mdxish('<HTMLBlock safeMode="false">{`<p>content</p>`}</HTMLBlock>', opts);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: '<p>content</p>', safeMode: 'true' },
+      });
+    });
+
+    it('wins over an author-supplied safeMode={false}', () => {
+      const tree = mdxish('<HTMLBlock safeMode={false}>{`<p>content</p>`}</HTMLBlock>', opts);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: '<p>content</p>', safeMode: 'true' },
+      });
+    });
+
+    it('applies to an <HTMLBlock> embedded in a raw html node', () => {
+      const tree = mdxish('<div><HTMLBlock>{`<p>content</p>`}</HTMLBlock></div>', opts);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: '<p>content</p>', safeMode: 'true' },
+      });
+    });
+
+    it('keeps runScripts alongside safeMode', () => {
+      const tree = mdxish('<HTMLBlock runScripts="true">{`<p>content</p>`}</HTMLBlock>', opts);
+      const htmlBlock = findElementByTagName(tree, 'html-block');
+      expect(htmlBlock).toMatchObject({
+        properties: { html: '<p>content</p>', runScripts: true, safeMode: 'true' },
       });
     });
   });
@@ -132,4 +174,4 @@ second
       expect(htmlBlock).toBeNull();
     });
   });
-})
+});

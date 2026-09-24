@@ -2,10 +2,10 @@ import '@testing-library/jest-dom';
 import { render, screen, cleanup } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup, renderToString } from 'react-dom/server';
-
 import { vi, type Mock } from 'vitest';
 
 import HTMLBlock from '../../components/HTMLBlock';
+import { mdxish, renderMdxish } from '../../lib';
 
 import { renderingEngines } from './utils';
 
@@ -62,6 +62,15 @@ describe('HTML Block', () => {
     expect(screen.getByText('x')).toBeInTheDocument();
   });
 
+  it("doesn't run user scripts in safeMode even when runScripts is set", () => {
+    render(
+      <HTMLBlock runScripts={true} safeMode={true}>
+        {'<script>mockFn()</script>'}
+      </HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(0);
+  });
+
   it("doesn't run scripts on the server (even in compat mode)", () => {
     const html = `
     <h1>Hello World</h1>
@@ -79,6 +88,14 @@ describe('HTML Block', () => {
     const Component = renderContent(md);
     expect(renderToStaticMarkup(<Component />)).toBe(
       '<pre class="html-unsafe"><code>&lt;button onload=&quot;alert(&#x27;gotcha!&#x27;)&quot;/&gt;</code></pre>',
+    );
+  });
+
+  it('mdxish: renders the html in a `<pre>` tag when the document is parsed in safeMode', () => {
+    const md = '<HTMLBlock>{`<img src=x onerror=mockFn()>`}</HTMLBlock>';
+    const Component = renderMdxish(mdxish(md, { safeMode: true })).default;
+    expect(renderToStaticMarkup(<Component />)).toBe(
+      '<pre class="html-unsafe"><code>&lt;img src=x onerror=mockFn()&gt;</code></pre>',
     );
   });
 });
