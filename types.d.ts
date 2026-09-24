@@ -240,6 +240,11 @@ declare module 'mdast' {
     reparseSource?: string;
   }
 
+  interface TableData {
+    /** Authored as lowercase `<table>`; the serializer keeps that spelling when there is no alignment to encode. */
+    lowercaseTable?: boolean;
+  }
+
   interface BlockContentMap {
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
