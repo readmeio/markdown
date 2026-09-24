@@ -12,8 +12,8 @@ import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { getCellWidth } from './tables/cell-width';
-import { unwrapSoleParagraph } from './tables/utils';
+import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
+import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
 function toImageAlign(value: string | undefined): ImageAlign | undefined {
   if (value === 'left' || value === 'center' || value === 'right') {
@@ -595,10 +595,40 @@ const wrapBareCellsInRow = (node: Node): void => {
 };
 
 /**
- * Converts a JSX <Table> element to an MDAST table node with alignment and widths.
- * Returns null for header-less tables since MDAST always promotes the first row to <thead>.
+ * A lowercase <table> reaches here only because `mdxishTables` kept it as JSX for its
+ * attributes. Widths on first-row cells are the one attribute mdast can carry; anything
+ * else stays JSX so it still renders.
+ */
+const lowercaseTableIsConvertible = (jsx: MdxJsxFlowElement): boolean => {
+  let headerRow: MdxJsxFlowElement | MdxJsxTextElement | undefined;
+  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (child.name === 'tr' && !headerRow) headerRow = child;
+  });
+
+  const headerCells = new Set<Node>();
+  if (headerRow) {
+    visit(headerRow as Node, isTableCell, cell => {
+      headerCells.add(cell);
+    });
+  }
+
+  let convertible = true;
+  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (!tableTags.has(child.name || '') || child.attributes.length === 0) return;
+    if (!headerCells.has(child) || !hasOnlyWidthAttributes(child)) convertible = false;
+  });
+  return convertible;
+};
+
+/**
+ * Converts a JSX <Table>, or a lowercase <table> carrying only widths, to an MDAST table
+ * node with alignment and widths. Returns null for header-less tables since MDAST always
+ * promotes the first row to <thead>.
  */
 const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
+  const isLowercase = jsx.name === 'table';
+  if (isLowercase && !lowercaseTableIsConvertible(jsx)) return null;
+
   wrapBareCellsInRow(jsx as Node);
 
   let hasThead = false;
@@ -649,12 +679,17 @@ const transformTable = (jsx: MdxJsxFlowElement): Table | null => {
       ? align.slice(0, columnCount).concat(Array.from({ length: Math.max(0, columnCount - align.length) }, () => null))
       : Array.from({ length: columnCount }, () => null);
 
+  const data = {
+    ...(isLowercase && { lowercaseTable: true }),
+    ...(widths.some(Boolean) && { widths }),
+  };
+
   return {
     type: 'table',
     align: alignArray,
     position: jsx.position,
     children: rows,
-    ...(widths.some(Boolean) && { data: { widths } }),
+    ...(Object.keys(data).length > 0 && { data }),
   };
 };
 
@@ -690,6 +725,7 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   figure: transformFigure,
   Recipe: transformRecipe,
   Table: transformTable,
+  table: transformTable,
 };
 
 /**

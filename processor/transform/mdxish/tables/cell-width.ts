@@ -8,18 +8,28 @@ const STYLE_OBJECT_WIDTH_REGEX = /[{,]\s*["']?width["']?\s*:\s*(?:"([^"]*)"|'([^
 // First colon only, so `url(http://…)` values stay intact
 const CSS_DECLARATION_REGEX = /:(.*)/s;
 const UNITLESS_NUMBER_REGEX = /^\d+(?:\.\d+)?$/;
+// HTML reads a `width` attribute as a leading number plus optional `%`, ignoring the rest
+const HTML_DIMENSION_REGEX = /^\s*(\d+(?:\.\d+)?)\s*(%?)/;
 
 interface CellSizingAttrs {
   style?: Record<string, unknown> | string;
   width?: number | string;
 }
 
-/** Bare numbers are pixels, as React and the HTML `width` attribute treat them. */
+/** Bare numbers are pixels. A value carrying declaration separators is not a single width. */
 export const normalizeWidth = (value: unknown): string | null => {
   if (typeof value === 'number') return `${value}px`;
   if (typeof value !== 'string' || !value.trim()) return null;
   const trimmed = value.trim();
+  if (/[;:{}]/.test(trimmed)) return null;
   return UNITLESS_NUMBER_REGEX.test(trimmed) ? `${trimmed}px` : trimmed;
+};
+
+const widthFromAttribute = (value: unknown): string | null => {
+  if (typeof value === 'number') return `${value}px`;
+  if (typeof value !== 'string') return null;
+  const match = HTML_DIMENSION_REGEX.exec(value);
+  return match ? `${match[1]}${match[2] || 'px'}` : null;
 };
 
 const cssPropertyNames = (style: string): string[] =>
@@ -51,7 +61,7 @@ export const getCellWidth = (cell: MdxJsxFlowElement | MdxJsxTextElement): strin
   } else if (typeof style === 'string') {
     styleWidth = widthFromStyleString(style);
   }
-  return normalizeWidth(styleWidth) ?? normalizeWidth(width);
+  return normalizeWidth(styleWidth) ?? widthFromAttribute(width);
 };
 
 /** True when the cell's attributes state nothing but its width, which mdast can carry. */

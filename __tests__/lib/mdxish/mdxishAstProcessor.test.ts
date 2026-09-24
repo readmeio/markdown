@@ -625,6 +625,12 @@ describe('mdxishAstProcessor', () => {
         expect(table.data?.widths).toStrictEqual(['30%', null]);
       });
 
+      it('reads a width attribute the way HTML does, dropping anything after the dimension', () => {
+        const table = parse(jsxTable('<th width="30%; color: red">Name</th>\n<th width="200 px">Description</th>'));
+
+        expect(table.data?.widths).toStrictEqual(['30%', '200px']);
+      });
+
       it.each([
         ['a numeric style value', '<th style={{ width: 200 }}>Name</th>'],
         ['a unitless width attribute', '<th width="200">Name</th>'],
@@ -682,6 +688,21 @@ ${headers}
 
         expect(table.type).toBe('table');
         expect(table.data).toStrictEqual({ lowercaseTable: true, widths: ['30%', null] });
+      });
+
+      it.each([
+        ['a width on a body cell', '<td width="30%">a</td>'],
+        ['an attribute on the body section', '<tbody class="x"><tr><td>a</td>'],
+      ])('keeps a lowercase table as JSX when %s is present', (_label, body) => {
+        const md = lowercase('      <th style="width: 30%">Name</th>\n      <th>Description</th>').replace(
+          '<tbody>\n    <tr>\n      <td>a</td>',
+          `<tbody>\n    <tr>\n      ${body}`.replace(
+            '<tbody>\n    <tr>\n      <tbody class="x"><tr>',
+            '<tbody class="x">\n    <tr>',
+          ),
+        );
+
+        expect(parse(md).type).toBe('mdxJsxFlowElement');
       });
 
       it('keeps a lowercase table as JSX when a header cell carries more than a width', () => {

@@ -20,6 +20,8 @@ describe('normalizeWidth', () => {
   it.each([
     ['an empty string', ''],
     ['whitespace', '   '],
+    ['a value smuggling another declaration', '30%; color: red'],
+    ['a stringified object', '{ width: "30%" }'],
     ['undefined', undefined],
     ['null', null],
     ['an array', ['30%']],

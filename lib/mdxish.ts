@@ -160,7 +160,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(normalizeEmphasisAST)
     .use(mdxishMdxComponentBlocks, { safeMode })
     .use(mdxishInlineMdxHtmlBlocks, { safeMode })
-    .use(mdxishTables, { newEditorTypes })
+    .use(mdxishTables)
     .use(mdxishHtmlBlocks) // Convert every <HTMLBlock> shape → html-block
     // The next few transformers must appear after mdxishMdxComponentBlocks
     // so nodes produced by the inline re-parse of component bodies

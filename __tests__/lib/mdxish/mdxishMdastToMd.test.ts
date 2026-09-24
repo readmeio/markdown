@@ -1682,6 +1682,24 @@ Final plain paragraph at end of file.
   describe('lowercase <table> serialization', () => {
     const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
 
+    const uppercaseWidthTable = (): string =>
+      [
+        '<Table>',
+        '<thead>',
+        '<tr>',
+        '<th style={{ width: "30%" }}>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>Bar</td>',
+        '</tr>',
+        '</tbody>',
+        '</Table>',
+      ].join('\n');
+
     const lowercaseTableWithCell = (cell: string, openTag = '<table>'): string =>
       [
         openTag,
@@ -1741,6 +1759,60 @@ Final plain paragraph at end of file.
       expect(roundTripMdxish('| H |\n| --- |\n| <Image src="x.png" /> |')).toMatch(/^<Table/);
     });
 
+    const lowercaseWithWidth = lowercaseTableWithCell('plain').replace(
+      '<th>Name</th>',
+      '<th style="width: 30%">Name</th>',
+    );
+
+    // Width handling lives on the editor path, so these parse with editor types on.
+    const editor = { newEditorTypes: true };
+
+    it('serializes a lowercase <table> width as an HTML style attribute', () => {
+      expect(collectNodes(parseMdxish(lowercaseWithWidth, editor), 'table')).toHaveLength(1);
+
+      const markdown = roundTripMdxish(lowercaseWithWidth, editor);
+
+      expect(markdown).toMatch(/^<table>\n/);
+      expect(markdown).toContain('<th style="width: 30%">');
+      expect(markdown).not.toContain('style={{');
+    });
+
+    it('serializes a lowercase <table> that gains an alignment as <Table>', () => {
+      const [table] = parseMdxish(lowercaseWithWidth, editor).children as [Table];
+      table.align = ['center', null];
+
+      const markdown = mdxishMdastToMd({ type: 'root', children: [table] });
+
+      expect(markdown).toMatch(/^<Table align=/);
+      expect(markdown).toContain('<th style={{ textAlign: "center", width: "30%" }}>');
+    });
+
+    it('keeps widths stable across repeated round trips, on both table forms', () => {
+      const uppercase = lowercaseTableWithCell(listCell, '<Table>')
+        .replace('</table>', '</Table>')
+        .replace('<th>Name</th>', '<th style={{ width: "30%" }}>Name</th>');
+
+      [lowercaseWithWidth, uppercase].forEach(source => {
+        expect(collectNodes(parseMdxish(source, editor), 'table')).toHaveLength(1);
+        const once = roundTripMdxish(source, editor);
+        const twice = roundTripMdxish(once, editor);
+
+        expect(twice).toBe(once);
+        expect(twice).toContain('30%');
+      });
+    });
+
+    it('keeps a width on a table nested inside a component', () => {
+      const source = ['<Accordion title="Details">', uppercaseWidthTable(), '</Accordion>', ''].join('\n');
+
+      expect(collectNodes(parseMdxish(source, editor), 'table')).toHaveLength(1);
+      const markdown = roundTripMdxish(source, editor);
+
+      expect(markdown).toMatch(/^<Accordion title="Details">/);
+      expect(markdown).toContain('<th style={{ width: "30%" }}>');
+      expect(roundTripMdxish(markdown, editor)).toBe(markdown);
+    });
+
     it('is stable across repeated round trips', () => {
       const once = roundTripMdxish(lowercaseTableWithCell(listCell));
       const twice = roundTripMdxish(once);
@@ -1757,7 +1829,10 @@ Final plain paragraph at end of file.
           '<tr><th>Name</th><th>Notes</th></tr>',
         ),
       ],
-      ['indented sections', lowercaseTableWithCell(listCell).replace(/^(<thead>|<tbody>|<\/thead>|<\/tbody>)$/gm, '  $1')],
+      [
+        'indented sections',
+        lowercaseTableWithCell(listCell).replace(/^(<thead>|<tbody>|<\/thead>|<\/tbody>)$/gm, '  $1'),
+      ],
       ['blank lines around the list', lowercaseTableWithCell(`\n${listCell}\n`)],
     ])('keeps the lowercase spelling with %s', (_label, source) => {
       expect(collectNodes(parseMdxish(source), 'table')).toHaveLength(1);
@@ -2151,9 +2226,11 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     it('serializes a tutorial tile to a Recipe element', () => {
-      const doc = ['[block:tutorial-tile]', JSON.stringify({ slug: 'send-a-message', title: 'Send a message' }), '[/block]'].join(
-        '\n',
-      );
+      const doc = [
+        '[block:tutorial-tile]',
+        JSON.stringify({ slug: 'send-a-message', title: 'Send a message' }),
+        '[/block]',
+      ].join('\n');
 
       const result = roundTripMdxish(doc);
 
@@ -2165,9 +2242,11 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     // spelling for, so it unwraps to its content — matching readmeToMdx's behavior
     // (readmeio/markdown#1618, greptile P1).
     it('unwraps a pinned magic block instead of throwing', () => {
-      const doc = ['[block:code]', JSON.stringify({ sidebar: true, codes: [{ code: 'const x = 1', language: 'javascript' }] }), '[/block]'].join(
-        '\n',
-      );
+      const doc = [
+        '[block:code]',
+        JSON.stringify({ sidebar: true, codes: [{ code: 'const x = 1', language: 'javascript' }] }),
+        '[/block]',
+      ].join('\n');
 
       expect(roundTripMdxish(doc)).toContain('const x = 1');
     });
@@ -2199,9 +2278,11 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     it('serializes an attribute-less image block as plain markdown', () => {
-      const doc = ['[block:image]', JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }), '[/block]'].join(
-        '\n',
-      );
+      const doc = [
+        '[block:image]',
+        JSON.stringify({ images: [{ image: ['https://x.io/a.png', '', 'Alt'] }] }),
+        '[/block]',
+      ].join('\n');
 
       expect(roundTripMdxish(doc)).toContain('![Alt](https://x.io/a.png)');
     });
@@ -2237,9 +2318,11 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     it('serializes a legacy callout magic block as a Callout element', () => {
-      const doc = ['[block:callout]', JSON.stringify({ type: 'info', title: 'Heads up', body: 'The body.' }), '[/block]'].join(
-        '\n',
-      );
+      const doc = [
+        '[block:callout]',
+        JSON.stringify({ type: 'info', title: 'Heads up', body: 'The body.' }),
+        '[/block]',
+      ].join('\n');
 
       const result = roundTripMdxish(doc);
 
@@ -2321,7 +2404,7 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
             if (child.value) emphasisValues.push(child.value);
           });
         }
-        (node.children as typeof node[] | undefined)?.forEach(walk);
+        (node.children as (typeof node)[] | undefined)?.forEach(walk);
       };
       walk(reparsed as never);
       expect(emphasisValues).toContain('用語');
