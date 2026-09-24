@@ -1,6 +1,20 @@
 Changelog
 ===
 
+## Version 15.8.0
+### ✨ New & Improved
+
+* add opt-in sanitize option to strip script tags ([#1574](https://github.com/readmeio/markdown/issues/1574)) ([bf61853](https://github.com/readmeio/markdown/commit/bf61853ed38ac4dce12d9c1d458b60acc9eb0af2)), closes [readmeio/readme#20204](https://github.com/readmeio/readme/issues/20204)
+
+### 🛠 Fixes & Updates
+
+* **callout:** keep code block and columns gap from doubling inside callouts ([#1628](https://github.com/readmeio/markdown/issues/1628)) ([71fb43e](https://github.com/readmeio/markdown/commit/71fb43e9faf8f902d8d84a8aa84bf294a76b5d8f)), closes [#1627](https://github.com/readmeio/markdown/issues/1627)
+
+## Version 15.7.3
+### 🛠 Fixes & Updates
+
+* **callout:** space margin-less blocks like tables inside callouts ([#1627](https://github.com/readmeio/markdown/issues/1627)) ([5668182](https://github.com/readmeio/markdown/commit/5668182667ba3ec7d47a835552e15139d7b184c4))
+
 ## Version 15.7.2
 ### 🛠 Fixes & Updates
 

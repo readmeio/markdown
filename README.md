@@ -174,7 +174,7 @@ npm link $PATH_TO_LOCAL_MARKDOWN_REPO
 
 1. Actions → [Cut release](https://github.com/readmeio/markdown/actions/workflows/cut-release.yml) → **Run workflow**. That merges `next` into `main`; Release publishes to npm.
 2. Watch [Release](https://github.com/readmeio/markdown/actions/workflows/release.yml). It publishes, then fast-forwards `next` to that release. If `next` moved during publish, merge `main` into `next` by hand.
-3. Still manual: in `readmeio/readme` on `next`, run `make upgrade-markdown` and open a PR.
+3. After a real publish, Release notifies repos in `CONSUMER_DISPATCH_REPOS` (`package-released`). No-op if the variable is unset.
 
 <details>
 <summary>Merge <code>next</code> into <code>main</code> by hand</summary>
@@ -199,6 +199,6 @@ git merge main
 git push
 ```
 
-Then do step 3.
+Release still notifies consumers when it actually publishes.
 
 </details>
