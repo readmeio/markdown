@@ -2,6 +2,7 @@ import type { CustomComponents } from '../../../types';
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 import { mdxish, mix, renderMdxish } from '../../../lib';
