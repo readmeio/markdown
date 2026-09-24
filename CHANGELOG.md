@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.7.3
+### 🛠 Fixes & Updates
+
+* **callout:** space margin-less blocks like tables inside callouts ([#1627](https://github.com/readmeio/markdown/issues/1627)) ([5668182](https://github.com/readmeio/markdown/commit/5668182667ba3ec7d47a835552e15139d7b184c4))
+
 ## Version 15.7.2
 ### 🛠 Fixes & Updates
 
