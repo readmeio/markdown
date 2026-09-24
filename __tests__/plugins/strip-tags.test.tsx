@@ -4,6 +4,7 @@ import type { MDXContent } from 'mdx/types';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { unified } from 'unified';
+
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { compile, mdxish, renderMdxish } from '../../lib';

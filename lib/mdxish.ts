@@ -80,12 +80,6 @@ export interface MdxishOpts {
   hardBreaks?: boolean;
   newEditorTypes?: boolean;
   /**
-   * Strip content that would execute in the page (currently literal `<script>`
-   * elements). Defaults to `false` to preserve existing rendering for callers
-   * that may rely on raw HTML; opt in per project.
-   */
-  sanitize?: boolean;
-  /**
    * When enabled, the pipeline ignores all expression syntax `{...}`.
    * This disables:
    * - JSX attribute expression evaluation (e.g., `href={baseUrl}`)
@@ -95,6 +89,13 @@ export interface MdxishOpts {
    * Expressions will remain as literal text in the output.
    */
   safeMode?: boolean;
+  /**
+   * Strip content that would execute in the page (currently `<script>`
+   * elements, whether written as a literal tag or as JSX inside an export).
+   * Defaults to `false` to preserve existing rendering for callers that may
+   * rely on raw HTML; opt in per project.
+   */
+  sanitize?: boolean;
   useTailwind?: boolean;
   variables?: Variables;
 }

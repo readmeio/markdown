@@ -111,12 +111,13 @@ export const stripJsxTags = (program: Program): Program => {
       if (Array.isArray(value)) {
         for (let i = value.length - 1; i >= 0; i -= 1) {
           const child: unknown = value[i];
-          if (!isEstreeNode(child)) continue;
-          if (isStrippedJsxElement(child)) {
-            if (key === 'children') value.splice(i, 1);
-            else value[i] = nullLiteral();
-          } else {
-            walk(child);
+          if (isEstreeNode(child)) {
+            if (isStrippedJsxElement(child)) {
+              if (key === 'children') value.splice(i, 1);
+              else value[i] = nullLiteral();
+            } else {
+              walk(child);
+            }
           }
         }
         return;
