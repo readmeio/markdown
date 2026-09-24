@@ -392,19 +392,16 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Term
             </th>
-
             <th style={{ textAlign: "left" }}>
               Definition
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               Events
             </td>
-
             <td style={{ textAlign: "left" }}>
               Pseudo-list:\\
               ● One\\
@@ -462,19 +459,16 @@ ${JSON.stringify(
             <th style={{ textAlign: "left" }}>
               Field
             </th>
-
             <th style={{ textAlign: "left" }}>
               Description
             </th>
           </tr>
         </thead>
-
         <tbody>
           <tr>
             <td style={{ textAlign: "left" }}>
               orderby
             </td>
-
             <td style={{ textAlign: "left" }}>
               \`\`\`
               {
