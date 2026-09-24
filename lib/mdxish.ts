@@ -284,7 +284,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
       components,
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
     })
-    .use(safeMode ? rehypeSafeModeHtmlBlocks : undefined);
+    .use(safeMode ? rehypeSafeModeHtmlBlocks : undefined); // Last, so every element that renders HTMLBlock is covered
 
   const vfile = new VFile({ value: parserReadyContent });
   const mdast = processor.parse(parserReadyContent);

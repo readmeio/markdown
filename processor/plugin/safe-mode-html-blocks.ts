@@ -24,7 +24,6 @@ const isHtmlBlockTag = (tagName: string): boolean => toPascalCase(tagName).toLow
  */
 export const rehypeSafeModeHtmlBlocks = (): Transformer<Root, Root> => tree => {
   visit(tree, 'element', node => {
-    if (!isHtmlBlockTag(node.tagName)) return;
-    node.properties.safeMode = 'true';
+    if (isHtmlBlockTag(node.tagName)) node.properties.safeMode = 'true';
   });
 };
