@@ -177,7 +177,7 @@ mdContent (raw input)
 
 `mdxish()` takes the base processor from `mdxishAstProcessor()` and appends the remaining MDAST transformers, the MDAST → HAST bridge (`remarkRehype`), and the HAST (rehype) transformers, then runs it and returns the resulting HAST tree. As with the base processor there is no compiler/stringify stage — a tree is returned directly.
 
-The `!safeMode`-only stages are the expression/export evaluators and the deferred-attribute resolver.
+The `!safeMode`-only stages are the expression/export evaluators and the deferred-attribute resolver. The one `safeMode`-only stage is `rehypeSafeModeHtmlBlocks`, which runs last and stamps `safeMode` on every element that renders through `HTMLBlock` so all of them render escaped.
 
 `hardBreaks` (default `true`) adds the `hardBreaks` plugin, which turns every newline (\n) into a `<br>` and splits the lines.
 

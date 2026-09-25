@@ -44,9 +44,7 @@ describe('mdxish html blocks transformer', () => {
     });
 
     it('extracts multiple attributes', () => {
-      const tree = mdxish(
-        '<HTMLBlock safeMode={true} runScripts="true">{`<p>content</p>`}</HTMLBlock>',
-      );
+      const tree = mdxish('<HTMLBlock safeMode={true} runScripts="true">{`<p>content</p>`}</HTMLBlock>');
       const htmlBlock = findElementByTagName(tree, 'html-block');
       expect(htmlBlock).toMatchObject({
         properties: { html: '<p>content</p>', safeMode: 'true', runScripts: true },
@@ -132,4 +130,4 @@ second
       expect(htmlBlock).toBeNull();
     });
   });
-})
+});
