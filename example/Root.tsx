@@ -11,7 +11,7 @@ const Root = () => {
   const ci = searchParams.has('ci');
 
   return (
-    <div data-color-mode={theme}>
+    <div className="rm-ReadMe" data-color-mode={theme}>
       {!ci && <Header setTheme={setTheme} theme={theme} />}
       <div className="rdmd-demo--container">
         <div className="rdmd-demo--content">

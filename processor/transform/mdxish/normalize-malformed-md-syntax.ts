@@ -20,19 +20,44 @@ const MARKER_PATTERNS = [
 // Pattern for ** bold **
 // Groups: 1=wordBefore, 2=marker, 3=contentWithSpaceAfter, 4=trailingSpace1, 5=contentWithSpaceBefore, 6=trailingSpace2, 7=afterChar
 // trailingSpace1 is for "** text **" pattern, trailingSpace2 is for "**text **" pattern
+//
+// The wordBefore and whitespace prefixes are deliberately bounded ({1,64} /
+// {0,8}) rather than unbounded (+ / *). An unbounded prefix makes matchAll
+// re-scan an arbitrarily long run from every character position, which turns
+// the pass O(n²) on text nodes containing huge unbroken tokens (pasted base64
+// payloads, minified code). Bounding the prefix caps the backtracking per
+// position; a prefix longer than the bound just starts the match later, and
+// the cut-off chars flow into the preceding text node instead — adjacent text
+// parts are merged before splicing, so the emitted AST is unchanged.
+//
+// The content quantifiers are bounded too ({1,500}). The underscore content
+// clauses can scan across `_` (needed for snake_case content), so without a
+// bound every `_` in a marker-dense token (base64url, snake_case identifiers)
+// re-scans to end-of-line looking for a closer — O(n²) again. Content already
+// can't cross a newline, and 500 chars covers any sentence-length emphasis
+// phrase; longer spans stay unnormalized rather than costing quadratic scans.
 const asteriskBoldRegex =
-  /([^*\s]+)?\s*(\*\*)(?:\s+((?:[^*\n]|\*(?!\*))+?)(\s*)\2|((?:[^*\n]|\*(?!\*))+?)(\s+)\2)(\S|$)?/g;
+  /([^*\s]{1,64})?\s{0,8}(\*\*)(?:\s+((?:[^*\n]|\*(?!\*)){1,500}?)(\s*)\2|((?:[^*\n]|\*(?!\*)){1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for __ bold __
 const underscoreBoldRegex =
-  /([^_\s]+)?\s*(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n])+?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n])+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(__)(?:\s+((?:__(?! )|_(?!_)|[^_\n]){1,500}?)(\s*)\2|((?:__(?! )|_(?!_)|[^_\n]){1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for * italic *
-const asteriskItalicRegex = /([^*\s]+)?\s*(\*)(?!\*)(?:\s+([^*\n]+?)(\s*)\2|([^*\n]+?)(\s+)\2)(\S|$)?/g;
+const asteriskItalicRegex =
+  /([^*\s]{1,64})?\s{0,8}(\*)(?!\*)(?:\s+([^*\n]{1,500}?)(\s*)\2|([^*\n]{1,500}?)(\s+)\2)(\S|$)?/g;
 
 // Pattern for _ italic _
 const underscoreItalicRegex =
-  /([^_\s]+)?\s*(_)(?!_)(?:\s+((?:[^_\n]|_(?! ))+?)(\s*)\2|((?:[^_\n]|_(?! ))+?)(\s+)\2)(\S|$)?/g;
+  /([^_\s]{1,64})?\s{0,8}(_)(?!_)(?:\s+((?:[^_\n]|_(?! )){1,500}?)(\s*)\2|((?:[^_\n]|_(?! )){1,500}?)(\s+)\2)(\S|$)?/g;
+
+// Every loose alternation requires whitespace beside a marker — after the
+// opening (`** text**`) or before the closing (`**text **`) — so
+// marker-beside-whitespace is an exact gate for the loose families. A single
+// linear probe skips them entirely on marker-dense tokens whose markers are
+// all intraword (base64url payloads, snake_case identifiers).
+const asteriskBesideWhitespaceRegex = /\*\s|\s\*/;
+const underscoreBesideWhitespaceRegex = /_\s|\s_/;
 
 // CommonMark ignores intraword underscores or asteriks, but we want to italicize/bold the inner part
 // Pattern for intraword _word_ in words like hello_world_
@@ -46,6 +71,24 @@ const intrawordAsteriskItalicRegex = /(\w)\*(?!\*)([a-zA-Z0-9]+)\*(?![\w*])/g;
 
 // Pattern for intraword **word** in words like hello**world**
 const intrawordAsteriskBoldRegex = /(\w)\*\*([a-zA-Z0-9]+)\*\*(?![\w*])/g;
+
+// All regex families, in match-precedence order: collected matches are
+// stable-sorted by match.index, so at an equal index the earlier row wins the
+// overlap filter — keep this order. `gate` names the per-node precondition
+// (see the gate record in the visitor) checked before the family's regex
+// runs, so a node that can't possibly match never pays for a full scan: the
+// intraword families need their marker character present, and the loose
+// families additionally need that marker beside whitespace.
+const REGEX_FAMILIES = [
+  { regex: asteriskBoldRegex, isBold: true, marker: '**', gate: 'asteriskLoose' },
+  { regex: underscoreBoldRegex, isBold: true, marker: '__', gate: 'underscoreLoose' },
+  { regex: asteriskItalicRegex, isBold: false, marker: '*', gate: 'asteriskLoose' },
+  { regex: underscoreItalicRegex, isBold: false, marker: '_', gate: 'underscoreLoose' },
+  { regex: intrawordUnderscoreItalicRegex, isBold: false, isIntraword: true, marker: '_', gate: 'underscore' },
+  { regex: intrawordUnderscoreBoldRegex, isBold: true, isIntraword: true, marker: '__', gate: 'underscore' },
+  { regex: intrawordAsteriskItalicRegex, isBold: false, isIntraword: true, marker: '*', gate: 'asterisk' },
+  { regex: intrawordAsteriskBoldRegex, isBold: true, isIntraword: true, marker: '**', gate: 'asterisk' },
+] as const;
 
 /**
  * Finds opening emphasis marker in a text value.
@@ -272,6 +315,22 @@ function isInsideInlineHtmlCode(index: number | undefined, parent: Parent): bool
  * malformed emphasis syntax. This plugin post-processes the AST to handle these cases.
  */
 const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
+  // Back-scanning siblings for <code>…</code> html pairs costs O(children)
+  // per text node — O(children²) per parent, which bites on marker-dense
+  // paragraphs where micromark emits thousands of inline children. Most
+  // parents have no html children at all, so cache that check per parent and
+  // skip the back-scan entirely. The cached flag survives our splices: they
+  // only ever swap text nodes for text/strong/emphasis, never html.
+  const hasHtmlChild = new WeakMap<Parent, boolean>();
+  const mayBeInsideInlineHtmlCode = (index: number, parent: Parent): boolean => {
+    let flag = hasHtmlChild.get(parent);
+    if (flag === undefined) {
+      flag = parent.children.some(child => child.type === 'html');
+      hasHtmlChild.set(parent, flag);
+    }
+    return flag && isInsideInlineHtmlCode(index, parent);
+  };
+
   visit(tree, 'text', function visitor(node: Text, index, parent: Parent) {
     if (index === undefined || !parent) return undefined;
 
@@ -284,19 +343,35 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     // parses as MDX JSX (not as an mdast `inlineCode` node).
     if (
       (parent.type === 'mdxJsxTextElement' || parent.type === 'mdxJsxFlowElement') &&
-      'name' in parent && parent.name === 'code'
+      'name' in parent &&
+      parent.name === 'code'
     ) {
       return undefined;
     }
+    const text = node.value;
+
+    // The regexes below can't match without their marker character, but
+    // running them anyway costs a scan of the whole node — ruinous on huge
+    // pasted payloads (base64 attachments, minified code). Checked before the
+    // html-sibling scan so marker-free text never pays for that either.
+    const hasAsterisk = text.includes('*');
+    const hasUnderscore = text.includes('_');
+    if (!hasAsterisk && !hasUnderscore) return undefined;
+
     // In GFM tables, inline <code>...</code> is represented as sibling `html`
     // nodes rather than as an mdxJsxTextElement, so the check above doesn't
     // apply. Scan backwards through siblings to see if we are enclosed by a
     // <code>…</code> inline HTML pair.
-    if (isInsideInlineHtmlCode(index, parent)) {
+    if (mayBeInsideInlineHtmlCode(index, parent)) {
       return undefined;
     }
 
-    const text = node.value;
+    const gates: Record<(typeof REGEX_FAMILIES)[number]['gate'], boolean> = {
+      asterisk: hasAsterisk,
+      asteriskLoose: hasAsterisk && asteriskBesideWhitespaceRegex.test(text),
+      underscore: hasUnderscore,
+      underscoreLoose: hasUnderscore && underscoreBesideWhitespaceRegex.test(text),
+    };
 
     interface MatchInfo {
       isBold: boolean;
@@ -307,29 +382,11 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
 
     const allMatches: MatchInfo[] = [];
 
-    [...text.matchAll(asteriskBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, marker: '**', match });
-    });
-    [...text.matchAll(underscoreBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, marker: '__', match });
-    });
-    [...text.matchAll(asteriskItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, marker: '*', match });
-    });
-    [...text.matchAll(underscoreItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, marker: '_', match });
-    });
-    [...text.matchAll(intrawordUnderscoreItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, isIntraword: true, marker: '_', match });
-    });
-    [...text.matchAll(intrawordUnderscoreBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, isIntraword: true, marker: '__', match });
-    });
-    [...text.matchAll(intrawordAsteriskItalicRegex)].forEach(match => {
-      allMatches.push({ isBold: false, isIntraword: true, marker: '*', match });
-    });
-    [...text.matchAll(intrawordAsteriskBoldRegex)].forEach(match => {
-      allMatches.push({ isBold: true, isIntraword: true, marker: '**', match });
+    REGEX_FAMILIES.forEach(({ regex, gate, ...info }) => {
+      if (!gates[gate]) return;
+      [...text.matchAll(regex)].forEach(match => {
+        allMatches.push({ ...info, match });
+      });
     });
 
     if (allMatches.length === 0) return undefined;
@@ -439,9 +496,22 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
       }
     }
 
-    if (parts.length > 0) {
-      parent.children.splice(index, 1, ...parts);
-      return [SKIP, index + parts.length];
+    // Merge adjacent text parts so the emitted AST doesn't depend on where a
+    // match happened to start (the bounded prefixes above can shift a match
+    // start rightward, splitting what used to be a single text node).
+    const mergedParts = parts.reduce<typeof parts>((acc, part) => {
+      const prev = acc[acc.length - 1];
+      if (part.type === 'text' && prev?.type === 'text') {
+        prev.value += part.value;
+      } else {
+        acc.push(part);
+      }
+      return acc;
+    }, []);
+
+    if (mergedParts.length > 0) {
+      parent.children.splice(index, 1, ...mergedParts);
+      return [SKIP, index + mergedParts.length];
     }
 
     return undefined;

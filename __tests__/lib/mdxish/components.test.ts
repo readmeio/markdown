@@ -5,7 +5,7 @@ import React from 'react';
 import { visit } from 'unist-util-visit';
 
 import { mdxish, compile, run } from '../../../lib';
-import { findAllElementsByTagName, findElementByTagName } from '../../helpers';
+import { findAllElementsByTagName, findElementByTagName, parseMdxish } from '../../helpers';
 
 describe('end-to-end tests in the mdxish pipeline for various types and variations of MDX components', () => {
   // Create & compile example component
@@ -465,6 +465,275 @@ Final plain paragraph at end of file.`;
     it('does not strand a literal </Callout> in the output', () => {
       const tree = mdxish(md);
       expect(JSON.stringify(tree)).not.toContain('</Callout>');
+    });
+  });
+
+  describe('components under list items (CX-3940)', () => {
+    // Lines indented below the item's content column are CommonMark "lazy" lines. The
+    // tokenizer used to stop claiming at the first one, leaving a truncated opener as raw html.
+    const itemWithCallout = {
+      type: 'listItem',
+      children: [
+        { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'Callout',
+          attributes: [{ type: 'mdxJsxAttribute', name: 'icon', value: '📘' }],
+          children: [{ type: 'paragraph', children: [{ type: 'text', value: 'Body' }] }],
+        },
+      ],
+    };
+
+    it.each([
+      ['column 0 under a bullet', '- one\n<Callout icon="📘">\nBody\n</Callout>'],
+      ['one space under a bullet', '- one\n <Callout icon="📘">\n Body\n </Callout>'],
+      ['two spaces under an ordered item', '1. one\n  <Callout icon="📘">\n  Body\n  </Callout>'],
+      ['the content column under an ordered item', '1. one\n   <Callout icon="📘">\n   Body\n   </Callout>'],
+      ['the content column after a blank line', '- one\n\n  <Callout icon="📘">\n  Body\n  </Callout>'],
+      ['a body indented deeper than its tags', '- one\n<Callout icon="📘">\n    Body\n</Callout>'],
+    ])('keeps a component inside the item when indented at %s', (_, md) => {
+      expect(parseMdxish(md)).toMatchObject({
+        type: 'root',
+        children: [{ type: 'list', children: [itemWithCallout] }],
+      });
+    });
+
+    it('renders a readme component inside the <li>', () => {
+      const md = '- three\n<Callout icon="📘" theme="info">\nThis is an MDX-style callout component.\n</Callout>';
+      expect(mdxish(md).children).toMatchObject([
+        {
+          type: 'element',
+          tagName: 'ul',
+          children: [
+            { type: 'text', value: '\n' },
+            {
+              type: 'element',
+              tagName: 'li',
+              children: [
+                { type: 'text', value: 'three\n' },
+                {
+                  type: 'element',
+                  tagName: 'Callout',
+                  properties: { icon: '📘', theme: 'info' },
+                  children: [
+                    {
+                      type: 'element',
+                      tagName: 'p',
+                      children: [{ type: 'text', value: 'This is an MDX-style callout component.' }],
+                    },
+                  ],
+                },
+                { type: 'text', value: '\n' },
+              ],
+            },
+            { type: 'text', value: '\n' },
+          ],
+        },
+      ]);
+    });
+
+    it('parses markdown inside a custom component body', () => {
+      const md = '- one\n<ExampleComponent header="h">\n**bold** body\n</ExampleComponent>';
+      const tree = mdxish(md, { components: exampleComponents });
+      expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
+        { type: 'text', value: 'one\n' },
+        {
+          type: 'element',
+          tagName: 'ExampleComponent',
+          properties: { header: 'h' },
+          children: [
+            {
+              type: 'element',
+              tagName: 'p',
+              children: [
+                { type: 'element', tagName: 'strong', children: [{ type: 'text', value: 'bold' }] },
+                { type: 'text', value: ' body' },
+              ],
+            },
+          ],
+        },
+        { type: 'text', value: '\n' },
+      ]);
+    });
+
+    it('promotes nested components', () => {
+      const md = '- one\n<Steps>\n  <Step>First, install the dependencies.</Step>\n</Steps>';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+                  {
+                    type: 'mdxJsxFlowElement',
+                    name: 'Steps',
+                    children: [
+                      {
+                        type: 'mdxJsxFlowElement',
+                        name: 'Step',
+                        children: [
+                          { type: 'paragraph', children: [{ type: 'text', value: 'First, install the dependencies.' }] },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('keeps a fenced code block inside the component body', () => {
+      const md = '- one\n<Callout icon="📘">\n```js\nconst x = 1;\n```\n</Callout>';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+                  {
+                    type: 'mdxJsxFlowElement',
+                    name: 'Callout',
+                    children: [{ type: 'code-tabs', children: [{ type: 'code', lang: 'js', value: 'const x = 1;' }] }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it.each([
+      ['attributes on their own lines', '- two\n<ExampleComponent\nbody={\n`Test content\n`}\n/>'],
+      ['the template literal opened on the tag line', '- two\n<ExampleComponent body={`Test content\n`} />'],
+      ['two spaces under an ordered item', '1. two\n  <ExampleComponent\n  body={`Test content\n`}\n  />'],
+    ])('keeps a multi-line attribute expression together with %s', (_, md) => {
+      const tree = mdxish(md, { components: exampleComponents });
+      expect(findElementByTagName(tree, 'li')?.children).toMatchObject([
+        { type: 'text', value: 'two\n' },
+        { type: 'element', tagName: 'ExampleComponent', properties: { body: 'Test content\n' }, children: [] },
+        { type: 'text', value: '\n' },
+      ]);
+    });
+
+    it('does not corrupt raw html that follows the component', () => {
+      // The truncated opener left parse5 mid-tag, so the next raw tag threw
+      // "Cannot read properties of null (reading 'tagName')".
+      const md = '- one\n<ExampleComponent\nbody={`x`}\n/>\n- two <b>bold</b>';
+      const tree = mdxish(md, { components: exampleComponents });
+      expect(findAllElementsByTagName(tree, 'li')).toMatchObject([
+        {
+          children: [
+            { type: 'text', value: 'one\n' },
+            { type: 'element', tagName: 'ExampleComponent', properties: { body: 'x' }, children: [] },
+            { type: 'text', value: '\n' },
+          ],
+        },
+        {
+          children: [
+            { type: 'text', value: 'two ' },
+            { type: 'element', tagName: 'b', children: [{ type: 'text', value: 'bold' }] },
+          ],
+        },
+      ]);
+    });
+
+    it('keeps following items and text outside the component', () => {
+      const md = '- one\n<Callout icon="📘">\nBody\n</Callout>\n- two\n\nAfter the list';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'list',
+            children: [itemWithCallout, { type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }],
+          },
+          { type: 'paragraph', children: [{ type: 'text', value: 'After the list' }] },
+        ],
+      });
+    });
+
+    it('binds to the innermost nested item', () => {
+      const md = '- outer\n  - one\n<Callout icon="📘">\nBody\n</Callout>';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  { type: 'paragraph', children: [{ type: 'text', value: 'outer' }] },
+                  { type: 'list', children: [itemWithCallout] },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('keeps a component inside a blockquote when its lines drop the > prefix', () => {
+      const md = '> quote\n<Callout icon="📘">\nBody\n</Callout>';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'blockquote',
+            children: [{ type: 'paragraph', children: [{ type: 'text', value: 'quote' }] }, itemWithCallout.children[1]],
+          },
+        ],
+      });
+    });
+
+    it('ends the list when a blank line precedes an unindented component', () => {
+      const md = '- two\n\n<ExampleComponent header="h" />';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }] },
+          { type: 'mdxJsxFlowElement', name: 'ExampleComponent', children: [] },
+        ],
+      });
+    });
+
+    it('ends the item at a single-line component on an under-indented line', () => {
+      // Only a token still open across the line keeps the item open; a one-line claim closes it.
+      const md = '- one\n<ExampleComponent header="h" />\n- two';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'one' }] }] }] },
+          { type: 'mdxJsxFlowElement', name: 'ExampleComponent', children: [] },
+          { type: 'list', children: [{ type: 'listItem', children: [{ type: 'paragraph', children: [{ type: 'text', value: 'two' }] }] }] },
+        ],
+      });
+    });
+
+    it('falls back without throwing when the component is never closed', () => {
+      const md = '- one\n<Callout icon="📘">\nBody\n';
+      expect(parseMdxish(md)).toMatchObject({
+        children: [
+          {
+            type: 'list',
+            children: [
+              {
+                type: 'listItem',
+                children: [
+                  { type: 'paragraph', children: [{ type: 'text', value: 'one' }] },
+                  { type: 'html', value: '<Callout icon="📘">' },
+                  { type: 'paragraph', children: [{ type: 'text', value: 'Body' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      expect(() => mdxish(md)).not.toThrow();
     });
   });
 });

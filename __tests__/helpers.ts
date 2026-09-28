@@ -139,3 +139,24 @@ export const collectNodes = <T extends Node = Node>(
   });
   return out;
 };
+
+/**
+ * Spies on an <img>'s `src` setter so tests can assert whether `useRestartAnimatedImages`
+ * rewound it (see `gifRestartWrites`) or left it untouched (no writes).
+ */
+export const spyOnImageSrc = (img: HTMLImageElement) => {
+  const spy = vi.spyOn(img, 'src', 'set');
+  return {
+    /** Every value written to `src`, in order. */
+    get writes(): string[] {
+      return spy.mock.calls.map(([value]) => value);
+    },
+    restore: () => spy.mockRestore(),
+  };
+};
+
+/**
+ * The `src` writes a GIF restart produces: cleared, then restored. Reassigning `src` is the
+ * only way to rewind an animated image to frame 0.
+ */
+export const gifRestartWrites = (src: string) => ['', src];

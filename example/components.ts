@@ -93,6 +93,16 @@ export const Grid = ({ children }) => {
   return <div className="grid grid-cols-2 gap-4">{children}</div>;
 };
   `,
+
+  ExpressionPropCodeBlock: `
+export const ExpressionPropCodeBlock = ({ code = '' }) => {
+  return (
+    <pre>
+      <code>{code}</code>
+    </pre>
+  );
+};
+  `,
 };
 
 export default components;

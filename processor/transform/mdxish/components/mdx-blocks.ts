@@ -22,12 +22,18 @@ import {
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 
-// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. */
-const NESTED_ATTR_EXPRESSION_RE = /[\w-]+\s*=\s*\{/;
+// Matches a JSX attribute expression (e.g. `key={i}`) anywhere in a string. One name
+// char suffices for existence — `[\w-]+` backtracked quadratically over huge attributes.
+const NESTED_ATTR_EXPRESSION_RE = /[\w-]\s*=\s*\{/;
 
 // Name shape mirrors `componentTagPattern`; the lookbehind skips the inner tag
 // of a legacy `<<VARIABLE>>`.
 const NESTED_COMPONENT_TAG_RE = /(?<!<)<([A-Z][A-Za-z0-9_]*)[\s/>]/g;
+
+// Whole blank lines at a component body's edges. `\n` sits inside each group so a
+// match can only ever span complete lines, never part of a content line.
+const LEADING_BLANK_LINES_RE = /^(?:[ \t]*\n)+/;
+const TRAILING_BLANK_LINES_RE = /(?:\n[ \t]*)+$/;
 
 // Excludes tags with dedicated transformers (`Table`, `HTMLBlock`, inline
 // components), which expect their wrapper to stay raw.
@@ -67,17 +73,27 @@ function safeDeindent(text: string): string {
 }
 
 /**
+ * Drop the blank lines at a component body's edges, keeping the first content line's
+ * indent: `.trim()` stripped that line alone, so a uniformly indented body reparsed
+ * lopsided and every list item after the first nested. The trailing pattern
+ * takes the last content line's newline but leaves its spaces, which are code content
+ * when a fence runs into the end tag.
+ */
+const trimBlankEdges = (text: string): string =>
+  text.replace(LEADING_BLANK_LINES_RE, '').replace(TRAILING_BLANK_LINES_RE, '');
+
+/**
  * Parse component-body markdown into mdast children. Dedenting shifts columns and
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
 const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(safeDeindent(value).trim());
+  const reparseSource = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(value)));
   const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
-  promoteComponentBlocks(parsed as Parent, safeMode, null);
+  promoteComponentBlocks(parsed as Parent, safeMode, reparseSource);
   const children = parsed.children || [];
   // These children root a new coordinate space: their offsets index into `reparseSource`.
   stampReparseSource(children, reparseSource);
@@ -106,29 +122,31 @@ interface ComponentNodeOptions {
 }
 
 // Ends the position at `consumedLength` so the component doesn't claim trailing
-// content the tokenizer swallowed into the same html node.
+// content the tokenizer swallowed into the same html node. Measured against the source
+// when available: each value line is its source line minus the container prefix
+// (list indent, `> `) micromark stripped, so those prefixes are counted back in.
 const positionEndingAtConsumed = (
   nodePosition: Node['position'],
   value: string,
   consumedLength: number,
+  source: string | null,
 ): Node['position'] => {
   if (!nodePosition?.start) return nodePosition;
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, value.slice(0, consumedLength)) };
-};
+  const consumedValue = value.slice(0, consumedLength);
+  const sourceLines = source?.slice(nodePosition.start.offset, nodePosition.end?.offset).split('\n');
+  const valueLines = value.split('\n');
+  if (!sourceLines || sourceLines.length !== valueLines.length) {
+    return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedValue) };
+  }
 
-// Like `positionEndingAtConsumed`, but measures against the original source so
-// blockquote/list prefixes stripped from the html node's value are counted.
-const positionEndingAtClosingTagInSource = (
-  nodePosition: Node['position'],
-  closingTag: string,
-  source: string,
-): Node['position'] => {
-  if (!nodePosition?.start || !nodePosition.end) return nodePosition;
-  const nodeSource = source.slice(nodePosition.start.offset, nodePosition.end.offset);
-  const closingTagOffset = nodeSource.lastIndexOf(closingTag);
-  if (closingTagOffset === -1) return nodePosition;
-  const consumed = nodeSource.slice(0, closingTagOffset + closingTag.length);
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumed) };
+  const consumedLines = consumedValue.split('\n');
+  const lastLineIndex = consumedLines.length - 1;
+  const prefixWidth = sourceLines[lastLineIndex].length - valueLines[lastLineIndex].length;
+  const consumedSource = [
+    ...sourceLines.slice(0, lastLineIndex),
+    sourceLines[lastLineIndex].slice(0, prefixWidth + consumedLines[lastLineIndex].length),
+  ].join('\n');
+  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedSource) };
 };
 
 const createComponentNode = ({
@@ -254,17 +272,19 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
 
     // Case 1: Self-closing tag
     if (selfClosing) {
+      const remainingContent = contentAfterTag.trim();
       const componentNode = createComponentNode({
         tag,
         attributes,
         children: [],
         startPosition: node.position,
-        // End at the self-closing tag, not at any trailing content.
-        endPosition: positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd),
+        // Without trailing content the whole node position is correct; with it, end at the tag.
+        endPosition: remainingContent
+          ? positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd, source)
+          : node.position,
       });
       substituteNodeWithMdxNode(parent, index, componentNode);
 
-      const remainingContent = contentAfterTag.trim();
       if (remainingContent) {
         parseSibling(parent, index, remainingContent, safeMode, promoted);
       }
@@ -274,7 +294,8 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     // Case 2: Self-contained block (closing tag in content)
     const closingTagIndex = isPlainLowercaseHtml ? plainClosingTagIndex : contentAfterTag.lastIndexOf(closingTagStr);
     if (closingTagIndex >= 0) {
-      // Untrimmed so parseMdChildren can dedent before trimming.
+      // Left as authored: parseMdChildren needs the original columns to dedent by, and
+      // it clears the blank edges itself.
       const componentInnerContent = contentAfterTag.substring(0, closingTagIndex);
       const contentAfterClose = contentAfterTag.substring(closingTagIndex + closingTagStr.length).trim();
       let parsedChildren: MdxJsxFlowElement['children'] = [];
@@ -299,18 +320,15 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         if (soleParagraph.data?.reparseSource) stampReparseSource(parsedChildren, soleParagraph.data.reparseSource);
         unwrappedSoleParagraph = true;
       }
-      // Without trailing content the whole node position is correct. With it, end
-      // precisely at the closing tag — preferring source offsets when available (the
-      // node's value strips blockquote/list prefixes), else the consumed span.
+      // Without trailing content the whole node position is correct; with it, end at the closing tag.
       let endPosition = node.position;
       if (contentAfterClose) {
-        endPosition = source
-          ? positionEndingAtClosingTagInSource(node.position, closingTagStr, source)
-          : positionEndingAtConsumed(
-              node.position,
-              value,
-              leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-            );
+        endPosition = positionEndingAtConsumed(
+          node.position,
+          value,
+          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
+          source,
+        );
       }
       const componentNode = createComponentNode({
         tag,

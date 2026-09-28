@@ -5,7 +5,7 @@ import { renderToString } from 'react-dom/server';
 import { compile, run } from '../../index';
 
 describe('toc transformer', () => {
-  it('parses out a toc with max depth of 2', () => {
+  it('parses out a toc with max depth of 3', () => {
     const md = `
 # Title
 
@@ -13,16 +13,19 @@ describe('toc transformer', () => {
 
 ### Third
 
+#### Fourth
+
 ## Second Subheading
 `;
     const { Toc } = run(compile(md));
 
     render(<Toc />);
 
-    expect(screen.findByText('Title')).toBeDefined();
-    expect(screen.findByText('Subheading')).toBeDefined();
-    expect(screen.queryByText('Third')).toBeNull();
-    expect(screen.findByText('Second Subheading')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Title' })).toHaveAttribute('href', '#title');
+    expect(screen.getByRole('link', { name: 'Subheading' })).toHaveAttribute('href', '#subheading');
+    expect(screen.getByRole('link', { name: 'Third' })).toHaveAttribute('href', '#third');
+    expect(screen.queryByText('Fourth')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Second Subheading' })).toHaveAttribute('href', '#second-subheading');
   });
 
   it('parses a toc from components', () => {
@@ -227,6 +230,48 @@ export const toc = [
 
     expect(screen.findByText('Hello John!')).toBeDefined();
     expect(screen.findByText('Setup for admins')).toBeDefined();
+  });
+
+  it('stringifies structured variables in labels', async () => {
+    const md = `# Keys {user.keys}
+
+## Profile {user.profile} {user.limit}`;
+    const variables = {
+      user: {
+        keys: [{ apiKey: 'rdme_123' }],
+        limit: 25,
+        profile: { plan: 'enterprise' },
+      },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
+
+    render(<Toc />);
+
+    expect(await screen.findByText('Keys [{"apiKey":"rdme_123"}]')).toBeDefined();
+    expect(await screen.findByText('Profile {"plan":"enterprise"} 25')).toBeDefined();
+  });
+
+  it('falls back to the variable name for nullish values in labels', async () => {
+    const md = `# Hello {user.nullValue}
+
+## Bye {user.undefinedValue}
+`;
+    const variables = {
+      user: {
+        nullValue: null,
+        undefinedValue: undefined,
+      },
+      defaults: [],
+    };
+
+    const { Toc } = run(compile(md), { variables });
+
+    render(<Toc />);
+
+    expect(await screen.findByText('Hello nullValue')).toBeDefined();
+    expect(await screen.findByText('Bye undefinedValue')).toBeDefined();
   });
 
   it('keeps mixed inline phrasing together', () => {

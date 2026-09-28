@@ -1,4 +1,4 @@
-import type { MdxTextExpression } from 'mdast-util-mdx-expression';
+import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 
 import { describe, it, expect } from 'vitest';
 
@@ -6,6 +6,7 @@ import { mdxish, mix } from '../../../lib';
 import { collectNodes, findElementByTagName, parseMdxish } from '../../helpers';
 
 const textExpressions = (doc: string) => collectNodes<MdxTextExpression>(parseMdxish(doc), 'mdxTextExpression');
+const flowExpressions = (doc: string) => collectNodes<MdxFlowExpression>(parseMdxish(doc), 'mdxFlowExpression');
 
 /**
  * Suite for the lenient MDX text-expression tokenizer, which replaced the old
@@ -108,6 +109,105 @@ describe('mdxExpressionLenient tokenizer', () => {
       ['surrounded by prose', 'Hello {\n\n} World'],
     ])('does not throw: %s', (_name, input) => {
       expect(() => mdxish(input)).not.toThrow();
+    });
+  });
+
+  describe('flow expressions (a run spanning several lines)', () => {
+    // A `<Component>` at the start of a line opens a block, which would end the paragraph a text
+    // expression lives in and split the run into pieces. The flow construct claims every line of
+    // the run instead, so a branch can sit on its own line.
+    const conditional = ['{user ? (', '  <Callout theme="info">', '    Yes', '  </Callout>', ') : null}'].join('\n');
+
+    it('tokenizes a run whose branch sits on its own line as one node', () => {
+      const [expression] = flowExpressions(conditional);
+
+      expect(expression.value).toContain('<Callout theme="info">');
+      expect(textExpressions(conditional)).toHaveLength(0);
+    });
+
+    it.each([
+      ['a parenthesized branch', conditional],
+      ['a tag at column zero', '{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}'],
+      ['a body at column zero', '{true ? (\n<Callout theme="info">\nYes\n</Callout>\n) : null}'],
+      ['a deeply indented body', '{true ? (\n        <Callout theme="info">\n                Yes\n        </Callout>\n) : null}'],
+      ['an unevenly indented body', '{true ? (\n  <Callout theme="info">\n           Yes\n      More\n  </Callout>\n) : null}'],
+      ['a callback returning a tag', '{[1].map(i => (\n  <Callout theme="info" key={i}>Yes</Callout>\n))}'],
+      ['nested components', '{true ? (\n  <Tabs>\n    <Tab title="One">Yes</Tab>\n  </Tabs>\n) : null}'],
+    ])('evaluates %s without leaking the expression syntax', (_name, doc) => {
+      const html = mix(doc, { variables: { user: { name: 'Dee' }, defaults: [] } });
+
+      expect(html).toContain('Yes');
+      expect(html).not.toContain('{');
+      expect(html).not.toContain('}');
+    });
+
+    it('leaves a single-line expression as a text expression inside its paragraph', () => {
+      // Claiming these as flow would drop the `<p>` every standalone `{expr}` line renders with.
+      expect(flowExpressions('{1 + 1}')).toHaveLength(0);
+      expect(mix('{1 + 1}')).toBe('<p>2</p>');
+    });
+
+    it('wraps a literal fallback in a paragraph rather than leaving bare text at the root', () => {
+      const html = mix(['Before', '', '{nope ? (', '  <Callout theme="info">x</Callout>', ') : null}', '', 'After'].join('\n'));
+
+      expect(html).toContain('<p>Before</p>');
+      expect(html).toContain('<p>After</p>');
+      expect(html).toMatch(/<p>\{nope \? \(/);
+    });
+
+    it('does not end a paragraph, so a magic-block body is left to the magic block', () => {
+      // `[block:callout]` puts a multiline `{…}` run on the next line; claiming it would swallow
+      // the body before `magicBlockTransformer` sees it.
+      const html = mix('Before [block:callout]\n{\n  "type": "info",\n  "body": "b"\n}\n[/block] after');
+
+      expect(html).toContain('<Callout');
+      expect(html).toContain('b');
+      expect(html).not.toContain('"type"');
+    });
+
+    it.each([
+      ['a stray brace before a blank line', 'a { b\n\nc'],
+      ['a stray brace before a whitespace-only line', 'a { b\n   \nc'],
+      ['an unclosed brace running to the end of input', 'text with { unclosed\nmore text'],
+    ])('leaves %s literal without claiming the rest of the document', (_name, doc) => {
+      expect(flowExpressions(doc)).toHaveLength(0);
+      expect(mix(doc)).toContain('{');
+    });
+
+    it('ends the run at a whitespace-only line exactly as at an empty one', () => {
+      expect(mix('{ a\n   \n}')).toBe(mix('{ a\n\n}'));
+    });
+
+    // A stray `{` followed by a block that happens to contain a `}` would otherwise balance and
+    // claim the block; a paragraph lets these constructs interrupt it, so the run does too.
+    it.each([
+      ['a fenced code block', '{foo\n```\ncode }\n```', '<pre>'],
+      ['a heading', '{foo\n# heading }', '<h1'],
+      ['a thematic break', '{foo\n***\n}', '<hr>'],
+      ['a list', '{foo\n- item }', '<ul>'],
+      ['a blockquote', '{foo\n> quote }', '<blockquote>'],
+    ])('lets %s interrupt the run rather than swallowing it', (_name, doc, tag) => {
+      expect(flowExpressions(doc)).toHaveLength(0);
+      expect(mix(doc)).toContain(tag);
+    });
+
+    it.each([
+      ['a JSX branch', '{true ? (\n  <Callout theme="info">\n    Yes\n\n  </Callout>\n) : null}'],
+      ['a callback body', '{[1].map(n => {\n  const label = "Yes";\n\n  return <Callout theme="info" key={n}>{label}</Callout>;\n})}'],
+    ])('keeps a blank line inside %s as part of the run', (_name, doc) => {
+      expect(flowExpressions(doc)).toHaveLength(1);
+      expect(mix(doc)).toBe('<Callout theme="info"><p>Yes</p></Callout>');
+    });
+
+    it('ends the run at a blank line when no bracket is open, so prose about braces stays prose', () => {
+      const html = mix('{ is the opening delimiter.\n\nSome **bold** prose.\n\nClose it with }.');
+
+      expect(html).toContain('<p>{ is the opening delimiter.</p>');
+      expect(html).toContain('<strong>bold</strong>');
+    });
+
+    it('does not let a component tag interrupt the run', () => {
+      expect(flowExpressions('{true ? (\n<Callout theme="info">Yes</Callout>\n) : null}')).toHaveLength(1);
     });
   });
 

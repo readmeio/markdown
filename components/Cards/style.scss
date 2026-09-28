@@ -1,4 +1,4 @@
-@import '../../styles/mixins/dark-mode.scss';
+@import '../../styles/mixins/when-color-mode-dark.scss';
 
 $iphone-plus: 414px;
 
@@ -46,7 +46,7 @@ $iphone-plus: 414px;
     --Card-layout: column;
     --Card-padding: 1.5em;
 
-    @include dark-mode {
+    @include when-color-mode-dark('.rm-ReadMe') {
       --Card-bg-color: rgba(var(--color-bg-page-inverse-rgb), 0.05);
       --Card-bg-color-hover: rgba(var(--color-bg-page-inverse-rgb), 0.1);
     }

@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMdx from 'remark-mdx';
 
 import transformers, {
+  flattenAttributeExpressions,
   mermaidTransformer,
   readmeComponentsTransformer,
   variablesTransformer,
@@ -17,6 +18,9 @@ export interface MdastOpts {
   components?: Record<string, string>;
   missingComponents?: 'ignore' | 'throw';
   remarkPlugins?: PluggableList;
+  // Needed to ensure no expression evaluation is done in the AST
+  // and no code is executed
+  safeMode?: boolean;
 }
 
 export const remarkPlugins = [remarkFrontmatter, remarkGfm, ...transformers];
@@ -27,6 +31,9 @@ const astProcessor = (opts: MdastOpts = {}) => {
 
   let processor = remark()
     .use(remarkMdx)
+    // Must precede every other transformer: it strips evaluable attribute expressions so no
+    // downstream `getAttrs()` call can reach `evaluate()`.
+    .use(opts.safeMode ? flattenAttributeExpressions : undefined)
     .use(remarkPlugins)
     .use(opts.remarkPlugins)
     .use(variablesTransformer, { asMdx: false })

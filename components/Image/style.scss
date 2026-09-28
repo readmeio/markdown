@@ -1,7 +1,7 @@
 /* stylelint-disable selector-max-compound-selectors */
 /* stylelint-disable no-descending-specificity */
 /* stylelint-disable font-family-no-missing-generic-family-keyword */
-@import '../../styles/mixins/dark-mode.scss';
+@import '../../styles/mixins/when-color-mode-dark.scss';
 %img-align {
   &-right {
     float: right;
@@ -147,7 +147,7 @@
     padding: var(--size-12);
     max-width: 100%;
 
-    @include dark-mode($global: true) {
+    @include when-color-mode-dark('.rm-ReadMe', $global: true) {
       background: rgba(var(--color-bg-page-inverse-rgb), 0.1);
     }
 

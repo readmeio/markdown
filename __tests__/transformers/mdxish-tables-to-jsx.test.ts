@@ -1,11 +1,11 @@
-import type { Parent, Root } from 'mdast';
+import type { Parent, Root, Root as MdastRoot, TableCell } from 'mdast';
 
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import mdxishTablesToJsx from '../../processor/transform/mdxish/tables/mdxish-tables-to-jsx';
-import { collectNodes, roundTripMdxish } from '../helpers';
+import { collectNodes, parseMdxish, roundTripMdxish } from '../helpers';
 
 /**
  * A pipe table cannot express a multi-line cell, so the CX-3773 cases have to start
@@ -247,6 +247,118 @@ describe('mdxish-tables-to-jsx', () => {
 
       expect(collectNodes(tree, 'table')).toHaveLength(1);
       expect(collectNodes(tree, 'mdxJsxFlowElement')).toHaveLength(0);
+    });
+  });
+
+  describe('lowercase tables', () => {
+    const listCell = ['<ul>', '<li>one</li>', '<li>two</li>', '</ul>'].join('\n');
+
+    const lowercaseTableWithCell = (cell: string, openTag = '<table>'): string =>
+      [
+        openTag,
+        '<thead>',
+        '<tr>',
+        '<th>Name</th>',
+        '<th>Notes</th>',
+        '</tr>',
+        '</thead>',
+        '<tbody>',
+        '<tr>',
+        '<td>Foo</td>',
+        '<td>',
+        cell,
+        '</td>',
+        '</tr>',
+        '</tbody>',
+        '</table>',
+        '',
+      ].join('\n');
+
+    const flowTable = (lowercaseTable: boolean): MdastRoot => ({
+      type: 'root',
+      children: [
+        {
+          type: 'table',
+          align: [null],
+          ...(lowercaseTable && { data: { lowercaseTable: true } }),
+          children: [
+            { type: 'tableRow', children: [{ type: 'tableCell', children: [{ type: 'text', value: 'H' }] }] },
+            {
+              type: 'tableRow',
+              children: [
+                {
+                  type: 'tableCell',
+                  // A code block has no single-line GFM form, so this table must serialize as JSX.
+                  children: [{ type: 'code', value: 'x' } as unknown as TableCell['children'][number]],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    /** Runs the serializer transform in place and returns the same tree. */
+    const toJsx = (tree: MdastRoot): MdastRoot => {
+      mdxishTablesToJsx()(tree);
+      return tree;
+    };
+
+    it('converts a stamped table with a flow-content cell into a lowercase table element', () => {
+      const tree = parseMdxish(lowercaseTableWithCell(listCell));
+      expect(collectNodes(tree, 'table')).toHaveLength(1);
+
+      expect(toJsx(tree).children[0]).toMatchObject({
+        type: 'mdxJsxFlowElement',
+        name: 'table',
+        attributes: [],
+        children: [
+          {
+            name: 'thead',
+            children: [{ name: 'tr', children: [{ name: 'th' }, { name: 'th' }] }],
+          },
+          {
+            name: 'tbody',
+            children: [
+              {
+                name: 'tr',
+                children: [
+                  { name: 'td', children: [{ type: 'text', value: 'Foo' }] },
+                  { name: 'td', children: [{ type: 'mdxJsxFlowElement', name: 'ul' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    it('converts a stamped phrasing-only table into a table element instead of leaving it GFM', () => {
+      const tree = toJsx(parseMdxish(lowercaseTableWithCell('plain')));
+
+      expect(collectNodes(tree, 'table')).toHaveLength(0);
+      expect(tree.children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'table', attributes: [] });
+    });
+
+    it('keeps the Table element name when the stamp is absent', () => {
+      expect(toJsx(flowTable(false)).children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Table' });
+      expect(toJsx(flowTable(true)).children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'table' });
+    });
+
+    it('keeps a <Table> source as a Table element', () => {
+      const source = lowercaseTableWithCell(listCell, '<Table>').replace('</table>', '</Table>');
+
+      expect(toJsx(parseMdxish(source)).children[0]).toMatchObject({ type: 'mdxJsxFlowElement', name: 'Table' });
+    });
+
+    it('leaves a stamped table with no rows untouched instead of throwing', () => {
+      const tree: MdastRoot = {
+        type: 'root',
+        children: [{ type: 'table', align: [], data: { lowercaseTable: true }, children: [] }],
+      };
+
+      expect(() => toJsx(tree)).not.toThrow();
+      expect(tree.children[0]).toStrictEqual({ type: 'table', align: [], data: { lowercaseTable: true }, children: [] });
     });
   });
 });

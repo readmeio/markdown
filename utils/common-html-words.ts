@@ -1,4 +1,5 @@
 import htmlTags from 'html-tags';
+import { html as parse5Html } from 'parse5';
 import reactHtmlAttributes from 'react-html-attributes';
 import { allProps as reactNativeStylingProps } from 'react-native-known-styling-properties';
 
@@ -87,10 +88,44 @@ export const CUSTOM_PROP_BOUNDARIES = [
 export const RUNTIME_COMPONENT_TAGS = new Set(['Variable', 'variable', 'html-block', 'rdme-pin']);
 
 /**
- * Standard HTML tags that should never be treated as custom components.
- * Uses the html-tags package, converted to a Set<string> for efficient lookups.
+ * Elements that are not actually standard HTML tags, or those that we intentionally
+ * don't want to treat as one & is mute to check with. These include:
+ * - SVG/MathML descendants
+ * - Namespaced foreign content
+ * - `image`, which the HTML tree builder rewrites to `img`
+ * Most of these are bundled in parse5's `TAG_NAMES` set, but we can also add a few more.
  */
-export const STANDARD_HTML_TAGS = new Set(htmlTags) as Set<string>;
+const NON_STANDARD_TAGS = new Set<string>([
+  'annotation-xml',
+  'desc',
+  'foreignObject',
+  'image',
+  'malignmark',
+  'mglyph',
+  'mi',
+  'mn',
+  'mo',
+  'ms',
+  'mtext',
+]);
+
+/**
+ * Standard HTML tags list.
+ * A use case of this is to differentiate custom components tag vs standard HTML tags.
+ * 
+ * Unioned from:
+ * - `html-tags`: All modern spec HTML elements
+ * - parse5's `TAG_NAMES`: Elements the HTML tree-construction algorithm has to special-case
+ *   This includes obsolete tags that are still rendered by browsers.
+ * - NON_STANDARD_TAGS: We've had to filter because currently parse5's `TAG_NAMES` set over-enumerates 
+ *   tags that are not actually standard HTML tags. It also allows custom tags to be filtered out.
+ */
+export const STANDARD_HTML_TAGS: Set<string> = new Set([
+  ...htmlTags,
+  ...Object.values(parse5Html.TAG_NAMES),
+  'acronym',  // Obselete tag not included either of the above sources. Add here if we have missed any.
+  'blink',
+].filter(tag => !NON_STANDARD_TAGS.has(tag)));
 
 /**
  * Table structural tags. Blank lines inside these carry deliberate meaning for

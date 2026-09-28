@@ -3,6 +3,9 @@
  */
 export const componentTagPattern = /<(\/?[A-Z][A-Za-z0-9_]*)([^>]*?)(\/?)>/g;
 
+/** A bare component name, the same shape `componentTagPattern` accepts inside `<…>`. */
+export const componentNamePattern = /^[A-Z][A-Za-z0-9_]*$/;
+
 /**
  * MDAST flow (block-level) content types that cannot be represented
  * inside GFM table cells. Used to decide whether a table should be

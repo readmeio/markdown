@@ -176,6 +176,29 @@ describe('mdxishAstProcessor', () => {
       expect(sliceOf(emphasis)).toBe('*sibling*');
     });
 
+    it('resolves a multi-line self-closing component under a list item inside a body (CX-3940)', () => {
+      const md = [
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    - four',
+        '      <ExampleComponent',
+        '      header="x"',
+        '      /> trailing',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const listItem = (tab.children.find(child => child.type === 'list') as Parent).children[0] as Parent;
+      expect(listItem.children).toMatchObject([
+        { type: 'paragraph', children: [{ type: 'text', value: 'four' }] },
+        { type: 'mdxJsxFlowElement', name: 'ExampleComponent' },
+        { type: 'paragraph', children: [{ type: 'text', value: 'trailing' }] },
+      ]);
+      expect(sliceOf(findJsxChild(listItem, 'ExampleComponent'))).toBe('<ExampleComponent\n  header="x"\n  />');
+    });
+
     it('resolves deeply indented bodies against the dedented source', () => {
       const md = [
         '<Tabs>',
@@ -252,8 +275,11 @@ describe('mdxishAstProcessor', () => {
       const md = ['<Wrapper>', '  <div>A **bold** move</div>', '</Wrapper>'].join('\n');
       const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
 
+      // The body keeps its indent (RM-17790), and remark reports an indented html node's
+      // position from the line start — so the span opens on the indent, as it does for
+      // indented html outside a component body.
       const div = findJsxChild(findJsxChild(tree, 'Wrapper'), 'div');
-      expect(sliceOf(div)).toBe('<div>A **bold** move</div>');
+      expect(sliceOf(div)).toBe('  <div>A **bold** move</div>');
 
       // A lowercase tag unwraps its sole paragraph, so phrasing sits directly under `div`.
       const strong = (div as Parent).children.find(child => child.type === 'strong')!;
@@ -265,7 +291,7 @@ describe('mdxishAstProcessor', () => {
       const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
 
       const button = findJsxChild(findJsxChild(tree, 'Wrapper'), 'button');
-      expect(sliceOf(button)).toBe('<button style={{ color: "red" }}>Click me</button>');
+      expect(sliceOf(button)).toBe('  <button style={{ color: "red" }}>Click me</button>');
     });
 
     it('resolves a component nested inside a list item of a component body', () => {
