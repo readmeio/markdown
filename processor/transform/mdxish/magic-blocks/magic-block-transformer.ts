@@ -338,7 +338,7 @@ function transformMagicBlock(
   rawValue: string,
   options: MagicBlockTransformerOptions = {},
 ): MdastNode[] {
-  const { compatibilityMode = false, hardBreaks = true, safeMode = false } = options;
+  const { compatibilityMode = false, hardBreaks = true } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
   // This allows the editor to show appropriate placeholder UI instead of nothing
@@ -585,7 +585,7 @@ function transformMagicBlock(
           {
             data: {
               hName: 'html-block',
-              hProperties: { html: htmlJson.html, runScripts: compatibilityMode, safeMode },
+              hProperties: { html: htmlJson.html, runScripts: compatibilityMode },
             },
             type: 'html-block',
           },
