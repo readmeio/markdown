@@ -602,21 +602,17 @@ const wrapBareCellsInRow = (node: Node): void => {
 const lowercaseTableIsConvertible = (jsx: MdxJsxFlowElement): boolean => {
   if (jsx.attributes.length > 0) return false;
 
-  let headerRow: MdxJsxFlowElement | MdxJsxTextElement | undefined;
-  visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (child.name === 'tr' && !headerRow) headerRow = child;
-  });
-
   const headerCells = new Set<Node>();
-  if (headerRow) {
-    visit(headerRow as Node, isTableCell, cell => {
-      headerCells.add(cell);
-    });
-  }
-
+  let headerRowSeen = false;
   let convertible = true;
   visit(jsx as Node, isMDXElement, (child: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (!tableTags.has(child.name || '') || child.attributes.length === 0) return;
+    if (child.name === 'tr' && !headerRowSeen) {
+      headerRowSeen = true;
+      visit(child as Node, isTableCell, cell => {
+        headerCells.add(cell);
+      });
+    }
+    if (child.name === null || !tableTags.has(child.name) || child.attributes.length === 0) return;
     if (!headerCells.has(child) || !hasOnlyWidthAttributes(child) || getCellWidth(child) === null) {
       convertible = false;
     }
