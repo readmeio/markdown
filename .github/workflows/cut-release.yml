@@ -40,9 +40,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          conclusion="$(gh run list --repo "${GITHUB_REPOSITORY}" --branch next --workflow CI --limit 1 --json conclusion --jq '.[0].conclusion // empty')"
+          # --branch next can return a stale run from the Actions search index.
+          # Check the tip commit; that is what we are about to merge.
+          sha="$(git rev-parse origin/next)"
+          conclusion="$(gh run list --repo "${GITHUB_REPOSITORY}" --commit "${sha}" --event push --workflow CI --limit 1 --json conclusion --jq '.[0].conclusion // empty')"
           if [ "${conclusion}" != 'success' ]; then
-            echo "Latest CI run on next is '${conclusion:-missing}', expected success."
+            echo "CI on next (${sha}) is '${conclusion:-missing}', expected success."
             exit 1
           fi
 
