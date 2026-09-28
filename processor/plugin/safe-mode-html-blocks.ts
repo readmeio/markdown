@@ -22,7 +22,7 @@ const isHtmlBlockTag = (tagName: string): boolean => toPascalCase(tagName).toLow
  * `<html-block>` — and it is unconditional so an author-supplied
  * `safeMode="false"` can't opt out.
  */
-export const rehypeSafeModeHtmlBlocks = (): Transformer<Root, Root> => tree => {
+export const enforceSafeModeHtmlBlocks = (): Transformer<Root, Root> => tree => {
   visit(tree, 'element', node => {
     if (isHtmlBlockTag(node.tagName)) node.properties.safeMode = 'true';
   });
