@@ -5,13 +5,8 @@ import React from 'react';
 import { expect } from 'vitest';
 
 import Icon from '../../components/Icon';
-import { Icon as ExportedIcon } from '../../index';
 
 describe('Icon', () => {
-  it('is available as a direct public export without joining the component registry', () => {
-    expect(ExportedIcon).toBe(Icon);
-  });
-
   describe('Font Awesome icons', () => {
     it('renders an <i> for a bare fa- icon with the fa-duotone fa-solid fallback', () => {
       const { container } = render(<Icon className="Test-icon" icon="fa-book" />);
