@@ -7,22 +7,10 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
 
+import { cellStyle } from './cell-style';
 import { hasChildren, normalizeCellChildrenForGfm } from './gfm-cell-normalization';
 
 const SELF_CLOSING_JSX_REGEX = /^\s*<[A-Z][^>]*\/>\s*$/;
-
-const alignToStyle = (align: 'center' | 'left' | 'right' | null) => {
-  if (!align || align === 'left') return null;
-
-  return {
-    type: 'mdxJsxAttribute',
-    name: 'style',
-    value: {
-      type: 'mdxJsxAttributeValueExpression',
-      value: `{ textAlign: "${align}" }`,
-    },
-  };
-};
 
 const isTableCell = (node: Node) => ['tableHead', 'tableCell'].includes(node.type);
 
@@ -89,13 +77,18 @@ const mdxishTablesToJsx = (): Transform => tree => {
         return undefined;
       });
 
-      const stayLowercase = table.data?.lowercaseTable === true;
+      const widths = table.data?.widths ?? [];
+      const hasWidths = widths.some(Boolean);
+      // Lowercase cells can carry a width but not an alignment, so an aligned table becomes <Table>
+      const hasAlignment = table.align.some(align => align && align !== 'left');
+      const stayLowercase = table.data?.lowercaseTable === true && !hasAlignment;
 
       // We transform to GFM tables if:
       // 1. If it doesn't contain complex elements that the syntax can't represent
-      // 2. The original table is not lowercase HTML <table>, because we want to 
+      // 2. The original table is not lowercase HTML <table>, because we want to
       // preserve original tables as much as possible
-      if (!requiresJsxTable && !stayLowercase) {
+      // 3. No column has a width, which GFM can't express
+      if (!requiresJsxTable && !stayLowercase && !hasWidths) {
         gfmCells.forEach(([cell, children]) => {
           cell.children = children;
         });
@@ -109,7 +102,8 @@ const mdxishTablesToJsx = (): Transform => tree => {
 
       visit(table, isTableCell, flattenBreaksToNewlines);
 
-      const styles = table.align.map(alignToStyle);
+      const headerStyles = table.align.map((align, i) => cellStyle(align, widths[i] ?? null, { html: stayLowercase }));
+      const bodyStyles = table.align.map(align => cellStyle(align, null, { html: stayLowercase }));
 
       const head: MdxJsxFlowElement = {
         attributes: [],
@@ -126,7 +120,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 type: 'mdxJsxFlowElement',
                 name: 'th',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(headerStyles[cellIndex] && { attributes: [headerStyles[cellIndex]] }),
               } as MdxJsxFlowElement;
             }),
           },
@@ -147,7 +141,7 @@ const mdxishTablesToJsx = (): Transform => tree => {
                 type: 'mdxJsxFlowElement',
                 name: 'td',
                 children: cell.children,
-                ...(styles[cellIndex] && { attributes: [styles[cellIndex]] }),
+                ...(bodyStyles[cellIndex] && { attributes: [bodyStyles[cellIndex]] }),
               };
             }),
           } as MdxJsxFlowElement;

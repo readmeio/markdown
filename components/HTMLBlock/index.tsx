@@ -38,8 +38,8 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   const [cleanedHtml, exec] = extractScripts(html);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && typeof runScripts === 'boolean' && runScripts) exec();
-  }, [runScripts, exec]);
+    if (typeof window !== 'undefined' && typeof runScripts === 'boolean' && runScripts && !safeMode) exec();
+  }, [runScripts, safeMode, exec]);
 
   if (nonStringChildren) {
     // Fail soft: a non-string child (e.g. JSX that wasn't serialized back to a

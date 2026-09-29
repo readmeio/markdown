@@ -62,6 +62,15 @@ describe('HTML Block', () => {
     expect(screen.getByText('x')).toBeInTheDocument();
   });
 
+  it("doesn't run user scripts in safeMode even when runScripts is set", () => {
+    render(
+      <HTMLBlock runScripts={true} safeMode={true}>
+        {'<script>mockFn()</script>'}
+      </HTMLBlock>,
+    );
+    expect(g.mockFn).toHaveBeenCalledTimes(0);
+  });
+
   it("doesn't run scripts on the server (even in compat mode)", () => {
     const html = `
     <h1>Hello World</h1>
