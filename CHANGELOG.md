@@ -1,6 +1,15 @@
 Changelog
 ===
 
+## Version 15.9.0
+### ✨ New & Improved
+
+* **mdxish:** round-trip table column widths through JSX <Table> ([#1619](https://github.com/readmeio/markdown/issues/1619)) ([76dfe93](https://github.com/readmeio/markdown/commit/76dfe93567cd24b3b5200d9cae7ff0cd18c58fad))
+
+### 🛠 Fixes & Updates
+
+* **mdxish:** render html blocks escaped in safeMode ([#1629](https://github.com/readmeio/markdown/issues/1629)) ([c48ce6e](https://github.com/readmeio/markdown/commit/c48ce6e29dab6841ad6b602e003ac39e88b5f2ae))
+
 ## Version 15.8.0
 ### ✨ New & Improved
 
