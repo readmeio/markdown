@@ -347,6 +347,33 @@ describe('mdxishAstProcessor', () => {
       const strong = (span as Parent).children.find(child => child.type === 'strong')!;
       expect(sliceOf(strong)).toBe('**emphatic**');
     });
+
+    // CX-4004: `mdxishJsxToMdast` replaces the stamped JSX node with a new mdast node.
+    it('resolves a component converted to an mdast node inside a component body', () => {
+      const md = [
+        'Hello world',
+        '',
+        '<Tabs>',
+        '  <Tab title="One">',
+        '    <Callout icon="📘" theme="info">',
+        '      Some **bold** {bucket}',
+        '    </Callout>',
+        '  </Tab>',
+        '</Tabs>',
+      ].join('\n');
+      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+
+      const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
+      const callout = tab.children.find(child => child.type === 'rdme-callout')!;
+      expect(sliceOf(callout)).toBe(
+        ['<Callout icon="📘" theme="info">', '  Some **bold** {bucket}', '</Callout>'].join('\n'),
+      );
+
+      // `children[0]` is the synthesized (positionless) title placeholder.
+      const [, paragraph] = (callout as Parent).children;
+      expect(sliceOf(paragraph)).toBe('Some **bold** {bucket}');
+      expect(sliceOf((paragraph as Parent).children.find(child => child.type === 'strong')!)).toBe('**bold**');
+    });
   });
 
   it('should return a unified processor and parser-ready content for simple text', () => {
