@@ -184,6 +184,11 @@
     --fa-primary-color: var(--Callout-title);
     --fa-secondary-color: var(--Callout-title);
 
+    // The duotone vars above don't reach a single-color glyph, which takes the `color` that
+    // `calloutCustomIcons` sets with `!important` (hence the matching `!important` here).
+    // `--icon-color` stays first so a customer's override still wins.
+    color: var(--icon-color, var(--Callout-title)) !important;
+
     margin-top: 0.25rem;
   }
 }

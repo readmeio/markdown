@@ -1923,6 +1923,19 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
     expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="📘" theme="info">');
   });
 
+  it.each(['default', 'info', 'okay', 'warn', 'error'])('keeps a cleared icon off a %s callout', theme => {
+    const mdast = callout({ icon: '', theme, empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'No icon' }] },
+    ]);
+
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout theme="${theme}">
+  ### No icon
+</Callout>
+`,
+    );
+  });
+
   it('converts nested callouts in the body to JSX', () => {
     const mdast = callout({ icon: '📘', theme: 'info', empty: false }, [
       { type: 'heading', depth: 3, children: [{ type: 'text', value: 'Outer' }] },
