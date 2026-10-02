@@ -82,7 +82,8 @@ export const parseMdxishWithSource = (
   opts: MdxishOpts = {},
 ): { source: string; tree: MdastRoot } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+  // Pass the source as the file, as the editor's `processSync` does, so source-aware transforms run.
+  const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
   return { source: parserReadyContent, tree };
 };
 

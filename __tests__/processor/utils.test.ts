@@ -1,4 +1,4 @@
-import { toAttributes, pointAfter, getAttrs } from '../../processor/utils';
+import { toAttributes, getAttrs, createValueToSourceMapper } from '../../processor/utils';
 
 const expressionAttribute = (name: string, value: string) => ({
   type: 'mdxJsxAttribute',
@@ -84,36 +84,61 @@ describe('toAttributes', () => {
   });
 });
 
-describe('pointAfter', () => {
-  it('returns the start point unchanged when nothing is consumed', () => {
-    const start = { line: 5, column: 3, offset: 40 };
-    expect(pointAfter(start, '')).toStrictEqual({ line: 5, column: 3, offset: 40 });
+// CX-4028
+describe('createValueToSourceMapper', () => {
+  const positionOf = (source: string, value: string) => {
+    const offset = source.indexOf(value.split('\n')[0]);
+    return { start: { line: 1, column: offset + 1, offset }, end: { line: 3, column: 1, offset: source.length } };
+  };
+
+  it('returns null without a start offset', () => {
+    expect(createValueToSourceMapper(undefined, 'a', 'a')).toBeNull();
   });
 
-  it('advances only the column and offset when the consumed run stays on the start line', () => {
-    const start = { line: 5, column: 3, offset: 40 };
-    expect(pointAfter(start, '0123')).toStrictEqual({ line: 5, column: 7, offset: 44 });
+  it('shifts a verbatim value by its start point', () => {
+    const source = 'Hello\n<x>\n  <y>';
+    const value = '<x>\n  <y>';
+    const toSourcePoint = createValueToSourceMapper(
+      { start: { line: 2, column: 1, offset: 6 }, end: { line: 3, column: 6, offset: 15 } },
+      value,
+      source,
+    )!;
+
+    expect(toSourcePoint(0)).toStrictEqual({ line: 2, column: 1, offset: 6 });
+    expect(toSourcePoint(value.indexOf('<y>'))).toStrictEqual({ line: 3, column: 3, offset: 12 });
   });
 
-  it('advances the line and resets the column relative to the last newline when the run crosses lines', () => {
-    const start = { line: 1, column: 1, offset: 0 };
-    // "ab\ncdef\nghi" ends on the 3rd line, 3 chars past its newline.
-    expect(pointAfter(start, 'ab\ncdef\nghi')).toStrictEqual({ line: 3, column: 4, offset: 11 });
+  it('adds back the prefix a container stripped from each continuation line', () => {
+    const source = '> <x>\n>   <y>\n><z>';
+    const value = '<x>\n  <y>\n<z>';
+    const toSourcePoint = createValueToSourceMapper(positionOf(source, value), value, source)!;
+
+    expect(toSourcePoint(value.indexOf('<x>'))).toStrictEqual({ line: 1, column: 3, offset: 2 });
+    expect(toSourcePoint(value.indexOf('<y>'))).toStrictEqual({ line: 2, column: 5, offset: source.indexOf('<y>') });
+    expect(toSourcePoint(value.indexOf('<z>'))).toStrictEqual({ line: 3, column: 2, offset: source.indexOf('<z>') });
+    expect(toSourcePoint(value.length).offset).toBe(source.length);
   });
 
-  it('places the column at 1 when the run ends right after a trailing newline', () => {
-    const start = { line: 1, column: 1, offset: 0 };
-    expect(pointAfter(start, 'ab\n')).toStrictEqual({ line: 2, column: 1, offset: 3 });
+  it('aligns a line whose prefix tab was expanded to spaces', () => {
+    const source = '> <x>\n>\t<y>';
+    const value = '<x>\n  <y>';
+    const toSourcePoint = createValueToSourceMapper(positionOf(source, value), value, source)!;
+
+    expect(toSourcePoint(value.indexOf('<y>')).offset).toBe(source.indexOf('<y>'));
   });
 
-  it('treats a missing start offset as 0', () => {
-    const start = { line: 2, column: 5 };
-    expect(pointAfter(start, 'xy')).toStrictEqual({ line: 2, column: 7, offset: 2 });
-  });
+  it.each([
+    ['no source', undefined],
+    ['a source that does not line up', '> <x>\n> <nope>\n'],
+  ])('treats the value as verbatim given %s', (_, source) => {
+    const value = '<x>\n  <y>';
+    const toSourcePoint = createValueToSourceMapper(
+      { start: { line: 4, column: 3, offset: 10 }, end: { line: 5, column: 6, offset: 20 } },
+      value,
+      source,
+    )!;
 
-  it('carries a non-zero start offset through unchanged in the same-line case', () => {
-    const start = { line: 1, column: 1, offset: 1000 };
-    expect(pointAfter(start, 'hello ')).toStrictEqual({ line: 1, column: 7, offset: 1006 });
+    expect(toSourcePoint(value.indexOf('<y>'))).toStrictEqual({ line: 5, column: 3, offset: 16 });
   });
 });
 
