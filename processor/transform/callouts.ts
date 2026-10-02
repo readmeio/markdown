@@ -250,7 +250,9 @@ const processBlockquote = (
 
     Object.assign(node, {
       type: NodeTypes.callout,
+      // Keep the blockquote's data, e.g. the `reparseSource` its positions index into.
       data: {
+        ...node.data,
         hName: 'Callout',
         hProperties: {
           icon,

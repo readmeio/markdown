@@ -272,3 +272,120 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
     });
   });
 });
+
+// CX-4028: a container (`> `, list indent) strips its prefix from every line of the table's html
+// `value`, so a plain offset shift drifted by line and sliced cells from the wrong text.
+describe('mdxish table positions inside containers (CX-4028)', () => {
+  const table = ['<table>', '  <thead>', '    <tr>', '      <th>{bucket}</th>', '    </tr>', '  </thead>', '</table>'];
+  const prefixed = (lines: string[], prefix: string) => lines.map(line => `${prefix}${line}`);
+
+  // Multi-line slices keep the prefixes, as for any node in a container.
+  const containedTableSlices = (prefix: string): [string, string][] => [
+    ['table', prefixed(table, prefix).join('\n').slice(prefix.length)],
+    ['tableRow', ['<tr>', `${prefix}      <th>{bucket}</th>`, `${prefix}    </tr>`].join('\n')],
+    ['tableCell', '<th>{bucket}</th>'],
+    ['mdxFlowExpression', '{bucket}'],
+  ];
+
+  it.each([
+    ['a blockquote callout', ['> 📘 Title', '>', ...prefixed(table, '> ')], '> '],
+    ['a plain blockquote', prefixed(table, '> '), '> '],
+    ['a nested blockquote', prefixed(table, '> > '), '> > '],
+    ['a list item', ['- item', '', ...prefixed(table, '  ')], '  '],
+    ['a list item in a blockquote', ['> - item', '>', ...prefixed(table, '>   ')], '>   '],
+  ])('resolves every node inside %s', (_, lines, prefix) => {
+    expect(tableSlices(['Hello world', '', ...lines].join('\n'))).toStrictEqual(containedTableSlices(prefix));
+  });
+
+  it('resolves the renderer path (no newEditorTypes) the same way', () => {
+    const md = ['> 📘 Title', '>', ...prefixed(table, '> ')].join('\n');
+    expect(tableSlices(md, false)).toStrictEqual(containedTableSlices('> '));
+  });
+
+  // The editor strips continuation-line prefixes using the node's start column.
+  it('maps lines and columns onto the document', () => {
+    const md = ['Hello world', '', '> 📘 Title', '>', ...prefixed(table, '> ')].join('\n');
+    const { tree } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+
+    const cellOffset = md.indexOf('<th>{bucket}</th>');
+    expect(collectNodes(tree, 'tableCell')[0].position).toStrictEqual({
+      start: { line: 8, column: 9, offset: cellOffset },
+      end: { line: 8, column: 26, offset: cellOffset + '<th>{bucket}</th>'.length },
+    });
+  });
+
+  it('resolves lines with mixed prefix widths', () => {
+    const md = ['> <table>', '>  <thead>', '><tr>', '>       <th>{bucket}</th>', '>     </tr>', '>   </thead>', '> </table>'].join('\n'); // prettier-ignore
+    expect(tableSlices(md).slice(1)).toStrictEqual([
+      ['tableRow', ['<tr>', '>       <th>{bucket}</th>', '>     </tr>'].join('\n')],
+      ['tableCell', '<th>{bucket}</th>'],
+      ['mdxFlowExpression', '{bucket}'],
+    ]);
+  });
+
+  // micromark expands the tab to spaces in `value`, so lines no longer match the source verbatim.
+  it('resolves lines whose prefix holds a tab', () => {
+    const md = prefixed(table, '>\t').join('\n');
+    expect(tableSlices(md).slice(1)).toStrictEqual([
+      ['tableRow', ['<tr>', '>\t      <th>{bucket}</th>', '>\t    </tr>'].join('\n')],
+      ['tableCell', '<th>{bucket}</th>'],
+      ['mdxFlowExpression', '{bucket}'],
+    ]);
+  });
+
+  it('resolves a <Table> with blank lines between its sections', () => {
+    const jsxTable = ['<Table>', '  <thead>', '    <tr>', '      <th>{bucket}</th>', '    </tr>', '  </thead>', '', '  <tbody>', '    <tr>', '      <td><code>{region}</code></td>', '    </tr>', '  </tbody>', '</Table>']; // prettier-ignore
+    const md = jsxTable.map(line => (line ? `> ${line}` : '>')).join('\n');
+
+    expect(tableSlices(md).slice(1)).toStrictEqual([
+      ['tableRow', ['<tr>', '>       <th>{bucket}</th>', '>     </tr>'].join('\n')],
+      ['tableCell', '<th>{bucket}</th>'],
+      ['mdxFlowExpression', '{bucket}'],
+      ['tableRow', ['<tr>', '>       <td><code>{region}</code></td>', '>     </tr>'].join('\n')],
+      ['tableCell', '<td><code>{region}</code></td>'],
+      ['code', '<code>{region}</code>'],
+      ['mdxFlowExpression', '{region}'],
+    ]);
+  });
+
+  it('resolves a header-less <Table> kept as JSX', () => {
+    const md = prefixed(['<Table>', '  <tr>', '    <td>{bucket}</td>', '  </tr>', '</Table>'], '> ').join('\n');
+    expect(tableSlices(md).slice(1)).toStrictEqual([
+      ['tr', ['<tr>', '>     <td>{bucket}</td>', '>   </tr>'].join('\n')],
+      ['td', '<td>{bucket}</td>'],
+      ['mdxFlowExpression', '{bucket}'],
+    ]);
+  });
+
+  it('resolves a table recovered through the repair re-parse', () => {
+    const repaired = ['<Table>', '  <thead>', '    <tr>', '      <th>a <b>bold</th>', '      <th>{bucket}</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
+    expect(tableSlices(prefixed(repaired, '> ').join('\n')).slice(2)).toStrictEqual([
+      ['tableCell', '<th>a <b>bold</th>'],
+      ['text', 'a '],
+      ['b', '<b>bold'],
+      ['text', 'bold'],
+      ['tableCell', '<th>{bucket}</th>'],
+      ['mdxFlowExpression', '{bucket}'],
+    ]);
+  });
+
+  // `splitHtmlWithNestedTables` lifts the table out of the `<div>` html node first.
+  it('resolves a table lifted out of a raw HTML wrapper', () => {
+    const md = prefixed(['<div>', ...table, '</div>'], '> ').join('\n');
+    expect(tableSlices(md)).toStrictEqual(containedTableSlices('> '));
+  });
+
+  // The body re-parse stamps the blockquote; the callout built from it must keep that stamp.
+  it('resolves a blockquote callout nested in a component body', () => {
+    const md = wrapIn('<Accordion title="A">', '</Accordion>', ['> 📘 Title', '>', ...prefixed(table, '> ')]);
+    const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+
+    expect(sliceOf(collectNodes(tree, 'rdme-callout')[0])).toBe(
+      ['> 📘 Title', '  >', ...prefixed(table, '  > ')].join('\n'),
+    );
+    expect(tableSlices(md).slice(2)).toStrictEqual([
+      ['tableCell', '<th>{bucket}</th>'],
+      ['mdxFlowExpression', '{bucket}'],
+    ]);
+  });
+});

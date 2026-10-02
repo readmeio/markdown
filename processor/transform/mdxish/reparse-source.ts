@@ -21,3 +21,16 @@ export const replaceInheritingReparseSource = (parent: Parent, index: number, re
   if (replacedSource) stampReparseSource(replacements, replacedSource);
   (parent.children as Node[]).splice(index, 1, ...replacements);
 };
+
+/**
+ * The string `node`'s offsets index into: the nearest stamp on it or an ancestor, else the
+ * document source.
+ */
+export const resolveReparseSource = (node: Node, ancestors: Node[], documentSource?: string) => {
+  if (node.data?.reparseSource) return node.data.reparseSource;
+  for (let i = ancestors.length - 1; i >= 0; i -= 1) {
+    const { reparseSource } = ancestors[i].data ?? {};
+    if (reparseSource) return reparseSource;
+  }
+  return documentSource;
+};

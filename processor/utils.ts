@@ -7,7 +7,7 @@ import type {
   MdxJsxAttributeValueExpression,
   MdxJsxAttributeValueExpressionData,
 } from 'mdast-util-mdx-jsx';
-import type { Point } from 'unist';
+import type { Point, Position } from 'unist';
 
 import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
@@ -40,19 +40,66 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
   return new Function(...names, `return (${source})`)(...values);
 }
 
+interface ValueLine {
+  /** Width of the container prefix (`> `, list indent) micromark stripped from this line. */
+  prefixWidth: number;
+  sourceStart: number;
+  valueStart: number;
+}
+
 /**
- * Advance a `Point` by the `consumed` substring that follows it, returning the
- * point at the consumed string's end. Lets split-out sub-nodes carry accurate
- * document positions so downstream offset shifting stays correct.
+ * Width each container prefix adds back per line of `value`, aligned from the line end since a
+ * tab in the prefix is expanded to spaces in `value`. None (a verbatim slice) when the source
+ * is missing or doesn't line up.
  */
-export const pointAfter = (start: Point, consumed: string): Point => {
-  const newlineIndex = consumed.lastIndexOf('\n');
-  const newlineCount = newlineIndex === -1 ? 0 : consumed.split('\n').length - 1;
-  return {
-    line: start.line + newlineCount,
-    // Same line → advance the base column; a later line → column is the run since its newline.
-    column: newlineCount === 0 ? start.column + consumed.length : consumed.length - newlineIndex,
-    offset: (start.offset ?? 0) + consumed.length,
+const containerPrefixWidths = (valueLines: string[], source: string | null | undefined, position: Position) => {
+  const sourceLines = source?.slice(position.start.offset, position.end.offset).split('\n');
+  const linesUp =
+    sourceLines?.length === valueLines.length &&
+    sourceLines.every((line, i) => line.endsWith(valueLines[i].trimStart()));
+  return valueLines.map((line, i) => (linesUp ? sourceLines[i].length - line.length : 0));
+};
+
+/**
+ * Maps offsets in a node's `value` to points in `source`. Containers strip a prefix from every
+ * continuation line of `value`, so a plain offset shift drifts by line (CX-4028).
+ */
+export const createValueToSourceMapper = (
+  position: Position | undefined,
+  value: string,
+  source: string | null | undefined,
+): ((valueOffset: number) => Point) | null => {
+  if (position?.start.offset === undefined) return null;
+  const { start } = position;
+  const valueLines = value.split('\n');
+  const prefixWidths = containerPrefixWidths(valueLines, source, position);
+
+  const lines: ValueLine[] = [];
+  let valueStart = 0;
+  let sourceStart = start.offset;
+  valueLines.forEach((line, i) => {
+    lines.push({ prefixWidth: prefixWidths[i], sourceStart, valueStart });
+    valueStart += line.length + 1;
+    sourceStart += prefixWidths[i] + line.length + 1;
+  });
+
+  return valueOffset => {
+    // Binary search: a large table maps one point per node.
+    let low = 0;
+    let high = lines.length - 1;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if (lines[mid].valueStart <= valueOffset) low = mid;
+      else high = mid - 1;
+    }
+    const { prefixWidth, sourceStart: lineSourceStart, valueStart: lineValueStart } = lines[low];
+    // Clamped: an expanded tab can make a leading-whitespace offset fall before the line.
+    const sourceColumn = Math.max(0, prefixWidth + valueOffset - lineValueStart);
+    return {
+      line: start.line + low,
+      column: (low === 0 ? start.column : 1) + sourceColumn,
+      offset: lineSourceStart + sourceColumn,
+    };
   };
 };
 
