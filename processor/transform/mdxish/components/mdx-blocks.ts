@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { pointAfter } from '../../../utils';
+import { createValueToSourceMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
 import { replaceInheritingReparseSource, stampReparseSource } from '../reparse-source';
 import { tableTags } from '../tables/utils';
@@ -122,31 +122,16 @@ interface ComponentNodeOptions {
 }
 
 // Ends the position at `consumedLength` so the component doesn't claim trailing
-// content the tokenizer swallowed into the same html node. Measured against the source
-// when available: each value line is its source line minus the container prefix
-// (list indent, `> `) micromark stripped, so those prefixes are counted back in.
+// content the tokenizer swallowed into the same html node.
 const positionEndingAtConsumed = (
   nodePosition: Node['position'],
   value: string,
   consumedLength: number,
   source: string | null,
 ): Node['position'] => {
-  if (!nodePosition?.start) return nodePosition;
-  const consumedValue = value.slice(0, consumedLength);
-  const sourceLines = source?.slice(nodePosition.start.offset, nodePosition.end?.offset).split('\n');
-  const valueLines = value.split('\n');
-  if (!sourceLines || sourceLines.length !== valueLines.length) {
-    return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedValue) };
-  }
-
-  const consumedLines = consumedValue.split('\n');
-  const lastLineIndex = consumedLines.length - 1;
-  const prefixWidth = sourceLines[lastLineIndex].length - valueLines[lastLineIndex].length;
-  const consumedSource = [
-    ...sourceLines.slice(0, lastLineIndex),
-    sourceLines[lastLineIndex].slice(0, prefixWidth + consumedLines[lastLineIndex].length),
-  ].join('\n');
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedSource) };
+  const toSourcePoint = createValueToSourceMapper(nodePosition, value, source);
+  if (!nodePosition || !toSourcePoint) return nodePosition;
+  return { start: nodePosition.start, end: toSourcePoint(consumedLength) };
 };
 
 const createComponentNode = ({
