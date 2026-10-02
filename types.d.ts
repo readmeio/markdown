@@ -241,10 +241,10 @@ declare module 'mdast' {
   }
 
   interface TableData {
-    /** Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. */
-    widths?: (string | null)[];
     /** Authored as lowercase `<table>`; the serializer keeps that spelling when there is no alignment to encode. */
     lowercaseTable?: boolean;
+    /** Per-column CSS widths (`"30%"`, `"200px"`), indexed like `align`. */
+    widths?: (string | null)[];
   }
 
   interface BlockContentMap {

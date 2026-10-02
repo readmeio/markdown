@@ -1,4 +1,4 @@
-import type { Html, Node, Parents, Root, Table, TableCell, TableRow } from 'mdast';
+import type { Html, Node, Root, Table, TableCell, TableRow } from 'mdast';
 import type { Transform } from 'mdast-util-from-markdown';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 
@@ -17,6 +17,7 @@ import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
+import { replaceInheritingReparseSource, stampReparseSource } from '../reparse-source';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
@@ -151,17 +152,13 @@ const hasFlowContent = (nodes: Node[]): boolean => {
 };
 
 /**
- * Process a Table node: re-parse text-only cell content, then output as
- * a markdown table (phrasing-only) or keep as JSX <Table> (has flow content).
+ * Process a Table node: re-parse text-only cell content, then return it as
+ * a markdown table (phrasing-only) or keep it as JSX <Table> (has flow content).
  */
 const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
-  index: number,
-  parent: Parents,
   documentPosition?: Node['position'],
-): void => {
-  if (node.name !== 'Table' && node.name !== 'table') return;
-
+): MdxJsxFlowElement | MdxJsxTextElement | Table => {
   const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
   const align = Array.isArray(alignAttr) ? alignAttr : null;
@@ -196,6 +193,8 @@ const processTableNode = (
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
       if (parsed.children.length > 0) {
+        // Positions index into the extracted text rather than the table source (CX-4004).
+        stampReparseSource(parsed.children, textContent);
         cell.children = parsed.children as MdxJsxTableCell['children'];
         if (hasFlowContent(parsed.children as Node[])) {
           tableHasFlowContent = true;
@@ -243,11 +242,7 @@ const processTableNode = (
       el.children = removeWhitespaceOnlyTextNodes(unwrapped) as typeof el.children;
     });
 
-    (parent.children as ((typeof parent.children)[number] | MdxJsxFlowElement | MdxJsxTextElement)[])[index] = {
-      ...node,
-      position,
-    };
-    return;
+    return { ...node, position };
   }
 
   // All cells are phrasing-only — convert to markdown table
@@ -336,7 +331,7 @@ const processTableNode = (
       ? align.slice(0, columnCount).concat(new Array(Math.max(0, columnCount - align.length)).fill(null))
       : new Array(columnCount).fill(null);
 
-  const mdNode: Table = {
+  return {
     align: alignArray,
     type: 'table',
     position,
@@ -344,8 +339,6 @@ const processTableNode = (
     // Remember the author's spelling so the serializer can write `<table>` back instead of `<Table>`
     ...(node.name === 'table' && { data: { lowercaseTable: true } }),
   };
-
-  parent.children[index] = mdNode;
 };
 
 /**
@@ -396,7 +389,7 @@ const mdxishTables = (): Transform => tree => {
     // The inserted parts can't re-trigger a split (table parts start with
     // `<table`; the wrapper slices hold no table), so plain in-place splicing
     // visits each once without looping.
-    parent.children.splice(index, 1, ...(parts as typeof parent.children));
+    replaceInheritingReparseSource(parent, index, parts);
   });
 
   visit(tree, 'html', (_node, index, parent) => {
@@ -418,7 +411,7 @@ const mdxishTables = (): Transform => tree => {
       // to build on the markdown / JSX table
       visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
         if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-        processTableNode(tableNode, index, parent as Parents, node.position);
+        replaceInheritingReparseSource(parent, index, [processTableNode(tableNode, node.position)]);
         return EXIT;
       });
     } else if (node.value.startsWith('<table')) {
@@ -427,7 +420,7 @@ const mdxishTables = (): Transform => tree => {
       // have needed MDX parsing anyway
       const fallback = parseTableNode(fallbackTableNodeProcessor, node);
       if (!fallback || fallback.children.length <= 1) return;
-      parent.children.splice(index, 1, ...(fallback.children as typeof parent.children));
+      replaceInheritingReparseSource(parent, index, fallback.children);
     }
     // Otherwise, there's no point in trying to parse the table content further
     // More repairs are needed in that case

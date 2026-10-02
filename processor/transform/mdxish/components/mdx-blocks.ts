@@ -6,6 +6,7 @@ import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { pointAfter } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { replaceInheritingReparseSource, stampReparseSource } from '../reparse-source';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -17,7 +18,6 @@ import {
   isMarkdownPromotableHtmlTag,
   isPascalCase,
   NESTED_TABLE_RE,
-  stampReparseSource,
 } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
@@ -166,14 +166,6 @@ const createComponentNode = ({
   },
 });
 
-// The promoted node takes over the html node's position, so it also takes over the
-// coordinate space that position belongs to.
-const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
-  const replacedSource = parent.children[index]?.data?.reparseSource;
-  if (replacedSource) stampReparseSource([mdxNode], replacedSource);
-  (parent.children as Node[]).splice(index, 1, mdxNode);
-};
-
 /**
  * Transform PascalCase HTML nodes into mdxJsxFlowElement nodes.
  *
@@ -283,7 +275,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
           ? positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd, source)
           : node.position,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      replaceInheritingReparseSource(parent, index, [componentNode]);
 
       if (remainingContent) {
         parseSibling(parent, index, remainingContent, safeMode, promoted);
@@ -337,7 +329,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      replaceInheritingReparseSource(parent, index, [componentNode]);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
