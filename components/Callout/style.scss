@@ -188,8 +188,17 @@
   }
 }
 
+// Registered so `em` resolves on the callout rather than on the (possibly shrunk) emoji icon.
+@property --emoji-line-height {
+  syntax: '<length> | normal';
+  inherits: true;
+  initial-value: normal;
+}
+
 @mixin calloutCustomIcons($R: callout) {
-  --emoji: 1em;
+  --emoji: var(--Icon-emoji-size, 1em);
+  // Match the title's line box (1.25em × 1.25); with `normal`, WebKit sits emoji ~5px higher than Chromium.
+  --emoji-line-height: 1.5625em;
   --icon-font: var(--fa-style-family, 'Font Awesome 6 Pro', FontAwesome);
   &-icon {
     font-size: var(--emoji, 0);
@@ -197,6 +206,9 @@
   }
   // Emoji icons render as <span>; Font Awesome icons render as <i> and manage their
   // own ::before/::after pseudo-elements. Only apply the legacy icon-font ::before to spans.
+  span#{&}-icon {
+    line-height: var(--emoji-line-height);
+  }
   span#{&}-icon::before {
     content: var(--icon);
     font-family: var(--icon-font);
@@ -211,6 +223,7 @@
   }
   @at-root .rdmdCallouts--useIconFont & {
     --emoji: unset;
+    --emoji-line-height: normal;
     &_okay {
       /* thumbs up */
       --icon: '\f164';

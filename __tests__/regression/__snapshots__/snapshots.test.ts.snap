@@ -2,30 +2,30 @@
 
 exports[`Render engine regressions tests > callout-icons (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote>"
 `;
 
 exports[`Render engine regressions tests > callout-icons (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote></div>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading-1"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading-1"></a></h3><p>Body</p></blockquote></div>"
 `;
 
 exports[`Render engine regressions tests > callouts-and-glossary (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to [object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to [object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote>
 <!-- -->
 <p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;
 
 exports[`Render engine regressions tests > callouts-and-glossary (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callouts-and-glossary"></div><div class="heading-text">Callouts and glossary</div><a aria-label="Skip link to Callouts and glossary" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callouts-and-glossary"></a></h1>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote></div>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-emoji"></div><div class="heading-text"><i class="fa-regular fa-rss-square"></i> Blockquote callout with FA emoji</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA emoji" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-emoji"></a></h3><p>Body of the blockquote callout.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="title-with-acme-term"></div><div class="heading-text">Title with <span class="GlossaryItem-trigger">acme</span> term</div><a aria-label="Skip link to Title with ,[object Object], term" class="heading-anchor-icon fa fa-regular fa-anchor" href="#title-with-acme-term"></a></h2><p>Callout body content.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>This headerless callout&#x27;s first paragraph should not be styled as title.</p></blockquote></div>
 <p></p>
 <p>A trailing glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>"
 `;
@@ -63,7 +63,7 @@ exports[`Render engine regressions tests > components-under-list-items (mdxish) 
 </li>
 <li>
 <p>three</p>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>This is an MDX-style callout component.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>This is an MDX-style callout component.</p></blockquote></div>
 </li>
 </ul>"
 `;
@@ -72,16 +72,16 @@ exports[`Render engine regressions tests > consecutive-emojis-fa (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
 <p>Consecutive gemojis: <!-- -->😁<!-- -->:grin: should both render side by side.</p>
 <p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to [object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and <!-- -->😁<!-- --> together.</p></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to [object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and <!-- -->😁<!-- --> together.</p></blockquote>"
 `;
 
 exports[`Render engine regressions tests > consecutive-emojis-fa (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="emoji-rendering"></div><div class="heading-text">Emoji rendering</div><a aria-label="Skip link to Emoji rendering" class="heading-anchor-icon fa fa-regular fa-anchor" href="#emoji-rendering"></a></h1>
 <p>Consecutive gemojis: 😁😁 should both render side by side.</p>
 <p>FA standalone: <i class="fa-regular fa-rss-square"></i> and <i class="fa-regular fa-coffee"></i>.</p>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and 😁 together.</p></blockquote></div>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="-blockquote-callout-with-fa-in-header"></div><div class="heading-text"><i class="fa-regular fa-coffee"></i> Blockquote callout with FA in header</div><a aria-label="Skip link to ,[object Object], Blockquote callout with FA in header" class="heading-anchor-icon fa fa-regular fa-anchor" href="#-blockquote-callout-with-fa-in-header"></a></h3><p>Body content.</p></blockquote>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Callout body containing <i class="fa-regular fa-rss-square"></i> and 😁 together.</p></blockquote></div>"
 `;
 
 exports[`Render engine regressions tests > convergent (mdx) 1`] = `
@@ -105,7 +105,7 @@ exports[`Render engine regressions tests > deprecated-html-tags (mdx) 1`] = `
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
 <div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
 <object data="movie.swf"><param name="quality" value="high"/></object>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
 `;
 
 exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
@@ -137,7 +137,7 @@ exports[`Render engine regressions tests > deprecated-html-tags (mdxish) 1`] = `
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Tag</th><th>Example</th></tr></thead><tbody><tr><td>center</td><td><center><strong>middle</strong></center></td></tr><tr><td>font</td><td><font color="blue">blue</font></td></tr></tbody></table></div></div>
 <div class="outer"><center><big><strong>nested inside plain HTML</strong></big></center></div>
 <p><object data="movie.swf"><param name="quality" value="high"/></object></p>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="callout"></div><div class="heading-text">Callout</div><a aria-label="Skip link to Callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout"></a></h3><center><strong>centered in a callout</strong></center></blockquote>"
 `;
 
 exports[`Render engine regressions tests > divergent (mdx) 1`] = `
@@ -283,7 +283,7 @@ exports[`Render engine regressions tests > indented-component-body-lists (mdx) 1
 <li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
 <li>Clients can also compare performance across various metrics using the comparison functionality.</li>
 </ul></div></details>
-<blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<blockquote class="callout callout_okay" theme="👍"><span class="callout-icon Icon-emoji">👍</span><ul>
 <li>first</li>
 <li>second<!-- -->
 <ul>
@@ -304,7 +304,7 @@ exports[`Render engine regressions tests > indented-component-body-lists (mdxish
 <li>Filters can be applied across multiple attributes such as page name, source code, browser and device.</li>
 <li>Clients can also compare performance across various metrics using the comparison functionality.</li>
 </ul></div></details></div>
-<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="👍"><span class="callout-icon">👍</span><ul>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="👍"><span class="callout-icon Icon-emoji">👍</span><ul>
 <li>first</li>
 <li>second
 <ul>
@@ -559,15 +559,15 @@ exports[`Render engine regressions tests > inline-image-tailwind (mdxish) 1`] = 
 
 exports[`Render engine regressions tests > jsx-attribute-entities (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
-<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote>
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon Icon-emoji">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote>
 <figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/></span></span><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></figure>"
 `;
 
 exports[`Render engine regressions tests > jsx-attribute-entities (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="jsx-attribute-entities"></div><div class="heading-text">JSX attribute entities</div><a aria-label="Skip link to JSX attribute entities" class="heading-anchor-icon fa fa-regular fa-anchor" href="#jsx-attribute-entities"></a></h1>
-<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote></div>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon Icon-emoji">🚧</span><p>Numeric-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the construction sign.</p></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Hex-entity emoji in <code class="rdmd-code lang-undefined theme-undefined">icon</code> should decode to the blue book.</p></blockquote></div>
 <div class="readme-tailwind"><figure><span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="" class="img img-align-center " height="auto" loading="lazy" src="https://example.com/x.png" title="" width="auto"/></span></span><figcaption><p>Caption with &amp; ampersand entity</p></figcaption></figure></div>"
 `;
 
@@ -690,7 +690,7 @@ exports[`Render engine regressions tests > multiline-jsx-expressions (mdx) 1`] =
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
 <div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info">Enterprise tab</blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div>
 <details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay">us</blockquote><blockquote class="callout callout_okay" theme="okay">eu</blockquote></div></details>
-<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info">Inside a custom component</blockquote></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon Icon-emoji">🃏</span><blockquote class="callout callout_info" theme="info">Inside a custom component</blockquote></blockquote></div>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td>Ada</td></tr></table></div></div>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
 <blockquote class="callout callout_default" theme="default">Ada</blockquote>
@@ -713,7 +713,7 @@ exports[`Render engine regressions tests > multiline-jsx-expressions (mdxish) 1`
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="inside-components"></div><div class="heading-text">Inside components</div><a aria-label="Skip link to Inside components" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inside-components"></a></h2>
 <div class="readme-tailwind"><div class="TabGroup"><header><nav class="TabGroup-nav"><button class="TabGroup-tab_active">Enterprise</button><button class="TabGroup-tab">Free</button></nav></header><section><div><div class="TabContent"><blockquote class="callout callout_info" theme="info"><p>Enterprise tab</p></blockquote></div></div><div hidden=""><div class="TabContent"><p>Nothing here.</p></div></div></section></div></div>
 <div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Regions</summary><div class="Accordion-content"><blockquote class="callout callout_okay" theme="okay"><p>us</p></blockquote><blockquote class="callout callout_okay" theme="okay"><p>eu</p></blockquote></div></details></div>
-<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon">🃏</span><blockquote class="callout callout_info" theme="info"><p>Inside a custom component</p></blockquote></blockquote></div>
+<div class="readme-tailwind"><blockquote class="callout callout_okay" theme="🃏"><span class="callout-icon Icon-emoji">🃏</span><blockquote class="callout callout_info" theme="info"><p>Inside a custom component</p></blockquote></blockquote></div>
 <div class="readme-tailwind"><div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>2</td><td><span>Ada</span></td></tr></table></div></div></div>
 <h2 class="heading heading-2 header-scroll"><div class="heading-anchor anchor waypoint" id="lone-variables-stay-bare"></div><div class="heading-text">Lone variables stay bare</div><a aria-label="Skip link to Lone variables stay bare" class="heading-anchor-icon fa fa-regular fa-anchor" href="#lone-variables-stay-bare"></a></h2>
 <div class="readme-tailwind"><blockquote class="callout callout_default" theme="default"><span>Ada</span></blockquote></div>
@@ -724,7 +724,7 @@ exports[`Render engine regressions tests > rich (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
 <p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer &lt;&lt;apiKey&gt;&gt;</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;region&gt;&gt;</code> region.</p>
 <p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;name&gt;&gt;</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">{user.region}</code>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">&lt;&lt;name&gt;&gt;</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">{user.region}</code>
 interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
 <p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
 `;
@@ -733,7 +733,7 @@ exports[`Render engine regressions tests > rich (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="rich-fixture"></div><div class="heading-text">Rich Fixture</div><a aria-label="Skip link to Rich Fixture" class="heading-anchor-icon fa fa-regular fa-anchor" href="#rich-fixture"></a></h1>
 <p>Authentication uses your API key. Use <code class="rdmd-code lang-undefined theme-undefined">Bearer sk_test_abc123</code> for requests originating from the <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code> region.</p>
 <p>A short glossary term: <span class="GlossaryItem-trigger">acme</span>.</p>
-<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code><br/>
+<div class="readme-tailwind"><blockquote class="callout callout_info" theme="📘"><span class="callout-icon Icon-emoji">📘</span><p>Both legacy <code class="rdmd-code lang-undefined theme-undefined">NAME</code> substitution and MDX-style <code class="rdmd-code lang-undefined theme-undefined">us-east-1</code><br/>
 interpolation should resolve from <code class="rdmd-code lang-undefined theme-undefined">context.json</code>.</p></blockquote></div>
 <p>Closing prose to anchor a trailing paragraph in the rendered tree.</p>"
 `;
@@ -1232,12 +1232,12 @@ exports[`Render engine regressions tests > style-and-jsx-expressions (mdxish) 1`
 
 exports[`Render engine regressions tests > table-in-callout (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
-<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p><div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Scenario</th><th>Result</th></tr></thead><tbody><tr><td>Two adapters disagree</td><td>Higher-tier adapter wins</td></tr><tr><td>One adapter reports twice</td><td>Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote>"
+<blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon Icon-emoji">🚧</span><p><strong>Conflict resolution</strong></p><div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Scenario</th><th>Result</th></tr></thead><tbody><tr><td>Two adapters disagree</td><td>Higher-tier adapter wins</td></tr><tr><td>One adapter reports twice</td><td>Most recent by Last Seen wins</td></tr></tbody></table></div></div></blockquote>"
 `;
 
 exports[`Render engine regressions tests > table-in-callout (mdxish) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="table-nested-inside-a-callout"></div><div class="heading-text">Table nested inside a callout</div><a aria-label="Skip link to Table nested inside a callout" class="heading-anchor-icon fa fa-regular fa-anchor" href="#table-nested-inside-a-callout"></a></h1>
-<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon">🚧</span><p><strong>Conflict resolution</strong></p>
+<div class="readme-tailwind"><blockquote class="callout callout_warn" theme="🚧"><span class="callout-icon Icon-emoji">🚧</span><p><strong>Conflict resolution</strong></p>
 
 
 

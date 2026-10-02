@@ -1,0 +1,12 @@
+// WebKit paints Apple Color Emoji up to ~1.3x larger than other engines below 24px (identical from
+// 24px up), so shrink to 0.8em at body sizes and ramp back to 1em by 24px. Only WebKit supports this font.
+@supports (font: -apple-system-body) {
+  :root {
+    --Icon-emoji-size: clamp(0.8em, 2.5em - 36px, 1em);
+  }
+}
+
+// Zero specificity so components that size their own icon (e.g. callouts) win and apply the variable.
+:where(.Icon-emoji) {
+  font-size: var(--Icon-emoji-size, 1em);
+}
