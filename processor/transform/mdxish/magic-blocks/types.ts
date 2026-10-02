@@ -71,6 +71,7 @@ export interface RecipeJson extends MagicBlockJson {
 export interface MagicBlockTransformerOptions {
   compatibilityMode?: boolean;
   hardBreaks?: boolean;
+  safeMode?: boolean;
 }
 
 /**

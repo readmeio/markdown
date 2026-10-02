@@ -22,7 +22,6 @@ import { rehypeFlattenTableCellParagraphs } from '../processor/plugin/flatten-ta
 import hardBreaks from '../processor/plugin/hard-breaks';
 import { rehypeMdxishComponents } from '../processor/plugin/mdxish-components';
 import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
-import { enforceSafeModeHtmlBlocks } from '../processor/plugin/safe-mode-html-blocks';
 import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
@@ -283,8 +282,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(rehypeMdxishComponents, {
       components,
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
-    })
-    .use(safeMode ? enforceSafeModeHtmlBlocks : undefined); // Force safeMode on every HTMLBlock; runs last so every producer is covered
+    });
 
   const vfile = new VFile({ value: parserReadyContent });
   const mdast = processor.parse(parserReadyContent);
