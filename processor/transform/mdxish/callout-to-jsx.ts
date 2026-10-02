@@ -26,8 +26,10 @@ const mdxishCalloutToJsx = (): Transform => tree => {
   visit(tree, NodeTypes.callout, (node: Callout, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 
-    let { icon, theme } = node.data.hProperties;
-    if (!icon && theme) icon = defaultIcons[theme];
+    let { theme } = node.data.hProperties;
+    // An empty `icon` is the author choosing no icon, so only a tree that never carried the
+    // key at all falls back to the theme's default.
+    const icon = node.data.hProperties.icon ?? (theme ? defaultIcons[theme] : undefined);
     if (!theme && icon) theme = themes[icon] || 'default';
 
     // Mutate in place to keep the children array identity so nested callouts in
