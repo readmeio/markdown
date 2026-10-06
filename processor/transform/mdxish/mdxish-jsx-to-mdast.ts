@@ -12,6 +12,7 @@ import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
+import { replaceInheritingReparseSource } from './reparse-source';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
 import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
@@ -753,8 +754,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     const newNode = transformer(node);
     if (!newNode) return;
 
-    // Replace the JSX node with the MDAST node
-    (parent.children as Node[])[index] = newNode;
+    replaceInheritingReparseSource(parent, index, [newNode]);
   });
 
   // Inline JSX components (Anchor)
