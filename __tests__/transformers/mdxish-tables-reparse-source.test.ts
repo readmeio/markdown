@@ -1,29 +1,14 @@
 import type { Node } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
-import { visit } from 'unist-util-visit';
-
-import { collectNodes, parseMdxishWithResolvedSources } from '../helpers';
+import { collectNodes, parseMdxishWithResolvedSources, resolvedSlicesUnder } from '../helpers';
 
 const isTableRoot = (node: Node): boolean =>
   node.type === 'table' ||
   (node.type === 'mdxJsxFlowElement' && ['Table', 'table'].includes((node as MdxJsxFlowElement).name ?? ''));
 
-const labelOf = (node: Node): string => ('name' in node && typeof node.name === 'string' ? node.name : node.type);
-
-/**
- * Every node under the first table, as `[label, slice]` pairs, resolving each node's
- * source the way a consumer must (nearest `data.reparseSource`, else the document).
- */
-const tableSlices = (md: string, newEditorTypes = true): [string, string | undefined][] => {
-  const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes });
-  const [table] = collectNodes(tree, isTableRoot);
-  const slices: [string, string | undefined][] = [];
-  visit(table, node => {
-    slices.push([labelOf(node), sliceOf(node)]);
-  });
-  return slices;
-};
+// Every node under the first table, resolving each node's source the way a consumer must.
+const tableSlices = (md: string, newEditorTypes = true) => resolvedSlicesUnder(md, isTableRoot, { newEditorTypes });
 
 const indent = (lines: string[], by = '  ') => lines.map(line => (line ? `${by}${line}` : line));
 
