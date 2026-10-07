@@ -5,14 +5,9 @@ import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { stampReparseSource } from '../reparse-source';
 
-import {
-  getInlineMdProcessor,
-  hasExpressionAttr,
-  isPascalCase,
-  stampReparseSource,
-  toMdxJsxTextElement,
-} from './utils';
+import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always

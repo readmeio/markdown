@@ -2,7 +2,7 @@ import type { Element } from 'hast';
 
 import { mdast, hast } from '../../index';
 import { mdxish } from '../../lib/mdxish';
-import { findAllElementsByTagName, findElementByTagName } from '../helpers';
+import { findAllElementsByTagName, findElementByTagName, resolvedSlicesUnder } from '../helpers';
 
 describe('Code Tabs Transformer', () => {
   it('can parse code tabs', () => {
@@ -194,6 +194,57 @@ Second code block
         expect(code).toMatchObject({
           properties: { className: ['language-js'], lang: 'js' },
         });
+      });
+    });
+
+    // Setting `hProperties` replaced `data` and dropped the body's `reparseSource`,
+    // and the `code-tabs` wrapper was never stamped, so fences sliced the wrong text.
+    describe('positions inside a component body', () => {
+      const isCodeTabsOrCode = ({ type }: { type: string }) => type === 'code-tabs' || type === 'code';
+
+      it.each([
+        ['<Accordion>', '<Accordion title="A">', '</Accordion>'],
+        ['<Callout>', '<Callout icon="📘" theme="info">', '</Callout>'],
+      ])('resolves a fence with a language inside a %s', (_, opener, closer) => {
+        const md = ['Hello world', '', opener, '  ```js', '  const a = {bucket};', '  ```', closer].join('\n');
+        const fence = ['```js', '  const a = {bucket};', '  ```'].join('\n');
+
+        expect(resolvedSlicesUnder(md, isCodeTabsOrCode)).toStrictEqual([
+          ['code-tabs', fence],
+          ['code', fence],
+        ]);
+      });
+
+      it('resolves a plain fence surrounded by blank lines', () => {
+        const md = [
+          'Hello world',
+          '',
+          '<Accordion title="A">',
+          '',
+          '  ```',
+          '  plain',
+          '  ```',
+          '',
+          '</Accordion>',
+        ].join('\n');
+        expect(resolvedSlicesUnder(md, isCodeTabsOrCode)).toStrictEqual([['code', '```\n  plain\n  ```']]);
+      });
+
+      it('resolves adjacent fences grouped into one <CodeTabs> inside <Tabs><Tab>', () => {
+        const md = ['<Tabs>', '  <Tab title="T">', '    ```js A', '    one', '    ```', '    ```py B', '    two', '    ```', '  </Tab>', '</Tabs>'].join('\n'); // prettier-ignore
+
+        expect(resolvedSlicesUnder(md, isCodeTabsOrCode)).toStrictEqual([
+          ['code-tabs', ['```js A', '  one', '  ```', '  ```py B', '  two', '  ```'].join('\n')],
+          ['code', ['```js A', '  one', '  ```'].join('\n')],
+          ['code', ['```py B', '  two', '  ```'].join('\n')],
+        ]);
+      });
+
+      it('still sets hProperties on the code node', () => {
+        const md = ['<Accordion title="A">', '  ```js', '  x', '  ```', '</Accordion>'].join('\n');
+        const [, [, codeSlice]] = resolvedSlicesUnder(md, isCodeTabsOrCode);
+        expect(codeSlice).toBe('```js\n  x\n  ```');
+        expect(findElementByTagName(mdxish(md), 'code')?.properties).toMatchObject({ lang: 'js' });
       });
     });
   });

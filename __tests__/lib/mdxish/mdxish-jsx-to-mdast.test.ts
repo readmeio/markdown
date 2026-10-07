@@ -5,6 +5,7 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
+import { resolvedSlicesUnder } from '../../helpers';
 
 describe('normalizeWidth', () => {
   it.each([
@@ -211,6 +212,41 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         expect(paragraph.children[0]).toMatchObject({ type: 'text', value: 'With ' });
         expect(paragraph.children[1]).toMatchObject({ type: 'strong' });
         expect(paragraph.children[3]).toMatchObject({ type: 'inlineCode', value: 'default' });
+      });
+
+      describe('caption positions', () => {
+        const isImageBlock = ({ type }: { type: string }) => type === NodeTypes.imageBlock;
+        const captionSlices = (caption: string): [string, string][] => [
+          ['paragraph', caption],
+          ['text', 'A '],
+          ['strong', '**bold**'],
+          ['text', 'bold'],
+          ['text', ' cap'],
+        ];
+
+        it('resolves caption children against the caption at the top level', () => {
+          const md = 'Hello world\n\n<Image src="https://x.com/a.png" caption="A **bold** cap" />';
+          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+        });
+
+        it('resolves caption children inside a component body', () => {
+          const md = ['Hello world', '', '<Accordion title="A">', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />', '</Accordion>'].join('\n'); // prettier-ignore
+          expect(resolvedSlicesUnder(md, isImageBlock)).toStrictEqual([
+            ['image-block', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />'],
+            ...captionSlices('A **bold** cap'),
+          ]);
+        });
+
+        // Entities are decoded before the re-parse, so slices index the decoded caption.
+        it('resolves against the decoded caption when it holds entities', () => {
+          const md = '<Image src="https://x.com/a.png" caption="&#x22;A&#x22; **b**" />';
+          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
+            ['paragraph', '"A" **b**'],
+            ['text', '"A" '],
+            ['strong', '**b**'],
+            ['text', 'b'],
+          ]);
+        });
       });
     });
 
