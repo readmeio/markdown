@@ -37,6 +37,7 @@ import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/m
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
+import headingIdsTransformer from '../processor/transform/mdxish/heading-ids';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import mdxishImagesToJsx from '../processor/transform/mdxish/images-to-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
@@ -176,6 +177,7 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(magicBlockTransformer, { hardBreaks: enableHardBreaks })
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
+    .use(headingIdsTransformer, { safeMode }) // After defaultTransformers, which build callout title headings
     .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes

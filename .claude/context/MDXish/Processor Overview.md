@@ -97,7 +97,7 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
   │    · looseHtmlEntity  │  imageTransformer                │
   │    · htmlBlockComp.   │  defaultTransformers             │
   │    · mdxExprTextOnly? │    (callouts, codeTabs, embeds)  │
-  │    · mdxjsEsm?        │                                  │
+  │    · mdxjsEsm?        │  headingIdsTransformer           │
   │    · jsxComment?      │                                  │
   │                       │  mdxishInlineMdxComponents?      │
   │   fromMarkdownExts:   │  mdxishJsxToMdast?               │

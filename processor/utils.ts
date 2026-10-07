@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Root as HastRoot } from 'hast';
-import type { Node, Root as MdastRoot, Root } from 'mdast';
+import type { Heading, Node, Root as MdastRoot, Root } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
@@ -150,6 +150,17 @@ export const getHProps = <T>(node: Node): T => {
 export const getHPropKeys = <T>(node: Node): string[] => {
   const hProps = getHProps<T>(node);
   return Object.keys(hProps) || [];
+};
+
+/** Characters an explicit `{#id}` heading id may use: the ones github-slugger keeps, plus `.` and `:`. */
+export const HEADING_ID_PATTERN = '[\\p{L}\\p{M}\\p{N}_.:-]+';
+
+const HEADING_ID_REGEX = new RegExp(`^${HEADING_ID_PATTERN}$`, 'u');
+
+/** The id a heading's trailing `{#id}` set, when it is one the `{#id}` syntax can spell. */
+export const explicitHeadingId = (node: Heading): string | undefined => {
+  const id = node.data?.hProperties?.id;
+  return typeof id === 'string' && HEADING_ID_REGEX.test(id) ? id : undefined;
 };
 
 /**

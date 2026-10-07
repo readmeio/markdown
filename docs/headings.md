@@ -60,3 +60,13 @@ Occasionally, a single doc might contain multiple headings with the same text, w
 #### Incremented Heading Anchors
 
 #### Incremented Heading Anchors
+
+### Custom Anchors
+
+End a heading with `{#your-id}` to set its anchor yourself. The anchor then stays the same when the heading's text changes, for example on a translated page:
+
+```
+## Prérequis {#prerequisites}
+```
+
+This heading links as `#prerequisites`, and `{#prerequisites}` is not shown. An anchor can use letters, numbers, `-`, `_`, `.` and `:`. To show a literal `{#…}` at the end of a heading, escape the brace: `\{#each}`. Custom anchors work in the MDXish engine only.
