@@ -1,4 +1,5 @@
 import type { ListMarker, ListWithMarker } from '../../../lib';
+import type { Callout } from '../../../types';
 import type { List, ListItem, Root as MdastRoot, RootContent, Table } from 'mdast';
 
 import { NodeTypes } from '../../../enums';
@@ -1915,12 +1916,42 @@ describe('mdxishMdastToMd callout JSX serialization', () => {
     expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="🚧" theme="warn">');
   });
 
-  it('fills a missing icon from the theme', () => {
-    const mdast = callout({ theme: 'info', empty: false }, [
-      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'FYI' }] },
+  it.each(['default', 'info', 'okay', 'warn', 'error'])('keeps a cleared icon off a %s callout', theme => {
+    const mdast = callout({ icon: '', theme, empty: false }, [
+      { type: 'heading', depth: 3, children: [{ type: 'text', value: 'No icon' }] },
     ]);
 
-    expect(mdxishMdastToMd(mdast)).toContain('<Callout icon="📘" theme="info">');
+    expect(mdxishMdastToMd(mdast)).toBe(
+      `<Callout theme="${theme}">
+  ### No icon
+</Callout>
+`,
+    );
+  });
+
+  describe('editor round trip of callout icons', () => {
+    // Callouts only parse into callout nodes on the editor path
+    const opts = { newEditorTypes: true };
+    const iconOf = (md: string) =>
+      (collectNodes(parseMdxish(md, opts), NodeTypes.callout)[0] as Callout).data.hProperties.icon;
+
+    it.each(['📘', '🦉', 'far fa-circle-check', 'fad fa-wagon-covered'])('keeps a %s icon', icon => {
+      const md = `<Callout icon="${icon}" theme="info">\n  ### Title\n</Callout>\n`;
+      const once = roundTripMdxish(md, opts);
+
+      expect(once).toBe(md);
+      expect(iconOf(once)).toBe(icon);
+      expect(roundTripMdxish(once, opts)).toBe(once);
+    });
+
+    it('keeps a cleared icon cleared', () => {
+      const md = '<Callout icon="" theme="info">\n  ### Title\n</Callout>\n';
+      const once = roundTripMdxish(md, opts);
+
+      expect(once).toBe('<Callout theme="info">\n  ### Title\n</Callout>\n');
+      expect(iconOf(once)).toBe('');
+      expect(roundTripMdxish(once, opts)).toBe(once);
+    });
   });
 
   it('converts nested callouts in the body to JSX', () => {

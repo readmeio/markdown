@@ -5,7 +5,7 @@ import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 import { visit } from 'unist-util-visit';
 
-import { defaultIcons, themes } from '../../../components/Callout';
+import { themes } from '../../../components/Callout';
 import { NodeTypes } from '../../../enums';
 import { toAttributes } from '../../utils';
 
@@ -26,8 +26,9 @@ const mdxishCalloutToJsx = (): Transform => tree => {
   visit(tree, NodeTypes.callout, (node: Callout, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
 
-    let { icon, theme } = node.data.hProperties;
-    if (!icon && theme) icon = defaultIcons[theme];
+    // No default-icon fill: an empty `icon` means the author removed it
+    const { icon } = node.data.hProperties;
+    let { theme } = node.data.hProperties;
     if (!theme && icon) theme = themes[icon] || 'default';
 
     // Mutate in place to keep the children array identity so nested callouts in
