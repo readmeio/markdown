@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 15.9.1
+### 🛠 Fixes & Updates
+
+* **mdxish:** keep cleared callout icons cleared and color fa icons in view mode ([#1632](https://github.com/readmeio/markdown/issues/1632)) ([15377f9](https://github.com/readmeio/markdown/commit/15377f9df1ab4fd59543a22349955d5713d90668)), closes [readmeio/readme#21330](https://github.com/readmeio/readme/issues/21330) [readmeio/readme#21330](https://github.com/readmeio/readme/issues/21330)
+* **mdxish:** keep reparseSource stamp on tables nested in components ([#1631](https://github.com/readmeio/markdown/issues/1631)) ([fc5b2ab](https://github.com/readmeio/markdown/commit/fc5b2ab04ea8dadb9d31bb0ebd4dc544a0ab078e))
+* **mdxish:** map table positions through blockquote and list prefixes ([#1634](https://github.com/readmeio/markdown/issues/1634)) ([02ca7d4](https://github.com/readmeio/markdown/commit/02ca7d42a4a637a809849364e6a613fdf548e48d)), closes [#1631](https://github.com/readmeio/markdown/issues/1631)
+
 ## Version 15.9.0
 ### ✨ New & Improved
 
