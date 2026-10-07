@@ -12,6 +12,7 @@ import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
+import { replaceInheritingReparseSource, stampReparseSource } from './reparse-source';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
 import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
@@ -306,6 +307,16 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
 };
 
 /**
+ * Parses an image caption's markdown. The caption is re-parsed on its own, so the
+ * children's positions index into it rather than the document.
+ */
+const parseCaptionChildren = (caption: string): RootContent[] => {
+  const { children } = mdast(caption);
+  stampReparseSource(children, caption);
+  return children;
+};
+
+/**
  * Transforms an `<Image />` JSX element into an image-block MDAST node.
  * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
  */
@@ -351,7 +362,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: toBool(border),
     caption,
-    children: caption ? mdast(caption).children : [],
+    children: caption ? parseCaptionChildren(caption) : [],
     className,
     framed: toBool(framed),
     height: height !== undefined ? String(height) : undefined,
@@ -753,8 +764,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     const newNode = transformer(node);
     if (!newNode) return;
 
-    // Replace the JSX node with the MDAST node
-    (parent.children as Node[])[index] = newNode;
+    replaceInheritingReparseSource(parent, index, [newNode]);
   });
 
   // Inline JSX components (Anchor)

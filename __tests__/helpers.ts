@@ -82,7 +82,8 @@ export const parseMdxishWithSource = (
   opts: MdxishOpts = {},
 ): { source: string; tree: MdastRoot } => {
   const { processor, parserReadyContent } = mdxishAstProcessor(doc, opts);
-  const tree = processor.runSync(processor.parse(parserReadyContent)) as MdastRoot;
+  // Pass the source as the file, as the editor's `processSync` does, so source-aware transforms run.
+  const tree = processor.runSync(processor.parse(parserReadyContent), parserReadyContent) as MdastRoot;
   return { source: parserReadyContent, tree };
 };
 
@@ -138,6 +139,27 @@ export const collectNodes = <T extends Node = Node>(
     if (match(node)) out.push(node as T);
   });
   return out;
+};
+
+/**
+ * `[label, slice]` for the first node matching `test` and every positioned node under it, sliced
+ * the way a consumer must (see `parseMdxishWithResolvedSources`). Labels are the JSX name or type.
+ */
+export const resolvedSlicesUnder = (
+  doc: string,
+  test: (node: Node) => boolean,
+  opts: MdxishOpts = { newEditorTypes: true },
+): [string, string | undefined][] => {
+  const { tree, sliceOf } = parseMdxishWithResolvedSources(doc, opts);
+  const [match] = collectNodes(tree, test);
+  const slices: [string, string | undefined][] = [];
+  if (!match) return slices;
+  visit(match, node => {
+    if (!node.position) return;
+    const label = 'name' in node && typeof node.name === 'string' ? node.name : node.type;
+    slices.push([label, sliceOf(node)]);
+  });
+  return slices;
 };
 
 /**

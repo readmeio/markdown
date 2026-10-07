@@ -4,8 +4,9 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { pointAfter } from '../../../utils';
+import { createValueToSourceMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
+import { replaceInheritingReparseSource, stampReparseSource } from '../reparse-source';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -17,7 +18,6 @@ import {
   isMarkdownPromotableHtmlTag,
   isPascalCase,
   NESTED_TABLE_RE,
-  stampReparseSource,
 } from './utils';
 
 export { parseAttributes, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
@@ -122,31 +122,16 @@ interface ComponentNodeOptions {
 }
 
 // Ends the position at `consumedLength` so the component doesn't claim trailing
-// content the tokenizer swallowed into the same html node. Measured against the source
-// when available: each value line is its source line minus the container prefix
-// (list indent, `> `) micromark stripped, so those prefixes are counted back in.
+// content the tokenizer swallowed into the same html node.
 const positionEndingAtConsumed = (
   nodePosition: Node['position'],
   value: string,
   consumedLength: number,
   source: string | null,
 ): Node['position'] => {
-  if (!nodePosition?.start) return nodePosition;
-  const consumedValue = value.slice(0, consumedLength);
-  const sourceLines = source?.slice(nodePosition.start.offset, nodePosition.end?.offset).split('\n');
-  const valueLines = value.split('\n');
-  if (!sourceLines || sourceLines.length !== valueLines.length) {
-    return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedValue) };
-  }
-
-  const consumedLines = consumedValue.split('\n');
-  const lastLineIndex = consumedLines.length - 1;
-  const prefixWidth = sourceLines[lastLineIndex].length - valueLines[lastLineIndex].length;
-  const consumedSource = [
-    ...sourceLines.slice(0, lastLineIndex),
-    sourceLines[lastLineIndex].slice(0, prefixWidth + consumedLines[lastLineIndex].length),
-  ].join('\n');
-  return { start: nodePosition.start, end: pointAfter(nodePosition.start, consumedSource) };
+  const toSourcePoint = createValueToSourceMapper(nodePosition, value, source);
+  if (!nodePosition || !toSourcePoint) return nodePosition;
+  return { start: nodePosition.start, end: toSourcePoint(consumedLength) };
 };
 
 const createComponentNode = ({
@@ -165,14 +150,6 @@ const createComponentNode = ({
     end: endPosition?.end ?? startPosition?.end,
   },
 });
-
-// The promoted node takes over the html node's position, so it also takes over the
-// coordinate space that position belongs to.
-const substituteNodeWithMdxNode = (parent: Parent, index: number, mdxNode: MdxJsxFlowElement) => {
-  const replacedSource = parent.children[index]?.data?.reparseSource;
-  if (replacedSource) stampReparseSource([mdxNode], replacedSource);
-  (parent.children as Node[]).splice(index, 1, mdxNode);
-};
 
 /**
  * Transform PascalCase HTML nodes into mdxJsxFlowElement nodes.
@@ -283,7 +260,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
           ? positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd, source)
           : node.position,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      replaceInheritingReparseSource(parent, index, [componentNode]);
 
       if (remainingContent) {
         parseSibling(parent, index, remainingContent, safeMode, promoted);
@@ -337,7 +314,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      substituteNodeWithMdxNode(parent, index, componentNode);
+      replaceInheritingReparseSource(parent, index, [componentNode]);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)

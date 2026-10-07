@@ -1,5 +1,7 @@
 import type { Node } from 'mdast';
 
+import { stampReparseSource } from '../reparse-source';
+
 export interface Insert {
   consumes?: number;
   offset: number;
@@ -31,6 +33,8 @@ export const tableTags = new Set([
 export const unwrapParagraphNodes = (children: Node[]): Node[] => {
   return children.flatMap(child => {
     if (child.type === 'paragraph' && 'children' in child && Array.isArray(child.children)) {
+      // The unwrap drops a stamped root, so its children inherit that coordinate space.
+      if (child.data?.reparseSource) stampReparseSource(child.children, child.data.reparseSource);
       return child.children as Node[];
     }
     return [child];
