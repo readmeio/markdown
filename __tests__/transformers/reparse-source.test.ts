@@ -1,6 +1,10 @@
 import type { Node, Paragraph, Parent, Root, Text } from 'mdast';
 
-import { replaceInheritingReparseSource, stampReparseSource } from '../../processor/transform/mdxish/reparse-source';
+import {
+  replaceInheritingReparseSource,
+  resolveReparseSource,
+  stampReparseSource,
+} from '../../processor/transform/mdxish/reparse-source';
 import { unwrapParagraphNodes, unwrapSoleParagraph } from '../../processor/transform/mdxish/tables/utils';
 
 const text = (value: string, reparseSource?: string): Text => ({
@@ -47,6 +51,22 @@ describe('replaceInheritingReparseSource', () => {
     const parent: Parent = { type: 'paragraph', children: [text('x')] };
     replaceInheritingReparseSource(parent, 0, [text('a')]);
     expect(parent.children).toStrictEqual([text('a')]);
+  });
+});
+
+describe('resolveReparseSource', () => {
+  it("prefers the node's own stamp", () => {
+    expect(resolveReparseSource(text('a', 'own'), [paragraph([], 'outer')], 'doc')).toBe('own');
+  });
+
+  it('takes the nearest stamped ancestor', () => {
+    const ancestors = [paragraph([], 'outer'), paragraph([]), paragraph([], 'inner'), paragraph([])];
+    expect(resolveReparseSource(text('a'), ancestors, 'doc')).toBe('inner');
+  });
+
+  it('falls back to the document source when nothing is stamped', () => {
+    expect(resolveReparseSource(text('a'), [paragraph([])], 'doc')).toBe('doc');
+    expect(resolveReparseSource(text('a'), [])).toBeUndefined();
   });
 });
 

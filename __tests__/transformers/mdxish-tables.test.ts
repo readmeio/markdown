@@ -1963,6 +1963,22 @@ ${cell}
       expect(tablePart?.position?.start).toStrictEqual({ line: 4, column: 1, offset: 26 });
     });
 
+    // CX-4028: the blockquote's `> ` is stripped from each line of `value` but not the source.
+    it('maps each part through the container prefixes stripped from the value', () => {
+      const source = '> <div>\n> <table><tr><td>x</td></tr></table>\n> </div>';
+      const value = '<div>\n<table><tr><td>x</td></tr></table>\n</div>';
+      const node: Html = {
+        type: 'html',
+        value,
+        position: { start: { line: 1, column: 3, offset: 2 }, end: { line: 3, column: 9, offset: source.length } },
+      };
+
+      const tablePart = splitHtmlWithNestedTables(node, source)?.find(p => p.value.startsWith('<table'));
+      const { start, end } = tablePart!.position!;
+      expect(start).toStrictEqual({ line: 2, column: 3, offset: 10 });
+      expect(source.slice(start.offset, end.offset)).toBe('<table><tr><td>x</td></tr></table>');
+    });
+
     describe('when surrounded by HTMLBlock (protected)', () => {
       it('does not split a table inside a closed <HTMLBlock>', () => {
         const value = '<HTMLBlock>\n<table><tr><td>x</td></tr></table>\n</HTMLBlock>';

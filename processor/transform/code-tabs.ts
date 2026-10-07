@@ -5,6 +5,8 @@ import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../enums';
 
+import { stampReparseSource } from './mdxish/reparse-source';
+
 const isCode = (node: Node): node is Code => node?.type === 'code';
 
 const codeTabsTransformer =
@@ -13,6 +15,8 @@ const codeTabsTransformer =
     visit(tree, 'code', (node: Code) => {
       const { lang, meta, value } = node;
       node.data = {
+         // Ensure positions are passed through
+        ...node.data,
         hProperties: { lang, meta, value, copyButtons },
       };
     });
@@ -63,6 +67,8 @@ const codeTabsTransformer =
         },
       };
 
+      // Adjacent siblings share a coordinate space, so the wrapper takes the first block's.
+      if (node.data?.reparseSource) stampReparseSource([codeTabs], node.data.reparseSource);
       parent.children.splice(index, children.length, codeTabs);
     });
 
