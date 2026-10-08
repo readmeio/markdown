@@ -185,9 +185,9 @@ describe('visual regression tests', () => {
     expect(columnGaps).toStrictEqual([15, 15]);
   });
 
-  // A fixed column count used to set the page min-width (four 200px tracks). The hub
-  // scroller then pans sideways. The grid should scroll that row itself.
-  it('scrolls a fixed card column count inside the grid', async () => {
+  // Four 200px tracks used to lock the page wider than a SuperHub shell. A chosen
+  // count wraps below that minimum and stays at that count when the row fits.
+  it('wraps a fixed card column count instead of widening the page', async () => {
     await page.setContent(`
       <style>
         ${cardsStyles}
@@ -201,20 +201,27 @@ describe('visual regression tests', () => {
         <div class="row">
           <div class="chrome"></div>
           <div class="article">
-            <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
+            <div class="CardsGrid" data-fixed-columns style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
               <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
             </div>
           </div>
         </div>
       </div>
       <div class="shell" id="wide" style="width: 1200px;">
-        <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
+        <div class="CardsGrid" data-fixed-columns style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
           <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+          <div class="Card">5</div><div class="Card">6</div><div class="Card">7</div><div class="Card">8</div>
         </div>
       </div>
       <div class="shell" id="autofit" style="width: 400px;">
         <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;">
           <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+        </div>
+      </div>
+      <div class="shell" id="autofit-wide" style="width: 1200px;">
+        <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;">
+          <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+          <div class="Card">5</div><div class="Card">6</div><div class="Card">7</div><div class="Card">8</div>
         </div>
       </div>
     `);
@@ -224,25 +231,36 @@ describe('visual regression tests', () => {
         const shell = document.getElementById(id);
         const grid = shell.querySelector('.CardsGrid');
         const tracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean);
+        const rows = new Set([...grid.children].map(card => Math.round(card.getBoundingClientRect().top))).size;
         return {
           gridOverflow: grid.scrollWidth - grid.clientWidth,
+          rows,
           shellOverflow: shell.scrollWidth - shell.clientWidth,
-          tracks,
+          tracks: tracks.length,
         };
       };
-      return { autofit: read('autofit'), narrow: read('narrow'), wide: read('wide') };
+      return {
+        autofit: read('autofit'),
+        autofitWide: read('autofit-wide'),
+        narrow: read('narrow'),
+        wide: read('wide'),
+      };
     });
 
     expect(layouts.narrow.shellOverflow).toBe(0);
-    expect(layouts.narrow.gridOverflow).toBeGreaterThan(0);
-    expect(layouts.narrow.tracks).toHaveLength(4);
+    expect(layouts.narrow.gridOverflow).toBe(0);
+    expect(layouts.narrow.tracks).toBeLessThan(4);
+    expect(layouts.narrow.rows).toBeGreaterThan(1);
 
     expect(layouts.wide.shellOverflow).toBe(0);
     expect(layouts.wide.gridOverflow).toBe(0);
-    expect(layouts.wide.tracks).toHaveLength(4);
+    expect(layouts.wide.tracks).toBe(4);
+    expect(layouts.wide.rows).toBe(2);
 
     expect(layouts.autofit.shellOverflow).toBe(0);
     expect(layouts.autofit.gridOverflow).toBe(0);
-    expect(layouts.autofit.tracks.length).toBeLessThan(4);
+    expect(layouts.autofit.tracks).toBeLessThan(4);
+
+    expect(layouts.autofitWide.tracks).toBeGreaterThan(4);
   });
 });

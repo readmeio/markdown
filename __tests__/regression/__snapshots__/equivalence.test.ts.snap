@@ -170,6 +170,14 @@ exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
       "severity": "structural",
     },
     {
+      "attrName": "data-fixed-columns",
+      "kind": "attr",
+      "left": "true",
+      "path": "/div[1]",
+      "right": null,
+      "severity": "cosmetic",
+    },
+    {
       "attrName": "style",
       "kind": "attr",
       "left": "--CardsGrid-cardWidth:200px;--CardsGrid-columns:3",
@@ -184,6 +192,14 @@ exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
       "path": "/div[1]/div[0]",
       "right": "CardsGrid",
       "severity": "structural",
+    },
+    {
+      "attrName": "data-fixed-columns",
+      "kind": "attr",
+      "left": null,
+      "path": "/div[1]/div[0]",
+      "right": "true",
+      "severity": "cosmetic",
     },
     {
       "attrName": "style",
