@@ -114,15 +114,22 @@ function settleExpressions(tree: MdastRoot): boolean {
     if (canChangeHeadings(node, parent, heading)) settled = false;
   });
 
-  edits.forEach(({ heading, node, parent, replacement }) => {
+  const apply = ({ node, parent, replacement }: ExpressionEdit) => {
     (parent.children as Nodes[]).splice(
       parent.children.indexOf(node as never),
       1,
       ...(replacement ? [replacement] : []),
     );
-    // The hub trims what a stripped comment leaves behind, but keeps a literal's spaces.
-    if (heading && !replacement) trimHeadingText(heading);
-  });
+  };
+  // Comments go first: the hub strips them from the source, so the parser trims only the source
+  // whitespace around them, never the spaces a literal adds.
+  edits
+    .filter(edit => !edit.replacement)
+    .forEach(edit => {
+      apply(edit);
+      if (edit.heading) trimHeadingText(edit.heading);
+    });
+  edits.filter(edit => edit.replacement).forEach(apply);
   return settled;
 }
 

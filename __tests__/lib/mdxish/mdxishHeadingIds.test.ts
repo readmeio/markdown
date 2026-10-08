@@ -37,6 +37,8 @@ describe('mdxishHeadingIds (RM-18626)', () => {
     ['a property read in a sentence', 'Price: {plan.price} per seat\n\n## Setup', ['setup']],
     ['a space literal after the heading text', '## Setup{" "}\n\n## Setup', ['setup-', 'setup']],
     ['a space literal before the heading text', '## {" "}Setup', ['-setup']],
+    ['a space literal before the text and a comment after it', '## {" "}Setup {/* note */}', ['-setup']],
+    ['a comment before the text and a space literal after it', '## {/* note */}Setup{" "}', ['setup-']],
     ['a legacy magic block heading', '[block:api-header]\n{"title":"Magic","level":2}\n[/block]', ['magic']],
   ])('matches the hub for %s', (_, doc, expected) => {
     expect(headingIds(doc)).toStrictEqual(expected);

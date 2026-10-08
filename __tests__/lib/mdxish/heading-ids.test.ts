@@ -32,6 +32,7 @@ describe.each([
     ['a `#` in the heading text', '## C# {#sharp}', 'C#', 'sharp'],
     ['an id with underscores', '## The `__init__` method {#the-__init__-method}', 'The __init__ method', 'the-__init__-method'],
     ['a unicode id', '## Café {#café}', 'Café', 'café'],
+    ['an id outside the basic multilingual plane', '## Deseret {#𐐀}', 'Deseret', '𐐀'],
     ['a heading that is only an id', '## {#empty}', '', 'empty'],
     ['a heading whose emphasis is normalized', '## hello_world_ {#stable}', 'helloworld', 'stable'],
     ['an underscore that could pair with one in the id', '## _Text {#xy_}', '_Text', 'xy_'],

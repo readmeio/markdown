@@ -30,6 +30,10 @@ describe('heading compiler (RM-18626)', () => {
     expect(mdxishMdastToMd(withBreak)).toBe('Line one\\\nline two\n========\n');
   });
 
+  it('round-trips an id outside the basic multilingual plane', () => {
+    expect(roundTripMdxish('## Deseret {#𐐀}\n')).toBe('## Deseret {#𐐀}\n');
+  });
+
   it('keeps an escaped brace literal across round trips', () => {
     const once = roundTripMdxish('## Use \\{#each\\}\n');
     expect(once).toBe('## Use \\{#each\\}\n');
