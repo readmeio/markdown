@@ -50,9 +50,14 @@ export const Card = ({
 interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string, columns?: number | string }> {}
 
 const CardsGrid = ({ cardWidth = '200px', columns = 'auto-fit', children }: CardsGridProps) => {
+  const fixedColumns = columns !== 'auto-fit' && columns !== 'auto-fill';
 
   return (
-    <div className="CardsGrid" style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}>
+    <div
+      className="CardsGrid"
+      data-fixed-columns={fixedColumns ? '' : undefined}
+      style={{ '--CardsGrid-cardWidth': cardWidth, '--CardsGrid-columns': columns } as React.CSSProperties}
+    >
       {children}
     </div>
   );
