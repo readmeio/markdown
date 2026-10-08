@@ -1,4 +1,4 @@
-import { MDX_VARIABLE_REGEXP } from '@readme/variable';
+import { MDX_VARIABLE_REGEXP, VARIABLE_REGEXP } from '@readme/variable';
 
 import { stringifyVariableValue } from '../../../utils/user';
 
@@ -11,6 +11,8 @@ const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'gu');
 // Escaped and `$`-prefixed forms are left alone so a reference that stays literal keeps its source.
 // A closing escape needs no lookahead: requiring a literal `]}` already rules out `]\}`.
 const BRACKET_NOTATION_REGEX = /(?<![$\\])\{user\[['"](\w+)['"]\]\}/gu;
+
+const LEGACY_VARIABLE_REGEX = new RegExp(VARIABLE_REGEXP, 'gu');
 
 /**
  * Resolve `{user.*}` in a JSX attribute value against the same `user` binding the rmdx engine gets,
@@ -28,4 +30,12 @@ export function resolveAttributeVariables(value: string, user: Record<string, un
       if (escapePrefix || escapeSuffix) return source;
       return stringifyVariableValue(user[name]);
     });
+}
+
+/** Resolve legacy `<<...>>`, leaving escaped `\<<...>>` literal. */
+export function resolveLegacyVariables(value: string, user: Record<string, unknown>): string {
+  return value.replace(LEGACY_VARIABLE_REGEX, (source, name: string) => {
+    if (source.startsWith('\\<<') || source.endsWith('\\>>')) return source;
+    return stringifyVariableValue(user[name.trim()]);
+  });
 }

@@ -172,6 +172,23 @@ Hi
     });
   });
 
+  // RM-10865
+  describe('legacy variables in image alt text', () => {
+    it.each([
+      ['a block image', '![<<region>> Domains](https://example.com/a.png)'],
+      ['an inline image', 'See ![<<region>> Domains](https://example.com/a.png) here'],
+      ['a reference image', '![<<region>> Domains][a]\n\n[a]: https://example.com/a.png'],
+      [
+        'an image magic block',
+        '[block:image]\n{"images":[{"image":["https://example.com/a.png","a.png","<<region>> Domains"]}]}\n[/block]',
+      ],
+    ])('resolves %s parsed without variables, as the SSR render server does', (_shape, md) => {
+      const { default: Content } = renderMdxish(mdxish(md), { variables });
+
+      expect(render(<Content />).container.querySelector('img')).toHaveAttribute('alt', 'us-east-1 Domains');
+    });
+  });
+
   describe('non-variable content', () => {
     it('keeps an unevaluatable attribute expression as literal braces', () => {
       const container = renderMd('<a href="#" title={someUnknownThing}>link</a>');

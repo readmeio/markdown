@@ -12,7 +12,7 @@ import Contexts from '../../../contexts';
 import User from '../../../utils/user';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
-import { resolveAttributeVariables } from './mdxish-variables';
+import { resolveAttributeVariables, resolveLegacyVariables } from './mdxish-variables';
 
 export interface RenderOpts {
   baseUrl?: string;
@@ -74,7 +74,8 @@ const CODE_TAG_NAMES = new Set(['code']);
 const RAW_HTML_PROP_NAMES = new Set(['html']);
 
 /**
- * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but
+ * Resolve `{user.*}` in string-valued props, plus legacy `<<...>>` in img alt since markdown alt is
+ * document content (RM-10865). Body text is handled by the `Variable` component, but
  * attributes are plain strings, so they are substituted here — at render time, so that a
  * server-parsed (user-agnostic) tree resolves against the current reader's variables.
  */
@@ -88,7 +89,9 @@ function resolveVariablesInProps(
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
     const isDocumentContent = RAW_HTML_PROP_NAMES.has(key) || (isCodeTag && key === 'value');
     if (typeof value !== 'string' || isDocumentContent) return [key, value];
-    return [key, resolveAttributeVariables(value, user)];
+    const isImageAlt = tagName === 'img' && key === 'alt';
+    const resolved = resolveAttributeVariables(value, user);
+    return [key, isImageAlt ? resolveLegacyVariables(resolved, user) : resolved];
   });
 
   return Object.fromEntries(resolvedEntries);
