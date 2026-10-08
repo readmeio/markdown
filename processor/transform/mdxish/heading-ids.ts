@@ -4,11 +4,6 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { HEADING_ID_PATTERN } from '../../utils';
-
-const SUFFIX_ID_REGEX = new RegExp(`^\\{#(${HEADING_ID_PATTERN})\\}\\s*$`, 'u');
-const SUFFIX_PARTS_REGEX = /^\{([^}]*)\}(\s*)$/;
-
 declare module 'vfile' {
   interface DataMap {
     /** Heading ids authored as `{#id}`, which the slug pass must not hand to another heading. */
@@ -23,24 +18,22 @@ function trimTrailingWhitespace(node: Heading) {
   if (!last.value) node.children.pop();
 }
 
+const isBlank = (node: PhrasingContent) => node.type === 'text' && !node.value.trim();
+
 function takeSuffixId(node: Heading): string | undefined {
-  const last = node.children.at(-1);
-  if (last?.type !== 'mdxishHeadingId') return undefined;
-  const id = last.value.match(SUFFIX_ID_REGEX)?.[1];
-  if (id) node.children.pop();
-  return id;
+  let end = node.children.length;
+  while (end > 0 && isBlank(node.children[end - 1])) end -= 1;
+  const suffix = node.children[end - 1];
+  if (suffix?.type !== 'mdxishHeadingId') return undefined;
+  node.children.splice(end - 1);
+  return suffix.value.slice(2, -1);
 }
 
 // A suffix that isn't a heading's id is what the parser would otherwise have made of it.
-function restoreSuffix(node: HeadingIdSuffix, safeMode: boolean): PhrasingContent[] {
-  const parts = node.value.match(SUFFIX_PARTS_REGEX);
-  if (safeMode || !parts) return [{ type: 'text', value: node.value, position: node.position }];
-  const [, expression, trailing] = parts;
-  return [
-    { type: 'mdxTextExpression', value: expression, position: node.position },
-    ...(trailing ? [{ type: 'text' as const, value: trailing }] : []),
-  ];
-}
+const restoreSuffix = (node: HeadingIdSuffix, safeMode: boolean): PhrasingContent =>
+  safeMode
+    ? { type: 'text', value: node.value, position: node.position }
+    : { type: 'mdxTextExpression', value: node.value.slice(1, -1), position: node.position };
 
 /** Sets a heading's id from a trailing `{#custom-id}`, so its anchor survives translation; `\{#id}` stays text. */
 const headingIdsTransformer: Plugin<[{ safeMode?: boolean }?], Root> =
@@ -56,9 +49,8 @@ const headingIdsTransformer: Plugin<[{ safeMode?: boolean }?], Root> =
 
     visit(tree, 'mdxishHeadingId', (node: HeadingIdSuffix, index, parent) => {
       if (!parent || index === undefined) return undefined;
-      const restored = restoreSuffix(node, safeMode);
-      (parent.children as PhrasingContent[]).splice(index, 1, ...restored);
-      return index + restored.length;
+      (parent.children as PhrasingContent[]).splice(index, 1, restoreSuffix(node, safeMode));
+      return index + 1;
     });
   };
 

@@ -35,6 +35,8 @@ describe.each([
     ['a heading whose emphasis is normalized', '## hello_world_ {#stable}', 'helloworld', 'stable'],
     ['an escaped backslash before the brace', '## Use \\\\{#each}', 'Use \\', 'each'],
     ['an underscore that could pair with one in the id', '## _Text {#xy_}', '_Text', 'xy_'],
+    ['trailing spaces after the id', '## Setup {#setup}   ', 'Setup', 'setup'],
+    ['a legacy api-header block', '[block:api-header]\n{"title":"Magic {#magic}","level":2}\n[/block]', 'Magic', 'magic'],
   ])('reads %s', (__, doc, text, id) => {
     expect(renderedHeadings(doc, opts)).toStrictEqual([{ id, text }]);
   });
@@ -45,10 +47,6 @@ describe.each([
     ['a character ids cannot use', '## Rock {#a&b}', 'Rock {#a&b}', 'rock-ab'],
   ])('leaves %s as text', (__, doc, text, id) => {
     expect(renderedHeadings(doc, opts)).toStrictEqual([{ id, text }]);
-  });
-
-  it('does not read an id with spaces inside the braces', () => {
-    expect(renderedHeadings('## Lead { #lead }', opts)[0].id).not.toBe('lead');
   });
 
   it.each([
@@ -73,10 +71,42 @@ describe.each([
     ).toBe('Para ends {#x}');
   });
 
+  it.each([
+    ['two trailing spaces', 'Text {#x}  \nnext', 1],
+    ['a trailing tab', 'Text {#x}\t\nnext', 0],
+  ])('keeps a paragraph line ending in {#x} and %s as it was', (__, doc, breaks) => {
+    const tree = mdxish(doc, { ...opts, hardBreaks: false });
+    const [paragraph] = collectNodes<Element>(tree, node => (node as Element).tagName === 'p');
+
+    expect(collectNodes<Element>(paragraph, node => (node as Element).tagName === 'br')).toHaveLength(breaks);
+    expect(
+      collectNodes(paragraph, 'text')
+        .map(text => ('value' in text ? text.value : ''))
+        .join(''),
+    ).toBe('Text {#x}\nnext');
+  });
+
   it('keeps the id out of the heading text in the mdast', () => {
     const [heading] = collectNodes<Heading>(parseMdxish('## Prérequis {#prerequisites}', opts), 'heading');
     expect(heading.children).toStrictEqual([expect.objectContaining({ type: 'text', value: 'Prérequis' })]);
   });
+});
+
+test.each([
+  [{ safeMode: false }, { id: 'lead-lead', text: 'Lead {#lead}' }],
+  [{ safeMode: true }, { id: 'lead--lead-', text: 'Lead { #lead }' }],
+])('does not read an id with spaces inside the braces (%o)', (opts, expected) => {
+  expect(renderedHeadings('## Lead { #lead }', opts)).toStrictEqual([expected]);
+});
+
+test('decodes a character reference in a line-final suffix that is not an id in safe mode', () => {
+  const [paragraph] = collectNodes<Element>(mdxish('Text {#a&amp;b}', { safeMode: true }), node => (node as Element).tagName === 'p');
+
+  expect(
+    collectNodes(paragraph, 'text')
+      .map(text => ('value' in text ? text.value : ''))
+      .join(''),
+  ).toBe('Text {#a&b}');
 });
 
 describe('explicit heading ids in RMDX', () => {

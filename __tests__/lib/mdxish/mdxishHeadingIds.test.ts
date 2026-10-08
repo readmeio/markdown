@@ -34,6 +34,9 @@ describe('mdxishHeadingIds (RM-18626)', () => {
       ['setup', 'setup-1'],
     ],
     ['a non-literal expression in a sentence', 'Price: {price} per seat\n\n## Setup', ['setup']],
+    ['a property read in a sentence', 'Price: {plan.price} per seat\n\n## Setup', ['setup']],
+    ['a space literal after the heading text', '## Setup{" "}\n\n## Setup', ['setup-', 'setup']],
+    ['a space literal before the heading text', '## {" "}Setup', ['-setup']],
     ['a legacy magic block heading', '[block:api-header]\n{"title":"Magic","level":2}\n[/block]', ['magic']],
   ])('matches the hub for %s', (_, doc, expected) => {
     expect(headingIds(doc)).toStrictEqual(expected);
@@ -51,6 +54,8 @@ describe('mdxishHeadingIds (RM-18626)', () => {
     ['a non-literal expression in a heading', '## Digest {timeDescription}'],
     ['a non-literal expression on its own line', '{renderHeading()}\n\n## Setup'],
     ['a non-literal expression with JSX', 'Before {<h2>Setup</h2>} after\n\n## Setup'],
+    ['a call that can build a heading', 'Before {React.createElement("h2", null, "Setup")} after\n\n## Setup'],
+    ['a heading tag with an evaluated attribute', '<h2 id={"fixed"}>Setup</h2>\n\n## Setup'],
     ['an export', 'export const Title = () => <h2>Setup</h2>;\n\n## Setup'],
   ])('returns null for %s, which only running code could settle', (_, doc) => {
     expect(mdxishHeadingIds(parse(doc))).toBeNull();

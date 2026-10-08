@@ -1,18 +1,21 @@
 import type { MdxishOpts } from './mdxish';
 import type { Element, Root as HastRoot } from 'hast';
 import type { Heading, Nodes, Parent, Root as MdastRoot, Text } from 'mdast';
+import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 
-import { visit } from 'unist-util-visit';
+import { EXIT, visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 import { VFile } from 'vfile';
 
-import { createTextNode } from '../processor/transform/mdxish/evaluate-expressions';
+import { createTextNode, isMDXElement } from '../processor/utils';
 
 import { mdxishRenderProcessor } from './mdxish';
+import { jsxAcornParser } from './utils/jsx-acorn-parser';
 import { evaluateLiteralExpression } from './utils/literal-expression';
 
 const HEADING_INDEX = 'dataMdxishHeadingIndex';
+const HEADING_TAG_REGEX = /^h[1-6]$/;
 const JSX_COMMENT_REGEX = /^\s*\/\*[\s\S]*\*\/\s*$/;
 
 type Expression = MdxFlowExpression | MdxTextExpression;
@@ -22,6 +25,12 @@ interface ExpressionEdit {
   node: Expression;
   parent: Parent;
   replacement: Text | null;
+}
+
+interface EstreeNode {
+  computed?: boolean;
+  object?: EstreeNode;
+  type: string;
 }
 
 const isExpression = (node: Nodes): node is Expression =>
@@ -50,11 +59,38 @@ function trimHeadingText(heading: Heading) {
   if (last?.type === 'text') last.value = last.value.trimEnd();
 }
 
-// An expression the hub has to run can change a heading only from inside one, or by rendering a block or JSX:
-// alone in its paragraph, its result is lifted out as a block.
+const isNamePath = (node: EstreeNode): boolean =>
+  node.type === 'Identifier' ||
+  (node.type === 'MemberExpression' && !node.computed && !!node.object && isNamePath(node.object));
+
+// A name like `{price}` or `{plan.name}` can only read a value, never build an element. Code the parser
+// rejects can't run at all, so the hub shows it as text.
+function canBuildElements(source: string): boolean {
+  try {
+    return !isNamePath(jsxAcornParser.parseExpressionAt(source, 0, { ecmaVersion: 'latest' }) as EstreeNode);
+  } catch {
+    return false;
+  }
+}
+
+// An expression the hub has to run changes a heading from inside one, by building an element (a call or JSX),
+// or as a block: alone in its paragraph, its result is lifted out as one.
 function canChangeHeadings(node: Expression, parent: Parent, heading: Heading | undefined): boolean {
-  if (heading || node.type === 'mdxFlowExpression' || node.value.includes('<')) return true;
+  if (heading || node.type === 'mdxFlowExpression' || canBuildElements(node.value)) return true;
   return parent.children.every(child => child === node || (child.type === 'text' && !child.value.trim()));
+}
+
+// Safe mode leaves `<h2 id={...}>` without the id the hub evaluates, which shifts the numbering.
+function hasEvaluatedHeadingAttribute(tree: MdastRoot): boolean {
+  let found = false;
+  visit(tree, isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
+    if (!HEADING_TAG_REGEX.test(node.name ?? '')) return undefined;
+    found = node.attributes.some(
+      attribute => attribute.type === 'mdxJsxExpressionAttribute' || typeof attribute.value === 'object',
+    );
+    return found ? EXIT : undefined;
+  });
+  return found;
 }
 
 // Matches what the hub renders without running code: comments are stripped and plain literals become their
@@ -84,7 +120,8 @@ function settleExpressions(tree: MdastRoot): boolean {
       1,
       ...(replacement ? [replacement] : []),
     );
-    if (heading) trimHeadingText(heading);
+    // The hub trims what a stripped comment leaves behind, but keeps a literal's spaces.
+    if (heading && !replacement) trimHeadingText(heading);
   });
   return settled;
 }
@@ -103,7 +140,7 @@ export function mdxishHeadingIds(
     hasExport = true;
   });
   // An `export` can define components that render headings.
-  if (hasExport || !settleExpressions(copy)) return null;
+  if (hasExport || hasEvaluatedHeadingAttribute(copy) || !settleExpressions(copy)) return null;
 
   collectHeadings(copy).forEach((heading, index) => {
     heading.data = { ...heading.data, hProperties: { ...heading.data?.hProperties, [HEADING_INDEX]: index } };

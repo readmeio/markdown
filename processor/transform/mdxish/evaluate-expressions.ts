@@ -3,7 +3,6 @@ import type { ElementContent } from 'hast';
 import type { Paragraph, PhrasingContent, Root, Text } from 'mdast';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
-import type { Position } from 'unist';
 import type { VFile } from 'vfile';
 
 import { fromHtml } from 'hast-util-from-html';
@@ -15,6 +14,7 @@ import { INLINE_COMPONENT_TAGS } from '../../../lib/constants';
 import { evalExpression, jsxComponentNames } from '../../../lib/utils/mdxish/mdxish-expression';
 import { getComponentName, toPascalCase } from '../../../lib/utils/mdxish/mdxish-get-component-name';
 import User from '../../../utils/user';
+import { createTextNode } from '../../utils';
 
 import { reactElementToHast } from './react-element-to-hast';
 
@@ -79,13 +79,6 @@ const wrapInParagraph = (child: PhrasingContent): Paragraph => ({
 });
 
 const placeText = (text: Text, needsBlock: boolean): Paragraph | Text => (needsBlock ? wrapInParagraph(text) : text);
-
-/** Turn a non-renderable evaluation result into a text node. */
-export const createTextNode = (result: unknown, position: Position | undefined): Text => {
-  if (result === null || result === undefined) return { type: 'text', value: '', position };
-  if (typeof result === 'object') return { type: 'text', value: JSON.stringify(result), position };
-  return { type: 'text', value: String(result), position };
-};
 
 /**
  * AST transformer to evaluate MDX expressions.
