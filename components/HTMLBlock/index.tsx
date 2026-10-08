@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 const MATCH_SCRIPT_TAGS = /<script\b[^>]*>([\s\S]*?)<\/script *>\n?/gim;
 
@@ -35,7 +35,8 @@ const HTMLBlock = ({ children = '', html: htmlProp, runScripts, safeMode: safeMo
   // In MDXish mode, safeMode comes in as a string from HAST props
   const safeMode = typeof safeModeRaw !== 'boolean' ? safeModeRaw === 'true' : safeModeRaw;
 
-  const [cleanedHtml, exec] = extractScripts(html);
+  // Memoised so `exec` is stable across rerenders and the effect below only runs when the html changes.
+  const [cleanedHtml, exec] = useMemo(() => extractScripts(html), [html]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && typeof runScripts === 'boolean' && runScripts) exec();

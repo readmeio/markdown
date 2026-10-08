@@ -26,6 +26,12 @@ describe('HTML Block', () => {
     expect(g.mockFn).toHaveBeenCalledTimes(1);
   });
 
+  it('runs user scripts once in compat mode, not again on rerender', () => {
+    const { rerender } = render(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
+    rerender(<HTMLBlock runScripts={true}>{'<script>mockFn()</script>'}</HTMLBlock>);
+    expect(g.mockFn).toHaveBeenCalledTimes(1);
+  });
+
   it("doesn't run user scripts by default", () => {
     render(<HTMLBlock>{'<script>mockFn()</script>'}</HTMLBlock>);
     expect(g.mockFn).toHaveBeenCalledTimes(0);
