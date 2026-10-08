@@ -71,7 +71,7 @@ const REGISTRY = {
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
   gemoji: { syntax: gemoji, fromMarkdown: gemojiFromMarkdown },
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
-  // After the `{` expression tokenizers, so a line-final `{#id}` is tried first and never parsed as one.
+  // Replaces the ATX heading construct in `flow`, so it never touches prose outside a heading.
   headingId: { syntax: headingId, fromMarkdown: headingIdFromMarkdown },
   looseHtmlEntity: { syntax: looseHtmlEntity, fromMarkdown: looseHtmlEntityFromMarkdown },
   htmlBlockComponent: { syntax: htmlBlockComponent, fromMarkdown: htmlBlockComponentFromMarkdown },
@@ -92,7 +92,7 @@ export type MdxishFeature = keyof typeof REGISTRY;
 const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
 
 /** Inline syntax every parser that renders user prose needs. */
-const INLINE: MdxishFeature[] = ['gemoji', 'headingId', 'legacyVariable', 'looseHtmlEntity'];
+const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
 
 /**
  * `{}` and ESM (export) syntax. A parser that re-parses a component body swaps
@@ -111,14 +111,14 @@ const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdx
  */
 export const FEATURES = {
   /** `lib/mdxish.ts` — the document parser; the only site taking every group */
-  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem'],
+  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem', 'headingId'],
 
   /**
    * `components/utils.ts` — re-parses a component body, which should tokenize
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
    */
-  componentBody: [...BLOCK_CLAIMS, ...INLINE, 'mdxExpression', 'emptyTaskListItem'],
+  componentBody: [...BLOCK_CLAIMS, ...INLINE, 'mdxExpression', 'emptyTaskListItem', 'headingId'],
 
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.

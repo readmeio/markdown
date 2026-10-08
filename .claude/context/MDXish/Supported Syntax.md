@@ -105,7 +105,7 @@ Standard Markdown heading syntaxes (`#` prefixes) are supported, as well as comp
 
 Underline notation (using `=` or `-` are also supported for first and second level headings, respectively.
 
-A trailing `{#custom-id}` sets a heading's anchor, so it survives text changes such as translation. Ids use letters, numbers, `-`, `_`, `.` and `:`; an escaped `\{#id}` stays text. MDXish only; RMDX rejects the syntax.
+A trailing ` {#custom-id}` on a `#` heading sets its anchor, so it survives text changes such as translation. Ids use letters, numbers, `-`, `_`, `.` and `:`; an escaped `\{#id}` stays text. The ATX heading construct takes it off before the inline parse, so nothing outside a `#` heading sees it: underlined headings, legacy callout titles and prose are parsed as before. MDXish only; RMDX rejects the syntax.
 
 	## Prérequis {#prerequisites}
 

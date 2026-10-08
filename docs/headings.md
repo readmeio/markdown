@@ -69,4 +69,4 @@ End a heading with `{#your-id}` to set its anchor yourself. The anchor then stay
 ## Prérequis {#prerequisites}
 ```
 
-This heading links as `#prerequisites`, and `{#prerequisites}` is not shown. An anchor can use letters, numbers, `-`, `_`, `.` and `:`. To show a literal `{#…}` at the end of a heading, escape the brace: `\{#each}`. Custom anchors work in the MDXish engine only.
+This heading links as `#prerequisites`, and `{#prerequisites}` is not shown. An anchor can use letters, numbers, `-`, `_`, `.` and `:`, and needs a space before it. To show a literal `{#…}` at the end of a heading, escape the brace: `\{#each}`. Custom anchors work on `#` headings in the MDXish engine only, not on underlined headings or on legacy callout titles.

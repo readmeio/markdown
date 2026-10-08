@@ -15,10 +15,19 @@ describe('heading compiler (RM-18626)', () => {
     expect(roundTripMdxish('## Prérequis {#prerequisites}\n', { safeMode })).toBe('## Prérequis {#prerequisites}\n');
   });
 
-  it('writes the id above a setext underline', () => {
-    expect(roundTripMdxish('Line one\\\nline two {#two-lines}\n===\n')).toBe(
-      'Line one\\\nline two {#two-lines}\n========\n',
-    );
+  it('drops the id from a heading with a line break, which is written as setext', () => {
+    const withBreak: Root = {
+      type: 'root',
+      children: [
+        {
+          type: 'heading',
+          depth: 1,
+          data: { hProperties: { id: 'two-lines' } },
+          children: [{ type: 'text', value: 'Line one' }, { type: 'break' }, { type: 'text', value: 'line two' }],
+        },
+      ],
+    };
+    expect(mdxishMdastToMd(withBreak)).toBe('Line one\\\nline two\n========\n');
   });
 
   it('keeps an escaped brace literal across round trips', () => {
