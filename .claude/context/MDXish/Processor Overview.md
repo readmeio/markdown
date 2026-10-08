@@ -175,6 +175,8 @@ mdContent (raw input)
 
 > **See**: `mdxish` — @lib/mdxish.ts#223 (appended `.use` chain #238)
 
+The steps after parsing live in `mdxishRenderProcessor(opts)`, which `mdxish()` runs on the same VFile as the parse. `mdxishHeadingIds(tree)` (@lib/mdxishHeadingIds.ts) reuses them in safe mode on an mdast a caller already has, to report the anchor id each heading renders with. It returns `null` when an `export` or an expression that needs running could change those ids.
+
 `mdxish()` takes the base processor from `mdxishAstProcessor()` and appends the remaining MDAST transformers, the MDAST → HAST bridge (`remarkRehype`), and the HAST (rehype) transformers, then runs it and returns the resulting HAST tree. As with the base processor there is no compiler/stringify stage — a tree is returned directly.
 
 The `!safeMode`-only stages are the expression/export evaluators and the deferred-attribute resolver.

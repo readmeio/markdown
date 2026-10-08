@@ -81,7 +81,7 @@ const wrapInParagraph = (child: PhrasingContent): Paragraph => ({
 const placeText = (text: Text, needsBlock: boolean): Paragraph | Text => (needsBlock ? wrapInParagraph(text) : text);
 
 /** Turn a non-renderable evaluation result into a text node. */
-const createTextNode = (result: unknown, position: Position | undefined): Text => {
+export const createTextNode = (result: unknown, position: Position | undefined): Text => {
   if (result === null || result === undefined) return { type: 'text', value: '', position };
   if (typeof result === 'object') return { type: 'text', value: JSON.stringify(result), position };
   return { type: 'text', value: String(result), position };

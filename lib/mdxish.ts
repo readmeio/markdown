@@ -238,13 +238,8 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
   return processor.stringify(processor.runSync(mdast));
 }
 
-/**
- * Processes markdown content with MDX syntax support and returns a HAST.
- * Detects and renders custom component tags from the components hash.
- *
- * @see .claude/context/MDXish/Processor Overview.md
- */
-export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+/** The steps `mdxish()` runs after parsing; run it on the parse's VFile, since steps read `file.data`. */
+export function mdxishRenderProcessor(opts: MdxishOpts = {}) {
   const {
     components: userComponents = {},
     hardBreaks: enableHardBreaks = true,
@@ -258,14 +253,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  // Remove JSX comments before processing (protect code blocks first)
-  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
-  const withoutComments = removeJSXComments(protectedContent);
-  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
-
-  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
-
-  processor
+  return unified()
     .use(safeMode ? undefined : evaluateExports, { sanitize }) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
@@ -283,12 +271,28 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {
       components,
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define -- component bodies render through mdxish() again
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
     });
+}
+
+/**
+ * Processes markdown content with MDX syntax support and returns a HAST.
+ * Detects and renders custom component tags from the components hash.
+ *
+ * @see .claude/context/MDXish/Processor Overview.md
+ */
+export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+  // Remove JSX comments before processing (protect code blocks first)
+  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
+  const withoutComments = removeJSXComments(protectedContent);
+  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
+
+  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   const vfile = new VFile({ value: parserReadyContent });
-  const mdast = processor.parse(parserReadyContent);
-  const hast = processor.runSync(mdast, vfile) as Root;
+  const mdast = processor.runSync(processor.parse(parserReadyContent), vfile) as MdastRoot;
+  const hast = mdxishRenderProcessor(opts).runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');
