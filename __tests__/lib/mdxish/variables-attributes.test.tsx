@@ -173,11 +173,23 @@ Hi
   });
 
   // RM-10865
-  describe('legacy variables in image alt text', () => {
+  describe('variables in image alt text', () => {
     it.each([
       ['a block image', '![<<region>> Domains](https://example.com/a.png)'],
       ['an inline image', 'See ![<<region>> Domains](https://example.com/a.png) here'],
       ['a reference image', '![<<region>> Domains][a]\n\n[a]: https://example.com/a.png'],
+      ['{user.*} in a block image', '![{user.region} Domains](https://example.com/a.png)'],
+      ['{user.*} in an inline image', 'See ![{user.region} Domains](https://example.com/a.png) here'],
+      ['{user.*} in a reference image', '![{user.region} Domains][a]\n\n[a]: https://example.com/a.png'],
+      ['bracket notation', '![{user["region"]} Domains](https://example.com/a.png)'],
+      [
+        '{user.*} in a component body',
+        '<Callout>\n\n![{user.region} Domains](https://example.com/a.png)\n\n</Callout>',
+      ],
+      [
+        '{user.*} in a JSX table cell',
+        '<Table>\n  <tbody>\n    <tr>\n      <td>![{user.region} Domains](https://example.com/a.png)</td>\n    </tr>\n  </tbody>\n</Table>',
+      ],
       [
         'an image magic block',
         '[block:image]\n{"images":[{"image":["https://example.com/a.png","a.png","<<region>> Domains"]}]}\n[/block]',
@@ -186,6 +198,13 @@ Hi
       const { default: Content } = renderMdxish(mdxish(md), { variables });
 
       expect(render(<Content />).container.querySelector('img')).toHaveAttribute('alt', 'us-east-1 Domains');
+    });
+
+    it('keeps a non-variable expression in alt as literal braces', () => {
+      expect(renderMd('![{1 + 1} Domains](https://example.com/a.png)').querySelector('img')).toHaveAttribute(
+        'alt',
+        '{1 + 1} Domains',
+      );
     });
   });
 

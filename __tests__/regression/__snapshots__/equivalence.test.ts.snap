@@ -1584,7 +1584,7 @@ exports[`MDX↔MDXish equivalence > variables-everywhere 1`] = `
       "kind": "extra",
       "left": null,
       "path": "/p[10]",
-      "right": "<p>…(2 children)…</p>",
+      "right": "<p>…(4 children)…</p>",
       "severity": "structural",
     },
   ],

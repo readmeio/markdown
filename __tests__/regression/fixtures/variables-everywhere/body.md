@@ -34,4 +34,4 @@ Accordion body with <<apiKey>>
 
 Closing prose with a glossary term: <Glossary>acme</Glossary>.
 
-Image alt text: ![<<apiKey>> logo](https://example.com/logo.png)
+Image alt text: ![<<apiKey>> logo](https://example.com/logo.png) ![{user.region} logo](https://example.com/logo.png)
