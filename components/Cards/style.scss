@@ -9,7 +9,11 @@ $iphone-plus: 414px;
 
   display: grid;
   gap: var(--CardsGrid-gap);
-  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
+  // A fixed column count scrolls inside the grid instead of widening the page.
+  // auto-fit still wraps. min() caps a cardWidth wider than the column.
+  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(min(var(--CardsGrid-cardWidth), 100%), 1fr));
+  min-width: 0;
+  overflow-x: auto;
 }
 
 .Card {

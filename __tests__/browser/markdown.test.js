@@ -6,6 +6,7 @@ const sass = require('sass');
 
 const tabsStyles = sass.compile(path.resolve(__dirname, '../../components/Tabs/style.scss')).css;
 const columnsStyles = sass.compile(path.resolve(__dirname, '../../components/Columns/style.scss')).css;
+const cardsStyles = sass.compile(path.resolve(__dirname, '../../components/Cards/style.scss')).css;
 const markdownStyles = sass.compile(path.resolve(__dirname, '../../styles/main.scss')).css;
 
 // eslint-disable-next-line no-promise-executor-return
@@ -182,5 +183,66 @@ describe('visual regression tests', () => {
     );
 
     expect(columnGaps).toStrictEqual([15, 15]);
+  });
+
+  // A fixed column count used to set the page min-width (four 200px tracks). The hub
+  // scroller then pans sideways. The grid should scroll that row itself.
+  it('scrolls a fixed card column count inside the grid', async () => {
+    await page.setContent(`
+      <style>
+        ${cardsStyles}
+        body { margin: 0; }
+        .shell { overflow-y: auto; }
+        .row { display: flex; }
+        .chrome { flex: none; width: 352px; }
+        .article { flex: 1; min-width: 0; }
+      </style>
+      <div class="shell" id="narrow" style="width: 1150px;">
+        <div class="row">
+          <div class="chrome"></div>
+          <div class="article">
+            <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
+              <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="shell" id="wide" style="width: 1200px;">
+        <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: 4;">
+          <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+        </div>
+      </div>
+      <div class="shell" id="autofit" style="width: 400px;">
+        <div class="CardsGrid" style="--CardsGrid-cardWidth: 200px; --CardsGrid-columns: auto-fit;">
+          <div class="Card">1</div><div class="Card">2</div><div class="Card">3</div><div class="Card">4</div>
+        </div>
+      </div>
+    `);
+
+    const layouts = await page.evaluate(() => {
+      const read = id => {
+        const shell = document.getElementById(id);
+        const grid = shell.querySelector('.CardsGrid');
+        const tracks = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean);
+        return {
+          gridOverflow: grid.scrollWidth - grid.clientWidth,
+          shellOverflow: shell.scrollWidth - shell.clientWidth,
+          tracks,
+        };
+      };
+      return { autofit: read('autofit'), narrow: read('narrow'), wide: read('wide') };
+    });
+
+    expect(layouts.narrow.shellOverflow).toBe(0);
+    expect(layouts.narrow.gridOverflow).toBeGreaterThan(0);
+    expect(layouts.narrow.tracks).toHaveLength(4);
+
+    expect(layouts.wide.shellOverflow).toBe(0);
+    expect(layouts.wide.gridOverflow).toBe(0);
+    expect(layouts.wide.tracks).toHaveLength(4);
+
+    expect(layouts.autofit.shellOverflow).toBe(0);
+    expect(layouts.autofit.gridOverflow).toBe(0);
+    expect(layouts.autofit.tracks.length).toBeLessThan(4);
   });
 });
