@@ -8,6 +8,7 @@ import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
 import { emptyTaskListItemFromMarkdown } from '../mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../mdast-util/gemoji';
+import { headingIdFromMarkdown } from '../mdast-util/heading-id';
 import { htmlBlockComponentFromMarkdown } from '../mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from '../mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
@@ -16,6 +17,7 @@ import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { gemoji } from './gemoji';
+import { headingId } from './heading-id';
 import { htmlBlockComponent } from './html-block-component';
 import { jsxComment } from './jsx-comment';
 import { jsxTable } from './jsx-table';
@@ -26,7 +28,7 @@ import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
- * Constructs disabled for every MDXish parser. 
+ * Constructs disabled for every MDXish parser.
  * -`codeIndented`: To avoid formatting 4+ column indentation as code (default commonmark behavior)
  *                  and match MDX behavior.
  * Pass `extra` to disable more on top of the shared set, never in place of it.
@@ -69,6 +71,8 @@ const REGISTRY = {
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
   gemoji: { syntax: gemoji, fromMarkdown: gemojiFromMarkdown },
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
+  // After the `{` expression tokenizers, so a line-final `{#id}` is tried first and never parsed as one.
+  headingId: { syntax: headingId, fromMarkdown: headingIdFromMarkdown },
   looseHtmlEntity: { syntax: looseHtmlEntity, fromMarkdown: looseHtmlEntityFromMarkdown },
   htmlBlockComponent: { syntax: htmlBlockComponent, fromMarkdown: htmlBlockComponentFromMarkdown },
   // This is for in-document variable & function definitions
@@ -88,7 +92,7 @@ export type MdxishFeature = keyof typeof REGISTRY;
 const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
 
 /** Inline syntax every parser that renders user prose needs. */
-const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
+const INLINE: MdxishFeature[] = ['gemoji', 'headingId', 'legacyVariable', 'looseHtmlEntity'];
 
 /**
  * `{}` and ESM (export) syntax. A parser that re-parses a component body swaps
@@ -114,12 +118,7 @@ export const FEATURES = {
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
    */
-  componentBody: [
-    ...BLOCK_CLAIMS,
-    ...INLINE,
-    'mdxExpression',
-    'emptyTaskListItem',
-  ],
+  componentBody: [...BLOCK_CLAIMS, ...INLINE, 'mdxExpression', 'emptyTaskListItem'],
 
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
@@ -140,7 +139,7 @@ export const FEATURES = {
   /**
    * `lib/stripComments.ts` — parses only to strip comments, then re-stringifies,
    * so it needs the tokenizers that keep a construct in one piece across the
-   * round trip. 
+   * round trip.
    * No inline syntax: nothing here rewrites prose, and magic blocks are already excluded.
    */
   stripComments: [...BLOCK_CLAIMS.filter(feature => feature !== 'magicBlock'), 'mdxExpression'],

@@ -12,6 +12,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { themes } from '../../components/Callout';
 import { NodeTypes } from '../../enums';
+import { headingIdToMarkdown } from '../../lib/mdast-util/heading-id';
 import plain from '../../lib/plain';
 import compatibility from '../compile/compatibility';
 import gemoji from '../compile/gemoji';
@@ -33,6 +34,7 @@ const toMarkdownExtensions = [
       [NodeTypes.emoji]: gemoji,
       [NodeTypes.i]: compatibility,
       [NodeTypes.glossary]: compatibility,
+      mdxishHeadingId: headingIdToMarkdown,
     },
   },
 ];

@@ -1,0 +1,1 @@
+export { headingId } from './syntax';

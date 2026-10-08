@@ -1,14 +1,13 @@
-import type { Heading, Parent, Root } from 'mdast';
+import type { HeadingIdSuffix } from '../../../lib/mdast-util/heading-id';
+import type { Heading, PhrasingContent, Root } from 'mdast';
 import type { Plugin } from 'unified';
 
-import { visitParents } from 'unist-util-visit-parents';
+import { visit } from 'unist-util-visit';
 
 import { HEADING_ID_PATTERN } from '../../utils';
 
-import { resolveReparseSource } from './reparse-source';
-
-const EXPRESSION_ID_REGEX = new RegExp(`^#(${HEADING_ID_PATTERN})$`, 'u');
-const SOURCE_ID_REGEX = new RegExp(`(?<!\\\\)\\{#(${HEADING_ID_PATTERN})\\}$`, 'u');
+const SUFFIX_ID_REGEX = new RegExp(`^\\{#(${HEADING_ID_PATTERN})\\}\\s*$`, 'u');
+const SUFFIX_PARTS_REGEX = /^\{([^}]*)\}(\s*)$/;
 
 declare module 'vfile' {
   interface DataMap {
@@ -24,48 +23,42 @@ function trimTrailingWhitespace(node: Heading) {
   if (!last.value) node.children.pop();
 }
 
-function takeExpressionId(node: Heading): string | undefined {
+function takeSuffixId(node: Heading): string | undefined {
   const last = node.children.at(-1);
-  if (last?.type !== 'mdxTextExpression') return undefined;
-  const id = last.value.match(EXPRESSION_ID_REGEX)?.[1];
+  if (last?.type !== 'mdxishHeadingId') return undefined;
+  const id = last.value.match(SUFFIX_ID_REGEX)?.[1];
   if (id) node.children.pop();
   return id;
 }
 
-// Safe mode leaves `{#id}` as text the inline parser already ran over (an escape is gone, `__` in
-// an id became emphasis), so the id is matched in the source and every child from its `{` is cut.
-function takeSourceId(node: Heading, source: string | undefined): string | undefined {
-  const start = node.children[0]?.position?.start.offset;
-  const end = node.children.at(-1)?.position?.end.offset;
-  if (source === undefined || start === undefined || end === undefined) return undefined;
-
-  const match = source.slice(start, end).match(SOURCE_ID_REGEX);
-  if (!match) return undefined;
-  const idStart = end - match[0].length;
-
-  const kept = node.children.filter(child => (child.position?.start.offset ?? Infinity) < idStart);
-  const straddling = kept.at(-1);
-  if (straddling?.type === 'text' && (straddling.position?.end.offset ?? 0) > idStart) {
-    straddling.value = straddling.value.slice(0, straddling.value.lastIndexOf('{'));
-  }
-  node.children = kept;
-  return match[1];
+// A suffix that isn't a heading's id is what the parser would otherwise have made of it.
+function restoreSuffix(node: HeadingIdSuffix, safeMode: boolean): PhrasingContent[] {
+  const parts = node.value.match(SUFFIX_PARTS_REGEX);
+  if (safeMode || !parts) return [{ type: 'text', value: node.value, position: node.position }];
+  const [, expression, trailing] = parts;
+  return [
+    { type: 'mdxTextExpression', value: expression, position: node.position },
+    ...(trailing ? [{ type: 'text' as const, value: trailing }] : []),
+  ];
 }
 
 /** Sets a heading's id from a trailing `{#custom-id}`, so its anchor survives translation; `\{#id}` stays text. */
 const headingIdsTransformer: Plugin<[{ safeMode?: boolean }?], Root> =
   ({ safeMode = false } = {}) =>
   (tree, file) => {
-    const documentSource = file?.value ? String(file.value) : undefined;
-
-    visitParents(tree, 'heading', (node: Heading, ancestors: Parent[]) => {
-      const id = safeMode
-        ? takeSourceId(node, resolveReparseSource(node, ancestors, documentSource))
-        : takeExpressionId(node);
+    visit(tree, 'heading', (node: Heading) => {
+      const id = takeSuffixId(node);
       if (!id) return;
       trimTrailingWhitespace(node);
       node.data = { ...node.data, hProperties: { ...node.data?.hProperties, id } };
       file.data.explicitHeadingIds = (file.data.explicitHeadingIds ?? new Set()).add(id);
+    });
+
+    visit(tree, 'mdxishHeadingId', (node: HeadingIdSuffix, index, parent) => {
+      if (!parent || index === undefined) return undefined;
+      const restored = restoreSuffix(node, safeMode);
+      (parent.children as PhrasingContent[]).splice(index, 1, ...restored);
+      return index + restored.length;
     });
   };
 

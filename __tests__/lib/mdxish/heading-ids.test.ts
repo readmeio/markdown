@@ -32,6 +32,9 @@ describe.each([
     ],
     ['a unicode id', '## Café {#café}', 'Café', 'café'],
     ['a heading that is only an id', '## {#empty}', '', 'empty'],
+    ['a heading whose emphasis is normalized', '## hello_world_ {#stable}', 'helloworld', 'stable'],
+    ['an escaped backslash before the brace', '## Use \\\\{#each}', 'Use \\', 'each'],
+    ['an underscore that could pair with one in the id', '## _Text {#xy_}', '_Text', 'xy_'],
   ])('reads %s', (__, doc, text, id) => {
     expect(renderedHeadings(doc, opts)).toStrictEqual([{ id, text }]);
   });
@@ -54,6 +57,20 @@ describe.each([
     ['a Callout', '<Callout icon="📘" theme="info">\n  ## Setup {#setup}\n</Callout>'],
   ])('reads an id inside %s', (__, doc) => {
     expect(renderedHeadings(doc, opts)).toStrictEqual([{ id: 'setup', text: 'Setup' }]);
+  });
+
+  it('reads an id on a blockquote callout title', () => {
+    const [title] = renderedHeadings('> 📘 Title {#stable}\n> Body', opts);
+    expect(title).toStrictEqual({ id: 'stable', text: 'Title' });
+  });
+
+  it('keeps a line-final {#x} in a paragraph as it was', () => {
+    const paragraph = collectNodes<Element>(mdxish('Para ends {#x}', opts), node => (node as Element).tagName === 'p');
+    expect(
+      collectNodes(paragraph[0], 'text')
+        .map(text => ('value' in text ? text.value : ''))
+        .join(''),
+    ).toBe('Para ends {#x}');
   });
 
   it('keeps the id out of the heading text in the mdast', () => {
