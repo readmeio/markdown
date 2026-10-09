@@ -58,6 +58,8 @@ describe('mdxishHeadingIds (RM-18626)', () => {
     ['a non-literal expression with JSX', 'Before {<h2>Setup</h2>} after\n\n## Setup'],
     ['a call that can build a heading', 'Before {React.createElement("h2", null, "Setup")} after\n\n## Setup'],
     ['a heading tag with an evaluated attribute', '<h2 id={"fixed"}>Setup</h2>\n\n## Setup'],
+    ['a non-literal expression in a bold heading tag', '<h2>**Setup** {Math.PI}</h2>\n\n## Setup 3.141592653589793'],
+    ['a non-literal expression in an italic heading tag', '<h2>_Setup_ {Math.PI}</h2>\n\n## Setup 3.141592653589793'],
     ['an export', 'export const Title = () => <h2>Setup</h2>;\n\n## Setup'],
   ])('returns null for %s, which only running code could settle', (_, doc) => {
     expect(mdxishHeadingIds(parse(doc))).toBeNull();

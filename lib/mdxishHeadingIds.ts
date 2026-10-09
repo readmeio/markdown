@@ -3,6 +3,7 @@ import type { Element, Root as HastRoot } from 'hast';
 import type { Heading, Nodes, Parent, Root as MdastRoot, Text } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { MdxFlowExpression, MdxTextExpression } from 'mdast-util-mdx-expression';
+import type { Node } from 'unist';
 
 import { EXIT, visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
@@ -73,18 +74,22 @@ function canBuildElements(source: string): boolean {
   }
 }
 
-// An expression the hub has to run changes a heading from inside one, by building an element (a call or JSX),
-// or as a block: alone in its paragraph, its result is lifted out as one.
-function canChangeHeadings(node: Expression, parent: Parent, heading: Heading | undefined): boolean {
-  if (heading || node.type === 'mdxFlowExpression' || canBuildElements(node.value)) return true;
+const isHeadingElement = (node: Node): node is MdxJsxFlowElement | MdxJsxTextElement =>
+  isMDXElement(node) && HEADING_TAG_REGEX.test(node.name ?? '');
+
+// An expression the hub has to run changes a heading from inside one (Markdown or an HTML heading tag), by
+// building an element (a call or JSX), or as a block: alone in its paragraph, its result is lifted out as one.
+function canChangeHeadings(node: Expression, ancestors: Parent[], heading: Heading | undefined): boolean {
+  if (heading || ancestors.some(isHeadingElement) || node.type === 'mdxFlowExpression' || canBuildElements(node.value))
+    return true;
+  const parent = ancestors[ancestors.length - 1];
   return parent.children.every(child => child === node || (child.type === 'text' && !child.value.trim()));
 }
 
 // Safe mode leaves `<h2 id={...}>` without the id the hub evaluates, which shifts the numbering.
 function hasEvaluatedHeadingAttribute(tree: MdastRoot): boolean {
   let found = false;
-  visit(tree, isMDXElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-    if (!HEADING_TAG_REGEX.test(node.name ?? '')) return undefined;
+  visit(tree, isHeadingElement, (node: MdxJsxFlowElement | MdxJsxTextElement) => {
     found = node.attributes.some(
       attribute => attribute.type === 'mdxJsxExpressionAttribute' || typeof attribute.value === 'object',
     );
@@ -111,7 +116,7 @@ function settleExpressions(tree: MdastRoot): boolean {
       edits.push({ heading, node, parent, replacement: createTextNode(literal.value, node.position) });
       return;
     }
-    if (canChangeHeadings(node, parent, heading)) settled = false;
+    if (canChangeHeadings(node, ancestors, heading)) settled = false;
   });
 
   const apply = ({ node, parent, replacement }: ExpressionEdit) => {
