@@ -156,11 +156,15 @@ describe('legacy variables resolution', () => {
       expect((parent.children[2] as Text).value).toBe('>');
     });
 
-    it('should not resolve variable if the first < is escaped', () => {
-      const md = '\\<<name>>';
-      const tree = mdxish(md);
+    // RM-10865: CommonMark's escape used to drop the backslash and leave `<name>` to parse as an HTML tag.
+    it.each([
+      ['a variable', '\\<<name>>', '<<name>>'],
+      ['a variable with an escaped close', '\\<<name\\>>', '<<name>>'],
+      ['a glossary term', '\\<<glossary:term>>', '<<glossary:term>>'],
+    ])('renders an escaped %s as literal text', (_kind, md, text) => {
+      const paragraph = mdxish(`Use ${md} here`).children[0] as Element;
 
-      expect(findElementByTagName(tree.children[0] as Element, 'variable')).toBeNull();
+      expect(paragraph.children).toStrictEqual([expect.objectContaining({ type: 'text', value: `Use ${text} here` })]);
     });
 
     it('should resolve double escaped <<variable>>', () => {

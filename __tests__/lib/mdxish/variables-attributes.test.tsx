@@ -172,6 +172,28 @@ Hi
     });
   });
 
+  // RM-10865
+  describe('legacy variables in image alt text', () => {
+    const altVariables = { ...variables, user: { ...variables.user, label: '<<region>>' } };
+
+    it.each([
+      ['a block image', '![<<region>> Domains](https://example.com/a.png)', 'us-east-1 Domains'],
+      [
+        'an image magic block',
+        '[block:image]\n{"images":[{"image":["https://example.com/a.png","a.png","<<region>> Domains"]}]}\n[/block]',
+        'us-east-1 Domains',
+      ],
+      ['an escaped variable', '![\\<<region>> Domains](https://example.com/a.png)', '<<region>> Domains'],
+      ['an escaped variable in raw HTML', '<img src="a.png" alt="\\<<region>> Domains" />', '<<region>> Domains'],
+      ['a glossary term', '<img src="a.png" alt="<<glossary:API>> diagram" />', 'API diagram'],
+      ['a substituted value once', '<img src="a.png" alt="{user.label} <<region>>" />', '<<region>> us-east-1'],
+    ])('resolves %s, parsed without variables as the SSR render server does', (_case, md, alt) => {
+      const { default: Content } = renderMdxish(mdxish(md), { variables: altVariables });
+
+      expect(render(<Content />).container.querySelector('img')).toHaveAttribute('alt', alt);
+    });
+  });
+
   describe('non-variable content', () => {
     it('keeps an unevaluatable attribute expression as literal braces', () => {
       const container = renderMd('<a href="#" title={someUnknownThing}>link</a>');
