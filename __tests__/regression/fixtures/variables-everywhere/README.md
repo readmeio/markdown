@@ -13,7 +13,6 @@ Mermaid block where `<<-->>` / `<<->>` arrows must NOT be substituted.
 - CX-3789 — `{user.*}` in component attributes (`<Accordion title={user.name}>`) never
   resolved, because only text, expression, and code nodes were ever visited. Legacy
   `<<...>>` stays literal in attributes by design
-- RM-10865 — `<<...>>` and `{user.*}` in markdown image alt text never resolved
 
 ## What flips this fixture
 

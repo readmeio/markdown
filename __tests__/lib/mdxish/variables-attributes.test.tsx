@@ -174,37 +174,39 @@ Hi
 
   // RM-10865
   describe('variables in image alt text', () => {
+    const altVariables = { ...variables, user: { ...variables.user, label: '<<region>>' } };
+
     it.each([
-      ['a block image', '![<<region>> Domains](https://example.com/a.png)'],
-      ['an inline image', 'See ![<<region>> Domains](https://example.com/a.png) here'],
-      ['a reference image', '![<<region>> Domains][a]\n\n[a]: https://example.com/a.png'],
-      ['{user.*} in a block image', '![{user.region} Domains](https://example.com/a.png)'],
-      ['{user.*} in an inline image', 'See ![{user.region} Domains](https://example.com/a.png) here'],
-      ['{user.*} in a reference image', '![{user.region} Domains][a]\n\n[a]: https://example.com/a.png'],
-      ['bracket notation', '![{user["region"]} Domains](https://example.com/a.png)'],
+      ['a block image', '![<<region>> Domains](https://example.com/a.png)', 'us-east-1 Domains'],
+      ['{user.*} in a block image', '![{user.region} Domains](https://example.com/a.png)', 'us-east-1 Domains'],
+      ['bracket notation', '![{user["region"]} Domains](https://example.com/a.png)', 'us-east-1 Domains'],
       [
         '{user.*} in a component body',
         '<Callout>\n\n![{user.region} Domains](https://example.com/a.png)\n\n</Callout>',
+        'us-east-1 Domains',
       ],
       [
         '{user.*} in a JSX table cell',
         '<Table>\n  <tbody>\n    <tr>\n      <td>![{user.region} Domains](https://example.com/a.png)</td>\n    </tr>\n  </tbody>\n</Table>',
+        'us-east-1 Domains',
       ],
       [
         'an image magic block',
         '[block:image]\n{"images":[{"image":["https://example.com/a.png","a.png","<<region>> Domains"]}]}\n[/block]',
+        'us-east-1 Domains',
       ],
-    ])('resolves %s parsed without variables, as the SSR render server does', (_shape, md) => {
-      const { default: Content } = renderMdxish(mdxish(md), { variables });
-
-      expect(render(<Content />).container.querySelector('img')).toHaveAttribute('alt', 'us-east-1 Domains');
-    });
-
-    it('keeps a non-variable expression in alt as literal braces', () => {
-      expect(renderMd('![{1 + 1} Domains](https://example.com/a.png)').querySelector('img')).toHaveAttribute(
-        'alt',
+      ['an escaped variable', '<img src="a.png" alt="\\<<region>> Domains" />', '\\<<region>> Domains'],
+      ['a glossary term', '<img src="a.png" alt="<<glossary:API>> diagram" />', 'API diagram'],
+      ['a substituted value once', '![{user.label} <<region>>](a.png)', '<<region>> us-east-1'],
+      [
+        'a non-variable expression as literal braces',
+        '![{1 + 1} Domains](https://example.com/a.png)',
         '{1 + 1} Domains',
-      );
+      ],
+    ])('resolves %s, parsed without variables as the SSR render server does', (_case, md, alt) => {
+      const { default: Content } = renderMdxish(mdxish(md), { variables: altVariables });
+
+      expect(render(<Content />).container.querySelector('img')).toHaveAttribute('alt', alt);
     });
   });
 
