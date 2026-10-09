@@ -31,7 +31,7 @@ export function resolveAttributeVariables(value: string, user: Record<string, un
       isImageAlt ? ALT_VARIABLE_REGEX : MDX_VARIABLE_REGEX,
       (source, _prefix?: string, name?: string, _suffix?: string, legacyName?: string) => {
         // Variable names can't contain a backslash, so one marks an escaped reference.
-        if (source.includes('\\')) return source;
+        if (source.includes('\\')) return isImageAlt ? source.replaceAll('\\', '') : source;
         const key = (name ?? legacyName!).trim();
         if (key.startsWith('glossary:')) return key.slice('glossary:'.length).trim();
         return stringifyVariableValue(user[key]);

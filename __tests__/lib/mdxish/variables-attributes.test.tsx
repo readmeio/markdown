@@ -195,7 +195,8 @@ Hi
         '[block:image]\n{"images":[{"image":["https://example.com/a.png","a.png","<<region>> Domains"]}]}\n[/block]',
         'us-east-1 Domains',
       ],
-      ['an escaped variable', '<img src="a.png" alt="\\<<region>> Domains" />', '\\<<region>> Domains'],
+      ['an escaped variable', '![\\<<region>> Domains](https://example.com/a.png)', '<<region>> Domains'],
+      ['an escaped variable in raw HTML', '<img src="a.png" alt="\\<<region>> Domains" />', '<<region>> Domains'],
       ['a glossary term', '<img src="a.png" alt="<<glossary:API>> diagram" />', 'API diagram'],
       ['a substituted value once', '![{user.label} <<region>>](a.png)', '<<region>> us-east-1'],
       [
