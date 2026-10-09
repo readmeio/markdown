@@ -311,4 +311,16 @@ describe('heading slugs', () => {
       expect(headings[2].id).toBe('hello-name-2');
     });
   });
+
+  describe('explicit {#id} anchors (RM-18626)', () => {
+    it.each([false, true])('never gives an auto slug an explicit id (safeMode: %s)', safeMode => {
+      const headings = findAllHeadings(mdxish('## Setup\n\n## Configuration {#setup}\n\n## Setup', { safeMode }));
+      expect(headings).toStrictEqual([{ id: 'setup-1' }, { id: 'setup' }, { id: 'setup-2' }]);
+    });
+
+    it('leaves raw HTML heading ids out of the reservation, as before', () => {
+      const headings = findAllHeadings(mdxish('## Setup\n\n<h2 id="setup">Setup</h2>'));
+      expect(headings).toStrictEqual([{ id: 'setup' }, { id: 'setup' }]);
+    });
+  });
 });

@@ -7,6 +7,7 @@ import codeTabs from './code-tabs';
 import compatibility from './compatibility';
 import embed from './embed';
 import gemoji from './gemoji';
+import heading from './heading';
 import htmlBlock from './html-block';
 import list from './list';
 import listItem from './list-item';
@@ -37,6 +38,7 @@ function compilers(this: Processor, mdxish = false) {
     yaml: compatibility,
 
     // needed only for mdxish
+    ...(mdxish && { heading }),
     ...(mdxish && { list }),
     ...(mdxish && { listItem }),
     ...(mdxish && { text: mdxishText }),

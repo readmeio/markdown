@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import type { Root as HastRoot } from 'hast';
-import type { Node, Root as MdastRoot, Root } from 'mdast';
+import type { Heading, Node, Root as MdastRoot, Root, Text } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxFlowExpression, MdxjsEsm } from 'mdast-util-mdx';
 import type {
   MdxJsxAttribute,
@@ -13,6 +13,7 @@ import { decodeHTMLStrict } from 'entities';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
+import { HEADING_ID_CHAR } from '../lib/micromark/heading-id/syntax';
 import { jsxAcornParser } from '../lib/utils/jsx-acorn-parser';
 import { evaluateLiteralExpression } from '../lib/utils/literal-expression';
 
@@ -150,6 +151,21 @@ export const getHProps = <T>(node: Node): T => {
 export const getHPropKeys = <T>(node: Node): string[] => {
   const hProps = getHProps<T>(node);
   return Object.keys(hProps) || [];
+};
+
+/** Turn a non-renderable evaluation result into a text node. */
+export const createTextNode = (result: unknown, position: Position | undefined): Text => {
+  if (result === null || result === undefined) return { type: 'text', value: '', position };
+  if (typeof result === 'object') return { type: 'text', value: JSON.stringify(result), position };
+  return { type: 'text', value: String(result), position };
+};
+
+const HEADING_ID_REGEX = new RegExp(`^${HEADING_ID_CHAR}+$`, 'u');
+
+/** The id a heading's trailing `{#id}` set, when it is one the `{#id}` syntax can spell. */
+export const explicitHeadingId = (node: Heading): string | undefined => {
+  const id = node.data?.hProperties?.id;
+  return typeof id === 'string' && HEADING_ID_REGEX.test(id) ? id : undefined;
 };
 
 /**
