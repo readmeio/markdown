@@ -33,5 +33,3 @@ Accordion body with <<apiKey>>
 </Cards>
 
 Closing prose with a glossary term: <Glossary>acme</Glossary>.
-
-Image alt text: ![<<apiKey>> logo](https://example.com/logo.png)

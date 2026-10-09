@@ -42,6 +42,15 @@ function exitlegacyVariableValue(this: CompileContext, token: Parameters<Handle>
 function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
   const serialized = this.sliceSerialize(token);
+
+  // An escaped `\<<name>>` (or `\<<name\>>`) is literal text, as in the legacy parser.
+  if (serialized.startsWith('\\')) {
+    this.enter({ type: 'text', value: serialized.slice(1).replace('\\>>', '>>') }, token);
+    this.exit(token);
+    contextMap.delete(token);
+    return;
+  }
+
   const variableName =
     serialized.startsWith('<<') && serialized.endsWith('>>')
       ? serialized.slice(2, -2)
