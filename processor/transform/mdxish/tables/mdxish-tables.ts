@@ -12,6 +12,7 @@ import { EXIT, visit } from 'unist-util-visit';
 import { visitParents } from 'unist-util-visit-parents';
 
 import { NodeTypes } from '../../../../enums';
+import { mdxishExpressionFromMarkdown } from '../../../../lib/mdast-util/mdx-expression';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { createValueToSourceMapper, getAttrs, isMDXElement } from '../../../utils';
 import calloutTransformer from '../../callouts';
@@ -54,9 +55,13 @@ const buildTableNodeProcessor = (withMdx: boolean) => {
 
   // `mdxjs` goes first (= lowest priority): its `mdxJsx` also claims `text` + `<`,
   // and `legacyVariable` has to keep winning that race so `<<var>>` still parses.
+  // `mdxishExpressionFromMarkdown` follows `mdxFromMarkdown` to override its expression exit.
   return unified()
     .data('micromarkExtensions', [...(withMdx ? [mdxjs()] : []), ...micromarkExtensions])
-    .data('fromMarkdownExtensions', [...(withMdx ? [mdxFromMarkdown()] : []), ...fromMarkdownExtensions])
+    .data('fromMarkdownExtensions', [
+      ...(withMdx ? [mdxFromMarkdown(), mdxishExpressionFromMarkdown()] : []),
+      ...fromMarkdownExtensions,
+    ])
     .use(remarkParse)
     .use(normalizeEmphasisAST)
     .use([[calloutTransformer, { isMdxish: true }], codeTabsTransformer])
