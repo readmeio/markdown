@@ -25,13 +25,13 @@ describe.each([
   it.each([
     ['an ATX heading', '## Prérequis {#prerequisites}', 'Prérequis', 'prerequisites'],
     ['inline code before the id', '## Call `init()` {#call-init}', 'Call init()', 'call-init'],
-    ['a closing sequence', '## Setup {#setup} ##', 'Setup', 'setup'],
-    ['a compact heading', '##Setup {#setup}', 'Setup', 'setup'],
-    ['a tab before the id', '## Setup\t{#setup}', 'Setup', 'setup'],
-    ['trailing spaces after the id', '## Setup {#setup}   ', 'Setup', 'setup'],
+    ['a closing sequence', '## Setup {#install} ##', 'Setup', 'install'],
+    ['a compact heading', '##Setup {#install}', 'Setup', 'install'],
+    ['a tab before the id', '## Setup\t{#install}', 'Setup', 'install'],
+    ['trailing spaces after the id', '## Setup {#install}   ', 'Setup', 'install'],
     ['a `#` in the heading text', '## C# {#sharp}', 'C#', 'sharp'],
     ['an id with underscores', '## The `__init__` method {#the-__init__-method}', 'The __init__ method', 'the-__init__-method'],
-    ['a unicode id', '## Café {#café}', 'Café', 'café'],
+    ['a unicode id', '## Coffee {#café}', 'Coffee', 'café'],
     ['an id outside the basic multilingual plane', '## Deseret {#𐐀}', 'Deseret', '𐐀'],
     ['a heading that is only an id', '## {#empty}', '', 'empty'],
     ['a heading whose emphasis is normalized', '## hello_world_ {#stable}', 'helloworld', 'stable'],
@@ -58,11 +58,11 @@ describe.each([
   });
 
   it.each([
-    ['a list', '- ## Setup {#setup}'],
-    ['a blockquote', '> ## Setup {#setup}'],
-    ['a Callout', '<Callout icon="📘" theme="info">\n  ## Setup {#setup}\n</Callout>'],
+    ['a list', '- ## Setup {#install}'],
+    ['a blockquote', '> ## Setup {#install}'],
+    ['a Callout', '<Callout icon="📘" theme="info">\n  ## Setup {#install}\n</Callout>'],
   ])('reads an id inside %s', (__, doc) => {
-    expect(renderedHeadings(doc, opts)).toStrictEqual([{ id: 'setup', text: 'Setup' }]);
+    expect(renderedHeadings(doc, opts)).toStrictEqual([{ id: 'install', text: 'Setup' }]);
   });
 
   it.each([
