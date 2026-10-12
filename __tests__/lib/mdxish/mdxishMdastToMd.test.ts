@@ -2395,6 +2395,24 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
+  describe('DNT round trip', () => {
+    const docs = [
+      'Hello <DNT>Acme **Cloud**</DNT> world\n',
+      '<DNT>Acme</DNT> is great\n',
+      '<DNT>Acme</DNT>\n',
+      '<DNT></DNT>\n**after**\n',
+      '<DNT>Acme\nCloud</DNT> after\n',
+      '<DNT>\\*literal\\*</DNT> after\n',
+      'Use <DNT>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</DNT> today\n',
+    ];
+
+    it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
+      docs.forEach(doc => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(doc);
+      });
+    });
+  });
+
   describe('mdxish dialect', () => {
     it('serializes a legacy callout in JSX form, like the editor serializer', () => {
       const result = roundTripMdxish('> 📘 Nota\n>\n> El cuerpo.\n');

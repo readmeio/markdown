@@ -34,6 +34,7 @@ import { collapseForeignContentBlankLines } from '../processor/transform/mdxish/
 import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
 import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
+import mdxishDntToJsx from '../processor/transform/mdxish/dnt-to-jsx';
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
@@ -224,6 +225,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
+    .use(mdxishDntToJsx)
     // The rest only a PARSER tree carries.
     // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
     .use(unwrapPins)
