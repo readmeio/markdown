@@ -12,12 +12,13 @@ import { VFile } from 'vfile';
 import { createTextNode, isMDXElement } from '../processor/utils';
 
 import { mdxishRenderProcessor } from './mdxish';
+import { JSX_COMMENT_REGEX } from './micromark/jsx-comment/pattern';
 import { jsxAcornParser } from './utils/jsx-acorn-parser';
 import { evaluateLiteralExpression } from './utils/literal-expression';
 
 const HEADING_INDEX = 'dataMdxishHeadingIndex';
 const HEADING_TAG_REGEX = /^h[1-6]$/;
-const JSX_COMMENT_REGEX = /^\s*\/\*[\s\S]*\*\/\s*$/;
+const JSX_COMMENT_ONLY_REGEX = new RegExp(`^${JSX_COMMENT_REGEX.source}$`);
 
 type Expression = MdxFlowExpression | MdxTextExpression;
 
@@ -107,7 +108,7 @@ function settleExpressions(tree: MdastRoot): boolean {
   visitParents(tree, isExpression, (node: Expression, ancestors: Parent[]) => {
     const heading = ancestors.find((ancestor): ancestor is Heading => ancestor.type === 'heading');
     const parent = ancestors[ancestors.length - 1];
-    if (JSX_COMMENT_REGEX.test(node.value)) {
+    if (JSX_COMMENT_ONLY_REGEX.test(`{${node.value}}`)) {
       edits.push({ heading, node, parent, replacement: null });
       return;
     }

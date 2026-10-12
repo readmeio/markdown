@@ -60,6 +60,7 @@ describe('mdxishHeadingIds (RM-18626)', () => {
     ['a heading tag with an evaluated attribute', '<h2 id={"fixed"}>Setup</h2>\n\n## Setup'],
     ['a non-literal expression in a bold heading tag', '<h2>**Setup** {Math.PI}</h2>\n\n## Setup 3.141592653589793'],
     ['a non-literal expression in an italic heading tag', '<h2>_Setup_ {Math.PI}</h2>\n\n## Setup 3.141592653589793'],
+    ['a comment with spaces inside its braces, which the hub shows as text', '## Setup { /* note */ }\n\n## Setup'],
     ['an export', 'export const Title = () => <h2>Setup</h2>;\n\n## Setup'],
   ])('returns null for %s, which only running code could settle', (_, doc) => {
     expect(mdxishHeadingIds(parse(doc))).toBeNull();
