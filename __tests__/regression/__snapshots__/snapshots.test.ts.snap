@@ -539,6 +539,43 @@ exports[`Render engine regressions tests > indented-markdown-islands-in-html (md
 </div>"
 `;
 
+exports[`Render engine regressions tests > inline-dnt (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-dnt"></div><div class="heading-text">Inline DNT</div><a aria-label="Skip link to Inline DNT" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-dnt"></a></h1>
+<p>Hello <span translate="no">Acme <strong>Cloud</strong></span> world.</p>
+<p><span translate="no">Acme</span> is great.</p>
+<p>Use <span translate="no"><a href="https://example.com" target="" title="">Acme</a>, <code class="rdmd-code lang-undefined theme-undefined">acme run</code> and <em>Acme</em></span> today.</p>
+<ul>
+<li>Install <span translate="no">Acme CLI</span> first</li>
+</ul>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span translate="no">Acme</span></td><td>Keep the name</td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heads-up"></div><div class="heading-text">Heads up</div><a aria-label="Skip link to Heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heads-up"></a></h3><p><span translate="no">Acme Cloud</span> is the product name.</p></blockquote>"
+`;
+
+exports[`Render engine regressions tests > inline-dnt (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="inline-dnt"></div><div class="heading-text">Inline DNT</div><a aria-label="Skip link to Inline DNT" class="heading-anchor-icon fa fa-regular fa-anchor" href="#inline-dnt"></a></h1>
+<p>Hello <span translate="no">Acme <strong>Cloud</strong></span> world.</p>
+<p><span translate="no">Acme</span> is great.</p>
+<p>Use <span translate="no"><a href="https://example.com" target="" title="">Acme</a>, <code class="rdmd-code lang-undefined theme-undefined">acme run</code> and <em>Acme</em></span> today.</p>
+<ul>
+<li>Install <span translate="no">Acme CLI</span> first</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span translate="no">Acme</span></td><td>Keep the name</td></tr></tbody></table></div></div>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heads-up"></div><div class="heading-text">Heads up</div><a aria-label="Skip link to Heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heads-up"></a></h3><p><span translate="no">Acme Cloud</span> is the product name.</p></blockquote>"
+`;
+
 exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
 "<p>An inline <span aria-label="Expand image" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img alt="menu icon" class="img  " height="auto" loading="lazy" src="https://files.readme.io/a.png" title="" width="15px"/></span></span> image should stay on the same line as this text.</p>
 <p>Line 1</p>

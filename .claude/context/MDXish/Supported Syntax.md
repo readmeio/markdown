@@ -35,6 +35,12 @@ Simple markdown link with `@embed` title:
 
 	[Embed Title](https://youtu.be/example "@embed")
 
+### Do Not Translate
+
+Inline `<DNT>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
+
+	Sign in to <DNT>Acme **Cloud**</DNT> to start.
+
 ## Data Replacement Syntaxes
 
 ### User Variables
