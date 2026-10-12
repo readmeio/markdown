@@ -34,6 +34,7 @@ function contentEnd(events: Event[]): number {
 }
 
 const resolveHeadingId: Resolver = (events, context) => {
+  // Each token is an enter and an exit event; these indexes point at the exits.
   const close = contentEnd(events);
   const hash = close - 2;
   const open = close - 4;
@@ -46,7 +47,7 @@ const resolveHeadingId: Resolver = (events, context) => {
   if (!endsWithId) return headingAtx.resolve?.(events, context) ?? events;
 
   const id: Token = { type: 'headingId', start: events[open][1].start, end: events[close][1].end };
-  events.splice(space - 1, 8);
+  events.splice(space - 1, close - space + 2);
   const resolved = headingAtx.resolve?.(events, context) ?? events;
   resolved.splice(resolved.length - 1, 0, ['enter', id, context], ['exit', id, context]);
   return resolved;
