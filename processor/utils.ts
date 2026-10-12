@@ -162,7 +162,11 @@ export const createTextNode = (result: unknown, position: Position | undefined):
 
 const HEADING_ID_REGEX = new RegExp(`^${HEADING_ID_CHAR}+$`, 'u');
 
-/** The id a heading's trailing `{#id}` set, when it is one the `{#id}` syntax can spell. */
+/**
+ * The id a heading's trailing `{#id}` set, when it is one the `{#id}` syntax can spell.
+ *
+ * Ids may use letters, numbers, `-`, `_`, `.` and `:`; anything else, like `x y`, is dropped.
+ */
 export const explicitHeadingId = (node: Heading): string | undefined => {
   const id = node.data?.hProperties?.id;
   return typeof id === 'string' && HEADING_ID_REGEX.test(id) ? id : undefined;

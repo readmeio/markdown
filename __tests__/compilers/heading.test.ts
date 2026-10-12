@@ -40,7 +40,7 @@ describe('heading compiler (RM-18626)', () => {
     expect(roundTripMdxish(once)).toBe(once);
   });
 
-  it('drops an id the {#id} syntax cannot spell', () => {
+  it('drops an id with a character {#id} cannot spell, like a space', () => {
     expect(mdxishMdastToMd(headingWithId('x y'))).toBe('## Setup\n');
   });
 
