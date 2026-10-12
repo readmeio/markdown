@@ -177,7 +177,6 @@ export function mdxishAstProcessor(mdContent: string, opts: MdxishOpts = {}) {
     .use(magicBlockTransformer, { hardBreaks: enableHardBreaks })
     .use(imageTransformer, { isMdxish: true })
     .use(defaultTransformers)
-    .use(headingIdsTransformer)
     .use(newEditorTypes ? mdxishInlineMdxComponents : undefined) // Merge inline html components (e.g. <Anchor>) into MDAST nodes
     .use(newEditorTypes ? mdxishJsxToMdast : undefined) // Convert block JSX elements to MDAST types
     .use(variablesTextTransformer) // Parse {user.*} patterns from text nodes
@@ -254,6 +253,7 @@ export function mdxishRenderProcessor(opts: MdxishOpts = {}) {
   };
 
   return unified()
+    .use(headingIdsTransformer)
     .use(safeMode ? undefined : evaluateExports, { sanitize }) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)

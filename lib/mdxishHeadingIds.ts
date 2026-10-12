@@ -158,13 +158,7 @@ export function mdxishHeadingIds(
   collectHeadings(copy).forEach((heading, index) => {
     heading.data = { ...heading.data, hProperties: { ...heading.data?.hProperties, [HEADING_INDEX]: index } };
   });
-  const file = new VFile();
-  file.data.explicitHeadingIds = new Set(
-    headings.flatMap(heading =>
-      typeof heading.data?.hProperties?.id === 'string' ? [heading.data.hProperties.id] : [],
-    ),
-  );
-  const hast = mdxishRenderProcessor({ ...opts, safeMode: true }).runSync(copy, file) as HastRoot;
+  const hast = mdxishRenderProcessor({ ...opts, safeMode: true }).runSync(copy, new VFile()) as HastRoot;
 
   const ids = new Map<Heading, string>();
   visit(hast, 'element', (node: Element) => {
