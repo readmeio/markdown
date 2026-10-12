@@ -110,6 +110,27 @@ test.each([
   expect(renderedHeadings('## Lead { #lead }', opts)).toStrictEqual([expected]);
 });
 
+describe('a repeated explicit heading id', () => {
+  it('warns, since links reach only the first heading', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    expect(renderedHeadings('## A {#x}\n\n## B {#x}')).toStrictEqual([
+      { id: 'x', text: 'A' },
+      { id: 'x', text: 'B' },
+    ]);
+    expect(warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('"x" is used more than once'));
+    warn.mockRestore();
+  });
+
+  it('does not warn for distinct ids', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    renderedHeadings('## A {#x}\n\n## B {#y}');
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
 test('stripComments keeps a heading id it does not parse', async () => {
   await expect(stripComments('## Setup {#x}\n', { mdxish: true })).resolves.toBe('## Setup {#x}');
 });
