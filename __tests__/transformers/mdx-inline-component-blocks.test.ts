@@ -423,6 +423,45 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
     });
   });
 
+  describe('nested inline components', () => {
+    it.each([
+      ['an Anchor inside a DNT', '<DNT><Anchor href="https://example.com">Acme</Anchor></DNT> after', 'DNT', 'Anchor'],
+      ['a DNT inside an Anchor', '<Anchor href="https://example.com"><DNT>Acme</DNT></Anchor> after', 'Anchor', 'DNT'],
+    ])('should transform %s into nested elements', (_label, markdown, outer, inner) => {
+      const tree = parseWithPlugin(markdown);
+
+      const paragraph = tree.children[0] as Parent;
+      expect(paragraph.children).toMatchObject([
+        {
+          type: 'mdxJsxTextElement',
+          name: outer,
+          children: [{ type: 'mdxJsxTextElement', name: inner, children: [{ type: 'text', value: 'Acme' }] }],
+        },
+        { type: 'text', value: ' after' },
+      ]);
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+
+    it('should match a DNT closer to its own opener', () => {
+      const tree = parseWithPlugin('<DNT>a <DNT>b</DNT> c</DNT> after');
+
+      const paragraph = tree.children[0] as Parent;
+      expect(paragraph.children).toMatchObject([
+        {
+          type: 'mdxJsxTextElement',
+          name: 'DNT',
+          children: [
+            { type: 'text', value: 'a ' },
+            { type: 'mdxJsxTextElement', name: 'DNT', children: [{ type: 'text', value: 'b' }] },
+            { type: 'text', value: ' c' },
+          ],
+        },
+        { type: 'text', value: ' after' },
+      ]);
+      expect(collectNodes(tree, 'html')).toHaveLength(0);
+    });
+  });
+
   describe('components NOT in INLINE_COMPONENTS set', () => {
     it('should NOT transform unknown PascalCase inline components', () => {
       const markdown = '<CustomInline attr="value">content</CustomInline>';

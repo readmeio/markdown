@@ -21,25 +21,28 @@ const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
  */
 const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return;
+    if (!parent || index === undefined) return undefined;
 
     const match = node.value?.match(INLINE_COMPONENT_OPEN_RE);
-    if (!match) return;
+    if (!match) return undefined;
 
     const [, name, attrStr] = match;
-    if (!INLINE_COMPONENT_TAGS.has(name)) return;
+    if (!INLINE_COMPONENT_TAGS.has(name)) return undefined;
 
     // Parse attributes directly - preserves all attribute types (strings, booleans, objects, arrays)
     const attributes = parseAttributes(attrStr ?? '');
 
-    // Find closing tag with whitespace-tolerant matching
+    // Find this opener's own closing tag; a same-name tag nested inside adds a level.
+    let depth = 1;
     let closeIdx = index + 1;
     while (closeIdx < parent.children.length) {
       const sib = parent.children[closeIdx] as { type: string; value?: string };
-      if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) break;
+      if (sib.type === 'html' && sib.value?.match(INLINE_COMPONENT_OPEN_RE)?.[1] === name) depth += 1;
+      if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) depth -= 1;
+      if (depth === 0) break;
       closeIdx += 1;
     }
-    if (closeIdx >= parent.children.length) return;
+    if (closeIdx >= parent.children.length) return undefined;
 
     // Extract all nodes between opening tag (index) and closing tag (closeIdx).
     // These are the inline component's children (e.g., text, emphasis, links).
@@ -47,6 +50,8 @@ const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
     const newNode = toMdxJsxTextElement(name, attributes, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
+    // Visit the new element too, so an inline component nested in it gets merged.
+    return index;
   });
 };
 

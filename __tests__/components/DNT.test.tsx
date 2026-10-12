@@ -36,6 +36,26 @@ describe('DNT', () => {
     );
   });
 
+  it.each([
+    [
+      'an Anchor inside a DNT',
+      '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after',
+      'span[translate="no"] > a',
+    ],
+    [
+      'a DNT inside an Anchor',
+      '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after',
+      'a > span[translate="no"]',
+    ],
+  ])('mdxish with newEditorTypes: renders %s', (_label, md, selector) => {
+    const Content = renderMdxish(mdxish(md, { newEditorTypes: true })).default;
+
+    const { container } = render(<Content />);
+
+    expect(container.querySelector(selector)?.textContent).toBe('Acme');
+    expect(container.querySelector('a')?.getAttribute('target')).toBe('_blank');
+  });
+
   describe.each([
     ['a paragraph', 'Before <DNT></DNT> after'],
     ['bold', '**Before <DNT></DNT> after**'],

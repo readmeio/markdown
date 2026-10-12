@@ -488,6 +488,33 @@ Body content
       });
     });
 
+    describe('nested DNT and Anchor', () => {
+      it.each([
+        [
+          'an Anchor inside a DNT',
+          '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after',
+          NodeTypes.dnt,
+          NodeTypes.anchor,
+        ],
+        [
+          'a DNT inside an Anchor',
+          '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after',
+          NodeTypes.anchor,
+          NodeTypes.dnt,
+        ],
+      ])('should turn %s into nested readme nodes', (_label, md, outer, inner) => {
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            { type: outer, children: [{ type: inner, children: [{ type: 'text', value: 'Acme' }] }] },
+            { type: 'text', value: ' after' },
+          ],
+        });
+      });
+    });
+
     describe('Recipe component', () => {
       it('should transform <Recipe /> to recipe node', () => {
         const md = '<Recipe slug="recipe-1" title="Recipe 1" />';
