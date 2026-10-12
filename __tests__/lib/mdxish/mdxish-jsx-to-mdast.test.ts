@@ -466,6 +466,28 @@ Body content
       });
     });
 
+    describe('DNT component', () => {
+      it('should transform <DNT> to a readme-dnt node inside its paragraph', () => {
+        const ast = processWithNewTypes('<DNT>Acme **Cloud**</DNT> is great');
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.dnt,
+              data: { hName: 'DNT' },
+              children: [
+                { type: 'text', value: 'Acme ' },
+                { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
+              ],
+            },
+            { type: 'text', value: ' is great' },
+          ],
+        });
+      });
+    });
+
     describe('Recipe component', () => {
       it('should transform <Recipe /> to recipe node', () => {
         const md = '<Recipe slug="recipe-1" title="Recipe 1" />';
@@ -1308,6 +1330,25 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
+    });
+
+    it.each([
+      ['at the start of a line', '<DNT>Acme</DNT> is great', [{ type: 'text', value: ' is great' }]],
+      ['alone on its line', '<DNT>Acme</DNT>', []],
+    ])('should keep a DNT %s as html siblings in one paragraph', (_label, md, trailing) => {
+      const ast = processWithoutNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [
+          { type: 'html', value: '<DNT>' },
+          { type: 'text', value: 'Acme' },
+          { type: 'html', value: '</DNT>' },
+          ...trailing,
+        ],
+      });
+      expect((ast.children[0] as Paragraph).children).toHaveLength(3 + trailing.length);
     });
   });
 });

@@ -405,6 +405,24 @@ Second <Anchor href="https://b.com">link</Anchor>.`;
     });
   });
 
+  describe('DNT transformation', () => {
+    it('should transform a DNT with inline markdown children to mdxJsxTextElement', () => {
+      const tree = parseWithPlugin('Hello <DNT>Acme **Cloud**</DNT> world');
+
+      const nodes = collectNodes<MdxJsxTextElement>(tree, 'mdxJsxTextElement');
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0]).toMatchObject({
+        type: 'mdxJsxTextElement',
+        name: 'DNT',
+        attributes: [],
+        children: [
+          { type: 'text', value: 'Acme ' },
+          { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
+        ],
+      });
+    });
+  });
+
   describe('components NOT in INLINE_COMPONENTS set', () => {
     it('should NOT transform unknown PascalCase inline components', () => {
       const markdown = '<CustomInline attr="value">content</CustomInline>';

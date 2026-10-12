@@ -31,7 +31,7 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
 /**
  * Attempt to promote an inline `html` node to an `mdxJsxTextElement`. Scope
  * mirrors what the `mdxComponent` text tokenizer claims: lowercase tags and
- * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary),
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, DNT, Glossary),
  * both carrying `{…}` attribute expressions. All other PascalCase components
  * stay with `mdxishComponentBlocks` so they remain `mdxJsxFlowElement`,
  * matching ReadMe's flow-level component authoring model.

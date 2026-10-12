@@ -78,7 +78,7 @@ const mdxComponentTextConstruct: Construct = {
  * Multi-line, concrete, `afterClose` consumes the rest of the line.
  *
  * **Text** — runs inside paragraphs / inline context. Claims lowercase tags and
- * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary), both
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, DNT, Glossary), both
  * gated on at least one `{…}` brace attribute. All other PascalCase stays
  * flow-only, matching how ReadMe's custom components are authored. Aborts on line
  * endings (inline constructs don't span lines) and exits immediately after
@@ -97,7 +97,7 @@ function createTokenize(mode: 'flow' | 'text') {
     // attribute expression syntax (`attr={...}`). Plain HTML should fall
     // through to CommonMark html-flow. Flow mode claims any PascalCase block
     // component; text mode claims only inline PascalCase components
-    // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
+    // (INLINE_COMPONENT_TAGS — Anchor, DNT, Glossary), also brace-gated.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
 
@@ -310,7 +310,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function tagNameFirst(code: Code): State | undefined {
       // Uppercase A-Z → PascalCase MDX component. Flow mode claims block
-      // components; text mode only claims inline components (Anchor, Glossary),
+      // components; text mode only claims inline components (Anchor, DNT, Glossary),
       // which is enforced once the full name is known in `tagNameRest`.
       if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
         tagName = String.fromCharCode(code);
@@ -350,7 +350,7 @@ function createTokenize(mode: 'flow' | 'text') {
       // Three cases: lowercase tags are always candidates (brace-gated later in
       // `afterOpenTagName`); flow-mode PascalCase claims any block component
       // except those with a dedicated tokenizer; text-mode PascalCase claims
-      // only inline components (Anchor, Glossary).
+      // only inline components (Anchor, DNT, Glossary).
       const claimable = isLowercaseTag
         ? true
         : isFlow
@@ -982,7 +982,7 @@ function createTokenize(mode: 'flow' | 'text') {
  * transformer. All other PascalCase is flow-only; ReadMe's custom components
  * are authored as block-level elements.
  *
- * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * Excludes Table, Anchor, DNT and Glossary (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
  * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
  * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
  * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.

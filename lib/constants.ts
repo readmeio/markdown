@@ -61,7 +61,7 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
  *
  * @see processor/transform/mdxish/components/inline-mdx-blocks.ts
  */
-export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'Glossary']);
+export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'DNT', 'Glossary']);
 
 /**
  * PascalCase tags that have their own dedicated tokenizer / transformer
