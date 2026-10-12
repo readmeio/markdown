@@ -45,6 +45,7 @@ describe.each([
     ['no space before the brace', '## Setup{#x}', 'Setup{#x}', 'setupx'],
     ['an id that is not last', '## A {#a} b', 'A {#a} b', 'a-a-b'],
     ['a character ids cannot use', '## Rock {#a&b}', 'Rock {#a&b}', 'rock-ab'],
+    ['a space after the `#`', '## Heading {# Space}', 'Heading {# Space}', 'heading--space'],
     ['a setext heading', 'Prérequis {#prerequisites}\n===', 'Prérequis {#prerequisites}', 'prérequis-prerequisites'],
     ['a blockquote callout title', '> 📘 Title {#stable}\n> Body', 'Title {#stable}', 'title-stable'],
     [
