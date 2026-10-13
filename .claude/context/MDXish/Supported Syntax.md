@@ -49,6 +49,12 @@ With the opener alone on its line, it wraps whole blocks instead and renders as 
 	- Acme CLI
 	</DNT>
 
+Text right after the opener is still the block form when a blank line comes before `</DNT>`, so a `<DNT>` around several paragraphs never drops the later ones:
+
+	<DNT>First paragraph.
+
+	Second paragraph.</DNT>
+
 ## Data Replacement Syntaxes
 
 ### User Variables

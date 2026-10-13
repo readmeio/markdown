@@ -111,6 +111,8 @@ function createTokenize(mode: 'flow' | 'text') {
     let pendingBlankLine = false;
     // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
     let pendingBlockWrapperClaim = false;
+    let needsBlankLine = false;
+    let sawBlankLine = false;
 
     // Code span tracking
     let codeSpanOpenSize = 0;
@@ -484,16 +486,20 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     // A type-7 tag is claimed only as a block wrapper: opener alone on its line
-    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark, except a
+    // block-form component spanning a blank line, so a paragraph break cant drop the tag.
     function blockWrapperOpenerRest(code: Code): State | undefined {
       if (markdownSpace(code)) {
         effects.consume(code);
         return blockWrapperOpenerRest;
       }
-      if (!markdownLineEnding(code)) return nok(code);
       pendingBlockWrapperClaim = false;
       // A component body keeps going past blank lines, like any other block component.
       isPlainBlockClaim = isLowercaseTag;
+      if (!markdownLineEnding(code)) {
+        if (isLowercaseTag) return nok(code);
+        needsBlankLine = true;
+      }
       return body(code);
     }
 
@@ -837,6 +843,7 @@ function createTokenize(mode: 'flow' | 'text') {
         depth -= 1;
         effects.consume(code);
         if (depth === 0) {
+          if (needsBlankLine && !sawBlankLine) return nok(code);
           return afterClose;
         }
         return body;
@@ -899,6 +906,7 @@ function createTokenize(mode: 'flow' | 'text') {
         // Empty line: outside any `{…}` expression this is CommonMark's html-block
         // terminator, so a plain block claim must pass the guard below to continue.
         if (isPlainBlockClaim && braceDepth === 0) pendingBlankLine = true;
+        sawBlankLine = true;
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');

@@ -2419,6 +2419,10 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
   describe('block DNT round trip', () => {
     const saved = '<DNT>\n  Para one **bold**\n\n  - item\n</DNT>\n\nafter\n';
 
+    it.each([false, true])('writes a DNT spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>one\n\ntwo</DNT>\n', { newEditorTypes })).toBe('<DNT>\n  one\n\n  two\n</DNT>\n');
+    });
+
     it.each([false, true])('writes a block DNT as a block with newEditorTypes %s', newEditorTypes => {
       expect(roundTripMdxish('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter', { newEditorTypes })).toBe(saved);
     });

@@ -56,6 +56,26 @@ describe('DNT', () => {
       expect(renderSaved(block, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(html);
     });
 
+    describe('with text right after the opener', () => {
+      const spread = '<DNT>one **bold**\n\ntwo</DNT>\n\nafter';
+      const spreadHtml = '<div translate="no"><p>one <strong>bold</strong></p><p>two</p></div><p>after</p>';
+
+      it.each(editorModes)('newEditorTypes %s: wraps every paragraph up to the closer', newEditorTypes => {
+        expect(renderDoc(spread, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(spreadHtml);
+      });
+
+      it.each(editorModes)('newEditorTypes %s: still wraps them after a save', newEditorTypes => {
+        expect(renderSaved(spread, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(spreadHtml);
+      });
+
+      it.each(editorModes)('newEditorTypes %s: stays inline under a paragraph line', newEditorTypes => {
+        const container = renderDoc('Text\n<DNT>one</DNT>\n\nafter', newEditorTypes);
+
+        expect(container.querySelector('div')).toBeNull();
+        expect(container.querySelector('p > span[translate="no"]')?.textContent).toBe('one');
+      });
+    });
+
     it.each(editorModes)('newEditorTypes %s: keeps lists and inline DNT inside', newEditorTypes => {
       const container = renderDoc('<DNT>\n- one <DNT>two</DNT>\n- three\n</DNT>', newEditorTypes);
 
