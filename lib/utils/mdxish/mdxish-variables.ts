@@ -7,6 +7,9 @@ import { stringifyVariableValue } from '../../../utils/user';
 // which either evaluated already or is meant to stay literal.
 const MDX_VARIABLE_REGEX = new RegExp(`(?<!\\$)${MDX_VARIABLE_REGEXP}`, 'gu');
 
+// A whole attribute expression that is one `user.*` reference, e.g. the `user.name` in `title={user.name}`.
+const BARE_VARIABLE_REGEX = new RegExp(`^${MDX_VARIABLE_REGEXP}$`, 'u');
+
 // Bracket notation names the same variable as dot notation, so normalize it before substituting.
 // Escaped and `$`-prefixed forms are left alone so a reference that stays literal keeps its source.
 // A closing escape needs no lookahead: requiring a literal `]}` already rules out `]\}`.
@@ -29,3 +32,6 @@ export function resolveAttributeVariables(value: string, user: Record<string, un
       return stringifyVariableValue(user[name]);
     });
 }
+
+/** Whether an attribute expression's source is a bare `user.*` reference, left for render-time substitution. */
+export const isBareVariableReference = (source: string): boolean => BARE_VARIABLE_REGEX.test(`{${source.trim()}}`);
