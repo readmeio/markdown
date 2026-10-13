@@ -12,6 +12,9 @@ import { toMdxJsxTextElement } from './utils';
 // Uses [A-Za-z0-9_]* to match block version in mdx-blocks.ts
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
 
+const isOpener = (node: { type: string; value?: string }, name: string): boolean =>
+  node.type === 'html' && node.value?.match(INLINE_COMPONENT_OPEN_RE)?.[1] === name;
+
 /**
  * Transforms inline MDX blocks inside html nodes (e.g. <Anchor>) into proper MDAST phrasing content.
  *
@@ -32,12 +35,13 @@ const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
     // Parse attributes directly - preserves all attribute types (strings, booleans, objects, arrays)
     const attributes = parseAttributes(attrStr ?? '');
 
-    // Find this opener's own closing tag; a same-name tag nested inside adds a level.
+    // Find the closing tag. Only DNT counts a same-name tag nested inside as a level,
+    // so other components keep their first-closer matching.
     let depth = 1;
     let closeIdx = index + 1;
     while (closeIdx < parent.children.length) {
       const sib = parent.children[closeIdx] as { type: string; value?: string };
-      if (sib.type === 'html' && sib.value?.match(INLINE_COMPONENT_OPEN_RE)?.[1] === name) depth += 1;
+      if (name === 'DNT' && isOpener(sib, name)) depth += 1;
       if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) depth -= 1;
       if (depth === 0) break;
       closeIdx += 1;
@@ -50,8 +54,8 @@ const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
     const newNode = toMdxJsxTextElement(name, attributes, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
-    // Visit the new element too, so an inline component nested in it gets merged.
-    return index;
+    // With a DNT involved, visit the new element too, so a component nested in it gets merged.
+    return name === 'DNT' || children.some(child => isOpener(child, 'DNT')) ? index : undefined;
   });
 };
 
