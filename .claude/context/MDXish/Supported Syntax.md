@@ -37,9 +37,17 @@ Simple markdown link with `@embed` title:
 
 ### Do Not Translate
 
-Inline `<DNT>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
+`<DNT>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
 
 	Sign in to <DNT>Acme **Cloud**</DNT> to start.
+
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+
+	<DNT>
+	Acme Cloud keeps **every** name as is.
+
+	- Acme CLI
+	</DNT>
 
 ## Data Replacement Syntaxes
 

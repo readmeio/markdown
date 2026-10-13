@@ -6,7 +6,11 @@ import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
 import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
-import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
+import {
+  BLOCK_FORM_COMPONENT_TAGS,
+  INLINE_COMPONENT_TAGS,
+  TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS,
+} from '../../constants';
 
 import { markupOnlyContinuation } from './continuation-checks';
 
@@ -354,9 +358,14 @@ function createTokenize(mode: 'flow' | 'text') {
       const claimable = isLowercaseTag
         ? true
         : isFlow
-          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)
+          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName) || BLOCK_FORM_COMPONENT_TAGS.has(tagName)
           : INLINE_COMPONENT_TAGS.has(tagName);
       if (!claimable) return nok(code);
+      // Block form only when the opener sits alone on its line, and never mid paragraph.
+      if (isFlow && !isLowercaseTag && BLOCK_FORM_COMPONENT_TAGS.has(tagName)) {
+        if (self.interrupt) return nok(code);
+        pendingBlockWrapperClaim = true;
+      }
 
       depth = 1;
       return afterOpenTagName(code);
@@ -381,6 +390,7 @@ function createTokenize(mode: 'flow' | 'text') {
       // Self-closing />
       if (code === codes.slash) {
         if (requiresBraceAttr && !sawBraceAttr) return nok(code);
+        if (pendingBlockWrapperClaim) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
@@ -482,7 +492,8 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       if (!markdownLineEnding(code)) return nok(code);
       pendingBlockWrapperClaim = false;
-      isPlainBlockClaim = true;
+      // A component body keeps going past blank lines, like any other block component.
+      isPlainBlockClaim = isLowercaseTag;
       return body(code);
     }
 

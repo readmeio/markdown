@@ -64,6 +64,12 @@ export const INLINE_ONLY_PARENT_TYPES = new Set([
 export const INLINE_COMPONENT_TAGS = new Set(['Anchor', 'DNT', 'Glossary']);
 
 /**
+ * Inline components that also have a block form, like a lowercase JSX tag: an
+ * opener alone on its line wraps blocks, anything else stays inline.
+ */
+export const BLOCK_FORM_COMPONENT_TAGS = new Set(['DNT']);
+
+/**
  * PascalCase tags that have their own dedicated tokenizer / transformer
  * and must not be claimed by the generic `mdxComponent` construct.
  * Subject to change as we add more dedicated tokenizers.

@@ -1,5 +1,63 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`MDX↔MDXish equivalence > block-dnt 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "span",
+      "path": "/span[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]/br[1]",
+      "right": "<br>",
+      "severity": "structural",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]/#text[2]",
+      "right": "#text(" ")",
+      "severity": "content",
+    },
+    {
+      "kind": "extra",
+      "left": null,
+      "path": "/p[3]/span[3]",
+      "right": "<span translate="no">…(3 children)…</span>",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "span",
+      "path": "/span[4]",
+      "right": "blockquote",
+      "severity": "structural",
+    },
+    {
+      "kind": "tag",
+      "left": "blockquote",
+      "path": "/blockquote[5]",
+      "right": "ul",
+      "severity": "structural",
+    },
+    {
+      "kind": "missing",
+      "left": "<ul>…(1 children)…</ul>",
+      "path": "/ul[6]",
+      "right": null,
+      "severity": "structural",
+    },
+  ],
+  "severity": "content",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > callout-icons 1`] = `
 {
   "changes": [

@@ -1,5 +1,43 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Render engine regressions tests > block-dnt (mdx) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="block-dnt"></div><div class="heading-text">Block DNT</div><a aria-label="Skip link to Block DNT" class="heading-anchor-icon fa fa-regular fa-anchor" href="#block-dnt"></a></h1>
+<span translate="no"><p>Acme Cloud keeps <strong>every</strong> name as is.</p><ul>
+<li>Acme CLI</li>
+<li>Acme <span translate="no">Studio</span></li>
+</ul></span>
+<p>Text after the block.</p>
+<p>Some text</p>
+<span translate="no"><p>Acme</p></span>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heads-up"></div><div class="heading-text">Heads up</div><a aria-label="Skip link to Heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heads-up"></a></h3><span translate="no"><p>Acme Cloud is the product name.</p></span></blockquote>
+<ul>
+<li>
+<p>Install</p>
+<span translate="no"><p>Acme CLI</p></span>
+</li>
+</ul>"
+`;
+
+exports[`Render engine regressions tests > block-dnt (mdxish) 1`] = `
+"<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="block-dnt"></div><div class="heading-text">Block DNT</div><a aria-label="Skip link to Block DNT" class="heading-anchor-icon fa fa-regular fa-anchor" href="#block-dnt"></a></h1>
+<div class="readme-tailwind"><div translate="no"><p>Acme Cloud keeps <strong>every</strong> name as is.</p><ul>
+<li>Acme CLI</li>
+<li>Acme <span translate="no">Studio</span></li>
+</ul></div></div>
+<p>Text after the block.</p>
+<p>Some text<br/>
+<span translate="no"><br/>
+Acme<br/>
+</span></p>
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heads-up"></div><div class="heading-text">Heads up</div><a aria-label="Skip link to Heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heads-up"></a></h3><div class="readme-tailwind"><div translate="no"><p>Acme Cloud is the product name.</p></div></div></blockquote>
+<ul>
+<li>
+<p>Install</p>
+<div class="readme-tailwind"><div translate="no"><p>Acme CLI</p></div></div>
+</li>
+</ul>"
+`;
+
 exports[`Render engine regressions tests > callout-icons (mdx) 1`] = `
 "<h1 class="heading heading-1 header-scroll"><div class="heading-anchor anchor waypoint" id="callout-rendering-across-engines"></div><div class="heading-text">Callout rendering across engines</div><a aria-label="Skip link to Callout rendering across engines" class="heading-anchor-icon fa fa-regular fa-anchor" href="#callout-rendering-across-engines"></a></h1>
 <blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="heading"></div><div class="heading-text">Heading</div><a aria-label="Skip link to Heading" class="heading-anchor-icon fa fa-regular fa-anchor" href="#heading"></a></h3><p>Body</p></blockquote>

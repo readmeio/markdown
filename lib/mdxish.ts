@@ -25,6 +25,7 @@ import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
+import dntBlocksToDiv from '../processor/transform/dnt-blocks';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
 import mdxishAnchorToJsx from '../processor/transform/mdxish/anchor-to-jsx';
@@ -271,6 +272,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
+    .use(dntBlocksToDiv) // Block <DNT> renders as a div, inline stays a span
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip

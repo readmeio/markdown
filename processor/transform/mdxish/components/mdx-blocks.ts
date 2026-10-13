@@ -1,8 +1,12 @@
-import type { Node, Parent, RootContent } from 'mdast';
+import type { Html, Node, Parent, RootContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
 
-import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
+import {
+  BLOCK_FORM_COMPONENT_TAGS,
+  GENERIC_MDX_COMPONENT_EXCLUDED_TAGS,
+  INLINE_ONLY_PARENT_TYPES,
+} from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { createValueToSourceMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
@@ -189,6 +193,18 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
   // re-descending them finds no html to promote, so skip them.
   const promoted = new WeakSet<Node>();
 
+  // Cuts an html node down to the component wrapper and parses what came after it as siblings.
+  const keepWrapperAsHtml = (parent: Parent, index: number, wrapperEnd: number) => {
+    const node = parent.children[index] as Html;
+    const wrapper: Html = {
+      type: 'html',
+      value: node.value.slice(0, wrapperEnd),
+      position: positionEndingAtConsumed(node.position, node.value, wrapperEnd, source),
+    };
+    replaceInheritingReparseSource(parent, index, [wrapper]);
+    parseSibling(parent, index, node.value.slice(wrapperEnd).trim(), safeMode, promoted);
+  };
+
   const processChildNode = (parent: Parent, index: number) => {
     const node = parent.children[index];
     if (!node) return;
@@ -212,7 +228,10 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     const leadingWhitespace = value.length - value.trimStart().length;
     const openingTagEnd = trimmed.length - contentAfterTag.length;
 
-    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag)) return; // owned by dedicated transformers
+    // A block `<DNT>` arrives here whole. An inline one stays with the inline pass.
+    const isBlockForm =
+      BLOCK_FORM_COMPONENT_TAGS.has(tag) && !selfClosing && !INLINE_ONLY_PARENT_TYPES.has(parent.type);
+    if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag) && !isBlockForm) return; // owned by dedicated transformers
 
     const isPascal = isPascalCase(tag);
 
@@ -287,6 +306,12 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         }
       }
       if (isPlainLowercaseHtml && !containsMarkdownConstruct(parsedChildren)) return;
+      // An empty block `<DNT>` stays html. As an element it would save as `<DNT />`.
+      if (isBlockForm && !parsedChildren.length) {
+        if (contentAfterClose)
+          keepWrapperAsHtml(parent, index, leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length);
+        return;
+      }
       // Lowercase tags are usually inline; unwrap a sole paragraph so their
       // phrasing content isn't spuriously block-wrapped.
       let unwrappedSoleParagraph = false;

@@ -2416,6 +2416,46 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
+  describe('block DNT round trip', () => {
+    const saved = '<DNT>\n  Para one **bold**\n\n  - item\n</DNT>\n\nafter\n';
+
+    it.each([false, true])('writes a block DNT as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter', { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('round-trips a saved block DNT byte for byte with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('keeps the block after an empty block DNT with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>\n</DNT>\n\n# Heading\n', { newEditorTypes })).toBe('<DNT>\n</DNT>\n\n# Heading\n');
+    });
+
+    describe.each([
+      ['an expression', '<DNT>\n{"</DNT>"}</DNT>\n', '<DNT>\n  {"</DNT>"}\n</DNT>\n'],
+      ['an inline DNT', '<DNT>\n<DNT>inner</DNT></DNT>\n', '<DNT>\n  <DNT>inner</DNT>\n</DNT>\n'],
+      [
+        'an inline DNT opened on an earlier line',
+        '<DNT>\nkept <DNT>inner\nstill</DNT></DNT>\n',
+        '<DNT>\n  kept <DNT>inner\n  still</DNT>\n</DNT>\n',
+      ],
+    ])('with a closer inside %s on the last line', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its own closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+
+    describe.each([
+      ['a blockquote', '> <DNT>\n> first\n> </DNT> later\n', '> <DNT>\n>   first\n> </DNT>\n>\n> later\n'],
+      ['a list item', '- <DNT>\n  first\n  </DNT> later\n', '- <DNT>\n    first\n  </DNT>\n  later\n'],
+      ['trailing spaces', '<DNT>\nfirst\n</DNT>   \n', '<DNT>\n  first\n</DNT>\n'],
+    ])('in %s', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+  });
+
   describe('mdxish dialect', () => {
     it('serializes a legacy callout in JSX form, like the editor serializer', () => {
       const result = roundTripMdxish('> 📘 Nota\n>\n> El cuerpo.\n');
