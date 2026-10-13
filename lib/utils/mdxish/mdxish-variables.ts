@@ -34,4 +34,5 @@ export function resolveAttributeVariables(value: string, user: Record<string, un
 }
 
 /** Whether an attribute expression's source is a bare `user.*` reference, left for render-time substitution. */
-export const isBareVariableReference = (source: string): boolean => BARE_VARIABLE_REGEX.test(`{${source.trim()}}`);
+export const isBareVariableReference = (source: string): boolean =>
+  BARE_VARIABLE_REGEX.test(`{${source.trim()}}`.replace(BRACKET_NOTATION_REGEX, '{user.$1}'));

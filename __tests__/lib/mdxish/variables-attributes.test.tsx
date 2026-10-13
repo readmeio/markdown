@@ -248,9 +248,13 @@ Hi
     };
 
     // Evaluating it would hand the component a raw array, which crashes one rendering it as a child
-    it('stringifies a bare reference at render time instead of passing the raw value', () => {
-      expect(parseTitle('user.keys')).toBe('{user.keys}');
-      expect(renderTitle('user.keys')).toHaveTextContent('[{"name":"production","apiKey":"abc123"}]');
+    it.each([
+      ['dot notation', 'user.keys'],
+      ['single-quoted bracket notation', "user['keys']"],
+      ['double-quoted bracket notation', 'user["keys"]'],
+    ])('stringifies a bare reference in %s at render time instead of passing the raw value', (_label, title) => {
+      expect(parseTitle(title)).toBe(`{${title}}`);
+      expect(renderTitle(title)).toHaveTextContent('[{"name":"production","apiKey":"abc123"}]');
     });
 
     it('reads into a structured value', () => {
