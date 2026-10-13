@@ -71,6 +71,7 @@ const Doc = () => {
   const lazyImages = searchParams.has('lazyImages');
   const safeMode = searchParams.has('safeMode');
   const copyButtons = searchParams.has('copyButtons');
+  const mermaidControls = searchParams.has('mermaidControls');
   const darkModeDataAttribute = searchParams.has('darkModeDataAttribute');
   const showAst = searchParams.has('showAst');
   const newEditorTypes = searchParams.has('newEditorTypes');
@@ -135,6 +136,7 @@ const Doc = () => {
         });
         const content = await mdx.run(code, {
           components: executedComponents,
+          mermaidControls,
           terms,
           variables,
         });
@@ -164,7 +166,7 @@ const Doc = () => {
         const sanitized = await sanitize('mdxish');
         if (sanitized === null) return;
         const tree = mdx.mdxish(sanitized, { components: executedComponents, variables, newEditorTypes, useTailwind: true, safeMode });
-        const vdom = mdx.renderMdxish(tree, { components: executedComponents, terms, variables, useTailwind: true });
+        const vdom = mdx.renderMdxish(tree, { components: executedComponents, mermaidControls, terms, variables, useTailwind: true });
         setMdxishError(null);
         setMdxishResult(vdom);
         if (showAst) {
@@ -205,7 +207,7 @@ const Doc = () => {
     if (showRmdx || (!legacy && !mdxish)) renderRMDX();
     if (mdxish) renderXish();
     if (legacy) renderRDMD();
-  }, [doc, lazyImages, safeMode, copyButtons, showRmdx, legacy, mdxish, stripComments, showAst, newEditorTypes]);
+  }, [doc, lazyImages, safeMode, copyButtons, mermaidControls, showRmdx, legacy, mdxish, stripComments, showAst, newEditorTypes]);
 
 
   const darkMode = darkModeDataAttribute ? 'data-theme' : null;

@@ -1,4 +1,5 @@
 import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
+import type { RenderConfig } from '../../../contexts/RenderConfig';
 import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
 import type { Element } from 'hast';
 
@@ -14,16 +15,17 @@ import makeUseMDXComponents from '../makeUseMdxComponents';
 
 import { resolveAttributeVariables } from './mdxish-variables';
 
-export interface RenderOpts {
+export interface RenderOpts extends RenderConfig {
   baseUrl?: string;
   components?: CustomComponents;
-  copyButtons?: boolean;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
   useTailwind?: boolean;
   variables?: Variables;
 }
+
+type ContextOpts = Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'mermaidControls' | 'terms' | 'theme' | 'variables'>;
 
 /** Flatten CustomComponents into a component map for rehype-react */
 export function exportComponentsForRehype(components: CustomComponents): Record<string, React.ComponentType> {
@@ -154,13 +156,17 @@ export function createTocComponent(tocHast: TocList): React.FC {
 }
 
 /** Create the default wrapper component with contexts */
-export function createDefaultComponent(
-  content: React.ReactNode,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
-): React.FC {
-  const { baseUrl, copyButtons, terms, theme, variables } = opts;
+export function createDefaultComponent(content: React.ReactNode, opts: ContextOpts): React.FC {
+  const { baseUrl, copyButtons, mermaidControls, terms, theme, variables } = opts;
   const DefaultComponent = () => (
-    <Contexts baseUrl={baseUrl} copyButtons={copyButtons} terms={terms} theme={theme} variables={variables}>
+    <Contexts
+      baseUrl={baseUrl}
+      copyButtons={copyButtons}
+      mermaidControls={mermaidControls}
+      terms={terms}
+      theme={theme}
+      variables={variables}
+    >
       {content}
     </Contexts>
   );
@@ -173,7 +179,7 @@ export function buildRMDXModule(
   content: React.ReactNode,
   headings: IndexableElements[],
   tocHast: TocList | null,
-  opts: Pick<RenderOpts, 'baseUrl' | 'copyButtons' | 'terms' | 'theme' | 'variables'>,
+  opts: ContextOpts,
 ): RMDXModule {
   const DefaultComponent = createDefaultComponent(content, opts);
   const Toc = tocHast ? createTocComponent(tocHast) : () => null;

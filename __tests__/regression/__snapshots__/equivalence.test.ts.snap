@@ -1548,8 +1548,8 @@ exports[`MDX↔MDXish equivalence > variables-everywhere 1`] = `
     {
       "kind": "extra",
       "left": null,
-      "path": "/div[5]",
-      "right": "<div class="MermaidDiagram theme-undefined">…(1 children)…</div>",
+      "path": "/pre[5]",
+      "right": "<pre class="mermaid-render mermaid_single">…(1 children)…</pre>",
       "severity": "structural",
     },
     {

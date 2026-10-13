@@ -1338,9 +1338,9 @@ exports[`Render engine regressions tests > variables-everywhere (mdxish) 1`] = `
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>API key</td><td><span>sk_test_abc123</span></td></tr><tr><td>Region</td><td><span>us-east-1</span></td></tr></tbody></table></div></div>
 <p>Mermaid sequence diagram — <code class="rdmd-code lang-undefined theme-undefined">--</code> and <code class="rdmd-code lang-undefined theme-undefined">-</code> must NOT be substituted<br/>
 as legacy variables:</p>
-<div class="MermaidDiagram theme-undefined"><pre class="mermaid-render mermaid_single">sequenceDiagram
+<pre class="mermaid-render mermaid_single">sequenceDiagram
   Client &lt;&lt;--&gt;&gt; Server: Bidirectional dotted
-  Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre></div>
+  Client &lt;&lt;-&gt;&gt; Server: Bidirectional solid</pre>
 <p>Component attributes resolve at render time, and only for <code class="rdmd-code lang-undefined theme-undefined">{user.*}</code>. Legacy<br/>
 <code class="rdmd-code lang-undefined theme-undefined">...</code> in a quoted attribute is valid MDX, but is not resolved there and<br/>
 stays literal:</p>

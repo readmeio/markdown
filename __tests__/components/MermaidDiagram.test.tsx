@@ -9,8 +9,18 @@ import { renderingEngines } from './utils';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
 describe('MermaidDiagram', () => {
+  const md = '```mermaid\ngraph TD\nA --> B\n```';
+
+  it.each(renderingEngines)('%s: renders a plain diagram unless mermaidControls is set', (_label, renderContent) => {
+    const Component = renderContent(md);
+    const { container } = render(<Component />);
+
+    expect(container.querySelector('.MermaidDiagram')).toBeNull();
+    expect(container.querySelector('pre.mermaid-render.mermaid_single')).toHaveTextContent('graph TD');
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   describe('zoom and pan', () => {
-    const md = '```mermaid\ngraph TD\nA --> B\n```';
     const transformOf = (pre: HTMLElement) => pre.style.getPropertyValue('--MermaidDiagram-transform');
     // jsdom has no PointerEvent; React routes on the event type, so a MouseEvent carries the coordinates
     const pointer = (
@@ -39,7 +49,7 @@ describe('MermaidDiagram', () => {
     };
 
     it.each(renderingEngines)('%s: server-renders the diagram without controls', (_label, renderContent) => {
-      const Component = renderContent(md);
+      const Component = renderContent(md, { mermaidControls: true });
       const html = renderToStaticMarkup(<Component />);
 
       expect(html).toMatch(/<div class="MermaidDiagram[^"]*"><pre class="mermaid-render mermaid_single">graph TD/);
@@ -47,7 +57,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: zooms in steps within bounds and resets', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       expect(pre.querySelector('button')).toBeNull();
       expect(screen.getByRole('button', { name: 'Reset view' })).toHaveAttribute('aria-disabled', 'true');
@@ -69,7 +79,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: drag-pans at any zoom and keeps zoom centred', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       expect(pointer(pre, 'pointerdown', 10, 10)).toBe(false); // default prevented, so no text selection starts
       pointer(pre, 'pointermove', 40, 30);
@@ -89,7 +99,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: keeps a zoom made mid-drag', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       pointer(pre, 'pointerdown', 10, 10);
       pointer(pre, 'pointermove', 40, 30);
@@ -99,7 +109,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: pans with only the first pointer', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       pointer(pre, 'pointerdown', 10, 10, { pointerId: 1 });
       pointer(pre, 'pointerdown', 100, 100, { pointerId: 2 });
@@ -110,7 +120,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: leaves presses on labels and links to the browser', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
       const svgLabel = pre.appendChild(document.createElementNS(SVG_NS, 'text'));
       const htmlLabel = pre
         .appendChild(document.createElementNS(SVG_NS, 'foreignObject'))
@@ -122,7 +132,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: frees the pan when the pointer is cancelled', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       pointer(pre, 'pointerdown', 10, 10, { pointerId: 1 });
       pointer(pre, 'pointercancel', 10, 10, { pointerId: 1 });
@@ -132,14 +142,14 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: ignores non-primary buttons', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
 
       expect(pointer(pre, 'pointerdown', 10, 10, { button: 2 })).toBe(true);
       expect(pre.setPointerCapture).not.toHaveBeenCalled();
     });
 
     it.each(renderingEngines)('%s: does not pan before mermaid has rendered', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
       pre.querySelector('svg')!.remove();
 
       expect(pointer(pre, 'pointerdown', 10, 10)).toBe(true);
@@ -147,7 +157,7 @@ describe('MermaidDiagram', () => {
     });
 
     it.each(renderingEngines)('%s: lets touch scroll the page until zoomed', (_label, renderContent) => {
-      const pre = renderDiagram(renderContent(md));
+      const pre = renderDiagram(renderContent(md, { mermaidControls: true }));
       const touch = { pointerType: 'touch' };
 
       pointer(pre, 'pointerdown', 10, 10, touch);

@@ -109,6 +109,7 @@ Extends [`RunOptions`](https://mdxjs.com/packages/mdx/#runoptions)
 
 - **`components`** (`Record<string, MDXModule>`, optional)—a set of custom MDX components
 - **`imports`** (`Record<string, unknown>`, optional)—an set of modules to import globally
+- **`mermaidControls`** (`boolean`, optional)—add zoom and drag-to-pan controls to mermaid diagrams. Also accepted by `renderMdxish`
 - **`terms`** (`GlossaryTerm[]`, optional)
 - **`variables`** (`Variables`, optional)—an object containing [user variables](https://github.com/readmeio/variable)
 

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
+import RenderConfigContext from '../../contexts/RenderConfig';
 import ThemeContext from '../../contexts/Theme';
 import useHydrated from '../../hooks/useHydrated';
 
@@ -70,18 +71,16 @@ const CONTROLS = [
 ] as const;
 
 /**
- * Single mermaid diagram with zoom and drag-to-pan. mermaid.run() replaces the pre's children with an
- * svg, so the controls are a sibling and the transform reaches the svg through a CSS variable.
+ * Single mermaid diagram, with opt-in (`mermaidControls`) zoom and drag-to-pan. mermaid.run() replaces the pre's
+ * children with an svg, so the controls are a sibling and the transform reaches the svg through a CSS variable.
  */
 const MermaidDiagram = ({ value }: { value: string }) => {
   const theme = useContext(ThemeContext);
+  const { mermaidControls } = useContext(RenderConfigContext);
   const isHydrated = useHydrated();
   const mermaidRef = useRef<HTMLPreElement>(null);
   const lastPointer = useRef<{ id: number; x: number; y: number } | null>(null);
   const [view, setView] = useState(INITIAL_VIEW);
-  const transform = isSameView(view, INITIAL_VIEW)
-    ? undefined
-    : `translate(${view.x}px, ${view.y}px) scale(${ZOOM_STEP ** view.zoom})`;
 
   useEffect(() => {
     // Wait for hydration so mermaid's DOM mutations don't cause mismatches
@@ -98,14 +97,26 @@ const MermaidDiagram = ({ value }: { value: string }) => {
         mermaidQueue = [];
       }
     };
-  }, [theme, isHydrated]);
+  }, [theme, isHydrated, mermaidControls]); // toggling controls swaps in a fresh pre
+
+  if (!mermaidControls) {
+    return (
+      <pre ref={mermaidRef} className="mermaid-render mermaid_single">
+        {value}
+      </pre>
+    );
+  }
+
+  const transform = isSameView(view, INITIAL_VIEW)
+    ? undefined
+    : `translate(${view.x}px, ${view.y}px) scale(${ZOOM_STEP ** view.zoom})`;
 
   const startPan = (e: React.PointerEvent<HTMLPreElement>) => {
-    const isContent = e.target instanceof Element && e.target.closest(NON_PAN_TARGETS);
+    const isNonPanTarget = e.target instanceof Element && e.target.closest(NON_PAN_TARGETS);
     // Touch only pans once zoomed (matching touch-action) so swiping past a diagram scrolls the page
     const isTouchAt1x = e.pointerType === 'touch' && !view.zoom;
     const isRendered = e.currentTarget.firstElementChild instanceof SVGSVGElement;
-    if (e.button !== 0 || lastPointer.current || isContent || isTouchAt1x || !isRendered) return;
+    if (e.button !== 0 || lastPointer.current || isNonPanTarget || isTouchAt1x || !isRendered) return;
     e.preventDefault(); // stops the drag from starting a text selection
     e.currentTarget.setPointerCapture(e.pointerId);
     lastPointer.current = { id: e.pointerId, x: e.clientX, y: e.clientY };
