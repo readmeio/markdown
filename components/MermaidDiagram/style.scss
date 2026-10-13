@@ -1,0 +1,102 @@
+.MermaidDiagram {
+  display: flow-root; // narrows beside floats like the pre, so the absolute controls stay on the diagram
+  position: relative;
+  // Carry the block margin on the wrapper so container :last-child margin resets still apply
+  margin-bottom: var(--markdown-spacing, 15px);
+
+  > pre.mermaid-render {
+    margin-bottom: 0;
+    overflow: hidden;
+  }
+
+  > pre:has(> svg) {
+    cursor: grab;
+
+    // Excludes presses on labels and links, which select text or navigate instead of panning
+    &:active:not(:has(:is(a, text, foreignObject):active)) {
+      cursor: grabbing;
+
+      > svg {
+        transition: none;
+      }
+    }
+  }
+
+  // Child combinator: icon svgs nested in the diagram inherit the variable but must not transform
+  > pre > svg {
+    transform: var(--MermaidDiagram-transform, none);
+    transform-origin: center;
+    transition: transform 0.15s ease-out;
+
+    :is(text, foreignObject) {
+      cursor: text;
+    }
+  }
+
+  // Touch pans only once zoomed, so an untouched diagram never blocks page scrolling
+  &_zoomed > pre {
+    touch-action: none;
+  }
+
+  &-controls {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--md-code-background, #f6f8fa);
+    color: var(--md-code-text, #333);
+    box-shadow:
+      inset 0 0 0 1px rgba(#aaa, 0.66),
+      0 2px 6px -2px rgba(black, 0.2);
+    transition: opacity 0.15s ease-out;
+
+    // Only shown once mermaid has swapped in its svg: hidden while loading and on render errors
+    pre:not(:has(> svg)) + & {
+      display: none;
+    }
+
+    button {
+      appearance: none;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: inherit;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:hover:not([aria-disabled='true']) {
+        background: rgba(#808080, 0.2);
+      }
+
+      &[aria-disabled='true'] {
+        cursor: default;
+        opacity: 0.4;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-focus-ring, currentColor);
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  // Like the copy button, reveal on hover/focus so the pill doesn't cover the diagram at rest
+  @media (hover: hover) {
+    &:not(:hover, :focus-within) &-controls {
+      opacity: 0;
+    }
+  }
+
+  &.theme-dark &-controls {
+    background: var(--md-code-background, #242e34);
+    color: var(--md-code-text, white);
+  }
+}
