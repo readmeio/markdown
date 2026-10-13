@@ -311,7 +311,7 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
  */
 const transformDnt = (jsx: MdxJsxTextElement): Dnt => ({
   type: NodeTypes.dnt,
-  children: jsx.children as PhrasingContent[],
+  children: jsx.children,
   data: { hName: 'DNT' },
   position: jsx.position,
 });
