@@ -486,6 +486,43 @@ Body content
           ],
         });
       });
+
+      it.each([
+        [
+          'markdown in the body',
+          'Hello <DNT>Acme **Cloud**</DNT> world',
+          [
+            [NodeTypes.dnt, '<DNT>Acme **Cloud**</DNT>'],
+            ['text', 'Acme '],
+            ['strong', '**Cloud**'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a DNT nested in the body',
+          'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end',
+          [
+            [NodeTypes.dnt, '<DNT>a <DNT>**b**</DNT> c</DNT>'],
+            ['text', 'a '],
+            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+            ['text', ' c'],
+          ],
+        ],
+        [
+          'a DNT alone in the body',
+          'Use <DNT><DNT>**b**</DNT></DNT> now',
+          [
+            [NodeTypes.dnt, '<DNT><DNT>**b**</DNT></DNT>'],
+            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+          ],
+        ],
+      ])('should slice every node under a DNT with %s to its own source', (_label, md, slices) => {
+        expect(resolvedSlicesUnder(md, node => node.type === NodeTypes.dnt)).toStrictEqual(slices);
+      });
     });
 
     describe('block DNT component', () => {

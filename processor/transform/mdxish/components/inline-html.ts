@@ -113,7 +113,12 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   if (closeIdx < 0) return node;
 
   const inner = contentAfterTag.slice(0, closeIdx);
-  const promote: PromoteHtml = child => promoteInlineHtml(child, parseOpts, safeMode);
+  // A promoted body child keeps the stamp its offsets index into.
+  const promote: PromoteHtml = child => {
+    const promoted = promoteInlineHtml(child, parseOpts, safeMode);
+    if (child.data?.reparseSource) stampReparseSource([promoted], child.data.reparseSource);
+    return promoted;
+  };
   return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode, promote), node.position);
 };
 

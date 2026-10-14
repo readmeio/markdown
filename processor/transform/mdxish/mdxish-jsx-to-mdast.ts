@@ -783,7 +783,7 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
       const newNode = transformAnchor(node);
       (parent.children as Node[])[index] = newNode;
     } else if (node.name === 'DNT') {
-      (parent.children as Node[])[index] = transformDnt(node);
+      replaceInheritingReparseSource(parent, index, [transformDnt(node)]);
     }
   });
 
