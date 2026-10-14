@@ -2407,6 +2407,8 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       '<DNT>Acme\nCloud</DNT> after\n',
       '<DNT>\\*literal\\*</DNT> after\n',
       'Use <DNT>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</DNT> today\n',
+      '| a                   |\n| ------------------- |\n| <DNT>**Acme**</DNT> |\n',
+      '| a                        |\n| ------------------------ |\n| Before <DNT></DNT> after |\n',
     ];
 
     it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
@@ -2432,7 +2434,7 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     it.each([false, true])('keeps the block after an empty block DNT with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<DNT>\n</DNT>\n\n# Heading\n', { newEditorTypes })).toBe('<DNT>\n</DNT>\n\n# Heading\n');
+      expect(roundTripMdxish('<DNT>\n</DNT>\n\n# Heading\n', { newEditorTypes })).toBe('<DNT>\n\n</DNT>\n\n# Heading\n');
     });
 
     describe.each([

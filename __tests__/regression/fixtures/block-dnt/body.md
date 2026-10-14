@@ -9,6 +9,15 @@ Acme Cloud keeps **every** name as is.
 
 Text after the block.
 
+<DNT>- Acme CLI
+- Acme SDK
+</DNT>
+
+<DNT><Callout icon="📘" theme="info">
+Acme callout
+</Callout>
+</DNT>
+
 Some text
 <DNT>
 Acme

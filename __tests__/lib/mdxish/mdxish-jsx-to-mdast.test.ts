@@ -1386,20 +1386,23 @@ Some callout content
     it.each([
       ['at the start of a line', '<DNT>Acme</DNT> is great', [{ type: 'text', value: ' is great' }]],
       ['alone on its line', '<DNT>Acme</DNT>', []],
-    ])('should keep a DNT %s as html siblings in one paragraph', (_label, md, trailing) => {
+    ])('should keep a DNT %s as one JSX element in one paragraph', (_label, md, trailing) => {
       const ast = processWithoutNewTypes(md);
 
       expect(ast.children).toHaveLength(1);
       expect(ast.children[0]).toMatchObject({
         type: 'paragraph',
         children: [
-          { type: 'html', value: '<DNT>' },
-          { type: 'text', value: 'Acme' },
-          { type: 'html', value: '</DNT>' },
+          {
+            type: 'mdxJsxTextElement',
+            name: 'DNT',
+            children: [{ type: 'text', value: 'Acme' }],
+            position: { start: { offset: 0 }, end: { offset: '<DNT>Acme</DNT>'.length } },
+          },
           ...trailing,
         ],
       });
-      expect((ast.children[0] as Paragraph).children).toHaveLength(3 + trailing.length);
+      expect((ast.children[0] as Paragraph).children).toHaveLength(1 + trailing.length);
     });
   });
 });

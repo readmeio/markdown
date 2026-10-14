@@ -68,6 +68,21 @@ describe('DNT', () => {
         expect(renderSaved(spread, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(spreadHtml);
       });
 
+      describe.each([
+        ['a list', '<DNT>- one\n- two\n</DNT>\n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
+        ['a paragraph', '<DNT>one\n  </DNT>\n\nafter', '<div translate="no"><p>one</p></div>'],
+        ['a list closing on its last line', '<DNT>- one\n- two</DNT>  \n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
+        ['a paragraph closing on its last line', '<DNT>one\ntwo</DNT>\n\nafter', '<div translate="no"><p>one<br>two</p></div>'],
+      ])('with the closer ending a later line around %s', (_label, md, wrapped) => {
+        it.each(editorModes)('newEditorTypes %s: wraps it in a div', newEditorTypes => {
+          expect(renderDoc(md, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(`${wrapped}<p>after</p>`);
+        });
+
+        it.each(editorModes)('newEditorTypes %s: still wraps it after a save', newEditorTypes => {
+          expect(renderSaved(md, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(`${wrapped}<p>after</p>`);
+        });
+      });
+
       it.each(editorModes)('newEditorTypes %s: stays inline under a paragraph line', newEditorTypes => {
         const container = renderDoc('Text\n<DNT>one</DNT>\n\nafter', newEditorTypes);
 
@@ -157,6 +172,24 @@ describe('DNT', () => {
 
     expect(container.querySelector('span[translate="no"]')?.innerHTML).toBe('');
     expect(container.querySelector('strong')?.textContent).toBe('after');
+  });
+
+  describe.each([
+    ['a heading', '## Set up <DNT>**Acme**</DNT> now', 'h2'],
+    ['a table cell', '| a |\n| - |\n| <DNT>**Acme**</DNT> |', 'td'],
+  ])('with markdown inside, in %s', (_label, md, parent) => {
+    it.each(editorModes)('newEditorTypes %s: parses the markdown inside the span', newEditorTypes => {
+      const container = renderDoc(md, newEditorTypes);
+
+      expect(container.querySelector(`${parent} span[translate="no"] strong`)?.textContent).toBe('Acme');
+    });
+  });
+
+  it.each(editorModes)('newEditorTypes %s: renders a DNT in a legacy callout heading', newEditorTypes => {
+    const container = renderDoc('> 📘 Set up <DNT>Acme</DNT> first\n>\n> body', newEditorTypes);
+
+    expect(container.querySelector('.callout h3 span[translate="no"]')?.textContent).toBe('Acme');
+    expect(container.querySelector('.callout h3')?.textContent).toContain('Set up Acme first');
   });
 
   describe.each([

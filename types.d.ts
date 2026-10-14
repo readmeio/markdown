@@ -245,6 +245,8 @@ declare module 'mdast' {
      * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
      */
     reparseSource?: string;
+    /** Set by a dedicated tokenizer (`lib/micromark/dnt`) on an html node that holds a whole tag. */
+    tokenized?: boolean;
   }
 
   interface TableData {

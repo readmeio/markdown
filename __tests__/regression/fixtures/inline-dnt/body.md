@@ -12,6 +12,6 @@ Use <DNT>[Acme](https://example.com), `acme run` and _Acme_</DNT> today.
 | ------- | ----- |
 | <DNT>Acme</DNT> | Keep the name |
 
-> 📘 Heads up
+> 📘 <DNT>Acme</DNT> heads up
 >
 > <DNT>Acme Cloud</DNT> is the product name.

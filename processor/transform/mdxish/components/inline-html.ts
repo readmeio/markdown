@@ -1,9 +1,9 @@
-import type { Html, Paragraph, PhrasingContent, Root } from 'mdast';
+import type { Html, Node, Paragraph, Parent, PhrasingContent, Root } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
+import { INLINE_COMPONENT_TAGS, INLINE_ONLY_PARENT_TYPES } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { stampReparseSource } from '../reparse-source';
 
@@ -14,15 +14,14 @@ import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElem
  * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
  * the result is valid `mdxJsxTextElement` content.
  *
- * Block content inside an inline tag never reaches here (the text tokenizer
- * rejects line endings), so the paragraph-flatten path covers every case we
- * actually produce; other shapes fall back to empty children.
+ * A `<DNT>` body can span soft breaks, which still parse as one paragraph.
  */
 const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingContent[] => {
   const trimmed = value.trim();
   if (!trimmed) return [];
   const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  if (first?.type !== 'paragraph') return [];
+  // A body that parses as a block (`- x`, `# x`) stays plain text instead of being dropped.
+  if (first?.type !== 'paragraph') return [{ type: 'text', value: trimmed }];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource((first as Paragraph).children, trimmed);
   return (first as Paragraph).children;
@@ -31,7 +30,7 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
 /**
  * Attempt to promote an inline `html` node to an `mdxJsxTextElement`. Scope
  * mirrors what the `mdxComponent` text tokenizer claims: lowercase tags and
- * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, DNT, Glossary),
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary),
  * both carrying `{…}` attribute expressions. All other PascalCase components
  * stay with `mdxishComponentBlocks` so they remain `mdxJsxFlowElement`,
  * matching ReadMe's flow-level component authoring model.
@@ -51,8 +50,8 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   if (isPascalCase(tag) && !INLINE_COMPONENT_TAGS.has(tag)) return node;
 
   // Plain inline HTML (no expressions) stays as an html node so rehype-raw
-  // parses it with parse5 as normal.
-  if (!hasExpressionAttr(attributes)) return node;
+  // parses it with parse5 as normal. A tokenized tag is promoted as is.
+  if (!hasExpressionAttr(attributes) && !node.data?.tokenized) return node;
 
   if (selfClosing) return toMdxJsxTextElement(tag, attributes, [], node.position);
 
@@ -65,6 +64,10 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   const inner = contentAfterTag.slice(0, closeIdx);
   return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode), node.position);
 };
+
+// Every inline-only parent, not just paragraphs: a tokenized `<DNT>` in a heading or
+// table cell is one html node too, and its markdown only parses once promoted.
+const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
 
 /**
  * Transform inline html nodes with expression attributes
@@ -87,8 +90,8 @@ const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts
   const safeMode = !!opts.safeMode;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
-  visit(tree, 'paragraph', (paragraph: Paragraph) => {
-    paragraph.children = paragraph.children.map(child =>
+  visit(tree, isInlineParent, (parent: Parent) => {
+    parent.children = parent.children.map(child =>
       child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode) : child,
     );
   });

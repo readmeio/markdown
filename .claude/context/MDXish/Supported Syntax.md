@@ -49,11 +49,17 @@ With the opener alone on its line, it wraps whole blocks instead and renders as 
 	- Acme CLI
 	</DNT>
 
-Text right after the opener is still the block form when a blank line comes before `</DNT>`, so a `<DNT>` around several paragraphs never drops the later ones:
+Text right after the opener is still the block form when the body has a blank line, or `</DNT>` starts its own line or ends a later line. So a list can start right after the tag, and a `<DNT>` around several paragraphs never drops the later ones:
+
+	<DNT>- Acme CLI
+	- Acme SDK
+	</DNT>
 
 	<DNT>First paragraph.
 
 	Second paragraph.</DNT>
+
+Both forms are claimed whole by their own tokenizer (`lib/micromark/dnt`), so CommonMark never splits the opener from its closer.
 
 ## Data Replacement Syntaxes
 

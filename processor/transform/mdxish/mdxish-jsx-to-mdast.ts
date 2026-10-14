@@ -306,9 +306,7 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   };
 };
 
-/**
- * Transforms an inline `<DNT>` JSX element into a readme-dnt MDAST node.
- */
+/** Transforms an inline `<DNT>` JSX element into a readme-dnt MDAST node. */
 const transformDnt = (jsx: MdxJsxTextElement): Dnt => ({
   type: NodeTypes.dnt,
   children: jsx.children,
