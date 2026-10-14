@@ -233,16 +233,20 @@ describe('DNT', () => {
     });
   });
 
-  describe.each([['spaces inside the tags', 'Use<DNT> Acme </DNT>now', 'Use<span translate="no"> Acme </span>now']])(
-    'renders %s',
-    (_label, md, innerHTML) => {
-      it.each(editorModes)('newEditorTypes %s', newEditorTypes => {
-        expect(renderDoc(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
-      });
+  describe.each([
+    ['spaces inside the tags', 'Use<DNT> Acme </DNT>now', 'Use<span translate="no"> Acme </span>now'],
+    [
+      'markdown inside a nested DNT',
+      'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end',
+      'Hello <span translate="no">a <span translate="no"><strong>b</strong></span> c</span> end',
+    ],
+  ])('renders %s', (_label, md, innerHTML) => {
+    it.each(editorModes)('newEditorTypes %s', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
+    });
 
-      it.each(editorModes)('newEditorTypes %s: after a save', newEditorTypes => {
-        expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
-      });
-    },
-  );
+    it.each(editorModes)('newEditorTypes %s: after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
+    });
+  });
 });

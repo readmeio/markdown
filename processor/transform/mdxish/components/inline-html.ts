@@ -14,6 +14,18 @@ const TRAILING_SPACES_RE = /[ \t]+$/;
 
 const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
 
+type PromoteHtml = (node: Html) => PhrasingContent;
+
+// Every inline-only parent, not just paragraphs: a tokenized `<DNT>` in a heading or
+// table cell is one html node too, and its markdown only parses once promoted.
+const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
+
+const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
+  visit(tree, isInlineParent, (parent: Parent) => {
+    parent.children = parent.children.map(child => (child.type === 'html' ? promote(child as Html) : child));
+  });
+};
+
 /**
  * Parse the body of an inline component as phrasing content. Remark always
  * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
@@ -21,7 +33,7 @@ const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text
  *
  * A `<DNT>` body can span soft breaks, which still parse as one paragraph.
  */
-const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingContent[] => {
+const parsePhrasingChildren = (value: string, safeMode: boolean, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
   if (!trimmed) return [];
   const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
@@ -29,6 +41,8 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
   if (first?.type !== 'paragraph') return [{ type: 'text', value: trimmed }];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource((first as Paragraph).children, trimmed);
+  // A nested tokenized tag is one html child here too, so it needs the same promotion.
+  promoteHtmlIn(first, promote);
   // Edge spaces are content: `Use<DNT> Acme </DNT>now` reads "Use Acme now".
   return [
     ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
@@ -72,12 +86,9 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   if (closeIdx < 0) return node;
 
   const inner = contentAfterTag.slice(0, closeIdx);
-  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode), node.position);
+  const promote: PromoteHtml = child => promoteInlineHtml(child, parseOpts, safeMode);
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode, promote), node.position);
 };
-
-// Every inline-only parent, not just paragraphs: a tokenized `<DNT>` in a heading or
-// table cell is one html node too, and its markdown only parses once promoted.
-const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
 
 /**
  * Transform inline html nodes with expression attributes
@@ -100,11 +111,7 @@ const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts
   const safeMode = !!opts.safeMode;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
 
-  visit(tree, isInlineParent, (parent: Parent) => {
-    parent.children = parent.children.map(child =>
-      child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode) : child,
-    );
-  });
+  promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, safeMode));
 };
 
 export default mdxishInlineMdxHtmlBlocks;
