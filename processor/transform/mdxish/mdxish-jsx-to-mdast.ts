@@ -831,6 +831,8 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
       }
     }
 
+    // A magic-block image has no range of its own; the figure wrapping it does.
+    imageBlock.position ??= node.position;
     (parent.children as Node[])[index] = imageBlock;
   });
 

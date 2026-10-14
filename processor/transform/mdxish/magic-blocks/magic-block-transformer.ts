@@ -41,6 +41,7 @@ import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-ext
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
 import { toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
+import { stampReparseSource } from '../reparse-source';
 
 import {
   BLANK_LINE_RE,
@@ -297,12 +298,14 @@ const parseTableCell = (text: string, hardBreaks: boolean): MdastNode[] => {
         n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
       );
 
+  stampReparseSource(result, processed);
   return result;
 };
 
 const parseBlock = (text: string): MdastNode[] => {
   if (!text.trim()) return textToBlock('');
   const tree = contentParser.runSync(contentParser.parse(text)) as MdastRoot;
+  stampReparseSource(tree.children, text);
   return tree.children as MdastNode[];
 };
 
@@ -324,9 +327,11 @@ const apiHeaderTitleParser = unified()
 const parseApiHeaderTitle = (text: string): MdastNode[] => {
   if (!text.trim()) return textToInline(text);
   const tree = apiHeaderTitleParser.runSync(apiHeaderTitleParser.parse(text)) as MdastRoot;
-  return tree.children.flatMap(n =>
+  const result = tree.children.flatMap(n =>
     n.type === 'paragraph' && 'children' in n ? (n.children as MdastNode[]) : [n as MdastNode],
   );
+  stampReparseSource(result, text);
+  return result;
 };
 
 /**
@@ -476,6 +481,8 @@ function transformMagicBlock(
             type: 'heading',
             depth: 3,
             children: (firstTitle.children || []) as unknown[],
+            // Carries the title's re-parse source, which the moved children's positions index into.
+            data: titleBlocks[0].data,
           };
           children.push(heading as unknown as MdastNode);
           children.push(...titleBlocks.slice(1));
@@ -678,6 +685,10 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         node.value,
         options,
       ) as unknown as RootContent[];
+      // Built from JSON, so the `[block:…]` range is the only source range these roots have.
+      children.forEach(child => {
+        child.position = structuredClone(node.position);
+      });
       if (!children.length) {
         // `visitParents` doesn't support [Action, Index] returns like `visit` does;
         // a bare return after splicing is sufficient since `visitParents` walks by

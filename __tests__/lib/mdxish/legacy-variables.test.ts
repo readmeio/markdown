@@ -1,8 +1,9 @@
 import type { CustomComponents } from '../../../types';
 import type { Element, Root, Text } from 'hast';
+import type { Parent } from 'mdast';
 
 import { mdxish } from '../../../lib';
-import { findElementByTagName } from '../../helpers';
+import { collectNodes, findElementByTagName, parseMdxishWithResolvedSources } from '../../helpers';
 
 // Count all variable nodes in the tree (recursively)
 function countVariableNodes(node: Element | Root): number {
@@ -471,6 +472,14 @@ My name is not <<name>>!
       const glossaryNode = parent.children[0] as Element;
       expect(glossaryNode.tagName).toBe('Glossary');
       expect(glossaryNode.properties.term).toBe('parliament');
+    });
+
+    it("should position the term's text on the term itself", () => {
+      const { tree, sliceOf } = parseMdxishWithResolvedSources('A <<glossary: parliament >> term');
+      const [glossary] = collectNodes<Parent>(tree, 'readme-glossary-item');
+
+      expect(sliceOf(glossary)).toBe('<<glossary: parliament >>');
+      expect(sliceOf(glossary.children[0])).toBe('parliament');
     });
 
     it('should resolve a glossary variable with spaces', () => {
