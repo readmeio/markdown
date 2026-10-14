@@ -9,7 +9,7 @@ $iphone-plus: 414px;
 
   display: grid;
   gap: var(--CardsGrid-gap);
-  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(min(var(--CardsGrid-cardWidth), 100%), 1fr));
+  grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
   // Fixed columns can't shrink below cardWidth, so scroll the grid instead of widening the page
   // and unsticking the hub header
   min-width: 0;
