@@ -23,6 +23,7 @@ import type { Root as HastRoot, Text as HastText, Element as HastElement, Elemen
 import type { Root as MdastRoot, RootContent, Parent, Paragraph, PhrasingContent } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
+import type { Position } from 'unist';
 
 import { VARIABLE_REGEXP } from '@readme/variable';
 import { gfmStrikethroughFromMarkdown } from 'mdast-util-gfm-strikethrough';
@@ -660,6 +661,17 @@ const isWhitespacePhrasing = (node: PhrasingContent): boolean =>
   node.type === 'break' || (node.type === 'text' && !node.value.trim());
 
 /**
+ * Magic block output is built from JSON fields, whose offsets don't index the document, so
+ * every node takes the whole `[block:…]` range.
+ */
+const assignBlockPosition = (nodes: RootContent[], blockPosition: Position | undefined) =>
+  nodes.forEach(root =>
+    visit(root, node => {
+      node.position = blockPosition && { start: { ...blockPosition.start }, end: { ...blockPosition.end } };
+    }),
+  );
+
+/**
  * Unified plugin that transforms magicBlock nodes into final MDAST nodes.
  */
 const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> =
@@ -685,6 +697,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         parent.children.splice(index, 1);
         return;
       }
+      assignBlockPosition(children, node.position);
 
       // If parent is a paragraph and we're inserting block nodes (which must not be in paragraphs)
       // it means we need to lift them out
