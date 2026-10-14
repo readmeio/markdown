@@ -2413,12 +2413,21 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       '| a                        |\n| ------------------------ |\n| Before <DNT></DNT> after |\n',
       'Use <DNT>{/* internal note */}</DNT> now.\n',
       'Use <DNT><Badge label="Acme" /></DNT> today\n',
+      '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\|b`</DNT> now. |\n',
     ];
 
     it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
       docs.forEach(doc => {
         expect(roundTripMdxish(doc, { newEditorTypes })).toBe(doc);
       });
+    });
+
+    it('keeps the escaped pipe in a cell code span of any promoted inline component', () => {
+      const doc =
+        '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
+
+      expect(roundTripMdxish(doc)).toBe(doc);
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
     });
   });
 

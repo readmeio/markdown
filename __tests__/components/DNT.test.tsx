@@ -272,4 +272,16 @@ describe('DNT', () => {
       expect(dnt.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' })]);
     });
   });
+
+  describe('with a piped code span in a table cell', () => {
+    const md = '| a |\n| - |\n| Use <DNT>`a\\|b`</DNT> now. |';
+
+    it.each(editorModes)('newEditorTypes %s: renders the pipe', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('td code')?.textContent).toBe('a|b');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: renders the pipe after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('td code')?.textContent).toBe('a|b');
+    });
+  });
 });

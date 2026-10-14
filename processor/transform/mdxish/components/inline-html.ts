@@ -1,4 +1,4 @@
-import type { Html, Node, Paragraph, Parent, PhrasingContent, Root, RootContent, Text } from 'mdast';
+import type { Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, RootContent, Text } from 'mdast';
 import type { MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
@@ -21,9 +21,24 @@ type PromoteHtml = (node: Html) => PhrasingContent;
 // table cell is one html node too, and its markdown only parses once promoted.
 const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
 
+// gfm unescapes `\|` in a cell's inline code. A body reparsed inside a cell has no
+// cell context, so its code keeps the backslash and the table writer would double it.
+const CELL_CODE_ESCAPE_RE = /\\([\\|])/g;
+
+const unescapeCellCode = (node: Node): void => {
+  visit(node, 'inlineCode', (code: InlineCode) => {
+    code.value = code.value.replace(CELL_CODE_ESCAPE_RE, '$1');
+  });
+};
+
 const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
   visit(tree, isInlineParent, (parent: Parent) => {
-    parent.children = parent.children.map(child => (child.type === 'html' ? promote(child as Html) : child));
+    parent.children = parent.children.map(child => {
+      if (child.type !== 'html') return child;
+      const promoted = promote(child as Html);
+      if (parent.type === 'tableCell' && promoted !== child) unescapeCellCode(promoted);
+      return promoted;
+    });
   });
 };
 
