@@ -166,6 +166,33 @@ exports[`Render engine regressions tests > embeds (mdxish) 1`] = `
 <div class="readme-tailwind"><iframe src="https://jsfiddle.net/example" style="border:none;display:flex;margin:auto;width:100%;height:480px"></iframe></div>"
 `;
 
+exports[`Render engine regressions tests > escaped-table-cells (mdx) 1`] = `
+"<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Escaped</th><th>Markdown</th></tr></thead><tbody><tr><td>*not italic*</td><td><em>italic</em></td></tr><tr><td>_not italic_ and &lt;not-a-tag&gt;</td><td><strong>bold</strong></td></tr></tbody></table></div></div>
+<table><tr><td>*not italic*</td><td><em>italic</em></td></tr></table>"
+`;
+
+exports[`Render engine regressions tests > escaped-table-cells (mdxish) 1`] = `
+"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Escaped</th><th>Markdown</th></tr></thead><tbody><tr><td>*not italic*</td><td><em>italic</em></td></tr><tr><td>_not italic_ and &lt;not-a-tag&gt;</td><td><strong>bold</strong></td></tr></tbody></table></div></div>
+<div class="rdmd-table"><div class="rdmd-table-inner"><table><tr><td>*not italic*</td><td><em>italic</em></td></tr></table></div></div>"
+`;
+
 exports[`Render engine regressions tests > expressions-in-tables (mdx) 1`] = `""`;
 
 exports[`Render engine regressions tests > expressions-in-tables (mdxish) 1`] = `

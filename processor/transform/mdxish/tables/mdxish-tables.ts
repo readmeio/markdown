@@ -12,12 +12,12 @@ import { EXIT, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../../enums';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
-import { createValueToSourceMapper, getAttrs, isMDXElement, mapPositionsToSource } from '../../../utils';
+import { createValueToSourceMapper, getAttrs, isMDXElement, mapPositionsToSource, spanOf } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
-import { mapReparsedPositions, replaceChild } from '../source-positions';
+import { mapReparsedPositions, type ReparsedText, replaceChild } from '../source-positions';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
@@ -142,13 +142,22 @@ const hasFlowContent = (nodes: Node[]): boolean => {
   return nodes.some(node => !phrasing(node) && node.type !== 'paragraph');
 };
 
-/** Locates a text-only cell's extracted text in the document, from its first to last child. */
-const cellText = (cell: MdxJsxTableCell, textContent: string, source: string | undefined) => {
-  const first = cell.children[0]?.position;
-  const last = cell.children[cell.children.length - 1]?.position;
-  const position = first && last ? { start: first.start, end: last.end } : undefined;
-  const value = source?.slice(position?.start.offset, position?.end.offset) ?? textContent;
-  return { text: textContent, offset: value.indexOf(textContent), container: { position, value }, source };
+/**
+ * The markdown to re-parse for a text-only cell. Its own source keeps escapes and entities
+ * literal: re-parsing the decoded text turns `\*a\*` into emphasis. Container prefixes can
+ * split that source, so fall back to the decoded text when the table value doesn't hold it.
+ */
+const cellMarkdown = (
+  cell: MdxJsxTableCell,
+  textContent: string,
+  source: string | undefined,
+  tableValue: string,
+): ReparsedText => {
+  const position = spanOf(cell.children);
+  const cellSource = position && source?.slice(position.start.offset, position.end.offset);
+  const text = cellSource && tableValue.includes(cellSource) ? cellSource : textContent;
+  const value = cellSource ?? textContent;
+  return { text, offset: value.indexOf(text), container: { position, value }, source };
 };
 
 /**
@@ -159,6 +168,7 @@ const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
   documentPosition: Node['position'],
   source: string | undefined,
+  tableValue: string,
 ): MdxJsxFlowElement | MdxJsxTextElement | Table => {
   const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
@@ -192,9 +202,10 @@ const processTableNode = (
     // gate this behind a try/catch to ensure that malformed syntaxes do not
     // crash the page
     try {
-      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
+      const markdown = cellMarkdown(cell, textContent, source, tableValue);
+      const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(markdown.text)) as Root;
       if (parsed.children.length > 0) {
-        mapReparsedPositions(parsed.children, textContent, cellText(cell, textContent, source));
+        mapReparsedPositions(parsed.children, markdown.text, markdown);
         cell.children = parsed.children as MdxJsxTableCell['children'];
         if (hasFlowContent(parsed.children as Node[])) {
           tableHasFlowContent = true;
@@ -381,7 +392,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
     // to build on the markdown / JSX table
     visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
       if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-      replaceChild(parent, index, [processTableNode(tableNode, node.position, source)]);
+      replaceChild(parent, index, [processTableNode(tableNode, node.position, source, node.value)]);
       return EXIT;
     });
   } else if (node.value.startsWith('<table')) {

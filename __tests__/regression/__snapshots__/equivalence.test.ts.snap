@@ -299,6 +299,22 @@ exports[`MDX↔MDXish equivalence > embeds 1`] = `
 }
 `;
 
+exports[`MDX↔MDXish equivalence > escaped-table-cells 1`] = `
+{
+  "changes": [
+    {
+      "kind": "tag",
+      "left": "table",
+      "path": "/table[1]",
+      "right": "div",
+      "severity": "structural",
+    },
+  ],
+  "severity": "structural",
+  "status": "differ",
+}
+`;
+
 exports[`MDX↔MDXish equivalence > expressions-in-tables 1`] = `
 {
   "changes": [

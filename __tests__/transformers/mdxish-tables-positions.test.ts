@@ -239,15 +239,13 @@ describe('mdxish table positions inside component bodies (CX-4004)', () => {
     });
   });
 
-  // A text-only cell is re-parsed from its extracted text. Unescaped text no longer matches the
-  // source, so its nodes take the text's whole range rather than a guessed one.
+  // A text-only cell is re-parsed from its own source, so escapes stay literal and map exactly.
   describe('given a text-only cell re-parsed as markdown', () => {
     const plainTable = ['<Table>', '  <thead>', '    <tr>', '      <th>plain</th>', '      <th>\\*a\\*</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
     const plainCellSlices: [string, string][] = [
       ['tableCell', '<th>plain</th>'],
       ['text', 'plain'],
       ['tableCell', '<th>\\*a\\*</th>'],
-      ['emphasis', '\\*a\\*'],
       ['text', '\\*a\\*'],
     ];
 
