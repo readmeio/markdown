@@ -10,6 +10,7 @@ import { unified } from 'unified';
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import User from '../../../utils/user';
+import { RAW_HTML_PROP_NAMES } from '../../constants';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
 import { resolveAttributeVariables } from './mdxish-variables';
@@ -69,9 +70,6 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
  * deliberately leaves mermaid alone; resolving it again here would override that.
  */
 const CODE_TAG_NAMES = new Set(['code']);
-
-/** Raw markup injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed — never interpolate. */
-const RAW_HTML_PROP_NAMES = new Set(['html']);
 
 /**
  * Resolve `{user.*}` in string-valued props. Body text is handled by the `Variable` component, but

@@ -273,7 +273,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip
     .use(restoreBooleanProperties)
-    .use(safeMode ? undefined : resolveDeferredAttributeExpressionProps) // Evaluate deferred attribute expressions on mdx-jsx nodes (now past rehypeRaw's clone)
+    .use(safeMode ? undefined : resolveDeferredAttributeExpressionProps, { variables }) // Evaluate deferred attribute expressions on mdx-jsx nodes (now past rehypeRaw's clone)
     .use(normalizeMdxJsxNodes) // Rewrite `mdx-jsx` back to standard `element` nodes for downstream plugins
     .use(sanitize ? rehypeStripTags : undefined) // Strip STRIPPED_TAG_NAMES elements; this pipeline has no sanitization step
     .use(rehypeFlattenTableCellParagraphs) // Remove <p> wrappers inside table cells to prevent margin issues
