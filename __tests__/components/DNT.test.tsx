@@ -1,8 +1,10 @@
+import type { MDXContent } from 'mdx/types';
+
 import { render } from '@testing-library/react';
 import React from 'react';
 
 import { mdxish, renderMdxish } from '../../lib';
-import { roundTripMdxish } from '../helpers';
+import { execute, roundTripMdxish } from '../helpers';
 
 const renderDoc = (md: string, newEditorTypes: boolean) => {
   const Content = renderMdxish(mdxish(md, { newEditorTypes })).default;
@@ -190,6 +192,35 @@ describe('DNT', () => {
 
     expect(container.querySelector('.callout h3 span[translate="no"]')?.textContent).toBe('Acme');
     expect(container.querySelector('.callout h3')?.textContent).toContain('Set up Acme first');
+  });
+
+  describe('in a title prop', () => {
+    const cases = [
+      ['an Accordion', '<Accordion title="Use <DNT>Acme</DNT> now">\nbody\n</Accordion>', 'summary'],
+      ['a Card', '<Cards columns={1}>\n  <Card title="Use <DNT>Acme</DNT> now">body</Card>\n</Cards>', '.Card-title'],
+      ['a Tab', '<Tabs>\n  <Tab title="Use <DNT>Acme</DNT> now">\n    body\n  </Tab>\n</Tabs>', 'button'],
+    ] as const;
+
+    it.each(cases)('mdxish renders the DNT in %s as a span', (_label, md, selector) => {
+      const title = renderDoc(md, false).querySelector(selector);
+
+      expect(title?.querySelector('span[translate="no"]')?.textContent).toBe('Acme');
+      expect(title?.textContent).toContain('Use Acme now');
+    });
+
+    it.each(cases)('mdx renders the DNT in %s as a span', (_label, md, selector) => {
+      const Content = execute(md) as MDXContent;
+      const title = render(<Content />).container.querySelector(selector);
+
+      expect(title?.querySelector('span[translate="no"]')?.textContent).toBe('Acme');
+      expect(title?.textContent).toContain('Use Acme now');
+    });
+
+    it('keeps a title without a DNT as plain text', () => {
+      const title = renderDoc('<Accordion title="Use <b>Acme</b> now">\nbody\n</Accordion>', false).querySelector('summary');
+
+      expect(title?.textContent).toBe('Use <b>Acme</b> now');
+    });
   });
 
   describe.each([

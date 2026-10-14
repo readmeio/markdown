@@ -900,6 +900,13 @@ exports[`MDX↔MDXish equivalence > inline-dnt 1`] = `
       "right": "<span>",
       "severity": "structural",
     },
+    {
+      "kind": "tag",
+      "left": "details",
+      "path": "/details[7]",
+      "right": "div",
+      "severity": "structural",
+    },
   ],
   "severity": "content",
   "status": "differ",

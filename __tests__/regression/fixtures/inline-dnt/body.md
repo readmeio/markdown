@@ -15,3 +15,7 @@ Use <DNT>[Acme](https://example.com), `acme run` and _Acme_</DNT> today.
 > 📘 <DNT>Acme</DNT> heads up
 >
 > <DNT>Acme Cloud</DNT> is the product name.
+
+<Accordion title="Set up <DNT>Acme</DNT> first">
+The title prop holds a DNT.
+</Accordion>

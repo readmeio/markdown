@@ -61,6 +61,8 @@ Text right after the opener is still the block form when the body has a blank li
 
 Both forms are claimed whole by their own tokenizer (`lib/micromark/dnt`), so CommonMark never splits the opener from its closer.
 
+A string prop is plain text, so no tag renders inside one. `<DNT>` is the one exception: an Accordion, Card or Tab title holding `<DNT>Acme</DNT>` still shows the span, in both engines (`dntTagsToSpans` in `components/DNT.tsx`).
+
 ## Data Replacement Syntaxes
 
 ### User Variables

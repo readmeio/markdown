@@ -573,7 +573,8 @@ exports[`Render engine regressions tests > inline-dnt (mdx) 1`] = `
 <li>Install <span translate="no">Acme CLI</span> first</li>
 </ul>
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span translate="no">Acme</span></td><td>Keep the name</td></tr></tbody></table></div></div>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span translate="no">Acme</span> heads up</div><a aria-label="Skip link to [object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span translate="no">Acme Cloud</span> is the product name.</p></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span translate="no">Acme</span> heads up</div><a aria-label="Skip link to [object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span translate="no">Acme Cloud</span> is the product name.</p></blockquote>
+<details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Set up <span translate="no">Acme</span> first</summary><div class="Accordion-content"><p>The title prop holds a DNT.</p></div></details>"
 `;
 
 exports[`Render engine regressions tests > inline-dnt (mdxish) 1`] = `
@@ -598,7 +599,8 @@ exports[`Render engine regressions tests > inline-dnt (mdxish) 1`] = `
 
 
 <div class="rdmd-table"><div class="rdmd-table-inner"><table><thead><tr><th>Product</th><th>Notes</th></tr></thead><tbody><tr><td><span class="readme-tailwind"><span translate="no">Acme</span></span></td><td>Keep the name</td></tr></tbody></table></div></div>
-<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span class="readme-tailwind"><span translate="no">Acme</span></span> heads up</div><a aria-label="Skip link to ,[object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span class="readme-tailwind"><span translate="no">Acme Cloud</span></span> is the product name.</p></blockquote>"
+<blockquote class="callout callout_info" theme="📘"><span class="callout-icon">📘</span><h3 class="heading heading-3 header-scroll"><div class="heading-anchor anchor waypoint" id="acme-heads-up"></div><div class="heading-text"><span class="readme-tailwind"><span translate="no">Acme</span></span> heads up</div><a aria-label="Skip link to ,[object Object], heads up" class="heading-anchor-icon fa fa-regular fa-anchor" href="#acme-heads-up"></a></h3><p><span class="readme-tailwind"><span translate="no">Acme Cloud</span></span> is the product name.</p></blockquote>
+<div class="readme-tailwind"><details class="Accordion"><summary class="Accordion-title"><i class="Accordion-toggleIcon fa fa-regular fa-chevron-right"></i>Set up <span translate="no">Acme</span> first</summary><div class="Accordion-content"><p>The title prop holds a DNT.</p></div></details></div>"
 `;
 
 exports[`Render engine regressions tests > inline-image-tailwind (mdx) 1`] = `
