@@ -12,9 +12,6 @@ import { toMdxJsxTextElement } from './utils';
 // Uses [A-Za-z0-9_]* to match block version in mdx-blocks.ts
 const INLINE_COMPONENT_OPEN_RE = /^<([A-Z][A-Za-z0-9_]*)(\s[^>]*)?>$/;
 
-const isOpener = (node: { type: string; value?: string }, name: string): boolean =>
-  node.type === 'html' && node.value?.match(INLINE_COMPONENT_OPEN_RE)?.[1] === name;
-
 /**
  * Transforms inline MDX blocks inside html nodes (e.g. <Anchor>) into proper MDAST phrasing content.
  *
@@ -24,29 +21,25 @@ const isOpener = (node: { type: string; value?: string }, name: string): boolean
  */
 const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
-    if (!parent || index === undefined) return undefined;
+    if (!parent || index === undefined) return;
 
     const match = node.value?.match(INLINE_COMPONENT_OPEN_RE);
-    if (!match) return undefined;
+    if (!match) return;
 
     const [, name, attrStr] = match;
-    if (!INLINE_COMPONENT_TAGS.has(name)) return undefined;
+    if (!INLINE_COMPONENT_TAGS.has(name)) return;
 
     // Parse attributes directly - preserves all attribute types (strings, booleans, objects, arrays)
     const attributes = parseAttributes(attrStr ?? '');
 
-    // Find the closing tag. Only DNT counts a same-name tag nested inside as a level,
-    // so other components keep their first-closer matching.
-    let depth = 1;
+    // Find closing tag with whitespace-tolerant matching
     let closeIdx = index + 1;
     while (closeIdx < parent.children.length) {
       const sib = parent.children[closeIdx] as { type: string; value?: string };
-      if (name === 'DNT' && isOpener(sib, name)) depth += 1;
-      if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) depth -= 1;
-      if (depth === 0) break;
+      if (sib.type === 'html' && sib.value?.trim() === `</${name}>`) break;
       closeIdx += 1;
     }
-    if (closeIdx >= parent.children.length) return undefined;
+    if (closeIdx >= parent.children.length) return;
 
     // Extract all nodes between opening tag (index) and closing tag (closeIdx).
     // These are the inline component's children (e.g., text, emphasis, links).
@@ -54,8 +47,6 @@ const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
     const newNode = toMdxJsxTextElement(name, attributes, children);
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
-    // With a DNT involved, visit the new element too, so a component nested in it gets merged.
-    return name === 'DNT' || children.some(child => isOpener(child, 'DNT')) ? index : undefined;
   });
 };
 

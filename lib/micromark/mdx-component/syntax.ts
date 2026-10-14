@@ -6,11 +6,7 @@ import { htmlBlockNames, htmlRawNames } from 'micromark-util-html-tag-name';
 import { codes, types } from 'micromark-util-symbol';
 
 import { FOREIGN_CONTENT_TAGS, HTML_TABLE_STRUCTURE_TAGS, HTML_VOID_ELEMENTS } from '../../../utils/common-html-words';
-import {
-  BLOCK_FORM_COMPONENT_TAGS,
-  INLINE_COMPONENT_TAGS,
-  TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS,
-} from '../../constants';
+import { INLINE_COMPONENT_TAGS, TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS } from '../../constants';
 
 import { markupOnlyContinuation } from './continuation-checks';
 
@@ -82,7 +78,7 @@ const mdxComponentTextConstruct: Construct = {
  * Multi-line, concrete, `afterClose` consumes the rest of the line.
  *
  * **Text** — runs inside paragraphs / inline context. Claims lowercase tags and
- * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, DNT, Glossary), both
+ * inline PascalCase components (`INLINE_COMPONENT_TAGS` — Anchor, Glossary), both
  * gated on at least one `{…}` brace attribute. All other PascalCase stays
  * flow-only, matching how ReadMe's custom components are authored. Aborts on line
  * endings (inline constructs don't span lines) and exits immediately after
@@ -101,7 +97,7 @@ function createTokenize(mode: 'flow' | 'text') {
     // attribute expression syntax (`attr={...}`). Plain HTML should fall
     // through to CommonMark html-flow. Flow mode claims any PascalCase block
     // component; text mode claims only inline PascalCase components
-    // (INLINE_COMPONENT_TAGS — Anchor, DNT, Glossary), also brace-gated.
+    // (INLINE_COMPONENT_TAGS — Anchor, Glossary), also brace-gated.
     let isLowercaseTag = false;
     let sawBraceAttr = false;
 
@@ -111,8 +107,6 @@ function createTokenize(mode: 'flow' | 'text') {
     let pendingBlankLine = false;
     // Type-7 tag claimed pending the block-wrapper (opener alone on its line) check.
     let pendingBlockWrapperClaim = false;
-    let needsBlankLine = false;
-    let sawBlankLine = false;
 
     // Code span tracking
     let codeSpanOpenSize = 0;
@@ -316,7 +310,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function tagNameFirst(code: Code): State | undefined {
       // Uppercase A-Z → PascalCase MDX component. Flow mode claims block
-      // components; text mode only claims inline components (Anchor, DNT, Glossary),
+      // components; text mode only claims inline components (Anchor, Glossary),
       // which is enforced once the full name is known in `tagNameRest`.
       if (code !== null && code >= codes.uppercaseA && code <= codes.uppercaseZ) {
         tagName = String.fromCharCode(code);
@@ -356,18 +350,13 @@ function createTokenize(mode: 'flow' | 'text') {
       // Three cases: lowercase tags are always candidates (brace-gated later in
       // `afterOpenTagName`); flow-mode PascalCase claims any block component
       // except those with a dedicated tokenizer; text-mode PascalCase claims
-      // only inline components (Anchor, DNT, Glossary).
+      // only inline components (Anchor, Glossary).
       const claimable = isLowercaseTag
         ? true
         : isFlow
-          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName) || BLOCK_FORM_COMPONENT_TAGS.has(tagName)
+          ? !TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS.has(tagName)
           : INLINE_COMPONENT_TAGS.has(tagName);
       if (!claimable) return nok(code);
-      // Block form only when the opener sits alone on its line, and never mid paragraph.
-      if (isFlow && !isLowercaseTag && BLOCK_FORM_COMPONENT_TAGS.has(tagName)) {
-        if (self.interrupt) return nok(code);
-        pendingBlockWrapperClaim = true;
-      }
 
       depth = 1;
       return afterOpenTagName(code);
@@ -392,7 +381,6 @@ function createTokenize(mode: 'flow' | 'text') {
       // Self-closing />
       if (code === codes.slash) {
         if (requiresBraceAttr && !sawBraceAttr) return nok(code);
-        if (pendingBlockWrapperClaim) return nok(code);
         effects.consume(code);
         return selfCloseGt;
       }
@@ -486,20 +474,15 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     // A type-7 tag is claimed only as a block wrapper: opener alone on its line
-    // (trailing spaces ok). Inline content after the opener bails to CommonMark, except a
-    // block-form component spanning a blank line, so a paragraph break cant drop the tag.
+    // (trailing spaces ok). Inline content after the opener bails to CommonMark.
     function blockWrapperOpenerRest(code: Code): State | undefined {
       if (markdownSpace(code)) {
         effects.consume(code);
         return blockWrapperOpenerRest;
       }
+      if (!markdownLineEnding(code)) return nok(code);
       pendingBlockWrapperClaim = false;
-      // A component body keeps going past blank lines, like any other block component.
-      isPlainBlockClaim = isLowercaseTag;
-      if (!markdownLineEnding(code)) {
-        if (isLowercaseTag) return nok(code);
-        needsBlankLine = true;
-      }
+      isPlainBlockClaim = true;
       return body(code);
     }
 
@@ -843,7 +826,6 @@ function createTokenize(mode: 'flow' | 'text') {
         depth -= 1;
         effects.consume(code);
         if (depth === 0) {
-          if (needsBlankLine && !sawBlankLine) return nok(code);
           return afterClose;
         }
         return body;
@@ -906,7 +888,6 @@ function createTokenize(mode: 'flow' | 'text') {
         // Empty line: outside any `{…}` expression this is CommonMark's html-block
         // terminator, so a plain block claim must pass the guard below to continue.
         if (isPlainBlockClaim && braceDepth === 0) pendingBlankLine = true;
-        sawBlankLine = true;
         return bodyContinuationStart(code);
       }
       effects.enter('mdxComponentData');
@@ -1001,7 +982,7 @@ function createTokenize(mode: 'flow' | 'text') {
  * transformer. All other PascalCase is flow-only; ReadMe's custom components
  * are authored as block-level elements.
  *
- * Excludes Table, Anchor, DNT and Glossary (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
+ * Excludes Table, Glossary and Anchor (`TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS`).
  * `HTMLBlock` is deliberately *not* excluded — this claims it into the same
  * opaque `html` node `htmlBlockComponent` would, and the transforms skip it by
  * name via `GENERIC_MDX_COMPONENT_EXCLUDED_TAGS`.

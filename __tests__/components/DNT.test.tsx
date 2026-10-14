@@ -83,18 +83,6 @@ describe('DNT', () => {
       expect(container.querySelector('li span[translate="no"]')?.textContent).toBe('two');
     });
 
-    describe.each([
-      ['LF', '\n'],
-      ['CRLF', '\r\n'],
-      ['CR', '\r'],
-    ])('with %s line endings', (_eol, eol) => {
-      it.each(editorModes)('newEditorTypes %s: wraps blocks in a div', newEditorTypes => {
-        const container = renderDoc(['<DNT>', 'first', '', 'second', '</DNT>'].join(eol), newEditorTypes);
-
-        expect(container.querySelectorAll('div[translate="no"] > p')).toHaveLength(2);
-      });
-    });
-
     it.each(editorModes)('newEditorTypes %s: wraps an expression-only block in a div', newEditorTypes => {
       const container = renderDoc('<DNT>\n{"Acme"}\n</DNT>', newEditorTypes);
 

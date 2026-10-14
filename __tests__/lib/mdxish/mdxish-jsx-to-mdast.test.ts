@@ -5,7 +5,7 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
-import { collectNodes, resolvedSlicesUnder } from '../../helpers';
+import { resolvedSlicesUnder } from '../../helpers';
 
 describe('normalizeWidth', () => {
   it.each([
@@ -1381,20 +1381,6 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
-    });
-
-    it('should not start a block DNT right under a paragraph line', () => {
-      const ast = processWithoutNewTypes('Some text\n<DNT>\nAcme\n</DNT>');
-
-      expect(ast.children).toHaveLength(1);
-      expect(ast.children[0].type).toBe('paragraph');
-      expect(collectNodes(ast, 'mdxJsxFlowElement')).toHaveLength(0);
-    });
-
-    it('should leave a self-closing DNT alone on its line as html', () => {
-      const ast = processWithoutNewTypes('<DNT />\nafter');
-
-      expect(ast.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<DNT />\nafter' })]);
     });
 
     it.each([
