@@ -10,13 +10,16 @@
     border-radius: 5px;
     color: var(--color-text-default, #384248);
     cursor: pointer;
-    display: flex;
     font-size: 16px;
     font-weight: 500;
     padding: 10px;
     position: relative;
     text-align: left;
     width: 100%;
+    
+    .Accordion > & {
+      display: flex;
+    }
 
     &:hover {
       background: var(--color-bg-hover, rgba(black, 0.05));

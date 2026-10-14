@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 15.9.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#1635](https://github.com/readmeio/markdown/issues/1635)) ([849cc34](https://github.com/readmeio/markdown/commit/849cc34f97a1c8dacf8d4d92c8061922b0e3467c))
+* **html-block:** stop rerunning scripts on every rerender ([#1641](https://github.com/readmeio/markdown/issues/1641)) ([66098a5](https://github.com/readmeio/markdown/commit/66098a550be57ac51ab67e309dd27181f75e64e9)), closes [readmeio/readme#21367](https://github.com/readmeio/readme/issues/21367)
+* **accordion:** stop Safari showing a second dropdown arrow ([#1644](https://github.com/readmeio/markdown/issues/1644)) ([895b165](https://github.com/readmeio/markdown/commit/895b1656585f49edcd27eaa2f0d479f7c8284f13))
+
 ## Version 15.9.1
 ### 🛠 Fixes & Updates
 
