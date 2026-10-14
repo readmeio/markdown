@@ -284,4 +284,16 @@ describe('DNT', () => {
       expect(renderSaved(md, newEditorTypes).querySelector('td code')?.textContent).toBe('a|b');
     });
   });
+
+  describe('with a double backslash code span in a table cell', () => {
+    const md = '| a |\n| - |\n| Use <DNT>`a\\\\b`</DNT> now. |';
+
+    it.each(editorModes)('newEditorTypes %s: keeps both backslashes', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('td code')?.textContent).toBe('a\\\\b');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: keeps both backslashes after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('td code')?.textContent).toBe('a\\\\b');
+    });
+  });
 });
