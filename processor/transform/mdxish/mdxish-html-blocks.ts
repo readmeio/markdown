@@ -8,7 +8,7 @@ import { visit } from 'unist-util-visit';
 import { NodeTypes } from '../../../enums';
 import { formatHtmlForMdxish } from '../../utils';
 
-import { replaceInheritingReparseSource } from './reparse-source';
+import { replaceChild } from './source-positions';
 
 type HtmlBlockJsx = MdxJsxFlowElement | MdxJsxTextElement;
 
@@ -148,7 +148,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
         toRunScripts(jsxAttr(element, 'runScripts')),
         jsxAttr(element, 'safeMode'),
       );
-      replaceInheritingReparseSource(parent, index, [htmlBlock]);
+      replaceChild(parent, index, [htmlBlock]);
     },
   );
 
@@ -156,7 +156,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
     const replacement = splitRawHtmlBlocks(node);
-    if (replacement) replaceInheritingReparseSource(parent, index, replacement);
+    if (replacement) replaceChild(parent, index, replacement);
   });
 };
 

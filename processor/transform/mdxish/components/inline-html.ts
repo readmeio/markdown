@@ -5,7 +5,7 @@ import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { stampReparseSource } from '../reparse-source';
+import { mapReparsedPositions, type ReparsedText } from '../source-positions';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
 
@@ -18,13 +18,12 @@ import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElem
  * rejects line endings), so the paragraph-flatten path covers every case we
  * actually produce; other shapes fall back to empty children.
  */
-const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingContent[] => {
-  const trimmed = value.trim();
+const parsePhrasingChildren = (body: ReparsedText, safeMode: boolean): PhrasingContent[] => {
+  const trimmed = body.text.trim();
   if (!trimmed) return [];
   const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
   if (first?.type !== 'paragraph') return [];
-  // These children root a new coordinate space: their offsets index into `trimmed`.
-  stampReparseSource((first as Paragraph).children, trimmed);
+  mapReparsedPositions((first as Paragraph).children, trimmed, body);
   return (first as Paragraph).children;
 };
 
@@ -38,8 +37,15 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
  *
  * Returns the original node unchanged when it doesn't qualify.
  */
-const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMode: boolean): PhrasingContent => {
-  const parsed = parseTag((node.value ?? '').trim(), parseOpts);
+const promoteInlineHtml = (
+  node: Html,
+  parseOpts: ParseAttributesOptions,
+  safeMode: boolean,
+  source: string | undefined,
+): PhrasingContent => {
+  const value = node.value ?? '';
+  const trimmed = value.trim();
+  const parsed = parseTag(trimmed, parseOpts);
   if (!parsed) return node;
 
   const { tag, attributes, selfClosing, contentAfterTag = '' } = parsed;
@@ -62,8 +68,10 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   const closeIdx = contentAfterTag.lastIndexOf(closingTagStr);
   if (closeIdx < 0) return node;
 
-  const inner = contentAfterTag.slice(0, closeIdx);
-  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode), node.position);
+  const text = contentAfterTag.slice(0, closeIdx);
+  const offset = value.indexOf(trimmed) + trimmed.length - contentAfterTag.length;
+  const body = { text, offset, container: { position: node.position, value }, source };
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(body, safeMode), node.position);
 };
 
 /**
@@ -83,15 +91,18 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
  * carries an expression attribute and isn't a non-inline PascalCase component;
  * plain inline HTML like `<a href="x">` stays as an html node for rehype-raw.
  */
-const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
-  const safeMode = !!opts.safeMode;
-  const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> =
+  (opts = {}) =>
+  (tree, file) => {
+    const safeMode = !!opts.safeMode;
+    const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+    const source = file?.value ? String(file.value) : undefined;
 
-  visit(tree, 'paragraph', (paragraph: Paragraph) => {
-    paragraph.children = paragraph.children.map(child =>
-      child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode) : child,
-    );
-  });
-};
+    visit(tree, 'paragraph', (paragraph: Paragraph) => {
+      paragraph.children = paragraph.children.map(child =>
+        child.type === 'html' ? promoteInlineHtml(child as Html, parseOpts, safeMode, source) : child,
+      );
+    });
+  };
 
 export default mdxishInlineMdxHtmlBlocks;

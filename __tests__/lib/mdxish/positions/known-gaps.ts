@@ -24,12 +24,6 @@ const MAGIC_BLOCK_INPUTS = ['positions/magic-blocks.md', 'fixtures/magic-blocks-
 
 export const KNOWN_POSITION_GAPS: KnownPositionGap[] = [
   {
-    reason: 'CRLF: JSX/HTML table re-parse falls back to a verbatim shift, drifting one column per line',
-    kinds: MISMATCH_KINDS,
-    location: /<[tT]able>|\btable\b/,
-    variants: ['crlf'],
-  },
-  {
     reason: 'Magic blocks build nodes without positions, or keep offsets into their JSON',
     kinds: ALL_KINDS,
     location: /./,
@@ -40,11 +34,6 @@ export const KNOWN_POSITION_GAPS: KnownPositionGap[] = [
     kinds: ALL_KINDS,
     location: /^root \/ heading( \/ text)?$|listItem \/ html-block$/,
     inputs: ['docs/getting-started.md', 'docs/lists.md'],
-  },
-  {
-    reason: 'Code tabs reuse the first and last code block point objects',
-    kinds: ['shared-point'],
-    location: /code-tabs \/ code$/,
   },
   {
     reason: 'html-block text children have no position',

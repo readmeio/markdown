@@ -1,4 +1,4 @@
-import { toAttributes, getAttrs, createValueToSourceMapper } from '../../processor/utils';
+import { toAttributes, getAttrs, createSourcePointMapper, createValueToSourceMapper } from '../../processor/utils';
 
 const expressionAttribute = (name: string, value: string) => ({
   type: 'mdxJsxAttribute',
@@ -127,18 +127,59 @@ describe('createValueToSourceMapper', () => {
     expect(toSourcePoint(value.indexOf('<y>')).offset).toBe(source.indexOf('<y>'));
   });
 
-  it.each([
-    ['no source', undefined],
-    ['a source that does not line up', '> <x>\n> <nope>\n'],
-  ])('treats the value as verbatim given %s', (_, source) => {
+  it('treats the value as verbatim given no source', () => {
     const value = '<x>\n  <y>';
     const toSourcePoint = createValueToSourceMapper(
       { start: { line: 4, column: 3, offset: 10 }, end: { line: 5, column: 6, offset: 20 } },
       value,
-      source,
+      undefined,
     )!;
 
     expect(toSourcePoint(value.indexOf('<y>'))).toStrictEqual({ line: 5, column: 3, offset: 16 });
+  });
+
+  it('leaves lines after a source that stops lining up unmapped', () => {
+    const source = '> <x>\n> <nope>\n';
+    const value = '<x>\n  <y>';
+    const toSourcePoint = createValueToSourceMapper(positionOf(source, value), value, source)!;
+
+    expect(toSourcePoint(value.indexOf('<x>'))).toStrictEqual({ line: 1, column: 3, offset: 2 });
+    expect(toSourcePoint(value.indexOf('<y>'))).toBeUndefined();
+  });
+
+  it('skips the carriage return of CRLF source lines', () => {
+    const source = '<x>\r\n  <y>\r\n</x>';
+    const value = '<x>\n  <y>\n</x>';
+    const toSourcePoint = createValueToSourceMapper(positionOf(source, value), value, source)!;
+
+    expect(toSourcePoint(value.indexOf('<y>'))).toStrictEqual({ line: 2, column: 3, offset: source.indexOf('<y>') });
+    expect(toSourcePoint(value.length)).toStrictEqual({ line: 3, column: 5, offset: source.length });
+  });
+});
+
+// RM-18923
+describe('createSourcePointMapper', () => {
+  const start = { line: 3, column: 5, offset: 20 };
+
+  it('maps a deindented copy back onto its indented source', () => {
+    const source = 'a\n    b\n      c';
+    const toSourcePoint = createSourcePointMapper('a\nb\n  c', source, start);
+
+    expect(toSourcePoint(2)).toStrictEqual({ line: 4, column: 5, offset: 20 + source.indexOf('b') });
+    expect(toSourcePoint(6)).toStrictEqual({ line: 5, column: 7, offset: 20 + source.indexOf('c') });
+  });
+
+  it('skips blank lines the copy dropped and clamps lines it inserted', () => {
+    const source = '\n\n<div>\n## Heading';
+    const toSourcePoint = createSourcePointMapper('<div>\n\n## Heading', source, start);
+
+    expect(toSourcePoint(0)).toStrictEqual({ line: 5, column: 1, offset: 20 + source.indexOf('<div>') });
+    expect(toSourcePoint(6)).toStrictEqual({ line: 6, column: 1, offset: 20 + source.indexOf('##') });
+    expect(toSourcePoint(7)).toStrictEqual({ line: 6, column: 1, offset: 20 + source.indexOf('##') });
+  });
+
+  it('leaves a copy with decoded entities unmapped', () => {
+    expect(createSourcePointMapper('a & b', 'a &amp; b', start)(0)).toBeUndefined();
   });
 });
 

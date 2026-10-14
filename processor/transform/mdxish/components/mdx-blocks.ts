@@ -6,7 +6,7 @@ import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { createValueToSourceMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
-import { replaceInheritingReparseSource, stampReparseSource } from '../reparse-source';
+import { mapReparsedPositions, type ReparsedText, replaceChild } from '../source-positions';
 import { tableTags } from '../tables/utils';
 import { terminateHtmlFlowBlocks } from '../terminate-html-flow-blocks';
 
@@ -87,16 +87,15 @@ const trimBlankEdges = (text: string): string =>
  * stales the top-level `terminateHtmlFlowBlocks` decisions, so that one preprocessor
  * re-runs here; other column-anchored fixups (compact headings, tables) do not.
  */
-const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
-  const reparseSource = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(value)));
-  const parsed = getInlineMdProcessor({ safeMode }).parse(reparseSource);
+const parseMdChildren = (body: ReparsedText, safeMode: boolean): RootContent[] => {
+  const reshapedBody = terminateHtmlFlowBlocks(trimBlankEdges(safeDeindent(body.text)));
+  const parsed = getInlineMdProcessor({ safeMode }).parse(reshapedBody);
   // Promote nested wrappers bottom-up so an outer wrapper sees markdown buried in a
   // child claimed whole (e.g. `<li>` in `<ol>`) before its containsMarkdownConstruct check (RM-17560).
   // eslint-disable-next-line @typescript-eslint/no-use-before-define -- mutually recursive; hoisted decl, safe at runtime
-  promoteComponentBlocks(parsed as Parent, safeMode, reparseSource);
+  promoteComponentBlocks(parsed as Parent, safeMode, reshapedBody);
   const children = parsed.children || [];
-  // These children root a new coordinate space: their offsets index into `reparseSource`.
-  stampReparseSource(children, reparseSource);
+  mapReparsedPositions(children, reshapedBody, body);
   return children;
 };
 
@@ -105,7 +104,13 @@ const parseMdChildren = (value: string, safeMode: boolean): RootContent[] => {
 // index-based walk then reaches these spliced siblings and the original children
 // they shift down, so no parent re-queue is needed. Each spliced subtree is marked
 // `promoted` so the walk doesn't redundantly re-descend into it (its html is gone).
-const parseSibling = (parent: Parent, index: number, sibling: string, safeMode: boolean, promoted: WeakSet<Node>) => {
+const parseSibling = (
+  parent: Parent,
+  index: number,
+  sibling: ReparsedText,
+  safeMode: boolean,
+  promoted: WeakSet<Node>,
+) => {
   const siblingNodes = parseMdChildren(sibling, safeMode) as Node[];
   if (siblingNodes.length > 0) {
     (parent.children as Node[]).splice(index + 1, 0, ...siblingNodes);
@@ -129,9 +134,8 @@ const positionEndingAtConsumed = (
   consumedLength: number,
   source: string | null,
 ): Node['position'] => {
-  const toSourcePoint = createValueToSourceMapper(nodePosition, value, source);
-  if (!nodePosition || !toSourcePoint) return nodePosition;
-  return { start: nodePosition.start, end: toSourcePoint(consumedLength) };
+  const end = createValueToSourceMapper(nodePosition, value, source)?.(consumedLength);
+  return nodePosition && end ? { start: nodePosition.start, end } : nodePosition;
 };
 
 const createComponentNode = ({
@@ -246,6 +250,13 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     if (isPlainLowercaseHtml && plainClosingTagIndex < 0) return;
 
     const closingTagStr = `</${tag}>`;
+    const bodyOffset = leadingWhitespace + openingTagEnd;
+    const reparsedText = (text: string, from: number): ReparsedText => ({
+      text,
+      offset: value.indexOf(text, from),
+      container: { position: node.position, value },
+      source,
+    });
 
     // Case 1: Self-closing tag
     if (selfClosing) {
@@ -257,13 +268,13 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         // Without trailing content the whole node position is correct; with it, end at the tag.
         endPosition: remainingContent
-          ? positionEndingAtConsumed(node.position, value, leadingWhitespace + openingTagEnd, source)
+          ? positionEndingAtConsumed(node.position, value, bodyOffset, source)
           : node.position,
       });
-      replaceInheritingReparseSource(parent, index, [componentNode]);
+      replaceChild(parent, index, [componentNode]);
 
       if (remainingContent) {
-        parseSibling(parent, index, remainingContent, safeMode, promoted);
+        parseSibling(parent, index, reparsedText(remainingContent, bodyOffset), safeMode, promoted);
       }
       return;
     }
@@ -278,7 +289,10 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       let parsedChildren: MdxJsxFlowElement['children'] = [];
       if (componentInnerContent.trim()) {
         try {
-          parsedChildren = parseMdChildren(componentInnerContent, safeMode) as MdxJsxFlowElement['children'];
+          parsedChildren = parseMdChildren(
+            reparsedText(componentInnerContent, bodyOffset),
+            safeMode,
+          ) as MdxJsxFlowElement['children'];
         } catch (error) {
           // Plain HTML bodies can hold anything (e.g. stray braces the strict
           // expression parser rejects) — keep the node raw instead of throwing.
@@ -291,21 +305,14 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // phrasing content isn't spuriously block-wrapped.
       let unwrappedSoleParagraph = false;
       if (!isPascal && parsedChildren.length === 1 && parsedChildren[0].type === 'paragraph') {
-        const soleParagraph = parsedChildren[0];
-        parsedChildren = (soleParagraph as Parent).children as MdxJsxFlowElement['children'];
-        // The unwrap drops the stamped root, so its children inherit that coordinate space.
-        if (soleParagraph.data?.reparseSource) stampReparseSource(parsedChildren, soleParagraph.data.reparseSource);
+        parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
         unwrappedSoleParagraph = true;
       }
       // Without trailing content the whole node position is correct; with it, end at the closing tag.
+      const closeEnd = bodyOffset + closingTagIndex + closingTagStr.length;
       let endPosition = node.position;
       if (contentAfterClose) {
-        endPosition = positionEndingAtConsumed(
-          node.position,
-          value,
-          leadingWhitespace + openingTagEnd + closingTagIndex + closingTagStr.length,
-          source,
-        );
+        endPosition = positionEndingAtConsumed(node.position, value, closeEnd, source);
       }
       const componentNode = createComponentNode({
         tag,
@@ -314,7 +321,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         startPosition: node.position,
         endPosition,
       });
-      replaceInheritingReparseSource(parent, index, [componentNode]);
+      replaceChild(parent, index, [componentNode]);
 
       // The unwrap reparented the children out of their paragraph, so re-walk them
       // since the children HTML may contain promotable syntax (e.g. `{…}`-attr tags)
@@ -326,7 +333,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
       // already promoted any components nested inside both sides, so the promoted
       // subtree itself needs no re-queue.
       if (contentAfterClose) {
-        parseSibling(parent, index, contentAfterClose, safeMode, promoted);
+        parseSibling(parent, index, reparsedText(contentAfterClose, closeEnd), safeMode, promoted);
       }
     }
   };

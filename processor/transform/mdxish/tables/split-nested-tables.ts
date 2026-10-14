@@ -71,11 +71,11 @@ export const splitHtmlWithNestedTables = (node: Html, source?: string): Html[] |
   if (ranges.length === 0) return null;
 
   const toSourcePoint = createValueToSourceMapper(node.position, value, source);
-  const sliceToHtml = (from: number, to: number): Html => ({
-    type: 'html',
-    value: value.slice(from, to),
-    ...(toSourcePoint && { position: { start: toSourcePoint(from), end: toSourcePoint(to) } }),
-  });
+  const sliceToHtml = (from: number, to: number): Html => {
+    const start = toSourcePoint?.(from);
+    const end = toSourcePoint?.(to);
+    return { type: 'html', value: value.slice(from, to), ...(start && end && { position: { start, end } }) };
+  };
 
   const parts: Html[] = [];
   let cursor = 0;

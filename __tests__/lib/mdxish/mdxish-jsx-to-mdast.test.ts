@@ -5,7 +5,7 @@ import type { Heading, Paragraph, Root, RootContent, Table, TableCell } from 'md
 import { NodeTypes } from '../../../enums';
 import { mdxish, mdxishAstProcessor } from '../../../lib/mdxish';
 import { normalizeWidth, widthFromStyleString } from '../../../processor/transform/mdxish/tables/cell-width';
-import { resolvedSlicesUnder } from '../../helpers';
+import { slicesUnder } from '../../helpers';
 
 describe('normalizeWidth', () => {
   it.each([
@@ -226,25 +226,26 @@ describe('mdxish-jsx-to-mdast transformer', () => {
 
         it('resolves caption children against the caption at the top level', () => {
           const md = 'Hello world\n\n<Image src="https://x.com/a.png" caption="A **bold** cap" />';
-          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+          expect(slicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
         });
 
         it('resolves caption children inside a component body', () => {
           const md = ['Hello world', '', '<Accordion title="A">', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />', '</Accordion>'].join('\n'); // prettier-ignore
-          expect(resolvedSlicesUnder(md, isImageBlock)).toStrictEqual([
+          expect(slicesUnder(md, isImageBlock)).toStrictEqual([
             ['image-block', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />'],
             ...captionSlices('A **bold** cap'),
           ]);
         });
 
-        // Entities are decoded before the re-parse, so slices index the decoded caption.
-        it('resolves against the decoded caption when it holds entities', () => {
+        // Entities are decoded before the re-parse, so the caption can't be found in the
+        // source and its nodes take the image's range.
+        it('takes the image range when the caption holds entities', () => {
           const md = '<Image src="https://x.com/a.png" caption="&#x22;A&#x22; **b**" />';
-          expect(resolvedSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
-            ['paragraph', '"A" **b**'],
-            ['text', '"A" '],
-            ['strong', '**b**'],
-            ['text', 'b'],
+          expect(slicesUnder(md, isImageBlock).slice(1)).toStrictEqual([
+            ['paragraph', md],
+            ['text', md],
+            ['strong', md],
+            ['text', md],
           ]);
         });
       });

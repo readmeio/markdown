@@ -1,15 +1,14 @@
 import type { Blockquote, Paragraph, Root, Text } from 'mdast';
 import type { Node, Position } from 'unist';
 
-import { collectNodes, parseMdxishWithResolvedSources } from '../../../helpers';
+import { collectNodes, parseMdxishWithSlices } from '../../../helpers';
 
 import { findPositionViolations } from './position-invariant';
 
 const violationsOf = (doc: string, breakTree: (tree: Root) => void = () => {}) => {
-  const { tree, sourceOf } = parseMdxishWithResolvedSources(doc);
+  const { tree, source } = parseMdxishWithSlices(doc);
   breakTree(tree);
-  // Nodes added by `breakTree` weren't resolved, so they fall back to the document source.
-  return findPositionViolations(tree, node => sourceOf(node) ?? sourceOf(tree));
+  return findPositionViolations(tree, () => source);
 };
 
 const requirePosition = (node: Node): Position => {

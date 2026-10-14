@@ -9,16 +9,15 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 import { EXIT, visit } from 'unist-util-visit';
-import { visitParents } from 'unist-util-visit-parents';
 
 import { NodeTypes } from '../../../../enums';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
-import { createValueToSourceMapper, getAttrs, isMDXElement } from '../../../utils';
+import { createValueToSourceMapper, getAttrs, isMDXElement, mapPositionsToSource } from '../../../utils';
 import calloutTransformer from '../../callouts';
 import codeTabsTransformer from '../../code-tabs';
 import { extractText } from '../../extract-text';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
-import { replaceInheritingReparseSource, resolveReparseSource, stampReparseSource } from '../reparse-source';
+import { mapReparsedPositions, replaceChild } from '../source-positions';
 
 import { escapeCrossingEmphasis } from './escape-crossing-emphasis';
 import { escapeStrayLessThan } from './escape-stray-less-than';
@@ -111,14 +110,7 @@ const parseTableNode = (
   // The subparser produces positions relative to `node.value`; map them into
   // the outer source so consumers can slice it.
   const toSourcePoint = createValueToSourceMapper(node.position, repair?.originalSource ?? node.value, source);
-  if (!toSourcePoint) return parsed;
-  visit(parsed as Node, child => {
-    if (!child.position) return;
-    child.position = {
-      start: toSourcePoint(child.position.start.offset ?? 0),
-      end: toSourcePoint(child.position.end.offset ?? 0),
-    };
-  });
+  mapPositionsToSource([parsed], toSourcePoint, node.position);
   return parsed;
 };
 
@@ -150,13 +142,23 @@ const hasFlowContent = (nodes: Node[]): boolean => {
   return nodes.some(node => !phrasing(node) && node.type !== 'paragraph');
 };
 
+/** Locates a text-only cell's extracted text in the document, from its first to last child. */
+const cellText = (cell: MdxJsxTableCell, textContent: string, source: string | undefined) => {
+  const first = cell.children[0]?.position;
+  const last = cell.children[cell.children.length - 1]?.position;
+  const position = first && last ? { start: first.start, end: last.end } : undefined;
+  const value = source?.slice(position?.start.offset, position?.end.offset) ?? textContent;
+  return { text: textContent, offset: value.indexOf(textContent), container: { position, value }, source };
+};
+
 /**
  * Process a Table node: re-parse text-only cell content, then return it as
  * a markdown table (phrasing-only) or keep it as JSX <Table> (has flow content).
  */
 const processTableNode = (
   node: MdxJsxFlowElement | MdxJsxTextElement,
-  documentPosition?: Node['position'],
+  documentPosition: Node['position'],
+  source: string | undefined,
 ): MdxJsxFlowElement | MdxJsxTextElement | Table => {
   const position = documentPosition ?? node.position;
   const { align: alignAttr } = getAttrs<Pick<Table, 'align'>>(node);
@@ -192,8 +194,7 @@ const processTableNode = (
     try {
       const parsed = tableNodeProcessor.runSync(tableNodeProcessor.parse(textContent)) as Root;
       if (parsed.children.length > 0) {
-        // Positions index into the extracted text rather than the table source (CX-4004).
-        stampReparseSource(parsed.children, textContent);
+        mapReparsedPositions(parsed.children, textContent, cellText(cell, textContent, source));
         cell.children = parsed.children as MdxJsxTableCell['children'];
         if (hasFlowContent(parsed.children as Node[])) {
           tableHasFlowContent = true;
@@ -380,7 +381,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
     // to build on the markdown / JSX table
     visit(parsed as Node, isMDXElement, (tableNode: MdxJsxFlowElement | MdxJsxTextElement) => {
       if (tableNode.name !== 'Table' && tableNode.name !== 'table') return undefined;
-      replaceInheritingReparseSource(parent, index, [processTableNode(tableNode, node.position)]);
+      replaceChild(parent, index, [processTableNode(tableNode, node.position, source)]);
       return EXIT;
     });
   } else if (node.value.startsWith('<table')) {
@@ -389,7 +390,7 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
     // have needed MDX parsing anyway
     const fallback = parseTableNode(fallbackTableNodeProcessor, node, source);
     if (!fallback || fallback.children.length <= 1) return;
-    replaceInheritingReparseSource(parent, index, fallback.children);
+    replaceChild(parent, index, fallback.children);
   }
   // Otherwise, there's no point in trying to parse the table content further
   // More repairs are needed in that case
@@ -407,37 +408,29 @@ const replaceTableHtml = (node: Html, index: number, parent: Parent, source: str
  * is kept as a JSX <Table> element so that remarkRehype can properly handle the flow content.
  */
 const mdxishTables: Plugin<[], Root> = () => (tree, file) => {
-  // Positions index into the document unless a re-parse stamped another source.
-  const documentSource = file?.value ? String(file.value) : undefined;
+  const source = file?.value ? String(file.value) : undefined;
 
   // Pre-pass: lift `<table>`s wrapped in a raw HTML block out into their own
   // html nodes so the main pass below treats them like top-level tables.
-  visitParents(tree, 'html', (node: Html, ancestors: Parent[]) => {
-    const parent = ancestors[ancestors.length - 1];
-    if (!parent) return;
-    const parts = splitHtmlWithNestedTables(node, resolveReparseSource(node, ancestors, documentSource));
+  visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return;
+    const parts = splitHtmlWithNestedTables(node, source);
     if (!parts) return;
     // The inserted parts can't re-trigger a split (table parts start with
     // `<table`; the wrapper slices hold no table), so plain in-place splicing
     // visits each once without looping.
-    replaceInheritingReparseSource(parent, parent.children.indexOf(node), parts);
+    replaceChild(parent, index, parts);
   });
 
-  visitParents(tree, 'html', (node: Html, ancestors: Parent[]) => {
-    const parent = ancestors[ancestors.length - 1];
-    if (!parent) return;
+  visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
+    if (!parent || index === undefined) return;
     if (!node.value.startsWith('<Table') && !node.value.startsWith('<table')) return;
 
     // Inline tables are tokenized as separate raw HTML fragments inside a
     // paragraph. Leave them untouched so rehype-raw can reassemble the table.
     if (parent.type === 'paragraph') return;
 
-    replaceTableHtml(
-      node,
-      parent.children.indexOf(node),
-      parent,
-      resolveReparseSource(node, ancestors, documentSource),
-    );
+    replaceTableHtml(node, index, parent, source);
   });
 };
 

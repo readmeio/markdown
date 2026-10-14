@@ -1,10 +1,8 @@
 import type { Parent, Root, Table } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
-import { visit } from 'unist-util-visit';
-
 import { mdxishAstProcessor, mdxishMdastToMd } from '../../../lib/mdxish';
-import { parseMdxishWithResolvedSources, roundTripMdxish } from '../../helpers';
+import { parseMdxishWithSlices, roundTripMdxish } from '../../helpers';
 
 describe('mdxishAstProcessor', () => {
   describe('deferred processing (handled by mdxish rendering pipeline)', () => {
@@ -100,10 +98,8 @@ describe('mdxishAstProcessor', () => {
     });
   });
 
-  // CX-3772: WYSIWYG mangled tab-block content because nodes re-parsed from a component
-  // body carry offsets into that body, not the document. Each re-parsed subtree root is
-  // stamped with `data.reparseSource`; descendants resolve via their nearest stamped
-  // ancestor. These tests assert through that resolution, exactly as a consumer must.
+  // CX-3772, RM-18923: nodes re-parsed from a component body are mapped back onto the
+  // document, so every position slices the document's own text, indentation included.
   describe('re-parsed component body positions (CX-3772)', () => {
     // `Variable` declares no `type`, so it survives the discriminant check and the cast
     // is what actually reaches `name`.
@@ -113,15 +109,7 @@ describe('mdxishAstProcessor', () => {
           child.type === 'mdxJsxFlowElement' && (child as MdxJsxFlowElement).name === name,
       )!;
 
-    const stampedNodeTypes = (tree: Root): string[] => {
-      const stamped: string[] = [];
-      visit(tree, node => {
-        if (node.data?.reparseSource) stamped.push(node.type);
-      });
-      return stamped;
-    };
-
-    it('resolves every node in a nested component body to its own source', () => {
+    it('resolves every node in a nested component body to the document', () => {
       const md = [
         '<Tabs>',
         '  <Tab title="Accounts">',
@@ -131,16 +119,14 @@ describe('mdxishAstProcessor', () => {
         '  </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
-      // Top-level positions still index into the document, so `Tabs` carries no stamp.
       const tabs = findJsxChild(tree, 'Tabs');
-      expect(tabs.data?.reparseSource).toBeUndefined();
       expect(sliceOf(tabs)).toBe(md);
 
       const tab = findJsxChild(tabs, 'Tab');
       expect(sliceOf(tab)).toBe(
-        ['<Tab title="Accounts">', '  ### Common Account Fields', '', '  <ExampleComponent />', '</Tab>'].join('\n'),
+        ['<Tab title="Accounts">', '    ### Common Account Fields', '', '    <ExampleComponent />', '  </Tab>'].join('\n'),
       );
 
       const heading = tab.children.find(child => child.type === 'heading')!;
@@ -148,25 +134,17 @@ describe('mdxishAstProcessor', () => {
       expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('  <ExampleComponent />');
     });
 
-    it('stamps only subtree roots, never their descendants', () => {
-      const md = ['<Wrapper>', '  Some **bold** text', '</Wrapper>'].join('\n');
-      const { tree } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
-
-      // The body's sole root is the paragraph; `strong`/`text` inherit from it.
-      expect(stampedNodeTypes(tree)).toStrictEqual(['paragraph']);
-    });
-
     it('resolves expression nodes inside a component body', () => {
       const md = ['<Wrapper>', '  {1 + 1}', '</Wrapper>'].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const expression = findJsxChild(tree, 'Wrapper').children.find(child => child.type === 'mdxFlowExpression')!;
       expect(sliceOf(expression)).toBe('{1 + 1}');
     });
 
-    it('resolves siblings spliced after a self-closing component against their own source', () => {
+    it('resolves siblings spliced after a self-closing component', () => {
       const md = ['<Wrapper>', '  <ExampleComponent />', '  Some *sibling* text', '</Wrapper>'].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const wrapper = findJsxChild(tree, 'Wrapper');
       const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
@@ -187,7 +165,7 @@ describe('mdxishAstProcessor', () => {
         '  </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
       const listItem = (tab.children.find(child => child.type === 'list') as Parent).children[0] as Parent;
@@ -196,10 +174,12 @@ describe('mdxishAstProcessor', () => {
         { type: 'mdxJsxFlowElement', name: 'ExampleComponent' },
         { type: 'paragraph', children: [{ type: 'text', value: 'trailing' }] },
       ]);
-      expect(sliceOf(findJsxChild(listItem, 'ExampleComponent'))).toBe('<ExampleComponent\n  header="x"\n  />');
+      expect(sliceOf(findJsxChild(listItem, 'ExampleComponent'))).toBe(
+        '<ExampleComponent\n      header="x"\n      />',
+      );
     });
 
-    it('resolves deeply indented bodies against the dedented source', () => {
+    it('resolves deeply indented bodies against the document', () => {
       const md = [
         '<Tabs>',
         '    <Tab title="One">',
@@ -209,7 +189,7 @@ describe('mdxishAstProcessor', () => {
         '    </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
       expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('<ExampleComponent />');
@@ -227,43 +207,40 @@ describe('mdxishAstProcessor', () => {
         '  </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
       const cards = findJsxChild(tab, 'Cards');
       expect(sliceOf(cards)).toBe(
         [
           '<Cards columns={2}>',
-          '  <Card title="First" icon="fa-rocket">',
-          '    Card **body** text',
-          '  </Card>',
-          '</Cards>',
+          '      <Card title="First" icon="fa-rocket">',
+          '        Card **body** text',
+          '      </Card>',
+          '    </Cards>',
         ].join('\n'),
       );
 
       const card = findJsxChild(cards, 'Card');
       expect(sliceOf(card)).toBe(
-        ['<Card title="First" icon="fa-rocket">', '  Card **body** text', '</Card>'].join('\n'),
+        ['<Card title="First" icon="fa-rocket">', '        Card **body** text', '      </Card>'].join('\n'),
       );
 
       const paragraph = card.children.find(child => child.type === 'paragraph')!;
       expect(sliceOf(paragraph)).toBe('Card **body** text');
 
-      // Descendants of a stamped root inherit it rather than carrying their own copy.
       const strong = (paragraph as Parent).children.find(child => child.type === 'strong')!;
-      expect(strong.data?.reparseSource).toBeUndefined();
       expect(sliceOf(strong)).toBe('**body**');
     });
 
     it('resolves a multi-line HTML sequence and the markdown between its tags', () => {
       const md = ['<Wrapper>', '  <div>', '    A **bold** move', '  </div>', '</Wrapper>'].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       // A multi-line lowercase tag stays a pair of html nodes with markdown between;
       // all three are body roots (the body re-parse adds the blank line after `<div>`).
       const wrapper = findJsxChild(tree, 'Wrapper');
       const openingTag = wrapper.children.find(child => child.type === 'html')!;
-      expect(openingTag.data?.reparseSource).toBe('<div>\n\n  A **bold** move\n</div>');
       expect(sliceOf(openingTag)).toBe('<div>');
 
       const paragraph = wrapper.children.find(child => child.type === 'paragraph')!;
@@ -273,7 +250,7 @@ describe('mdxishAstProcessor', () => {
 
     it('resolves children of a single-line lowercase HTML tag promoted for markdown parsing', () => {
       const md = ['<Wrapper>', '  <div>A **bold** move</div>', '</Wrapper>'].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       // The body keeps its indent (RM-17790), and remark reports an indented html node's
       // position from the line start — so the span opens on the indent, as it does for
@@ -288,7 +265,7 @@ describe('mdxishAstProcessor', () => {
 
     it('resolves lowercase HTML promoted through an MDX expression attribute', () => {
       const md = ['<Wrapper>', '  <button style={{ color: "red" }}>Click me</button>', '</Wrapper>'].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const button = findJsxChild(findJsxChild(tree, 'Wrapper'), 'button');
       expect(sliceOf(button)).toBe('  <button style={{ color: "red" }}>Click me</button>');
@@ -303,7 +280,7 @@ describe('mdxishAstProcessor', () => {
         '    </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
       const list = tab.children.find(child => child.type === 'list')!;
@@ -311,7 +288,7 @@ describe('mdxishAstProcessor', () => {
       expect(sliceOf(nested)).toBe('<ExampleComponent />');
     });
 
-    it('resolves sibling components separated by extra blank lines against the same body source', () => {
+    it('resolves sibling components separated by extra blank lines', () => {
       const md = [
         '<Wrapper>',
         '',
@@ -324,21 +301,20 @@ describe('mdxishAstProcessor', () => {
         '',
         '</Wrapper>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const wrapper = findJsxChild(tree, 'Wrapper');
       const first = findJsxChild(wrapper, 'First');
       const second = findJsxChild(wrapper, 'Second');
 
-      expect(first.data?.reparseSource).toBe(second.data?.reparseSource);
       expect(sliceOf(first)).toBe('<First />');
-      expect(sliceOf(second)).toBe(['<Second>', '  content', '</Second>'].join('\n'));
+      expect(sliceOf(second)).toBe(['<Second>', '    content', '  </Second>'].join('\n'));
     });
 
-    // The inline path re-parses bodies too, so it must stamp its roots for the same reason.
+    // The inline path re-parses bodies too, so it maps them the same way.
     it('resolves the re-parsed body of an inline component', () => {
       const md = 'Lead in <span style={{ color: "red" }}>an **emphatic** label</span> and out.';
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const paragraph = tree.children[0] as Parent;
       const span = paragraph.children.find(child => child.type === 'mdxJsxTextElement')!;
@@ -348,7 +324,7 @@ describe('mdxishAstProcessor', () => {
       expect(sliceOf(strong)).toBe('**emphatic**');
     });
 
-    // CX-4004: `mdxishJsxToMdast` replaces the stamped JSX node with a new mdast node.
+    // CX-4004: `mdxishJsxToMdast` replaces the JSX node with a new mdast node.
     it('resolves a component converted to an mdast node inside a component body', () => {
       const md = [
         'Hello world',
@@ -361,12 +337,12 @@ describe('mdxishAstProcessor', () => {
         '  </Tab>',
         '</Tabs>',
       ].join('\n');
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const tab = findJsxChild(findJsxChild(tree, 'Tabs'), 'Tab');
       const callout = tab.children.find(child => child.type === 'rdme-callout')!;
       expect(sliceOf(callout)).toBe(
-        ['<Callout icon="📘" theme="info">', '  Some **bold** {bucket}', '</Callout>'].join('\n'),
+        ['<Callout icon="📘" theme="info">', '      Some **bold** {bucket}', '    </Callout>'].join('\n'),
       );
 
       // `children[0]` is the synthesized (positionless) title placeholder.

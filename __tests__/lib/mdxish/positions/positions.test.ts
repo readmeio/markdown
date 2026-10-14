@@ -1,6 +1,6 @@
 import type { MdxishOpts } from '../../../../lib';
 
-import { parseMdxishWithResolvedSources } from '../../../helpers';
+import { parseMdxishWithSource } from '../../../helpers';
 
 import { buildPositionCorpus } from './corpus';
 import { isKnownPositionGap, KNOWN_POSITION_GAPS } from './known-gaps';
@@ -10,8 +10,8 @@ const MODES: MdxishOpts[] = [{ newEditorTypes: false }, { newEditorTypes: true }
 
 const runs = MODES.flatMap(opts =>
   buildPositionCorpus().map(input => {
-    const { tree, sourceOf } = parseMdxishWithResolvedSources(input.doc, opts);
-    return { input, opts, violations: findPositionViolations(tree, sourceOf) };
+    const { tree, source } = parseMdxishWithSource(input.doc, opts);
+    return { input, opts, violations: findPositionViolations(tree, () => source) };
   }),
 );
 

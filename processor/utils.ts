@@ -40,24 +40,94 @@ export function evaluate(source: string, scope: Record<string, unknown> = {}) {
   return new Function(...names, `return (${source})`)(...values);
 }
 
-interface ValueLine {
-  /** Width of the container prefix (`> `, list indent) micromark stripped from this line. */
-  prefixWidth: number;
-  sourceStart: number;
-  valueStart: number;
+interface AlignedLine {
+  /** Where the derived line's trimmed content starts, in derived and source columns. */
+  derivedContentColumn: number;
+  derivedStart: number;
+  sourceContentColumn: number;
+  sourceLineIndex: number;
+  sourceLineStart: number;
+  /** Inserted lines have no source text, so every column clamps to the line start. */
+  sourceMaxColumn: number;
 }
 
+const TRAILING_CARRIAGE_RETURN = /\r$/;
+// Blank once its container prefix is gone, e.g. a lone `>` inside a blockquote.
+const BLANK_SOURCE_LINE = /^[\s>]*$/;
+
 /**
- * Width each container prefix adds back per line of `value`, aligned from the line end since a
- * tab in the prefix is expanded to spaces in `value`. None (a verbatim slice) when the source
- * is missing or doesn't line up.
+ * Pairs each line of `derived` with the `source` line it came from. Derived lines may lose
+ * their container prefix or indent, and blank lines may be added or dropped; any other
+ * difference (e.g. decoded entities) leaves that line and the rest unaligned.
  */
-const containerPrefixWidths = (valueLines: string[], source: string | null | undefined, position: Position) => {
-  const sourceLines = source?.slice(position.start.offset, position.end.offset).split('\n');
-  const linesUp =
-    sourceLines?.length === valueLines.length &&
-    sourceLines.every((line, i) => line.endsWith(valueLines[i].trimStart()));
-  return valueLines.map((line, i) => (linesUp ? sourceLines[i].length - line.length : 0));
+const alignLines = (derived: string, source: string) => {
+  const sourceLines = source.split('\n');
+  const aligned: AlignedLine[] = [];
+  let sourceLineIndex = 0;
+  let sourceLineStart = 0;
+  let derivedStart = 0;
+  const consumeSourceLine = () => {
+    sourceLineStart += sourceLines[sourceLineIndex].length + 1;
+    sourceLineIndex += 1;
+  };
+
+  const allAligned = derived.split('\n').every(line => {
+    const content = line.trim();
+    const isBlankSourceLine = () => BLANK_SOURCE_LINE.test(sourceLines[sourceLineIndex] ?? '');
+    const holdsContent = () => sourceLines[sourceLineIndex].includes(content);
+    if (content) {
+      while (sourceLineIndex < sourceLines.length && isBlankSourceLine() && !holdsContent()) consumeSourceLine();
+    }
+    const sourceLine = sourceLines[sourceLineIndex];
+    if (sourceLine === undefined || !sourceLine.includes(content)) return false;
+
+    const inserted = !content && !isBlankSourceLine();
+    aligned.push({
+      derivedStart,
+      derivedContentColumn: line.length - line.trimStart().length,
+      sourceContentColumn: content ? sourceLine.lastIndexOf(content) : 0,
+      sourceLineIndex,
+      sourceLineStart,
+      sourceMaxColumn: inserted ? 0 : sourceLine.replace(TRAILING_CARRIAGE_RETURN, '').length,
+    });
+    if (!inserted) consumeSourceLine();
+    derivedStart += line.length + 1;
+    return true;
+  });
+  // Derived offsets past the end of the last aligned line have no source counterpart.
+  return { aligned, mappableUntil: allAligned ? derived.length : derivedStart - 1 };
+};
+
+/**
+ * Maps offsets in `derived`, a copy of `source` re-shaped for a re-parse, to points in the
+ * document, where `source` starts at `start`. Returns undefined past the last aligned line.
+ */
+export const createSourcePointMapper = (derived: string, source: string, start: Point) => {
+  const { aligned: lines, mappableUntil } = alignLines(derived, source);
+  const startOffset = start.offset ?? 0;
+
+  return (derivedOffset: number): Point | undefined => {
+    if (!lines.length || derivedOffset > mappableUntil) return undefined;
+    // Binary search: a large table maps one point per node.
+    let low = 0;
+    let high = lines.length - 1;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      if (lines[mid].derivedStart <= derivedOffset) low = mid;
+      else high = mid - 1;
+    }
+    const line = lines[low];
+    const derivedColumn = derivedOffset - line.derivedStart;
+    const sourceColumn = Math.min(
+      line.sourceMaxColumn,
+      Math.max(0, line.sourceContentColumn + derivedColumn - line.derivedContentColumn),
+    );
+    return {
+      line: start.line + line.sourceLineIndex,
+      column: (line.sourceLineIndex === 0 ? start.column : 1) + sourceColumn,
+      offset: startOffset + line.sourceLineStart + sourceColumn,
+    };
+  };
 };
 
 /**
@@ -68,39 +138,29 @@ export const createValueToSourceMapper = (
   position: Position | undefined,
   value: string,
   source: string | null | undefined,
-): ((valueOffset: number) => Point) | null => {
+) => {
   if (position?.start.offset === undefined) return null;
-  const { start } = position;
-  const valueLines = value.split('\n');
-  const prefixWidths = containerPrefixWidths(valueLines, source, position);
+  const sourceText = source ? source.slice(position.start.offset, position.end.offset) : value;
+  return createSourcePointMapper(value, sourceText, position.start);
+};
 
-  const lines: ValueLine[] = [];
-  let valueStart = 0;
-  let sourceStart = start.offset;
-  valueLines.forEach((line, i) => {
-    lines.push({ prefixWidth: prefixWidths[i], sourceStart, valueStart });
-    valueStart += line.length + 1;
-    sourceStart += prefixWidths[i] + line.length + 1;
-  });
-
-  return valueOffset => {
-    // Binary search: a large table maps one point per node.
-    let low = 0;
-    let high = lines.length - 1;
-    while (low < high) {
-      const mid = Math.ceil((low + high) / 2);
-      if (lines[mid].valueStart <= valueOffset) low = mid;
-      else high = mid - 1;
-    }
-    const { prefixWidth, sourceStart: lineSourceStart, valueStart: lineValueStart } = lines[low];
-    // Clamped: an expanded tab can make a leading-whitespace offset fall before the line.
-    const sourceColumn = Math.max(0, prefixWidth + valueOffset - lineValueStart);
-    return {
-      line: start.line + low,
-      column: (low === 0 ? start.column : 1) + sourceColumn,
-      offset: lineSourceStart + sourceColumn,
-    };
-  };
+/**
+ * Moves every position under `roots` from re-parse offsets onto the document. Nodes the mapper
+ * can't place have no verbatim source, so they take the `enclosing` range.
+ */
+export const mapPositionsToSource = (
+  roots: Node[],
+  toSourcePoint: ((derivedOffset: number) => Point | undefined) | null,
+  enclosing: Position | undefined,
+) => {
+  roots.forEach(root =>
+    visit(root, node => {
+      if (!node.position) return;
+      const start = toSourcePoint?.(node.position.start.offset ?? 0);
+      const end = toSourcePoint?.(node.position.end.offset ?? 0);
+      node.position = start && end ? { start, end } : enclosing && structuredClone(enclosing);
+    }),
+  );
 };
 
 /**
@@ -257,8 +317,7 @@ export function formatHtmlForMdxish(html: string, openingTagIndent = 0): string 
   // which is invalid javascript and will cause error
   cleaned = cleaned.replace(
     /(<(pre|code)\b[^>]*>)([\s\S]*?)(<\/\2>)/gi,
-    (_m, open: string, _tag: string, inner: string, close: string) =>
-      open + inner.replace(/\\n/g, '\n') + close,
+    (_m, open: string, _tag: string, inner: string, close: string) => open + inner.replace(/\\n/g, '\n') + close,
   );
 
   // Unescape backticks: \` -> ` (users escape backticks in template literals)

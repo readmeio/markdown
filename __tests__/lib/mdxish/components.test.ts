@@ -360,6 +360,19 @@ labore et dolore magna aliqua.`,
     ]);
   });
 
+  // RM-18923: body nodes kept offsets into the re-parsed body, so the tag check sliced the
+  // document at the wrong place and deleted the element as an unknown component.
+  it.each([
+    ['at the top level', '<foo-bar>bar</foo-bar>'],
+    ['inside a component body', '<Callout icon="📘" theme="info">\n  <foo-bar>bar</foo-bar>\n</Callout>'],
+    ['in a nested component body', '<Tabs>\n  <Tab title="A">\n    <foo-bar>bar</foo-bar>\n  </Tab>\n</Tabs>'],
+  ])('should keep a custom element %s', (_, md) => {
+    expect(findElementByTagName(mdxish(md), 'foo-bar')).toMatchObject({
+      tagName: 'foo-bar',
+      children: [{ type: 'text', value: 'bar' }],
+    });
+  });
+
   it('should not identify an MDX component syntax inside a code block', () => {
     const md = '```jsx\n<ExampleComponent body="This is a body" />\n```';
     const tree = mdxish(md, { components: exampleComponents });

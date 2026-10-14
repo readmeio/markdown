@@ -94,27 +94,16 @@ export const parseMdxish = (doc: string, opts: MdxishOpts = {}): MdastRoot =>
   parseMdxishWithSource(doc, opts).tree;
 
 /**
- * Parses markdown and returns a `sliceOf` that resolves each node's coordinate space the
- * way a consumer must: a node's offsets index into the nearest `data.reparseSource` on
- * itself or an ancestor, falling back to the post-preprocess document source.
+ * Parses markdown and returns a `sliceOf` that reads each node's source text through its
+ * position, which always indexes into the post-preprocess document source.
  */
-export const parseMdxishWithResolvedSources = (doc: string, opts: MdxishOpts = {}) => {
+export const parseMdxishWithSlices = (doc: string, opts: MdxishOpts = {}) => {
   const { source, tree } = parseMdxishWithSource(doc, opts);
-  const sourceByNode = new Map<Node, string>();
-
-  const resolve = (node: Node, inherited: string) => {
-    const resolved = node.data?.reparseSource ?? inherited;
-    sourceByNode.set(node, resolved);
-    if ('children' in node) (node.children as Node[]).forEach(child => resolve(child, resolved));
-  };
-  resolve(tree, source);
-  const sourceOf = (node: Node): string | undefined => sourceByNode.get(node);
-
   return {
     tree,
-    sourceOf,
+    source,
     sliceOf: (node: Node): string | undefined =>
-      sourceOf(node)?.slice(node.position?.start.offset, node.position?.end.offset),
+      node.position ? source.slice(node.position.start.offset, node.position.end.offset) : undefined,
   };
 };
 
@@ -144,15 +133,15 @@ export const collectNodes = <T extends Node = Node>(
 };
 
 /**
- * `[label, slice]` for the first node matching `test` and every positioned node under it, sliced
- * the way a consumer must (see `parseMdxishWithResolvedSources`). Labels are the JSX name or type.
+ * `[label, slice]` for the first node matching `test` and every positioned node under it.
+ * Labels are the JSX name or type.
  */
-export const resolvedSlicesUnder = (
+export const slicesUnder = (
   doc: string,
   test: (node: Node) => boolean,
   opts: MdxishOpts = { newEditorTypes: true },
 ): [string, string | undefined][] => {
-  const { tree, sliceOf } = parseMdxishWithResolvedSources(doc, opts);
+  const { tree, sliceOf } = parseMdxishWithSlices(doc, opts);
   const [match] = collectNodes(tree, test);
   const slices: [string, string | undefined][] = [];
   if (!match) return slices;
