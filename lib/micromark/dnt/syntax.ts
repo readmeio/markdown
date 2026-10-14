@@ -304,13 +304,22 @@ function createTokenize(mode: 'flow' | 'text') {
     }
 
     function inCodeSpan(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) return body(code);
+      if (code === null) return nok(code);
+      if (markdownLineEnding(code)) return lineEnding(code, codeSpanLineStart);
       if (code === codes.graveAccent) {
         codeSpanCloseSize = 0;
         return countCloseTicks(code);
       }
       consumeData(code);
       return inCodeSpan;
+    }
+
+    // A code span crosses a soft break but not a blank line, so a second line ending ends it.
+    function codeSpanLineStart(code: Code): State | undefined {
+      if (code === null) return nok(code);
+      if (markdownLineEnding(code)) return bodyLineStart(code);
+      atLineStart = false;
+      return inCodeSpan(code);
     }
 
     function countCloseTicks(code: Code): State | undefined {

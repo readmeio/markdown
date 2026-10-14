@@ -22,6 +22,7 @@ describe('dnt tokenizer', () => {
       ['a nested DNT', '<DNT>\n<DNT>a</DNT>\n</DNT>'],
       ['a nested block DNT', '<DNT>\n<DNT>\na\n</DNT>\n</DNT>'],
       ['a closer in a code span', '<DNT>\n`</DNT>`\n</DNT>'],
+      ['a closer in a code span spanning lines', '<DNT>\n`code\n</DNT>\nmore`\n</DNT>'],
       ['a closer in a fence', '<DNT>\n```\n</DNT>\n```\n</DNT>'],
       ['a closer in a tilde fence', '<DNT>\n~~~\n</DNT>\n~~~\n</DNT>'],
       ['a closer in an expression', '<DNT>\n{"</DNT>"}\n</DNT>'],
@@ -33,6 +34,10 @@ describe('dnt tokenizer', () => {
       ['CR line endings', '<DNT>\rone\r</DNT>'],
     ])('claims the whole block with %s', (_label, doc) => {
       expect(htmlValues(doc)).toStrictEqual([doc]);
+    });
+
+    it('ends a code span at a blank line, so a closer after it counts', () => {
+      expect(htmlValues('<DNT>\n`a\n\n</DNT>\nb`\n</DNT>')[0]).toBe('<DNT>\n`a\n\n</DNT>');
     });
 
     it('claims a block inside a blockquote', () => {
@@ -57,6 +62,7 @@ describe('dnt tokenizer', () => {
       ['with attributes', 'Hi <DNT title={"x"}>Acme</DNT>', '<DNT title={"x"}>Acme</DNT>'],
       ['with a nested DNT', '<DNT><DNT>a</DNT> b</DNT> c', '<DNT><DNT>a</DNT> b</DNT>'],
       ['with a closer in inline code', '<DNT>a `</DNT>` b</DNT> c', '<DNT>a `</DNT>` b</DNT>'],
+      ['with a closer in inline code across a soft break', '<DNT>a `x\n</DNT>` b</DNT> c', '<DNT>a `x\n</DNT>` b</DNT>'],
       ['with a closer in an expression', '<DNT>a {"</DNT>"} b</DNT> c', '<DNT>a {"</DNT>"} b</DNT>'],
       ['empty', 'Before <DNT></DNT> after', '<DNT></DNT>'],
     ])('claims one node %s', (_label, doc, value) => {
