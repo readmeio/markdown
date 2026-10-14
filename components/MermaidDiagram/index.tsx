@@ -44,6 +44,16 @@ function queueMermaidNode(node: HTMLPreElement, theme: string) {
   }
 }
 
+/** Drops an unmounting diagram without discarding other diagrams still waiting in the batch. */
+function dequeueMermaidNode(node: HTMLPreElement | null) {
+  mermaidQueue = mermaidQueue.filter(queued => queued !== node);
+  // Nothing left to render, so stop mermaid from running after the DOM is torn down
+  if (!mermaidQueue.length && mermaidFlushTimer) {
+    clearTimeout(mermaidFlushTimer);
+    mermaidFlushTimer = null;
+  }
+}
+
 // Zoom is an integer step count so zooming back always lands exactly on 1x.
 // -3..8 steps of 1.25x ≈ 0.5x..6x: enough to read a wide diagram mermaid has shrunk to column width.
 const ZOOM_STEP = 1.25;
@@ -83,20 +93,13 @@ const MermaidDiagram = ({ value }: { value: string }) => {
   const [view, setView] = useState(INITIAL_VIEW);
 
   useEffect(() => {
+    const node = mermaidRef.current;
     // Wait for hydration so mermaid's DOM mutations don't cause mismatches
-    if (isHydrated && mermaidRef.current) {
-      queueMermaidNode(mermaidRef.current, theme);
+    if (isHydrated && node) {
+      queueMermaidNode(node, theme);
     }
 
-    return () => {
-      // Clear the batch timer on unmount to prevent mermaid from running
-      // after the DOM is torn down
-      if (mermaidFlushTimer) {
-        clearTimeout(mermaidFlushTimer);
-        mermaidFlushTimer = null;
-        mermaidQueue = [];
-      }
-    };
+    return () => dequeueMermaidNode(node);
   }, [theme, isHydrated, mermaidControls]); // toggling controls swaps in a fresh pre
 
   if (!mermaidControls) {

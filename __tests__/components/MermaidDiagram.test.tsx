@@ -1,10 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { vi } from 'vitest';
 
 import { renderingEngines } from './utils';
+
+const mermaid = vi.hoisted(() => ({ initialize: vi.fn(), run: vi.fn() }));
+vi.mock('mermaid', () => ({ default: mermaid }));
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -19,6 +22,17 @@ describe('MermaidDiagram', () => {
     expect(container.querySelector('pre.mermaid-render.mermaid_single')).toHaveTextContent('graph TD');
     expect(screen.queryByRole('button')).toBeNull();
   });
+
+  it.each(renderingEngines)(
+    '%s: still renders a queued diagram when another unmounts first',
+    (_label, renderContent) => {
+      const Component = renderContent(md);
+      const kept = render(<Component />).container.querySelector('pre');
+      render(<Component />).unmount();
+
+      return waitFor(() => expect(mermaid.run).toHaveBeenCalledWith({ nodes: [kept] }));
+    },
+  );
 
   describe('zoom and pan', () => {
     const transformOf = (pre: HTMLElement) => pre.style.getPropertyValue('--MermaidDiagram-transform');
