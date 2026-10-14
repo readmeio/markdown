@@ -1,24 +1,33 @@
 import type { Node } from 'mdast';
 import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
-import { collectNodes, parseMdxishWithResolvedSources, resolvedSlicesUnder } from '../helpers';
+import { collectNodes, parseMdxishWithSlices, sourceSlicesUnder } from '../helpers';
 
 const isTableRoot = (node: Node): boolean =>
   node.type === 'table' ||
   (node.type === 'mdxJsxFlowElement' && ['Table', 'table'].includes((node as MdxJsxFlowElement).name ?? ''));
 
-// Every node under the first table, resolving each node's source the way a consumer must.
-const tableSlices = (md: string, newEditorTypes = true) => resolvedSlicesUnder(md, isTableRoot, { newEditorTypes });
+// Every node under the first table, sliced from the document.
+const tableSlices = (md: string, newEditorTypes = true) => sourceSlicesUnder(md, isTableRoot, { newEditorTypes });
 
 const indent = (lines: string[], by = '  ') => lines.map(line => (line ? `${by}${line}` : line));
 
 const wrapIn = (opener: string, closer: string, lines: string[], by = '  ') =>
   ['Hello world', '', opener, ...indent(lines, by), closer].join('\n');
 
-// CX-4004: a table nested in a component body is re-parsed from that body, so its offsets
-// index into the body. The replacement table dropped the body's `reparseSource` stamp, so
-// consumers sliced the whole document and corrupted cells (e.g. `{bucket}` → 8 random chars).
-describe('mdxish table positions resolve against their re-parse source (CX-4004)', () => {
+// A slice from an indented body keeps the indent on every continuation line.
+const indentSlices = (slices: [string, string][], by = '  '): [string, string][] =>
+  slices.map(([label, text]) => [
+    label,
+    text
+      .split('\n')
+      .map((line, i) => (i && line ? `${by}${line}` : line))
+      .join('\n'),
+  ]);
+
+// CX-4004: a table nested in a component body is re-parsed from that body. Its positions
+// must still slice the document, or consumers corrupt cells (e.g. `{bucket}` → 8 random chars).
+describe('mdxish table positions inside component bodies (CX-4004)', () => {
   const headedTable = [
     '<Table>',
     '  <thead>',
@@ -41,23 +50,23 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
       ['Callout', '<Callout icon="📘" theme="info">', '</Callout>'],
       ['Card', '<Card title="A">', '</Card>'],
     ])('resolves every node inside a <%s>', (_, opener, closer) => {
-      expect(tableSlices(wrapIn(opener, closer, headedTable))).toStrictEqual(headedTableSlices);
+      expect(tableSlices(wrapIn(opener, closer, headedTable))).toStrictEqual(indentSlices(headedTableSlices));
     });
 
     it('resolves every node inside <Tabs><Tab>', () => {
       const md = wrapIn('<Tabs>', '</Tabs>', ['<Tab title="One">', ...indent(headedTable), '</Tab>']);
-      expect(tableSlices(md)).toStrictEqual(headedTableSlices);
+      expect(tableSlices(md)).toStrictEqual(indentSlices(headedTableSlices, '    '));
     });
 
     it('resolves the renderer path (no newEditorTypes) the same way', () => {
       expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', headedTable), false)).toStrictEqual(
-        headedTableSlices,
+        indentSlices(headedTableSlices),
       );
     });
 
     it('resolves a table indented 4+ columns (dedented body)', () => {
       const md = wrapIn('<Accordion title="A">', '</Accordion>', headedTable, '    ');
-      expect(tableSlices(md)).toStrictEqual(headedTableSlices);
+      expect(tableSlices(md)).toStrictEqual(indentSlices(headedTableSlices, '    '));
     });
 
     it('resolves a table surrounded by blank lines and prose inside the body', () => {
@@ -70,23 +79,25 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
         'Outro',
         '',
       ]);
-      expect(tableSlices(md)).toStrictEqual(headedTableSlices);
+      expect(tableSlices(md)).toStrictEqual(indentSlices(headedTableSlices));
     });
 
     it('resolves a table with blank lines between its sections', () => {
       const table = ['<Table>', '  <thead>', '    <tr>', '      <th>{bucket}</th>', '    </tr>', '  </thead>', '', '  <tbody>', '    <tr>', '      <td><code>{region}</code></td>', '    </tr>', '  </tbody>', '</Table>']; // prettier-ignore
       const slices = tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table));
 
-      expect(slices).toStrictEqual([
-        ['table', table.join('\n')],
-        ['tableRow', ['<tr>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
-        ['tableCell', '<th>{bucket}</th>'],
-        ['mdxFlowExpression', '{bucket}'],
-        ['tableRow', ['<tr>', '      <td><code>{region}</code></td>', '    </tr>'].join('\n')],
-        ['tableCell', '<td><code>{region}</code></td>'],
-        ['code', '<code>{region}</code>'],
-        ['mdxFlowExpression', '{region}'],
-      ]);
+      expect(slices).toStrictEqual(
+        indentSlices([
+          ['table', table.join('\n')],
+          ['tableRow', ['<tr>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
+          ['tableCell', '<th>{bucket}</th>'],
+          ['mdxFlowExpression', '{bucket}'],
+          ['tableRow', ['<tr>', '      <td><code>{region}</code></td>', '    </tr>'].join('\n')],
+          ['tableCell', '<td><code>{region}</code></td>'],
+          ['code', '<code>{region}</code>'],
+          ['mdxFlowExpression', '{region}'],
+        ]),
+      );
     });
 
     it('resolves a condensed single-line table', () => {
@@ -103,30 +114,34 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
 
     it('resolves a multi-line cell holding a list', () => {
       const table = ['<Table>', '  <thead>', '    <tr>', '      <th>', '', '        - {bucket}', '', '      </th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
-      expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table))).toStrictEqual([
-        ['table', table.join('\n')],
-        ['tableRow', ['<tr>', '      <th>', '', '        - {bucket}', '', '      </th>', '    </tr>'].join('\n')],
-        ['tableCell', ['<th>', '', '        - {bucket}', '', '      </th>'].join('\n')],
-        ['list', '- {bucket}'],
-        ['listItem', '- {bucket}'],
-        ['mdxFlowExpression', '{bucket}'],
-      ]);
+      expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table))).toStrictEqual(
+        indentSlices([
+          ['table', table.join('\n')],
+          ['tableRow', ['<tr>', '      <th>', '', '        - {bucket}', '', '      </th>', '    </tr>'].join('\n')],
+          ['tableCell', ['<th>', '', '        - {bucket}', '', '      </th>'].join('\n')],
+          ['list', '- {bucket}'],
+          ['listItem', '- {bucket}'],
+          ['mdxFlowExpression', '{bucket}'],
+        ]),
+      );
     });
   });
 
   describe('given a <Table> kept as JSX', () => {
     it('resolves a header-less table inside a <Callout>', () => {
       const table = ['<Table>', '  <tr>', '    <td>{bucket}</td>', '  </tr>', '</Table>'];
-      expect(tableSlices(wrapIn('<Callout icon="📘" theme="info">', '</Callout>', table))).toStrictEqual([
-        ['Table', table.join('\n')],
-        ['tr', ['<tr>', '    <td>{bucket}</td>', '  </tr>'].join('\n')],
-        ['td', '<td>{bucket}</td>'],
-        ['mdxFlowExpression', '{bucket}'],
-      ]);
+      expect(tableSlices(wrapIn('<Callout icon="📘" theme="info">', '</Callout>', table))).toStrictEqual(
+        indentSlices([
+          ['Table', table.join('\n')],
+          ['tr', ['<tr>', '    <td>{bucket}</td>', '  </tr>'].join('\n')],
+          ['td', '<td>{bucket}</td>'],
+          ['mdxFlowExpression', '{bucket}'],
+        ]),
+      );
     });
 
     // Structural attributes keep it JSX in `mdxishTables`; the editor path then converts it
-    // in `mdxishJsxToMdast`, so that replacement must carry the stamp too.
+    // in `mdxishJsxToMdast`, so that replacement must keep the position too.
     it.each([
       ['renderer', false, 'Table'],
       ['editor', true, 'table'],
@@ -134,7 +149,7 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
       const table = ['<Table>', '  <thead>', '    <tr>', '      <th style={{ width: "30%" }}>{bucket}</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
       const slices = tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table), newEditorTypes);
 
-      expect(slices[0]).toStrictEqual([rootLabel, table.join('\n')]);
+      expect(slices[0]).toStrictEqual(indentSlices([[rootLabel, table.join('\n')]])[0]);
       expect(slices.slice(-2)).toStrictEqual([
         [newEditorTypes ? 'tableCell' : 'th', '<th style={{ width: "30%" }}>{bucket}</th>'],
         ['mdxFlowExpression', '{bucket}'],
@@ -153,14 +168,16 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
         '  </thead>',
         '</table>',
       ];
-      expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table))).toStrictEqual([
-        ['table', table.join('\n')],
-        ['tableRow', ['<tr>', '      <th>a **b**</th>', '    </tr>'].join('\n')],
-        ['tableCell', '<th>a **b**</th>'],
-        ['text', 'a '],
-        ['strong', '**b**'],
-        ['text', 'b'],
-      ]);
+      expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table))).toStrictEqual(
+        indentSlices([
+          ['table', table.join('\n')],
+          ['tableRow', ['<tr>', '      <th>a **b**</th>', '    </tr>'].join('\n')],
+          ['tableCell', '<th>a **b**</th>'],
+          ['text', 'a '],
+          ['strong', '**b**'],
+          ['text', 'b'],
+        ]),
+      );
     });
 
     // `splitHtmlWithNestedTables` lifts the table out of the `<div>` html node first.
@@ -175,15 +192,17 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
         '</table>',
       ];
       const md = wrapIn('<Accordion title="A">', '</Accordion>', ['<div>', ...table, '</div>']);
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
-      expect(collectNodes(tree, 'html').map(sliceOf)).toStrictEqual(['<div>\n', '\n</div>']);
-      expect(tableSlices(md)).toStrictEqual([
-        ['table', table.join('\n')],
-        ['tableRow', ['<tr>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
-        ['tableCell', '<th>{bucket}</th>'],
-        ['mdxFlowExpression', '{bucket}'],
-      ]);
+      expect(collectNodes(tree, 'html').map(sliceOf)).toStrictEqual(['<div>\n  ', '\n  </div>']);
+      expect(tableSlices(md)).toStrictEqual(
+        indentSlices([
+          ['table', table.join('\n')],
+          ['tableRow', ['<tr>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
+          ['tableCell', '<th>{bucket}</th>'],
+          ['mdxFlowExpression', '{bucket}'],
+        ]),
+      );
     });
   });
 
@@ -191,31 +210,30 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
     const table = ['<Table>', '  <thead>', '    <tr>', '      <th>a <b>bold</th>', '      <th>{bucket}</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
     const slices = tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', table));
 
-    expect(slices).toStrictEqual([
-      ['table', table.join('\n')],
-      ['tableRow', ['<tr>', '      <th>a <b>bold</th>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
-      ['tableCell', '<th>a <b>bold</th>'],
-      ['text', 'a '],
-      ['b', '<b>bold'],
-      ['text', 'bold'],
-      ['tableCell', '<th>{bucket}</th>'],
-      ['mdxFlowExpression', '{bucket}'],
-    ]);
+    expect(slices).toStrictEqual(
+      indentSlices([
+        ['table', table.join('\n')],
+        ['tableRow', ['<tr>', '      <th>a <b>bold</th>', '      <th>{bucket}</th>', '    </tr>'].join('\n')],
+        ['tableCell', '<th>a <b>bold</th>'],
+        ['text', 'a '],
+        ['b', '<b>bold'],
+        ['text', 'bold'],
+        ['tableCell', '<th>{bucket}</th>'],
+        ['mdxFlowExpression', '{bucket}'],
+      ]),
+    );
   });
 
   describe('given a top-level table (no component body)', () => {
     it('resolves every node against the document', () => {
       const md = ['Hello world', '', ...headedTable].join('\n');
-      const { tree } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
-
-      expect(collectNodes(tree, isTableRoot)[0].data?.reparseSource).toBeUndefined();
       expect(tableSlices(md)).toStrictEqual(headedTableSlices);
     });
 
     // The no-mdxjs fallback splices the table's fragments in place of the html node.
     it('resolves every fragment spliced in by the fallback parse', () => {
       const md = ['<table>', '<tbody>', '<tr>', '<td>', '', 'a { b', '', '**bold**', '', '</td>', '</tr>', '</tbody>', '</table>'].join('\n'); // prettier-ignore
-      const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       expect(tree.children.map(child => [child.type, sliceOf(child)])).toStrictEqual([
         ['html', '<table>\n<tbody>\n<tr>\n<td>'],
@@ -226,23 +244,23 @@ describe('mdxish table positions resolve against their re-parse source (CX-4004)
     });
   });
 
-  // A text-only cell is re-parsed from its extracted text, so its positions index into that
-  // text rather than the table source; this held for top-level tables too.
+  // A text-only cell is re-parsed from its extracted text. Text that isn't verbatim in the
+  // document (the unescaped `\*a\*`) takes the cell text's whole range.
   describe('given a text-only cell re-parsed as markdown', () => {
     const plainTable = ['<Table>', '  <thead>', '    <tr>', '      <th>plain</th>', '      <th>\\*a\\*</th>', '    </tr>', '  </thead>', '</Table>']; // prettier-ignore
     const plainCellSlices: [string, string][] = [
       ['tableCell', '<th>plain</th>'],
       ['text', 'plain'],
       ['tableCell', '<th>\\*a\\*</th>'],
-      ['emphasis', '*a*'],
-      ['text', 'a'],
+      ['emphasis', '\\*a\\*'],
+      ['text', '\\*a\\*'],
     ];
 
-    it('resolves its children against the extracted text at the top level', () => {
+    it('maps its children onto the document at the top level', () => {
       expect(tableSlices(plainTable.join('\n')).slice(2)).toStrictEqual(plainCellSlices);
     });
 
-    it('resolves its children against the extracted text inside a component', () => {
+    it('maps its children onto the document inside a component', () => {
       expect(tableSlices(wrapIn('<Accordion title="A">', '</Accordion>', plainTable)).slice(2)).toStrictEqual(
         plainCellSlices,
       );
@@ -290,7 +308,7 @@ describe('mdxish table positions inside containers (CX-4028)', () => {
   // The editor strips continuation-line prefixes using the node's start column.
   it('maps lines and columns onto the document', () => {
     const md = ['Hello world', '', '> 📘 Title', '>', ...prefixed(table, '> ')].join('\n');
-    const { tree } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+    const { tree } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
     const cellOffset = md.indexOf('<th>{bucket}</th>');
     expect(collectNodes(tree, 'tableCell')[0].position).toStrictEqual({
@@ -360,10 +378,10 @@ describe('mdxish table positions inside containers (CX-4028)', () => {
     expect(tableSlices(md)).toStrictEqual(containedTableSlices('> '));
   });
 
-  // The body re-parse stamps the blockquote; the callout built from it must keep that stamp.
+  // The callout is built from a blockquote in a re-parsed body, so it must keep its document position.
   it('resolves a blockquote callout nested in a component body', () => {
     const md = wrapIn('<Accordion title="A">', '</Accordion>', ['> 📘 Title', '>', ...prefixed(table, '> ')]);
-    const { tree, sliceOf } = parseMdxishWithResolvedSources(md, { newEditorTypes: true });
+    const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
     expect(sliceOf(collectNodes(tree, 'rdme-callout')[0])).toBe(
       ['> 📘 Title', '  >', ...prefixed(table, '  > ')].join('\n'),

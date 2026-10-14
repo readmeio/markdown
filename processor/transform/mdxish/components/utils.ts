@@ -2,44 +2,13 @@ import type { Html, Node, PhrasingContent } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxExpressionAttribute, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 
 import { htmlRawNames } from 'micromark-util-html-tag-name';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import { unified } from 'unified';
 
-import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
 import { tableTags } from '../tables/utils';
 import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
-
-const buildInlineMdProcessor = (safeMode: boolean) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
-
-  return unified()
-    .data('micromarkExtensions', micromarkExtensions)
-    .data('fromMarkdownExtensions', fromMarkdownExtensions)
-    .use(remarkParse)
-    .use(remarkGfm);
-};
-
-const processorCache = new Map<boolean, ReturnType<typeof buildInlineMdProcessor>>();
-
-/**
- * Unified processor for re-parsing the body of an MDX component
- * Memoized based on the argument value so we don't pay the construction cost on every parse
- * Currently the argument is only safeMode, but we could add more arguments in the future,
- * in which case the key would need to be extend to include the new arguments.
- */
-export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
-  let processor = processorCache.get(safeMode);
-  if (!processor) {
-    processor = buildInlineMdProcessor(safeMode);
-    processorCache.set(safeMode, processor);
-  }
-  return processor;
-};
 
 /**
  * True when a tag name starts with an uppercase letter — ReadMe's marker for

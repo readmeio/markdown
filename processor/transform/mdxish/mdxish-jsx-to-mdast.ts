@@ -8,11 +8,10 @@ import type { Plugin } from 'unified';
 import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
-import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
 import { getAttrs, isMDXElement } from '../../utils';
 
-import { replaceInheritingReparseSource, stampReparseSource } from './reparse-source';
+import { type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
 import { tableTags, unwrapSoleParagraph } from './tables/utils';
 
@@ -45,6 +44,8 @@ const FIGURE_COMPLETE_REGEX = /^<figure(\s[^>]*)?>[\s\S]*<\/figure>\s*$/;
 const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
 const FIGCAPTION_OPEN_REGEX = /^<figcaption>$/;
 const FIGCAPTION_CLOSE_REGEX = /^<\/figcaption>$/;
+// Opens a quoted `caption` attribute; the quote is captured to find its closer.
+const CAPTION_ATTRIBUTE_OPENER_REGEX = /\bcaption=(["'])/;
 
 /**
  * Extracts an image or image-block from a node. If the node itself is an image/image-block,
@@ -306,21 +307,27 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
   };
 };
 
-/**
- * Parses an image caption's markdown. The caption is re-parsed on its own, so the
- * children's positions index into it rather than the document.
- */
-const parseCaptionChildren = (caption: string): RootContent[] => {
-  const { children } = mdast(caption);
-  stampReparseSource(children, caption);
-  return children;
+/** The `<Image>` tag's caption as written; the whole tag when it isn't a quoted attribute. */
+const findCaptionFragment = (image: MdxJsxFlowElement, documentSource: string): MarkdownFragment => {
+  const value = documentSource.slice(image.position?.start.offset, image.position?.end.offset);
+  const parentNode = { position: image.position, value };
+  const opener = CAPTION_ATTRIBUTE_OPENER_REGEX.exec(value);
+  if (!opener) return { parentNode, offsetInParentNode: 0, rawText: value };
+
+  const offsetInParentNode = opener.index + opener[0].length;
+  const closingQuote = value.indexOf(opener[1], offsetInParentNode);
+  return { parentNode, offsetInParentNode, rawText: value.slice(offsetInParentNode, closingQuote) };
 };
+
+/** Parses an image caption's markdown, positioned where the caption sits in the `<Image>` tag. */
+const parseCaptionChildren = (caption: string, image: MdxJsxFlowElement, documentSource: string): RootContent[] =>
+  reparseMarkdownFragment(findCaptionFragment(image, documentSource), caption, { documentSource });
 
 /**
  * Transforms an `<Image />` JSX element into an image-block MDAST node.
  * Normalizes attributes (align, border, width→sizing) and parses caption markdown into children.
  */
-const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
+const transformImage = (jsx: MdxJsxFlowElement, documentSource: string): ImageBlock => {
   const attrs = getAttrs<ImageAttrs>(jsx);
   const {
     align,
@@ -362,7 +369,7 @@ const transformImage = (jsx: MdxJsxFlowElement): ImageBlock => {
     alt,
     border: toBool(border),
     caption,
-    children: caption ? parseCaptionChildren(caption) : [],
+    children: caption ? parseCaptionChildren(caption, jsx, documentSource) : [],
     className,
     framed: toBool(framed),
     height: height !== undefined ? String(height) : undefined,
@@ -727,7 +734,7 @@ const transformFigure = (jsx: MdxJsxFlowElement): FigureNode | null => {
   return buildFigureNode(imageNode, captionText, jsx.position);
 };
 
-type ComponentTransformer = (jsx: MdxJsxFlowElement) => Node | null;
+type ComponentTransformer = (jsx: MdxJsxFlowElement, documentSource: string) => Node | null;
 
 const COMPONENT_MAP: Record<string, ComponentTransformer> = {
   Callout: transformCallout,
@@ -753,7 +760,9 @@ const COMPONENT_MAP: Record<string, ComponentTransformer> = {
  *
  * This is controlled by the `newEditorTypes` flag to maintain backwards compatibility.
  */
-const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
+const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
+  const documentSource = String(file?.value ?? '');
+
   // Block JSX components (Image, Callout, Embed, Recipe)
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
@@ -761,10 +770,10 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => tree => {
     const transformer = COMPONENT_MAP[node.name];
     if (!transformer) return;
 
-    const newNode = transformer(node);
+    const newNode = transformer(node, documentSource);
     if (!newNode) return;
 
-    replaceInheritingReparseSource(parent, index, [newNode]);
+    (parent.children as Node[]).splice(index, 1, newNode);
   });
 
   // Inline JSX components (Anchor)

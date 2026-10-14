@@ -230,16 +230,6 @@ export interface Anchor extends Node {
 }
 
 declare module 'mdast' {
-  // eslint-disable-next-line @typescript-eslint/no-shadow -- augmenting mdast's `Data` requires reusing the name
-  interface Data {
-    /**
-     * Marks the root of a re-parsed subtree: this node's and its descendants' positions
-     * index into this string rather than the document. Resolve a node's source from its
-     * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
-     */
-    reparseSource?: string;
-  }
-
   interface TableData {
     /** Authored as lowercase `<table>`; the serializer keeps that spelling when there is no alignment to encode. */
     lowercaseTable?: boolean;
