@@ -108,11 +108,13 @@ export const parseMdxishWithResolvedSources = (doc: string, opts: MdxishOpts = {
     if ('children' in node) (node.children as Node[]).forEach(child => resolve(child, resolved));
   };
   resolve(tree, source);
+  const sourceOf = (node: Node): string | undefined => sourceByNode.get(node);
 
   return {
     tree,
+    sourceOf,
     sliceOf: (node: Node): string | undefined =>
-      sourceByNode.get(node)?.slice(node.position?.start.offset, node.position?.end.offset),
+      sourceOf(node)?.slice(node.position?.start.offset, node.position?.end.offset),
   };
 };
 
