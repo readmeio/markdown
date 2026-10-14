@@ -2404,6 +2404,7 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after\n',
       '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after\n',
       '<DNT>a <DNT>b</DNT> c</DNT> after\n',
+      'Use<DNT> Acme </DNT>now\n',
       '<DNT>Acme\nCloud</DNT> after\n',
       '<DNT>\\*literal\\*</DNT> after\n',
       'Use <DNT>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</DNT> today\n',

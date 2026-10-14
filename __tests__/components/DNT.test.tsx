@@ -232,4 +232,17 @@ describe('DNT', () => {
       expect(renderDoc(md, newEditorTypes).querySelector('span[translate="no"]')?.textContent).toBe(text);
     });
   });
+
+  describe.each([['spaces inside the tags', 'Use<DNT> Acme </DNT>now', 'Use<span translate="no"> Acme </span>now']])(
+    'renders %s',
+    (_label, md, innerHTML) => {
+      it.each(editorModes)('newEditorTypes %s', newEditorTypes => {
+        expect(renderDoc(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
+      });
+
+      it.each(editorModes)('newEditorTypes %s: after a save', newEditorTypes => {
+        expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
+      });
+    },
+  );
 });

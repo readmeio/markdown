@@ -1,4 +1,4 @@
-import type { Html, Node, Paragraph, Parent, PhrasingContent, Root } from 'mdast';
+import type { Html, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -8,6 +8,11 @@ import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdx
 import { stampReparseSource } from '../reparse-source';
 
 import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElement } from './utils';
+
+const LEADING_SPACES_RE = /^[ \t]+/;
+const TRAILING_SPACES_RE = /[ \t]+$/;
+
+const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
 
 /**
  * Parse the body of an inline component as phrasing content. Remark always
@@ -24,7 +29,12 @@ const parsePhrasingChildren = (value: string, safeMode: boolean): PhrasingConten
   if (first?.type !== 'paragraph') return [{ type: 'text', value: trimmed }];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource((first as Paragraph).children, trimmed);
-  return (first as Paragraph).children;
+  // Edge spaces are content: `Use<DNT> Acme </DNT>now` reads "Use Acme now".
+  return [
+    ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
+    ...(first as Paragraph).children,
+    ...spaceText(TRAILING_SPACES_RE.exec(value)?.[0]),
+  ];
 };
 
 /**
