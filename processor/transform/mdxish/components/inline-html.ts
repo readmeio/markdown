@@ -1,4 +1,5 @@
-import type { Html, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
+import type { Html, Node, Paragraph, Parent, PhrasingContent, Root, RootContent, Text } from 'mdast';
+import type { MdxTextExpression } from 'mdast-util-mdx-expression';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -26,6 +27,13 @@ const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
   });
 };
 
+// A lone tag or `{}` parses as a block on its own. It stays that node, inline.
+const blockAsInline = (node: RootContent, promote: PromoteHtml): PhrasingContent | undefined => {
+  if (node.type === 'html') return promote(node as Html);
+  if (node.type === 'mdxFlowExpression') return { ...node, type: 'mdxTextExpression' } satisfies MdxTextExpression;
+  return undefined;
+};
+
 /**
  * Parse the body of an inline component as phrasing content. Remark always
  * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
@@ -37,9 +45,13 @@ const parsePhrasingChildren = (value: string, safeMode: boolean, promote: Promot
   const trimmed = value.trim();
   if (!trimmed) return [];
   const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  // A body that parses as a block (`- x`, `# x`) stays plain text instead of being dropped.
-  if (first?.type !== 'paragraph') return [{ type: 'text', value: trimmed }];
-  // These children root a new coordinate space: their offsets index into `trimmed`.
+  if (first?.type !== 'paragraph') {
+    // These nodes root a new coordinate space: their offsets index into `trimmed`.
+    if (first) stampReparseSource([first], trimmed);
+    const inline = first && blockAsInline(first, promote);
+    // Any other block (`- x`, `# x`) stays plain text instead of being dropped.
+    return inline ? [inline] : [{ type: 'text', value: trimmed }];
+  }
   stampReparseSource((first as Paragraph).children, trimmed);
   // A nested tokenized tag is one html child here too, so it needs the same promotion.
   promoteHtmlIn(first, promote);

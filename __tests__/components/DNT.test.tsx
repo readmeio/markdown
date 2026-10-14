@@ -1,10 +1,12 @@
+import type { Parent } from 'mdast';
 import type { MDXContent } from 'mdx/types';
 
 import { render } from '@testing-library/react';
 import React from 'react';
 
+import { NodeTypes } from '../../enums';
 import { mdxish, renderMdxish } from '../../lib';
-import { execute, roundTripMdxish } from '../helpers';
+import { collectNodes, execute, parseMdxish, roundTripMdxish } from '../helpers';
 
 const renderDoc = (md: string, newEditorTypes: boolean) => {
   const Content = renderMdxish(mdxish(md, { newEditorTypes })).default;
@@ -247,6 +249,27 @@ describe('DNT', () => {
 
     it.each(editorModes)('newEditorTypes %s: after a save', newEditorTypes => {
       expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(innerHTML);
+    });
+  });
+
+  describe('with only a comment inside', () => {
+    const md = 'Use <DNT>{/* internal note */}</DNT> now.';
+
+    it.each(editorModes)('newEditorTypes %s: keeps the comment hidden', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('p')?.innerHTML).toBe('Use <span translate="no"></span> now.');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: keeps the comment hidden after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe('Use <span translate="no"></span> now.');
+    });
+  });
+
+  describe('with only a self-closing tag inside', () => {
+    it.each(editorModes)('newEditorTypes %s: keeps the tag as an html child', newEditorTypes => {
+      const tree = parseMdxish('Use <DNT><Badge label="Acme" /></DNT> today', { newEditorTypes });
+      const [dnt] = collectNodes<Parent>(tree, node => node.type === NodeTypes.dnt || node.type === 'mdxJsxTextElement');
+
+      expect(dnt.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' })]);
     });
   });
 });
