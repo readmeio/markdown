@@ -4,7 +4,7 @@ import type { Plugin } from 'unified';
 
 import { GENERIC_MDX_COMPONENT_EXCLUDED_TAGS } from '../../../../lib/constants';
 import { type ParseAttributesOptions, parseTag } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
-import { createValueToSourceMapper } from '../../../utils';
+import { createValueRangeMapper } from '../../../utils';
 import { expandIndentToColumns, leadingIndent } from '../indentation';
 import { mapReparsedPositions, type ReparsedText, replaceChild } from '../source-positions';
 import { tableTags } from '../tables/utils';
@@ -121,38 +121,27 @@ const parseSibling = (
 interface ComponentNodeOptions {
   attributes: MdxJsxAttribute[];
   children: MdxJsxFlowElement['children'];
-  endPosition?: Node['position'];
-  startPosition?: Node['position'];
+  position?: Node['position'];
   tag: string;
 }
 
-// Ends the position at `consumedLength` so the component doesn't claim trailing
-// content the tokenizer swallowed into the same html node.
-const positionEndingAtConsumed = (
+/**
+ * Narrows an html node's range to the component's own tags: the node starts at the line's
+ * indent and can run on into trailing content the tokenizer swallowed.
+ */
+const componentRange = (
   nodePosition: Node['position'],
   value: string,
-  consumedLength: number,
   source: string | null,
-): Node['position'] => {
-  const end = createValueToSourceMapper(nodePosition, value, source)?.(consumedLength);
-  return nodePosition && end ? { start: nodePosition.start, end } : nodePosition;
-};
+  [start, end]: [number, number],
+): Node['position'] => createValueRangeMapper(nodePosition, value, source)(start, end) ?? nodePosition;
 
-const createComponentNode = ({
-  tag,
-  attributes,
-  children,
-  startPosition,
-  endPosition,
-}: ComponentNodeOptions): MdxJsxFlowElement => ({
+const createComponentNode = ({ tag, attributes, children, position }: ComponentNodeOptions): MdxJsxFlowElement => ({
   type: 'mdxJsxFlowElement',
   name: tag,
   attributes,
   children,
-  position: {
-    start: startPosition?.start,
-    end: endPosition?.end ?? startPosition?.end,
-  },
+  position,
 });
 
 /**
@@ -265,11 +254,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         tag,
         attributes,
         children: [],
-        startPosition: node.position,
-        // Without trailing content the whole node position is correct; with it, end at the tag.
-        endPosition: remainingContent
-          ? positionEndingAtConsumed(node.position, value, bodyOffset, source)
-          : node.position,
+        position: componentRange(node.position, value, source, [leadingWhitespace, bodyOffset]),
       });
       replaceChild(parent, index, [componentNode]);
 
@@ -308,18 +293,12 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
         parsedChildren = (parsedChildren[0] as Parent).children as MdxJsxFlowElement['children'];
         unwrappedSoleParagraph = true;
       }
-      // Without trailing content the whole node position is correct; with it, end at the closing tag.
       const closeEnd = bodyOffset + closingTagIndex + closingTagStr.length;
-      let endPosition = node.position;
-      if (contentAfterClose) {
-        endPosition = positionEndingAtConsumed(node.position, value, closeEnd, source);
-      }
       const componentNode = createComponentNode({
         tag,
         attributes,
         children: parsedChildren,
-        startPosition: node.position,
-        endPosition,
+        position: componentRange(node.position, value, source, [leadingWhitespace, closeEnd]),
       });
       replaceChild(parent, index, [componentNode]);
 

@@ -1,12 +1,12 @@
 import type { HTMLBlock } from '../../../types';
-import type { Html, Parent, RootContent } from 'mdast';
-import type { Transform } from 'mdast-util-from-markdown';
+import type { Html, Parent, Root, RootContent } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
+import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
-import { formatHtmlForMdxish } from '../../utils';
+import { createValueRangeMapper, formatHtmlForMdxish } from '../../utils';
 
 import { replaceChild } from './source-positions';
 
@@ -27,7 +27,8 @@ const createHtmlBlockNode = (
   safeMode?: string,
 ): HTMLBlock => ({
   position,
-  children: [{ type: 'text', value: html }],
+  // The formatted html isn't verbatim source, so the text spans the whole block.
+  children: [{ type: 'text', value: html, position: position && structuredClone(position) }],
   type: NodeTypes.htmlBlock,
   data: {
     hName: 'html-block',
@@ -88,26 +89,30 @@ const htmlBlockFromRaw = (
 
 /**
  * Splits a raw `html` node that embeds one or more `<HTMLBlock>`s into
- * `[html before, html-block, html after, …]`. Returns null when there is none.
- *
- * `String.split` on a regex with capture groups interleaves the captures into
- * the result, so segments arrive as `[text, attrs, body, text, attrs, body, …]`.
+ * `[html before, html-block, html after, …]`, each with its own slice of the node's range.
+ * Returns null when there is none.
  */
-const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
-  const segments = node.value.split(RAW_HTML_BLOCK_RE);
-  if (segments.length === 1) return null; // no <HTMLBlock> present
+const splitRawHtmlBlocks = (node: Html, source: string | undefined): RootContent[] | null => {
+  const matches = [...node.value.matchAll(RAW_HTML_BLOCK_RE)];
+  if (!matches.length) return null;
+
+  const rangeOf = createValueRangeMapper(node.position, node.value, source);
 
   const parts: RootContent[] = [];
-  for (let i = 0; i < segments.length; i += 3) {
-    const [text, attrs, body] = segments.slice(i, i + 3);
-    if (text) parts.push({ type: 'html', value: text });
-    if (body !== undefined) {
-      // The opening tag's column equals the length of the line it starts on
-      // (the text run since the previous newline preceding the match).
-      const openingTagIndent = text.slice(text.lastIndexOf('\n') + 1).length;
-      parts.push(htmlBlockFromRaw(attrs, body, node.position, openingTagIndent));
-    }
-  }
+  let cursor = 0;
+  const pushHtmlUpTo = (end: number) => {
+    if (end > cursor) parts.push({ type: 'html', value: node.value.slice(cursor, end), position: rangeOf(cursor, end) });
+  };
+  matches.forEach(({ 0: match, 1: attrs, 2: body, index: start = 0 }) => {
+    // The opening tag's column equals the length of the line it starts on
+    // (the text run since the previous newline preceding the match).
+    const text = node.value.slice(cursor, start);
+    const openingTagIndent = text.slice(text.lastIndexOf('\n') + 1).length;
+    pushHtmlUpTo(start);
+    parts.push(htmlBlockFromRaw(attrs, body, rangeOf(start, start + match.length), openingTagIndent));
+    cursor = start + match.length;
+  });
+  pushHtmlUpTo(node.value.length);
   return parts;
 };
 
@@ -128,7 +133,9 @@ const splitRawHtmlBlocks = (node: Html): RootContent[] | null => {
  * keep a table as a JSX `<Table>`. This replaces the old base64-comment marker
  * machinery — the #1455 tokenizer hands the body over already parsed.
  */
-const mdxishHtmlBlocks = (): Transform => tree => {
+const mdxishHtmlBlocks: Plugin<[], Root> = () => (tree, file) => {
+  const source = file?.value ? String(file.value) : undefined;
+
   // Shape 1: tokenized JSX element.
   visit(
     tree,
@@ -155,7 +162,7 @@ const mdxishHtmlBlocks = (): Transform => tree => {
   // Shape 2: raw HTML blob.
   visit(tree, 'html', (node: Html, index, parent: Parent | undefined) => {
     if (!parent || index === undefined) return;
-    const replacement = splitRawHtmlBlocks(node);
+    const replacement = splitRawHtmlBlocks(node, source);
     if (replacement) replaceChild(parent, index, replacement);
   });
 };

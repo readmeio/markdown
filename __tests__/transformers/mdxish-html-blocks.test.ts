@@ -1,5 +1,5 @@
 import { mdxish } from '../../lib';
-import { findElementByTagName, slicesUnder } from '../helpers';
+import { collectNodes, findElementByTagName, parseMdxishWithSlices, slicesUnder } from '../helpers';
 
 describe('mdxish html blocks transformer', () => {
   describe('attribute extraction', () => {
@@ -138,15 +138,20 @@ second
 
     it('resolves a standalone <HTMLBlock> (raw html shape)', () => {
       const md = ['Hello world', '', '<Accordion title="A">', '  <HTMLBlock>{`', '  <p>hi</p>', '  `}</HTMLBlock>', '</Accordion>'].join('\n'); // prettier-ignore
+      const htmlBlock = ['<HTMLBlock>{`', '  <p>hi</p>', '  `}</HTMLBlock>'].join('\n');
       expect(slicesUnder(md, isHtmlBlock)).toStrictEqual([
-        ['html-block', ['  <HTMLBlock>{`', '  <p>hi</p>', '  `}</HTMLBlock>'].join('\n')],
+        ['html-block', htmlBlock],
+        ['text', htmlBlock],
       ]);
     });
 
     it('resolves an <HTMLBlock> embedded in a single-line raw <div>', () => {
       const md = ['Hello world', '', '<Tabs>', '  <Tab title="T">', '    <div><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></div>', '  </Tab>', '</Tabs>'].join('\n'); // prettier-ignore
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+      expect(collectNodes(tree, 'html').map(sliceOf)).toStrictEqual(['  <div>', '</div>']);
       expect(slicesUnder(md, isHtmlBlock)).toStrictEqual([
-        ['html-block', '  <div><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></div>'],
+        ['html-block', '<HTMLBlock>{`<p>hi</p>`}</HTMLBlock>'],
+        ['text', '<HTMLBlock>{`<p>hi</p>`}</HTMLBlock>'],
       ]);
     });
 
@@ -154,6 +159,7 @@ second
       const md = ['Hello world', '', '<Accordion title="A">', '  <Table>', '    <thead>', '      <tr>', '        <th><HTMLBlock>{`<p>hi</p>`}</HTMLBlock></th>', '      </tr>', '    </thead>', '  </Table>', '</Accordion>'].join('\n'); // prettier-ignore
       expect(slicesUnder(md, isHtmlBlock)).toStrictEqual([
         ['html-block', '<HTMLBlock>{`<p>hi</p>`}</HTMLBlock>'],
+        ['text', '<HTMLBlock>{`<p>hi</p>`}</HTMLBlock>'],
       ]);
     });
   });

@@ -131,7 +131,7 @@ describe('mdxishAstProcessor', () => {
 
       const heading = tab.children.find(child => child.type === 'heading')!;
       expect(sliceOf(heading)).toBe('### Common Account Fields');
-      expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('  <ExampleComponent />');
+      expect(sliceOf(findJsxChild(tab, 'ExampleComponent'))).toBe('<ExampleComponent />');
     });
 
     it('resolves expression nodes inside a component body', () => {
@@ -252,11 +252,9 @@ describe('mdxishAstProcessor', () => {
       const md = ['<Wrapper>', '  <div>A **bold** move</div>', '</Wrapper>'].join('\n');
       const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
-      // The body keeps its indent (RM-17790), and remark reports an indented html node's
-      // position from the line start — so the span opens on the indent, as it does for
-      // indented html outside a component body.
+      // remark starts an indented html node at its line's indent; the element starts at its tag.
       const div = findJsxChild(findJsxChild(tree, 'Wrapper'), 'div');
-      expect(sliceOf(div)).toBe('  <div>A **bold** move</div>');
+      expect(sliceOf(div)).toBe('<div>A **bold** move</div>');
 
       // A lowercase tag unwraps its sole paragraph, so phrasing sits directly under `div`.
       const strong = (div as Parent).children.find(child => child.type === 'strong')!;
@@ -268,7 +266,7 @@ describe('mdxishAstProcessor', () => {
       const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
 
       const button = findJsxChild(findJsxChild(tree, 'Wrapper'), 'button');
-      expect(sliceOf(button)).toBe('  <button style={{ color: "red" }}>Click me</button>');
+      expect(sliceOf(button)).toBe('<button style={{ color: "red" }}>Click me</button>');
     });
 
     it('resolves a component nested inside a list item of a component body', () => {

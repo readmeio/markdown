@@ -163,6 +163,39 @@ export const mapPositionsToSource = (
   );
 };
 
+/** Maps `[from, to)` in a node's `value` to a document range, or undefined when it can't be placed. */
+export const createValueRangeMapper = (
+  position: Position | undefined,
+  value: string,
+  source: string | null | undefined,
+) => {
+  const toSourcePoint = createValueToSourceMapper(position, value, source);
+  return (from: number, to: number): Position | undefined => {
+    const start = toSourcePoint?.(from);
+    const end = toSourcePoint?.(to);
+    return start && end ? { start, end } : undefined;
+  };
+};
+
+/**
+ * Gives every node under `roots` the `enclosing` range. For nodes built from data with no
+ * verbatim source (e.g. magic-block JSON), the block is the smallest range that produced them.
+ */
+export const assignEnclosingPosition = (roots: Node[], enclosing: Position | undefined) => {
+  roots.forEach(root =>
+    visit(root, node => {
+      node.position = enclosing && structuredClone(enclosing);
+    }),
+  );
+};
+
+/** The range from the first node's start to the last node's end, as fresh points. */
+export const spanOf = (nodes: Node[]): Position | undefined => {
+  const start = nodes[0]?.position?.start;
+  const end = nodes[nodes.length - 1]?.position?.end;
+  return start && end ? { start: { ...start }, end: { ...end } } : undefined;
+};
+
 /**
  * Formats the hProperties of a node as a string, so they can be compiled back into JSX/MDX.
  * This currently sets all the values to a string since we process/compile the MDX on the fly

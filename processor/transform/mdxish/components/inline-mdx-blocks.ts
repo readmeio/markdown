@@ -5,6 +5,7 @@ import { visit } from 'unist-util-visit';
 
 import { INLINE_COMPONENT_TAGS } from '../../../../lib/constants';
 import { parseAttributes } from '../../../../lib/utils/mdxish/mdxish-component-tag-parser';
+import { spanOf } from '../../../utils';
 
 import { toMdxJsxTextElement } from './utils';
 
@@ -45,7 +46,7 @@ const mdxishInlineMdxComponents: Plugin<[], Parent> = () => tree => {
     // These are the inline component's children (e.g., text, emphasis, links).
     // Example: "<Anchor>click **here**</Anchor>" → children = [text, strong]
     const children = parent.children.slice(index + 1, closeIdx) as PhrasingContent[];
-    const newNode = toMdxJsxTextElement(name, attributes, children);
+    const newNode = toMdxJsxTextElement(name, attributes, children, spanOf([node, parent.children[closeIdx]]));
     (parent.children as Node[]).splice(index, closeIdx - index + 1, newNode as unknown as Node);
   });
 };

@@ -10,7 +10,7 @@ import { SKIP, visit } from 'unist-util-visit';
 import { NodeTypes } from '../../../enums';
 import { mdast } from '../../../lib';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
-import { getAttrs, isMDXElement } from '../../utils';
+import { assignEnclosingPosition, getAttrs, isMDXElement } from '../../utils';
 
 import { mapReparsedPositions, replaceChild } from './source-positions';
 import { getCellWidth, hasOnlyWidthAttributes } from './tables/cell-width';
@@ -397,12 +397,10 @@ const transformCallout = (jsx: MdxJsxFlowElement): Callout => {
   // when JSX has no leading heading, otherwise the body round-trips into it.
   const jsxChildren = jsx.children as Callout['children'];
   const hasHeadingFirst = jsxChildren[0]?.type === 'heading';
-  const children = hasHeadingFirst
-    ? jsxChildren
-    : ([
-        { type: 'paragraph', children: [{ type: 'text', value: '' }] },
-        ...jsxChildren,
-      ] as Callout['children']);
+  const placeholder: Paragraph = { type: 'paragraph', children: [{ type: 'text', value: '' }] };
+  // It has no source of its own, so it spans the callout.
+  assignEnclosingPosition([placeholder], jsx.position);
+  const children = hasHeadingFirst ? jsxChildren : ([placeholder, ...jsxChildren] as Callout['children']);
 
   return {
     type: NodeTypes.callout,

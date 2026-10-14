@@ -3,6 +3,10 @@ import type { Plugin } from 'unified';
 
 import { SKIP, visit } from 'unist-util-visit';
 
+import { createValueRangeMapper } from '../../utils';
+
+import { positionEmphasisParts } from './emphasis-positions';
+
 // Marker patterns for multi-node emphasis detection
 const MARKER_PATTERNS = [
   { isBold: true, marker: '**' },
@@ -202,20 +206,36 @@ function findClosingInChildren(children: Parent['children'], openingIdx: number,
 }
 
 /**
- * Build the replacement nodes for a matched emphasis pair.
+ * Build the replacement nodes for a matched emphasis pair. The opening and closing text nodes
+ * each map their own offsets, since the emphasis spans the nodes between them.
  */
-function buildReplacementNodes(container: Parent, { opening, openingIdx, closing, closingIdx }: MarkerPair) {
+function buildReplacementNodes(
+  container: Parent,
+  { opening, openingIdx, closing, closingIdx }: MarkerPair,
+  source: string | undefined,
+) {
   const newNodes: PhrasingContent[] = [];
+  const openingNode = container.children[openingIdx] as Text;
+  const closingNode = container.children[closingIdx] as Text;
+  const openingRange = createValueRangeMapper(openingNode.position, openingNode.value, source);
+  const closingRange = createValueRangeMapper(closingNode.position, closingNode.value, source);
+  const markerStart = opening.textBefore.length;
+  const closingMarkerEnd = closingNode.value.length - closing.textAfter.length;
 
   if (opening.textBefore) {
-    newNodes.push({ type: 'text', value: `${opening.textBefore} ` } as Text);
+    newNodes.push({ type: 'text', value: `${opening.textBefore} `, position: openingRange(0, markerStart) } as Text);
   }
 
   const emphasisChildren: PhrasingContent[] = [];
 
   const openingText = opening.textAfter.replace(/^\s+/, '');
   if (openingText) {
-    emphasisChildren.push({ type: 'text', value: openingText } as Text);
+    const openingTextStart = openingNode.value.length - openingText.length;
+    emphasisChildren.push({
+      type: 'text',
+      value: openingText,
+      position: openingRange(openingTextStart, openingNode.value.length),
+    } as Text);
   }
 
   container.children.slice(openingIdx + 1, closingIdx).forEach(child => {
@@ -224,18 +244,25 @@ function buildReplacementNodes(container: Parent, { opening, openingIdx, closing
 
   const closingText = closing.textBefore.replace(/\s+$/, '');
   if (closingText) {
-    emphasisChildren.push({ type: 'text', value: closingText } as Text);
+    emphasisChildren.push({ type: 'text', value: closingText, position: closingRange(0, closingText.length) } as Text);
   }
 
   if (emphasisChildren.length > 0) {
+    const start = openingRange(markerStart, markerStart)?.start;
+    const end = closingRange(closingMarkerEnd, closingMarkerEnd)?.end;
+    const position = start && end ? { start, end } : undefined;
     const emphasisNode = opening.isBold
-      ? ({ type: 'strong', children: emphasisChildren } as Strong)
-      : ({ type: 'emphasis', children: emphasisChildren } as Emphasis);
+      ? ({ type: 'strong', children: emphasisChildren, position } as Strong)
+      : ({ type: 'emphasis', children: emphasisChildren, position } as Emphasis);
     newNodes.push(emphasisNode);
   }
 
   if (closing.textAfter) {
-    newNodes.push({ type: 'text', value: closing.textAfter } as Text);
+    newNodes.push({
+      type: 'text',
+      value: closing.textAfter,
+      position: closingRange(closingMarkerEnd, closingNode.value.length),
+    } as Text);
   }
 
   return newNodes;
@@ -245,7 +272,7 @@ function buildReplacementNodes(container: Parent, { opening, openingIdx, closing
  * Find and transform one multi-node emphasis pair in the container.
  * Returns true if a pair was found and transformed, false otherwise.
  */
-function processOneEmphasisPair(container: Parent) {
+function processOneEmphasisPair(container: Parent, source: string | undefined) {
   const openingResult = findOpeningInChildren(container.children);
   if (!openingResult) return false;
 
@@ -256,7 +283,7 @@ function processOneEmphasisPair(container: Parent) {
 
   const { closingIdx, closing } = closingResult;
 
-  const newNodes = buildReplacementNodes(container, { opening, openingIdx, closing, closingIdx });
+  const newNodes = buildReplacementNodes(container, { opening, openingIdx, closing, closingIdx }, source);
 
   const deleteCount = closingIdx - openingIdx + 1;
   container.children.splice(openingIdx, deleteCount, ...(newNodes as typeof container.children));
@@ -268,7 +295,7 @@ function processOneEmphasisPair(container: Parent) {
  * Handle malformed emphasis that spans multiple AST nodes.
  * E.g., "**bold [link](url)**" where markers are in different text nodes.
  */
-function visitMultiNodeEmphasis(tree: Root) {
+function visitMultiNodeEmphasis(tree: Root, source: string | undefined) {
   const containerTypes = ['paragraph', 'heading', 'tableCell', 'listItem', 'blockquote'];
 
   visit(tree, node => {
@@ -278,7 +305,7 @@ function visitMultiNodeEmphasis(tree: Root) {
     const container = node as Parent;
     let foundPair = true;
     while (foundPair) {
-      foundPair = processOneEmphasisPair(container);
+      foundPair = processOneEmphasisPair(container, source);
     }
   });
 }
@@ -314,7 +341,8 @@ function isInsideInlineHtmlCode(index: number | undefined, parent: Parent): bool
  * This runs after remark-parse, which (in v11+) is strict and doesn't parse
  * malformed emphasis syntax. This plugin post-processes the AST to handle these cases.
  */
-const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
+const normalizeEmphasisAST: Plugin = () => (tree: Root, file) => {
+  const source = file?.value ? String(file.value) : undefined;
   // Back-scanning siblings for <code>…</code> html pairs costs O(children)
   // per text node — O(children²) per parent, which bites on marker-dense
   // paragraphs where micromark emits thousands of inline children. Most
@@ -510,6 +538,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
     }, []);
 
     if (mergedParts.length > 0) {
+      positionEmphasisParts(mergedParts, text, createValueRangeMapper(node.position, text, source));
       parent.children.splice(index, 1, ...mergedParts);
       return [SKIP, index + mergedParts.length];
     }
@@ -518,7 +547,7 @@ const normalizeEmphasisAST: Plugin = () => (tree: Root) => {
   });
 
   // Handle malformed emphasis spanning multiple nodes (e.g., **text [link](url) **)
-  visitMultiNodeEmphasis(tree);
+  visitMultiNodeEmphasis(tree, source);
 
   return tree;
 };

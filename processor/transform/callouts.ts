@@ -16,6 +16,7 @@ import plain from '../../lib/plain';
 import compatibility from '../compile/compatibility';
 import gemoji from '../compile/gemoji';
 import variable from '../compile/variable';
+import { assignEnclosingPosition, createValueRangeMapper, spanOf } from '../utils';
 
 import { extractText } from './extract-text';
 
@@ -47,15 +48,26 @@ const findFirst = (node: Node): Node | null => {
 
 export const wrapHeading = (node: Blockquote | Callout): Heading => {
   const firstChild = node.children[0];
+  const children = ('children' in firstChild ? firstChild.children : []) as Heading['children'];
 
   return {
     type: 'heading' as Heading['type'],
     depth: 3,
-    children: ('children' in firstChild ? firstChild.children : []) as Heading['children'],
-    position: {
-      start: firstChild.position.start,
-      end: firstChild.position.end,
-    },
+    children,
+    // The title is its own children (the icon is already gone), not the whole first paragraph.
+    position: spanOf(children) ?? spanOf([firstChild]),
+  };
+};
+
+/** Moves a text node's start past `length` characters removed from the front of its first line. */
+const trimTextStart = (text: Text, length: number) => {
+  const removed = Math.min(length, text.value.length);
+  text.value = text.value.slice(length);
+  if (!text.position) return;
+  const { start } = text.position;
+  text.position = {
+    ...text.position,
+    start: { line: start.line, column: start.column + removed, offset: (start.offset ?? 0) + removed },
   };
 };
 
@@ -94,27 +106,35 @@ const findNewlineInParagraph = (paragraph: Paragraph): { index: number; newlineI
  * Splits a paragraph at the first newline, separating heading content (before \n)
  * from body content (after \n). Mutates the paragraph to contain only heading children.
  */
-const splitParagraphAtNewline = (paragraph: Paragraph): Paragraph['children'] | null => {
+const splitParagraphAtNewline = (paragraph: Paragraph, source?: string): Paragraph['children'] | null => {
   const splitPoint = findNewlineInParagraph(paragraph);
   if (!splitPoint) return null;
 
   const { index, newlineIndex } = splitPoint;
   const originalChildren = paragraph.children;
   const textNode = originalChildren[index] as Text;
-  const beforeNewline = textNode.value.slice(0, newlineIndex);
+  // A CRLF line ending's `\r` belongs to neither the title nor the body.
+  const titleEnd = textNode.value[newlineIndex - 1] === '\r' ? newlineIndex - 1 : newlineIndex;
+  const beforeNewline = textNode.value.slice(0, titleEnd);
   const afterNewline = textNode.value.slice(newlineIndex + 1);
+  // Mapped through the value, since the body's line lost its `> ` prefix.
+  const rangeOf = createValueRangeMapper(textNode.position, textNode.value, source);
 
   // Split paragraph: heading = children[0..index-1] + text before newline
   const headingChildren = originalChildren.slice(0, index);
   if (beforeNewline.length > 0 || headingChildren.length === 0) {
-    headingChildren.push({ type: 'text', value: beforeNewline });
+    headingChildren.push({ type: 'text', value: beforeNewline, position: rangeOf(0, titleEnd) });
   }
   paragraph.children = headingChildren;
 
   // Body = text after newline + remaining children from original array
   const bodyChildren: Paragraph['children'] = [];
   if (afterNewline.length > 0) {
-    bodyChildren.push({ type: 'text', value: afterNewline });
+    bodyChildren.push({
+      type: 'text',
+      value: afterNewline,
+      position: rangeOf(newlineIndex + 1, textNode.value.length),
+    });
   }
   bodyChildren.push(...originalChildren.slice(index + 1));
 
@@ -127,9 +147,7 @@ const splitParagraphAtNewline = (paragraph: Paragraph): Paragraph['children'] | 
  */
 const removeIconPrefix = (paragraph: Paragraph, prefixLength: number) => {
   const firstTextNode = findFirst(paragraph);
-  if (firstTextNode && 'value' in firstTextNode && typeof firstTextNode.value === 'string') {
-    firstTextNode.value = firstTextNode.value.slice(prefixLength);
-  }
+  if (firstTextNode?.type === 'text') trimTextStart(firstTextNode as Text, prefixLength);
 };
 
 const processBlockquote = (
@@ -137,6 +155,7 @@ const processBlockquote = (
   index: number | undefined,
   parent: Parent | undefined,
   isMdxish = false,
+  source?: string,
 ) => {
   if (!isCalloutStructure(node)) {
     // Only stringify empty blockquotes (no extractable text content)
@@ -148,6 +167,7 @@ const processBlockquote = (
       const textNode: Text = {
         type: 'text',
         value: '>',
+        position: node.position && structuredClone(node.position),
       };
       const paragraphNode: Paragraph = {
         type: 'paragraph',
@@ -164,12 +184,10 @@ const processBlockquote = (
   const startText = plain(firstParagraph as unknown as Parameters<typeof plain>[0]).toString();
   const [match, icon] = startText.match(regex) || [];
 
-  const firstParagraphOriginalEnd = firstParagraph.position.end;
-
   if (icon && match) {
     // Handle cases where heading and body are on the same line separated by a newline.
     // Example: "> ⚠️ **Bold heading**\nBody text here"
-    const bodyChildren = splitParagraphAtNewline(firstParagraph);
+    const bodyChildren = splitParagraphAtNewline(firstParagraph, source);
     const didSplit = bodyChildren !== null;
 
     removeIconPrefix(firstParagraph, match.length);
@@ -186,12 +204,11 @@ const processBlockquote = (
       // # heading syntax is handled via direct AST manipulation so we can
       // set the depth while preserving the original inline children (bold, etc.)
       if (headingMatch) {
-        firstText!.value = rawValue.slice(headingMatch[0].length);
+        // Wrapped first so the heading spans its `#` markers, which the text then drops.
         const heading = wrapHeading(node);
+        trimTextStart(firstText!, headingMatch[0].length);
         heading.depth = headingMatch[1].length as Heading['depth'];
         node.children[0] = heading;
-        node.children[0].position.start.offset += match.length;
-        node.children[0].position.start.column += match.length;
       } else if (isMdxish) {
         // Block-level title re-parsing is only needed for MDXish where HTML stays
         // as raw nodes. In MDX, remarkMdx has already converted HTML to JSX AST
@@ -211,41 +228,22 @@ const processBlockquote = (
         // Block-level syntax ("> quote", "- list") produces non-paragraph nodes;
         // inline text parses as a paragraph and falls through to wrapHeading().
         if (parsedFirstChild && parsedFirstChild.type !== 'paragraph') {
-          // Strip positions from re-parsed nodes since they're relative to the heading text, not the original source
-          visit(parsedTitle, (n: Node) => {
-            delete n.position;
-          });
+          // The re-parse reads serialized title text, so its nodes take the title's whole range.
           const heading = wrapHeading(node);
+          assignEnclosingPosition(parsedTitle.children, heading.position);
           heading.children = parsedTitle.children as Heading['children'];
-          delete heading.position;
           node.children[0] = heading;
         } else {
           node.children[0] = wrapHeading(node);
-          node.children[0].position.start.offset += match.length;
-          node.children[0].position.start.column += match.length;
         }
       } else {
         node.children[0] = wrapHeading(node);
-        node.children[0].position.start.offset += match.length;
-        node.children[0].position.start.column += match.length;
       }
     }
 
     // Insert body content as a separate paragraph after the heading
     if (bodyChildren) {
-      const headingPosition = node.children[0].position;
-      node.children.splice(1, 0, {
-        type: 'paragraph',
-        children: bodyChildren,
-        ...(headingPosition && firstParagraphOriginalEnd
-          ? {
-              position: {
-                start: headingPosition.end,
-                end: firstParagraphOriginalEnd,
-              },
-            }
-          : {}),
-      });
+      node.children.splice(1, 0, { type: 'paragraph', children: bodyChildren, position: spanOf(bodyChildren) });
     }
 
     Object.assign(node, {
@@ -265,9 +263,10 @@ const processBlockquote = (
 };
 
 const calloutTransformer = ({ isMdxish = false } = {}) => {
+  let source: string | undefined;
   const processNode = (root: Node) => {
     visit(root, 'blockquote', (node: Blockquote, index: number | undefined, parent: Parent | undefined) => {
-      processBlockquote(node, index, parent, isMdxish);
+      processBlockquote(node, index, parent, isMdxish, source);
       if ((node as unknown as { type: string }).type === NodeTypes.callout) {
         // SKIP prevents re-processing synthetic blockquotes in parsed title content
         // (e.g., blockquotes from "> Quote" titles). Recursively process body children
@@ -280,7 +279,8 @@ const calloutTransformer = ({ isMdxish = false } = {}) => {
       return undefined;
     });
   };
-  return (tree: Root) => {
+  return (tree: Root, file?: { value?: unknown }) => {
+    source = file?.value ? String(file.value) : undefined;
     processNode(tree);
   };
 };

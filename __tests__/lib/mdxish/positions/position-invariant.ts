@@ -38,15 +38,24 @@ const WHITESPACE_TYPES = new Set(['break', 'root']);
 
 const normalizeLines = (text: string) => text.replace(CONTAINER_PREFIX, '\n');
 
+// Leading whitespace is fine when it's the first child's own text, e.g. a paragraph split mid-line.
+const startsAtFirstChild = (node: Node) =>
+  'children' in node &&
+  Array.isArray(node.children) &&
+  node.children[0]?.position?.start.offset === node.position?.start.offset;
+
 /** Text slices to its value modulo escapes, entities and prefixes; JSX starts at a tag; nothing starts at whitespace. */
 const sliceMatches = (node: Node, slice: string) => {
   if (node.type === 'text' || node.type === 'html') {
     const value = 'value' in node ? normalizeLines(String(node.value)) : '';
     const unescaped = decodeHTML(slice.replace(BACKSLASH_ESCAPE, '$1'));
-    return normalizeLines(slice) === value || normalizeLines(unescaped) === value;
+    // Malformed-emphasis repair moves a space across a marker (`Hello** Bold**` → `Hello `).
+    const movedSpace = slice === value.trim() && slice !== '';
+    return normalizeLines(slice) === value || normalizeLines(unescaped) === value || movedSpace;
   }
-  if (node.type.startsWith('mdxJsx')) return slice.startsWith('<');
-  return WHITESPACE_TYPES.has(node.type) || !/^\s/.test(slice);
+  // Magic blocks also build JSX elements (e.g. `<Callout>` from `[block:callout]`).
+  if (node.type.startsWith('mdxJsx')) return slice.startsWith('<') || slice.startsWith('[block:');
+  return WHITESPACE_TYPES.has(node.type) || startsAtFirstChild(node) || !/^\s/.test(slice);
 };
 
 /**

@@ -61,7 +61,15 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
   };
 
   if (variableName.startsWith('glossary:')) {
-    const term = variableName.slice('glossary:'.length).trim();
+    const rawTerm = variableName.slice('glossary:'.length);
+    const term = rawTerm.trim();
+    // The token sits on one line, so the term is a column shift past `<<glossary:` and its padding.
+    const termShift = '<<glossary:'.length + rawTerm.indexOf(term);
+    const termPoint = (shift: number) => ({
+      offset: token.start.offset + shift,
+      line: token.start.line,
+      column: token.start.column + shift,
+    });
     this.enter(
       {
         type: NodeTypes.glossary,
@@ -69,7 +77,13 @@ function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]):
           hName: 'Glossary',
           hProperties: { term },
         },
-        children: [{ type: 'text', value: term }],
+        children: [
+          {
+            type: 'text',
+            value: term,
+            position: { start: termPoint(termShift), end: termPoint(termShift + term.length) },
+          },
+        ],
         position: nodePosition,
       },
       token,

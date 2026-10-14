@@ -39,7 +39,7 @@ import { visitParents } from 'unist-util-visit-parents';
 
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { STANDARD_HTML_TAGS } from '../../../../utils/common-html-words';
-import { toAttributes } from '../../../utils';
+import { assignEnclosingPosition, spanOf, toAttributes } from '../../../utils';
 import normalizeEmphasisAST from '../normalize-malformed-md-syntax';
 
 import {
@@ -678,6 +678,7 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
         node.value,
         options,
       ) as unknown as RootContent[];
+      assignEnclosingPosition(children, node.position);
       if (!children.length) {
         // `visitParents` doesn't support [Action, Index] returns like `visit` does;
         // a bare return after splicing is sufficient since `visitParents` walks by
@@ -731,11 +732,16 @@ const magicBlockTransformer: Plugin<[MagicBlockTransformerOptions?], MdastRoot> 
       if (parentSiblingsAfter.length > 0) {
         // Keep trailing inline content grouped under a paragraph sibling as it might be an inline node
         // Even if it contains a block node, it will be hoisted out during its turn in the loop
-        const trailingParagraph: Paragraph = { type: 'paragraph', children: parentSiblingsAfter };
+        const trailingParagraph: Paragraph = {
+          type: 'paragraph',
+          children: parentSiblingsAfter,
+          position: spanOf(parentSiblingsAfter),
+        };
         splitOffContentFromParent.push(trailingParagraph);
       }
 
       parentParagraph.children = [...parentSiblingsBefore];
+      parentParagraph.position = spanOf(parentSiblingsBefore);
       // If the parent paragraph is empty, just replace it with the lifted block nodes
       const shouldReplaceParent = parentParagraph.children.length === 0;
       if (shouldReplaceParent) {

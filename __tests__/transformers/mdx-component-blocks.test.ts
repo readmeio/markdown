@@ -825,7 +825,7 @@ hello
           [
             'a list item indented past the content column',
             '- four\n    <Tag\n    attr="x"\n    />',
-            '  <Tag\n    attr="x"\n    />',
+            '<Tag\n    attr="x"\n    />',
           ],
           ['an ordered list item', '1. four\n   <Tag attr="x"\n   />', '<Tag attr="x"\n   />'],
           ['a blockquote', '> <Tag\n> attr="x"\n> />', '<Tag\n> attr="x"\n> />'],

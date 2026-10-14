@@ -232,7 +232,7 @@ describe('mdxish-jsx-to-mdast transformer', () => {
         it('resolves caption children inside a component body', () => {
           const md = ['Hello world', '', '<Accordion title="A">', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />', '</Accordion>'].join('\n'); // prettier-ignore
           expect(slicesUnder(md, isImageBlock)).toStrictEqual([
-            ['image-block', '  <Image src="https://x.com/a.png" caption="A **bold** cap" />'],
+            ['image-block', '<Image src="https://x.com/a.png" caption="A **bold** cap" />'],
             ...captionSlices('A **bold** cap'),
           ]);
         });

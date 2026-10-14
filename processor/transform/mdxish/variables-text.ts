@@ -6,6 +6,7 @@ import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
+import { createValueRangeMapper } from '../../utils';
 
 /**
  * Matches {user.<field>} patterns:
@@ -33,13 +34,14 @@ export function soleUserVariableExpression(node: Node): { name: string; wrapped:
   return { name: matches[0][1] || matches[0][2], wrapped };
 }
 
-function makeVariableNode(varName: string, rawValue: string): Variable {
+function makeVariableNode(varName: string, rawValue: string, position: Node['position']): Variable {
   return {
     type: NodeTypes.variable,
     data: {
       hName: 'Variable',
       hProperties: { name: varName },
     },
+    position,
     value: rawValue,
   } satisfies Variable;
 }
@@ -59,10 +61,12 @@ function visitExpressionNode(node: MdxFlowExpression | MdxTextExpression, index:
   if (index === undefined || !parent) return;
   const match = soleUserVariableExpression(node);
   if (!match) return;
-  parent.children.splice(index, 1, makeVariableNode(match.name, match.wrapped));
+  parent.children.splice(index, 1, makeVariableNode(match.name, match.wrapped, node.position));
 }
 
-const variablesTextTransformer: Plugin = () => tree => {
+const variablesTextTransformer: Plugin = () => (tree, file) => {
+  const source = file?.value ? String(file.value) : undefined;
+
   visit(tree, 'mdxTextExpression', (node: MdxTextExpression, index, parent: Parent) => {
     visitExpressionNode(node, index, parent);
   });
@@ -87,25 +91,32 @@ const variablesTextTransformer: Plugin = () => tree => {
 
     const parts: (Text | Variable)[] = [];
     let lastIndex = 0;
+    // Text that isn't verbatim source (e.g. decoded entities) keeps the text node's whole range.
+    const toRange = createValueRangeMapper(node.position, text, source);
+    const rangeOf = (from: number, to: number) => toRange(from, to) ?? structuredClone(node.position);
 
     matches.forEach(match => {
       const matchIndex = match.index ?? 0;
 
       // Add text before the match
       if (matchIndex > lastIndex) {
-        parts.push({ type: 'text', value: text.slice(lastIndex, matchIndex) } satisfies Text);
+        parts.push({
+          type: 'text',
+          value: text.slice(lastIndex, matchIndex),
+          position: rangeOf(lastIndex, matchIndex),
+        } satisfies Text);
       }
 
       // Extract variable name from either capture group (dot or bracket notation)
       const varName = match[1] || match[2];
-      parts.push(makeVariableNode(varName, match[0]));
+      parts.push(makeVariableNode(varName, match[0], rangeOf(matchIndex, matchIndex + match[0].length)));
 
       lastIndex = matchIndex + match[0].length;
     });
 
     // Add remaining text after last match
     if (lastIndex < text.length) {
-      parts.push({ type: 'text', value: text.slice(lastIndex) } satisfies Text);
+      parts.push({ type: 'text', value: text.slice(lastIndex), position: rangeOf(lastIndex, text.length) } satisfies Text);
     }
 
     // Replace node with parts

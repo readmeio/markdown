@@ -14,6 +14,10 @@ This is ** bold** text, **bold ** text, word* italic* and _ under _ end.
 
 A ** strong ** b and x ** bold `code` text** y.
 
+Hello** Wrong Bold** end and **bold **text.
+
+Hello* Wrong Italic* end, x ** bold [link](https://x.com) ** y.
+
 _a_ _b_ **c** **d** **_e_** ~~f~~ `g`
 
 Esc \* \_ \` &amp; &copy; &#169; &#xA9; \\ end
