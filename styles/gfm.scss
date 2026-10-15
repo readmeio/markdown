@@ -404,9 +404,12 @@
   }
 
   // Custom blocks (e.g. reusable content) render inside a flow TailwindRoot
-  // div, so spacing must pierce the wrapper to reach their block children.
+  // div, and a block `<DNT>` inside a `translate="no"` div, so spacing must
+  // pierce the wrappers to reach their block children.
   > *,
-  > .readme-tailwind > * {
+  > .readme-tailwind > *,
+  > [translate='no'] > *,
+  > .readme-tailwind > [translate='no'] > * {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: var(--markdown-spacing, 15px);
   }
