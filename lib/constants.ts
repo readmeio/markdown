@@ -97,3 +97,6 @@ export const TOKENIZER_MDX_COMPONENT_EXCLUDED_TAGS = new Set<string>([
 export const INLINE_COMPONENT_TAGS_LOWER = new Set(
   [...INLINE_COMPONENT_TAGS].map(t => t.toLowerCase()),
 );
+
+/** Raw markup props injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed; never interpolate reader values. */
+export const RAW_HTML_PROP_NAMES = new Set(['html']);

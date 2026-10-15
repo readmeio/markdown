@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.9.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** resolve variables in composite attribute expressions ([#1646](https://github.com/readmeio/markdown/issues/1646)) ([8bcbe26](https://github.com/readmeio/markdown/commit/8bcbe2668daa74819a7ba2eb500930fc169d2dee))
+
 ## Version 15.9.2
 ### 🛠 Fixes & Updates
 
