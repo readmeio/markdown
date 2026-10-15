@@ -92,17 +92,23 @@ describe('variables in component attributes', () => {
       // Attribute strings are literal, so the escape characters survive as authored
       expect(container.querySelector('.Accordion-title')).toHaveTextContent('\\{user.name\\}');
     });
+  });
 
-    // CX-3789: `${user.name}` embeds `{user.name}`, so substituting inside it used to leave a
-    // mangled `` `Hi $Dimas` ``. Composite expressions aren't resolved yet, so this stays literal.
-    it('does not substitute inside a template-literal interpolation', () => {
-      /* eslint-disable no-template-curly-in-string -- markdown source, not a JS template */
-      const md = '<Accordion title={`Hi ${user.name}`}>\nHi\n</Accordion>';
-      const expected = '{`Hi ${user.name}`}';
-      /* eslint-enable no-template-curly-in-string */
+  // `${user.name}` embeds `{user.name}`; substituting inside it would leave a mangled `` `Hi $Dimas` ``.
+  // safeMode keeps an expression as authored, otherwise it evaluates as a whole.
+  describe('composite expressions by mode', () => {
+    /* eslint-disable no-template-curly-in-string -- markdown source, not a JS template */
+    it.each([
+      ['a template literal', 'safeMode', true, '`Hi ${user.name}`', '{`Hi ${user.name}`}'],
+      ['a template literal', 'unsafeMode', false, '`Hi ${user.name}`', 'Hi Dimas'],
+      ['string concatenation', 'safeMode', true, '"Hi " + user.name', '{"Hi " + user.name}'],
+      ['string concatenation', 'unsafeMode', false, '"Hi " + user.name', 'Hi Dimas'],
+    ])('renders %s in %s', (_label, _mode, safeMode, title, expected) => {
+      const container = renderMd(`<Accordion title={${title}}>\nHi\n</Accordion>`, { safeMode });
 
-      expect(renderMd(md, { safeMode }).querySelector('.Accordion-title')).toHaveTextContent(expected);
+      expect(container.querySelector('.Accordion-title')?.textContent).toBe(expected);
     });
+    /* eslint-enable no-template-curly-in-string */
   });
 
   describe('formatting variations', () => {
@@ -136,6 +142,13 @@ Hi
     it.each([
       ['a component attribute', '<Accordion title={user.name}>\nHi\n</Accordion>', '.Accordion-title'],
       ['a nested Card title', '<Cards>\n  <Card title={user.name}>\n  Hi\n  </Card>\n</Cards>', '.Card-title'],
+      ['a composite expression', '<Accordion title={"Hi " + user.name}>\nHi\n</Accordion>', '.Accordion-title'],
+      [
+        'a composite Card title',
+        // eslint-disable-next-line no-template-curly-in-string -- markdown source, not a JS template
+        '<Cards>\n  <Card title={`Hi ${user.name}`}>\n  Hi\n  </Card>\n</Cards>',
+        '.Card-title',
+      ],
     ])('resolves %s identically in rmdx and mdxish', (_label, md, selector) => {
       const expected = renderWithMdx(md).querySelector(selector)?.textContent;
 
@@ -194,6 +207,89 @@ Hi
     });
   });
 
+  describe('composite expressions', () => {
+    const renderTitle = (title: string) =>
+      renderMd(`<Accordion title={${title}}>\nHi\n</Accordion>`).querySelector('.Accordion-title');
+
+    it.each([
+      ['string concatenation', '"Hi " + user.name', 'Hi Dimas'],
+      /* eslint-disable-next-line no-template-curly-in-string -- markdown source, not a JS template */
+      ['a template literal', '`${user.name} in ${user.region}`', 'Dimas in us-east-1'],
+      ['a ternary', 'user.name ? "Signed in" : "Guest"', 'Signed in'],
+      ['a method call', 'user.name.toUpperCase()', 'DIMAS'],
+      ['bracket notation', 'user["name"] + "!"', 'Dimas!'],
+      ['an unknown variable, which falls back to its uppercased name', '"Hi " + user.missing', 'Hi MISSING'],
+    ])('resolves %s', (_label, title, expected) => {
+      // Exact match: the literal fallback contains every string the expression could produce
+      expect(renderTitle(title)?.textContent).toBe(expected);
+    });
+
+    it('resolves a composite expression on a plain HTML attribute', () => {
+      const container = renderMd('<a href={"/docs/" + user.region}>link</a>');
+
+      expect(container.querySelector('a')).toHaveAttribute('href', '/docs/us-east-1');
+    });
+
+    it('mixes `user` with in-document exports', () => {
+      const md = 'export const greeting = "Hello";\n\n<Accordion title={greeting + " " + user.name}>\nHi\n</Accordion>';
+
+      expect(renderMd(md).querySelector('.Accordion-title')).toHaveTextContent('Hello Dimas');
+    });
+
+    it('lets an in-document `user` export shadow the variables', () => {
+      const md = 'export const user = { name: "Exported" };\n\n<Accordion title={"Hi " + user.name}>\nHi\n</Accordion>';
+
+      expect(renderMd(md).querySelector('.Accordion-title')).toHaveTextContent('Hi Exported');
+    });
+
+    it('stays literal in a tree parsed without variables, as the MDX cache path does', () => {
+      const serverTree = mdxish('<Accordion title={"Hi " + user.name}>\nHi\n</Accordion>');
+      const { default: Content } = renderMdxish(serverTree, { variables });
+      const { container } = render(<Content />);
+
+      expect(container.querySelector('.Accordion-title')).toHaveTextContent('{"Hi " + user.name}');
+    });
+  });
+
+  describe('object-valued variables', () => {
+    const structuredVariables: Variables = {
+      defaults: [],
+      user: { keys: [{ name: 'production', apiKey: 'abc123' }], count: 3 },
+    };
+
+    const parseTitle = (title: string) =>
+      findElementByTagName(
+        mdxish(`<Accordion title={${title}}>\nHi\n</Accordion>`, { variables: structuredVariables }),
+        'Accordion',
+      )?.properties.title;
+
+    const renderTitle = (title: string) => {
+      const tree = mdxish(`<Accordion title={${title}}>\nHi\n</Accordion>`, { variables: structuredVariables });
+      const { default: Content } = renderMdxish(tree, { variables: structuredVariables });
+      return render(<Content />).container.querySelector('.Accordion-title');
+    };
+
+    // Evaluating it would hand the component a raw array, which crashes one rendering it as a child
+    it.each([
+      ['dot notation', 'user.keys'],
+      ['single-quoted bracket notation', "user['keys']"],
+      ['double-quoted bracket notation', 'user["keys"]'],
+    ])('stringifies a bare reference in %s at render time instead of passing the raw value', (_label, title) => {
+      expect(parseTitle(title)).toBe(`{${title}}`);
+      expect(renderTitle(title)).toHaveTextContent('[{"name":"production","apiKey":"abc123"}]');
+    });
+
+    it('reads into a structured value', () => {
+      expect(renderTitle('user.keys[0].name')).toHaveTextContent('production');
+      expect(renderTitle('user.keys.map(key => key.name).join(", ")')).toHaveTextContent('production');
+    });
+
+    it('keeps a non-string result as a real prop value, as rmdx does', () => {
+      expect(parseTitle('user.count + 1')).toBe(4);
+      expect(parseTitle('user.keys.slice(0, 1)')).toStrictEqual([{ name: 'production', apiKey: 'abc123' }]);
+    });
+  });
+
   describe('non-variable content', () => {
     it('keeps an unevaluatable attribute expression as literal braces', () => {
       const container = renderMd('<a href="#" title={someUnknownThing}>link</a>');
@@ -229,6 +325,21 @@ Hi
       const container = renderMd(md);
 
       expect(container.querySelector('.embed-media')?.innerHTML).toBe('<img src="/x?k={user.name}">');
+    });
+
+    it('never exposes `user` to an Embed html expression', () => {
+      const md = '<Embed url="https://example.com" title="t" html={"<b>" + user.name + "</b>"} />';
+      const container = renderMd(md);
+
+      expect(container.querySelector('.embed-media')?.innerHTML).toBe('{"<b>" + user.name + "</b>"}');
+      expect(container).not.toHaveTextContent('Dimas');
+    });
+
+    it('still evaluates an Embed html expression that does not read `user`', () => {
+      const md = '<Embed url="https://example.com" title="t" html={"<b>" + "hi" + "</b>"} />';
+      const container = renderMd(md);
+
+      expect(container.querySelector('.embed-media')?.innerHTML).toBe('<b>hi</b>');
     });
 
     it('leaves an HTMLBlock literal', () => {
