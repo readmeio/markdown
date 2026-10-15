@@ -5,6 +5,7 @@ import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
+import { dntFromMarkdown } from '../mdast-util/dnt';
 import { emptyTaskListItemFromMarkdown } from '../mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../mdast-util/gemoji';
 import { htmlBlockComponentFromMarkdown } from '../mdast-util/html-block-component';
@@ -15,6 +16,7 @@ import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
 import { mdxishExpressionFromMarkdown } from '../mdast-util/mdx-expression';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
+import { dnt } from './dnt';
 import { gemoji } from './gemoji';
 import { htmlBlockComponent } from './html-block-component';
 import { jsxComment } from './jsx-comment';
@@ -55,6 +57,7 @@ interface ExtensionPair {
 const REGISTRY = {
   jsxComment: { syntax: jsxComment, expression: true },
   jsxTable: { syntax: jsxTable, fromMarkdown: jsxTableFromMarkdown },
+  dnt: { syntax: dnt, fromMarkdown: dntFromMarkdown },
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
@@ -85,7 +88,7 @@ export type MdxishFeature = keyof typeof REGISTRY;
 // ======= TOKENIZER EXTENSION GROUP DEFINITIONS =======
 
 /** Tokenizers that claim a whole block so broader ones can't fragment it. */
-const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
+const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'dnt', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
 
 /** Inline syntax every parser that renders user prose needs. */
 const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
