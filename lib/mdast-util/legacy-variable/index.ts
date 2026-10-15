@@ -42,6 +42,18 @@ function exitlegacyVariableValue(this: CompileContext, token: Parameters<Handle>
 function exitlegacyVariable(this: CompileContext, token: Parameters<Handle>[0]): void {
   const ctx = contextMap.get(token);
   const serialized = this.sliceSerialize(token);
+
+  // An escaped `\<<name>>` (or `\<<name\>>`) is literal text, as in the legacy parser.
+  if (serialized.startsWith('\\')) {
+    const literal = serialized.slice(1).replace('\\>>', '>>');
+    // An image's alt is flattened to a string, so keep the escape for render-time resolution to honor.
+    const inImageAlt = this.stack.some(node => node.type === 'image');
+    this.enter({ type: 'text', value: inImageAlt ? `\\${literal}` : literal }, token);
+    this.exit(token);
+    contextMap.delete(token);
+    return;
+  }
+
   const variableName =
     serialized.startsWith('<<') && serialized.endsWith('>>')
       ? serialized.slice(2, -2)
