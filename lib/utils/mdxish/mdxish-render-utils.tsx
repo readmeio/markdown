@@ -10,6 +10,7 @@ import { unified } from 'unified';
 import * as Components from '../../../components';
 import Contexts from '../../../contexts';
 import User from '../../../utils/user';
+import { RAW_HTML_PROP_NAMES } from '../../constants';
 import makeUseMDXComponents from '../makeUseMdxComponents';
 
 import { resolveAttributeVariables } from './mdxish-variables';
@@ -70,8 +71,7 @@ type PropsWithHastNode = Record<string, unknown> & { node?: Element };
  */
 const CODE_TAG_NAMES = new Set(['code']);
 
-/** Raw markup injected with `dangerouslySetInnerHTML` by HTMLBlock and Embed — never interpolate. */
-const RAW_HTML_PROP_NAMES = new Set(['html']);
+const isImageAlt = (tagName: string | undefined, key: string) => tagName === 'img' && key === 'alt';
 
 /**
  * Resolve `{user.*}` in string-valued props, plus legacy `<<...>>` in img alt, where markdown flattens
@@ -89,7 +89,7 @@ function resolveVariablesInProps(
   const resolvedEntries = Object.entries(props).map(([key, value]): [string, unknown] => {
     const isDocumentContent = RAW_HTML_PROP_NAMES.has(key) || (isCodeTag && key === 'value');
     if (typeof value !== 'string' || isDocumentContent) return [key, value];
-    return [key, resolveAttributeVariables(value, user, tagName === 'img' && key === 'alt')];
+    return [key, resolveAttributeVariables(value, user, isImageAlt(tagName, key))];
   });
 
   return Object.fromEntries(resolvedEntries);
