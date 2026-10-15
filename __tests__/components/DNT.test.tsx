@@ -75,8 +75,16 @@ describe('DNT', () => {
       describe.each([
         ['a list', '<DNT>- one\n- two\n</DNT>\n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
         ['a paragraph', '<DNT>one\n  </DNT>\n\nafter', '<div translate="no"><p>one</p></div>'],
-        ['a list closing on its last line', '<DNT>- one\n- two</DNT>  \n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
-        ['a paragraph closing on its last line', '<DNT>one\ntwo</DNT>\n\nafter', '<div translate="no"><p>one<br>two</p></div>'],
+        [
+          'a list closing on its last line',
+          '<DNT>- one\n- two</DNT>  \n\nafter',
+          '<div translate="no"><ul><li>one</li><li>two</li></ul></div>',
+        ],
+        [
+          'a paragraph closing on its last line',
+          '<DNT>one\ntwo</DNT>\n\nafter',
+          '<div translate="no"><p>one<br>two</p></div>',
+        ],
       ])('with the closer ending a later line around %s', (_label, md, wrapped) => {
         it.each(editorModes)('newEditorTypes %s: wraps it in a div', newEditorTypes => {
           expect(renderDoc(md, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(`${wrapped}<p>after</p>`);
@@ -227,7 +235,9 @@ describe('DNT', () => {
     });
 
     it('keeps a title without a DNT as plain text', () => {
-      const title = renderDoc('<Accordion title="Use <b>Acme</b> now">\nbody\n</Accordion>', false).querySelector('summary');
+      const title = renderDoc('<Accordion title="Use <b>Acme</b> now">\nbody\n</Accordion>', false).querySelector(
+        'summary',
+      );
 
       expect(title?.textContent).toBe('Use <b>Acme</b> now');
     });
@@ -245,6 +255,7 @@ describe('DNT', () => {
 
   describe.each([
     ['spaces inside the tags', 'Use<DNT> Acme </DNT>now', 'Use<span translate="no"> Acme </span>now'],
+    ['a nested DNT', '<DNT>a <DNT>b</DNT> c</DNT>', '<span translate="no">a <span translate="no">b</span> c</span>'],
     [
       'markdown inside a nested DNT',
       'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end',
@@ -268,7 +279,9 @@ describe('DNT', () => {
     });
 
     it.each(editorModes)('newEditorTypes %s: keeps the comment hidden after a save', newEditorTypes => {
-      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe('Use <span translate="no"></span> now.');
+      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(
+        'Use <span translate="no"></span> now.',
+      );
     });
   });
 
@@ -294,18 +307,25 @@ describe('DNT', () => {
     ['a bare url', 'x <DNT>https://b.com</DNT> y'],
   ])('with %s inside', (_label, md) => {
     it.each(editorModes)('newEditorTypes %s: renders the url as a link', newEditorTypes => {
-      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe(
+        'https://b.com',
+      );
     });
 
     it.each(editorModes)('newEditorTypes %s: renders the url as a link after a save', newEditorTypes => {
-      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe(
+        'https://b.com',
+      );
     });
   });
 
   describe('with only a self-closing tag inside', () => {
     it.each(editorModes)('newEditorTypes %s: keeps the tag as an html child', newEditorTypes => {
       const tree = parseMdxish('Use <DNT><Badge label="Acme" /></DNT> today', { newEditorTypes });
-      const [dnt] = collectNodes<Parent>(tree, node => node.type === NodeTypes.dnt || node.type === 'mdxJsxTextElement');
+      const [dnt] = collectNodes<Parent>(
+        tree,
+        node => node.type === NodeTypes.dnt || node.type === 'mdxJsxTextElement',
+      );
 
       expect(dnt.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' })]);
     });
