@@ -1,7 +1,6 @@
 import type { Extension as FromMarkdownExtension } from 'mdast-util-from-markdown';
 import type { Extension } from 'micromark-util-types';
 
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
@@ -14,6 +13,7 @@ import { jsxTableFromMarkdown } from '../mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
+import { mdxishExpressionFromMarkdown } from '../mdast-util/mdx-expression';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { dnt } from './dnt';
@@ -61,12 +61,12 @@ const REGISTRY = {
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
-  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown, expression: true },
+  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxishExpressionFromMarkdown, expression: true },
   // `allowEmpty` is the package default; passed explicitly because `mdx-jsx`
   // registers the same tokenizer with it off for attribute expressions.
   mdxExpression: {
     syntax: () => mdxExpression({ allowEmpty: true }),
-    fromMarkdown: mdxExpressionFromMarkdown,
+    fromMarkdown: mdxishExpressionFromMarkdown,
     expression: true,
   },
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
