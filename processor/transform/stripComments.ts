@@ -4,6 +4,8 @@ import { visit, SKIP } from 'unist-util-visit';
 
 const HTML_COMMENT_REGEX = /<!--[\s\S]*?-->/g;
 export const MDX_COMMENT_REGEX = /\/\*(?:(?!\*\/)[\s\S])*\*\//g;
+// A `{/* … */}` inside a tokenized tag (`<DNT>`) sits in the html text, not in an expression node.
+const MDX_COMMENT_EXPRESSION_REGEX = /\{\s*\/\*(?:(?!\*\/)[\s\S])*\*\/\s*\}/g;
 
 /**
  * A remark plugin to remove comments from Markdown and MDX.
@@ -21,6 +23,10 @@ export const stripCommentsTransformer = () => {
             parent.children.splice(index, 1);
             return [SKIP, index];
           }
+        }
+
+        if (node.type === 'html' && node.data?.tokenized) {
+          node.value = node.value.replace(MDX_COMMENT_EXPRESSION_REGEX, '');
         }
 
         // Remove MDX comments
