@@ -18,6 +18,7 @@ function exitTextExpression(this: CompileContext, token: Token): void {
   children[children.length - 1] = { type: 'text', value: this.sliceSerialize(token), position } satisfies Text;
 }
 
+/** Upstream `mdxExpressionFromMarkdown`, overriding only the text-expression exit to keep `{...}` source in image alt. */
 export function mdxishExpressionFromMarkdown(): FromMarkdownExtension {
   return { ...upstream, exit: { ...upstream.exit, mdxTextExpression: exitTextExpression } };
 }
