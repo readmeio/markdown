@@ -1,4 +1,5 @@
 import type { GlossaryTerm } from '../../../contexts/GlossaryTerms';
+import type { RenderConfig } from '../../../contexts/RenderConfig';
 import type { CustomComponents, IndexableElements, RMDXModule, TocList, Variables } from '../../../types';
 import type { Element } from 'hast';
 
@@ -15,10 +16,9 @@ import makeUseMDXComponents from '../makeUseMdxComponents';
 
 import { resolveAttributeVariables } from './mdxish-variables';
 
-export interface RenderOpts {
+export interface RenderOpts extends RenderConfig {
   baseUrl?: string;
   components?: CustomComponents;
-  copyButtons?: boolean;
   imports?: Record<string, unknown>;
   terms?: GlossaryTerm[];
   theme?: 'dark' | 'light';
