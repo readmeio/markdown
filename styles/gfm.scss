@@ -3,6 +3,11 @@
 /* stylelint-disable declaration-block-no-duplicate-properties */
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
+
+// A block `<DNT>` renders as `<div translate="no">`. An editor root (ProseMirror) carries
+// `translate="no"` too and sits right under `.markdown-body`, so editable roots are skipped.
+$block-dnt: "[translate='no']:not([contenteditable])";
+
 @mixin gfm {
   @include markdown-defaults;
   @include markdown-overrides;
@@ -273,16 +278,16 @@
   // A block `<DNT>` adds one more wrapper (`translate="no"`), so reach through it as well.
   & > .readme-tailwind:first-child > :first-child,
   & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child,
-  & > [translate='no']:first-child > :first-child,
-  & > [translate='no']:nth-child(1 of :not(style)) > :first-child,
-  & > .readme-tailwind:first-child > [translate='no'] > :first-child,
-  & > .readme-tailwind:nth-child(1 of :not(style)) > [translate='no'] > :first-child {
+  & > #{$block-dnt}:first-child > :first-child,
+  & > #{$block-dnt}:nth-child(1 of :not(style)) > :first-child,
+  & > .readme-tailwind:first-child > #{$block-dnt} > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > #{$block-dnt} > :first-child {
     margin-top: 0 !important;
   }
 
   & > .readme-tailwind:last-child > :last-child,
-  & > [translate='no']:last-child > :last-child,
-  & > .readme-tailwind:last-child > [translate='no'] > :last-child {
+  & > #{$block-dnt}:last-child > :last-child,
+  & > .readme-tailwind:last-child > #{$block-dnt} > :last-child {
     margin-bottom: 0 !important;
   }
 
@@ -415,8 +420,8 @@
   // pierce the wrappers to reach their block children.
   > *,
   > .readme-tailwind > *,
-  > [translate='no'] > *,
-  > .readme-tailwind > [translate='no'] > * {
+  > #{$block-dnt} > *,
+  > .readme-tailwind > #{$block-dnt} > * {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: var(--markdown-spacing, 15px);
   }
