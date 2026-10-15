@@ -10,6 +10,13 @@ const htmlValues = (doc: string) => {
   return collectNodes<Html>(processor.parse(parserReadyContent), 'html').map(node => node.value);
 };
 
+const tokenizedValues = (doc: string) => {
+  const { processor, parserReadyContent } = mdxishAstProcessor(doc);
+  return collectNodes<Html>(processor.parse(parserReadyContent), 'html')
+    .filter(node => node.data?.tokenized)
+    .map(node => node.value);
+};
+
 describe('dnt tokenizer', () => {
   describe('flow: block form', () => {
     it.each([
@@ -36,6 +43,13 @@ describe('dnt tokenizer', () => {
       expect(htmlValues(doc)).toStrictEqual([doc]);
     });
 
+    it.each([
+      ['a lone backtick in the body', '<DNT>\nAcme ` CLI **Cloud**\n</DNT>\n\nafter'],
+      ['a lone backtick run shorter than the next one', '<DNT>\nAcme ` CLI ``x``\n</DNT>\n\nafter'],
+    ])('claims the block with %s instead of leaving it to html flow', (_label, doc) => {
+      expect(tokenizedValues(doc)).toStrictEqual([doc.replace(/\n\nafter$/, '')]);
+    });
+
     it('ends a code span at a blank line, so a closer after it counts', () => {
       expect(htmlValues('<DNT>\n`a\n\n</DNT>\nb`\n</DNT>')[0]).toBe('<DNT>\n`a\n\n</DNT>');
     });
@@ -60,9 +74,11 @@ describe('dnt tokenizer', () => {
       ['under a paragraph line, across its lines', 'Text\n<DNT>\none\n</DNT>', '<DNT>\none\n</DNT>'],
       ['in a heading', '# Use <DNT>Acme</DNT> now', '<DNT>Acme</DNT>'],
       ['with attributes', 'Hi <DNT title={"x"}>Acme</DNT>', '<DNT title={"x"}>Acme</DNT>'],
+      ['with a brace in an attribute string', 'Hi <DNT title={"}"}>Acme</DNT>', '<DNT title={"}"}>Acme</DNT>'],
       ['with a nested DNT', '<DNT><DNT>a</DNT> b</DNT> c', '<DNT><DNT>a</DNT> b</DNT>'],
       ['with a closer in inline code', '<DNT>a `</DNT>` b</DNT> c', '<DNT>a `</DNT>` b</DNT>'],
       ['with a closer in inline code across a soft break', '<DNT>a `x\n</DNT>` b</DNT> c', '<DNT>a `x\n</DNT>` b</DNT>'],
+      ['with a lone backtick', '<DNT>a ` b</DNT> c', '<DNT>a ` b</DNT>'],
       ['with a closer in an expression', '<DNT>a {"</DNT>"} b</DNT> c', '<DNT>a {"</DNT>"} b</DNT>'],
       ['empty', 'Before <DNT></DNT> after', '<DNT></DNT>'],
     ])('claims one node %s', (_label, doc, value) => {

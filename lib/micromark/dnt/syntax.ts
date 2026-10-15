@@ -4,6 +4,8 @@ import type { Code, Construct, Effects, Extension, Resolver, State, TokenizeCont
 import { markdownLineEnding, markdownSpace } from 'micromark-util-character';
 import { codes, types } from 'micromark-util-symbol';
 
+import { createOpaqueRegions } from '../util/opaque-regions';
+
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
     dnt: 'dnt';
@@ -54,16 +56,8 @@ function createTokenize(mode: 'flow' | 'text') {
     let tagOpensLine = false;
 
     let quoteChar: Code = null;
-    let braceDepth = 0;
-    let inTemplateLiteral = false;
-    // braceDepth at each `${`, so its `}` returns to the template literal.
-    const templateStack: number[] = [];
-
-    let codeSpanOpenSize = 0;
-    let codeSpanCloseSize = 0;
-    let fenceChar: Code = null;
-    let fenceLength = 0;
-    let fenceCloseLength = 0;
+    let regionResume: State = nok;
+    const regions = createOpaqueRegions({ effects, nok, consume: consumeData, lineEnding: regionLineEnding });
 
     return start;
 
@@ -101,11 +95,7 @@ function createTokenize(mode: 'flow' | 'text') {
         consumeData(code);
         return attributeString;
       }
-      if (code === codes.leftCurlyBrace) {
-        braceDepth = 1;
-        consumeData(code);
-        return attributeExpression;
-      }
+      if (code === codes.leftCurlyBrace) return regions.braceExpression(code, attributes);
       consumeData(code);
       return attributes;
     }
@@ -116,14 +106,6 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code !== quoteChar) return attributeString;
       quoteChar = null;
       return attributes;
-    }
-
-    function attributeExpression(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) return nok(code);
-      if (code === codes.leftCurlyBrace) braceDepth += 1;
-      if (code === codes.rightCurlyBrace) braceDepth -= 1;
-      consumeData(code);
-      return braceDepth === 0 ? attributes : attributeExpression;
     }
 
     function openTagEnd(code: Code): State | undefined {
@@ -152,12 +134,13 @@ function createTokenize(mode: 'flow' | 'text') {
         return body;
       }
       if (code === codes.graveAccent) {
-        codeSpanOpenSize = 0;
-        return countOpenTicks(code);
+        const mayFence = isFlow && atLineStart;
+        atLineStart = false;
+        return regions.backticks(code, body, mayFence);
       }
       if (isFlow && atLineStart && code === codes.tilde) {
-        fenceCloseLength = 0;
-        return countTildes(code);
+        atLineStart = false;
+        return regions.tildes(code, body);
       }
 
       tagOpensLine = atLineStart;
@@ -166,12 +149,7 @@ function createTokenize(mode: 'flow' | 'text') {
         consumeData(code);
         return escaped;
       }
-      if (code === codes.leftCurlyBrace) {
-        braceDepth = 1;
-        inTemplateLiteral = false;
-        consumeData(code);
-        return braceExpression;
-      }
+      if (code === codes.leftCurlyBrace) return regions.braceExpression(code, body);
       if (code === codes.lessThan) {
         consumeData(code);
         return afterLessThan;
@@ -210,6 +188,20 @@ function createTokenize(mode: 'flow' | 'text') {
       effects.exit(types.lineEnding);
       atLineStart = true;
       return next;
+    }
+
+    // Attributes stay on the opener line. A region in the body runs on, blank lines included.
+    function regionLineEnding(code: Code, resume: State): State | undefined {
+      if (depth === 0) return nok(code);
+      regionResume = resume;
+      return lineEnding(code, regionLineStart);
+    }
+
+    function regionLineStart(code: Code): State | undefined {
+      if (code === null) return nok(code);
+      if (markdownLineEnding(code)) return lineEnding(code, regionLineStart);
+      atLineStart = false;
+      return regionResume(code);
     }
 
     function escaped(code: Code): State | undefined {
@@ -285,197 +277,6 @@ function createTokenize(mode: 'flow' | 'text') {
       if (code === null || markdownLineEnding(code)) return exitAfterClose(code);
       consumeData(code);
       return afterCloseRest;
-    }
-
-    // ── Code spans and fences ─────────────────────────────────────────────
-
-    function countOpenTicks(code: Code): State | undefined {
-      if (code === codes.graveAccent) {
-        codeSpanOpenSize += 1;
-        consumeData(code);
-        return countOpenTicks;
-      }
-      const isFence = isFlow && atLineStart && codeSpanOpenSize >= 3;
-      atLineStart = false;
-      if (!isFence) return inCodeSpan(code);
-      fenceChar = codes.graveAccent;
-      fenceLength = codeSpanOpenSize;
-      return inFencedCode(code);
-    }
-
-    function inCodeSpan(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, codeSpanLineStart);
-      if (code === codes.graveAccent) {
-        codeSpanCloseSize = 0;
-        return countCloseTicks(code);
-      }
-      consumeData(code);
-      return inCodeSpan;
-    }
-
-    // A code span crosses a soft break but not a blank line, so a second line ending ends it.
-    function codeSpanLineStart(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return bodyLineStart(code);
-      atLineStart = false;
-      return inCodeSpan(code);
-    }
-
-    function countCloseTicks(code: Code): State | undefined {
-      if (code === codes.graveAccent) {
-        codeSpanCloseSize += 1;
-        consumeData(code);
-        return countCloseTicks;
-      }
-      return codeSpanCloseSize === codeSpanOpenSize ? body(code) : inCodeSpan(code);
-    }
-
-    function countTildes(code: Code): State | undefined {
-      if (code === codes.tilde) {
-        fenceCloseLength += 1;
-        consumeData(code);
-        return countTildes;
-      }
-      atLineStart = false;
-      if (fenceCloseLength < 3) return body(code);
-      fenceChar = codes.tilde;
-      fenceLength = fenceCloseLength;
-      return inFencedCode(code);
-    }
-
-    function inFencedCode(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, fencedLineStart);
-      atLineStart = false;
-      consumeData(code);
-      return inFencedCode;
-    }
-
-    function fencedLineStart(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, fencedLineStart);
-      fenceCloseLength = 0;
-      return fenceCloseIndent(code);
-    }
-
-    // An indented fence closes on an equally indented line, so skip the indent first.
-    function fenceCloseIndent(code: Code): State | undefined {
-      if (markdownSpace(code)) {
-        consumeData(code);
-        return fenceCloseIndent;
-      }
-      return fenceCloseRun(code);
-    }
-
-    function fenceCloseRun(code: Code): State | undefined {
-      if (code === fenceChar) {
-        fenceCloseLength += 1;
-        atLineStart = false;
-        consumeData(code);
-        return fenceCloseRun;
-      }
-      return fenceCloseLength < fenceLength ? inFencedCode(code) : fenceCloseTrailing(code);
-    }
-
-    function fenceCloseTrailing(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) {
-        fenceChar = null;
-        return body(code);
-      }
-      if (markdownSpace(code)) {
-        consumeData(code);
-        return fenceCloseTrailing;
-      }
-      return inFencedCode(code);
-    }
-
-    // ── `{…}` expressions in the body ─────────────────────────────────────
-
-    function braceExpression(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, braceLineStart);
-      if (code === codes.quotationMark || code === codes.apostrophe) {
-        quoteChar = code;
-        consumeData(code);
-        return braceString;
-      }
-      if (code === codes.graveAccent) {
-        inTemplateLiteral = true;
-        consumeData(code);
-        return braceTemplateLiteral;
-      }
-      if (code === codes.leftCurlyBrace) braceDepth += 1;
-      if (code === codes.rightCurlyBrace) braceDepth -= 1;
-      consumeData(code);
-      if (templateStack.length && braceDepth === templateStack[templateStack.length - 1]) {
-        templateStack.pop();
-        inTemplateLiteral = true;
-        return braceTemplateLiteral;
-      }
-      return braceDepth === 0 ? body : braceExpression;
-    }
-
-    function braceLineStart(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, braceLineStart);
-      atLineStart = false;
-      if (quoteChar !== null) return braceString(code);
-      return inTemplateLiteral ? braceTemplateLiteral(code) : braceExpression(code);
-    }
-
-    function braceString(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, braceLineStart);
-      if (code === codes.backslash) {
-        consumeData(code);
-        return braceStringEscape;
-      }
-      consumeData(code);
-      if (code !== quoteChar) return braceString;
-      quoteChar = null;
-      return braceExpression;
-    }
-
-    function braceStringEscape(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) return braceString(code);
-      consumeData(code);
-      return braceString;
-    }
-
-    function braceTemplateLiteral(code: Code): State | undefined {
-      if (code === null) return nok(code);
-      if (markdownLineEnding(code)) return lineEnding(code, braceLineStart);
-      if (code === codes.graveAccent) {
-        inTemplateLiteral = false;
-        consumeData(code);
-        return braceExpression;
-      }
-      if (code === codes.backslash) {
-        consumeData(code);
-        return braceTemplateLiteralEscape;
-      }
-      if (code === codes.dollarSign) {
-        consumeData(code);
-        return braceTemplateLiteralDollar;
-      }
-      consumeData(code);
-      return braceTemplateLiteral;
-    }
-
-    function braceTemplateLiteralEscape(code: Code): State | undefined {
-      if (code === null || markdownLineEnding(code)) return braceTemplateLiteral(code);
-      consumeData(code);
-      return braceTemplateLiteral;
-    }
-
-    function braceTemplateLiteralDollar(code: Code): State | undefined {
-      if (code !== codes.leftCurlyBrace) return braceTemplateLiteral(code);
-      templateStack.push(braceDepth);
-      braceDepth += 1;
-      inTemplateLiteral = false;
-      consumeData(code);
-      return braceExpression;
     }
   };
 }
