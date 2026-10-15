@@ -270,12 +270,19 @@
 
   // When a TailwindRoot-wrapped custom block sits at the document edge, its
   // inner margins would collapse through the zeroed wrapper — trim them too.
+  // A block `<DNT>` adds one more wrapper (`translate="no"`), so reach through it as well.
   & > .readme-tailwind:first-child > :first-child,
-  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child {
+  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child,
+  & > [translate='no']:first-child > :first-child,
+  & > [translate='no']:nth-child(1 of :not(style)) > :first-child,
+  & > .readme-tailwind:first-child > [translate='no'] > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > [translate='no'] > :first-child {
     margin-top: 0 !important;
   }
 
-  & > .readme-tailwind:last-child > :last-child {
+  & > .readme-tailwind:last-child > :last-child,
+  & > [translate='no']:last-child > :last-child,
+  & > .readme-tailwind:last-child > [translate='no'] > :last-child {
     margin-bottom: 0 !important;
   }
 
