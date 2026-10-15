@@ -58,6 +58,8 @@ function createTokenize(mode: 'flow' | 'text') {
     let inTemplateLiteral = false;
     // braceDepth at each `${`, so its `}` returns to the template literal.
     const templateStack: number[] = [];
+    // A backtick run needs a partner before a blank line or the end, else it is literal text.
+    const codeSpanCloses: Construct = { tokenize: tokenizeCodeSpanCloses, partial: true };
 
     let codeSpanOpenSize = 0;
     let codeSpanCloseSize = 0;
@@ -297,10 +299,50 @@ function createTokenize(mode: 'flow' | 'text') {
       }
       const isFence = isFlow && atLineStart && codeSpanOpenSize >= 3;
       atLineStart = false;
-      if (!isFence) return inCodeSpan(code);
+      // A run with no partner is literal, as in CommonMark, so the body keeps looking for the closer.
+      if (!isFence) return effects.check(codeSpanCloses, inCodeSpan, body)(code);
       fenceChar = codes.graveAccent;
       fenceLength = codeSpanOpenSize;
       return inFencedCode(code);
+    }
+
+    // Looks ahead for a run of the same size, consuming nothing.
+    function tokenizeCodeSpanCloses(fx: Effects, closes: State, stays: State): State {
+      let run = 0;
+
+      function scan(code: Code): State | undefined {
+        if (code === null) return stays(code);
+        if (markdownLineEnding(code)) {
+          fx.consume(code);
+          return afterLineEnding;
+        }
+        if (code === codes.graveAccent) {
+          run = 0;
+          return ticks(code);
+        }
+        fx.consume(code);
+        return scan;
+      }
+
+      function afterLineEnding(code: Code): State | undefined {
+        if (code === null || markdownLineEnding(code)) return stays(code);
+        if (markdownSpace(code)) {
+          fx.consume(code);
+          return afterLineEnding;
+        }
+        return scan(code);
+      }
+
+      function ticks(code: Code): State | undefined {
+        if (code === codes.graveAccent) {
+          run += 1;
+          fx.consume(code);
+          return ticks;
+        }
+        return run === codeSpanOpenSize ? closes(code) : scan(code);
+      }
+
+      return scan;
     }
 
     function inCodeSpan(code: Code): State | undefined {
