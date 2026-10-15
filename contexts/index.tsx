@@ -26,9 +26,10 @@ const Contexts = ({
   baseUrl = '/',
   theme,
   copyButtons,
+  mermaidControls,
 }: Props) => {
   // Stable value so unchanged flags don't trigger context re-renders (and re-highlighting) in consumers
-  const renderConfig = useMemo(() => ({ copyButtons }), [copyButtons]);
+  const renderConfig = useMemo(() => ({ copyButtons, mermaidControls }), [copyButtons, mermaidControls]);
 
   return compose(
     children,
