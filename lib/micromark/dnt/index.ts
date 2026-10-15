@@ -1,0 +1,1 @@
+export { dnt } from './syntax';
