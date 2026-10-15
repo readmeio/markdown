@@ -264,6 +264,23 @@ describe('DNT', () => {
     });
   });
 
+  describe.each([
+    ['a comment', 'Hello <DNT><!-- note -->\nkept</DNT> after'],
+    ['an expression', 'Hello <DNT>{/* note */}\nkept</DNT> after'],
+  ])('with %s and text on separate lines', (_label, md) => {
+    it.each(editorModes)('newEditorTypes %s: keeps the text', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"]')?.textContent).toContain('kept');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: keeps the text after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"]')?.textContent).toContain('kept');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: keeps the block after a save', newEditorTypes => {
+      expect(roundTripMdxish(md, { newEditorTypes })).toMatch(/<DNT>.*note.*<\/DNT>/s);
+    });
+  });
+
   describe('with only a self-closing tag inside', () => {
     it.each(editorModes)('newEditorTypes %s: keeps the tag as an html child', newEditorTypes => {
       const tree = parseMdxish('Use <DNT><Badge label="Acme" /></DNT> today', { newEditorTypes });

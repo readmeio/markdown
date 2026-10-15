@@ -49,31 +49,43 @@ const blockAsInline = (node: RootContent, promote: PromoteHtml): PhrasingContent
   return undefined;
 };
 
+// One body block as phrasing: a paragraph's children, or a lone tag or `{}` as that node.
+const blockToPhrasing = (block: RootContent, source: string, promote: PromoteHtml): PhrasingContent[] | undefined => {
+  // These nodes root a new coordinate space: their offsets index into `source`.
+  if (block.type !== 'paragraph') {
+    stampReparseSource([block], source);
+    const inline = blockAsInline(block, promote);
+    return inline && [inline];
+  }
+  const paragraph = block as Paragraph;
+  stampReparseSource(paragraph.children, source);
+  // A nested tokenized tag is one html child here too, so it needs the same promotion.
+  promoteHtmlIn(paragraph, promote);
+  return paragraph.children;
+};
+
 /**
- * Parse the body of an inline component as phrasing content. Remark always
- * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
- * the result is valid `mdxJsxTextElement` content.
+ * Parse the body of an inline component as phrasing content. Remark wraps bare
+ * text in a paragraph, so each block is flattened into valid `mdxJsxTextElement`
+ * content.
  *
- * A `<DNT>` body can span soft breaks, which still parse as one paragraph.
+ * A `<DNT>` body can span lines, so a lone tag or `{}` can sit above or below text.
  */
 const parsePhrasingChildren = (value: string, safeMode: boolean, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
   if (!trimmed) return [];
-  const [first] = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  if (first?.type !== 'paragraph') {
-    // These nodes root a new coordinate space: their offsets index into `trimmed`.
-    if (first) stampReparseSource([first], trimmed);
-    const inline = first && blockAsInline(first, promote);
-    // Any other block (`- x`, `# x`) stays plain text instead of being dropped.
-    return inline ? [inline] : [{ type: 'text', value: trimmed }];
-  }
-  stampReparseSource((first as Paragraph).children, trimmed);
-  // A nested tokenized tag is one html child here too, so it needs the same promotion.
-  promoteHtmlIn(first, promote);
+  const blocks = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
+  const phrasing = blocks.map(block => blockToPhrasing(block, trimmed, promote));
+  // Any other block (`- x`, `# x`) keeps the body as plain text instead of dropping it.
+  if (phrasing.some(nodes => !nodes)) return [{ type: 'text', value: trimmed }];
+  // Blocks sat on their own lines, so a line break keeps them apart.
+  const joined = (phrasing as PhrasingContent[][]).flatMap((nodes, i) =>
+    i ? [{ type: 'text', value: '\n' } satisfies Text, ...nodes] : nodes,
+  );
   // Edge spaces are content: `Use<DNT> Acme </DNT>now` reads "Use Acme now".
   return [
     ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
-    ...(first as Paragraph).children,
+    ...joined,
     ...spaceText(TRAILING_SPACES_RE.exec(value)?.[0]),
   ];
 };

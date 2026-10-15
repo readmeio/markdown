@@ -2415,6 +2415,8 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
       'Use <DNT><Badge label="Acme" /></DNT> today\n',
       '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\|b`</DNT> now. |\n',
       '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\\\b`</DNT> now. |\n',
+      'Hello <DNT>{/* note */}\nkept</DNT> after\n',
+      'Hello <DNT><Badge label="Acme" />\nkept</DNT> after\n',
     ];
 
     it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
