@@ -303,6 +303,24 @@ end"`);
     expect(output).toBe(input);
   });
 
+  it('strips a JSX comment inside an inline DNT in mdxish mode', async () => {
+    const output = await stripComments('Hello <DNT>{/* hidden */}Acme</DNT> world', { mdxish: true });
+    expect(output).toBe('Hello <DNT>Acme</DNT> world');
+  });
+
+  it('keeps a JSX comment shown in a code span inside a DNT in mdxish mode', async () => {
+    const output = await stripComments('Hello <DNT>Use `{/* example */}` and {/* hidden */}</DNT> world', { mdxish: true });
+    expect(output).toContain('`{/* example */}`');
+    expect(output).not.toContain('hidden');
+  });
+
+  it('strips a JSX comment inside a block DNT and keeps the block whole in mdxish mode', async () => {
+    const output = await stripComments('<DNT>- one\n{/* hidden */}\n- two</DNT>', { mdxish: true });
+    expect(output).not.toContain('hidden');
+    expect(output).toContain('<DNT>- one');
+    expect(output).toContain('- two</DNT>');
+  });
+
   it('preserves non-comment MDX expressions in mdxish mode', async () => {
     const input = 'Foo {user.email} bar {user.name} baz.';
 

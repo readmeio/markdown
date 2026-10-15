@@ -255,6 +255,7 @@ describe('DNT', () => {
 
   describe.each([
     ['spaces inside the tags', 'Use<DNT> Acme </DNT>now', 'Use<span translate="no"> Acme </span>now'],
+    ['a body of only a space', 'Use<DNT> </DNT>now', 'Use<span translate="no"> </span>now'],
     ['a nested DNT', '<DNT>a <DNT>b</DNT> c</DNT>', '<span translate="no">a <span translate="no">b</span> c</span>'],
     [
       'markdown inside a nested DNT',

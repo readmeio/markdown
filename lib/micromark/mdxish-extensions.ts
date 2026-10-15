@@ -1,8 +1,17 @@
 import type { Extension as FromMarkdownExtension } from 'mdast-util-from-markdown';
 import type { Extension } from 'micromark-util-types';
 
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
+import {
+  blockQuote,
+  codeFenced,
+  definition,
+  headingAtx,
+  htmlFlow,
+  list,
+  setextUnderline,
+  thematicBreak,
+} from 'micromark-core-commonmark';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
@@ -14,6 +23,7 @@ import { jsxTableFromMarkdown } from '../mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
+import { mdxishExpressionFromMarkdown } from '../mdast-util/mdx-expression';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { dnt } from './dnt';
@@ -28,7 +38,7 @@ import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
- * Constructs disabled for every MDXish parser. 
+ * Constructs disabled for every MDXish parser.
  * -`codeIndented`: To avoid formatting 4+ column indentation as code (default commonmark behavior)
  *                  and match MDX behavior.
  * Pass `extra` to disable more on top of the shared set, never in place of it.
@@ -36,6 +46,29 @@ import { mdxExpressionLenient } from './mdx-expression-lenient';
 export const disableConstructs = (extra: readonly string[] = []): Extension => ({
   disable: { null: ['codeIndented', ...extra] },
 });
+
+// CommonMark's own block constructs, from micromark's `document`, `contentInitial` and
+// `flow` tables (`codeIndented` is already off). The set is closed, so this list is complete.
+const COMMONMARK_BLOCK_CONSTRUCTS = [
+  blockQuote,
+  list,
+  definition,
+  codeFenced,
+  headingAtx,
+  htmlFlow,
+  setextUnderline,
+  thematicBreak,
+];
+
+const BLOCK_HOOKS = ['document', 'contentInitial', 'flowInitial', 'flow'] as const;
+
+/** Names of the block constructs an extension registers, read off the extension itself. */
+const blockConstructNames = (extension: Extension): string[] =>
+  BLOCK_HOOKS.flatMap(hook =>
+    Object.values(extension[hook] ?? {})
+      .flat()
+      .flatMap(construct => (construct?.name ? [construct.name] : [])),
+  );
 
 interface ExtensionPair {
   /** Produces expression syntax, so safeMode drops it. */
@@ -61,12 +94,12 @@ const REGISTRY = {
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
-  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown, expression: true },
+  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxishExpressionFromMarkdown, expression: true },
   // `allowEmpty` is the package default; passed explicitly because `mdx-jsx`
   // registers the same tokenizer with it off for attribute expressions.
   mdxExpression: {
     syntax: () => mdxExpression({ allowEmpty: true }),
-    fromMarkdown: mdxExpressionFromMarkdown,
+    fromMarkdown: mdxishExpressionFromMarkdown,
     expression: true,
   },
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
@@ -143,11 +176,17 @@ export const FEATURES = {
   /**
    * `lib/stripComments.ts` — parses only to strip comments, then re-stringifies,
    * so it needs the tokenizers that keep a construct in one piece across the
-   * round trip. 
+   * round trip.
    * No inline syntax: nothing here rewrites prose, and magic blocks are already excluded.
    */
   stripComments: [...BLOCK_CLAIMS.filter(feature => feature !== 'magicBlock'), 'mdxExpression'],
 } satisfies Record<string, MdxishFeature[]>;
+
+interface MdxishExtensionsOptions {
+  disable?: readonly string[];
+  phrasing?: boolean;
+  safeMode?: boolean;
+}
 
 /**
  * Builds the extension lists for an MDXish parser. `features` is an unordered
@@ -159,16 +198,20 @@ export const FEATURES = {
  */
 export function mdxishExtensions(
   features: readonly MdxishFeature[],
-  { disable = [], safeMode = false }: { disable?: readonly string[]; safeMode?: boolean } = {},
+  { disable = [], phrasing = false, safeMode = false }: MdxishExtensionsOptions = {},
 ): { fromMarkdownExtensions: FromMarkdownExtension[]; micromarkExtensions: Extension[] } {
   const enabled: Set<string> = new Set(features);
   const entries: [string, ExtensionPair][] = Object.entries(REGISTRY);
   const selected = entries
     .filter(([feature, pair]) => enabled.has(feature) && !(safeMode && pair.expression))
     .map(([, pair]) => pair);
+  const syntaxes = selected.flatMap(({ syntax }) => (syntax ? [syntax()] : []));
+  const blocks = phrasing
+    ? [...COMMONMARK_BLOCK_CONSTRUCTS.map(construct => construct.name), ...syntaxes.flatMap(blockConstructNames)]
+    : [];
 
   return {
     fromMarkdownExtensions: selected.flatMap(({ fromMarkdown }) => (fromMarkdown ? [fromMarkdown()] : [])),
-    micromarkExtensions: [disableConstructs(disable), ...selected.flatMap(({ syntax }) => (syntax ? [syntax()] : []))],
+    micromarkExtensions: [disableConstructs([...disable, ...blocks]), ...syntaxes],
   };
 }

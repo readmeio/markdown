@@ -48,7 +48,8 @@ const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
  */
 const parsePhrasingChildren = (value: string, safeMode: boolean, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
-  if (!trimmed) return [];
+  // A body of only spaces is still a separator: `Use<DNT> </DNT>now` reads "Use now".
+  if (!trimmed) return spaceText(value);
   const [paragraph] = getInlineMdProcessor({ phrasing: true, safeMode }).parse(trimmed).children as Paragraph[];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource(paragraph.children, trimmed);
