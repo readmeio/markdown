@@ -136,6 +136,16 @@ describe('Cards', () => {
       const grid = container.querySelector<HTMLElement>('.CardsGrid');
       expect(grid).toBeInTheDocument();
       expect(grid?.style.getPropertyValue('--CardsGrid-columns')).toBe('2');
+      expect(grid).toHaveAttribute('data-fixed-columns');
+    });
+
+    it('leaves an auto-fit grid unmarked so the row can wrap freely', () => {
+      const { container } = render(
+        <CardsGrid>
+          <Card title="First">Content</Card>
+        </CardsGrid>,
+      );
+      expect(container.querySelector('.CardsGrid')).not.toHaveAttribute('data-fixed-columns');
     });
   });
 
