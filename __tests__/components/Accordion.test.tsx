@@ -90,6 +90,7 @@ describe('Accordion', () => {
       );
       const icon = container.querySelector('span.Accordion-icon');
       expect(icon).toBeInTheDocument();
+      expect(icon).toHaveClass('Icon-emoji');
       expect(icon).toHaveTextContent('🚀');
     });
 
