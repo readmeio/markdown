@@ -14,34 +14,16 @@ import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
-// Block constructs that cannot start inside phrasing content. Without this an inline
-// body like `[a]: https://b.com` parses as a link definition and renders nothing.
-const BLOCK_CONSTRUCTS = [
-  'blockQuote',
-  'codeFenced',
-  'definition',
-  'headingAtx',
-  'htmlFlow',
-  'list',
-  'setextUnderline',
-  'thematicBreak',
-  'mdxFlowExpression',
-  'mdxComponent',
-  'htmlBlockComponent',
-  'magicBlock',
-  'jsxTable',
-  'dnt',
-];
-
 interface InlineMdProcessorOptions {
-  /** Parse the body as phrasing only, so it always comes back as one paragraph. */
+  // Phrasing only, so the body always comes back as one paragraph. Without it an inline
+  // body like `[a]: https://b.com` parses as a link definition and renders nothing.
   phrasing?: boolean;
   safeMode?: boolean;
 }
 
 const buildInlineMdProcessor = ({ phrasing = false, safeMode = false }: InlineMdProcessorOptions) => {
   const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
-    disable: phrasing ? BLOCK_CONSTRUCTS : [],
+    phrasing,
     safeMode,
   });
 
@@ -82,9 +64,7 @@ export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
  * signal to decide eligibility.
  */
 export const hasExpressionAttr = (attributes: MdxAttributes): boolean =>
-  attributes.some(
-    attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-  );
+  attributes.some(attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null);
 
 /**
  * Factory for the `mdxJsxTextElement` node shape. `position` is optional
