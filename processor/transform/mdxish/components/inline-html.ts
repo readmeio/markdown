@@ -1,5 +1,4 @@
-import type { Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, RootContent, Text } from 'mdast';
-import type { MdxTextExpression } from 'mdast-util-mdx-expression';
+import type { Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -13,17 +12,14 @@ import { getInlineMdProcessor, hasExpressionAttr, isPascalCase, toMdxJsxTextElem
 const LEADING_SPACES_RE = /^[ \t]+/;
 const TRAILING_SPACES_RE = /[ \t]+$/;
 
-const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
+// gfm unescapes `\|` in a cell's inline code, but a body reparsed on its own has no cell.
+const CELL_CODE_PIPE_RE = /\\\|/g;
 
 type PromoteHtml = (node: Html) => PhrasingContent;
 
-// Every inline-only parent, not just paragraphs: a tokenized `<DNT>` in a heading or
-// table cell is one html node too, and its markdown only parses once promoted.
-const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
+const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
 
-// gfm unescapes `\|` (never `\\`) in a cell's inline code. A body reparsed inside a cell
-// has no cell context, so its code keeps the backslash and the table writer would double it.
-const CELL_CODE_PIPE_RE = /\\\|/g;
+const isInlineParent = (node: Node): node is Parent => INLINE_ONLY_PARENT_TYPES.has(node.type);
 
 const unescapeCellCode = (node: Node): void => {
   visit(node, 'inlineCode', (code: InlineCode) => {
@@ -31,6 +27,7 @@ const unescapeCellCode = (node: Node): void => {
   });
 };
 
+/** Promote every html child of an inline parent (paragraph, heading, table cell). */
 const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
   visit(tree, isInlineParent, (parent: Parent) => {
     parent.children = parent.children.map(child => {
@@ -42,50 +39,24 @@ const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
   });
 };
 
-// A lone tag or `{}` parses as a block on its own. It stays that node, inline.
-const blockAsInline = (node: RootContent, promote: PromoteHtml): PhrasingContent | undefined => {
-  if (node.type === 'html') return promote(node as Html);
-  if (node.type === 'mdxFlowExpression') return { ...node, type: 'mdxTextExpression' } satisfies MdxTextExpression;
-  return undefined;
-};
-
-// One body block as phrasing: a paragraph's children, or a lone tag or `{}` as that node.
-const blockToPhrasing = (block: RootContent, source: string, promote: PromoteHtml): PhrasingContent[] | undefined => {
-  // These nodes root a new coordinate space: their offsets index into `source`.
-  if (block.type !== 'paragraph') {
-    stampReparseSource([block], source);
-    const inline = blockAsInline(block, promote);
-    return inline && [inline];
-  }
-  const paragraph = block as Paragraph;
-  stampReparseSource(paragraph.children, source);
-  // A nested tokenized tag is one html child here too, so it needs the same promotion.
-  promoteHtmlIn(paragraph, promote);
-  return paragraph.children;
-};
-
 /**
- * Parse the body of an inline component as phrasing content. Remark wraps bare
- * text in a paragraph, so each block is flattened into valid `mdxJsxTextElement`
- * content.
+ * Parse the body of an inline component as phrasing content. Remark always
+ * wraps bare text in a paragraph; flatten that single-paragraph wrapper so
+ * the result is valid `mdxJsxTextElement` content.
  *
- * A `<DNT>` body can span lines, so a lone tag or `{}` can sit above or below text.
+ * The body is parsed as phrasing only, so it is always one paragraph.
  */
 const parsePhrasingChildren = (value: string, safeMode: boolean, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
   if (!trimmed) return [];
-  const blocks = getInlineMdProcessor({ safeMode }).parse(trimmed).children;
-  const phrasing = blocks.map(block => blockToPhrasing(block, trimmed, promote));
-  // Any other block (`- x`, `# x`) keeps the body as plain text instead of dropping it.
-  if (phrasing.some(nodes => !nodes)) return [{ type: 'text', value: trimmed }];
-  // Blocks sat on their own lines, so a line break keeps them apart.
-  const joined = (phrasing as PhrasingContent[][]).flatMap((nodes, i) =>
-    i ? [{ type: 'text', value: '\n' } satisfies Text, ...nodes] : nodes,
-  );
+  const [paragraph] = getInlineMdProcessor({ phrasing: true, safeMode }).parse(trimmed).children as Paragraph[];
+  // These children root a new coordinate space: their offsets index into `trimmed`.
+  stampReparseSource(paragraph.children, trimmed);
+  promoteHtmlIn(paragraph, promote);
   // Edge spaces are content: `Use<DNT> Acme </DNT>now` reads "Use Acme now".
   return [
     ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
-    ...joined,
+    ...paragraph.children,
     ...spaceText(TRAILING_SPACES_RE.exec(value)?.[0]),
   ];
 };
@@ -136,7 +107,7 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
 
 /**
  * Transform inline html nodes with expression attributes
- * inside paragraphs into `mdxJsxTextElement`s.
+ * inside inline parents into `mdxJsxTextElement`s.
  *
  * Runs after `mdxishComponentBlocks`, which skips paragraph-parented html
  * nodes and leaves them for this pass. Two producers put html nodes inside

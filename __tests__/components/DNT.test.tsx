@@ -281,6 +281,19 @@ describe('DNT', () => {
     });
   });
 
+  describe.each([
+    ['a link definition shape', 'x <DNT>[a]: https://b.com</DNT> y'],
+    ['a bare url', 'x <DNT>https://b.com</DNT> y'],
+  ])('with %s inside', (_label, md) => {
+    it.each(editorModes)('newEditorTypes %s: renders the url as a link', newEditorTypes => {
+      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: renders the url as a link after a save', newEditorTypes => {
+      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+    });
+  });
+
   describe('with only a self-closing tag inside', () => {
     it.each(editorModes)('newEditorTypes %s: keeps the tag as an html child', newEditorTypes => {
       const tree = parseMdxish('Use <DNT><Badge label="Acme" /></DNT> today', { newEditorTypes });
