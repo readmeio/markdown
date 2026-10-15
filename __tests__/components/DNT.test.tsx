@@ -218,6 +218,14 @@ describe('DNT', () => {
       expect(title?.textContent).toContain('Use Acme now');
     });
 
+    it.each(cases)('keeps the title of %s as one node so a flex title keeps its spaces', (_label, md, selector) => {
+      const title = renderDoc(md, false).querySelector(selector);
+      const wrapper = title?.querySelector('span[translate="no"]')?.parentElement;
+
+      expect(wrapper).not.toBe(title);
+      expect(wrapper?.textContent).toBe('Use Acme now');
+    });
+
     it('keeps a title without a DNT as plain text', () => {
       const title = renderDoc('<Accordion title="Use <b>Acme</b> now">\nbody\n</Accordion>', false).querySelector('summary');
 
