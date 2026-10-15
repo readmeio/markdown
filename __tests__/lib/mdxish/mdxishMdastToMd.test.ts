@@ -2395,6 +2395,89 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
+  describe('DNT round trip', () => {
+    const docs = [
+      'Hello <DNT>Acme **Cloud**</DNT> world\n',
+      '<DNT>Acme</DNT> is great\n',
+      '<DNT>Acme</DNT>\n',
+      '<DNT></DNT>\n**after**\n',
+      '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after\n',
+      '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after\n',
+      '<DNT>a <DNT>b</DNT> c</DNT> after\n',
+      'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end\n',
+      'Use<DNT> Acme </DNT>now\n',
+      '<DNT>Acme\nCloud</DNT> after\n',
+      '<DNT>\\*literal\\*</DNT> after\n',
+      'Use <DNT>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</DNT> today\n',
+      '| a                   |\n| ------------------- |\n| <DNT>**Acme**</DNT> |\n',
+      '| a                        |\n| ------------------------ |\n| Before <DNT></DNT> after |\n',
+      'Use <DNT>{/* internal note */}</DNT> now.\n',
+      'Use <DNT><Badge label="Acme" /></DNT> today\n',
+      '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\|b`</DNT> now. |\n',
+      '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\\\b`</DNT> now. |\n',
+      'Hello <DNT>{/* note */}\nkept</DNT> after\n',
+      'Hello <DNT><Badge label="Acme" />\nkept</DNT> after\n',
+    ];
+
+    it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
+      docs.forEach(doc => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(doc);
+      });
+    });
+
+    it('keeps the escaped pipe in a cell code span of any promoted inline component', () => {
+      const doc =
+        '| a                                           |\n| ------------------------------------------- |\n| Use <Anchor href={"x"}>`a\\|b`</Anchor> now. |\n';
+
+      expect(roundTripMdxish(doc)).toBe(doc);
+      expect(roundTripMdxish(doc, { newEditorTypes: true })).toContain('`a|b`');
+    });
+  });
+
+  describe('block DNT round trip', () => {
+    const saved = '<DNT>\n  Para one **bold**\n\n  - item\n</DNT>\n\nafter\n';
+
+    it.each([false, true])('writes a DNT spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>one\n\ntwo</DNT>\n', { newEditorTypes })).toBe('<DNT>\n  one\n\n  two\n</DNT>\n');
+    });
+
+    it.each([false, true])('writes a block DNT as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter', { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('round-trips a saved block DNT byte for byte with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
+    });
+
+    it.each([false, true])('keeps the block after an empty block DNT with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<DNT>\n</DNT>\n\n# Heading\n', { newEditorTypes })).toBe('<DNT>\n\n</DNT>\n\n# Heading\n');
+    });
+
+    describe.each([
+      ['an expression', '<DNT>\n{"</DNT>"}</DNT>\n', '<DNT>\n  {"</DNT>"}\n</DNT>\n'],
+      ['an inline DNT', '<DNT>\n<DNT>inner</DNT></DNT>\n', '<DNT>\n  <DNT>inner</DNT>\n</DNT>\n'],
+      [
+        'an inline DNT opened on an earlier line',
+        '<DNT>\nkept <DNT>inner\nstill</DNT></DNT>\n',
+        '<DNT>\n  kept <DNT>inner\n  still</DNT>\n</DNT>\n',
+      ],
+    ])('with a closer inside %s on the last line', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its own closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+
+    describe.each([
+      ['a blockquote', '> <DNT>\n> first\n> </DNT> later\n', '> <DNT>\n>   first\n> </DNT>\n>\n> later\n'],
+      ['a list item', '- <DNT>\n  first\n  </DNT> later\n', '- <DNT>\n    first\n  </DNT>\n  later\n'],
+      ['trailing spaces', '<DNT>\nfirst\n</DNT>   \n', '<DNT>\n  first\n</DNT>\n'],
+    ])('in %s', (_label, doc, expected) => {
+      it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {
+        expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
+      });
+    });
+  });
+
   describe('mdxish dialect', () => {
     it('serializes a legacy callout in JSX form, like the editor serializer', () => {
       const result = roundTripMdxish('> 📘 Nota\n>\n> El cuerpo.\n');

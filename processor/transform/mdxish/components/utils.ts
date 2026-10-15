@@ -14,8 +14,36 @@ import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
-const buildInlineMdProcessor = (safeMode: boolean) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
+// Block constructs that cannot start inside phrasing content. Without this an inline
+// body like `[a]: https://b.com` parses as a link definition and renders nothing.
+const BLOCK_CONSTRUCTS = [
+  'blockQuote',
+  'codeFenced',
+  'definition',
+  'headingAtx',
+  'htmlFlow',
+  'list',
+  'setextUnderline',
+  'thematicBreak',
+  'mdxFlowExpression',
+  'mdxComponent',
+  'htmlBlockComponent',
+  'magicBlock',
+  'jsxTable',
+  'dnt',
+];
+
+interface InlineMdProcessorOptions {
+  /** Parse the body as phrasing only, so it always comes back as one paragraph. */
+  phrasing?: boolean;
+  safeMode?: boolean;
+}
+
+const buildInlineMdProcessor = ({ phrasing = false, safeMode = false }: InlineMdProcessorOptions) => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
+    disable: phrasing ? BLOCK_CONSTRUCTS : [],
+    safeMode,
+  });
 
   return unified()
     .data('micromarkExtensions', micromarkExtensions)
@@ -24,19 +52,19 @@ const buildInlineMdProcessor = (safeMode: boolean) => {
     .use(remarkGfm);
 };
 
-const processorCache = new Map<boolean, ReturnType<typeof buildInlineMdProcessor>>();
+const processorCache = new Map<string, ReturnType<typeof buildInlineMdProcessor>>();
 
 /**
  * Unified processor for re-parsing the body of an MDX component
- * Memoized based on the argument value so we don't pay the construction cost on every parse
- * Currently the argument is only safeMode, but we could add more arguments in the future,
- * in which case the key would need to be extend to include the new arguments.
+ * Memoized based on the argument values so we don't pay the construction cost on every parse
+ * The cache key is built from every option, so a new option has to be added to it too.
  */
-export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
-  let processor = processorCache.get(safeMode);
+export const getInlineMdProcessor = (options: InlineMdProcessorOptions = {}) => {
+  const key = `${!!options.phrasing}:${!!options.safeMode}`;
+  let processor = processorCache.get(key);
   if (!processor) {
-    processor = buildInlineMdProcessor(safeMode);
-    processorCache.set(safeMode, processor);
+    processor = buildInlineMdProcessor(options);
+    processorCache.set(key, processor);
   }
   return processor;
 };
