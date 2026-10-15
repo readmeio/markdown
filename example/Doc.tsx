@@ -44,6 +44,13 @@ const variables = {
   user: {
     email: 'kelly@readme.io',
     name: 'kelly joseph price',
+    // Structured values, as JWT logins can send
+    keys: [
+      { name: 'production', apiKey: 'rdme_prod_123' },
+      { name: 'sandbox', apiKey: 'rdme_test_456' },
+    ],
+    plan: { tier: 'enterprise', seats: 25 },
+    roles: ['admin', 'editor'],
   },
   defaults: [
     {
