@@ -74,6 +74,7 @@ describe('dnt tokenizer', () => {
       ['under a paragraph line, across its lines', 'Text\n<DNT>\none\n</DNT>', '<DNT>\none\n</DNT>'],
       ['in a heading', '# Use <DNT>Acme</DNT> now', '<DNT>Acme</DNT>'],
       ['with attributes', 'Hi <DNT title={"x"}>Acme</DNT>', '<DNT title={"x"}>Acme</DNT>'],
+      ['with a brace in an attribute string', 'Hi <DNT title={"}"}>Acme</DNT>', '<DNT title={"}"}>Acme</DNT>'],
       ['with a nested DNT', '<DNT><DNT>a</DNT> b</DNT> c', '<DNT><DNT>a</DNT> b</DNT>'],
       ['with a closer in inline code', '<DNT>a `</DNT>` b</DNT> c', '<DNT>a `</DNT>` b</DNT>'],
       ['with a closer in inline code across a soft break', '<DNT>a `x\n</DNT>` b</DNT> c', '<DNT>a `x\n</DNT>` b</DNT>'],
