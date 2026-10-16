@@ -35,6 +35,9 @@ interface AlignedLine {
 // Source lines a derived line can skip: blank, or only blockquote markers left by a blank line.
 const CONTENTLESS_LINE_RE = /^[\s>]*$/;
 
+// Markdown ends a line at `\r\n`, `\r` or `\n`.
+const LINE_ENDING_RE = /\r\n|\r|\n/g;
+
 const buildComponentBodyProcessor = (safeMode: boolean) => {
   const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
   return unified()
@@ -61,24 +64,34 @@ const toDocumentRange = (position: Position | undefined): DocumentRange | undefi
   return { start: { ...start, offset: start.offset }, end: { ...end, offset: end.offset } };
 };
 
+/** Each line of `text` with the offset it starts at. */
+const splitLines = (text: string) => {
+  const lines: { start: number; text: string }[] = [];
+  let start = 0;
+  [...text.matchAll(LINE_ENDING_RE)].forEach(({ 0: ending, index }) => {
+    lines.push({ start, text: text.slice(start, index) });
+    start = index + ending.length;
+  });
+  lines.push({ start, text: text.slice(start) });
+  return lines;
+};
+
 /**
  * Pairs each derived line with the document line it came from, in order. Reshaping only
  * strips indent or container prefixes and adds/drops blank lines, so a line's content
  * always ends the document line it came from.
  */
 const alignLines = (derivedText: string, documentSource: string, range: DocumentRange): AlignedLine[] => {
-  const documentLines = documentSource.slice(range.start.offset, range.end.offset).split('\n');
+  const documentLines = splitLines(documentSource.slice(range.start.offset, range.end.offset));
   let documentLineIndex = 0;
-  let documentLineStart = range.start.offset;
 
   const findDocumentLine = (content: string) => {
     while (documentLineIndex < documentLines.length) {
-      const text = documentLines[documentLineIndex];
-      const lineStart = documentLineStart;
+      const { start, text } = documentLines[documentLineIndex];
+      const lineStart = range.start.offset + start;
       const line = range.start.line + documentLineIndex;
       const column = documentLineIndex === 0 ? range.start.column : 1;
       documentLineIndex += 1;
-      documentLineStart += text.length + 1;
 
       const trimmed = text.trimEnd();
       if (trimmed.endsWith(content)) {
@@ -94,16 +107,13 @@ const alignLines = (derivedText: string, documentSource: string, range: Document
     return {};
   };
 
-  let derivedLineStart = 0;
-  return derivedText.split('\n').map(text => {
+  return splitLines(derivedText).map(({ start: derivedLineStart, text }) => {
     const content = text.trim();
-    const aligned = {
+    return {
       derivedLineStart,
       derivedContentStart: derivedLineStart + text.indexOf(content),
       ...(content ? findDocumentLine(content) : {}),
     };
-    derivedLineStart += text.length + 1;
-    return aligned;
   });
 };
 

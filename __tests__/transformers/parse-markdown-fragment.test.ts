@@ -125,6 +125,17 @@ describe('reparseMarkdownFragment', () => {
     ]);
   });
 
+  it('maps lines and columns across lone CR line endings', () => {
+    const doc = '<Wrapper>\r**a**\r</Wrapper>';
+    const fragment = fragmentIn(doc, doc, doc, '\r**a**\r');
+    const [paragraph] = reparseMarkdownFragment(fragment, '**a**', { documentSource: doc });
+
+    expect(paragraph.position).toStrictEqual({
+      start: { line: 2, column: 1, offset: 10 },
+      end: { line: 2, column: 6, offset: 15 },
+    });
+  });
+
   it('maps a body on the same line as its tags', () => {
     const doc = 'Lead <Wrapper>**a** and __b__</Wrapper> out';
     const parent = '<Wrapper>**a** and __b__</Wrapper>';
