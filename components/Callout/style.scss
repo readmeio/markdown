@@ -1,3 +1,8 @@
+// Also styles the MdxishEditor callout in readmeio/readme. Its DOM differs from view mode:
+// there is no `.callout-icon` (the editor's icon button is `.Callout-icon`, positioned outside
+// the content), so a `:has()` or structural selector written for view mode misses it.
+// Before merging a change here, link this checkout into readmeio/readme (`make link-markdown`)
+// and check the Components/MdxishEditor/Blocks stories in its Storybook for regressions.
 @import '../../styles/mixins/when-color-mode-dark.scss';
 
 @mixin callout($l-offset: 1.25rem) {
