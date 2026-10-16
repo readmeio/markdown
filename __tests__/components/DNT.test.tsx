@@ -47,6 +47,30 @@ describe('DNT', () => {
     });
   });
 
+  describe.each([
+    ['a footnote defined below', '<DNT>Hi[^1]</DNT>\n\n[^1]: A note.'],
+    ['a footnote with a mixed case label', 'Use <DNT>Hi[^Note]</DNT> now\n\n[^note]: A note.'],
+  ])('with %s', (_label, md) => {
+    it.each(editorModes)('newEditorTypes %s: links the footnote', newEditorTypes => {
+      const container = renderDoc(md, newEditorTypes);
+
+      expect(container.querySelector('span[translate="no"] sup a[data-footnote-ref]')?.textContent).toBe('1');
+      expect(container.querySelector('section.footnotes li')?.textContent).toContain('A note.');
+    });
+
+    it.each(editorModes)('newEditorTypes %s: still links the footnote after a save', newEditorTypes => {
+      const container = renderSaved(md, newEditorTypes);
+
+      expect(container.querySelector('span[translate="no"] sup a[data-footnote-ref]')?.textContent).toBe('1');
+    });
+  });
+
+  it.each(editorModes)('newEditorTypes %s: keeps an undefined footnote as text', newEditorTypes => {
+    const container = renderDoc('<DNT>Hi[^1]</DNT>', newEditorTypes);
+
+    expect(container.querySelector('span[translate="no"]')?.innerHTML).toBe('Hi[^1]');
+  });
+
   describe('block form', () => {
     const block = '<DNT>\nPara one **bold**\n\nPara two\n</DNT>\n\nafter';
     const html = '<div translate="no"><p>Para one <strong>bold</strong></p><p>Para two</p></div><p>after</p>';
