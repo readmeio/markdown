@@ -1,4 +1,4 @@
-import type { Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
+import type { FootnoteDefinition, Html, InlineCode, Node, Paragraph, Parent, PhrasingContent, Root, Text } from 'mdast';
 import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
@@ -16,6 +16,7 @@ const TRAILING_SPACES_RE = /[ \t]+$/;
 const CELL_CODE_PIPE_RE = /\\\|/g;
 
 type PromoteHtml = (node: Html) => PhrasingContent;
+type BodyProcessor = ReturnType<typeof getInlineMdProcessor>;
 
 const spaceText = (value: string | undefined): Text[] => (value ? [{ type: 'text', value }] : []);
 
@@ -46,11 +47,11 @@ const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
  *
  * The body is parsed as phrasing only, so it is always one paragraph.
  */
-const parsePhrasingChildren = (value: string, safeMode: boolean, promote: PromoteHtml): PhrasingContent[] => {
+const parsePhrasingChildren = (value: string, processor: BodyProcessor, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
   // A body of only spaces is still a separator: `Use<DNT> </DNT>now` reads "Use now".
   if (!trimmed) return spaceText(value);
-  const [paragraph] = getInlineMdProcessor({ phrasing: true, safeMode }).parse(trimmed).children as Paragraph[];
+  const [paragraph] = processor.parse(trimmed).children as Paragraph[];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource(paragraph.children, trimmed);
   promoteHtmlIn(paragraph, promote);
@@ -72,7 +73,7 @@ const parsePhrasingChildren = (value: string, safeMode: boolean, promote: Promot
  *
  * Returns the original node unchanged when it doesn't qualify.
  */
-const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMode: boolean): PhrasingContent => {
+const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, processor: BodyProcessor): PhrasingContent => {
   const parsed = parseTag((node.value ?? '').trim(), parseOpts);
   if (!parsed) return node;
 
@@ -99,11 +100,11 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
   const inner = contentAfterTag.slice(0, closeIdx);
   // A promoted body child keeps the stamp its offsets index into.
   const promote: PromoteHtml = child => {
-    const promoted = promoteInlineHtml(child, parseOpts, safeMode);
+    const promoted = promoteInlineHtml(child, parseOpts, processor);
     if (child.data?.reparseSource) stampReparseSource([promoted], child.data.reparseSource);
     return promoted;
   };
-  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, safeMode, promote), node.position);
+  return toMdxJsxTextElement(tag, attributes, parsePhrasingChildren(inner, processor, promote), node.position);
 };
 
 /**
@@ -126,8 +127,13 @@ const promoteInlineHtml = (node: Html, parseOpts: ParseAttributesOptions, safeMo
 const mdxishInlineMdxHtmlBlocks: Plugin<[{ safeMode?: boolean }?], Root> = (opts = {}) => tree => {
   const safeMode = !!opts.safeMode;
   const parseOpts: ParseAttributesOptions = { preserveExpressionsAsText: safeMode };
+  const footnotes: string[] = [];
+  visit(tree, 'footnoteDefinition', (def: FootnoteDefinition) => {
+    footnotes.push(def.identifier.toUpperCase());
+  });
+  const processor = getInlineMdProcessor({ footnotes, phrasing: true, safeMode });
 
-  promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, safeMode));
+  promoteHtmlIn(tree, child => promoteInlineHtml(child, parseOpts, processor));
 };
 
 export default mdxishInlineMdxHtmlBlocks;
