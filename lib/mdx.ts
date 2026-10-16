@@ -38,7 +38,17 @@ export const mdx = (
 
   // @ts-expect-error - @todo: coerce the processor and tree to the correct
   // type depending on the value of hast
-  return processor.stringify(processor.runSync(tree, file));
+  const string = processor.stringify(processor.runSync(tree, file));
+
+  // @note: mdast-util-mdx-jsx's containerFlow function inserts `\n\n` between
+  // all children of flow JSX elements. For table elements this introduces blank
+  // lines between siblings (e.g. </th>\n\n<th>, </thead>\n\n<tbody>) which the
+  // MDX renderer treats as new AST nodes, breaking table structure. Collapse
+  // these to single newlines while preserving blank lines inside cell content.
+  return string.replace(
+    /(<\/(?:th|td|tr|thead|tbody)>)\n\n(\s*<(?:th|td|tr|thead|tbody)[\s>])/g,
+    '$1\n$2',
+  );
 };
 
 export default mdx;
