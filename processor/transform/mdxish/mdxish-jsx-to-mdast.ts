@@ -9,6 +9,7 @@ import { SKIP, visit } from 'unist-util-visit';
 
 import { NodeTypes } from '../../../enums';
 import { INLINE_ONLY_PARENT_TYPES } from '../../../lib/constants';
+import { findQuotedAttributeValue } from '../../../lib/utils/mdxish/mdxish-component-tag-parser';
 import { getAttrs, isMDXElement } from '../../utils';
 
 import { type MarkdownFragment, reparseMarkdownFragment } from './parse-markdown-fragment';
@@ -44,8 +45,6 @@ const FIGURE_COMPLETE_REGEX = /^<figure(\s[^>]*)?>[\s\S]*<\/figure>\s*$/;
 const FIGCAPTION_REGEX = /<figcaption>(.*?)<\/figcaption>/s;
 const FIGCAPTION_OPEN_REGEX = /^<figcaption>$/;
 const FIGCAPTION_CLOSE_REGEX = /^<\/figcaption>$/;
-// Opens a quoted `caption` attribute; the quote is captured to find its closer.
-const CAPTION_ATTRIBUTE_OPENER_REGEX = /\bcaption=(["'])/;
 
 /**
  * Extracts an image or image-block from a node. If the node itself is an image/image-block,
@@ -311,12 +310,9 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
 const findCaptionFragment = (image: MdxJsxFlowElement, documentSource: string): MarkdownFragment => {
   const value = documentSource.slice(image.position?.start.offset, image.position?.end.offset);
   const parentNode = { position: image.position, value };
-  const opener = CAPTION_ATTRIBUTE_OPENER_REGEX.exec(value);
-  if (!opener) return { parentNode, offsetInParentNode: 0, rawText: value };
-
-  const offsetInParentNode = opener.index + opener[0].length;
-  const closingQuote = value.indexOf(opener[1], offsetInParentNode);
-  return { parentNode, offsetInParentNode, rawText: value.slice(offsetInParentNode, closingQuote) };
+  const caption = findQuotedAttributeValue(value, 'caption');
+  if (!caption) return { parentNode, offsetInParentNode: 0, rawText: value };
+  return { parentNode, offsetInParentNode: caption.start, rawText: value.slice(caption.start, caption.end) };
 };
 
 /** Parses an image caption's markdown, positioned where the caption sits in the `<Image>` tag. */

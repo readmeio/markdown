@@ -237,6 +237,15 @@ describe('mdxish-jsx-to-mdast transformer', () => {
           ]);
         });
 
+        // Only the `caption` attribute itself: not `data-caption`, nor `caption=` inside another value.
+        it.each([
+          ['a `data-caption` attribute', 'data-caption="wrong"'],
+          ['`caption=` inside another attribute', 'alt="the caption=\'wrong\' here"'],
+        ])('resolves the caption past %s', (_, otherAttribute) => {
+          const md = `<Image src="https://x.com/a.png" ${otherAttribute} caption="A **bold** cap" />`;
+          expect(sourceSlicesUnder(md, isImageBlock).slice(1)).toStrictEqual(captionSlices('A **bold** cap'));
+        });
+
         // RM-18923: captions went through the strict MDX parser, so a stray `<` threw and
         // took down the whole editor parse.
         it.each([
