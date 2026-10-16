@@ -3,7 +3,7 @@ import type { Element, Parent, RootContent, Text } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
-import { findElementByTagName, parseMdxish, sourceSlicesUnder } from '../../helpers';
+import { findElementByTagName, parseMdxish, parseMdxishWithSlices, sourceSlicesUnder } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -2407,6 +2407,17 @@ asdasdasd
         'text',
       ]);
       expect(slices.every(([, slice]) => slice === callout)).toBe(true);
+    });
+
+    it('gives each empty block its own range', () => {
+      const empty = '[block:parameters]\n{}\n[/block]';
+      const md = `${empty}\n\nMid\n\n${empty}`;
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+      const [first, second] = tree.children.filter(child => child.type === 'table');
+
+      expect(first).not.toBe(second);
+      expect([first.position?.start.offset, second.position?.start.offset]).toStrictEqual([0, md.lastIndexOf(empty)]);
+      expect(sliceOf(first)).toBe(empty);
     });
 
     it('gives every node of a parameters table the block range', () => {

@@ -342,23 +342,24 @@ function transformMagicBlock(
   const { compatibilityMode = false, hardBreaks = true, safeMode = false } = options;
 
   // Handle empty data by returning placeholder nodes for known block types
-  // This allows the editor to show appropriate placeholder UI instead of nothing
+  // This allows the editor to show appropriate placeholder UI instead of nothing.
+  // Each is cloned, since every block's output gets that block's position.
   if (Object.keys(data).length < 1) {
     switch (blockType) {
       case 'image':
-        return [EMPTY_IMAGE_PLACEHOLDER];
+        return [structuredClone(EMPTY_IMAGE_PLACEHOLDER)];
       case 'embed':
-        return [EMPTY_EMBED_PLACEHOLDER];
+        return [structuredClone(EMPTY_EMBED_PLACEHOLDER)];
       case 'code':
-        return [EMPTY_CODE_PLACEHOLDER];
+        return [structuredClone(EMPTY_CODE_PLACEHOLDER)];
       case 'callout':
-        return [EMPTY_CALLOUT_PLACEHOLDER];
+        return [structuredClone(EMPTY_CALLOUT_PLACEHOLDER)];
       case 'parameters':
       case 'table':
-        return [EMPTY_TABLE_PLACEHOLDER];
+        return [structuredClone(EMPTY_TABLE_PLACEHOLDER)];
       case 'recipe':
       case 'tutorial-tile':
-        return [EMPTY_RECIPE_PLACEHOLDER];
+        return [structuredClone(EMPTY_RECIPE_PLACEHOLDER)];
       default:
         return [{ type: 'paragraph', children: [{ type: 'text', value: rawValue }] }];
     }
