@@ -3,7 +3,7 @@ import type { Element, Parent, RootContent, Text } from 'hast';
 import { toHtml } from 'hast-util-to-html';
 
 import { mdxish } from '../../../lib';
-import { findElementByTagName, parseMdxish } from '../../helpers';
+import { findElementByTagName, parseMdxish, parseMdxishWithSlices, sourceSlicesUnder } from '../../helpers';
 
 describe('mdxish magic blocks', () => {
   describe('image block', () => {
@@ -2383,6 +2383,49 @@ asdasdasd
 
       const htmlBlockNode = findElementByTagName(ast, 'html-block');
       expect(htmlBlockNode).not.toBeNull();
+    });
+  });
+
+  // RM-18923: magic block output had no position, or offsets into its JSON fields. It is built
+  // from JSON, so every node now takes the whole `[block:…]` range.
+  describe('positions', () => {
+    const callout = '[block:callout]\n{"type":"info","title":"T","body":"**b**"}\n[/block]';
+
+    it.each([
+      ['editor', true, 'rdme-callout'],
+      ['renderer', false, 'Callout'],
+    ])('gives every node of a callout the block range (%s path)', (_, newEditorTypes, rootLabel) => {
+      const isCallout = (node: { name?: string; type: string }) => node.type === rootLabel || node.name === rootLabel;
+      const slices = sourceSlicesUnder(`Intro\n\n${callout}`, isCallout, { newEditorTypes });
+
+      expect(slices.map(([label]) => label)).toStrictEqual([
+        rootLabel,
+        'heading',
+        'text',
+        'paragraph',
+        'strong',
+        'text',
+      ]);
+      expect(slices.every(([, slice]) => slice === callout)).toBe(true);
+    });
+
+    it('gives each empty block its own range', () => {
+      const empty = '[block:parameters]\n{}\n[/block]';
+      const md = `${empty}\n\nMid\n\n${empty}`;
+      const { tree, sliceOf } = parseMdxishWithSlices(md, { newEditorTypes: true });
+      const [first, second] = tree.children.filter(child => child.type === 'table');
+
+      expect(first).not.toBe(second);
+      expect([first.position?.start.offset, second.position?.start.offset]).toStrictEqual([0, md.lastIndexOf(empty)]);
+      expect(sliceOf(first)).toBe(empty);
+    });
+
+    it('gives every node of a parameters table the block range', () => {
+      const parameters = '[block:parameters]\n{"data":{"h-0":"A","0-0":"**x**"},"cols":1,"rows":1}\n[/block]';
+      const slices = sourceSlicesUnder(parameters, ({ type }) => type === 'table');
+
+      expect(slices.map(([label]) => label)).toStrictEqual(['table', 'tableRow', 'tableHead', 'text', 'tableRow', 'tableCell', 'strong', 'text']); // prettier-ignore
+      expect(slices.every(([, slice]) => slice === parameters)).toBe(true);
     });
   });
 });
