@@ -10,10 +10,21 @@ $iphone-plus: 414px;
   display: grid;
   gap: var(--CardsGrid-gap);
   grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
-  // Fixed columns can't shrink below cardWidth, so scroll the grid instead of widening the page
-  // and unsticking the hub header
-  min-width: 0;
-  overflow-x: auto;
+
+  // Treat a fixed column count as a maximum: each track is at least an Nth of the row, so wide
+  // screens still get N columns, and narrow ones drop columns instead of widening the page
+  &_wrap {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        max(
+          min(var(--CardsGrid-cardWidth), 100%),
+          calc((100% - (var(--CardsGrid-columns) - 1) * var(--CardsGrid-gap)) / var(--CardsGrid-columns))
+        ),
+        1fr
+      )
+    );
+  }
 }
 
 .Card {

@@ -78,6 +78,22 @@ describe('Cards', () => {
       expect(container.querySelector('div.Card')).toBeInTheDocument();
     });
 
+    it('only wraps a fixed column count when cardWidth is a length', () => {
+      const grid = (props: React.ComponentProps<typeof CardsGrid>) =>
+        render(
+          <CardsGrid {...props}>
+            <Card title="First">Content</Card>
+          </CardsGrid>,
+        ).container.querySelector('.CardsGrid');
+
+      expect(grid({ columns: 4 })).toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: '3', cardWidth: '10em' })).toHaveClass('CardsGrid_wrap');
+      expect(grid({})).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 'auto-fit' })).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 3, cardWidth: 'auto' })).not.toHaveClass('CardsGrid_wrap');
+      expect(grid({ columns: 3, cardWidth: 'min-content' })).not.toHaveClass('CardsGrid_wrap');
+    });
+
     it('renders icon and badge props', () => {
       const { container } = render(
         <CardsGrid>
