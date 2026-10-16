@@ -41,7 +41,7 @@ Simple markdown link with `@embed` title:
 
 	Sign in to <DNT>Acme **Cloud**</DNT> to start.
 
-With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div class="readme-dnt" translate="no">`:
 
 	<DNT>
 	Acme Cloud keeps **every** name as is.
@@ -60,6 +60,8 @@ Text right after the opener is still the block form when the body has a blank li
 	Second paragraph.</DNT>
 
 Both forms are claimed whole by their own tokenizer (`lib/micromark/dnt`), so CommonMark never splits the opener from its closer.
+
+A string prop is plain text, so no tag renders inside one. `<DNT>` is the one exception: an Accordion, Card or Tab title holding `<DNT>Acme</DNT>` still shows the span, in both engines (`dntTagsToSpans` in `components/DNT.tsx`).
 
 ## Data Replacement Syntaxes
 

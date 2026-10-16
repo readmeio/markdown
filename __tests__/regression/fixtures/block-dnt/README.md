@@ -9,7 +9,7 @@ wraps whole blocks, next to the inline form it must not take over.
   parsed, and the paragraphs after it ended up inside the span. A block `<DNT>`
   is now claimed whole by its own tokenizer (`lib/micromark/dnt`), which stamps the
   node `data.tokenized` so it is promoted to a flow element, and renders as
-  `<div translate="no">`.
+  `<div class="readme-dnt" translate="no">`.
 - Text right after the opener (`<DNT>- one`) was taken as inline, so a list or a
   component on the opener line lost its markup. The closer on its own line, or
   ending a later line, or a blank line in the body, now makes it a block.

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { dntTagsToSpans } from '../DNT';
 import Icon from '../Icon';
 
 import './style.scss';
@@ -30,13 +31,15 @@ export const Card = ({
 }: CardProps) => {
   const Tag = href ? LinkComponent : 'div';
 
+  const normalizedTitle = dntTagsToSpans(title);
+
   return (
     <Tag className={`Card Card_${kind}`} href={href} target={target}>
       {icon && <Icon className="Card-icon" icon={icon} iconColor={iconColor} />}
       <div className="Card-content">
         {title && (
           <div className="Card-title">
-            {title}
+            {normalizedTitle}
             {badge && <span className="Card-badge">{badge}</span>}
             {href && <i aria-hidden="true" className="Card-arrow fa-regular fa-arrow-right" />}
           </div>

@@ -3,6 +3,11 @@
 /* stylelint-disable declaration-block-no-duplicate-properties */
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
+
+// A block `<DNT>` renders as `<div class="readme-dnt">`. A class, not `[translate='no']`,
+// since the editor root (ProseMirror) carries that attribute too.
+$block-dnt: '.readme-dnt';
+
 @mixin gfm {
   @include markdown-defaults;
   @include markdown-overrides;
@@ -270,12 +275,19 @@
 
   // When a TailwindRoot-wrapped custom block sits at the document edge, its
   // inner margins would collapse through the zeroed wrapper — trim them too.
+  // A block `<DNT>` adds one more wrapper (`translate="no"`), so reach through it as well.
   & > .readme-tailwind:first-child > :first-child,
-  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child {
+  & > .readme-tailwind:nth-child(1 of :not(style)) > :first-child,
+  & > #{$block-dnt}:first-child > :first-child,
+  & > #{$block-dnt}:nth-child(1 of :not(style)) > :first-child,
+  & > .readme-tailwind:first-child > #{$block-dnt} > :first-child,
+  & > .readme-tailwind:nth-child(1 of :not(style)) > #{$block-dnt} > :first-child {
     margin-top: 0 !important;
   }
 
-  & > .readme-tailwind:last-child > :last-child {
+  & > .readme-tailwind:last-child > :last-child,
+  & > #{$block-dnt}:last-child > :last-child,
+  & > .readme-tailwind:last-child > #{$block-dnt} > :last-child {
     margin-bottom: 0 !important;
   }
 
@@ -404,9 +416,12 @@
   }
 
   // Custom blocks (e.g. reusable content) render inside a flow TailwindRoot
-  // div, so spacing must pierce the wrapper to reach their block children.
+  // div, and a block `<DNT>` inside a `translate="no"` div, so spacing must
+  // pierce the wrappers to reach their block children.
   > *,
-  > .readme-tailwind > * {
+  > .readme-tailwind > *,
+  > #{$block-dnt} > *,
+  > .readme-tailwind > #{$block-dnt} > * {
     margin-bottom: var(--markdown-spacing, 15px);
     margin-top: var(--markdown-spacing, 15px);
   }
