@@ -11,11 +11,11 @@ $iphone-plus: 414px;
   gap: var(--CardsGrid-gap);
   grid-template-columns: repeat(var(--CardsGrid-columns), minmax(var(--CardsGrid-cardWidth), 1fr));
 
-  // Treat a fixed column count as a maximum: each track is at least an Nth of the row, so wide
-  // screens still get N columns, and narrow ones drop columns instead of widening the page
+  // Treat a fixed column count as a maximum: each track is at least an Nth of the row (auto-fill keeps
+  // empty tracks so short rows stay N wide), and narrow rows drop columns instead of widening the page
   &_wrap {
     grid-template-columns: repeat(
-      auto-fit,
+      auto-fill,
       minmax(
         max(
           min(var(--CardsGrid-cardWidth), 100%),
