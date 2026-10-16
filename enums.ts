@@ -2,6 +2,7 @@ export enum NodeTypes {
   anchor = 'readme-anchor',
   callout = 'rdme-callout',
   codeTabs = 'code-tabs',
+  dnt = 'readme-dnt',
   embedBlock = 'embed-block',
   emoji = 'gemoji',
   figcaption = 'figcaption',

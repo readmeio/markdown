@@ -25,6 +25,10 @@ interface Options {
 // untouched (their children are namespaced XML, not HTML tags/components).
 const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
+// The markdown parser already parsed these children. Parsing them again drops
+// line breaks and turns escaped text back into markup.
+const PARSED_CHILDREN_COMPONENTS = new Set(['DNT']);
+
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';
 }
@@ -250,7 +254,7 @@ export const rehypeMdxishComponents = ({ components, processMarkdown }: Options)
 
       node.tagName = componentName;
       normalizeProperties(node);
-      parseTextChildren(node, processMarkdown, allComponents);
+      if (!PARSED_CHILDREN_COMPONENTS.has(componentName)) parseTextChildren(node, processMarkdown, allComponents);
     });
 
     // Remove unknown components in reverse order to preserve indices

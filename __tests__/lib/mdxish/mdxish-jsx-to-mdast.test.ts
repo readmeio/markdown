@@ -466,6 +466,116 @@ Body content
       });
     });
 
+    describe('DNT component', () => {
+      it('should transform <DNT> to a readme-dnt node inside its paragraph', () => {
+        const ast = processWithNewTypes('<DNT>Acme **Cloud**</DNT> is great');
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.dnt,
+              data: { hName: 'DNT' },
+              children: [
+                { type: 'text', value: 'Acme ' },
+                { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
+              ],
+            },
+            { type: 'text', value: ' is great' },
+          ],
+        });
+      });
+
+      it.each([
+        [
+          'markdown in the body',
+          'Hello <DNT>Acme **Cloud**</DNT> world',
+          [
+            [NodeTypes.dnt, '<DNT>Acme **Cloud**</DNT>'],
+            ['text', 'Acme '],
+            ['strong', '**Cloud**'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a DNT nested in the body',
+          'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end',
+          [
+            [NodeTypes.dnt, '<DNT>a <DNT>**b**</DNT> c</DNT>'],
+            ['text', 'a '],
+            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+            ['text', ' c'],
+          ],
+        ],
+        [
+          'a DNT alone in the body',
+          'Use <DNT><DNT>**b**</DNT></DNT> now',
+          [
+            [NodeTypes.dnt, '<DNT><DNT>**b**</DNT></DNT>'],
+            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+          ],
+        ],
+      ])('should slice every node under a DNT with %s to its own source', (_label, md, slices) => {
+        expect(resolvedSlicesUnder(md, node => node.type === NodeTypes.dnt)).toStrictEqual(slices);
+      });
+    });
+
+    describe('block DNT component', () => {
+      it('should keep a block <DNT> as a plain JSX element holding its blocks', () => {
+        const ast = processWithNewTypes('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter');
+
+        expect(ast.children).toHaveLength(2);
+        expect(ast.children[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'DNT',
+          attributes: [],
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                { type: 'text', value: 'Para one ' },
+                { type: 'strong', children: [{ type: 'text', value: 'bold' }] },
+              ],
+            },
+            { type: 'list' },
+          ],
+        });
+        expect(ast.children[1]).toMatchObject({ type: 'paragraph', children: [{ type: 'text', value: 'after' }] });
+      });
+    });
+
+    describe('nested DNT and Anchor', () => {
+      it.each([
+        [
+          'an Anchor inside a DNT',
+          '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after',
+          NodeTypes.dnt,
+          NodeTypes.anchor,
+        ],
+        [
+          'a DNT inside an Anchor',
+          '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after',
+          NodeTypes.anchor,
+          NodeTypes.dnt,
+        ],
+      ])('should turn %s into nested readme nodes', (_label, md, outer, inner) => {
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            { type: outer, children: [{ type: inner, children: [{ type: 'text', value: 'Acme' }] }] },
+            { type: 'text', value: ' after' },
+          ],
+        });
+      });
+    });
+
     describe('Recipe component', () => {
       it('should transform <Recipe /> to recipe node', () => {
         const md = '<Recipe slug="recipe-1" title="Recipe 1" />';
@@ -1308,6 +1418,28 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
+    });
+
+    it.each([
+      ['at the start of a line', '<DNT>Acme</DNT> is great', [{ type: 'text', value: ' is great' }]],
+      ['alone on its line', '<DNT>Acme</DNT>', []],
+    ])('should keep a DNT %s as one JSX element in one paragraph', (_label, md, trailing) => {
+      const ast = processWithoutNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'mdxJsxTextElement',
+            name: 'DNT',
+            children: [{ type: 'text', value: 'Acme' }],
+            position: { start: { offset: 0 }, end: { offset: '<DNT>Acme</DNT>'.length } },
+          },
+          ...trailing,
+        ],
+      });
+      expect((ast.children[0] as Paragraph).children).toHaveLength(1 + trailing.length);
     });
   });
 });

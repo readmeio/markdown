@@ -25,6 +25,7 @@ import { mdxComponentHandlers } from '../processor/plugin/mdxish-handlers';
 import { rehypeStripTags } from '../processor/plugin/strip-tags';
 import calloutTransformer from '../processor/transform/callouts';
 import codeTabsTransformer from '../processor/transform/code-tabs';
+import dntBlocksToDiv from '../processor/transform/dnt-blocks';
 import embedTransformer from '../processor/transform/embeds';
 import imageTransformer from '../processor/transform/images';
 import mdxishAnchorToJsx from '../processor/transform/mdxish/anchor-to-jsx';
@@ -34,6 +35,7 @@ import { collapseForeignContentBlankLines } from '../processor/transform/mdxish/
 import mdxishInlineMdxHtmlBlocks from '../processor/transform/mdxish/components/inline-html';
 import mdxishInlineMdxComponents from '../processor/transform/mdxish/components/inline-mdx-blocks';
 import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/mdx-blocks';
+import mdxishDntToJsx from '../processor/transform/mdxish/dnt-to-jsx';
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
@@ -224,6 +226,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
+    .use(mdxishDntToJsx)
     // The rest only a PARSER tree carries.
     // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
     .use(unwrapPins)
@@ -269,6 +272,7 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
+    .use(dntBlocksToDiv) // Block <DNT> renders as a div, inline stays a span
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip

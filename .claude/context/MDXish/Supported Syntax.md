@@ -35,6 +35,32 @@ Simple markdown link with `@embed` title:
 
 	[Embed Title](https://youtu.be/example "@embed")
 
+### Do Not Translate
+
+`<DNT>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
+
+	Sign in to <DNT>Acme **Cloud**</DNT> to start.
+
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+
+	<DNT>
+	Acme Cloud keeps **every** name as is.
+
+	- Acme CLI
+	</DNT>
+
+Text right after the opener is still the block form when the body has a blank line, or `</DNT>` starts its own line or ends a later line. So a list can start right after the tag, and a `<DNT>` around several paragraphs never drops the later ones:
+
+	<DNT>- Acme CLI
+	- Acme SDK
+	</DNT>
+
+	<DNT>First paragraph.
+
+	Second paragraph.</DNT>
+
+Both forms are claimed whole by their own tokenizer (`lib/micromark/dnt`), so CommonMark never splits the opener from its closer.
+
 ## Data Replacement Syntaxes
 
 ### User Variables
