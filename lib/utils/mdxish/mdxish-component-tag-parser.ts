@@ -69,7 +69,11 @@ export interface ParseAttributesOptions {
  * - Expression attributes: `attr={expr}` → value: MdxJsxAttributeValueExpression
  * - Unquoted attributes: `attr=value` → value: string
  */
-export const parseAttributes = (raw: string, opts: ParseAttributesOptions = {}): MdxJsxAttribute[] => {
+export const parseAttributes = (
+  raw: string,
+  opts: ParseAttributesOptions = {},
+  quotedValueRanges?: Map<string, { end: number; start: number }>,
+): MdxJsxAttribute[] => {
   const attributes: MdxJsxAttribute[] = [];
   const len = raw.length;
   let i = 0;
@@ -118,6 +122,7 @@ export const parseAttributes = (raw: string, opts: ParseAttributesOptions = {}):
           const valueStart = i;
           while (i < len && raw[i] !== quote) i += 1;
           value = raw.slice(valueStart, i);
+          quotedValueRanges?.set(name, { start: valueStart, end: i });
           i += 1;
         } else {
           // Unquoted value — read until whitespace or tag-end characters
@@ -163,4 +168,21 @@ export const parseTag = (value: string, opts: ParseAttributesOptions = {}) => {
     contentAfterTag,
     attrString, // Just for debugging purposes
   };
+};
+
+/**
+ * Where attribute `name`'s quoted value sits in `tag`, e.g. the `x` of `<Image caption="x" />`.
+ * The tag may be indented, as an indented node's position opens on its indent.
+ */
+export const findQuotedAttributeValue = (tag: string, name: string) => {
+  const unindentedTag = tag.trimStart();
+  const parsed = parseTag(unindentedTag);
+  const nameLength = unindentedTag.match(tagNamePattern)?.[0].length;
+  if (!parsed || nameLength === undefined) return undefined;
+
+  const quotedValueRanges = new Map<string, { end: number; start: number }>();
+  parseAttributes(parsed.attrString, {}, quotedValueRanges);
+  const range = quotedValueRanges.get(name);
+  const attributesStart = tag.length - unindentedTag.length + nameLength;
+  return range && { start: attributesStart + range.start, end: attributesStart + range.end };
 };
