@@ -4,9 +4,9 @@
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
 
-// A block `<DNT>` renders as `<div translate="no">`. An editor root (ProseMirror) carries
-// `translate="no"` too and sits right under `.markdown-body`, so editable roots are skipped.
-$block-dnt: "[translate='no']:not([contenteditable])";
+// A block `<DNT>` renders as `<div class="readme-dnt">`. A class, not `[translate='no']`,
+// since the editor root (ProseMirror) carries that attribute too.
+$block-dnt: '.readme-dnt';
 
 @mixin gfm {
   @include markdown-defaults;

@@ -50,7 +50,8 @@ describe('DNT', () => {
 
   describe('block form', () => {
     const block = '<DNT>\nPara one **bold**\n\nPara two\n</DNT>\n\nafter';
-    const html = '<div translate="no"><p>Para one <strong>bold</strong></p><p>Para two</p></div><p>after</p>';
+    const html =
+      '<div class="readme-dnt" translate="no"><p>Para one <strong>bold</strong></p><p>Para two</p></div><p>after</p>';
 
     it.each(editorModes)('newEditorTypes %s: renders a div around its paragraphs', newEditorTypes => {
       expect(renderDoc(block, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(html);
@@ -62,7 +63,8 @@ describe('DNT', () => {
 
     describe('with text right after the opener', () => {
       const spread = '<DNT>one **bold**\n\ntwo</DNT>\n\nafter';
-      const spreadHtml = '<div translate="no"><p>one <strong>bold</strong></p><p>two</p></div><p>after</p>';
+      const spreadHtml =
+        '<div class="readme-dnt" translate="no"><p>one <strong>bold</strong></p><p>two</p></div><p>after</p>';
 
       it.each(editorModes)('newEditorTypes %s: wraps every paragraph up to the closer', newEditorTypes => {
         expect(renderDoc(spread, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(spreadHtml);
@@ -73,17 +75,21 @@ describe('DNT', () => {
       });
 
       describe.each([
-        ['a list', '<DNT>- one\n- two\n</DNT>\n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
-        ['a paragraph', '<DNT>one\n  </DNT>\n\nafter', '<div translate="no"><p>one</p></div>'],
+        [
+          'a list',
+          '<DNT>- one\n- two\n</DNT>\n\nafter',
+          '<div class="readme-dnt" translate="no"><ul><li>one</li><li>two</li></ul></div>',
+        ],
+        ['a paragraph', '<DNT>one\n  </DNT>\n\nafter', '<div class="readme-dnt" translate="no"><p>one</p></div>'],
         [
           'a list closing on its last line',
           '<DNT>- one\n- two</DNT>  \n\nafter',
-          '<div translate="no"><ul><li>one</li><li>two</li></ul></div>',
+          '<div class="readme-dnt" translate="no"><ul><li>one</li><li>two</li></ul></div>',
         ],
         [
           'a paragraph closing on its last line',
           '<DNT>one\ntwo</DNT>\n\nafter',
-          '<div translate="no"><p>one<br>two</p></div>',
+          '<div class="readme-dnt" translate="no"><p>one<br>two</p></div>',
         ],
       ])('with the closer ending a later line around %s', (_label, md, wrapped) => {
         it.each(editorModes)('newEditorTypes %s: wraps it in a div', newEditorTypes => {

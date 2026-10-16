@@ -41,7 +41,7 @@ Simple markdown link with `@embed` title:
 
 	Sign in to <DNT>Acme **Cloud**</DNT> to start.
 
-With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div class="readme-dnt" translate="no">`:
 
 	<DNT>
 	Acme Cloud keeps **every** name as is.
