@@ -27,7 +27,7 @@ const FOREIGN_CONTENT_ROOTS = new Set<string>(FOREIGN_CONTENT_TAGS);
 
 // The markdown parser already parsed these children. Parsing them again drops
 // line breaks and turns escaped text back into markup.
-const PARSED_CHILDREN_COMPONENTS = new Set(['DNT']);
+const PARSED_CHILDREN_COMPONENTS = new Set(['NoTranslate']);
 
 function isElementContentNode(node: Root['children'][number]): node is ElementContent {
   return node.type === 'element' || node.type === 'text' || node.type === 'comment';

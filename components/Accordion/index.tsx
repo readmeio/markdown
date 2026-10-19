@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 import { useRestartAnimatedImagesOnReveal } from '../../hooks/useRestartAnimatedImages';
-import { dntTagsToSpans } from '../DNT';
 import Icon from '../Icon';
+import { noTranslateTagsToSpans } from '../NoTranslate';
 
 import './style.scss';
 
@@ -12,7 +12,7 @@ const Accordion = ({ children, icon, iconColor, title }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRestartAnimatedImagesOnReveal<HTMLDivElement>(isOpen);
 
-  const normalizedTitle = dntTagsToSpans(title);
+  const normalizedTitle = noTranslateTagsToSpans(title);
 
   return (
     <details className="Accordion" onToggle={() => setIsOpen(!isOpen)}>

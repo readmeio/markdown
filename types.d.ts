@@ -229,11 +229,11 @@ export interface Anchor extends Node {
   type: NodeTypes.anchor;
 }
 
-export interface Dnt extends Node {
+export interface NoTranslate extends Node {
   children: PhrasingContent[];
-  data: Data & { hName: 'DNT' };
+  data: Data & { hName: 'NoTranslate' };
   position?: Position;
-  type: NodeTypes.dnt;
+  type: NodeTypes.noTranslate;
 }
 
 declare module 'mdast' {
@@ -245,7 +245,7 @@ declare module 'mdast' {
      * nearest stamped self-or-ancestor; unstamped means `parserReadyContent`.
      */
     reparseSource?: string;
-    /** Set by a dedicated tokenizer (`lib/micromark/dnt`) on an html node that holds a whole tag. */
+    /** Set by a dedicated tokenizer (`lib/micromark/no-translate`) on an html node that holds a whole tag. */
     tokenized?: boolean;
   }
 
@@ -273,7 +273,7 @@ declare module 'mdast' {
 
   interface PhrasingContentMap {
     [NodeTypes.anchor]: Anchor;
-    [NodeTypes.dnt]: Dnt;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.glossary]: Glossary;
@@ -286,7 +286,7 @@ declare module 'mdast' {
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
-    [NodeTypes.dnt]: Dnt;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;

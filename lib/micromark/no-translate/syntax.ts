@@ -8,20 +8,20 @@ import { createOpaqueRegions } from '../util/opaque-regions';
 
 declare module 'micromark-util-types' {
   interface TokenTypeMap {
-    dnt: 'dnt';
-    dntData: 'dntData';
+    noTranslate: 'noTranslate';
+    noTranslateData: 'noTranslateData';
   }
 }
 
-const TAG_NAME: Code[] = [codes.uppercaseD, codes.uppercaseN, codes.uppercaseT];
+const TAG_NAME: Code[] = Array.from('NoTranslate', char => char.charCodeAt(0));
 
-/** Pulls the indent before `<DNT>` into the token, so the node starts where its line does. */
-function resolveToDnt(events: Parameters<Resolver>[0]) {
+/** Pulls the indent before `<NoTranslate>` into the token, so the node starts where its line does. */
+function resolveToNoTranslate(events: Parameters<Resolver>[0]) {
   let index = events.length;
 
   while (index > 0) {
     index -= 1;
-    if (events[index][0] === 'enter' && events[index][1].type === 'dnt') break;
+    if (events[index][0] === 'enter' && events[index][1].type === 'noTranslate') break;
   }
 
   if (index > 1 && events[index - 2][1].type === types.linePrefix) {
@@ -33,7 +33,7 @@ function resolveToDnt(events: Parameters<Resolver>[0]) {
   return events;
 }
 
-// One token per `<DNT>…</DNT>`, skipping closers in code, fences, `{…}` and nested DNTs.
+// One token per `<NoTranslate>…</NoTranslate>`, skipping closers in code, fences, `{…}` and nested NoTranslate tags.
 // Flow claims the block form (shape rule in `afterClose`), text the inline form.
 function createTokenize(mode: 'flow' | 'text') {
   const isFlow = mode === 'flow';
@@ -62,9 +62,9 @@ function createTokenize(mode: 'flow' | 'text') {
     return start;
 
     function start(code: Code): State | undefined {
-      // Under a paragraph line a `<DNT>` stays inline, like any html block.
+      // Under a paragraph line a `<NoTranslate>` stays inline, like any html block.
       if (code !== codes.lessThan || (isFlow && self.interrupt)) return nok(code);
-      effects.enter('dnt');
+      effects.enter('noTranslate');
       consumeData(code);
       nameIndex = 0;
       return openTagName;
@@ -77,7 +77,7 @@ function createTokenize(mode: 'flow' | 'text') {
       return nameIndex === TAG_NAME.length ? afterOpenTagName : openTagName;
     }
 
-    // `<DNTx>` is another tag and `<DNT />` has no body: neither is this construct.
+    // `<NoTranslatex>` is another tag and `<NoTranslate />` has no body: neither is this construct.
     function afterOpenTagName(code: Code): State | undefined {
       if (code === codes.greaterThan) return openTagEnd(code);
       if (markdownSpace(code)) {
@@ -166,7 +166,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function consumeData(code: Code): void {
       if (!dataOpen) {
-        effects.enter('dntData');
+        effects.enter('noTranslateData');
         dataOpen = true;
       }
       effects.consume(code);
@@ -174,7 +174,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function exitData(): void {
       if (!dataOpen) return;
-      effects.exit('dntData');
+      effects.exit('noTranslateData');
       dataOpen = false;
     }
 
@@ -219,7 +219,7 @@ function createTokenize(mode: 'flow' | 'text') {
       return closeTagName;
     }
 
-    // A nested `<DNT>` adds a level, so its closer cant end the outer one.
+    // A nested `<NoTranslate>` adds a level, so its closer cant end the outer one.
     function nestedOpenTagName(code: Code): State | undefined {
       if (nameIndex < TAG_NAME.length) {
         if (code !== TAG_NAME[nameIndex]) return body(code);
@@ -251,7 +251,7 @@ function createTokenize(mode: 'flow' | 'text') {
 
     function exitAfterClose(code: Code): State | undefined {
       exitData();
-      effects.exit('dnt');
+      effects.exit('noTranslate');
       return ok(code);
     }
 
@@ -281,22 +281,22 @@ function createTokenize(mode: 'flow' | 'text') {
   };
 }
 
-const dntFlow: Construct = {
-  name: 'dnt',
+const noTranslateFlow: Construct = {
+  name: 'noTranslate',
   tokenize: createTokenize('flow'),
-  resolveTo: resolveToDnt,
+  resolveTo: resolveToNoTranslate,
   concrete: true,
 };
 
-const dntText: Construct = {
-  name: 'dntText',
+const noTranslateText: Construct = {
+  name: 'noTranslateText',
   tokenize: createTokenize('text'),
 };
 
-/** Micromark extension for the do-not-translate `<DNT>` tag, block (flow) and inline (text). */
-export function dnt(): Extension {
+/** Micromark extension for the do-not-translate `<NoTranslate>` tag, block (flow) and inline (text). */
+export function noTranslate(): Extension {
   return {
-    flow: { [codes.lessThan]: [dntFlow] },
-    text: { [codes.lessThan]: [dntText] },
+    flow: { [codes.lessThan]: [noTranslateFlow] },
+    text: { [codes.lessThan]: [noTranslateText] },
   };
 }

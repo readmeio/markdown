@@ -303,22 +303,22 @@ end"`);
     expect(output).toBe(input);
   });
 
-  it('strips a JSX comment inside an inline DNT in mdxish mode', async () => {
-    const output = await stripComments('Hello <DNT>{/* hidden */}Acme</DNT> world', { mdxish: true });
-    expect(output).toBe('Hello <DNT>Acme</DNT> world');
+  it('strips a JSX comment inside an inline NoTranslate in mdxish mode', async () => {
+    const output = await stripComments('Hello <NoTranslate>{/* hidden */}Acme</NoTranslate> world', { mdxish: true });
+    expect(output).toBe('Hello <NoTranslate>Acme</NoTranslate> world');
   });
 
-  it('keeps a JSX comment shown in a code span inside a DNT in mdxish mode', async () => {
-    const output = await stripComments('Hello <DNT>Use `{/* example */}` and {/* hidden */}</DNT> world', { mdxish: true });
+  it('keeps a JSX comment shown in a code span inside a NoTranslate in mdxish mode', async () => {
+    const output = await stripComments('Hello <NoTranslate>Use `{/* example */}` and {/* hidden */}</NoTranslate> world', { mdxish: true });
     expect(output).toContain('`{/* example */}`');
     expect(output).not.toContain('hidden');
   });
 
-  it('strips a JSX comment inside a block DNT and keeps the block whole in mdxish mode', async () => {
-    const output = await stripComments('<DNT>- one\n{/* hidden */}\n- two</DNT>', { mdxish: true });
+  it('strips a JSX comment inside a block NoTranslate and keeps the block whole in mdxish mode', async () => {
+    const output = await stripComments('<NoTranslate>- one\n{/* hidden */}\n- two</NoTranslate>', { mdxish: true });
     expect(output).not.toContain('hidden');
-    expect(output).toContain('<DNT>- one');
-    expect(output).toContain('- two</DNT>');
+    expect(output).toContain('<NoTranslate>- one');
+    expect(output).toContain('- two</NoTranslate>');
   });
 
   it('preserves non-comment MDX expressions in mdxish mode', async () => {

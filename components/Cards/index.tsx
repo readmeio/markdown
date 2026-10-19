@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { dntTagsToSpans } from '../DNT';
 import Icon from '../Icon';
+import { noTranslateTagsToSpans } from '../NoTranslate';
 
 import './style.scss';
 
@@ -31,7 +31,7 @@ export const Card = ({
 }: CardProps) => {
   const Tag = href ? LinkComponent : 'div';
 
-  const normalizedTitle = dntTagsToSpans(title);
+  const normalizedTitle = noTranslateTagsToSpans(title);
 
   return (
     <Tag className={`Card Card_${kind}`} href={href} target={target}>

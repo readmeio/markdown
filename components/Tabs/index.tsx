@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 import useRestartAnimatedImages from '../../hooks/useRestartAnimatedImages';
-import { dntTagsToSpans } from '../DNT';
 import Icon from '../Icon';
+import { noTranslateTagsToSpans } from '../NoTranslate';
 
 import './style.scss';
 
@@ -25,7 +25,7 @@ const Tabs = ({ children }: TabsProps) => {
       <header>
         <nav className="TabGroup-nav">
           {tabs.map((tab, index: number) => {
-            const normalizedTitle = dntTagsToSpans(tab.props.title);
+            const normalizedTitle = noTranslateTagsToSpans(tab.props.title);
 
             return (
               <button

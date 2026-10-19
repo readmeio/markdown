@@ -27,7 +27,7 @@ const toMarkdownExtensions = [
   gfmToMarkdown(),
   // For mdx variable syntaxes (e.g., {user.name})
   mdxExpressionToMarkdown(),
-  // Inline components in the title (`<DNT>`, `<Anchor href={…}>`) are JSX nodes in MDXish
+  // Inline components in the title (`<NoTranslate>`, `<Anchor href={…}>`) are JSX nodes in MDXish
   mdxJsxToMarkdown(),
   // Important: This is required and would crash the parser if there's no variable, gemoji, fa-icon, or glossary node handler
   {
