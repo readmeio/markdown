@@ -17,6 +17,7 @@ import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
 import { emptyTaskListItemFromMarkdown } from '../mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../mdast-util/gemoji';
+import { headingIdFromMarkdown } from '../mdast-util/heading-id';
 import { htmlBlockComponentFromMarkdown } from '../mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from '../mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
@@ -27,6 +28,7 @@ import { noTranslateFromMarkdown } from '../mdast-util/no-translate';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { gemoji } from './gemoji';
+import { headingId } from './heading-id';
 import { htmlBlockComponent } from './html-block-component';
 import { jsxComment } from './jsx-comment';
 import { jsxTable } from './jsx-table';
@@ -105,6 +107,8 @@ const REGISTRY = {
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
   gemoji: { syntax: gemoji, fromMarkdown: gemojiFromMarkdown },
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
+  // Replaces the ATX heading construct in `flow`, so it never touches prose outside a heading.
+  headingId: { syntax: headingId, fromMarkdown: headingIdFromMarkdown },
   looseHtmlEntity: { syntax: looseHtmlEntity, fromMarkdown: looseHtmlEntityFromMarkdown },
   htmlBlockComponent: { syntax: htmlBlockComponent, fromMarkdown: htmlBlockComponentFromMarkdown },
   // This is for in-document variable & function definitions
@@ -143,19 +147,14 @@ const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdx
  */
 export const FEATURES = {
   /** `lib/mdxish.ts` — the document parser; the only site taking every group */
-  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem'],
+  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem', 'headingId'],
 
   /**
    * `components/utils.ts` — re-parses a component body, which should tokenize
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
    */
-  componentBody: [
-    ...BLOCK_CLAIMS,
-    ...INLINE,
-    'mdxExpression',
-    'emptyTaskListItem',
-  ],
+  componentBody: [...BLOCK_CLAIMS, ...INLINE, 'mdxExpression', 'emptyTaskListItem', 'headingId'],
 
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
