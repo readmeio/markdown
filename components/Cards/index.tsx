@@ -49,9 +49,9 @@ export const Card = ({
 
 interface CardsGridProps extends React.PropsWithChildren<{ cardWidth?: string, columns?: number | string }> {}
 
-// max() can't take keyword widths like auto or min-content, so only wrap when every value is numeric
+// max() can't take keyword widths like auto or min-content, so only wrap a length or a math expression
 const canWrapColumns = (columns: number | string, cardWidth: string) =>
-  Number(columns) > 0 && /^\d/.test(cardWidth);
+  Number(columns) > 0 && /^(\.?\d|(calc|min|max|clamp)\()/.test(cardWidth);
 
 const CardsGrid = ({ cardWidth = '200px', columns = 'auto-fit', children }: CardsGridProps) => {
   const className = canWrapColumns(columns, cardWidth) ? 'CardsGrid CardsGrid_wrap' : 'CardsGrid';
