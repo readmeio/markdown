@@ -1,7 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
 import { tailwindPrefix } from '../../utils/consts';
 import { tailwindCompiler } from '../../utils/tailwind-compiler';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+const FREEZE_ATTRIBUTE = 'data-tailwind-freeze';
+const FREEZE_RULE = `:is([${FREEZE_ATTRIBUTE}] ~ *, [${FREEZE_ATTRIBUTE}] ~ * *):is(.${tailwindPrefix}, .${tailwindPrefix} *) { transition: none !important; }`;
 
 const traverse = (node: Node, callback: (element: Node) => void) => {
   callback(node);
@@ -11,18 +16,30 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
   });
 };
 
+/** With `freeze`, restyles the content under a transitions-off rule first, so utilities it lacked don't animate in. */
+const writeSheet = (style: HTMLStyleElement, css: string, freeze: boolean) => {
+  if (style.textContent === css) return;
+  if (freeze) {
+    style.setAttribute(FREEZE_ATTRIBUTE, '');
+    style.textContent = `${css}\n${FREEZE_RULE}`;
+    style.parentElement?.getBoundingClientRect(); // forces the restyle while frozen
+    style.removeAttribute(FREEZE_ATTRIBUTE);
+  }
+  style.textContent = css;
+};
+
 interface Props {
+  /** Writes the sheet before the content first paints, without animating the utilities in. */
+  beforePaint?: boolean;
   children: React.ReactNode;
   darkModeDataAttribute?: string | null;
   /** See the matching param on `tailwindCompiler` in `utils/tailwind-compiler.ts`. */
   darkModeRootSelector?: string | null;
 }
 
-const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
-  const [stylesheet, setStylesheet] = useState('');
+const TailwindStyle = ({ beforePaint = false, children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
   const classesSet = useRef(new Set<string>());
   const ref = useRef<HTMLStyleElement>(null);
-  const [classes, setClasses] = useState<string[]>([]);
 
   const addClasses = useCallback((element: Node) => {
     if (!(element instanceof HTMLElement)) return;
@@ -35,45 +52,29 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
   /*
    * @note: regenerate stylesheet
    */
-  useEffect(() => {
-    const run = async () => {
-      if (classes.length === 0) {
-        setStylesheet('');
-        return;
-      }
+  const watch = useCallback(() => {
+    const run = async (freeze: boolean) => {
+      if (classesSet.current.size === 0) return;
 
-      const sheet = await tailwindCompiler(classes, {
+      const sheet = await tailwindCompiler(Array.from(classesSet.current), {
         prefix: `.${tailwindPrefix}`,
         darkModeDataAttribute,
         darkModeRootSelector,
       });
       /* @note: don't insert an empty stylesheet */
-      if (sheet.css.match(/^@layer utilities;/m)) return;
+      if (sheet.css.match(/^@layer utilities;/m) || !ref.current) return;
 
-      setStylesheet(sheet.css);
+      writeSheet(ref.current, sheet.css, beforePaint && freeze);
     };
 
-    run();
-  }, [classes, darkModeDataAttribute, darkModeRootSelector]);
-
-  /*
-   * @note: execute once on load
-   */
-  useEffect(() => {
     if (!ref.current) return;
 
     ref.current.parentElement.querySelectorAll(`.${tailwindPrefix}`).forEach(child => traverse(child, addClasses));
-    setClasses(Array.from(classesSet.current));
-  }, [addClasses]);
-
-  /*
-   * @note: observe for changes
-   */
-  useEffect(() => {
-    if (!ref.current) return;
+    run(true);
 
     const observer = new MutationObserver((records: MutationRecord[]) => {
       let shouldUpdate = false;
+      let hasNewContent = false;
 
       records.forEach(record => {
         if (record.type === 'childList') {
@@ -94,7 +95,7 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
               });
             }
 
-            if (classesSet.current.size > sizeBefore) shouldUpdate = true;
+            if (classesSet.current.size > sizeBefore) hasNewContent = true;
           });
         } else if (record.type === 'attributes') {
           if (record.attributeName !== 'class' || !(record.target instanceof HTMLElement)) return;
@@ -105,8 +106,8 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
         }
       });
 
-      if (shouldUpdate) {
-        setClasses(Array.from(classesSet.current));
+      if (shouldUpdate || hasNewContent) {
+        run(hasNewContent);
       }
     });
 
@@ -119,13 +120,14 @@ const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }
 
     // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
-  }, [addClasses]);
+  }, [addClasses, beforePaint, darkModeDataAttribute, darkModeRootSelector]);
+
+  useIsomorphicLayoutEffect(() => (beforePaint ? watch() : undefined), [beforePaint, watch]);
+  useEffect(() => (beforePaint ? undefined : watch()), [beforePaint, watch]);
 
   return (
     <>
-      <style ref={ref} data-tailwind-stylesheet>
-        {stylesheet}
-      </style>
+      <style ref={ref} data-tailwind-stylesheet />
       {children}
     </>
   );

@@ -1,7 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react';
+import postcss from 'postcss';
 import React from 'react';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TailwindStyle from '../../components/TailwindStyle';
 import { tailwindPrefix } from '../../utils/consts';
@@ -11,9 +12,90 @@ vi.mock('../../utils/tailwind-compiler', () => ({
   tailwindCompiler: vi.fn().mockResolvedValue({ css: '.bg-red-500 { background: red; }' }),
 }));
 
+const compiled = (css: string) => postcss().process(css, { from: undefined }).sync();
+
+const sheetOf = (container: HTMLElement) => container.querySelector('style[data-tailwind-stylesheet]');
+
+const spyOnRestyles = () => {
+  const sheets: (string | null | undefined)[] = [];
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    sheets.push(sheetOf(this)?.textContent);
+    return new DOMRect();
+  });
+  return sheets;
+};
+
 describe('TailwindStyle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  describe('before first paint (RM-19138)', () => {
+    const content = <div className={`${tailwindPrefix} p-4`} />;
+
+    const renderSettled = async () => {
+      const result = render(<TailwindStyle beforePaint>{content}</TailwindStyle>);
+      await waitFor(() => expect(sheetOf(result.container)).not.toBeEmptyDOMElement());
+      return result;
+    };
+
+    it('restyles the content with transitions frozen before writing the sheet', async () => {
+      const restyles = spyOnRestyles();
+      const { container } = await renderSettled();
+
+      expect(restyles).toStrictEqual([expect.stringContaining('{ transition: none !important; }')]);
+      expect(sheetOf(container)?.textContent).toBe('.bg-red-500 { background: red; }');
+      expect(sheetOf(container)).not.toHaveAttribute('data-tailwind-freeze');
+    });
+
+    it('freezes again when added content brings new utilities', async () => {
+      const { container } = await renderSettled();
+      const restyles = spyOnRestyles();
+      vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.m-2{}'));
+
+      container.appendChild(Object.assign(document.createElement('div'), { className: `${tailwindPrefix} m-2` }));
+
+      await waitFor(() => expect(restyles).toStrictEqual([expect.stringContaining('.m-2{}')]));
+    });
+
+    it('does not freeze when an existing element picks up a new utility', async () => {
+      const { container } = await renderSettled();
+      const restyles = spyOnRestyles();
+      vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.rotate-180{}'));
+
+      container.querySelector('.p-4')?.classList.add('rotate-180');
+
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.rotate-180{}'));
+      expect(restyles).toHaveLength(0);
+    });
+
+    it('writes the recompiled sheet when the dark mode attribute changes', async () => {
+      vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.old{}')).mockResolvedValueOnce(compiled('.new{}'));
+      const { container, rerender } = render(
+        <TailwindStyle beforePaint darkModeDataAttribute="data-a">
+          {content}
+        </TailwindStyle>,
+      );
+
+      rerender(
+        <TailwindStyle beforePaint darkModeDataAttribute="data-b">
+          {content}
+        </TailwindStyle>,
+      );
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.new{}'));
+    });
+
+    it('does not freeze without the prop', async () => {
+      const restyles = spyOnRestyles();
+      const { container } = render(<TailwindStyle>{content}</TailwindStyle>);
+
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.bg-red-500 { background: red; }'));
+      expect(restyles).toHaveLength(0);
+    });
   });
 
   describe('on initial render', () => {
