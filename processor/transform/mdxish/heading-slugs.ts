@@ -1,4 +1,5 @@
 import type { Element, ElementContent, Root } from 'hast';
+import type { VFile } from 'vfile';
 
 import GithubSlugger from 'github-slugger';
 import { visit } from 'unist-util-visit';
@@ -25,13 +26,17 @@ function textContent(node: ElementContent): string {
  * Id's are used to construct slug anchor links & Table of Contents during rendering
  * Use the text / nodes that make up the heading to generate the id
  */
-const generateSlugForHeadings = () => (tree: Root) => {
+const generateSlugForHeadings = () => (tree: Root, file: VFile) => {
   const slugger = new GithubSlugger();
+  // The slugger only counts the ids it generates, so `{#id}` ones are skipped past by hand.
+  const explicitIds = file.data.explicitHeadingIds ?? new Set<string>();
 
   visit(tree, 'element', (node: Element) => {
     if (isHeading(node) && !node.properties.id) {
       const text = node.children.map(textContent).join('');
-      node.properties.id = slugger.slug(text);
+      let id = slugger.slug(text);
+      while (explicitIds.has(id)) id = slugger.slug(text);
+      node.properties.id = id;
     }
   });
 
