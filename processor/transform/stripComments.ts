@@ -13,7 +13,7 @@ const CODE_SPAN_OR_COMMENT_EXPRESSION_REGEX = new RegExp(
   'g',
 );
 
-// A tokenized tag (`<DNT>`) holds its `{/* … */}` as html text, so the expression visitor never sees it.
+// A tokenized tag (`<NoTranslate>`) holds its `{/* … */}` as html text, so the expression visitor never sees it.
 // The code span half matches first and is kept: a comment shown inside a code span is text.
 const stripCommentExpressions = (value: string): string =>
   value.replace(CODE_SPAN_OR_COMMENT_EXPRESSION_REGEX, (match, ticks?: string) => (ticks ? match : ''));
