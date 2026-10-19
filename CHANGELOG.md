@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.9.4
+### 🛠 Fixes & Updates
+
+* **variables:** resolve {user.*} syntax in markdown image alt text ([#1639](https://github.com/readmeio/markdown/issues/1639)) ([b132c85](https://github.com/readmeio/markdown/commit/b132c8580801214ee5d209423f6d1aced812b6e4)), closes [#1638](https://github.com/readmeio/markdown/issues/1638) [#1638](https://github.com/readmeio/markdown/issues/1638)
+* **variables:** resolve <<variable>> syntax in markdown image alt text ([#1638](https://github.com/readmeio/markdown/issues/1638)) ([86347af](https://github.com/readmeio/markdown/commit/86347af16f03d8262b794b9cebfae80fa28b9e1b)), closes [#1639](https://github.com/readmeio/markdown/issues/1639)
+
 ## Version 15.9.3
 ### 🛠 Fixes & Updates
 
