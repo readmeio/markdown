@@ -212,7 +212,7 @@ function promoteComponentBlocks(tree: Parent, safeMode: boolean, source: string 
     const leadingWhitespace = value.length - value.trimStart().length;
     const openingTagEnd = trimmed.length - contentAfterTag.length;
 
-    // A block `<DNT>` arrives here whole. An inline one stays with the inline pass.
+    // A block `<NoTranslate>` arrives here whole. An inline one stays with the inline pass.
     const isBlockForm = !!node.data?.tokenized && !selfClosing && !INLINE_ONLY_PARENT_TYPES.has(parent.type);
     if (GENERIC_MDX_COMPONENT_EXCLUDED_TAGS.has(tag) && !isBlockForm) return; // owned by dedicated transformers
 

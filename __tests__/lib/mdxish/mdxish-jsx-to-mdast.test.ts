@@ -466,17 +466,17 @@ Body content
       });
     });
 
-    describe('DNT component', () => {
-      it('should transform <DNT> to a readme-dnt node inside its paragraph', () => {
-        const ast = processWithNewTypes('<DNT>Acme **Cloud**</DNT> is great');
+    describe('NoTranslate component', () => {
+      it('should transform <NoTranslate> to a readme-no-translate node inside its paragraph', () => {
+        const ast = processWithNewTypes('<NoTranslate>Acme **Cloud**</NoTranslate> is great');
 
         expect(ast.children).toHaveLength(1);
         expect(ast.children[0]).toMatchObject({
           type: 'paragraph',
           children: [
             {
-              type: NodeTypes.dnt,
-              data: { hName: 'DNT' },
+              type: NodeTypes.noTranslate,
+              data: { hName: 'NoTranslate' },
               children: [
                 { type: 'text', value: 'Acme ' },
                 { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
@@ -490,49 +490,49 @@ Body content
       it.each([
         [
           'markdown in the body',
-          'Hello <DNT>Acme **Cloud**</DNT> world',
+          'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world',
           [
-            [NodeTypes.dnt, '<DNT>Acme **Cloud**</DNT>'],
+            [NodeTypes.noTranslate, '<NoTranslate>Acme **Cloud**</NoTranslate>'],
             ['text', 'Acme '],
             ['strong', '**Cloud**'],
             ['text', 'Cloud'],
           ],
         ],
         [
-          'a DNT nested in the body',
-          'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end',
+          'a NoTranslate nested in the body',
+          'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end',
           [
-            [NodeTypes.dnt, '<DNT>a <DNT>**b**</DNT> c</DNT>'],
+            [NodeTypes.noTranslate, '<NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate>'],
             ['text', 'a '],
-            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
             ['strong', '**b**'],
             ['text', 'b'],
             ['text', ' c'],
           ],
         ],
         [
-          'a DNT alone in the body',
-          'Use <DNT><DNT>**b**</DNT></DNT> now',
+          'a NoTranslate alone in the body',
+          'Use <NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate> now',
           [
-            [NodeTypes.dnt, '<DNT><DNT>**b**</DNT></DNT>'],
-            [NodeTypes.dnt, '<DNT>**b**</DNT>'],
+            [NodeTypes.noTranslate, '<NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate>'],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
             ['strong', '**b**'],
             ['text', 'b'],
           ],
         ],
-      ])('should slice every node under a DNT with %s to its own source', (_label, md, slices) => {
-        expect(resolvedSlicesUnder(md, node => node.type === NodeTypes.dnt)).toStrictEqual(slices);
+      ])('should slice every node under a NoTranslate with %s to its own source', (_label, md, slices) => {
+        expect(resolvedSlicesUnder(md, node => node.type === NodeTypes.noTranslate)).toStrictEqual(slices);
       });
     });
 
-    describe('block DNT component', () => {
-      it('should keep a block <DNT> as a plain JSX element holding its blocks', () => {
-        const ast = processWithNewTypes('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter');
+    describe('block NoTranslate component', () => {
+      it('should keep a block <NoTranslate> as a plain JSX element holding its blocks', () => {
+        const ast = processWithNewTypes('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter');
 
         expect(ast.children).toHaveLength(2);
         expect(ast.children[0]).toMatchObject({
           type: 'mdxJsxFlowElement',
-          name: 'DNT',
+          name: 'NoTranslate',
           attributes: [],
           children: [
             {
@@ -549,19 +549,19 @@ Body content
       });
     });
 
-    describe('nested DNT and Anchor', () => {
+    describe('nested NoTranslate and Anchor', () => {
       it.each([
         [
-          'an Anchor inside a DNT',
-          '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after',
-          NodeTypes.dnt,
+          'an Anchor inside a NoTranslate',
+          '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after',
+          NodeTypes.noTranslate,
           NodeTypes.anchor,
         ],
         [
-          'a DNT inside an Anchor',
-          '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after',
+          'a NoTranslate inside an Anchor',
+          '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after',
           NodeTypes.anchor,
-          NodeTypes.dnt,
+          NodeTypes.noTranslate,
         ],
       ])('should turn %s into nested readme nodes', (_label, md, outer, inner) => {
         const ast = processWithNewTypes(md);
@@ -1421,9 +1421,9 @@ Some callout content
     });
 
     it.each([
-      ['at the start of a line', '<DNT>Acme</DNT> is great', [{ type: 'text', value: ' is great' }]],
-      ['alone on its line', '<DNT>Acme</DNT>', []],
-    ])('should keep a DNT %s as one JSX element in one paragraph', (_label, md, trailing) => {
+      ['at the start of a line', '<NoTranslate>Acme</NoTranslate> is great', [{ type: 'text', value: ' is great' }]],
+      ['alone on its line', '<NoTranslate>Acme</NoTranslate>', []],
+    ])('should keep a NoTranslate %s as one JSX element in one paragraph', (_label, md, trailing) => {
       const ast = processWithoutNewTypes(md);
 
       expect(ast.children).toHaveLength(1);
@@ -1432,9 +1432,9 @@ Some callout content
         children: [
           {
             type: 'mdxJsxTextElement',
-            name: 'DNT',
+            name: 'NoTranslate',
             children: [{ type: 'text', value: 'Acme' }],
-            position: { start: { offset: 0 }, end: { offset: '<DNT>Acme</DNT>'.length } },
+            position: { start: { offset: 0 }, end: { offset: '<NoTranslate>Acme</NoTranslate>'.length } },
           },
           ...trailing,
         ],

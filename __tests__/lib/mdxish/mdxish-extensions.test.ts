@@ -127,14 +127,14 @@ describe('mdxishExtensions', () => {
           'setextUnderline',
           'thematicBreak',
           'jsxTable',
-          'dnt',
+          'noTranslate',
           'magicBlock',
           'mdxFlowExpression',
           'mdxComponent',
           'htmlBlockComponent',
         ]),
       );
-      expect(disabled).not.toContain('dntText');
+      expect(disabled).not.toContain('noTranslateText');
       expect(disabled).not.toContain('mdxComponentText');
     });
 
@@ -149,7 +149,7 @@ describe('mdxishExtensions', () => {
       ['a heading', '# not a heading'],
       ['a list', '- not a list'],
       ['a fence', '```\nnot code\n```'],
-      ['a block DNT', '<DNT>\nstill one paragraph\n</DNT>'],
+      ['a block NoTranslate', '<NoTranslate>\nstill one paragraph\n</NoTranslate>'],
     ])('parses %s as one paragraph of text', (_label, doc) => {
       const tree = parseWith(doc);
 
@@ -157,8 +157,8 @@ describe('mdxishExtensions', () => {
       expect(tree.children[0].type).toBe('paragraph');
     });
 
-    it('still claims an inline DNT', () => {
-      const tree = parseWith('Hi <DNT>Acme</DNT> there') as { children: { children: { type: string }[] }[] };
+    it('still claims an inline NoTranslate', () => {
+      const tree = parseWith('Hi <NoTranslate>Acme</NoTranslate> there') as { children: { children: { type: string }[] }[] };
 
       expect(tree.children[0].children.map(child => child.type)).toStrictEqual(['text', 'html', 'text']);
     });

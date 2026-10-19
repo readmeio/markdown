@@ -4,15 +4,15 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-// Renders a block `<DNT>` (do not translate) as `<div translate="no">`: it holds
-// paragraphs, and the `DNT` component's span cant hold those. Inline `<DNT>` keeps the span.
-const dntBlocksToDiv: Plugin<[], Root> = () => tree => {
+// Renders a block `<NoTranslate>` (do not translate) as `<div translate="no">`: it holds
+// paragraphs, and the `NoTranslate` component's span cant hold those. Inline `<NoTranslate>` keeps the span.
+const noTranslateBlocksToDiv: Plugin<[], Root> = () => tree => {
   visit(tree, 'mdxJsxFlowElement', (node: MdxJsxFlowElement) => {
-    if (node.name !== 'DNT') return;
+    if (node.name !== 'NoTranslate') return;
 
     node.name = 'div';
     node.attributes = [{ type: 'mdxJsxAttribute', name: 'translate', value: 'no' }];
   });
 };
 
-export default dntBlocksToDiv;
+export default noTranslateBlocksToDiv;

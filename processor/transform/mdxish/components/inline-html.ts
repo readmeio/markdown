@@ -49,13 +49,13 @@ const promoteHtmlIn = (tree: Node, promote: PromoteHtml): void => {
  */
 const parsePhrasingChildren = (value: string, processor: BodyProcessor, promote: PromoteHtml): PhrasingContent[] => {
   const trimmed = value.trim();
-  // A body of only spaces is still a separator: `Use<DNT> </DNT>now` reads "Use now".
+  // A body of only spaces is still a separator: `Use<NoTranslate> </NoTranslate>now` reads "Use now".
   if (!trimmed) return spaceText(value);
   const [paragraph] = processor.parse(trimmed).children as Paragraph[];
   // These children root a new coordinate space: their offsets index into `trimmed`.
   stampReparseSource(paragraph.children, trimmed);
   promoteHtmlIn(paragraph, promote);
-  // Edge spaces are content: `Use<DNT> Acme </DNT>now` reads "Use Acme now".
+  // Edge spaces are content: `Use<NoTranslate> Acme </NoTranslate>now` reads "Use Acme now".
   return [
     ...spaceText(LEADING_SPACES_RE.exec(value)?.[0]),
     ...paragraph.children,

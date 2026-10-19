@@ -2395,29 +2395,29 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
-  describe('DNT round trip', () => {
+  describe('NoTranslate round trip', () => {
     const docs = [
-      'Hello <DNT>Acme **Cloud**</DNT> world\n',
-      '<DNT>Acme</DNT> is great\n',
-      '<DNT>Acme</DNT>\n',
-      '<DNT></DNT>\n**after**\n',
-      '<DNT><Anchor target="_blank" href="https://example.com">Acme</Anchor></DNT> after\n',
-      '<Anchor target="_blank" href="https://example.com"><DNT>Acme</DNT></Anchor> after\n',
-      '<DNT>a <DNT>b</DNT> c</DNT> after\n',
-      'Hello <DNT>a <DNT>**b**</DNT> c</DNT> end\n',
-      'Use<DNT> Acme </DNT>now\n',
-      'Use<DNT> </DNT>now\n',
-      '<DNT>Acme\nCloud</DNT> after\n',
-      '<DNT>\\*literal\\*</DNT> after\n',
-      'Use <DNT>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</DNT> today\n',
-      '| a                   |\n| ------------------- |\n| <DNT>**Acme**</DNT> |\n',
-      '| a                        |\n| ------------------------ |\n| Before <DNT></DNT> after |\n',
-      'Use <DNT>{/* internal note */}</DNT> now.\n',
-      'Use <DNT><Badge label="Acme" /></DNT> today\n',
-      '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\|b`</DNT> now. |\n',
-      '| a                          |\n| -------------------------- |\n| Use <DNT>`a\\\\b`</DNT> now. |\n',
-      'Hello <DNT>{/* note */}\nkept</DNT> after\n',
-      'Hello <DNT><Badge label="Acme" />\nkept</DNT> after\n',
+      'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world\n',
+      '<NoTranslate>Acme</NoTranslate> is great\n',
+      '<NoTranslate>Acme</NoTranslate>\n',
+      '<NoTranslate></NoTranslate>\n**after**\n',
+      '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after\n',
+      '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after\n',
+      '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate> after\n',
+      'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end\n',
+      'Use<NoTranslate> Acme </NoTranslate>now\n',
+      'Use<NoTranslate> </NoTranslate>now\n',
+      '<NoTranslate>Acme\nCloud</NoTranslate> after\n',
+      '<NoTranslate>\\*literal\\*</NoTranslate> after\n',
+      'Use <NoTranslate>[Acme](https://example.com), `acme run`, _Acme_, {user.name} and :joy:</NoTranslate> today\n',
+      '| a                                   |\n| ----------------------------------- |\n| <NoTranslate>**Acme**</NoTranslate> |\n',
+      '| a                                        |\n| ---------------------------------------- |\n| Before <NoTranslate></NoTranslate> after |\n',
+      'Use <NoTranslate>{/* internal note */}</NoTranslate> now.\n',
+      'Use <NoTranslate><Badge label="Acme" /></NoTranslate> today\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\|b`</NoTranslate> now. |\n',
+      '| a                                          |\n| ------------------------------------------ |\n| Use <NoTranslate>`a\\\\b`</NoTranslate> now. |\n',
+      'Hello <NoTranslate>{/* note */}\nkept</NoTranslate> after\n',
+      'Hello <NoTranslate><Badge label="Acme" />\nkept</NoTranslate> after\n',
     ];
 
     it.each([false, true])('round-trips byte for byte with newEditorTypes %s', newEditorTypes => {
@@ -2435,32 +2435,32 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
   });
 
-  describe('block DNT round trip', () => {
-    const saved = '<DNT>\n  Para one **bold**\n\n  - item\n</DNT>\n\nafter\n';
+  describe('block NoTranslate round trip', () => {
+    const saved = '<NoTranslate>\n  Para one **bold**\n\n  - item\n</NoTranslate>\n\nafter\n';
 
-    it.each([false, true])('writes a DNT spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<DNT>one\n\ntwo</DNT>\n', { newEditorTypes })).toBe('<DNT>\n  one\n\n  two\n</DNT>\n');
+    it.each([false, true])('writes a NoTranslate spread over paragraphs as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>one\n\ntwo</NoTranslate>\n', { newEditorTypes })).toBe('<NoTranslate>\n  one\n\n  two\n</NoTranslate>\n');
     });
 
-    it.each([false, true])('writes a block DNT as a block with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<DNT>\nPara one **bold**\n\n- item\n</DNT>\n\nafter', { newEditorTypes })).toBe(saved);
+    it.each([false, true])('writes a block NoTranslate as a block with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter', { newEditorTypes })).toBe(saved);
     });
 
-    it.each([false, true])('round-trips a saved block DNT byte for byte with newEditorTypes %s', newEditorTypes => {
+    it.each([false, true])('round-trips a saved block NoTranslate byte for byte with newEditorTypes %s', newEditorTypes => {
       expect(roundTripMdxish(saved, { newEditorTypes })).toBe(saved);
     });
 
-    it.each([false, true])('keeps the block after an empty block DNT with newEditorTypes %s', newEditorTypes => {
-      expect(roundTripMdxish('<DNT>\n</DNT>\n\n# Heading\n', { newEditorTypes })).toBe('<DNT>\n\n</DNT>\n\n# Heading\n');
+    it.each([false, true])('keeps the block after an empty block NoTranslate with newEditorTypes %s', newEditorTypes => {
+      expect(roundTripMdxish('<NoTranslate>\n</NoTranslate>\n\n# Heading\n', { newEditorTypes })).toBe('<NoTranslate>\n\n</NoTranslate>\n\n# Heading\n');
     });
 
     describe.each([
-      ['an expression', '<DNT>\n{"</DNT>"}</DNT>\n', '<DNT>\n  {"</DNT>"}\n</DNT>\n'],
-      ['an inline DNT', '<DNT>\n<DNT>inner</DNT></DNT>\n', '<DNT>\n  <DNT>inner</DNT>\n</DNT>\n'],
+      ['an expression', '<NoTranslate>\n{"</NoTranslate>"}</NoTranslate>\n', '<NoTranslate>\n  {"</NoTranslate>"}\n</NoTranslate>\n'],
+      ['an inline NoTranslate', '<NoTranslate>\n<NoTranslate>inner</NoTranslate></NoTranslate>\n', '<NoTranslate>\n  <NoTranslate>inner</NoTranslate>\n</NoTranslate>\n'],
       [
-        'an inline DNT opened on an earlier line',
-        '<DNT>\nkept <DNT>inner\nstill</DNT></DNT>\n',
-        '<DNT>\n  kept <DNT>inner\n  still</DNT>\n</DNT>\n',
+        'an inline NoTranslate opened on an earlier line',
+        '<NoTranslate>\nkept <NoTranslate>inner\nstill</NoTranslate></NoTranslate>\n',
+        '<NoTranslate>\n  kept <NoTranslate>inner\n  still</NoTranslate>\n</NoTranslate>\n',
       ],
     ])('with a closer inside %s on the last line', (_label, doc, expected) => {
       it.each([false, true])('ends the block at its own closer with newEditorTypes %s', newEditorTypes => {
@@ -2469,9 +2469,9 @@ describe('mdxishMdastToMd on parser-produced trees', () => {
     });
 
     describe.each([
-      ['a blockquote', '> <DNT>\n> first\n> </DNT> later\n', '> <DNT>\n>   first\n> </DNT>\n>\n> later\n'],
-      ['a list item', '- <DNT>\n  first\n  </DNT> later\n', '- <DNT>\n    first\n  </DNT>\n  later\n'],
-      ['trailing spaces', '<DNT>\nfirst\n</DNT>   \n', '<DNT>\n  first\n</DNT>\n'],
+      ['a blockquote', '> <NoTranslate>\n> first\n> </NoTranslate> later\n', '> <NoTranslate>\n>   first\n> </NoTranslate>\n>\n> later\n'],
+      ['a list item', '- <NoTranslate>\n  first\n  </NoTranslate> later\n', '- <NoTranslate>\n    first\n  </NoTranslate>\n  later\n'],
+      ['trailing spaces', '<NoTranslate>\nfirst\n</NoTranslate>   \n', '<NoTranslate>\n  first\n</NoTranslate>\n'],
     ])('in %s', (_label, doc, expected) => {
       it.each([false, true])('ends the block at its closer with newEditorTypes %s', newEditorTypes => {
         expect(roundTripMdxish(doc, { newEditorTypes })).toBe(expected);
