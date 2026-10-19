@@ -25,6 +25,7 @@ export {
   mdx,
   mdxish,
   mdxishAstProcessor,
+  mdxishHeadingIds,
   mdxishMdastToMd,
   mdxishTags,
   extractToc,
