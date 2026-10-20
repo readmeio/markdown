@@ -1,21 +1,23 @@
 import type { Extension as FromMarkdownExtension } from 'mdast-util-from-markdown';
 import type { Extension } from 'micromark-util-types';
 
-import { mdxExpressionFromMarkdown } from 'mdast-util-mdx-expression';
 import { mdxjsEsmFromMarkdown } from 'mdast-util-mdxjs-esm';
 import { mdxExpression } from 'micromark-extension-mdx-expression';
 import { mdxjsEsm } from 'micromark-extension-mdxjs-esm';
 
 import { emptyTaskListItemFromMarkdown } from '../mdast-util/empty-task-list-item';
 import { gemojiFromMarkdown } from '../mdast-util/gemoji';
+import { headingIdFromMarkdown } from '../mdast-util/heading-id';
 import { htmlBlockComponentFromMarkdown } from '../mdast-util/html-block-component';
 import { jsxTableFromMarkdown } from '../mdast-util/jsx-table';
 import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
+import { mdxishExpressionFromMarkdown } from '../mdast-util/mdx-expression';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { gemoji } from './gemoji';
+import { headingId } from './heading-id';
 import { htmlBlockComponent } from './html-block-component';
 import { jsxComment } from './jsx-comment';
 import { jsxTable } from './jsx-table';
@@ -26,7 +28,7 @@ import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
 
 /**
- * Constructs disabled for every MDXish parser. 
+ * Constructs disabled for every MDXish parser.
  * -`codeIndented`: To avoid formatting 4+ column indentation as code (default commonmark behavior)
  *                  and match MDX behavior.
  * Pass `extra` to disable more on top of the shared set, never in place of it.
@@ -58,17 +60,19 @@ const REGISTRY = {
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
-  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxExpressionFromMarkdown, expression: true },
+  mdxExpressionLenient: { syntax: mdxExpressionLenient, fromMarkdown: mdxishExpressionFromMarkdown, expression: true },
   // `allowEmpty` is the package default; passed explicitly because `mdx-jsx`
   // registers the same tokenizer with it off for attribute expressions.
   mdxExpression: {
     syntax: () => mdxExpression({ allowEmpty: true }),
-    fromMarkdown: mdxExpressionFromMarkdown,
+    fromMarkdown: mdxishExpressionFromMarkdown,
     expression: true,
   },
   mdxComponent: { syntax: mdxComponent, fromMarkdown: mdxComponentFromMarkdown },
   gemoji: { syntax: gemoji, fromMarkdown: gemojiFromMarkdown },
   legacyVariable: { syntax: legacyVariable, fromMarkdown: legacyVariableFromMarkdown },
+  // Replaces the ATX heading construct in `flow`, so it never touches prose outside a heading.
+  headingId: { syntax: headingId, fromMarkdown: headingIdFromMarkdown },
   looseHtmlEntity: { syntax: looseHtmlEntity, fromMarkdown: looseHtmlEntityFromMarkdown },
   htmlBlockComponent: { syntax: htmlBlockComponent, fromMarkdown: htmlBlockComponentFromMarkdown },
   // This is for in-document variable & function definitions
@@ -107,19 +111,14 @@ const EXPRESSIONS: MdxishFeature[] = ['jsxComment', 'mdxExpressionLenient', 'mdx
  */
 export const FEATURES = {
   /** `lib/mdxish.ts` — the document parser; the only site taking every group */
-  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem'],
+  document: [...BLOCK_CLAIMS, ...INLINE, ...EXPRESSIONS, 'emptyTaskListItem', 'headingId'],
 
   /**
    * `parse-markdown-fragment.ts` — re-parses a component body, which should tokenize
    * like the document around it: when the two drifted a `<Table>` in a
    * `<Callout>` lost every row (CX-3705).
    */
-  componentBody: [
-    ...BLOCK_CLAIMS,
-    ...INLINE,
-    'mdxExpression',
-    'emptyTaskListItem',
-  ],
+  componentBody: [...BLOCK_CLAIMS, ...INLINE, 'mdxExpression', 'emptyTaskListItem', 'headingId'],
 
   /**
    * `lib/mdxishTags.ts` — collects component names, so nothing inline is needed.
@@ -140,7 +139,7 @@ export const FEATURES = {
   /**
    * `lib/stripComments.ts` — parses only to strip comments, then re-stringifies,
    * so it needs the tokenizers that keep a construct in one piece across the
-   * round trip. 
+   * round trip.
    * No inline syntax: nothing here rewrites prose, and magic blocks are already excluded.
    */
   stripComments: [...BLOCK_CLAIMS.filter(feature => feature !== 'magicBlock'), 'mdxExpression'],
