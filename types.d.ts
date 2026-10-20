@@ -229,6 +229,13 @@ export interface Anchor extends Node {
   type: NodeTypes.anchor;
 }
 
+export interface NoTranslate extends Node {
+  children: PhrasingContent[];
+  data: Data & { hName: 'NoTranslate' };
+  position?: Position;
+  type: NodeTypes.noTranslate;
+}
+
 declare module 'mdast' {
   // eslint-disable-next-line @typescript-eslint/no-shadow -- augmenting mdast's `Data` requires reusing the name
   interface Data {
@@ -266,6 +273,7 @@ declare module 'mdast' {
 
   interface PhrasingContentMap {
     [NodeTypes.anchor]: Anchor;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.i]: FaEmoji;
     [NodeTypes.glossary]: Glossary;
@@ -278,6 +286,7 @@ declare module 'mdast' {
     [NodeTypes.anchor]: Anchor;
     [NodeTypes.callout]: Callout;
     [NodeTypes.codeTabs]: CodeTabs;
+    [NodeTypes.noTranslate]: NoTranslate;
     [NodeTypes.embedBlock]: EmbedBlock;
     [NodeTypes.emoji]: Gemoji;
     [NodeTypes.figure]: Figure;

@@ -35,6 +35,32 @@ Simple markdown link with `@embed` title:
 
 	[Embed Title](https://youtu.be/example "@embed")
 
+### Do Not Translate
+
+`<NoTranslate>` tag for text that must not be translated. Any inline markdown can sit inside, and it stays in its paragraph even at the start of a line. Renders as `<span translate="no">`:
+
+	Sign in to <NoTranslate>Acme **Cloud**</NoTranslate> to start.
+
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+
+	<NoTranslate>
+	Acme Cloud keeps **every** name as is.
+
+	- Acme CLI
+	</NoTranslate>
+
+Text right after the opener is still the block form when the body has a blank line, or `</NoTranslate>` starts its own line or ends a later line. So a list can start right after the tag, and a `<NoTranslate>` around several paragraphs never drops the later ones:
+
+	<NoTranslate>- Acme CLI
+	- Acme SDK
+	</NoTranslate>
+
+	<NoTranslate>First paragraph.
+
+	Second paragraph.</NoTranslate>
+
+Both forms are claimed whole by their own tokenizer (`lib/micromark/no-translate`), so CommonMark never splits the opener from its closer.
+
 ## Data Replacement Syntaxes
 
 ### User Variables
