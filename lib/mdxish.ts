@@ -44,6 +44,7 @@ import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/ma
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
+import mdxishNoTranslateToJsx from '../processor/transform/mdxish/no-translate-to-jsx';
 import { normalizeClosingTagWhitespace } from '../processor/transform/mdxish/normalize-closing-tag-whitespace';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
@@ -62,6 +63,7 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import unwrapPins from '../processor/transform/mdxish/unwrap-pins';
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
+import noTranslateBlocksToDiv from '../processor/transform/no-translate-blocks';
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
@@ -225,6 +227,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
+    .use(mdxishNoTranslateToJsx)
     // The rest only a PARSER tree carries.
     // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
     .use(unwrapPins)
@@ -259,6 +262,7 @@ export function mdxishRenderProcessor(opts: MdxishOpts = {}) {
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
+    .use(noTranslateBlocksToDiv) // Block <NoTranslate> renders as a div, inline stays a span
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip

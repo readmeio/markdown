@@ -90,20 +90,22 @@ Input ->- | Parser | ->- Syntax Tree ->- |    N/A   |   returned
   │  remarkParse          │  remarkFrontmatter               │
   │   micromarkExts:      │  normalizeEmphasisAST            │
   │    · jsxTable         │  mdxishMdxComponentBlocks        │
-  │    · magicBlock       │  mdxishInlineMdxHtmlBlocks       │
-  │    · mdxComponent     │  mdxishTables                    │
-  │    · gemoji           │  mdxishHtmlBlocks                │
-  │    · legacyVariable   │  magicBlockTransformer           │
-  │    · looseHtmlEntity  │  imageTransformer                │
-  │    · htmlBlockComp.   │  defaultTransformers             │
-  │    · mdxExprTextOnly? │    (callouts, codeTabs, embeds)  │
-  │    · mdxjsEsm?        │  headingIdsTransformer           │
+  │    · noTranslate      │  mdxishInlineMdxHtmlBlocks       │
+  │    · magicBlock       │  mdxishTables                    │
+  │    · mdxComponent     │  mdxishHtmlBlocks                │
+  │    · gemoji           │  magicBlockTransformer           │
+  │    · legacyVariable   │  imageTransformer                │
+  │    · looseHtmlEntity  │  defaultTransformers             │
+  │    · htmlBlockComp.   │    (callouts, codeTabs, embeds)  │
+  │    · mdxExprTextOnly? │  headingIdsTransformer           │
+  │    · mdxjsEsm?        │                                  │
   │    · jsxComment?      │                                  │
   │                       │  mdxishInlineMdxComponents?      │
   │   fromMarkdownExts:   │  mdxishJsxToMdast?               │
   │    · jsxTable         │  variablesTextTransformer        │
-  │    · magicBlock       │  tailwindTransformer?            │
-  │    · mdxComponent     │  remarkGfm                       │
+  │    · noTranslate      │  tailwindTransformer?            │
+  │    · magicBlock       │  remarkGfm                       │
+  │    · mdxComponent     │                                  │
   │    · gemoji           │                                  │
   │    · legacyVariable   │                                  │
   │    · emptyTaskList…   │                                  │
@@ -242,6 +244,8 @@ Each extension is a **pair**, registered through the two arrays in `mdxishAstPro
 
 - a micromark tokenizer in `lib/micromark/*` (listed under `micromarkExtensions`) that emits the raw tokens, and
 - a fromMarkdown handler in `lib/mdast-util/*` (listed under `fromMarkdownExtensions`) that turns those tokens into an MDAST node.
+
+A tokenizer that claims a whole tag (`mdxComponent`, `noTranslate`) has to step over code spans, fences and `{…}` expressions in the body, where a `<` or `>` is not a tag. That scanning lives once in `createOpaqueRegions` (@lib/micromark/util/opaque-regions.ts): the host hands it `consume` and a `lineEnding` hook, so each tokenizer keeps its own line-ending rules, and a fix to the scanning lands in both.
 
 A tokenizer registers itself under one or more **constructs**, keyed by the character that triggers it:
 
