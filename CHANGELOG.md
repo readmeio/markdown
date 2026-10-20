@@ -1,6 +1,29 @@
 Changelog
 ===
 
+## Version 15.10.0
+### ✨ New & Improved
+
+* **mdxish:** RM-18626 support custom heading anchors with {[#id](https://github.com/readmeio/markdown/issues/id)} ([#1640](https://github.com/readmeio/markdown/issues/1640)) ([acac14f](https://github.com/readmeio/markdown/commit/acac14f1e6ba372d728c9407ac713441460af2a9)), closes [readmeio/ai#1309](https://github.com/readmeio/ai/issues/1309)
+
+## Version 15.9.4
+### 🛠 Fixes & Updates
+
+* **variables:** resolve {user.*} syntax in markdown image alt text ([#1639](https://github.com/readmeio/markdown/issues/1639)) ([b132c85](https://github.com/readmeio/markdown/commit/b132c8580801214ee5d209423f6d1aced812b6e4)), closes [#1638](https://github.com/readmeio/markdown/issues/1638) [#1638](https://github.com/readmeio/markdown/issues/1638)
+* **variables:** resolve <<variable>> syntax in markdown image alt text ([#1638](https://github.com/readmeio/markdown/issues/1638)) ([86347af](https://github.com/readmeio/markdown/commit/86347af16f03d8262b794b9cebfae80fa28b9e1b)), closes [#1639](https://github.com/readmeio/markdown/issues/1639)
+
+## Version 15.9.3
+### 🛠 Fixes & Updates
+
+* **mdxish:** resolve variables in composite attribute expressions ([#1646](https://github.com/readmeio/markdown/issues/1646)) ([8bcbe26](https://github.com/readmeio/markdown/commit/8bcbe2668daa74819a7ba2eb500930fc169d2dee))
+
+## Version 15.9.2
+### 🛠 Fixes & Updates
+
+* **deps:** bump source-map-js from 1.2.1 to 1.2.2 ([#1635](https://github.com/readmeio/markdown/issues/1635)) ([849cc34](https://github.com/readmeio/markdown/commit/849cc34f97a1c8dacf8d4d92c8061922b0e3467c))
+* **html-block:** stop rerunning scripts on every rerender ([#1641](https://github.com/readmeio/markdown/issues/1641)) ([66098a5](https://github.com/readmeio/markdown/commit/66098a550be57ac51ab67e309dd27181f75e64e9)), closes [readmeio/readme#21367](https://github.com/readmeio/readme/issues/21367)
+* **accordion:** stop Safari showing a second dropdown arrow ([#1644](https://github.com/readmeio/markdown/issues/1644)) ([895b165](https://github.com/readmeio/markdown/commit/895b1656585f49edcd27eaa2f0d479f7c8284f13))
+
 ## Version 15.9.1
 ### 🛠 Fixes & Updates
 
