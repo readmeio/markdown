@@ -1,9 +1,11 @@
 import type { HTMLBlock, MdxJsx } from '../../types';
 import type { Properties } from 'hast';
+import type { ListItem } from 'mdast';
 import type { MdxJsxAttribute, MdxJsxAttributeValueExpression } from 'mdast-util-mdx-jsx';
 import type { Handler, Handlers } from 'mdast-util-to-hast';
 
 import { decodeHTMLStrict } from 'entities';
+import { defaultHandlers } from 'remark-rehype';
 
 import { NodeTypes } from '../../enums';
 
@@ -80,8 +82,31 @@ const embedHandler: Handler = (state, node) => {
   };
 };
 
+/**
+ * Renders a list item whose marker sits alone on its line with that line kept empty.
+ *
+ * `-` over an indented block (a sublist, a code block) parses to the same mdast as the
+ * block written on the marker's line, since CommonMark has no empty paragraph, so both
+ * would render as `- - B`. Positions still tell the spellings apart. A `<br>` holds the
+ * line open, which an empty `<p>` wouldn't.
+ */
+const listItemHandler: Handler = (state, node, parent) => {
+  const item = node as ListItem;
+  const result = defaultHandlers.listItem(state, item, parent);
+  const first = item.children[0];
+  if (!first || first.type === 'paragraph') return result;
+
+  const itemLine = item.position?.start.line;
+  const blockLine = first.position?.start.line;
+  if (itemLine === undefined || blockLine === undefined || blockLine <= itemLine) return result;
+
+  result.children.unshift({ type: 'element', tagName: 'br', properties: {}, children: [] });
+  return result;
+};
+
 export const mdxComponentHandlers: Handlers = {
   embed: embedHandler,
+  listItem: listItemHandler,
   mdxFlowExpression: mdxExpressionHandler,
   mdxJsxFlowElement: mdxJsxElementHandler,
   mdxJsxTextElement: mdxJsxElementHandler,

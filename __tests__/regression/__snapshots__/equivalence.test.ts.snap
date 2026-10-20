@@ -229,7 +229,7 @@ exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
     {
       "attrName": "class",
       "kind": "attr",
-      "left": "CardsGrid",
+      "left": "CardsGrid CardsGrid_wrap",
       "path": "/div[1]",
       "right": "readme-tailwind",
       "severity": "structural",
@@ -247,7 +247,7 @@ exports[`MDX↔MDXish equivalence > deprecated-html-tags 1`] = `
       "kind": "attr",
       "left": "Card Card_card",
       "path": "/div[1]/div[0]",
-      "right": "CardsGrid",
+      "right": "CardsGrid CardsGrid_wrap",
       "severity": "structural",
     },
     {

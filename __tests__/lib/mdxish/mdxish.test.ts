@@ -673,3 +673,24 @@ describe('html tags rendering', () => {
     });
   });
 });
+
+describe('mdxish list item with an empty first line', () => {
+  const firstItemChildren = (md: string) =>
+    findElementByTagName(mdxish(md), 'li')!
+      .children.filter((child): child is Element => child.type === 'element')
+      .map(child => child.tagName);
+
+  it.each([
+    ['a bullet sublist', '-\n  - B', ['br', 'ul']],
+    ['an ordered sublist', '1.\n   1. B', ['br', 'ol']],
+    ['a blockquote', '-\n  > quote', ['br', 'blockquote']],
+    ['a fenced code block', '-\n  ```\n  code\n  ```', ['br', 'pre']],
+    ['a sublist inside a component body', '<Tabs>\n<Tab title="One">\n\n-\n  - B\n\n</Tab>\n</Tabs>', ['br', 'ul']],
+  ])('keeps the empty line above %s', (_, md, expected) => {
+    expect(firstItemChildren(md)).toStrictEqual(expected);
+  });
+
+  it('keeps a sublist written on the marker’s line on that line', () => {
+    expect(firstItemChildren('- - B')).toStrictEqual(['ul']);
+  });
+});
