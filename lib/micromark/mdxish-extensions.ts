@@ -14,6 +14,7 @@ import { legacyVariableFromMarkdown } from '../mdast-util/legacy-variable';
 import { magicBlockFromMarkdown } from '../mdast-util/magic-block';
 import { mdxComponentFromMarkdown } from '../mdast-util/mdx-component';
 import { mdxishExpressionFromMarkdown } from '../mdast-util/mdx-expression';
+import { noTranslateFromMarkdown } from '../mdast-util/no-translate';
 import { jsxAcornParser } from '../utils/jsx-acorn-parser';
 
 import { gemoji } from './gemoji';
@@ -26,6 +27,7 @@ import { looseHtmlEntity, looseHtmlEntityFromMarkdown } from './loose-html-entit
 import { magicBlock } from './magic-block';
 import { mdxComponent } from './mdx-component';
 import { mdxExpressionLenient } from './mdx-expression-lenient';
+import { noTranslate } from './no-translate';
 
 /**
  * Constructs disabled for every MDXish parser.
@@ -57,6 +59,7 @@ interface ExtensionPair {
 const REGISTRY = {
   jsxComment: { syntax: jsxComment, expression: true },
   jsxTable: { syntax: jsxTable, fromMarkdown: jsxTableFromMarkdown },
+  noTranslate: { syntax: noTranslate, fromMarkdown: noTranslateFromMarkdown },
   magicBlock: { syntax: magicBlock, fromMarkdown: magicBlockFromMarkdown },
   // Two `{` tokenizers, never registered together: the document parser takes text
   // only, the component-body re-parser needs flow too for multi-line expressions.
@@ -89,7 +92,7 @@ export type MdxishFeature = keyof typeof REGISTRY;
 // ======= TOKENIZER EXTENSION GROUP DEFINITIONS =======
 
 /** Tokenizers that claim a whole block so broader ones can't fragment it. */
-const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
+const BLOCK_CLAIMS: MdxishFeature[] = ['jsxTable', 'noTranslate', 'magicBlock', 'mdxComponent', 'htmlBlockComponent'];
 
 /** Inline syntax every parser that renders user prose needs. */
 const INLINE: MdxishFeature[] = ['gemoji', 'legacyVariable', 'looseHtmlEntity'];
