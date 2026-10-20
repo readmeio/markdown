@@ -1,11 +1,12 @@
 import type { Parent } from 'mdast';
+import type { MDXContent } from 'mdx/types';
 
 import { render } from '@testing-library/react';
 import React from 'react';
 
 import { NodeTypes } from '../../enums';
 import { mdxish, renderMdxish } from '../../lib';
-import { collectNodes, parseMdxish, roundTripMdxish } from '../helpers';
+import { collectNodes, execute, parseMdxish, roundTripMdxish } from '../helpers';
 
 const renderDoc = (md: string, newEditorTypes: boolean) => {
   const Content = renderMdxish(mdxish(md, { newEditorTypes })).default;
@@ -73,7 +74,8 @@ describe('NoTranslate', () => {
 
   describe('block form', () => {
     const block = '<NoTranslate>\nPara one **bold**\n\nPara two\n</NoTranslate>\n\nafter';
-    const html = '<div translate="no"><p>Para one <strong>bold</strong></p><p>Para two</p></div><p>after</p>';
+    const html =
+      '<div class="readme-no-translate" translate="no"><p>Para one <strong>bold</strong></p><p>Para two</p></div><p>after</p>';
 
     it.each(editorModes)('newEditorTypes %s: renders a div around its paragraphs', newEditorTypes => {
       expect(renderDoc(block, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(html);
@@ -85,7 +87,8 @@ describe('NoTranslate', () => {
 
     describe('with text right after the opener', () => {
       const spread = '<NoTranslate>one **bold**\n\ntwo</NoTranslate>\n\nafter';
-      const spreadHtml = '<div translate="no"><p>one <strong>bold</strong></p><p>two</p></div><p>after</p>';
+      const spreadHtml =
+        '<div class="readme-no-translate" translate="no"><p>one <strong>bold</strong></p><p>two</p></div><p>after</p>';
 
       it.each(editorModes)('newEditorTypes %s: wraps every paragraph up to the closer', newEditorTypes => {
         expect(renderDoc(spread, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(spreadHtml);
@@ -96,10 +99,22 @@ describe('NoTranslate', () => {
       });
 
       describe.each([
-        ['a list', '<NoTranslate>- one\n- two\n</NoTranslate>\n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
-        ['a paragraph', '<NoTranslate>one\n  </NoTranslate>\n\nafter', '<div translate="no"><p>one</p></div>'],
-        ['a list closing on its last line', '<NoTranslate>- one\n- two</NoTranslate>  \n\nafter', '<div translate="no"><ul><li>one</li><li>two</li></ul></div>'],
-        ['a paragraph closing on its last line', '<NoTranslate>one\ntwo</NoTranslate>\n\nafter', '<div translate="no"><p>one<br>two</p></div>'],
+        [
+          'a list',
+          '<NoTranslate>- one\n- two\n</NoTranslate>\n\nafter',
+          '<div class="readme-no-translate" translate="no"><ul><li>one</li><li>two</li></ul></div>',
+        ],
+        ['a paragraph', '<NoTranslate>one\n  </NoTranslate>\n\nafter', '<div class="readme-no-translate" translate="no"><p>one</p></div>'],
+        [
+          'a list closing on its last line',
+          '<NoTranslate>- one\n- two</NoTranslate>  \n\nafter',
+          '<div class="readme-no-translate" translate="no"><ul><li>one</li><li>two</li></ul></div>',
+        ],
+        [
+          'a paragraph closing on its last line',
+          '<NoTranslate>one\ntwo</NoTranslate>\n\nafter',
+          '<div class="readme-no-translate" translate="no"><p>one<br>two</p></div>',
+        ],
       ])('with the closer ending a later line around %s', (_label, md, wrapped) => {
         it.each(editorModes)('newEditorTypes %s: wraps it in a div', newEditorTypes => {
           expect(renderDoc(md, newEditorTypes).innerHTML.replace(/\n/g, '')).toBe(`${wrapped}<p>after</p>`);
@@ -219,6 +234,45 @@ describe('NoTranslate', () => {
     expect(container.querySelector('.callout h3')?.textContent).toContain('Set up Acme first');
   });
 
+  describe('in a title prop', () => {
+    const cases = [
+      ['an Accordion', '<Accordion title="Use <NoTranslate>Acme</NoTranslate> now">\nbody\n</Accordion>', 'summary'],
+      ['a Card', '<Cards columns={1}>\n  <Card title="Use <NoTranslate>Acme</NoTranslate> now">body</Card>\n</Cards>', '.Card-title'],
+      ['a Tab', '<Tabs>\n  <Tab title="Use <NoTranslate>Acme</NoTranslate> now">\n    body\n  </Tab>\n</Tabs>', 'button'],
+    ] as const;
+
+    it.each(cases)('mdxish renders the NoTranslate in %s as a span', (_label, md, selector) => {
+      const title = renderDoc(md, false).querySelector(selector);
+
+      expect(title?.querySelector('span[translate="no"]')?.textContent).toBe('Acme');
+      expect(title?.textContent).toContain('Use Acme now');
+    });
+
+    it.each(cases)('mdx renders the NoTranslate in %s as a span', (_label, md, selector) => {
+      const Content = execute(md) as MDXContent;
+      const title = render(<Content />).container.querySelector(selector);
+
+      expect(title?.querySelector('span[translate="no"]')?.textContent).toBe('Acme');
+      expect(title?.textContent).toContain('Use Acme now');
+    });
+
+    it.each(cases)('keeps the title of %s as one node so a flex title keeps its spaces', (_label, md, selector) => {
+      const title = renderDoc(md, false).querySelector(selector);
+      const wrapper = title?.querySelector('span[translate="no"]')?.parentElement;
+
+      expect(wrapper).not.toBe(title);
+      expect(wrapper?.textContent).toBe('Use Acme now');
+    });
+
+    it('keeps a title without a NoTranslate as plain text', () => {
+      const title = renderDoc('<Accordion title="Use <b>Acme</b> now">\nbody\n</Accordion>', false).querySelector(
+        'summary',
+      );
+
+      expect(title?.textContent).toBe('Use <b>Acme</b> now');
+    });
+  });
+
   describe.each([
     ['a line break', '<NoTranslate>Acme\nCloud</NoTranslate> after', 'Acme\nCloud'],
     ['an encoded tag', '<NoTranslate>&lt;Product&gt;</NoTranslate> after', '<Product>'],
@@ -232,6 +286,7 @@ describe('NoTranslate', () => {
   describe.each([
     ['spaces inside the tags', 'Use<NoTranslate> Acme </NoTranslate>now', 'Use<span translate="no"> Acme </span>now'],
     ['a body of only a space', 'Use<NoTranslate> </NoTranslate>now', 'Use<span translate="no"> </span>now'],
+    ['a nested NoTranslate', '<NoTranslate>a <NoTranslate>b</NoTranslate> c</NoTranslate>', '<span translate="no">a <span translate="no">b</span> c</span>'],
     [
       'markdown inside a nested NoTranslate',
       'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end',
@@ -255,7 +310,9 @@ describe('NoTranslate', () => {
     });
 
     it.each(editorModes)('newEditorTypes %s: keeps the comment hidden after a save', newEditorTypes => {
-      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe('Use <span translate="no"></span> now.');
+      expect(renderSaved(md, newEditorTypes).querySelector('p')?.innerHTML).toBe(
+        'Use <span translate="no"></span> now.',
+      );
     });
   });
 
@@ -281,18 +338,25 @@ describe('NoTranslate', () => {
     ['a bare url', 'x <NoTranslate>https://b.com</NoTranslate> y'],
   ])('with %s inside', (_label, md) => {
     it.each(editorModes)('newEditorTypes %s: renders the url as a link', newEditorTypes => {
-      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+      expect(renderDoc(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe(
+        'https://b.com',
+      );
     });
 
     it.each(editorModes)('newEditorTypes %s: renders the url as a link after a save', newEditorTypes => {
-      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe('https://b.com');
+      expect(renderSaved(md, newEditorTypes).querySelector('[translate="no"] a')?.getAttribute('href')).toBe(
+        'https://b.com',
+      );
     });
   });
 
   describe('with only a self-closing tag inside', () => {
     it.each(editorModes)('newEditorTypes %s: keeps the tag as an html child', newEditorTypes => {
       const tree = parseMdxish('Use <NoTranslate><Badge label="Acme" /></NoTranslate> today', { newEditorTypes });
-      const [noTranslate] = collectNodes<Parent>(tree, node => node.type === NodeTypes.noTranslate || node.type === 'mdxJsxTextElement');
+      const [noTranslate] = collectNodes<Parent>(
+        tree,
+        node => node.type === NodeTypes.noTranslate || node.type === 'mdxJsxTextElement',
+      );
 
       expect(noTranslate.children).toStrictEqual([expect.objectContaining({ type: 'html', value: '<Badge label="Acme" />' })]);
     });

@@ -41,7 +41,7 @@ Simple markdown link with `@embed` title:
 
 	Sign in to <NoTranslate>Acme **Cloud**</NoTranslate> to start.
 
-With the opener alone on its line, it wraps whole blocks instead and renders as `<div translate="no">`:
+With the opener alone on its line, it wraps whole blocks instead and renders as `<div class="readme-no-translate" translate="no">`:
 
 	<NoTranslate>
 	Acme Cloud keeps **every** name as is.
@@ -60,6 +60,8 @@ Text right after the opener is still the block form when the body has a blank li
 	Second paragraph.</NoTranslate>
 
 Both forms are claimed whole by their own tokenizer (`lib/micromark/no-translate`), so CommonMark never splits the opener from its closer.
+
+A string prop is plain text, so no tag renders inside one. `<NoTranslate>` is the one exception: an Accordion, Card or Tab title holding `<NoTranslate>Acme</NoTranslate>` still shows the span, in both engines (`noTranslateTagsToSpans` in `components/NoTranslate.tsx`).
 
 ## Data Replacement Syntaxes
 
