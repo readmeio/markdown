@@ -1,3 +1,8 @@
+// Also styles the MdxishEditor accordion in readmeio/readme. Its DOM differs from view mode:
+// no `<details>`/`[open]`, and TipTap wrappers sit between `.Accordion` and `.Accordion-title`,
+// so a direct-child selector written for view mode misses it.
+// Before merging a change here, link this checkout into readmeio/readme (`make link-markdown`)
+// and check the Components/MdxishEditor/Blocks stories in its Storybook for regressions.
 .Accordion {
   background: rgba(var(--color-bg-page-rgb, white), 1);
   border: 1px solid var(--color-border-default, rgba(black, 0.1));

@@ -3,6 +3,10 @@
 /* stylelint-disable declaration-block-no-duplicate-properties */
 /* stylelint-disable custom-property-pattern */
 /* stylelint-disable scss/selector-no-redundant-nesting-selector */
+// Also styles the MdxishEditor in readmeio/readme, which puts `.markdown-body` on its root with
+// `.ProseMirror` between it and the content, so `.markdown-body > *` rules miss editor blocks.
+// Before merging a change here, link this checkout into readmeio/readme (`make link-markdown`)
+// and check the Components/MdxishEditor/Blocks stories in its Storybook for regressions.
 @mixin gfm {
   @include markdown-defaults;
   @include markdown-overrides;

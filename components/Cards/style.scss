@@ -1,3 +1,8 @@
+// Also styles the MdxishEditor cards in readmeio/readme, where TipTap wrappers sit between
+// `.Card` and `.Card-title`/`.Card-content`, so a direct-child selector written for view mode
+// misses them.
+// Before merging a change here, link this checkout into readmeio/readme (`make link-markdown`)
+// and check the Components/MdxishEditor/Blocks stories in its Storybook for regressions.
 @import '../../styles/mixins/when-color-mode-dark.scss';
 
 $iphone-plus: 414px;
