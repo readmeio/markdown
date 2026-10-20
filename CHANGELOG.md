@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.10.1
+### 🛠 Fixes & Updates
+
+* **cards:** scroll a fixed-column grid inside itself instead of widening the page ([#1648](https://github.com/readmeio/markdown/issues/1648)) ([46a6fa2](https://github.com/readmeio/markdown/commit/46a6fa2a62848e4ca47a385f20050abe43e10db9)), closes [readmeio/readme#21752](https://github.com/readmeio/readme/issues/21752)
+* stop an empty list line rendering as a doubled bullet in view mode ([#1660](https://github.com/readmeio/markdown/issues/1660)) ([b5aaf71](https://github.com/readmeio/markdown/commit/b5aaf71fa008edec7ced4063d8d8a6f6b51ad375))
+
 ## Version 15.10.0
 ### ✨ New & Improved
 
