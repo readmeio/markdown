@@ -34,8 +34,8 @@
   "scripts": {
     "build": "webpack --mode production && npm run build-types",
     "build-types": "npx tsc --declaration --emitDeclarationOnly --declarationDir ./dist --skipLibCheck",
+    "build:demo": "webpack --mode production --config ./webpack.dev.js",
     "build:verify": "npm run build && npm run verify-exports",
-    "heroku-postbuild": "webpack --mode production --config ./webpack.dev.js",
     "lint": "eslint . --ext .jsx --ext .js --ext .ts --ext .tsx",
     "release": "npx semantic-release",
     "release.dry": "npx semantic-release --dry-run",

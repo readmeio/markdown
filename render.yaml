@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: markdown-demo
+    runtime: static
+    buildCommand: npm ci && npm run build:demo
+    staticPublishPath: ./example
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+    previews:
+      generation: automatic
