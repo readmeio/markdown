@@ -1,6 +1,11 @@
 Changelog
 ===
 
+## Version 15.10.0
+### ✨ New & Improved
+
+* **mdxish:** RM-18626 support custom heading anchors with {[#id](https://github.com/readmeio/markdown/issues/id)} ([#1640](https://github.com/readmeio/markdown/issues/1640)) ([acac14f](https://github.com/readmeio/markdown/commit/acac14f1e6ba372d728c9407ac713441460af2a9)), closes [readmeio/ai#1309](https://github.com/readmeio/ai/issues/1309)
+
 ## Version 15.9.4
 ### 🛠 Fixes & Updates
 
