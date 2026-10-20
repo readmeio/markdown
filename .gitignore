@@ -15,6 +15,7 @@ __diff_output__
 
 example/public/img/emojis
 example/demo.js*
+example/[0-9]*.js
 example/demo.css
 
 dist

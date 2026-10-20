@@ -1,1 +1,1 @@
-web: npx http-server example --port $PORT
+web: npx --yes http-server example --port $PORT

@@ -1,0 +1,6 @@
+{
+  "buildpacks": [{ "url": "heroku/nodejs" }],
+  "description": "Demo app for previewing @readme/markdown pull requests.",
+  "name": "@readme/markdown",
+  "repository": "https://github.com/readmeio/markdown"
+}
