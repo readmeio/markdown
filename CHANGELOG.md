@@ -1,6 +1,13 @@
 Changelog
 ===
 
+## Version 15.11.0
+### ✨ New & Improved
+
+* **mdxish:** add a micromark tokenizer for the <NoTranslate> tag ([#1651](https://github.com/readmeio/markdown/issues/1651)) ([9713447](https://github.com/readmeio/markdown/commit/97134470c70e9362a4f5cfca24b98bc7301fc061)), closes [#1645](https://github.com/readmeio/markdown/issues/1645) [#1652](https://github.com/readmeio/markdown/issues/1652) [#1645](https://github.com/readmeio/markdown/issues/1645)
+* **mdxish:** add inline <NoTranslate> do-not-translate tag ([#1645](https://github.com/readmeio/markdown/issues/1645)) ([374d0b5](https://github.com/readmeio/markdown/commit/374d0b50d0b5c9c8320e93f990587ae24d955d0a)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1652](https://github.com/readmeio/markdown/issues/1652)
+* **mdxish:** parse, render and save the <NoTranslate> tag ([#1652](https://github.com/readmeio/markdown/issues/1652)) ([fbb9223](https://github.com/readmeio/markdown/commit/fbb9223c7e9fc5ac88f678902a3a622f84e79cca)), closes [#1651](https://github.com/readmeio/markdown/issues/1651) [#1645](https://github.com/readmeio/markdown/issues/1645)
+
 ## Version 15.10.1
 ### 🛠 Fixes & Updates
 
