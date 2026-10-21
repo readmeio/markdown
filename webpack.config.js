@@ -8,7 +8,10 @@ const isDev = env === 'development';
 
 const getConfig = ({ target }) => ({
   target,
-  entry: './index',
+  entry: {
+    main: './index',
+    'owlmoji-details': './lib/owlmoji-details',
+  },
   plugins: [
     new ExtractCSS({
       filename: '[name].css',
@@ -130,7 +133,6 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
 
 const serverConfig = merge(getConfig({ target: 'node' }), {
   entry: {
-    main: './index',
     'render-diff': './lib/render-diff',
     'render-fixture': './lib/render-fixture',
   },

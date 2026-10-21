@@ -21,6 +21,12 @@
       "types": "./dist/lib/render-fixture/index.d.ts",
       "default": "./dist/render-fixture.node.js"
     },
+    "./owlmoji-details": {
+      "types": "./dist/lib/owlmoji-details.d.ts",
+      "node": "./dist/owlmoji-details.node.js",
+      "browser": "./dist/owlmoji-details.js",
+      "default": "./dist/owlmoji-details.node.js"
+    },
     "./package.json": "./package.json",
     "./*": "./*"
   },
@@ -42,7 +48,7 @@
     "test": "vitest",
     "test.ui": "vitest --ui",
     "test.browser": "jest",
-    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs && node scripts/verify-lazy-mermaid.cjs",
+    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs && node scripts/verify-lazy-mermaid.cjs && node scripts/verify-owlmoji.cjs",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {
@@ -177,6 +183,7 @@
     "semantic-release": "^25.0.9",
     "stream-browserify": "^3.0.0",
     "string.prototype.trimend": "^1.0.6",
+    "terser": "^5.51.2",
     "terser-webpack-plugin": "^5.3.17",
     "ts-loader": "^9.4.2",
     "typescript": "^5.7.3",
@@ -202,6 +209,14 @@
       {
         "path": "dist/main.node.js",
         "maxSize": "1MB"
+      },
+      {
+        "path": "dist/owlmoji-details.js",
+        "maxSize": "100KB"
+      },
+      {
+        "path": "dist/owlmoji-details.node.js",
+        "maxSize": "100KB"
       },
       {
         "path": "dist/render-diff.node.js",

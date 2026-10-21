@@ -98,7 +98,7 @@ visible API:
   readme monorepo reads these types. Interface changes there must be flagged and coordinated;
   extending the shared `Data` interface beats casting in two repos (🔴 for silent changes).
 - **Deep-import paths are public.** `files` ships raw `styles/` and `components/` — moving or
-  renaming anything there, or changing `exports` subpaths (`render-diff`, `render-fixture`),
+  renaming anything there, or changing `exports` subpaths (`render-diff`, `render-fixture`, `owlmoji-details`),
   is a breaking-change hazard (🔴).
 - **Breaking engine changes need the consumer-side PR ready** (editor/monorepo) before the engine
   side merges (🔴). Engine PRs touching monorepo behavior want a readme-side approval too (🟡).
