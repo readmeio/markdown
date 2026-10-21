@@ -9,7 +9,7 @@ import type {
 } from 'mdast-util-mdx-jsx';
 import type { Point, Position } from 'unist';
 
-import { decodeHTMLStrict } from 'entities';
+import { decodeHTMLStrict } from 'entities/decode';
 import { CONTINUE, EXIT, visit } from 'unist-util-visit';
 
 import mdast from '../lib/mdast';
