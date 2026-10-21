@@ -14,15 +14,13 @@ const traverse = (node: Node, callback: (element: Node) => void) => {
 };
 
 interface Props {
-  /** Writes the sheet before the content first paints, so its utilities don't transition in. */
-  beforePaint?: boolean;
   children: React.ReactNode;
   darkModeDataAttribute?: string | null;
   /** See the matching param on `tailwindCompiler` in `utils/tailwind-compiler.ts`. */
   darkModeRootSelector?: string | null;
 }
 
-const TailwindStyle = ({ beforePaint = false, children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
+const TailwindStyle = ({ children, darkModeDataAttribute, darkModeRootSelector }: Props) => {
   const classesSet = useRef(new Set<string>());
   const ref = useRef<HTMLStyleElement>(null);
 
@@ -35,9 +33,9 @@ const TailwindStyle = ({ beforePaint = false, children, darkModeDataAttribute, d
   }, []);
 
   /*
-   * @note: regenerate stylesheet
+   * @note: a layout effect writes the sheet before the content first paints, so its utilities don't transition in
    */
-  const watch = useCallback(() => {
+  useIsomorphicLayoutEffect(() => {
     const run = async () => {
       if (classesSet.current.size === 0) return;
 
@@ -105,9 +103,6 @@ const TailwindStyle = ({ beforePaint = false, children, darkModeDataAttribute, d
     // eslint-disable-next-line consistent-return
     return () => observer.disconnect();
   }, [addClasses, darkModeDataAttribute, darkModeRootSelector]);
-
-  useIsomorphicLayoutEffect(() => (beforePaint ? watch() : undefined), [beforePaint, watch]);
-  useEffect(() => (beforePaint ? undefined : watch()), [beforePaint, watch]);
 
   return (
     <>

@@ -25,13 +25,13 @@ describe('TailwindStyle', () => {
     const content = <div className={`${tailwindPrefix} p-4`} />;
 
     it('writes the compiled sheet', async () => {
-      const { container } = render(<TailwindStyle beforePaint>{content}</TailwindStyle>);
+      const { container } = render(<TailwindStyle>{content}</TailwindStyle>);
 
       await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.bg-red-500 { background: red; }'));
     });
 
     it('writes the recompiled sheet when added content brings new utilities', async () => {
-      const { container } = render(<TailwindStyle beforePaint>{content}</TailwindStyle>);
+      const { container } = render(<TailwindStyle>{content}</TailwindStyle>);
       await waitFor(() => expect(sheetOf(container)).not.toBeEmptyDOMElement());
       vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.m-2{}'));
 
@@ -42,17 +42,9 @@ describe('TailwindStyle', () => {
 
     it('writes the recompiled sheet when the dark mode attribute changes', async () => {
       vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.old{}')).mockResolvedValueOnce(compiled('.new{}'));
-      const { container, rerender } = render(
-        <TailwindStyle beforePaint darkModeDataAttribute="data-a">
-          {content}
-        </TailwindStyle>,
-      );
+      const { container, rerender } = render(<TailwindStyle darkModeDataAttribute="data-a">{content}</TailwindStyle>);
 
-      rerender(
-        <TailwindStyle beforePaint darkModeDataAttribute="data-b">
-          {content}
-        </TailwindStyle>,
-      );
+      rerender(<TailwindStyle darkModeDataAttribute="data-b">{content}</TailwindStyle>);
       await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.new{}'));
     });
   });
