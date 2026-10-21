@@ -1,6 +1,4 @@
-import type { Token } from 'parse5';
-
-import { Tokenizer, TokenizerMode } from 'parse5';
+import { Tokenizer, TokenizerMode, type Token } from 'parse5';
 
 import { HTML_VOID_ELEMENTS } from '../../../../utils/common-html-words';
 
@@ -25,8 +23,8 @@ interface TagEvent {
 
 /**
  * `isSelfClosing` — source ends with `/>`.
- * `isStrayCloser` — source starts with `</`. A stray `</br>` is read as `<br>`
- *   per the HTML5 spec; this flag lets consumers tell that apart from a real opener.
+ * `isStrayCloser` — source starts with `</`. A stray `</br>` / `</p>` is read as an
+ *   element per the HTML5 spec; this flag lets consumers tell that apart from a real opener.
  */
 interface OpenEvent extends TagEvent {
   isSelfClosing: boolean;
@@ -39,12 +37,28 @@ interface CloseEvent extends TagEvent {
 }
 
 interface TagWalkHandlers {
-  onClose?: (event: CloseEvent) => void;
-  onOpen?: (event: OpenEvent) => void;
+  onClose: (event: CloseEvent) => void;
+  onOpen: (event: OpenEvent) => void;
 }
 
-// Bodies of these are raw text, so tag-like content inside them is ignored.
-const RAW_TEXT_TAGS = new Set(['script', 'style', 'textarea', 'title']);
+// htmlparser2's HTML5 implied end tags: [openers, innermost open tags they close].
+const IMPLIED_CLOSES: [RegExp, RegExp][] = [
+  [
+    /^(?:address|article|aside|blockquote|details|div|dl|fieldset|figcaption|figure|footer|form|header|hr|main|nav|ol|p|pre|section|table|ul)$/,
+    /^p$/,
+  ],
+  [/^h[1-6]$/, /^(?:h[1-6]|p)$/],
+  [/^tr$/, /^(?:tr|th|td)$/],
+  [/^th$/, /^th$/],
+  [/^td$/, /^(?:thead|th|td)$/],
+  [/^(?:tbody|tfoot)$/, /^(?:thead|tbody)$/],
+  [/^(?:dd|dt)$/, /^(?:dd|dt)$/],
+  [/^optgroup$/, /^(?:optgroup|option)$/],
+  [/^option$/, /^option$/],
+  [/^li$/, /^li$/],
+  [/^a$/, /^a$/],
+];
+const RAW_TEXT_TAGS = new Set(['iframe', 'noembed', 'noframes', 'script', 'style', 'textarea', 'title', 'xmp']);
 
 const noop = () => {};
 
@@ -53,7 +67,7 @@ const noop = () => {};
  * tag-balance events. `start`/`end` use the original-string offsets, so
  * callers can splice against the input directly.
  */
-export const walkTags = (html: string, { onOpen = noop, onClose = noop }: TagWalkHandlers) => {
+export const walkTags = (html: string, { onOpen, onClose }: TagWalkHandlers) => {
   const stack: string[] = [];
   // parse5 lowercases tag names, so slice the original casing from the source.
   const readTag = ({ location, tagName }: Token.TagToken, nameOffset: number) => {
@@ -66,6 +80,10 @@ export const walkTags = (html: string, { onOpen = noop, onClose = noop }: TagWal
     {
       onStartTag(token) {
         const { name, start, end } = readTag(token, 1);
+        const closes = IMPLIED_CLOSES.find(([openers]) => openers.test(name))?.[1];
+        while (stack.length > 0 && closes?.test(stack[stack.length - 1])) {
+          onClose({ name: stack.pop()!, start, end, implicit: true });
+        }
         onOpen({ name, start, end, isSelfClosing: html[end - 2] === '/', isStrayCloser: false });
         if (token.selfClosing || HTML_VOID_ELEMENTS.has(name)) {
           onClose({ name, start, end, implicit: true });
@@ -77,11 +95,10 @@ export const walkTags = (html: string, { onOpen = noop, onClose = noop }: TagWal
       onEndTag(token) {
         const { name, start, end } = readTag(token, 2);
         const index = stack.lastIndexOf(name);
-        if (index === -1 && name === 'br') {
+        if (index === -1 && (name === 'br' || name === 'p')) {
           onOpen({ name, start, end, isSelfClosing: false, isStrayCloser: true });
           onClose({ name, start, end, implicit: false });
         }
-        // Closing a tag implicitly closes everything still open inside it.
         while (index !== -1 && stack.length > index) {
           onClose({ name: stack.pop()!, start, end, implicit: stack.length > index });
         }
