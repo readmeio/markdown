@@ -48,7 +48,8 @@
     border-radius: var(--theme-button-radius, var(--border-radius-full, 999px));
     background: var(--color-bg-page, white);
     color: var(--color-text-default, #384248);
-    box-shadow: inset 0 0 0 var(--border-width, 1px) var(--color-border-default, #{rgba(black, 0.1)});
+    outline: var(--border-width, 1px) solid var(--color-border-default, #{rgba(black, 0.1)});
+    outline-offset: calc(var(--border-width, 1px) * -1);
     transition: opacity var(--transition-fast, 0.15s) var(--transition-timing, ease-out);
 
     // Only shown once mermaid has swapped in its svg: hidden while loading and on render errors
@@ -107,7 +108,7 @@
   &.theme-dark &-controls {
     background: var(--color-bg-page, #242e34);
     color: var(--color-text-default, white);
-    box-shadow: inset 0 0 0 var(--border-width, 1px) var(--color-border-default, #{rgba(white, 0.1)});
+    outline-color: var(--color-border-default, #{rgba(white, 0.1)});
 
     button:hover:not([aria-disabled='true']) {
       background: var(--color-bg-hover, #{rgba(white, 0.05)});
