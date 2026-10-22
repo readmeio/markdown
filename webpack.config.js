@@ -3,6 +3,8 @@ const ExtractCSS = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const { merge } = require('webpack-merge');
 
+const gemojiCatalogGuardPlugin = require('./scripts/gemoji-catalog-guard-plugin');
+
 const env = process.env.NODE_ENV || 'development';
 const isDev = env === 'development';
 
@@ -113,6 +115,7 @@ const browserConfig = merge(getConfig({ target: 'web' }), {
       umd: 'react-dom',
     },
   },
+  plugins: [gemojiCatalogGuardPlugin],
   output: {
     library: {
       type: 'umd',

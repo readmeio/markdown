@@ -136,7 +136,7 @@ standard.
   on every markdown render — split it out and lazy-load like mermaid (#1571); mermaid's
   laziness is guarded by `verify-lazy-mermaid.cjs` and the `'import mermaid'` webpack external.
   gemoji's full catalog belongs only in `lib/owlmoji-details.ts` (`./owlmoji-details`); the main entry
-  imports just `nameToEmoji`, guarded by `verify-owlmoji.cjs`.
+  imports just `nameToEmoji`, guarded by `scripts/gemoji-catalog-guard-plugin.js`.
   bundlewatch budgets (main.js ≤ 1MB, main.node.js ≤ 990KB, render-diff ≤ 185KB) are enforced on
   every push.
 - 🟡 **Module-scope invariants** — regexes, Sets, processors, extension arrays built once, not

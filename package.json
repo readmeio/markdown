@@ -48,7 +48,7 @@
     "test": "vitest",
     "test.ui": "vitest --ui",
     "test.browser": "jest",
-    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs && node scripts/verify-lazy-mermaid.cjs && node scripts/verify-owlmoji.cjs",
+    "verify-exports": "node scripts/verify-render-diff.cjs && node scripts/verify-render-fixture.cjs && node scripts/verify-lazy-mermaid.cjs",
     "watch": "webpack --watch --progress --mode development"
   },
   "dependencies": {
@@ -183,7 +183,6 @@
     "semantic-release": "^25.0.9",
     "stream-browserify": "^3.0.0",
     "string.prototype.trimend": "^1.0.6",
-    "terser": "^5.51.2",
     "terser-webpack-plugin": "^5.3.17",
     "ts-loader": "^9.4.2",
     "typescript": "^5.7.3",
