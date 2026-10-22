@@ -22,7 +22,7 @@ const isLiteral = (node: Node): node is Literal => 'value' in node;
  */
 const isFlowChild = (child: Nodes): boolean => {
   if (child.type === 'paragraph' || child.type === 'plain' || child.type === 'escape') return false;
-  if (child.type === NodeTypes.variable) return false;
+  if (child.type === NodeTypes.variable || child.type === NodeTypes.noTranslate) return false;
   if (phrasing(child)) return false;
   if (child.type === 'html') return SELF_CLOSING_JSX_REGEX.test(child.value);
 
