@@ -239,6 +239,8 @@ export const isMDXEsm = (node: Node): node is MdxjsEsm => {
   return node.type === 'mdxjsEsm';
 };
 
+export const isText = (node: Node): node is Text => node.type === 'text';
+
 /**
  * Takes an HTML string and formats it for display in the editor. Removes leading/trailing newlines
  * and unindents the HTML.
