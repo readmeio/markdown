@@ -37,12 +37,14 @@ import mdxishMdxComponentBlocks from '../processor/transform/mdxish/components/m
 import evaluateExports from '../processor/transform/mdxish/evaluate-exports';
 import evaluateExpressions from '../processor/transform/mdxish/evaluate-expressions';
 import evaluateStyleBlockExpressions from '../processor/transform/mdxish/evaluate-style-block-expressions';
+import headingIdsTransformer from '../processor/transform/mdxish/heading-ids';
 import generateSlugForHeadings from '../processor/transform/mdxish/heading-slugs';
 import mdxishImagesToJsx from '../processor/transform/mdxish/images-to-jsx';
 import magicBlockTransformer from '../processor/transform/mdxish/magic-blocks/magic-block-transformer';
 import mdxishHtmlBlocks from '../processor/transform/mdxish/mdxish-html-blocks';
 import mdxishJsxToMdast from '../processor/transform/mdxish/mdxish-jsx-to-mdast';
 import mdxishMermaidTransformer from '../processor/transform/mdxish/mdxish-mermaid';
+import mdxishNoTranslateToJsx from '../processor/transform/mdxish/no-translate-to-jsx';
 import { normalizeClosingTagWhitespace } from '../processor/transform/mdxish/normalize-closing-tag-whitespace';
 import { normalizeCompactHeadings } from '../processor/transform/mdxish/normalize-compact-headings';
 import normalizeEmphasisAST from '../processor/transform/mdxish/normalize-malformed-md-syntax';
@@ -61,6 +63,7 @@ import { terminateHtmlFlowBlocks } from '../processor/transform/mdxish/terminate
 import unwrapPins from '../processor/transform/mdxish/unwrap-pins';
 import variablesCodeResolver from '../processor/transform/mdxish/variables-code';
 import variablesTextTransformer from '../processor/transform/mdxish/variables-text';
+import noTranslateBlocksToDiv from '../processor/transform/no-translate-blocks';
 import tailwindTransformer from '../processor/transform/tailwind';
 
 import { FEATURES, mdxishExtensions } from './micromark/mdxish-extensions';
@@ -224,6 +227,7 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
     .use(mdxishCalloutToJsx)
     .use(mdxishTablesToJsx)
     .use(mdxishAnchorToJsx)
+    .use(mdxishNoTranslateToJsx)
     // The rest only a PARSER tree carries.
     // A `sidebar: true` block parses into an `rdme-pin` wrapper the dialect can't spell.
     .use(unwrapPins)
@@ -236,13 +240,8 @@ export function mdxishMdastToMd(mdast: MdastRoot) {
   return processor.stringify(processor.runSync(mdast));
 }
 
-/**
- * Processes markdown content with MDX syntax support and returns a HAST.
- * Detects and renders custom component tags from the components hash.
- *
- * @see .claude/context/MDXish/Processor Overview.md
- */
-export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+/** The steps `mdxish()` runs after parsing; run it on the parse's VFile, since steps read `file.data`. */
+export function mdxishRenderProcessor(opts: MdxishOpts = {}) {
   const {
     components: userComponents = {},
     hardBreaks: enableHardBreaks = true,
@@ -256,19 +255,14 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     ...userComponents,
   };
 
-  // Remove JSX comments before processing (protect code blocks first)
-  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
-  const withoutComments = removeJSXComments(protectedContent);
-  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
-
-  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
-
-  processor
+  return unified()
+    .use(headingIdsTransformer)
     .use(safeMode ? undefined : evaluateExports, { sanitize }) // Evaluate `export const/function` and stash scope on file.data.mdxishScope
     .use(enableHardBreaks ? hardBreaks : undefined) // Must precede evaluateExpressions to avoid splitting the \n in an evaluated template literal into a <br> node
     .use(safeMode ? undefined : evaluateExpressions, { components, variables }) // Evaluate self-contained MDX expressions (e.g. `{1+1}`)
     .use(safeMode ? undefined : evaluateStyleBlockExpressions) // Evaluate `<style>{`...`}</style>` template literals into plain CSS
     .use(variablesCodeResolver, { variables }) // Resolve <<...>> and {user.*} inside code and inline code nodes
+    .use(noTranslateBlocksToDiv) // Block <NoTranslate> renders as a div, inline stays a span
     .use(remarkRehype, { allowDangerousHtml: true, handlers: mdxComponentHandlers })
     .use(preserveBooleanProperties) // RehypeRaw converts boolean properties to empty strings
     .use(rehypeRaw, { passThrough: ['html-block', 'mdx-jsx'] }) // MDX JSX nodes bypass parse5's string-only HTML round-trip
@@ -281,12 +275,28 @@ export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
     .use(generateSlugForHeadings)
     .use(rehypeMdxishComponents, {
       components,
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define -- component bodies render through mdxish() again
       processMarkdown: (markdown: string) => mdxish(markdown, opts),
     });
+}
+
+/**
+ * Processes markdown content with MDX syntax support and returns a HAST.
+ * Detects and renders custom component tags from the components hash.
+ *
+ * @see .claude/context/MDXish/Processor Overview.md
+ */
+export function mdxish(mdContent: string, opts: MdxishOpts = {}): Root {
+  // Remove JSX comments before processing (protect code blocks first)
+  const { protectedCode, protectedContent } = protectCodeBlocks(mdContent);
+  const withoutComments = removeJSXComments(protectedContent);
+  const contentWithoutComments = restoreCodeBlocks(withoutComments, protectedCode);
+
+  const { processor, parserReadyContent } = mdxishAstProcessor(contentWithoutComments, opts);
 
   const vfile = new VFile({ value: parserReadyContent });
-  const mdast = processor.parse(parserReadyContent);
-  const hast = processor.runSync(mdast, vfile) as Root;
+  const mdast = processor.runSync(processor.parse(parserReadyContent), vfile) as MdastRoot;
+  const hast = mdxishRenderProcessor(opts).runSync(mdast, vfile) as Root;
 
   if (!hast) {
     throw new Error('Markdown pipeline did not produce a HAST tree.');

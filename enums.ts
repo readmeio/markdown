@@ -10,6 +10,7 @@ export enum NodeTypes {
   htmlBlock = 'html-block',
   i = 'i',
   imageBlock = 'image-block',
+  noTranslate = 'readme-no-translate',
   plain = 'plain',
   recipe = 'recipe',
   reusableContent = 'reusable-content',

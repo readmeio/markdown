@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
+import { footnoteLabels } from '../../../../lib/micromark/footnote-labels';
 import { FEATURES, mdxishExtensions } from '../../../../lib/micromark/mdxish-extensions';
 import { NON_REPARSED_BODY_TAGS } from '../../../../utils/common-html-words';
 import { walkTags } from '../tables/tag-walker';
@@ -14,8 +15,21 @@ import { soleUserVariableExpression } from '../variables-text';
 
 export type MdxAttributes = (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
-const buildInlineMdProcessor = (safeMode: boolean) => {
-  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, { safeMode });
+interface InlineMdProcessorOptions {
+  // Footnotes the document defines, so `[^a]` in the body still links.
+  footnotes?: readonly string[];
+  // Phrasing only, so the body always comes back as one paragraph. Without it an inline
+  // body like `[a]: https://b.com` parses as a link definition and renders nothing.
+  phrasing?: boolean;
+  safeMode?: boolean;
+}
+
+const buildInlineMdProcessor = ({ footnotes = [], phrasing = false, safeMode = false }: InlineMdProcessorOptions) => {
+  const { micromarkExtensions, fromMarkdownExtensions } = mdxishExtensions(FEATURES.componentBody, {
+    phrasing,
+    safeMode,
+  });
+  if (footnotes.length) micromarkExtensions.push(footnoteLabels(footnotes));
 
   return unified()
     .data('micromarkExtensions', micromarkExtensions)
@@ -24,19 +38,21 @@ const buildInlineMdProcessor = (safeMode: boolean) => {
     .use(remarkGfm);
 };
 
-const processorCache = new Map<boolean, ReturnType<typeof buildInlineMdProcessor>>();
+const processorCache = new Map<string, ReturnType<typeof buildInlineMdProcessor>>();
 
 /**
  * Unified processor for re-parsing the body of an MDX component
- * Memoized based on the argument value so we don't pay the construction cost on every parse
- * Currently the argument is only safeMode, but we could add more arguments in the future,
- * in which case the key would need to be extend to include the new arguments.
+ * Memoized based on the argument values so we don't pay the construction cost on every parse
+ * The cache key is built from every option, so a new option has to be added to it too.
+ * Footnotes differ per document, so a processor with them is never cached.
  */
-export const getInlineMdProcessor = ({ safeMode = false }: { safeMode?: boolean } = {}) => {
-  let processor = processorCache.get(safeMode);
+export const getInlineMdProcessor = (options: InlineMdProcessorOptions = {}) => {
+  if (options.footnotes?.length) return buildInlineMdProcessor(options);
+  const key = `${!!options.phrasing}:${!!options.safeMode}`;
+  let processor = processorCache.get(key);
   if (!processor) {
-    processor = buildInlineMdProcessor(safeMode);
-    processorCache.set(safeMode, processor);
+    processor = buildInlineMdProcessor(options);
+    processorCache.set(key, processor);
   }
   return processor;
 };
@@ -54,9 +70,7 @@ export const isPascalCase = (tag: string): boolean => /^[A-Z]/.test(tag);
  * signal to decide eligibility.
  */
 export const hasExpressionAttr = (attributes: MdxAttributes): boolean =>
-  attributes.some(
-    attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null,
-  );
+  attributes.some(attr => attr.type === 'mdxJsxAttribute' && typeof attr.value === 'object' && attr.value !== null);
 
 /**
  * Factory for the `mdxJsxTextElement` node shape. `position` is optional
