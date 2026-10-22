@@ -29,7 +29,17 @@ export type RunOpts = Omit<RunOptions, 'Fragment'> &
 
 const run = (string: string, _opts: RunOpts = {}) => {
   const { Fragment } = runtime;
-  const { components = {}, terms, variables, baseUrl, imports = {}, theme, copyButtons, ...opts } = _opts;
+  const {
+    components = {},
+    terms,
+    variables,
+    baseUrl,
+    imports = {},
+    theme,
+    copyButtons,
+    mermaidControls,
+    ...opts
+  } = _opts;
 
   const tocsByTag: Record<string, RMDXModule['toc']> = {};
   const exportedComponents = Object.entries(components).reduce((memo, [tag, mod]) => {
@@ -72,7 +82,14 @@ const run = (string: string, _opts: RunOpts = {}) => {
 
   return {
     default: (props: MDXProps) => (
-      <Contexts baseUrl={baseUrl} copyButtons={copyButtons} terms={terms} theme={theme} variables={variables}>
+      <Contexts
+        baseUrl={baseUrl}
+        copyButtons={copyButtons}
+        mermaidControls={mermaidControls}
+        terms={terms}
+        theme={theme}
+        variables={variables}
+      >
         <Content {...props} />
       </Contexts>
     ),
