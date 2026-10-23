@@ -34,6 +34,15 @@ const x = 1;
     expect(container.textContent).toContain('const x = 1;');
   });
 
+  it.each(renderingEngines)('%s: adds copy buttons only when copyButtons is set', (_label, renderContent) => {
+    const md = '```js\nconst x = 1;\n```';
+    const copyButtonsIn = (Content: React.ComponentType) =>
+      render(<Content />).container.querySelectorAll('button[aria-label="Copy Code"]');
+
+    expect(copyButtonsIn(renderContent(md))).toHaveLength(0);
+    expect(copyButtonsIn(renderContent(md, { copyButtons: true }))).toHaveLength(1);
+  });
+
   it.each(renderingEngines)('%s: renders inline code', (_label, renderContent) => {
     const md = 'Use `console.log()` to debug';
     const Content = renderContent(md);
