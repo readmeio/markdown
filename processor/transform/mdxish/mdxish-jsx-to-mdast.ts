@@ -1,6 +1,6 @@
 import type { MagicBlockEmbed, MagicBlockImage } from './magic-blocks/types';
 import type { FigureNode } from './types';
-import type { Anchor, Callout, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
+import type { Anchor, Callout, NoTranslate, EmbedBlock, ImageAlign, ImageBlock, Recipe } from '../../../types';
 import type { Html, Node, Paragraph, Parent, PhrasingContent, RootContent, Table, TableCell, TableRow } from 'mdast';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx-jsx';
 import type { Plugin } from 'unified';
@@ -305,6 +305,14 @@ const transformAnchor = (jsx: MdxJsxTextElement): Anchor => {
     position: jsx.position,
   };
 };
+
+/** Transforms an inline `<NoTranslate>` JSX element into a readme-no-translate MDAST node. */
+const transformNoTranslate = (jsx: MdxJsxTextElement): NoTranslate => ({
+  type: NodeTypes.noTranslate,
+  children: jsx.children,
+  data: { hName: 'NoTranslate' },
+  position: jsx.position,
+});
 
 /** The `<Image>` tag's caption as written; the whole tag when it isn't a quoted attribute. */
 const findCaptionFragment = (image: MdxJsxFlowElement, documentSource: string): MarkdownFragment => {
@@ -772,13 +780,15 @@ const mdxishJsxToMdast: Plugin<[], Parent> = () => (tree, file) => {
     (parent.children as Node[]).splice(index, 1, newNode);
   });
 
-  // Inline JSX components (Anchor)
+  // Inline JSX components (Anchor, NoTranslate)
   visit(tree, 'mdxJsxTextElement', (node: MdxJsxTextElement, index, parent: Parent | undefined) => {
     if (!parent || index === undefined || !node.name) return;
 
     if (node.name === 'Anchor') {
       const newNode = transformAnchor(node);
       (parent.children as Node[])[index] = newNode;
+    } else if (node.name === 'NoTranslate') {
+      (parent.children as Node[])[index] = transformNoTranslate(node);
     }
   });
 

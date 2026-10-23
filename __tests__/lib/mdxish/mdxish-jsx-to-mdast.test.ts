@@ -487,6 +487,136 @@ Body content
       });
     });
 
+    describe('NoTranslate component', () => {
+      it('should transform <NoTranslate> to a readme-no-translate node inside its paragraph', () => {
+        const ast = processWithNewTypes('<NoTranslate>Acme **Cloud**</NoTranslate> is great');
+
+        expect(ast.children).toHaveLength(1);
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            {
+              type: NodeTypes.noTranslate,
+              data: { hName: 'NoTranslate' },
+              children: [
+                { type: 'text', value: 'Acme ' },
+                { type: 'strong', children: [{ type: 'text', value: 'Cloud' }] },
+              ],
+            },
+            { type: 'text', value: ' is great' },
+          ],
+        });
+      });
+
+      it.each([
+        [
+          'markdown in the body',
+          'Hello <NoTranslate>Acme **Cloud**</NoTranslate> world',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme **Cloud**</NoTranslate>'],
+            ['text', 'Acme '],
+            ['strong', '**Cloud**'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a NoTranslate nested in the body',
+          'Hello <NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate> end',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>a <NoTranslate>**b**</NoTranslate> c</NoTranslate>'],
+            ['text', 'a '],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+            ['text', ' c'],
+          ],
+        ],
+        [
+          'a NoTranslate alone in the body',
+          'Use <NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate> now',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate><NoTranslate>**b**</NoTranslate></NoTranslate>'],
+            [NodeTypes.noTranslate, '<NoTranslate>**b**</NoTranslate>'],
+            ['strong', '**b**'],
+            ['text', 'b'],
+          ],
+        ],
+        [
+          'a NoTranslate in a heading',
+          '## Hello <NoTranslate>Acme __Cloud__</NoTranslate>',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme __Cloud__</NoTranslate>'],
+            ['text', 'Acme '],
+            ['strong', '__Cloud__'],
+            ['text', 'Cloud'],
+          ],
+        ],
+        [
+          'a NoTranslate in a table cell',
+          '| Name |\n| --- |\n| <NoTranslate>Acme *Cloud*</NoTranslate> |',
+          [
+            [NodeTypes.noTranslate, '<NoTranslate>Acme *Cloud*</NoTranslate>'],
+            ['text', 'Acme '],
+            ['emphasis', '*Cloud*'],
+            ['text', 'Cloud'],
+          ],
+        ],
+      ])('should slice every node under a NoTranslate with %s to its own source', (_label, md, slices) => {
+        expect(sourceSlicesUnder(md, node => node.type === NodeTypes.noTranslate)).toStrictEqual(slices);
+      });
+    });
+
+    describe('block NoTranslate component', () => {
+      it('should keep a block <NoTranslate> as a plain JSX element holding its blocks', () => {
+        const ast = processWithNewTypes('<NoTranslate>\nPara one **bold**\n\n- item\n</NoTranslate>\n\nafter');
+
+        expect(ast.children).toHaveLength(2);
+        expect(ast.children[0]).toMatchObject({
+          type: 'mdxJsxFlowElement',
+          name: 'NoTranslate',
+          attributes: [],
+          children: [
+            {
+              type: 'paragraph',
+              children: [
+                { type: 'text', value: 'Para one ' },
+                { type: 'strong', children: [{ type: 'text', value: 'bold' }] },
+              ],
+            },
+            { type: 'list' },
+          ],
+        });
+        expect(ast.children[1]).toMatchObject({ type: 'paragraph', children: [{ type: 'text', value: 'after' }] });
+      });
+    });
+
+    describe('nested NoTranslate and Anchor', () => {
+      it.each([
+        [
+          'an Anchor inside a NoTranslate',
+          '<NoTranslate><Anchor target="_blank" href="https://example.com">Acme</Anchor></NoTranslate> after',
+          NodeTypes.noTranslate,
+          NodeTypes.anchor,
+        ],
+        [
+          'a NoTranslate inside an Anchor',
+          '<Anchor target="_blank" href="https://example.com"><NoTranslate>Acme</NoTranslate></Anchor> after',
+          NodeTypes.anchor,
+          NodeTypes.noTranslate,
+        ],
+      ])('should turn %s into nested readme nodes', (_label, md, outer, inner) => {
+        const ast = processWithNewTypes(md);
+
+        expect(ast.children[0]).toMatchObject({
+          type: 'paragraph',
+          children: [
+            { type: outer, children: [{ type: inner, children: [{ type: 'text', value: 'Acme' }] }] },
+            { type: 'text', value: ' after' },
+          ],
+        });
+      });
+    });
+
     describe('Recipe component', () => {
       it('should transform <Recipe /> to recipe node', () => {
         const md = '<Recipe slug="recipe-1" title="Recipe 1" />';
@@ -1329,6 +1459,28 @@ Some callout content
       const htmlNodes = para.children.filter(c => c.type === 'html');
       expect(htmlNodes.length).toBeGreaterThan(0);
       expect(para.children.find(c => c.type === 'mdxJsxFlowElement')).toBeUndefined();
+    });
+
+    it.each([
+      ['at the start of a line', '<NoTranslate>Acme</NoTranslate> is great', [{ type: 'text', value: ' is great' }]],
+      ['alone on its line', '<NoTranslate>Acme</NoTranslate>', []],
+    ])('should keep a NoTranslate %s as one JSX element in one paragraph', (_label, md, trailing) => {
+      const ast = processWithoutNewTypes(md);
+
+      expect(ast.children).toHaveLength(1);
+      expect(ast.children[0]).toMatchObject({
+        type: 'paragraph',
+        children: [
+          {
+            type: 'mdxJsxTextElement',
+            name: 'NoTranslate',
+            children: [{ type: 'text', value: 'Acme' }],
+            position: { start: { offset: 0 }, end: { offset: '<NoTranslate>Acme</NoTranslate>'.length } },
+          },
+          ...trailing,
+        ],
+      });
+      expect((ast.children[0] as Paragraph).children).toHaveLength(1 + trailing.length);
     });
   });
 });

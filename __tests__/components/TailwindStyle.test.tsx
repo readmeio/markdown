@@ -1,4 +1,5 @@
 import { act, render, waitFor } from '@testing-library/react';
+import postcss from 'postcss';
 import React from 'react';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,9 +12,41 @@ vi.mock('../../utils/tailwind-compiler', () => ({
   tailwindCompiler: vi.fn().mockResolvedValue({ css: '.bg-red-500 { background: red; }' }),
 }));
 
+const compiled = (css: string) => postcss().process(css, { from: undefined }).sync();
+
+const sheetOf = (container: HTMLElement) => container.querySelector('style[data-tailwind-stylesheet]');
+
 describe('TailwindStyle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('before first paint (RM-19138)', () => {
+    const content = <div className={`${tailwindPrefix} p-4`} />;
+
+    it('writes the compiled sheet', async () => {
+      const { container } = render(<TailwindStyle>{content}</TailwindStyle>);
+
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.bg-red-500 { background: red; }'));
+    });
+
+    it('writes the recompiled sheet when added content brings new utilities', async () => {
+      const { container } = render(<TailwindStyle>{content}</TailwindStyle>);
+      await waitFor(() => expect(sheetOf(container)).not.toBeEmptyDOMElement());
+      vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.m-2{}'));
+
+      container.appendChild(Object.assign(document.createElement('div'), { className: `${tailwindPrefix} m-2` }));
+
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.m-2{}'));
+    });
+
+    it('writes the recompiled sheet when the dark mode attribute changes', async () => {
+      vi.mocked(tailwindCompiler).mockResolvedValueOnce(compiled('.old{}')).mockResolvedValueOnce(compiled('.new{}'));
+      const { container, rerender } = render(<TailwindStyle darkModeDataAttribute="data-a">{content}</TailwindStyle>);
+
+      rerender(<TailwindStyle darkModeDataAttribute="data-b">{content}</TailwindStyle>);
+      await waitFor(() => expect(sheetOf(container)?.textContent).toBe('.new{}'));
+    });
   });
 
   describe('on initial render', () => {
