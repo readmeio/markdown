@@ -1,6 +1,12 @@
 Changelog
 ===
 
+## Version 15.12.0
+### ✨ New & Improved
+
+* **mermaid:** extract mermaid and add pan and zoom controls ([#1647](https://github.com/readmeio/markdown/issues/1647)) ([4253abd](https://github.com/readmeio/markdown/commit/4253abdcce80e3296b0b5ab96938269241eb1300))
+* **contexts:** move copyButtons into a shared render config context ([#1654](https://github.com/readmeio/markdown/issues/1654)) ([ad67380](https://github.com/readmeio/markdown/commit/ad67380346bb3355dce207295c6e84289c36d84d)), closes [#1647](https://github.com/readmeio/markdown/issues/1647)
+
 ## Version 15.11.0
 ### ✨ New & Improved
 
